@@ -65,7 +65,6 @@ enum PurchaseStrings {
     case begin_refund_no_active_entitlement
     case begin_refund_multiple_active_entitlements
     case begin_refund_customer_info_error(entitlementID: String?)
-    case cached_app_user_id_deleted
     case missing_cached_customer_info
     case sk1_purchase_too_slow
     case sk2_purchase_too_slow
@@ -243,14 +242,6 @@ extension PurchaseStrings: CustomStringConvertible {
         case .begin_refund_customer_info_error(let entitlementID):
             return "Failed to get CustomerInfo to proceed with refund for " +
                 "\(entitlementID.flatMap { "entitlement with ID " + $0 } ?? "active entitlement")."
-        case .cached_app_user_id_deleted:
-            return """
-                [\(Logger.frameworkDescription)] - Cached appUserID has been deleted from user defaults.
-                This leaves the SDK in an undetermined state. Please make sure that RevenueCat
-                entries in user defaults don't get deleted by anything other than the SDK.
-                More info: https://rev.cat/userdefaults-crash
-                """
-
         case .missing_cached_customer_info:
             return "Requested a cached CustomerInfo but it's not available."
 

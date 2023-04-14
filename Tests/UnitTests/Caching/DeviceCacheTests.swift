@@ -245,102 +245,42 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
     }
 
-    func testAssertionHappensWhenAppUserIDIsDeleted() {
-        let mockNotificationCenter = MockNotificationCenter()
-        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = "Rage Against the Machine"
-
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
-
-        expectNoFatalError { mockNotificationCenter.fireNotifications() }
-
-        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
-
-        // swiftlint:disable:next line_length
-        let expectedMessage = "[\(Logger.frameworkDescription)] - Cached appUserID has been deleted from user defaults.\n" +
-        "This leaves the SDK in an undetermined state. Please make sure that RevenueCat\n" +
-        "entries in user defaults don\'t get deleted by anything other than the SDK.\n" +
-        "More info: https://rev.cat/userdefaults-crash"
-        expectFatalError(expectedMessage: expectedMessage) { mockNotificationCenter.fireNotifications() }
-    }
-
-    func testDoesntCrashIfOtherSettingIsDeletedAndAppUserIDHadntBeenSet() {
-        let mockNotificationCenter = MockNotificationCenter()
-        mockUserDefaults.mockValues["com.revenuecat.userdefaults.appUserID.new"] = nil
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
-
-        expectNoFatalError { mockNotificationCenter.fireNotifications() }
-    }
-
-    func testNoAssertionIfModifyingRevenueCatUserDefaultsSuite() {
-        let userDefaults: UserDefaults = .revenueCatSuite
-        let mockNotificationCenter = MockNotificationCenter()
-
-        userDefaults.set("User", forKey: "com.revenuecat.userdefaults.appUserID.new")
-
-        self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: userDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
-
-        userDefaults.set(nil, forKey: "com.revenuecat.userdefaults.appUserID.new")
-
-        expectNoFatalError { mockNotificationCenter.fireNotifications() }
-    }
-
     func testNewDeviceCacheInstanceWithExistingValidCustomerInfoCacheIsntStale() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         let fourMinutesAgo = Calendar.current.date(byAdding: .minute, value: -4, to: Date())
         let cackeKey = "com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"
         mockUserDefaults.mockValues[cackeKey] = fourMinutesAgo
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                          isAppBackgrounded: false)) == false
     }
 
     func testNewDeviceCacheInstanceWithExistingInvalidCustomerInfoCacheIsStale() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         let fourDaysAgo = Calendar.current.date(byAdding: .day, value: -4, to: Date())
         mockUserDefaults.mockValues["com.revenuecat.userdefaults.purchaserInfoLastUpdated.\(appUserID)"] = fourDaysAgo
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                          isAppBackgrounded: false)) == true
     }
 
     func testNewDeviceCacheInstanceWithNoCachedCustomerInfoCacheIsStale() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
 
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
                                                          isAppBackgrounded: false)) == true
     }
 
     func testIsCustomerInfoCacheStaleForBackground() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
         let outdatedCacheDateForBackground = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForBackground, appUserID: appUserID)
 
@@ -355,12 +295,9 @@ class DeviceCacheTests: TestCase {
     }
 
     func testIsCustomerInfoCacheStaleForForeground() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
         let outdatedCacheDateForForeground = Calendar.current.date(byAdding: .minute, value: -25, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: outdatedCacheDateForForeground, appUserID: appUserID)
 
@@ -375,12 +312,9 @@ class DeviceCacheTests: TestCase {
     }
 
     func testIsCustomerInfoCacheWithCachedInfoButNoTimestamp() {
-        let mockNotificationCenter = MockNotificationCenter()
         let appUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
 
         let data = Data()
         self.deviceCache.cache(customerInfo: data, appUserID: appUserID)
@@ -394,13 +328,10 @@ class DeviceCacheTests: TestCase {
     }
 
     func testIsCustomerInfoCacheStaleForDifferentAppUserID() {
-        let mockNotificationCenter = MockNotificationCenter()
         let otherAppUserID = "some other user"
         let currentAppUserID = "myUser"
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
-                                       userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: nil,
-                                       notificationCenter: mockNotificationCenter)
+                                       userDefaults: self.mockUserDefaults)
         let validCacheDate = Calendar.current.date(byAdding: .minute, value: -3, to: Date())!
         self.deviceCache.setCustomerInfoCache(timestamp: validCacheDate, appUserID: otherAppUserID)
 
@@ -409,13 +340,11 @@ class DeviceCacheTests: TestCase {
     }
 
     func testIsOfferingsCacheStaleDifferentCacheLengthsForBackgroundAndForeground() {
-        let mockNotificationCenter = MockNotificationCenter()
         let mockCachedObject = InMemoryCachedObject<Offerings>()
 
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
-                                       offeringsCachedObject: mockCachedObject,
-                                       notificationCenter: mockNotificationCenter)
+                                       offeringsCachedObject: mockCachedObject)
 
         let outdatedCacheDate = Calendar.current.date(byAdding: .hour, value: -25, to: Date())!
         mockCachedObject.updateCacheTimestamp(date: outdatedCacheDate)
