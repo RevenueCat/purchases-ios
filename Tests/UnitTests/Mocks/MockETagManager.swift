@@ -29,8 +29,11 @@ class MockETagManager: ETagManager {
     var invokedETagHeaderParametersList: [ETagHeaderRequest] = []
     var stubbedETagHeaderResult: [String: String]! = [:]
 
-    func stubResponseEtag(_ tag: String) {
-        self.stubbedETagHeaderResult[ETagManager.eTagResponseHeaderName] = tag
+    func stubResponseEtag(_ tag: String, validationTime: Date = Date()) {
+        self.stubbedETagHeaderResult = [
+            ETagManager.eTagRequestHeaderName: tag,
+            ETagManager.eTagValidationTimeRequestHeaderName: validationTime.millisecondsSince1970.description
+        ]
     }
 
     override func eTagHeader(
