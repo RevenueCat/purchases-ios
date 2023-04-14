@@ -14,7 +14,7 @@
 
 import Foundation
 
-// swiftlint:disable file_length type_body_length
+// swiftlint:disable file_length
 class DeviceCache {
 
     var cachedAppUserID: String? { return self._cachedAppUserID.value }
@@ -23,7 +23,6 @@ class DeviceCache {
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
     private let userDefaults: SynchronizedUserDefaults
-    private let notificationCenter: NotificationCenter
     private let offeringsCachedObject: InMemoryCachedObject<Offerings>
 
     private let _cachedAppUserID: Atomic<String?>
@@ -33,52 +32,18 @@ class DeviceCache {
 
     init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
          userDefaults: UserDefaults,
-         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init(),
-         notificationCenter: NotificationCenter = .default) {
+         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.offeringsCachedObject = offeringsCachedObject
-        self.notificationCenter = notificationCenter
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: .appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: .legacyGeneratedAppUserDefaults))
 
         Logger.verbose(Strings.purchase.device_cache_init(self))
-
-        // Observe `UserDefaults` changes through `handleUserDefaultsChanged`
-        // to ensure that users don't remove the data from the SDK, which would
-        // leave it in an undetermined state. See https://rev.cat/userdefaults-crash
-        // If the user is not using a custom `UserDefaults`, we don't need to
-        // because they have no access to it.
-        if userDefaults !== UserDefaults.revenueCatSuite {
-            self.userDefaultsObserver = self.notificationCenter.addObserver(
-                forName: UserDefaults.didChangeNotification,
-                object: userDefaults,
-                queue: nil, // Run synchronously on the posting thread
-                using: { [weak self] notification in
-                    self?.handleUserDefaultsChanged(notification: notification)
-                }
-            )
-        }
-    }
-
-    @objc private func handleUserDefaultsChanged(notification: Notification) {
-        guard let userDefaults = notification.object as? UserDefaults else {
-            return
-        }
-
-        // Note: this should never use `self.userDefaults` directly because this method
-        // might be synchronized, and `Atomic` is not reentrant.
-        if self.cachedAppUserID != nil && Self.cachedAppUserID(userDefaults) == nil {
-            fatalError(Strings.purchase.cached_app_user_id_deleted.description)
-        }
     }
 
     deinit {
         Logger.verbose(Strings.purchase.device_cache_deinit(self))
-
-        if let observer = self.userDefaultsObserver {
-            self.notificationCenter.removeObserver(observer)
-        }
     }
 
     // MARK: - appUserID
@@ -372,7 +337,6 @@ class DeviceCache {
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-// - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
 extension DeviceCache: @unchecked Sendable {}
 
 // MARK: - Private
