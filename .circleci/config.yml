@@ -788,7 +788,8 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
-          xcode_version: '14.3.0'
+          # Using Xcode 14.2 until CocoaPods fixes https://github.com/CocoaPods/CocoaPods/pull/11828
+          xcode_version: '14.2.0'
           <<: *release-branches
       - installation-tests-swift-package-manager:
           xcode_version: '14.3.0'
