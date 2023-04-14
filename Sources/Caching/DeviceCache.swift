@@ -30,19 +30,11 @@ class DeviceCache {
 
     private var userDefaultsObserver: NSObjectProtocol?
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
-                     userDefaults: UserDefaults) {
-        self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-                  userDefaults: userDefaults,
-                  offeringsCachedObject: nil,
-                  notificationCenter: nil)
-    }
-
     init(sandboxEnvironmentDetector: SandboxEnvironmentDetector,
          userDefaults: UserDefaults,
-         offeringsCachedObject: InMemoryCachedObject<Offerings> = .init()) {
+         offeringsCachedObject: InMemoryCachedObject<Offerings>? = InMemoryCachedObject()) {
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
-        self.offeringsCachedObject = offeringsCachedObject
+        self.offeringsCachedObject = offeringsCachedObject ?? InMemoryCachedObject()
         self.userDefaults = .init(userDefaults: userDefaults)
         self._cachedAppUserID = .init(userDefaults.string(forKey: .appUserDefaults))
         self._cachedLegacyAppUserID = .init(userDefaults.string(forKey: .legacyGeneratedAppUserDefaults))
