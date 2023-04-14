@@ -117,11 +117,11 @@ class EntitlementInfosTests: TestCase {
         )
 
         let subscriberInfo = try CustomerInfo(data: response)
-        
+
         expect(subscriberInfo.entitlements["pro_cat"]).toNot(beNil())
         expect(subscriberInfo.entitlements.active["pro_cat"]).toNot(beNil())
     }
-    
+
     func testActiveSubscription() throws {
         stubResponse(
             entitlements: [
