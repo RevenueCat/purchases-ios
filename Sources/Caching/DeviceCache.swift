@@ -14,6 +14,7 @@
 
 import Foundation
 
+// swiftlint:disable file_length
 class DeviceCache {
 
     var cachedAppUserID: String? { return self._cachedAppUserID.value }
