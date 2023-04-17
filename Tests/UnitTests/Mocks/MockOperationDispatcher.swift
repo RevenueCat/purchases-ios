@@ -25,6 +25,16 @@ class MockOperationDispatcher: OperationDispatcher {
         }
     }
 
+    var invokedDispatchAsyncOnMainThread = false
+    var invokedDispatchAsyncOnMainThreadCount = 0
+
+    override func dispatchAsyncOnMainThread(_ block: @escaping @Sendable () -> Void) {
+        self.invokedDispatchAsyncOnMainThread = true
+        self.invokedDispatchAsyncOnMainThreadCount += 1
+
+        super.dispatchAsyncOnMainThread(block)
+    }
+
     override func dispatchOnMainActor(_ block: @escaping @Sendable @MainActor () -> Void) {
         self.invokedDispatchOnMainThread = true
         self.invokedDispatchOnMainThreadCount += 1

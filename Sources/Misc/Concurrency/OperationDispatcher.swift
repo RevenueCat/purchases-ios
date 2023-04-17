@@ -22,12 +22,19 @@ class OperationDispatcher {
 
     static let `default`: OperationDispatcher = .init()
 
+    /// Invokes `block` on the main thread asynchronously
+    /// or synchronously if called from the main thread.
     func dispatchOnMainThread(_ block: @escaping @Sendable () -> Void) {
         if Thread.isMainThread {
             block()
         } else {
             self.mainQueue.async(execute: block)
         }
+    }
+
+    /// Dispatch block on main thread asynchronously.
+    func dispatchAsyncOnMainThread(_ block: @escaping @Sendable () -> Void) {
+        self.mainQueue.async(execute: block)
     }
 
     func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
