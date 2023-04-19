@@ -72,7 +72,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.clearReceiptIfExists()
         self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
         self.verifyPurchasesDoesNotLeak()
-        try await self.waitForAnonymousUser()
+        await self.waitForAnonymousUser()
     }
 
     // MARK: - Configuration
@@ -130,12 +130,17 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
-    func waitForAnonymousUser() async throws {
+    func waitForAnonymousUser() async {
         // SDK initialization begins with an initial request to offerings,
         // which results in a get-create of the initial anonymous user.
         // To avoid race conditions with when this request finishes and make all tests deterministic
         // this waits for that request to finish.
-        _ = try await Purchases.shared.offerings()
+        //
+        // This ignores errors because this class does not set up `SKTestSession`,
+        // so subclasses would fail to load offerings if they don't set one up.
+        // However, it still serves the purpose of waiting for the anonymous user.
+        // If there is something broken when loading offerings, there is a dedicated test that would fail instead.
+        _ = try? await Purchases.shared.offerings()
     }
 
     private var dangerousSettings: DangerousSettings {
