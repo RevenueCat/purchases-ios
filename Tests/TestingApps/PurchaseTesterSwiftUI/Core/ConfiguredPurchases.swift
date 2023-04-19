@@ -38,6 +38,7 @@ public final class ConfiguredPurchases {
             with: .builder(withAPIKey: apiKey)
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(observerMode: observerMode)
+                .with(dangerousSettings: DangerousSettings(minimalImplementationOnly: true))
                 .build()
         )
 

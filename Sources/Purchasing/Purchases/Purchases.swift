@@ -1342,8 +1342,6 @@ private extension Purchases {
         isAppBackgrounded: Bool,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
-        Logger.verbose(Strings.purchase.updating_all_caches)
-
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)

@@ -45,7 +45,7 @@ import Foundation
      *- Important: This is a dangerous setting and should only be used in specific implementations.
      */
     // TODO: finish listing APIs that work
-    @objc public let minimalImplementationOnly: Bool = false
+    @objc public let minimalImplementationOnly: Bool
 
     internal let internalSettings: InternalSettings
 
@@ -60,14 +60,18 @@ import Foundation
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public convenience init(autoSyncPurchases: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases, internalSettings: .default)
+    @objc public convenience init(autoSyncPurchases: Bool = true, minimalImplementationOnly: Bool = false) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  minimalImplementationOnly: minimalImplementationOnly,
+                  internalSettings: .default)
+
     }
 
     /// Designated initializer
-    internal init(autoSyncPurchases: Bool, internalSettings: InternalSettings) {
+    internal init(autoSyncPurchases: Bool, minimalImplementationOnly: Bool, internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
+        self.minimalImplementationOnly = minimalImplementationOnly
     }
 
 }
