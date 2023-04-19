@@ -76,4 +76,38 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.notificationCenter.observers).to(haveCount(2))
     }
 
+    // See https://github.com/RevenueCat/purchases-ios/issues/2410
+    func testDelegateWithGetCustomerInfoCallDoesNotDeadlock() throws {
+        final class GetCustomerInfoPurchasesDelegate: NSObject, PurchasesDelegate {
+            func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
+                purchases.getCustomerInfo { _, _ in }
+            }
+        }
+
+        let delegate = GetCustomerInfoPurchasesDelegate()
+        self.purchases.delegate = delegate
+
+        let offerings = self.offeringsFactory.createOfferings(from: [:], data: .mockResponse)
+        let package = try XCTUnwrap(offerings?.all["base"]?.monthly)
+
+        waitUntil { completion in
+            self.purchases.purchase(package: package) { _, _, _, _ in
+                completion()
+            }
+
+            let transaction = MockTransaction()
+            transaction.mockPayment = self.storeKit1Wrapper.payment!
+            transaction.mockState = .purchasing
+
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper,
+                                                             updatedTransaction: transaction)
+
+            self.backend.postReceiptResult = .success(.emptyInfo)
+
+            transaction.mockState = .purchased
+            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper,
+                                                             updatedTransaction: transaction)
+        }
+    }
+
 }

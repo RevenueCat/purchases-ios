@@ -205,7 +205,7 @@ class PurchasesLogInTests: BasePurchasesTests {
             self.purchases.logIn(Self.appUserID) { _, _, _ in completed() }
         }
 
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == true
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache).toEventually(beTrue())
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount) == 1
     }
 
