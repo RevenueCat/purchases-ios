@@ -72,13 +72,13 @@ commands:
         type: string
     steps:
       - run:
-          name: Install xcode-install
-          command: gem install xcode-install
+          name: Install xcodes
+          command: brew install robotsandpencils/made/xcodes
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
-              xcversion simulators
-              xcversion simulators --install="<< parameters.install-name >>"
+              xcodes runtimes
+              xcodes runtimes install "<< parameters.install-name >>"
       - run:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
@@ -484,7 +484,7 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - install-and-create-sim:
-          install-name: iOS 13.7 Simulator
+          install-name: iOS 13.7
           sim-device-type: iPhone-8
           sim-device-runtime: iOS-13-7
           sim-name: iPhone 8 (13.7)
@@ -516,7 +516,7 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - install-and-create-sim:
-          install-name: iOS 12.4 Simulator
+          install-name: iOS 12.4
           sim-device-type: iPhone-6
           sim-device-runtime: iOS-12-4
           sim-name: iPhone 6 (12.4)
