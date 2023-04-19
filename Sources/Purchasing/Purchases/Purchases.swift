@@ -88,10 +88,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             self.privateDelegate = newValue
             Logger.debug(Strings.configure.delegate_set)
 
-            // Sends cached customer info (if exists) to delegate as latest
-            // customer info may have already been observed and sent by the monitor
-            self.sendCachedCustomerInfoToDelegateIfExists()
-            // TODO: do we need to send it the first time when the dangerousSetting is active? 
+            if !self.systemInfo.dangerousSettings.customEntitlementComputation {
+                // Sends cached customer info (if exists) to delegate as latest
+                // customer info may have already been observed and sent by the monitor
+                self.sendCachedCustomerInfoToDelegateIfExists()
+            }
         }
     }
 
