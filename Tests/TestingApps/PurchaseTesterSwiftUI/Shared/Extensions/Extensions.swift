@@ -47,6 +47,9 @@ extension CacheFetchPolicy: Identifiable {
 
 }
 
+// Trusted Entitlements is internal until ready to be made public.
+
+/*
 extension Configuration.EntitlementVerificationMode {
 
     var label: String {
@@ -84,3 +87,4 @@ extension VerificationResult: CustomStringConvertible {
     }
 
 }
+*/
