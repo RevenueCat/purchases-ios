@@ -78,7 +78,7 @@ commands:
           name: Install simulator
           command: | # Print all available simulators and install required one
               xcodes runtimes
-              xcodes runtimes install "<< parameters.install-name >>"
+              sudo xcodes runtimes install "<< parameters.install-name >>"
       - run:
           name: Create simulator
           command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
