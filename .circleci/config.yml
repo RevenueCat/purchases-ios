@@ -517,9 +517,9 @@ jobs:
       - update-spm-installation-commit
       - install-and-create-sim:
           install-name: iOS 12.4
-          sim-device-type: iPhone-6
+          sim-device-type: iPhone-5s
           sim-device-runtime: iOS-12-4
-          sim-name: iPhone 6 (12.4)
+          sim-name: iPhone 5s (12.4)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
