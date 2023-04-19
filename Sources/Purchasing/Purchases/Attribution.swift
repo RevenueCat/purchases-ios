@@ -30,18 +30,15 @@ import Foundation
     private let attributionPoster: AttributionPoster
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var automaticAdServicesAttributionTokenCollection: Bool = false
-    private var systemInfo: SystemInfo
 
     weak var delegate: AttributionDelegate?
 
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
-         attributionPoster: AttributionPoster,
-         systemInfo: SystemInfo) {
+         attributionPoster: AttributionPoster) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
         self.attributionPoster = attributionPoster
-        self.systemInfo = systemInfo
 
         super.init()
 
@@ -60,13 +57,11 @@ public extension Attribution {
      * Enable automatic collection of AdServices attribution token.
      */
     @objc func enableAdServicesAttributionTokenCollection() {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
         self.automaticAdServicesAttributionTokenCollection = true
         self.postAdServicesTokenIfNeeded()
     }
 
     internal func postAdServicesTokenIfNeeded() {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
         if self.automaticAdServicesAttributionTokenCollection {
             self.attributionPoster.postAdServicesTokenIfNeeded()
         }
