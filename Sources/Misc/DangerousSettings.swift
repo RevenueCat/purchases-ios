@@ -40,6 +40,21 @@ import Foundation
      */
     @objc public let autoSyncPurchases: Bool
 
+    /**
+     * A property that disables all functionality in the RevenueCat SDK except for the following methods:
+     * - ``Purchases/getOfferings(completion:)``
+     * - ``Purchases/offerings()``
+     * - ``Purchases/logIn(_:)-arja``
+     * - ``Purchases/purchasePackage(_:)``
+     * - ``Purchases/purchaseProduct(_:)``
+     *
+     * The ``PurchasesDelegate`` object and ``Purchases/customerInfoStream`` will continue to receive calls as expected.
+     *
+     *- Important: This is a dangerous setting and should only be used in specific implementations.
+     */
+    // TODO: finish listing APIs that work
+    @objc public let minimalImplementationOnly: Bool = false
+
     internal let internalSettings: InternalSettings
 
     @objc public override convenience init() {
