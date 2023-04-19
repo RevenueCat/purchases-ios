@@ -174,8 +174,12 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
                 Logger.debug(Strings.purchase.paymentqueue_removed_transaction(self, transaction))
                 delegate.storeKit1Wrapper(self, removedTransaction: transaction)
 
-                if let callbacks = self.finishedTransactionCallbacks.value.removeValue(forKey: transaction) {
+                if let callbacks = self.finishedTransactionCallbacks.value.removeValue(forKey: transaction),
+                    !callbacks.isEmpty {
                     callbacks.forEach { $0() }
+                } else {
+                    Logger.debug(Strings.purchase.paymentqueue_removed_transaction_no_callbacks_found(self,
+                                                                                                      transaction))
                 }
             }
         }

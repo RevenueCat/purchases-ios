@@ -30,10 +30,12 @@ enum PurchaseStrings {
     case finishing_transaction(StoreTransactionType)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
-    case paymentqueue_removed_transaction(_ observer: SKPaymentTransactionObserver,
-                                          _ transaction: SKPaymentTransaction)
-    case paymentqueue_updated_transaction(_ observer: SKPaymentTransactionObserver,
-                                          _ transaction: SKPaymentTransaction)
+    case paymentqueue_removed_transaction(SKPaymentTransactionObserver,
+                                          SKPaymentTransaction)
+    case paymentqueue_removed_transaction_no_callbacks_found(SKPaymentTransactionObserver,
+                                                             SKPaymentTransaction)
+    case paymentqueue_updated_transaction(SKPaymentTransactionObserver,
+                                          SKPaymentTransaction)
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
@@ -130,6 +132,10 @@ extension PurchaseStrings: CustomStringConvertible {
             ]
                 .compactMap { $0 }
                 .joined(separator: " ")
+
+        case let .paymentqueue_removed_transaction_no_callbacks_found(observer, transaction):
+            return "\(observer.debugName) removedTransaction for (\(transaction.payment.productIdentifier) " +
+            "but not callbacks to notify"
 
         case let .paymentqueue_updated_transaction(observer, transaction):
             return "\(observer.debugName) updatedTransaction: \(transaction.payment.productIdentifier) " +
