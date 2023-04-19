@@ -91,6 +91,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             // Sends cached customer info (if exists) to delegate as latest
             // customer info may have already been observed and sent by the monitor
             self.sendCachedCustomerInfoToDelegateIfExists()
+            // TODO: do we need to send it the first time when the dangerousSetting is active? 
         }
     }
 
@@ -418,6 +419,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
+
+        if systemInfo.dangerousSettings.minimalImplementationOnly {
+            Logger.info("entering offeringsAndPurchasesEnabledOnly mode. All methods other than getOfferings " +
+                        "and purchase APIs will fail") // TODO: extract
+        }
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
@@ -467,6 +473,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
 
+        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
+            guard let self = self else { return }
+            self.handleCustomerInfoChanged(customerInfo)
+        }
+
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
         /// for promotional offers to work.
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
@@ -476,10 +489,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
-            guard let self = self else { return }
-            self.handleCustomerInfoChanged(customerInfo)
-        }
     }
 
     deinit {
@@ -591,6 +600,8 @@ public extension Purchases {
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
@@ -649,6 +660,8 @@ public extension Purchases {
         fetchPolicy: CacheFetchPolicy,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                               fetchPolicy: fetchPolicy) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
@@ -731,6 +744,8 @@ public extension Purchases {
     }
 
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         self.purchasesOrchestrator.syncPurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
@@ -742,6 +757,8 @@ public extension Purchases {
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         purchasesOrchestrator.restorePurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
@@ -755,6 +772,8 @@ public extension Purchases {
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                              completion: completion)
     }
@@ -783,6 +802,8 @@ public extension Purchases {
 #endif
 
     @objc func invalidateCustomerInfoCache() {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
@@ -1243,7 +1264,9 @@ internal extension Purchases {
 private extension Purchases {
 
     func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
-        self.trialOrIntroPriceEligibilityChecker.clearCache()
+        if !self.systemInfo.dangerousSettings.minimalImplementationOnly {
+            self.trialOrIntroPriceEligibilityChecker.clearCache()
+        }
         self.delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 
@@ -1266,6 +1289,7 @@ private extension Purchases {
     }
 
     func subscribeToAppStateNotifications() {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
         notificationCenter.addObserver(self,
                                        selector: #selector(applicationDidBecomeActive(notification:)),
                                        name: SystemInfo.applicationDidBecomeActiveNotification, object: nil)
@@ -1292,18 +1316,18 @@ private extension Purchases {
     }
 
     func updateAllCachesIfNeeded() {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
-                                                                      isAppBackgrounded: isAppBackgrounded,
-                                                                      completion: nil)
-            guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
-                return
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            if !self.systemInfo.dangerousSettings.minimalImplementationOnly {
+                self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
+                                                                          isAppBackgrounded: isAppBackgrounded,
+                                                                          completion: nil)
             }
 
-            Logger.debug("Offerings cache is stale, updating caches")
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
+            if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
+                self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded,
+                                                           completion: nil)
+            }
         }
     }
 
@@ -1318,14 +1342,17 @@ private extension Purchases {
         isAppBackgrounded: Bool,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
-        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                           isAppBackgrounded: isAppBackgrounded) { @Sendable in
-            completion?($0.mapError { $0.asPublicError })
-        }
+        Logger.verbose(Strings.purchase.updating_all_caches)
 
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
+        
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded) { @Sendable in
+            completion?($0.mapError { $0.asPublicError })
+        }
     }
 
     // Used when delegate is being set
