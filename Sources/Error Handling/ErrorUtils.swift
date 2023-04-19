@@ -522,6 +522,19 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
+    /**
+     * Constructs an Error with the ``ErrorCode/featureNotAvailableInMinimalImplementation`` code.
+     *
+     * - Note: This error is used  when trying to use a feature that isn't supported in minimal implementation mode
+     * and the ``DangerousSettings/minimalImplementationOnly`` flag is set to true.
+     */
+    static func featureNotAvailableInMinimalImplementationError(
+        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
+    ) -> PurchasesError {
+        return ErrorUtils.error(with: .featureNotAvailableInMinimalImplementation,
+                                fileName: fileName, functionName: functionName, line: line)
+    }
+
 }
 
 extension ErrorUtils {
@@ -642,6 +655,7 @@ private extension ErrorUtils {
                 .apiEndpointBlockedError,
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
+                .featureNotAvailableInMinimalImplementation,
                 .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
