@@ -249,7 +249,10 @@ class CustomerInfoManager {
             }
 
             $0.lastSentCustomerInfo = customerInfo
-            self.operationDispatcher.dispatchOnMainThread { [observers = $0.customerInfoObserversByIdentifier] in
+
+            // This must be async to prevent deadlocks if the observer calls a method that ends up reading
+            // this class' data. By making it async, the closure is invoked outside of the lock.
+            self.operationDispatcher.dispatchAsyncOnMainThread { [observers = $0.customerInfoObserversByIdentifier] in
                 for closure in observers.values {
                     closure(customerInfo)
                 }
