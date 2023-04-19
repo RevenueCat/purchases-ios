@@ -20,6 +20,7 @@ class SubscriberAttributesManager {
     private let operationDispatcher: OperationDispatcher
     private let attributionFetcher: AttributionFetcher
     private let attributionDataMigrator: AttributionDataMigrator
+    private let systemInfo: SystemInfo
     private let lock = Lock()
 
     weak var delegate: SubscriberAttributesManagerDelegate?
@@ -28,12 +29,14 @@ class SubscriberAttributesManager {
          deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
          attributionFetcher: AttributionFetcher,
-         attributionDataMigrator: AttributionDataMigrator) {
+         attributionDataMigrator: AttributionDataMigrator,
+         systemInfo: SystemInfo) {
         self.backend = backend
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.attributionFetcher = attributionFetcher
         self.attributionDataMigrator = attributionDataMigrator
+        self.systemInfo = systemInfo
     }
 
     func setAttributes(_ attributes: [String: String], appUserID: String) {
@@ -246,6 +249,7 @@ extension SubscriberAttributesManager: AttributeSyncing {
 private extension SubscriberAttributesManager {
 
     func storeAttributeLocallyIfNeeded(key: String, value: String?, appUserID: String) {
+        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
         let currentValue = currentValueForAttribute(key: key, appUserID: appUserID)
         if currentValue == nil || currentValue != (value ?? "") {
             storeAttributeLocally(key: key, value: value ?? "", appUserID: appUserID)

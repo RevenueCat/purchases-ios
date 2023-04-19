@@ -294,7 +294,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                       deviceCache: deviceCache,
                                                                       operationDispatcher: operationDispatcher,
                                                                       attributionFetcher: attributionFetcher,
-                                                                      attributionDataMigrator: attributionDataMigrator)
+                                                                      attributionDataMigrator: attributionDataMigrator,
+                                                                      systemInfo: systemInfo)
         let identityManager = IdentityManager(deviceCache: deviceCache,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
@@ -307,7 +308,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                   subscriberAttributesManager: subscriberAttributesManager)
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
-                                               attributionPoster: attributionPoster)
+                                               attributionPoster: attributionPoster,
+                                               systemInfo: systemInfo)
         let productsRequestFactory = ProductsRequestFactory()
         let productsManager = CachingProductsManager(
             manager: ProductsManager(productsRequestFactory: productsRequestFactory,
