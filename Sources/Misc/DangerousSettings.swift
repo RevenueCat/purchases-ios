@@ -41,19 +41,18 @@ import Foundation
     @objc public let autoSyncPurchases: Bool
 
     /**
-     * A property that disables all functionality in the RevenueCat SDK except for the following methods:
-     * - ``Purchases/getOfferings(completion:)``
-     * - ``Purchases/offerings()``
-     * - ``Purchases/logIn(_:)-arja``
-     * - ``Purchases/purchasePackage(_:)``
-     * - ``Purchases/purchaseProduct(_:)``
+     * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
+     * It:
+     *   - disables automatic CustomerInfo cache updates
+     *   - disables ``Purchases/logOut``, disallows
+     *   - disallows configuration of the SDK without an appUserID
+     *   - disables automatic firing of the PurchasesDelegate's CustomerInfo listener when setting the delegate.
+     * It will only be called when the SDK posts a receipt or after customerInfo on device changes.
      *
-     * The ``PurchasesDelegate`` object and ``Purchases/customerInfoStream`` will continue to receive calls as expected.
-     *
-     *- Important: This is a dangerous setting and should only be used in specific implementations.
+     * - Important: This is a dangerous setting and should only be used if you intend to do your own entitlement
+     * granting, separate from RevenueCat.
      */
-    // TODO: finish listing APIs that work
-    @objc public let minimalImplementationOnly: Bool
+    @objc public let customEntitlementComputation: Bool
 
     internal let internalSettings: InternalSettings
 
@@ -68,18 +67,18 @@ import Foundation
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public convenience init(autoSyncPurchases: Bool = true, minimalImplementationOnly: Bool = false) {
+    @objc public convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool = false) {
         self.init(autoSyncPurchases: autoSyncPurchases,
-                  minimalImplementationOnly: minimalImplementationOnly,
+                  customEntitlementComputation: customEntitlementComputation,
                   internalSettings: .default)
 
     }
 
     /// Designated initializer
-    internal init(autoSyncPurchases: Bool, minimalImplementationOnly: Bool, internalSettings: InternalSettings) {
+    internal init(autoSyncPurchases: Bool, customEntitlementComputation: Bool, internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
-        self.minimalImplementationOnly = minimalImplementationOnly
+        self.customEntitlementComputation = customEntitlementComputation
     }
 
 }

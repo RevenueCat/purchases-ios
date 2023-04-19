@@ -426,9 +426,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
 
-        if systemInfo.dangerousSettings.minimalImplementationOnly {
-            Logger.info("entering offeringsAndPurchasesEnabledOnly mode. All methods other than getOfferings, logIn " +
-                        "and purchase APIs will fail") // TODO: extract
+        if systemInfo.dangerousSettings.customEntitlementComputation {
+            Logger.info("""
+            Entering customEntitlementComputation mode. CustomerInfo cache will not be automatically fetched. Anonymous
+        user IDs will be disallowed, logOut will be disabled, and the first call to the PurchasesDelegate's
+        customerInfo listener will only happen after a receipt is posted, getCustomerInfo is called or logIn is called.
+        """)
         }
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
@@ -484,8 +487,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             guard let self = self else { return }
             self.handleCustomerInfoChanged(customerInfo)
         }
-
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
 
         /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
         /// for promotional offers to work.
@@ -611,8 +612,8 @@ public extension Purchases {
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInMinimalImplementationError().asPublicError)
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
             return
        }
 
@@ -674,11 +675,6 @@ public extension Purchases {
         fetchPolicy: CacheFetchPolicy,
         completion: @escaping (CustomerInfo?, PublicError?) -> Void
     ) {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            completion(nil, NewErrorUtils.featureNotAvailableInMinimalImplementationError().asPublicError)
-            return
-        }
-
         self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                               fetchPolicy: fetchPolicy) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
@@ -761,11 +757,6 @@ public extension Purchases {
     }
 
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInMinimalImplementationError().asPublicError)
-            return
-        }
-
         self.purchasesOrchestrator.syncPurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
@@ -777,11 +768,6 @@ public extension Purchases {
     }
 
     @objc func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInMinimalImplementationError().asPublicError)
-            return
-        }
-
         purchasesOrchestrator.restorePurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
         }
@@ -795,15 +781,6 @@ public extension Purchases {
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            var result: [String: IntroEligibility] = [:]
-            for product in productIdentifiers {
-                result[product] = IntroEligibility(eligibilityStatus: .unknown)
-            }
-            completion(result)
-            return
-        }
-
         trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
                                                              completion: completion)
     }
@@ -832,8 +809,6 @@ public extension Purchases {
 #endif
 
     @objc func invalidateCustomerInfoCache() {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
-
         self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
     }
 
@@ -1302,9 +1277,7 @@ internal extension Purchases {
 private extension Purchases {
 
     func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
-        if !self.systemInfo.dangerousSettings.minimalImplementationOnly {
-            self.trialOrIntroPriceEligibilityChecker.clearCache()
-        }
+        self.trialOrIntroPriceEligibilityChecker.clearCache()
         self.delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 
@@ -1327,7 +1300,6 @@ private extension Purchases {
     }
 
     func subscribeToAppStateNotifications() {
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else { return }
         notificationCenter.addObserver(self,
                                        selector: #selector(applicationDidBecomeActive(notification:)),
                                        name: SystemInfo.applicationDidBecomeActiveNotification, object: nil)
@@ -1355,7 +1327,7 @@ private extension Purchases {
 
     func updateAllCachesIfNeeded() {
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            if !self.systemInfo.dangerousSettings.minimalImplementationOnly {
+            if !self.systemInfo.dangerousSettings.customEntitlementComputation {
                 self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                           isAppBackgrounded: isAppBackgrounded,
                                                                           completion: nil)
@@ -1390,8 +1362,8 @@ private extension Purchases {
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)
 
-        guard !self.systemInfo.dangerousSettings.minimalImplementationOnly else {
-            completion?(.failure(NewErrorUtils.featureNotAvailableInMinimalImplementationError().asPublicError))
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            completion?(.failure(NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError))
             return
        }
         

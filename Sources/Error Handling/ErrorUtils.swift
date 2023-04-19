@@ -523,15 +523,15 @@ enum ErrorUtils {
     }
 
     /**
-     * Constructs an Error with the ``ErrorCode/featureNotAvailableInMinimalImplementation`` code.
+     * Constructs an Error with the ``ErrorCode/featureNotAvailableInCustomEntitlementsComputationMode`` code.
      *
-     * - Note: This error is used  when trying to use a feature that isn't supported in minimal implementation mode
-     * and the ``DangerousSettings/minimalImplementationOnly`` flag is set to true.
+     * - Note: This error is used  when trying to use a feature that isn't supported in customEntitlementsComputation mode
+     * and the ``DangerousSettings/customEntitlementsComputation`` flag is set to true.
      */
-    static func featureNotAvailableInMinimalImplementationError(
+    static func featureNotAvailableInCustomEntitlementsComputationModeError(
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
-        return ErrorUtils.error(with: .featureNotAvailableInMinimalImplementation,
+        return ErrorUtils.error(with: .featureNotAvailableInCustomEntitlementsComputationMode,
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -655,7 +655,7 @@ private extension ErrorUtils {
                 .apiEndpointBlockedError,
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
-                .featureNotAvailableInMinimalImplementation,
+                .featureNotAvailableInCustomEntitlementsComputationMode,
                 .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
