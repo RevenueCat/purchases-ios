@@ -482,7 +482,7 @@ jobs:
           install-name: iOS 12.4
           sim-device-type: iPhone-5s
           sim-device-runtime: iOS-12-4
-          sim-name: iPhone 5s (12.4)
+          sim-name: iPhone 6 (12.4)
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -873,7 +873,8 @@ workflows:
       - run-test-ios-13:
           xcode_version: '14.3.0'
       - run-test-ios-12:
-          xcode_version: '14.3.0'
+          # Xcode 14's image is macOS 13 which doesn't support iOS 12.
+          xcode_version: '13.4.1'
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
       - backend-integration-tests:
