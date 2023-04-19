@@ -1,3 +1,6 @@
+## 4.17.11
+### Bug Fixes
+* `CustomerInfoManager`: fixed deadlock caused by reading `CustomerInfo` inside of observer (#2412) via NachoSoto (@NachoSoto)
 ## 4.17.10
 ### Bugfixes
 * Fix `NotificationCenter` deadlock in `customerInfoListener` (#2407) via Andy Boedo (@aboedo)
