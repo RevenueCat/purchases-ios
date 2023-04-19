@@ -25,8 +25,9 @@ public final class ConfiguredPurchases {
         apiKey: String,
         proxyURL: String?,
         useStoreKit2: Bool,
-        observerMode: Bool,
-        entitlementVerificationMode: Configuration.EntitlementVerificationMode
+        observerMode: Bool
+        // Trusted Entitlements is internal until ready to be made public.
+        // entitlementVerificationMode: Configuration.EntitlementVerificationMode
     ) {
         Purchases.logLevel = .verbose
         Purchases.logHandler = Self.logger.logHandler
@@ -41,7 +42,8 @@ public final class ConfiguredPurchases {
             with: .builder(withAPIKey: apiKey)
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(observerMode: observerMode)
-                .with(entitlementVerificationMode: entitlementVerificationMode)
+                // Trusted Entitlements is internal until ready to be made public.
+                // .with(entitlementVerificationMode: entitlementVerificationMode)
                 .build()
         )
 
