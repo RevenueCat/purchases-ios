@@ -60,15 +60,9 @@ aliases:
         only: /^release\/.*\.0$/
 
 commands:
-  install-and-create-sim:
+  install-runtime:
     parameters:
-      install-name:
-        type: string
-      sim-device-type:
-        type: string
-      sim-device-runtime:
-        type: string
-      sim-name:
+      runtime-name:
         type: string
     steps:
       - run:
@@ -78,10 +72,10 @@ commands:
           name: Install simulator
           command: | # Print all available simulators and install required one
               xcodes runtimes
-              sudo xcodes runtimes install "<< parameters.install-name >>"
+              sudo xcodes runtimes install "<< parameters.runtime-name >>"
       - run:
-          name: Create simulator
-          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+          name: List simulators
+          command: xcrun simctl list
 
   install-bundle-dependencies:
     parameters:
@@ -456,6 +450,8 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 14.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -483,11 +479,8 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
-      - install-and-create-sim:
-          install-name: iOS 13.7
-          sim-device-type: iPhone-8
-          sim-device-runtime: iOS-13-7
-          sim-name: iPhone 8 (13.7)
+      - install-runtime:
+          runtime-name: iOS 13.7
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -515,11 +508,8 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
-      - install-and-create-sim:
-          install-name: iOS 12.4
-          sim-device-type: iPhone-5s
-          sim-device-runtime: iOS-12-4
-          sim-name: iPhone 6 (12.4)
+      - install-runtime:
+          runtime-name: iOS 12.4
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
