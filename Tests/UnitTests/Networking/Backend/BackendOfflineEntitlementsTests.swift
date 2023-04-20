@@ -63,11 +63,11 @@ class BackendOfflineEntitlementsTests: BaseBackendTests {
 private extension BackendOfflineEntitlementsTests {
 
     static let noProductsEntitlements: [String: Any?] = [
-        "products": [] as [Any]
+        "product_entitlement_mapping": [] as [Any]
     ]
 
     static let productsEntitlements: [String: Any?] = [
-        "products": [
+        "product_entitlement_mapping": [
             [
                 "id": "com.revenuecat.foo_1",
                 "entitlements": [

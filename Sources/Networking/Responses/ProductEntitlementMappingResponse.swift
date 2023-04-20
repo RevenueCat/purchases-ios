@@ -45,5 +45,13 @@ extension ProductEntitlementMappingResponse.Product: Codable {
 
 }
 
-extension ProductEntitlementMappingResponse: Codable {}
+extension ProductEntitlementMappingResponse: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case products = "product_entitlement_mapping"
+
+    }
+
+}
 extension ProductEntitlementMappingResponse: HTTPResponseBody {}

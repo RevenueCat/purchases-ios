@@ -206,7 +206,7 @@ extension HTTPRequest.Path: CustomStringConvertible {
             return "health"
 
         case .getProductEntitlementMapping:
-            return "products_entitlements"
+            return "product_entitlement_mapping"
         }
     }
 

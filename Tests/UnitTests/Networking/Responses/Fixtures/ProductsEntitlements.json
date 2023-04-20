@@ -1,5 +1,5 @@
 {
-    "products": [
+    "product_entitlement_mapping": [
         {
             "id": "com.revenuecat.foo_1",
             "entitlements": [
