@@ -487,11 +487,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             Logger.warn(Strings.configure.autoSyncPurchasesDisabled)
         }
 
-        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
-            guard let self = self else { return }
-            self.handleCustomerInfoChanged(customerInfo)
-        }
-
         /// If SK1 is not enabled, `PaymentQueueWrapper` needs to handle transactions
         /// for promotional offers to work.
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
@@ -500,6 +495,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
+
+        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
+            guard let self = self else { return }
+            self.handleCustomerInfoChanged(customerInfo)
+        }
 
     }
 
