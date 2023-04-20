@@ -362,6 +362,36 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    func testCustomEntitlementComputationSkipsFirstDelegateCall() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        self.setupPurchases()
+    }
+
+    func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() throws {
+
+    }
+
+    func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
+
+    }
+
+    func testConfigureWithCustomEntitlementComputationNoFatalErrorIfAppUserIDPassedIn() throws {
+
+    }
+
+    func testConfigureWithCustomEntitlementComputationLogsInformationMessage() throws {
+
+    }
+
+    func testConfigureWithCustomEntitlementComputationDisablesLogOut() throws {
+
+    }
+
+    func testConfigureWithCustomEntitlementComputationDisablesAutomaticCacheUpdateForCustomerInfo() throws {
+
+    }
+
     // MARK: - UserDefaults
 
     func testCustomUserDefaultsIsUsed() {
