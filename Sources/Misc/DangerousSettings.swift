@@ -67,7 +67,7 @@ import Foundation
     }
 
     /// Designated initializer
-    internal init(autoSyncPurchases: Bool, customEntitlementComputation: Bool, internalSettings: InternalSettings) {
+    internal init(autoSyncPurchases: Bool, customEntitlementComputation: Bool = false, internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation

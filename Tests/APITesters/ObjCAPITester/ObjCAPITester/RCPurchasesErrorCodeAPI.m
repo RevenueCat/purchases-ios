@@ -58,6 +58,8 @@
         case RCInvalidPromotionalOfferError:
         case RCOfflineConnectionError:
             NSLog(@"%ld", (long)errCode);
+        case RCFeatureNotAvailableInCustomEntitlementsComputationMode:
+            break;
     }
 }
 
