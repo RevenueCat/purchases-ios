@@ -379,13 +379,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+
         let expectedMessage = Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description
 
         expectFatalError(expectedMessage: expectedMessage, testcase: {
-            Purchases.configure(
-                with: .builder(withAPIKey: "apiKey")
-                    .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                    .build())
+            self.setupAnonPurchases()
         })
     }
 

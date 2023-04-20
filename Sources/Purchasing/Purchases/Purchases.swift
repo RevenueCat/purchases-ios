@@ -301,11 +301,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID)
 
-        if systemInfo.dangerousSettings.customEntitlementComputation
-            && appUserID == nil && identityManager.currentUserIsAnonymous {
-            fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
-        }
-
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -430,6 +425,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
         }
+
+        if systemInfo.dangerousSettings.customEntitlementComputation
+            && appUserID == nil && identityManager.currentUserIsAnonymous {
+            fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
+        }
+
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
