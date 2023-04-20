@@ -507,7 +507,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             guard let self = self else { return }
             self.handleCustomerInfoChanged(customerInfo)
         }
-
     }
 
     deinit {
