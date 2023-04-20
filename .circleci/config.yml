@@ -486,7 +486,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 8 (13.7)
+            SCAN_DEVICE: iPhone 11 (13.7)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
