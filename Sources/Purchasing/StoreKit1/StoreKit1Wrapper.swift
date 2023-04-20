@@ -87,6 +87,8 @@ class StoreKit1Wrapper: NSObject {
     }
 
     func add(_ payment: SKPayment) {
+        Logger.debug(Strings.purchase.paymentqueue_adding_payment(self.paymentQueue, payment))
+
         self.paymentQueue.add(payment)
     }
 
