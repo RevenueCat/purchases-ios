@@ -508,7 +508,8 @@ enum ErrorUtils {
     /**
      * Constructs an Error with the ``ErrorCode/featureNotAvailableInCustomEntitlementsComputationMode`` code.
      *
-     * - Note: This error is used  when trying to use a feature that isn't supported in customEntitlementsComputation mode
+     * - Note: This error is used  when trying to use a feature that isn't supported
+     * in customEntitlementsComputation mode
      * and the ``DangerousSettings/customEntitlementsComputation`` flag is set to true.
      */
     static func featureNotAvailableInCustomEntitlementsComputationModeError(
