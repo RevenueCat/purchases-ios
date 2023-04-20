@@ -52,6 +52,7 @@ func checkPurchasesErrorCodeEnums() {
          .apiEndpointBlockedError,
          .invalidPromotionalOfferError,
          .offlineConnectionError,
+         .featureNotAvailableInCustomEntitlementsComputationMode,
          .signatureVerificationFailed:
         print(errCode!)
     @unknown default:
