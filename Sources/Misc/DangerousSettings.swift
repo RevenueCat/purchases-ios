@@ -44,7 +44,7 @@ import Foundation
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
      * It:
      *   - disables automatic CustomerInfo cache updates
-     *   - disables ``Purchases/logOut``, disallows
+     *   - disables ``Purchases/logOut()`` and ``Purchases/logOut(completion:)``
      *   - disallows configuration of the SDK without an appUserID
      *   - disables automatic firing of the PurchasesDelegate's CustomerInfo listener when setting the delegate.
      * It will only be called when the SDK posts a receipt or after customerInfo on device changes.
@@ -75,7 +75,9 @@ import Foundation
     }
 
     /// Designated initializer
-    internal init(autoSyncPurchases: Bool, customEntitlementComputation: Bool = false, internalSettings: InternalSettings) {
+    internal init(autoSyncPurchases: Bool,
+                  customEntitlementComputation: Bool = false,
+                  internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
