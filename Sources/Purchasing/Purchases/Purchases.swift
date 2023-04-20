@@ -432,11 +432,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
-            Logger.info("""
-            Entering customEntitlementComputation mode. CustomerInfo cache will not be automatically fetched. Anonymous
-        user IDs will be disallowed, logOut will be disabled, and the first call to the PurchasesDelegate's
-        customerInfo listener will only happen after a receipt is posted, getCustomerInfo is called or logIn is called.
-        """)
+            Logger.info(Strings.configure.custom_entitlements_computation_enabled)
         }
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {

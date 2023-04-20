@@ -366,22 +366,50 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
         self.setupPurchases()
+
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(0))
     }
 
     func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        self.setupPurchases()
 
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
     func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
-
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        expectFatalError(expectedMessage: "String", testcase: {
+            self.setupAnonPurchases()
+        })
     }
 
     func testConfigureWithCustomEntitlementComputationNoFatalErrorIfAppUserIDPassedIn() throws {
-
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        expectNoFatalError(testcase: {
+            self.setupPurchases()
+        })
     }
 
     func testConfigureWithCustomEntitlementComputationLogsInformationMessage() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        let logger = TestLogHandler()
 
+        self.setupPurchases()
+
+        logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
+    }
+
+    func testConfigureWithoutCustomEntitlementComputationLogsInformationMessage() throws {
+        let logger = TestLogHandler()
+
+        self.setupPurchases()
+
+        logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
     }
 
     func testConfigureWithCustomEntitlementComputationDisablesLogOut() throws {

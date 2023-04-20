@@ -67,6 +67,8 @@ enum ConfigureStrings {
 
     case public_key_could_not_load_key
 
+    case custom_entitlements_computation_enabled
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -152,6 +154,12 @@ extension ConfigureStrings: CustomStringConvertible {
 
         case .public_key_could_not_load_key:
             return "Failed to load public key. Ensure that it's a valid ed25519 key."
+
+        case .custom_entitlements_computation_enabled:
+            return "Entering customEntitlementComputation mode. CustomerInfo cache will not be \n" +
+            "automatically fetched. Anonymous user IDs will be disallowed, logOut will be disabled, \n" +
+            "and the PurchasesDelegate's customerInfo listener will only get called after a receipt is posted, \n" +
+            "getCustomerInfo is called or logIn is called."
         }
     }
 
