@@ -372,17 +372,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testWithoutCustomEntitlementComputationDoesntSkipFirstDelegateCall() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
-                                         customEntitlementsComputation: true)
+                                         customEntitlementsComputation: false)
         self.setupPurchases()
 
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
     func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
-        self.systemInfo = MockSystemInfo(finishTransactions: true,
-                                         customEntitlementsComputation: true)
-        expectFatalError(expectedMessage: "String", testcase: {
-            self.setupAnonPurchases()
+        let expectedMessage = Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description
+
+        expectFatalError(expectedMessage: expectedMessage, testcase: {
+            Purchases.configure(
+                with: .builder(withAPIKey: "apiKey")
+                    .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+                    .build())
         })
     }
 
@@ -401,10 +404,10 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
+        logger.verifyMessageWasLogged(Strings.configure.custom_entitlements_computation_enabled)
     }
 
-    func testConfigureWithoutCustomEntitlementComputationLogsInformationMessage() throws {
+    func testConfigureWithoutCustomEntitlementComputationDoesntLogInformationMessage() throws {
         let logger = TestLogHandler()
 
         self.setupPurchases()
@@ -413,11 +416,35 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testConfigureWithCustomEntitlementComputationDisablesLogOut() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        self.setupPurchases()
 
+        var receivedCustomerInfo: CustomerInfo?
+        var receivedError: PublicError?
+        var completionCalled = false
+
+        self.purchases.logOut { customerInfo, error in
+            completionCalled = true
+            receivedCustomerInfo = customerInfo
+            receivedError = error
+        }
+
+        expect(completionCalled).toEventually(beTrue())
+        expect(receivedCustomerInfo).to(beNil())
+        let unwrappedError = try XCTUnwrap(receivedError)
+        expect(unwrappedError.code).to(equal(
+            ErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().errorCode))
     }
 
     func testConfigureWithCustomEntitlementComputationDisablesAutomaticCacheUpdateForCustomerInfo() throws {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         customEntitlementsComputation: true)
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
 
+        self.setupPurchases()
+
+        expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
     }
 
     // MARK: - UserDefaults

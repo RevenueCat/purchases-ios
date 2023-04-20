@@ -303,11 +303,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if systemInfo.dangerousSettings.customEntitlementComputation
             && appUserID == nil && identityManager.currentUserIsAnonymous {
-            fatalError("""
-            ERROR: customEntitlementComputation mode is enabled, but appUserID is nil.
-            When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from being
-            generated.
-            """)
+            fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
         }
 
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,

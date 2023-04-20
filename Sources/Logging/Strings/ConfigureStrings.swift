@@ -69,6 +69,8 @@ enum ConfigureStrings {
 
     case custom_entitlements_computation_enabled
 
+    case custom_entitlements_computation_enabled_but_no_app_user_id
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -160,6 +162,11 @@ extension ConfigureStrings: CustomStringConvertible {
             "automatically fetched. Anonymous user IDs will be disallowed, logOut will be disabled, \n" +
             "and the PurchasesDelegate's customerInfo listener will only get called after a receipt is posted, \n" +
             "getCustomerInfo is called or logIn is called."
+
+        case .custom_entitlements_computation_enabled_but_no_app_user_id:
+            return "ERROR: customEntitlementComputation mode is enabled, but appUserID is nil. \n" +
+            "When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from \n" +
+            "being generated."
         }
     }
 
