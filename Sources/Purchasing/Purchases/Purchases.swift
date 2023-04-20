@@ -310,7 +310,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             generated.
             """)
         }
-        
+
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -413,7 +413,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasesOrchestrator: purchasesOrchestrator,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
-
+    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -1374,10 +1374,11 @@ private extension Purchases {
                                                    completion: nil)
 
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            completion?(.failure(NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError))
+            let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
+            completion?(.failure(error.asPublicError))
             return
-       }
-        
+        }
+
         self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                            isAppBackgrounded: isAppBackgrounded) { @Sendable in
             completion?($0.mapError { $0.asPublicError })

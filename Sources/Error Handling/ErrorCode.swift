@@ -57,7 +57,8 @@ import Foundation
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
     @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
     @objc(RCOfflineConnectionError) case offlineConnectionError = 35
-    @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode) case featureNotAvailableInCustomEntitlementsComputationMode = 36
+    @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
+    case featureNotAvailableInCustomEntitlementsComputationMode = 36
     @objc(RCSignatureVerificationFailed) case signatureVerificationFailed = 37
 
     // swiftlint:enable missing_docs
