@@ -50,7 +50,7 @@ Or view our iOS sample apps:
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
 ## Requirements
-- Xcode 13.2+
+- Xcode 14.0+
 
 | Platform | Minimum target |
 | --- | --- |

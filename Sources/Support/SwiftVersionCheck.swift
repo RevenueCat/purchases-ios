@@ -15,5 +15,5 @@ import Foundation
 
 #if swift(<5.5.2)
 // See https://xcodereleases.com
-#error("RevenueCat requires Xcode 13.2 with Swift 5.5.2 to compile.")
+#error("RevenueCat requires Xcode 14.0 with Swift 5.5.2 to compile.")
 #endif

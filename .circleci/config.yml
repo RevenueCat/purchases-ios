@@ -320,33 +320,6 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  compile-xcode-13-2:
-    <<: *base-job
-    steps:
-      - setup-git-credentials
-      - restore_cache:
-          keys:
-            - homebrew-tap-cache-3
-      - run:
-          name: Install swiftlint 0.48.0
-          command: |
-              brew update --preinstall
-              brew tap-new $USER/local-tap
-              brew extract --version=0.48.0 swiftlint $USER/local-tap
-              brew install swiftlint@0.48.0
-      - save_cache:
-          key: homebrew-tap-cache-3
-          paths:
-            - /usr/local/Homebrew/Library/Taps/$USER/homebrew-local-tap/
-            - /Users/$USER/Library/Caches/Homebrew/
-      - checkout
-      - install-bundle-dependencies
-      - run:
-          name: SPM Build
-          # Not using `pod lib lint` because that fails on this old Xcode
-          command: swift build
-          no_output_timeout: 5m
-
   run-test-tvos:
     <<: *base-job
     steps:
@@ -782,11 +755,6 @@ workflows:
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
-      # To ensure we don't break compilation with Xcode 13.2.1
-      - compile-xcode-13-2:
-          name: xcode-13.2.1
-          xcode_version: '13.2.1'
-          <<: *release-branches-and-main
       - backend-integration-tests:
           xcode_version: '14.3.0'
           filters:
