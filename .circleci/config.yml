@@ -66,9 +66,6 @@ commands:
         type: string
     steps:
       - run:
-          name: Install xcodes
-          command: brew install robotsandpencils/made/xcodes
-      - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
               xcodes runtimes
@@ -113,11 +110,14 @@ commands:
           dependency_name: 'xcbeautify'
       - install-brew-dependency:
           dependency_name: 'swiftlint'
+      - install-brew-dependency:
+          dependency_name: 'robotsandpencils/made/xcodes'
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
+            - /usr/local/Cellar/robotsandpencils/made/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
   
   install-brew-dependency:
