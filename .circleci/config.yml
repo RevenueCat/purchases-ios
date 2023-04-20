@@ -110,14 +110,15 @@ commands:
           dependency_name: 'xcbeautify'
       - install-brew-dependency:
           dependency_name: 'swiftlint'
+      - run: brew tap robotsandpencils/made
       - install-brew-dependency:
-          dependency_name: 'robotsandpencils/made/xcodes'
+          dependency_name: 'xcodes'
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
-            - /usr/local/Cellar/robotsandpencils/made/xcodes/
+            - /usr/local/Caskroom/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
   
   install-brew-dependency:
