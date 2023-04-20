@@ -362,6 +362,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    // MARK: - Custom Entitlement Computation
     func testCustomEntitlementComputationSkipsFirstDelegateCall() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
