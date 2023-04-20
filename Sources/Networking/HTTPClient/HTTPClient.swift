@@ -168,7 +168,7 @@ private extension HTTPClient {
         }
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
-            headers["X-Custom-Entitlements-Enabled"] = "\(true)"
+            headers["X-Custom-Entitlements-Computation"] = "\(true)"
         }
 
         return headers

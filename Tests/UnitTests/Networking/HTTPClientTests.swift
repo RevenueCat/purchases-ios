@@ -757,8 +757,8 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(request.path)) { request in
             let headers =  request.allHTTPHeaderFields ?? [:]
-            headerPresent = headers["X-Custom-Entitlements-Enabled"] != nil
-                && headers["X-Custom-Entitlements-Enabled"] == "true"
+            headerPresent = headers["X-Custom-Entitlements-Computation"] != nil
+                && headers["X-Custom-Entitlements-Computation"] == "true"
             return .emptySuccessResponse()
         }
 
@@ -783,7 +783,7 @@ class HTTPClientTests: TestCase {
 
         stub(condition: isPath(request.path)) { request in
             let headers =  request.allHTTPHeaderFields ?? [:]
-            headerPresent = headers["X-Custom-Entitlements-Enabled"] != nil
+            headerPresent = headers["X-Custom-Entitlements-Computation"] != nil
             return .emptySuccessResponse()
         }
 
