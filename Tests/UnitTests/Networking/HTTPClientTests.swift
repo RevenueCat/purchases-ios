@@ -745,11 +745,7 @@ class HTTPClientTests: TestCase {
 
     func testRequestsWithCustomEntitlementsSendHeader() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
-        self.client = HTTPClient(apiKey: self.apiKey,
-                                 systemInfo: self.systemInfo,
-                                 eTagManager: self.eTagManager,
-                                 dnsChecker: MockDNSChecker.self,
-                                 requestTimeout: 3)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
@@ -769,13 +765,9 @@ class HTTPClientTests: TestCase {
         expect(headerPresent) == true
     }
 
-    func testRequestsWithoutCustomEntitlementsSendHeader() {
+    func testRequestsWithoutCustomEntitlementsDoNotSendHeader() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
-        self.client = HTTPClient(apiKey: self.apiKey,
-                                 systemInfo: self.systemInfo,
-                                 eTagManager: self.eTagManager,
-                                 dnsChecker: MockDNSChecker.self,
-                                 requestTimeout: 3)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
