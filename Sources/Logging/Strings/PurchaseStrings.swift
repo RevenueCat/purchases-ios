@@ -30,6 +30,7 @@ enum PurchaseStrings {
     case finishing_transaction(StoreTransactionType)
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
+    case paymentqueue_adding_payment(SKPaymentQueue, SKPayment)
     case paymentqueue_removed_transaction(SKPaymentTransactionObserver,
                                           SKPaymentTransaction)
     case paymentqueue_removed_transaction_no_callbacks_found(SKPaymentTransactionObserver,
@@ -118,6 +119,10 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .paymentqueue_revoked_entitlements_for_product_identifiers(let productIdentifiers):
             return "PaymentQueue didRevokeEntitlementsForProductIdentifiers: \(productIdentifiers)"
+
+        case let .paymentqueue_adding_payment(queue, payment):
+            return "Adding payment for product '\(payment.productIdentifier)'. " +
+            "\(queue.transactions.count) transactions already in the queue."
 
         case let .paymentqueue_removed_transaction(observer, transaction):
             let errorUserInfo = (transaction.error as NSError?)?.userInfo ?? [:]
