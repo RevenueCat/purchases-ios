@@ -259,6 +259,7 @@ private func checkConfigure() -> Purchases! {
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+    Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
 
     return nil
 }
