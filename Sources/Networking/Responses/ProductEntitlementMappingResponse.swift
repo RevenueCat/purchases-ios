@@ -17,7 +17,7 @@ import Foundation
 /// - Seealso: `ProductEntitlementMapping`
 struct ProductEntitlementMappingResponse {
 
-    var products: [Product]
+    var products: [String: Product]
 
 }
 
@@ -38,7 +38,7 @@ extension ProductEntitlementMappingResponse.Product: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
-        case identifier = "id"
+        case identifier = "productIdentifier"
         case entitlements
 
     }
@@ -49,7 +49,7 @@ extension ProductEntitlementMappingResponse: Codable {
 
     private enum CodingKeys: String, CodingKey {
 
-        case products = "product_entitlement_mapping"
+        case products = "productEntitlementMapping"
 
     }
 

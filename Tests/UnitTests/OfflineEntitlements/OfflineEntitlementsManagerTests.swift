@@ -66,7 +66,7 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
 
     func testUpdateProductEntitlementMappingCacheUpdatesIfStaleSuccess() {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
-            .init(identifier: "a", entitlements: ["pro_1", "pro_2"])
+            "a": .init(identifier: "a", entitlements: ["pro_1", "pro_2"])
         ])
         let isAppBackgrounded: Bool = .random()
 

@@ -49,9 +49,9 @@ class ProductEntitlementMappingTests: TestCase {
 
     func testResponseToMapping() {
         let response = ProductEntitlementMappingResponse(products: [
-            .init(identifier: "product_1", entitlements: ["pro_1"]),
-            .init(identifier: "product_2", entitlements: ["pro_1", "pro_2"]),
-            .init(identifier: "product_3", entitlements: ["pro_4"])
+            "product_1": .init(identifier: "product_1", entitlements: ["pro_1"]),
+            "product_2": .init(identifier: "product_2", entitlements: ["pro_1", "pro_2"]),
+            "product_3": .init(identifier: "product_3", entitlements: ["pro_4"])
         ])
         let mapping = response.toMapping()
 
@@ -64,26 +64,6 @@ class ProductEntitlementMappingTests: TestCase {
                 "pro_2"
             ],
             "product_3": [
-                "pro_4"
-            ]
-        ]
-    }
-
-    func testResponseToMappingWithDuplicateProductIdentifiers() {
-        let response = ProductEntitlementMappingResponse(products: [
-            .init(identifier: "product_1", entitlements: ["pro_1"]),
-            .init(identifier: "product_1", entitlements: ["pro_1", "pro_2", "pro_3"]),
-            .init(identifier: "product_2", entitlements: ["pro_4"])
-        ])
-        let mapping = response.toMapping()
-
-        expect(mapping.entitlementsByProduct) == [
-            "product_1": [
-                "pro_1",
-                "pro_2",
-                "pro_3"
-            ],
-            "product_2": [
                 "pro_4"
             ]
         ]

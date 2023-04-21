@@ -30,14 +30,14 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
 
         expect(products).to(haveCount(3))
 
-        expect(products[0].identifier) == "com.revenuecat.foo_1"
-        expect(products[0].entitlements) == ["pro_1"]
+        expect(products["com.revenuecat.foo_1"]?.identifier) == "com.revenuecat.foo_1"
+        expect(products["com.revenuecat.foo_1"]?.entitlements) == ["pro_1"]
 
-        expect(products[1].identifier) == "com.revenuecat.foo_2"
-        expect(products[1].entitlements) == ["pro_1", "pro_2"]
+        expect(products["com.revenuecat.foo_2"]?.identifier) == "com.revenuecat.foo_2"
+        expect(products["com.revenuecat.foo_2"]?.entitlements) == ["pro_1", "pro_2"]
 
-        expect(products[2].identifier) == "com.revenuecat.foo_3"
-        expect(products[2].entitlements) == ["pro_2"]
+        expect(products["com.revenuecat.foo_3"]?.identifier) == "com.revenuecat.foo_3"
+        expect(products["com.revenuecat.foo_3"]?.entitlements) == ["pro_2"]
     }
 
     func testConversionToMapping() {

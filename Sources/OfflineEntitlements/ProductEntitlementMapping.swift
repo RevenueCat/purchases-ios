@@ -38,12 +38,7 @@ extension ProductEntitlementMapping {
 extension ProductEntitlementMappingResponse {
 
     func toMapping() -> ProductEntitlementMapping {
-        return .init(
-            entitlementsByProduct: Dictionary(
-                self.products.map { ( $0.identifier, Set($0.entitlements) ) },
-                uniquingKeysWith: +
-            )
-        )
+        return .init(entitlementsByProduct: self.products.mapValues { Set($0.entitlements) })
     }
 
 }
