@@ -209,6 +209,11 @@ private extension HTTPClient {
         if let idfv = systemInfo.identifierForVendor {
             headers["X-Apple-Device-Identifier"] = idfv
         }
+
+        if systemInfo.dangerousSettings.customEntitlementComputation {
+            headers["X-Custom-Entitlements-Computation"] = "\(true)"
+        }
+
         return headers
     }
 
