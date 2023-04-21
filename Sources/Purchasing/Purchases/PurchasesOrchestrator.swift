@@ -813,6 +813,8 @@ private extension PurchasesOrchestrator {
         for productIdentifier: String,
         restored: Bool
     ) -> ProductRequestData.InitiationSource {
+        // Having a purchase completed callback implies that the transation comes from an explicit call
+        // to `purchase()` instead of a StoreKit transaction notification.
         let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
 
         switch (hasPurchaseCallback, restored) {
