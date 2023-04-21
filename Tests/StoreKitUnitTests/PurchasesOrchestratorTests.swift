@@ -198,6 +198,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
     }
 
     func testSK1PurchaseDoesNotAlwaysRefreshReceiptInProduction() async throws {
@@ -436,6 +437,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -639,6 +641,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transaction.finishInvoked) == true
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -722,6 +725,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

@@ -32,14 +32,15 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
-        transaction.mockState = SKPaymentTransactionState.purchasing
+        transaction.mockState = .purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        transaction.mockState = SKPaymentTransactionState.purchased
+        transaction.mockState = .purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
         expect(self.backend.postedIsRestore) == false
+        expect(self.backend.postedInitiationSource) == .purchase
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
@@ -68,13 +69,14 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
-        transaction.mockState = SKPaymentTransactionState.purchasing
+        transaction.mockState = .purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        transaction.mockState = SKPaymentTransactionState.purchased
+        transaction.mockState = .purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .purchase
         expect(self.backend.postedIsRestore) == false
     }
 
@@ -86,11 +88,11 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .purchasing
 
-        transaction.mockState = SKPaymentTransactionState.purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        transaction.mockState = SKPaymentTransactionState.purchased
+        transaction.mockState = .purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
@@ -944,10 +946,10 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
-        transaction.mockState = SKPaymentTransactionState.purchasing
+        transaction.mockState = .purchasing
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        transaction.mockState = SKPaymentTransactionState.purchased
+        transaction.mockState = .purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
@@ -963,10 +965,11 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
 
-        transaction.mockState = SKPaymentTransactionState.restored
+        transaction.mockState = .restored
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .restore
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
