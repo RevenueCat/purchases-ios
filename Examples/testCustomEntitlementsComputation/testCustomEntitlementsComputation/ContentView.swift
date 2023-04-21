@@ -65,7 +65,7 @@ struct ContentView: View {
 
             Button("Purchase first offering") {
                 Task {
-                    try await purchaseFirstOffering()
+                    await purchaseFirstOffering()
                 }
             }
             .font(.system(size: 20))
@@ -76,13 +76,16 @@ struct ContentView: View {
             .cornerRadius(20)
             .padding()
 
-            .onAppear {
+            .task {
                 Purchases.configureInCustomEntitlementsComputationMode(apiKey: Constants.apiKey,
                                                                        appUserID: appUserID)
-
-                Task {
+                do {
                     self.offerings = try await Purchases.shared.offerings()
                     print("offerings: \(String(describing: offerings))")
+                }
+                catch {
+                    print("FAILED TO GET OFFERINGS: \(error.localizedDescription)")
+
                 }
             }
 
@@ -115,7 +118,7 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                         }
                     }
-                }.onAppear {
+                }.task {
                     subscribeToCustomerInfoStream()
                 }
             }
@@ -146,7 +149,7 @@ struct ContentView: View {
         }
     }
 
-    func purchaseFirstOffering() async throws {
+    func purchaseFirstOffering() async {
         guard let offerings = self.offerings,
               let offering = offerings.current,
               let package = offering.availablePackages.first else {
