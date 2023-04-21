@@ -1341,8 +1341,10 @@ private extension Purchases {
                                                    completion: nil)
 
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
-            completion?(.failure(error.asPublicError))
+            if let completion = completion {
+                let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
+                completion(.failure(error.asPublicError))
+            }
             return
         }
 
