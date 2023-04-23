@@ -277,12 +277,14 @@ public protocol PurchasesType: AnyObject {
      * - Important: Call this method when a user has decided to purchase a product.
      * Only call this in direct response to user input.
      *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
      *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, ``Purchases`` will
+     * - Note: You do not need to finish the transaction yourself after this, ``Purchases`` will
      * handle this for you.
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -318,12 +320,14 @@ public protocol PurchasesType: AnyObject {
      * - Important: Call this method when a user has decided to purchase a product.
      * Only call this in direct response to user input.
      *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
      *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will
+     * - Note: You do not need to finish the transaction yourself after this, Purchases will
      * handle this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -372,13 +376,15 @@ public protocol PurchasesType: AnyObject {
      * Call this method when a user has decided to purchase a product with an applied discount.
      * Only call this in direct response to user input.
      *
-     * From here ``Purchases`` will handle the purchase with `StoreKit` and call the ``PurchaseCompletedBlock``.
+     * From here ``Purchases`` will handle the purchase with `StoreKit` and return ``PurchaseResultData``.
      *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * - Note: You do not need to finish the transaction yourself after this, Purchases will handle
      * this for you.
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
+     *
+     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
      *
      * If the user cancelled, `userCancelled` will be `true`.
      */
@@ -411,10 +417,10 @@ public protocol PurchasesType: AnyObject {
     /**
      * Purchase the passed ``Package``.
      * Call this method when a user has decided to purchase a product with an applied discount. Only call this in
-     * direct response to user input. From here ``Purchases`` will handle the purchase with `StoreKit` and call the
-     * ``PurchaseCompletedBlock``.
+     * direct response to user input. From here ``Purchases`` will handle the purchase with `StoreKit` and return
+     * ``PurchaseResultData``.
      *
-     * - Note: You do not need to finish the transaction yourself in the completion callback, Purchases will handle
+     * - Note: You do not need to finish the transaction yourself after this, Purchases will handle
      * this for you.
      *
      * - Parameter package: The ``Package`` the user intends to purchase
