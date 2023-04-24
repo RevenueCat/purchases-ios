@@ -576,8 +576,7 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                           isAppBackgrounded:
-                                                            isAppBackgrounded,
+                                                           isAppBackgrounded: isAppBackgrounded,
                                                            completion: nil)
             }
         }
