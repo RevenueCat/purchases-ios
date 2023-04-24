@@ -51,10 +51,9 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        XCTExpectFailure("Endpoint is not available yet")
-
         let result = try await Purchases.shared.productEntitlementMapping()
-        expect(result.entitlementsByProduct).toNot(beEmpty())
+        expect(result.entitlementsByProduct).to(haveCount(1))
+        expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
     }
 
 }

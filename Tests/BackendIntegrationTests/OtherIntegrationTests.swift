@@ -30,10 +30,10 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        XCTExpectFailure("Endpoint is not available yet")
-
         let result = try await Purchases.shared.productEntitlementMapping()
-        expect(result.entitlementsByProduct).toNot(beEmpty())
+        expect(result.entitlementsByProduct).to(haveCount(14))
+        expect(result.entitlementsByProduct["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
+        expect(result.entitlementsByProduct["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
     }
 
 }

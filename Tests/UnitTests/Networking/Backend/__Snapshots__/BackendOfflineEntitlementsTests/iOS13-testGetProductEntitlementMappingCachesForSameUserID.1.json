@@ -5,6 +5,6 @@
   "request" : {
     "body" : null,
     "method" : "GET",
-    "url" : "https://api.revenuecat.com/v1/products_entitlements"
+    "url" : "https://api.revenuecat.com/v1/product_entitlement_mapping"
   }
 }
