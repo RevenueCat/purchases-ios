@@ -64,7 +64,7 @@ struct ContentView: View {
             }
 
             Button("Purchase first offering") {
-                Task {
+                Task<Void, Never> {
                     await purchaseFirstOffering()
                 }
             }
@@ -82,8 +82,7 @@ struct ContentView: View {
                 do {
                     self.offerings = try await Purchases.shared.offerings()
                     print("offerings: \(String(describing: offerings))")
-                }
-                catch {
+                } catch {
                     print("FAILED TO GET OFFERINGS: \(error.localizedDescription)")
 
                 }
@@ -105,7 +104,8 @@ struct ContentView: View {
                                 Text(customerInfoStreamFire.customerInfo.originalAppUserId)
                             }
                         }
-                    }                }
+                    }
+                }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .principal) {
@@ -118,7 +118,8 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                         }
                     }
-                }.task {
+                }
+                .task {
                     subscribeToCustomerInfoStream()
                 }
             }
@@ -139,12 +140,10 @@ struct ContentView: View {
     }
 
     func subscribeToCustomerInfoStream() {
-        self.streamTask = Task {
+        self.streamTask = Task<Void, Never> {
             for await customerInfo in Purchases.shared.customerInfoStream {
-                DispatchQueue.main.async {
-                    print("got new customerInfo: \(customerInfo)")
-                    customerInfoStreamFires.append(CustomerInfoStreamFires(customerInfo: customerInfo, date: Date()))
-                }
+                print("got new customerInfo: \(customerInfo)")
+                customerInfoStreamFires.append(CustomerInfoStreamFires(customerInfo: customerInfo, date: Date()))
             }
         }
     }
