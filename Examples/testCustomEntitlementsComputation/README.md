@@ -1,4 +1,4 @@
-# Test Custom Entitlements Computation App
+# Custom Entitlements Computation Example App
 
 This app is useful for testing RevenueCat under Custom Entitlements Computation mode and understanding how it works.
 
