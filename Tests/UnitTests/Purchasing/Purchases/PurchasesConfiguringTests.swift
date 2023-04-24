@@ -405,7 +405,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        logger.verifyMessageWasLogged(Strings.configure.custom_entitlements_computation_enabled)
+        logger.verifyMessageWasLogged(Strings.configure.custom_entitlements_computation_enabled, level: .info)
     }
 
     func testConfigureWithoutCustomEntitlementComputationDoesntLogInformationMessage() throws {
