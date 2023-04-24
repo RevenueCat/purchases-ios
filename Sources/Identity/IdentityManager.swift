@@ -91,6 +91,10 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
+    func switchUser(newAppUserID: String) {
+        self.resetCacheAndSaveNewUserID(newUserID: newAppUserID)
+    }
+
     static func generateRandomID() -> String {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }

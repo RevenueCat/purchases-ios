@@ -135,7 +135,7 @@ struct ContentView: View {
     func logIn(_ appUserID: String) {
         print("Switching to user: \(appUserID)")
         Task {
-            try await Purchases.shared.logIn(appUserID)
+            Purchases.shared.switchUser(newAppUserID: appUserID)
         }
     }
 
