@@ -556,7 +556,10 @@ public extension Purchases {
         self.logIn("\(appUserID)", completion: completion)
     }
 
-    @_disfavoredOverload // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // This allows us to provide a compile-time warning to developers who accidentally 
+    // call logIn with hardcoded user ids in their app
+    @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         self.identityManager.logIn(appUserID: appUserID) { result in
@@ -584,7 +587,10 @@ public extension Purchases {
         return try await self.logIn("\(appUserID)")
     }
 
-    @_disfavoredOverload // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // This allows us to provide a compile-time warning to developers who accidentally 
+    // call logIn with hardcoded user ids in their app
+    @_disfavoredOverload
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await self.logInAsync(appUserID)
