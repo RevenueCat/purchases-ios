@@ -65,6 +65,10 @@ BOOL isAnonymous;
               useStoreKit2IfAvailable:true
                     dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO
                                                                 customEntitlementComputation:NO]];
+
+    [RCPurchases configureInCustomEntitlementsModeWithApiKey:@""
+                                                   appUserID:@""];
+
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
