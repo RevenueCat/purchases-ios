@@ -91,12 +91,18 @@ final class CustomerAPI {
               initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let attributionStatus = self.attributionFetcher.authorizationStatus
-        var subscriberAttributesByKey = subscriberAttributesByKey ?? [:]
-        let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,
-                                                value: attributionStatus.description,
-                                                dateProvider: self.backendConfig.dateProvider)
-        subscriberAttributesByKey[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
+        var subscriberAttributesToPost: SubscriberAttribute.Dictionary? = nil
+
+        if !self.backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {
+            subscriberAttributesToPost = subscriberAttributesByKey ?? [:]
+            let attributionStatus = self.attributionFetcher.authorizationStatus
+            let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,
+                                                    value: attributionStatus.description,
+                                                    dateProvider: self.backendConfig.dateProvider)
+            subscriberAttributesToPost?[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
+        }
+
+
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -108,7 +114,7 @@ final class CustomerAPI {
                                                          presentedOfferingIdentifier: offeringIdentifier,
                                                          observerMode: observerMode,
                                                          initiationSource: initiationSource,
-                                                         subscriberAttributesByKey: subscriberAttributesByKey)
+                                                         subscriberAttributesByKey: subscriberAttributesToPost)
         let factory = PostReceiptDataOperation.createFactory(configuration: config,
                                                              postData: postData,
                                                              customerInfoCallbackCache: self.customerInfoCallbackCache)
