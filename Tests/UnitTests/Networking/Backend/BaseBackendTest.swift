@@ -48,7 +48,8 @@ class BaseBackendTests: TestCase {
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
                                                  operationDispatcher: operationDispatcher,
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: self.systemInfo)
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)

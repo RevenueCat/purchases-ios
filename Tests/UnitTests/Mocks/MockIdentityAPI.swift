@@ -27,7 +27,8 @@ class MockIdentityAPI: IdentityAPI {
         let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: Backend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: systemInfo)
         self.init(backendConfig: backendConfig)
     }
 
