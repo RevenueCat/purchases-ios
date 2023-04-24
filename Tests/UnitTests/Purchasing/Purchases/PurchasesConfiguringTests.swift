@@ -436,6 +436,10 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         let unwrappedError = try XCTUnwrap(receivedError)
         expect(unwrappedError.code).to(equal(
             ErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().errorCode))
+
+        expect(unwrappedError.domain).to(equal(
+            ErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
+                .asPublicError.domain))
     }
 
     func testConfigureWithCustomEntitlementComputationDisablesAutomaticCacheUpdateForCustomerInfo() throws {
