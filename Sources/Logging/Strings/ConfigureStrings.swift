@@ -67,6 +67,10 @@ enum ConfigureStrings {
 
     case public_key_could_not_load_key
 
+    case custom_entitlements_computation_enabled
+
+    case custom_entitlements_computation_enabled_but_no_app_user_id
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -152,6 +156,17 @@ extension ConfigureStrings: CustomStringConvertible {
 
         case .public_key_could_not_load_key:
             return "Failed to load public key. Ensure that it's a valid ed25519 key."
+
+        case .custom_entitlements_computation_enabled:
+            return "Entering customEntitlementComputation mode. CustomerInfo cache will not be " +
+            "automatically fetched. Anonymous user IDs will be disallowed, logOut will be disabled, " +
+            "and the PurchasesDelegate's customerInfo listener will only get called after a receipt is posted, " +
+            "getCustomerInfo is called or logIn is called."
+
+        case .custom_entitlements_computation_enabled_but_no_app_user_id:
+            return "ERROR: customEntitlementComputation mode is enabled, but appUserID is nil. " +
+            "When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from " +
+            "being generated."
         }
     }
 

@@ -302,15 +302,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID)
 
-        if systemInfo.dangerousSettings.customEntitlementComputation
-            && appUserID == nil && identityManager.currentUserIsAnonymous {
-            fatalError("""
-            ERROR: customEntitlementComputation mode is enabled, but appUserID is nil.
-            When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from being
-            generated.
-            """)
-        }
-
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -438,12 +429,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
-            Logger.info("""
-            Entering customEntitlementComputation mode. CustomerInfo cache will not be automatically fetched. Anonymous
-        user IDs will be disallowed, logOut will be disabled, and the first call to the PurchasesDelegate's
-        customerInfo listener will only happen after a receipt is posted, getCustomerInfo is called or logIn is called.
-        """)
+            Logger.info(Strings.configure.custom_entitlements_computation_enabled)
         }
+
+        if systemInfo.dangerousSettings.customEntitlementComputation
+            && appUserID == nil && identityManager.currentUserIsAnonymous {
+            fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
+        }
+
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
@@ -1373,8 +1366,10 @@ private extension Purchases {
                                                    completion: nil)
 
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
-            completion?(.failure(error.asPublicError))
+            if let completion = completion {
+                let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
+                completion(.failure(error.asPublicError))
+            }
             return
         }
 
