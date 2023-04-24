@@ -149,7 +149,7 @@ private extension IdentityManager {
             return
         }
 
-        self.resetUserIDCache()
+        self.resetCacheAndSaveNewUserID(newUserID: Self.generateRandomID())
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
     }
@@ -163,10 +163,9 @@ extension IdentityManager: @unchecked Sendable {}
 
 private extension IdentityManager {
 
-    func resetUserIDCache() {
-        self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID,
-                                     andSaveWithNewUserID: Self.generateRandomID())
-        self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: self.currentAppUserID)
+    func resetCacheAndSaveNewUserID(newUserID: String) {
+        self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: Self.generateRandomID())
+        self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }
 
