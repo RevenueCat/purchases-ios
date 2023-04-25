@@ -811,6 +811,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    /// - Parameter restored: whether the transaction state was `.restored` instead of `.`purchased`.
     private func initiationSource(
         for productIdentifier: String,
         restored: Bool
@@ -821,6 +822,8 @@ private extension PurchasesOrchestrator {
 
         switch (hasPurchaseCallback, restored) {
         case (true, false): return .purchase
+        // Note that restores initiated through the SDK with `restorePurchases`
+        // won't use this method since those set the initiation source explicitly.
         case (true, true): return .restore
         case (false, _): return .queue
         }
