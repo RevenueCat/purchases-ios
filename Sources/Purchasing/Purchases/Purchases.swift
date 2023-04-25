@@ -647,7 +647,7 @@ public extension Purchases {
     /// Receipts posted by the SDK to the RevenueCat backend after calling this method will be sent
     /// with the newAppUserID.
     ///
-    @objc(switchUserTo:)
+    @objc(switchUserToNewAppUserID:)
     func switchUser(to newAppUserID: String) {
         guard self.systemInfo.dangerousSettings.customEntitlementComputation else {
             Logger.error(Strings.configure.custom_entitlements_computation_only_feature("Switch users"))
