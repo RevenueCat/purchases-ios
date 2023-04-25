@@ -100,7 +100,7 @@ private extension SK2BeginRefundRequestHelper {
      * to our `RefundRequestStatus` type and adding more descriptive error messages where needed.
      */
     func mapSk2Result(from sk2Result: Result<StoreKit.Transaction.RefundRequestStatus, Error>) throws ->
-        RevenueCat.RefundRequestStatus {
+        RCRefundRequestStatus {
         switch sk2Result {
         case .success(let sk2Status):
             guard let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status) else {

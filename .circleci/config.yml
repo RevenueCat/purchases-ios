@@ -168,6 +168,24 @@ commands:
           working_directory: << parameters.directory >>
           when: always
 
+  scan:
+    parameters:
+      directory:
+        type: string
+    steps:
+      - run:
+          name: Replace API key
+          command: bundle exec fastlane replace_api_key_integration_tests
+      - run:
+          name: Run tests
+          working_directory: << parameters.directory >>
+          command: bundle exec fastlane scan
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/report.html
+          destination: test_report.html
+
   scan-and-archive:
     parameters:
       directory:
@@ -267,6 +285,15 @@ jobs:
       - run:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-custom-entitlement-computation-build:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Custom Entitlement Computation Build
+          command: swift build --target RevenueCat_CustomEntitlementComputation
           no_output_timeout: 30m
 
   spm-receipt-parser:
@@ -578,6 +605,17 @@ jobs:
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
 
+  installation-tests-custom-entitlement-computation-swift-package-manager:
+    <<: *base-job
+    steps:
+      - checkout
+      - trust-github-key
+      - update-spm-installation-commit
+      - install-dependencies:
+          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
+      - scan:
+          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
+
   installation-tests-receipt-parser:
     <<: *base-job
     steps:
@@ -745,6 +783,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-release-build:
           xcode_version: '14.3.0'
+      - spm-custom-entitlement-computation-build:
+          xcode_version: '14.3.0'
       - spm-receipt-parser:
           xcode_version: '14.3.0'
       - run-test-ios-16:
@@ -794,6 +834,9 @@ workflows:
       - installation-tests-swift-package-manager:
           xcode_version: '14.3.0'
           <<: *release-branches
+      - installation-tests-custom-entitlement-computation-swift-package-manager:
+          xcode_version: '14.3.0'
+          <<: *release-branches
       - installation-tests-receipt-parser:
           xcode_version: '14.1.0'
           <<: *release-branches
@@ -809,6 +852,7 @@ workflows:
             - release-checks
             - installation-tests-cocoapods
             - installation-tests-swift-package-manager
+            - installation-tests-custom-entitlement-computation-swift-package-manager
             - installation-tests-carthage
             - installation-tests-xcode-direct-integration
             - installation-tests-receipt-parser

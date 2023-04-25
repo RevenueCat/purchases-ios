@@ -150,7 +150,7 @@ extension Purchases {
                             forProductDiscount: discount,
                             product: product
                         )
-                    } catch RevenueCat.ErrorCode.ineligibleError {
+                    } catch RCErrorCode.ineligibleError {
                         return nil
                     } catch {
                         Logger.error(

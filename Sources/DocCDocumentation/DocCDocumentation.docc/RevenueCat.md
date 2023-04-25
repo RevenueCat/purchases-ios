@@ -58,9 +58,6 @@ Or browse our iOS sample apps:
 - ``Purchases/configure(with:)-6oipy``
 - ``PurchasesDiagnostics``
 
-### Advanced Configuration
-- ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``
-
 ### Displaying Products
 - ``Offerings``
 - ``Offering``
