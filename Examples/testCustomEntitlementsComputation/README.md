@@ -32,3 +32,75 @@ To use this mode, ensure that you install the RevenueCat_CustomEntitlementComput
 Happy testing!
 
 ![sample screenshot](./Sample%20screenshot.png)
+
+## Using Custom Entitlements mode
+
+### Installation: 
+
+Install the SDK through Swift Package Manager. 
+
+Select File » Add Packages... and enter the repository URL of the https://github.com/RevenueCat/purchases-ios.git into the search bar (top right). Set the Dependency Rule to Up to next major, and the version number to 4.18.0 < 5.0.0.
+
+**Check `RevenueCat_CustomEntitlementComputation` when a prompt for "Choose Package Products for purchases-ios" appears**. Finally, choose the target where you want to use it.
+
+The library should have been added to the Swift Package Dependencies section and you should be able to import it now.
+
+### Configuration: 
+
+The SDK should be configured once the user has already logged in. To configure, call:
+
+```swift
+Purchases.configureInCustomEntitlementsComputationMode(apiKey: "your_api_key", appUserID: appUserID)
+```
+
+### Getting Offerings: 
+
+Call getOfferings through either the Async / Await or completion blocks alternatives:
+
+```swift
+
+let offerings = try await Purchases.shared.offerings()
+
+```
+
+```swift
+Purchases.shared.getOfferings { (offerings, error) in
+    // code to handle here
+}
+```
+
+### Switching users: 
+
+To switch to a different user, call:
+
+```swift
+Purchases.shared.switchUser(to: appUserID)
+```
+
+This will ensure that all purchases made from this point on are posted for the new appUserID. 
+After calling this method, you might need to call your backend to refresh entitlements for the new appUserID if they haven't been refreshed already.
+
+### Making purchases:
+
+Call `purchase(package:)` through either the Async / Await or completion blocks alternatives:
+
+```swift
+let (transaction, customerInfo, userCancelled) = try await Purchases.shared.purchase(package: package)
+```
+
+```swift
+Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+    // code to handle here
+}
+```
+
+### Observing changes to purchases:
+
+To ensure that your app reacts to changes to subscriptions in real time, you can use `customerInfoStream`. This stream will only fire when new `customerInfo` is registered
+in RevenueCat, like when a subscription is renewed. If there are no changes from the last value, it will not fire. This means it's not guaranteed to fire on every app open.
+
+```swift
+for await customerInfo in Purchases.shared.customerInfoStream {
+    // code to handle here
+}
+```

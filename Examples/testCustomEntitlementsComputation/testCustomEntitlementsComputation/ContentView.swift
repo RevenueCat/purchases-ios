@@ -154,8 +154,9 @@ struct ContentView: View {
         }
 
         do {
-            let customerInfo = try await Purchases.shared.purchase(package: package)
-            print(customerInfo)
+            let (transaction, customerInfo, userCancelled) = try await Purchases.shared.purchase(package: package)
+            print("Purchase finished. Result: \nUser Cancelled: \(userCancelled)\n" +
+                  "transaction: \(transaction.debugDescription), customerInfo: \(customerInfo.debugDescription)")
         } catch {
             print("FAILED TO PURCHASE: \(error.localizedDescription)")
         }
