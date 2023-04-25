@@ -12,7 +12,7 @@
 		2D276F5A29F1C85800F51382 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D276F5929F1C85800F51382 /* Assets.xcassets */; };
 		2D276F5D29F1C85800F51382 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2D276F5C29F1C85800F51382 /* Preview Assets.xcassets */; };
 		2DB0898929F30ABD00A4DAE7 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DB0898829F30ABD00A4DAE7 /* Constants.swift */; };
-		2DB0899329F32C9F00A4DAE7 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2DB0899229F32C9F00A4DAE7 /* RevenueCat */; };
+		5714383029F86B4400CC2D44 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 5714382F29F86B4400CC2D44 /* RevenueCat_CustomEntitlementComputation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,7 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DB0899329F32C9F00A4DAE7 /* RevenueCat in Frameworks */,
+				5714383029F86B4400CC2D44 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,7 +99,7 @@
 			);
 			name = testCustomEntitlementsComputation;
 			packageProductDependencies = (
-				2DB0899229F32C9F00A4DAE7 /* RevenueCat */,
+				5714382F29F86B4400CC2D44 /* RevenueCat_CustomEntitlementComputation */,
 			);
 			productName = testCustomEntitlementsComputation;
 			productReference = 2D276F5229F1C85700F51382 /* testCustomEntitlementsComputation.app */;
@@ -362,9 +362,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		2DB0899229F32C9F00A4DAE7 /* RevenueCat */ = {
+		5714382F29F86B4400CC2D44 /* RevenueCat_CustomEntitlementComputation */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = RevenueCat;
+			productName = RevenueCat_CustomEntitlementComputation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

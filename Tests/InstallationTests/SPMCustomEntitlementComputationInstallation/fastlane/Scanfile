@@ -1,0 +1,3 @@
+# The scheme is only setup for testing, not building
+# This makes it so that the `xcodebuild` command is only `test` and not `build test`, which would fail
+skip_build(true)

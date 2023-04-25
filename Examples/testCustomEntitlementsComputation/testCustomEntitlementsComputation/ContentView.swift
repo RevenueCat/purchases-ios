@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 
 struct CustomerInfoStreamFires: Identifiable {
     let customerInfo: CustomerInfo

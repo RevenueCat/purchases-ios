@@ -245,7 +245,8 @@ platform :ios do
       new_text: ENV["REVENUECAT_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
+        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m',
+        './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
       ]
     )
     replace_text_in_files(
@@ -262,7 +263,8 @@ platform :ios do
       new_text: ENV["REVENUECAT_PROXY_URL"].to_s,
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
+        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m',
+        './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
       ],
       allow_empty: true
     )
@@ -407,6 +409,7 @@ platform :ios do
   lane :update_swift_package_commit do
     project_file_locations = [
       './Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.pbxproj',
+      './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]

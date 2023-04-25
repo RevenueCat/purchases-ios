@@ -36,14 +36,14 @@ struct Logger {
     static var logHandler: VerboseLogHandler = Self.defaultLogHandler
 
     static let defaultLogHandler: VerboseLogHandler = { level, message, file, functionName, line in
-        RevenueCat.defaultLogHandler(
-            framework: Self.frameworkDescription,
-            verbose: Logger.verbose,
-            level: level,
-            message: message,
-            file: file,
-            function: functionName,
-            line: line
+        RCDefaultLogHandler(
+            Self.frameworkDescription,
+            Logger.verbose,
+            level,
+            message,
+            file,
+            functionName,
+            line
         )
     }
 

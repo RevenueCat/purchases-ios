@@ -27,6 +27,8 @@ let package = Package(
     products: [
         .library(name: "RevenueCat",
                  targets: ["RevenueCat"]),
+        .library(name: "RevenueCat_CustomEntitlementComputation",
+                 targets: ["RevenueCat_CustomEntitlementComputation"]),
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"])
     ],
@@ -35,6 +37,10 @@ let package = Package(
         .target(name: "RevenueCat",
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
+        .target(name: "RevenueCat_CustomEntitlementComputation",
+                path: "CustomEntitlementComputation",
+                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
+                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")]),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests", dependencies: ["ReceiptParser", "Nimble"])
