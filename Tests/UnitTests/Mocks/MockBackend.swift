@@ -182,14 +182,6 @@ class MockBackend: Backend {
         let appUserID: String?
     }
 
-    var invokedClearHTTPClientCaches = false
-    var invokedClearHTTPClientCachesCount = 0
-
-    override func clearHTTPClientCaches() {
-        self.invokedClearHTTPClientCaches = true
-        self.invokedClearHTTPClientCachesCount += 1
-    }
-
     var stubbedSignatureVerificationEnabled: Bool?
 
     override var signatureVerificationEnabled: Bool {
