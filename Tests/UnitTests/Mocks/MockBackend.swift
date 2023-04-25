@@ -170,6 +170,13 @@ class MockBackend: Backend {
         }
     }
 
+    var invokedClearHTTPClientCaches = false
+    var invokedClearHTTPClientCachesCount = 0
+    override func clearHTTPClientCaches() {
+        self.invokedClearHTTPClientCaches = true
+        self.invokedClearHTTPClientCachesCount += 1
+    }
+
     struct InvokedPostSubscriberAttributesParams: Equatable {
         let subscriberAttributes: [String: SubscriberAttribute]?
         let appUserID: String?

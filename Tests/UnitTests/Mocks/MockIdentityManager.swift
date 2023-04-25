@@ -75,4 +75,13 @@ class MockIdentityManager: IdentityManager {
         completion(self.mockLogOutError)
     }
 
+    var invokedSwitchUser = false
+    var invokedSwitchUserCount = 0
+    var invokedSwitchUserParametersList: [String] = []
+    override func switchUser(to newAppUserID: String) {
+        self.invokedSwitchUser = true
+        self.invokedSwitchUserCount += 1
+        self.invokedSwitchUserParametersList.append(newAppUserID)
+    }
+
 }
