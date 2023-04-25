@@ -17,11 +17,15 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendPostReceiptDataTests: BaseBackendTests {
+class BaseBackendPostReceiptDataTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         return self.createClient(#file)
     }
+
+}
+
+class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
     func testPostsReceiptDataCorrectly() throws {
         let path: HTTPRequest.Path = .postReceiptData
@@ -687,7 +691,45 @@ class BackendPostReceiptDataTests: BaseBackendTests {
 
 }
 
-private extension BackendPostReceiptDataTests {
+// swiftlint:disable:next type_name
+class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests {
+
+    override func createClient() -> MockHTTPClient {
+        super.createClient(#file)
+    }
+
+    override var dangerousSettings: DangerousSettings {
+        return .init(autoSyncPurchases: true, customEntitlementComputation: true)
+    }
+
+    func testDoesNotPostConsentStatus() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        self.httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .queue,
+                              subscriberAttributes: nil,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+}
+
+private extension BaseBackendPostReceiptDataTests {
 
     static let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
     static let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!

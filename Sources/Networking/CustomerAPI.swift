@@ -91,18 +91,16 @@ final class CustomerAPI {
               initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        var subscriberAttributesToPost: SubscriberAttribute.Dictionary? = nil
+        var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
         if !self.backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {
             subscriberAttributesToPost = subscriberAttributesByKey ?? [:]
             let attributionStatus = self.attributionFetcher.authorizationStatus
-            let consentStatus = SubscriberAttribute(withKey: ReservedSubscriberAttribute.consentStatus.rawValue,
+            let consentStatus = SubscriberAttribute(attribute: ReservedSubscriberAttribute.consentStatus,
                                                     value: attributionStatus.description,
                                                     dateProvider: self.backendConfig.dateProvider)
             subscriberAttributesToPost?[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
         }
-
-
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
