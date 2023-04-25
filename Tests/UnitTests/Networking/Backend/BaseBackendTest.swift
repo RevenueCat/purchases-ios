@@ -38,7 +38,8 @@ class BaseBackendTests: TestCase {
         self.systemInfo = try SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            responseVerificationMode: self.responseVerificationMode
+            responseVerificationMode: self.responseVerificationMode,
+            dangerousSettings: self.dangerousSettings
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
@@ -48,7 +49,8 @@ class BaseBackendTests: TestCase {
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
                                                  operationDispatcher: operationDispatcher,
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: self.systemInfo)
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
@@ -66,6 +68,10 @@ class BaseBackendTests: TestCase {
 
     var verificationMode: Configuration.EntitlementVerificationMode {
         return .disabled
+    }
+
+    var dangerousSettings: DangerousSettings {
+        return .init()
     }
 
     func createClient() -> MockHTTPClient {

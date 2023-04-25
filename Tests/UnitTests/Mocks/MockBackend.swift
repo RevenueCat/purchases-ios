@@ -37,7 +37,8 @@ class MockBackend: Backend {
         let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: systemInfo)
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
         let offlineEntitlements = MockOfflineEntitlementsAPI(backendConfig: backendConfig)
