@@ -641,6 +641,8 @@ public extension Purchases {
         return try await logOutAsync()
     }
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     ///
     /// Updates the current appUserID to a new one, without associating the two.
     /// - Important: This method is **only available** in Custom Entitlements Computation mode.
@@ -656,6 +658,8 @@ public extension Purchases {
 
         self.identityManager.switchUser(to: newAppUserID)
     }
+
+    #endif
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
@@ -990,6 +994,8 @@ public extension Purchases {
         return Self.configure(with: builder.build())
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Configures an instance of the Purchases SDK with a specified API key.
      *
@@ -1032,7 +1038,39 @@ public extension Purchases {
         Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
     }
 
-    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /**
+     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     *
+     * Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool) -> Purchases {
+        Self.configure(
+            with: Configuration
+                .builder(withAPIKey: apiKey)
+                .with(appUserID: appUserID)
+                .with(observerMode: observerMode)
+                .build()
+        )
+    }
+
+    #else
 
     /**
      * Configures an instance of the Purchases SDK with a specified API key and
@@ -1078,38 +1116,6 @@ public extension Purchases {
     }
 
     #endif
-
-    /**
-     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
-     *
-     * Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:appUserID:observerMode:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
-        Self.configure(
-            with: Configuration
-                .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(observerMode: observerMode)
-                .build()
-        )
-    }
 
     // swiftlint:disable:next function_parameter_count
     @discardableResult internal static func configure(
