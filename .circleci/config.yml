@@ -269,6 +269,15 @@ jobs:
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
 
+  spm-custom-entitlement-computation-build:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Custom Entitlement Computation Build
+          command: swift build --target RevenueCat_CustomEntitlementComputation
+          no_output_timeout: 30m
+
   spm-receipt-parser:
     <<: *base-job
     steps:
@@ -551,6 +560,17 @@ jobs:
       - scan-and-archive-all-platforms:
           directory: Tests/InstallationTests/SPMInstallation/
 
+  installation-tests-custom-entitlement-computation-swift-package-manager:
+    <<: *base-job
+    steps:
+      - checkout
+      - trust-github-key
+      - update-spm-installation-commit
+      - install-dependencies:
+          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
+      - scan-and-archive-all-platforms:
+          directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
+
   installation-tests-receipt-parser:
     <<: *base-job
     steps:
@@ -732,6 +752,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-release-build:
           xcode_version: '14.3.0'
+      - spm-custom-entitlement-computation-build:
+          xcode_version: '14.3.0'
       - spm-receipt-parser:
           xcode_version: '14.3.0'
       - run-test-ios-16:
@@ -775,6 +797,9 @@ workflows:
       - installation-tests-swift-package-manager:
           xcode_version: '14.3.0'
           <<: *release-branches
+      - installation-tests-custom-entitlement-computation-swift-package-manager:
+          xcode_version: '14.3.0'
+          <<: *release-branches
       - installation-tests-receipt-parser:
           xcode_version: '14.1.0'
           <<: *release-branches
@@ -790,6 +815,7 @@ workflows:
             - release-checks
             - installation-tests-cocoapods
             - installation-tests-swift-package-manager
+            - installation-tests-custom-entitlement-computation-swift-package-manager
             - installation-tests-carthage
             - installation-tests-xcode-direct-integration
             - installation-tests-receipt-parser

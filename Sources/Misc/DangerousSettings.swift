@@ -67,7 +67,15 @@ import Foundation
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool = false) {
+    @objc public convenience init(autoSyncPurchases: Bool = true) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false)
+
+    }
+
+    /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
+    /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
+    @objc internal convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
                   internalSettings: .default)

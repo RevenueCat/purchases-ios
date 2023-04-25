@@ -1032,6 +1032,8 @@ public extension Purchases {
         Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
     }
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Configures an instance of the Purchases SDK with a specified API key and
      * app user ID in Custom Entitlements Computation mode.
@@ -1074,6 +1076,8 @@ public extension Purchases {
                 .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
                 .build())
     }
+
+    #endif
 
     /**
      * Configures an instance of the Purchases SDK with a custom `UserDefaults`.

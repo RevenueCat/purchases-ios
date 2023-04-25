@@ -66,8 +66,10 @@ BOOL isAnonymous;
                     dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO
                                                                 customEntitlementComputation:NO]];
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     [RCPurchases configureInCustomEntitlementsModeWithApiKey:@""
                                                    appUserID:@""];
+    #endif
 
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];

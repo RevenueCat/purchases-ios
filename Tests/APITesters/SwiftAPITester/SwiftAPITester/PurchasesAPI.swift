@@ -260,7 +260,10 @@ private func checkConfigure() -> Purchases! {
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
+    #endif
 
     return nil
 }

@@ -108,7 +108,6 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setOnesignalID(_:)``
 
 ### Advanced Configuration
-- ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``
 - ``Purchases/finishTransactions``
 - ``Purchases/invalidateCustomerInfoCache()``
 - ``Purchases/forceUniversalAppStore``
