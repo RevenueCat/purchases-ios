@@ -99,7 +99,7 @@ final class CustomerAPI {
             let consentStatus = SubscriberAttribute(attribute: ReservedSubscriberAttribute.consentStatus,
                                                     value: attributionStatus.description,
                                                     dateProvider: self.backendConfig.dateProvider)
-            subscriberAttributesToPost?[ReservedSubscriberAttribute.consentStatus.key] = consentStatus
+            subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
