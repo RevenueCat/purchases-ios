@@ -17,6 +17,8 @@ import Foundation
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Purchases {
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withCheckedThrowingContinuation { continuation in
             logIn(appUserID) { customerInfo, created, error in
@@ -34,18 +36,12 @@ extension Purchases {
         }
     }
 
+    #endif
+
     func offeringsAsync(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await withCheckedThrowingContinuation { continuation in
             self.getOfferings(fetchPolicy: fetchPolicy) { offerings, error in
                 continuation.resume(with: Result(offerings, error))
-            }
-        }
-    }
-
-    func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -92,6 +88,16 @@ extension Purchases {
                      promotionalOffer: promotionalOffer) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { PurchaseResultData(transaction, $0, userCancelled) })
+            }
+        }
+    }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
@@ -175,6 +181,8 @@ extension Purchases {
             return result
         }
     }
+
+    #endif
 
 #if os(iOS) || os(macOS)
 
