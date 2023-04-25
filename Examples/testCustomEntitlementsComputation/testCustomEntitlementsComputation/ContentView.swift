@@ -19,7 +19,7 @@ struct ContentView: View {
     @State private var streamTask: Task<Void, Never>?
     @State private var offerings: Offerings?
     @State private var customerInfoStreamFires: [CustomerInfoStreamFires] = []
-    @State private var showingLogInAlert = false
+    @State private var showingSwitchUserAlert = false
     @State private var appUserID = Constants.defaultAppUserID
     @State private var showingExplanation = false
 
@@ -50,9 +50,9 @@ struct ContentView: View {
             }
 
             Button(action: {
-                showingLogInAlert = true
+                showingSwitchUserAlert = true
             }) {
-                Text("Login")
+                Text("Switch user")
                     .font(.system(size: 20))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
@@ -124,15 +124,15 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingLogInAlert) {
-            CustomAlert(inputText: $appUserID, logIn: logIn)
+        .sheet(isPresented: $showingSwitchUserAlert) {
+            CustomAlert(inputText: $appUserID, switchUser: switchUser)
         }
         .sheet(isPresented: $showingExplanation) {
             ExplanationView()
         }
     }
 
-    func logIn(_ appUserID: String) {
+    func switchUser(_ appUserID: String) {
         Purchases.shared.switchUser(to: appUserID)
     }
 
@@ -176,11 +176,11 @@ struct CustomAlert: View {
     @Environment(\.dismiss) var dismiss
     @Binding var inputText: String
 
-    let logIn: (String) -> Void
+    let switchUser: (String) -> Void
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Log In with different user:")
+            Text("Switch to with different user:")
                 .font(.headline)
 
             TextField("Enter App User ID here", text: $inputText)
@@ -196,8 +196,8 @@ struct CustomAlert: View {
                 .cornerRadius(10)
                 .foregroundColor(.white)
 
-                Button("Log In") {
-                    logIn(inputText)
+                Button("Switch User") {
+                    switchUser(inputText)
                     dismiss()
                 }
                 .padding()
@@ -222,10 +222,11 @@ struct ExplanationView: View {
             .padding()
             Text("In this mode, RevenueCat will not generate " +
                  "anonymous user IDs, it will not refresh customerInfo cache automatically " +
-                 "(only when a purchase goes through), and it will disallow the logOut methods.")
+                 "(only when a purchase goes through), and it will disallow methods other than those for " +
+                 "configuration, switching users, getting offerings and purchases.")
             .padding()
-            Text("Use logIn to switch to a different App User ID if needed. The SDK should only be configured once" +
-                 "the initial appUserID is known.")
+            Text("Use switchUser to switch to a different App User ID if needed. " +
+                 "The SDK should only be configured once the initial appUserID is known.")
             .padding()
             Text("Apps using this mode rely on webhooks to signal their backends to refresh " +
                  "entitlements with RevenueCat.")
