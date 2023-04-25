@@ -194,7 +194,8 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         transaction.mockState = .purchased
         try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .queue
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
     }
 

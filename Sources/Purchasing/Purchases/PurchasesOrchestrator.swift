@@ -570,9 +570,16 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
         switch transaction.transactionState {
-        case .restored, // for observer mode
-             .purchased:
-            self.handlePurchasedTransaction(storeTransaction, storefront: storeKit1Wrapper.currentStorefront)
+        // For observer mode. Should only come from calls to `restoreCompletedTransactions`,
+        // which the SDK does not currently use.
+        case .restored:
+            self.handlePurchasedTransaction(storeTransaction,
+                                            storefront: storeKit1Wrapper.currentStorefront,
+                                            restored: true)
+        case .purchased:
+            self.handlePurchasedTransaction(storeTransaction,
+                                            storefront: storeKit1Wrapper.currentStorefront,
+                                            restored: false)
         case .purchasing:
             break
         case .failed:
@@ -708,15 +715,19 @@ extension PurchasesOrchestrator: @unchecked Sendable {}
 private extension PurchasesOrchestrator {
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
-                                    storefront: StorefrontType?) {
+                                    storefront: StorefrontType?,
+                                    restored: Bool) {
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
         ) { receiptData in
             if let receiptData = receiptData, !receiptData.isEmpty {
-                self.fetchProductsAndPostReceipt(withTransaction: transaction,
-                                                 receiptData: receiptData,
-                                                 initiationSource: .purchase,
-                                                 storefront: storefront)
+                self.fetchProductsAndPostReceipt(
+                    withTransaction: transaction,
+                    receiptData: receiptData,
+                    initiationSource: self.initiationSource(for: transaction.productIdentifier,
+                                                            restored: restored),
+                    storefront: storefront
+                )
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
                                        result: .failure(.missingReceiptFile()),
@@ -799,6 +810,25 @@ private extension PurchasesOrchestrator {
             #endif
         }
     }
+
+    /// - Parameter restored: whether the transaction state was `.restored` instead of `.`purchased`.
+    private func initiationSource(
+        for productIdentifier: String,
+        restored: Bool
+    ) -> ProductRequestData.InitiationSource {
+        // Having a purchase completed callback implies that the transation comes from an explicit call
+        // to `purchase()` instead of a StoreKit transaction notification.
+        let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
+
+        switch (hasPurchaseCallback, restored) {
+        case (true, false): return .purchase
+        // Note that restores initiated through the SDK with `restorePurchases`
+        // won't use this method since those set the initiation source explicitly.
+        case (true, true): return .restore
+        case (false, _): return .queue
+        }
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -919,8 +949,8 @@ private extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
 
         self.backend.post(receiptData: receiptData,
-                          appUserID: appUserID,
-                          isRestore: allowSharingAppStoreAccount,
+                          appUserID: self.appUserID,
+                          isRestore: self.allowSharingAppStoreAccount,
                           productData: productData,
                           presentedOfferingIdentifier: presentedOfferingID,
                           observerMode: self.observerMode,
@@ -1177,7 +1207,9 @@ extension PurchasesOrchestrator {
                 }
             )
 
-            self.handlePurchasedTransaction(transaction, storefront: storefront)
+            self.handlePurchasedTransaction(transaction,
+                                            storefront: storefront,
+                                            restored: false)
         }
     }
 
