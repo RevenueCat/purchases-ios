@@ -15,14 +15,14 @@ import XCTest
 
 class HTTPClientTests: TestCase {
 
-    private typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
+    typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
 
-    private let apiKey = "MockAPIKey"
-    private let systemInfo = MockSystemInfo(finishTransactions: true)
-    private var client: HTTPClient!
-    private var userDefaults: UserDefaults!
-    private var eTagManager: MockETagManager!
-    private var operationDispatcher: OperationDispatcher!
+    var systemInfo: MockSystemInfo!
+    var client: HTTPClient!
+    var eTagManager: MockETagManager!
+    var operationDispatcher: OperationDispatcher!
+
+    fileprivate let apiKey = "MockAPIKey"
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -32,8 +32,8 @@ class HTTPClientTests: TestCase {
         try XCTSkipIf(true, "OHHTTPStubs does not currently support watchOS")
         #endif
 
-        self.userDefaults = MockUserDefaults()
-        self.eTagManager = MockETagManager(userDefaults: self.userDefaults)
+        self.systemInfo = MockSystemInfo(finishTransactions: true)
+        self.eTagManager = MockETagManager()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
 
@@ -740,6 +740,49 @@ class HTTPClientTests: TestCase {
         }
 
         expect(headerPresent.value) == true
+    }
+
+    func testRequestsWithCustomEntitlementsSendHeader() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        var headerPresent = false
+
+        stub(condition: isPath(request.path)) { request in
+            let headers =  request.allHTTPHeaderFields ?? [:]
+            headerPresent = headers["X-Custom-Entitlements-Computation"] != nil
+                && headers["X-Custom-Entitlements-Computation"] == "true"
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+        }
+
+        expect(headerPresent) == true
+    }
+
+    func testRequestsWithoutCustomEntitlementsDoNotSendHeader() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
+        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        var headerPresent = false
+
+        stub(condition: isPath(request.path)) { request in
+            let headers =  request.allHTTPHeaderFields ?? [:]
+            headerPresent = headers["X-Custom-Entitlements-Computation"] != nil
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+        }
+
+        expect(headerPresent) == false
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {

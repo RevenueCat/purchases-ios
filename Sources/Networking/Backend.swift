@@ -36,7 +36,8 @@ class Backend {
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
-                                          dateProvider: dateProvider)
+                                          dateProvider: dateProvider,
+                                          systemInfo: systemInfo)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 

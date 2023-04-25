@@ -88,9 +88,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             self.privateDelegate = newValue
             Logger.debug(Strings.configure.delegate_set)
 
-            // Sends cached customer info (if exists) to delegate as latest
-            // customer info may have already been observed and sent by the monitor
-            self.sendCachedCustomerInfoToDelegateIfExists()
+            if !self.systemInfo.dangerousSettings.customEntitlementComputation {
+                // Sends cached customer info (if exists) to delegate as latest
+                // customer info may have already been observed and sent by the monitor
+                self.sendCachedCustomerInfoToDelegateIfExists()
+            }
         }
     }
 
@@ -298,6 +300,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID)
+
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -396,7 +399,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasesOrchestrator: purchasesOrchestrator,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
-
+    // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
@@ -418,6 +421,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
+
+        if systemInfo.dangerousSettings.customEntitlementComputation {
+            Logger.info(Strings.configure.custom_entitlements_computation_enabled)
+        }
+
+        if systemInfo.dangerousSettings.customEntitlementComputation
+            && appUserID == nil && identityManager.currentUserIsAnonymous {
+            fatalError(Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description)
+        }
+
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
@@ -597,6 +610,11 @@ public extension Purchases {
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+            return
+       }
+
         self.identityManager.logOut { error in
             guard error == nil else {
                 if let completion = completion {
@@ -616,6 +634,22 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
+    }
+
+    ///
+    /// Updates the current appUserID to a new one, without associating the two.
+    /// - Important: This method is **only available** in Custom Entitlements Computation mode.
+    /// Receipts posted by the SDK to the RevenueCat backend after calling this method will be sent
+    /// with the newAppUserID.
+    ///
+    @objc(switchUserToNewAppUserID:)
+    func switchUser(to newAppUserID: String) {
+        guard self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            Logger.error(Strings.configure.custom_entitlements_computation_only_feature("Switch users"))
+            return
+        }
+
+        self.identityManager.switchUser(to: newAppUserID)
     }
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
@@ -996,6 +1030,49 @@ public extension Purchases {
     }
 
     /**
+     * Configures an instance of the Purchases SDK with a specified API key and
+     * app user ID in Custom Entitlements Computation mode.
+
+     * - Warning: Configuring in Custom Entitlements Computation mode should only be enabled after
+     * being instructed to do so by the RevenueCat team.
+     * Apps configured in this mode will not have anonymous IDs, will not be able to use logOut methods,
+     * and will not have their CustomerInfo cache refreshed automatically.
+     *
+     * ## Custom Entitlements Computation mode
+     * This mode is intended for apps that will use RevenueCat to manage payment flows,
+     * but **will not** use RevenueCat's SDK to compute entitlements.
+     * Apps using this mode will instead rely on webhooks to get notified when purchases go through
+     * and to merge information between RevenueCat's servers
+     * and their own.
+     *
+     * In this mode, the RevenueCat SDK will never generate anonymous IDs. Instead, it can only be configured
+     * with a known appUserID, and the logOut methods
+     * will return an error if called. To change users, call ``logIn(_:)-arja``.
+     *
+     * The instance will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``.
+     *
+     * - Note: Best practice is to use a salted hash of your unique app user ids.
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     */
+    @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
+    @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
+                                                                                appUserID: String) -> Purchases {
+        Self.configure(
+            with: .builder(withAPIKey: apiKey)
+                .with(appUserID: appUserID)
+                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+                .build())
+    }
+
+    /**
      * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
      *
      * Use this constructor if you want to
@@ -1298,18 +1375,18 @@ private extension Purchases {
     }
 
     func updateAllCachesIfNeeded() {
-        systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
-                                                                      isAppBackgrounded: isAppBackgrounded,
-                                                                      completion: nil)
-            guard self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) else {
-                return
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            if !self.systemInfo.dangerousSettings.customEntitlementComputation {
+                self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
+                                                                          isAppBackgrounded: isAppBackgrounded,
+                                                                          completion: nil)
             }
 
-            Logger.debug("Offerings cache is stale, updating caches")
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
+            if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
+                self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                           isAppBackgrounded: isAppBackgrounded,
+                                                           completion: nil)
+            }
         }
     }
 
@@ -1324,14 +1401,22 @@ private extension Purchases {
         isAppBackgrounded: Bool,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
+        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                   isAppBackgrounded: isAppBackgrounded,
+                                                   completion: nil)
+
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            if let completion = completion {
+                let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
+                completion(.failure(error.asPublicError))
+            }
+            return
+        }
+
         self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                            isAppBackgrounded: isAppBackgrounded) { @Sendable in
             completion?($0.mapError { $0.asPublicError })
         }
-
-        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                   isAppBackgrounded: isAppBackgrounded,
-                                                   completion: nil)
     }
 
     // Used when delegate is being set

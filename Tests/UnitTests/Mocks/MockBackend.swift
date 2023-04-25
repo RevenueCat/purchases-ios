@@ -37,7 +37,8 @@ class MockBackend: Backend {
         let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: systemInfo)
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
@@ -166,6 +167,13 @@ class MockBackend: Backend {
         } else {
             completion?(nil)
         }
+    }
+
+    var invokedClearHTTPClientCaches = false
+    var invokedClearHTTPClientCachesCount = 0
+    override func clearHTTPClientCaches() {
+        self.invokedClearHTTPClientCaches = true
+        self.invokedClearHTTPClientCachesCount += 1
     }
 
     struct InvokedPostSubscriberAttributesParams: Equatable {

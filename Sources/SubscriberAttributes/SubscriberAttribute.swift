@@ -32,6 +32,10 @@ struct SubscriberAttribute {
         self.init(withKey: key, value: value, isSynced: false, setTime: dateProvider.now())
     }
 
+    init(attribute: ReservedSubscriberAttribute, value: String?, dateProvider: DateProvider = DateProvider()) {
+        self.init(withKey: attribute.rawValue, value: value, dateProvider: dateProvider)
+    }
+
 }
 
 extension SubscriberAttribute {

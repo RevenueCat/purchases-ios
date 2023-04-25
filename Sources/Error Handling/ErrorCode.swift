@@ -57,6 +57,8 @@ import Foundation
     @objc(RCAPIEndpointBlocked) case apiEndpointBlockedError = 33
     @objc(RCInvalidPromotionalOfferError) case invalidPromotionalOfferError = 34
     @objc(RCOfflineConnectionError) case offlineConnectionError = 35
+    @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
+    case featureNotAvailableInCustomEntitlementsComputationMode = 36
 
     // swiftlint:enable missing_docs
 
@@ -174,6 +176,9 @@ extension ErrorCode: DescribableError {
         case .offlineConnectionError:
             return "Error performing request because the internet connection appears to be offline."
 
+        case .featureNotAvailableInCustomEntitlementsComputationMode:
+            return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
+
         @unknown default:
             return "Something went wrong."
         }
@@ -270,6 +275,8 @@ extension ErrorCode {
             return "INVALID_PROMOTIONAL_OFFER_ERROR"
         case .offlineConnectionError:
             return "OFFLINE_CONNECTION_ERROR"
+        case .featureNotAvailableInCustomEntitlementsComputationMode:
+            return "FEATURE_NOT_AVAILABLE_IN_CUSTOM_ENTITLEMENTS_COMPUTATION_MODE_ERROR"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }

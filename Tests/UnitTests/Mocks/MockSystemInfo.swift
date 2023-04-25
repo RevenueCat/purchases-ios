@@ -14,13 +14,17 @@ import Foundation
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
+    var customEntitlementsComputation: Bool?
 
     convenience init(finishTransactions: Bool,
-                     storeKit2Setting: StoreKit2Setting = .default) {
+                     storeKit2Setting: StoreKit2Setting = .default,
+                     customEntitlementsComputation: Bool = false) {
+        let dangerousSettings = DangerousSettings(customEntitlementComputation: customEntitlementsComputation)
         // swiftlint:disable:next force_try
         try! self.init(platformInfo: nil,
                        finishTransactions: finishTransactions,
-                       storeKit2Setting: storeKit2Setting)
+                       storeKit2Setting: storeKit2Setting,
+                       dangerousSettings: dangerousSettings)
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

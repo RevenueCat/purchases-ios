@@ -34,7 +34,11 @@ class BaseBackendTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
+        self.systemInfo = try SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            dangerousSettings: self.dangerousSettings
+        )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
 
@@ -43,7 +47,8 @@ class BaseBackendTests: TestCase {
         let backendConfig = BackendConfiguration(httpClient: self.httpClient,
                                                  operationDispatcher: operationDispatcher,
                                                  operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: self.systemInfo)
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
@@ -55,6 +60,10 @@ class BaseBackendTests: TestCase {
                                identityAPI: self.identity,
                                offeringsAPI: self.offerings,
                                internalAPI: self.internalAPI)
+    }
+
+    var dangerousSettings: DangerousSettings {
+        return .init()
     }
 
     func createClient() -> MockHTTPClient {

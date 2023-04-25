@@ -20,15 +20,18 @@ final class BackendConfiguration {
     let operationDispatcher: OperationDispatcher
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
+    let systemInfo: SystemInfo
 
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         systemInfo: SystemInfo) {
         self.httpClient = httpClient
         self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
         self.dateProvider = dateProvider
+        self.systemInfo = systemInfo
     }
 
     func clearCache() {

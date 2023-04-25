@@ -32,6 +32,20 @@ import Foundation
      */
     @objc public let autoSyncPurchases: Bool
 
+    /**
+     * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
+     * It:
+     *   - disables automatic CustomerInfo cache updates
+     *   - disables ``Purchases/logOut()`` and ``Purchases/logOut(completion:)``
+     *   - disallows configuration of the SDK without an appUserID
+     *   - disables automatic firing of the PurchasesDelegate's CustomerInfo listener when setting the delegate.
+     * It will only be called when the SDK posts a receipt or after customerInfo on device changes.
+     *
+     * - Important: This is a dangerous setting and should only be used if you intend to do your own entitlement
+     * granting, separate from RevenueCat.
+     */
+    @objc public let customEntitlementComputation: Bool
+
     internal let internalSettings: InternalSettings
 
     @objc public override convenience init() {
@@ -45,14 +59,20 @@ import Foundation
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
      */
-    @objc public convenience init(autoSyncPurchases: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases, internalSettings: .default)
+    @objc public convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool = false) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: customEntitlementComputation,
+                  internalSettings: .default)
+
     }
 
     /// Designated initializer
-    internal init(autoSyncPurchases: Bool, internalSettings: InternalSettings) {
+    internal init(autoSyncPurchases: Bool,
+                  customEntitlementComputation: Bool = false,
+                  internalSettings: InternalSettings) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
+        self.customEntitlementComputation = customEntitlementComputation
     }
 
 }

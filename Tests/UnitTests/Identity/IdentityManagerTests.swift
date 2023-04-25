@@ -316,6 +316,21 @@ class IdentityManagerTests: TestCase {
 
         expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == false
     }
+
+    // MARK: - Switch user
+
+    func testSwitchUserResetsAllCaches() {
+        let manager = self.create(appUserID: "old-test-user-id")
+
+        manager.switchUser(to: "test-user-id")
+
+        expect(self.mockDeviceCache.clearCachesCalledOldUserID) == "old-test-user-id"
+        expect(self.mockDeviceCache.clearCachesCalleNewUserID) == "test-user-id"
+        expect(self.mockDeviceCache.invokedClearLatestNetworkAndAdvertisingIdsSentCount) == 1
+        expect(self.mockDeviceCache
+            .invokedClearLatestNetworkAndAdvertisingIdsSentParameters?.appUserID) == "test-user-id"
+        expect(self.mockBackend.invokedClearHTTPClientCachesCount) == 1
+    }
 }
 
 private extension IdentityManagerTests {
