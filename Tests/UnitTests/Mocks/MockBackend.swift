@@ -37,7 +37,8 @@ class MockBackend: Backend {
         let backendConfig = BackendConfiguration(httpClient: httpClient,
                                                  operationDispatcher: MockOperationDispatcher(),
                                                  operationQueue: QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                                 systemInfo: systemInfo)
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
         let offlineEntitlements = MockOfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -170,17 +171,16 @@ class MockBackend: Backend {
         }
     }
 
-    struct InvokedPostSubscriberAttributesParams: Equatable {
-        let subscriberAttributes: [String: SubscriberAttribute]?
-        let appUserID: String?
-    }
-
     var invokedClearHTTPClientCaches = false
     var invokedClearHTTPClientCachesCount = 0
-
     override func clearHTTPClientCaches() {
         self.invokedClearHTTPClientCaches = true
         self.invokedClearHTTPClientCachesCount += 1
+    }
+
+    struct InvokedPostSubscriberAttributesParams: Equatable {
+        let subscriberAttributes: [String: SubscriberAttribute]?
+        let appUserID: String?
     }
 
     var stubbedSignatureVerificationEnabled: Bool?

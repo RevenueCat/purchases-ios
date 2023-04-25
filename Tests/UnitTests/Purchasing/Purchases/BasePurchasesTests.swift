@@ -55,7 +55,8 @@ class BasePurchasesTests: TestCase {
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
+                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
+                                          systemInfo: self.systemInfo)
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,

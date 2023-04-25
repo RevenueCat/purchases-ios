@@ -59,6 +59,8 @@
         case RCOfflineConnectionError:
         case RCSignatureVerificationFailed:
             NSLog(@"%ld", (long)errCode);
+        case RCFeatureNotAvailableInCustomEntitlementsComputationMode:
+            break;
     }
 }
 

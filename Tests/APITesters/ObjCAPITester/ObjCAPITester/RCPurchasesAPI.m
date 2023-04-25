@@ -63,7 +63,12 @@ BOOL isAnonymous;
                          observerMode:false
                          userDefaults:[[NSUserDefaults alloc] init]
               useStoreKit2IfAvailable:true
-                    dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO]];
+                    dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO
+                                                                customEntitlementComputation:NO]];
+
+    [RCPurchases configureInCustomEntitlementsModeWithApiKey:@""
+                                                   appUserID:@""];
+
     
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
@@ -170,6 +175,7 @@ BOOL isAnonymous;
     [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
+    [p switchUserToNewAppUserID:@""];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];

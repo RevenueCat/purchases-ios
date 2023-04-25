@@ -91,6 +91,11 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
+    func switchUser(to newAppUserID: String) {
+        Logger.debug(Strings.identity.switching_user(newUserId: newAppUserID))
+        self.resetCacheAndSave(newUserID: newAppUserID)
+    }
+
     static func generateRandomID() -> String {
         "$RCAnonymousID:\(UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
     }
@@ -149,7 +154,7 @@ private extension IdentityManager {
             return
         }
 
-        self.resetUserIDCache()
+        self.resetCacheAndSave(newUserID: Self.generateRandomID())
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
     }
@@ -163,10 +168,9 @@ extension IdentityManager: @unchecked Sendable {}
 
 private extension IdentityManager {
 
-    func resetUserIDCache() {
-        self.deviceCache.clearCaches(oldAppUserID: self.currentAppUserID,
-                                     andSaveWithNewUserID: Self.generateRandomID())
-        self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: self.currentAppUserID)
+    func resetCacheAndSave(newUserID: String) {
+        self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newUserID)
+        self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }
 

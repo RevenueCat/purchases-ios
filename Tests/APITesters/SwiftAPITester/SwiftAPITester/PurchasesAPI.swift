@@ -157,6 +157,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 private func checkIdentity(purchases: Purchases) {
     purchases.logOut { (_: CustomerInfo?, _: Error?) in }
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
+    purchases.switchUser(to: "")
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
@@ -259,6 +260,7 @@ private func checkConfigure() -> Purchases! {
 
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+    Purchases.configureInCustomEntitlementsComputationMode(apiKey: "", appUserID: "")
 
     return nil
 }
