@@ -641,6 +641,22 @@ public extension Purchases {
         return try await logOutAsync()
     }
 
+    ///
+    /// Updates the current appUserID to a new one, without associating the two.
+    /// - Important: This method is **only available** in Custom Entitlements Computation mode.
+    /// Receipts posted by the SDK to the RevenueCat backend after calling this method will be sent
+    /// with the newAppUserID.
+    ///
+    @objc(switchUserToNewAppUserID:)
+    func switchUser(to newAppUserID: String) {
+        guard self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            Logger.error(Strings.configure.custom_entitlements_computation_only_feature("Switch users"))
+            return
+        }
+
+        self.identityManager.switchUser(to: newAppUserID)
+    }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }

@@ -98,6 +98,29 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 
+    // MARK: - Switch user
+
+    func testSwitchUserWontDoAnythingIfNotOnCustomEntitlementComputationMode() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: "old-test-user-id")
+
+        self.purchases.switchUser(to: "test-user-id")
+
+        expect(self.identityManager.invokedSwitchUser) == false
+    }
+
+    func testSwitchUserWillSwitchUserIfOnCustomEntitlementComputationMode() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: "old-test-user-id")
+
+        self.purchases.switchUser(to: "test-user-id")
+
+        expect(self.identityManager.invokedSwitchUser) == true
+        expect(self.identityManager.invokedSwitchUserParametersList) == ["test-user-id"]
+    }
+
     // MARK: - Update offerings cache
 
     func testLogInUpdatesOfferingsCache() throws {
