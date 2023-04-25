@@ -570,7 +570,9 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         let storeTransaction = StoreTransaction(sk1Transaction: transaction)
 
         switch transaction.transactionState {
-        case .restored: // for observer mode
+        // For observer mode. Should only come from calls to `restoreCompletedTransactions`,
+        // which the SDK does not currently use.
+        case .restored:
             self.handlePurchasedTransaction(storeTransaction,
                                             storefront: storeKit1Wrapper.currentStorefront,
                                             restored: true)
