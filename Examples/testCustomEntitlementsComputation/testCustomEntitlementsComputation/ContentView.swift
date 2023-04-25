@@ -133,10 +133,7 @@ struct ContentView: View {
     }
 
     func logIn(_ appUserID: String) {
-        print("Switching to user: \(appUserID)")
-        Task {
-            Purchases.shared.switchUser(newAppUserID: appUserID)
-        }
+        Purchases.shared.switchUser(to: appUserID)
     }
 
     func subscribeToCustomerInfoStream() {
