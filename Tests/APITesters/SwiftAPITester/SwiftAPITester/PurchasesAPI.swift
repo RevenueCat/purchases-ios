@@ -157,7 +157,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 private func checkIdentity(purchases: Purchases) {
     purchases.logOut { (_: CustomerInfo?, _: Error?) in }
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
+
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     purchases.switchUser(to: "")
+    #endif
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {

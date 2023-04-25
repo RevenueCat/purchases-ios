@@ -100,6 +100,8 @@ class PurchasesLogInTests: BasePurchasesTests {
 
     // MARK: - Switch user
 
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     func testSwitchUserWontDoAnythingIfNotOnCustomEntitlementComputationMode() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
         Purchases.clearSingleton()
@@ -120,6 +122,8 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(self.identityManager.invokedSwitchUser) == true
         expect(self.identityManager.invokedSwitchUserParametersList) == ["test-user-id"]
     }
+
+    #endif
 
     // MARK: - Update offerings cache
 

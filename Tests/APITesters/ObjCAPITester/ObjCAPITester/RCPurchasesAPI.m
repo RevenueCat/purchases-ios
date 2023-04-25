@@ -177,8 +177,11 @@ BOOL isAnonymous;
     [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
-    [p switchUserToNewAppUserID:@""];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
+
+    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    [p switchUserToNewAppUserID:@""];
+    #endif
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p
