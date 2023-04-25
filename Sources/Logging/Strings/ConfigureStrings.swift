@@ -71,7 +71,7 @@ enum ConfigureStrings {
 
     case custom_entitlements_computation_enabled_but_no_app_user_id
 
-    case custom_entitlements_computation_only_feature(feature: String)
+    case custom_entitlements_computation_only_feature(String)
 
 }
 
@@ -166,12 +166,12 @@ extension ConfigureStrings: CustomStringConvertible {
             "getCustomerInfo is called or logIn is called."
 
         case .custom_entitlements_computation_enabled_but_no_app_user_id:
-            return "ERROR: customEntitlementComputation mode is enabled, but appUserID is nil. " +
+            return "customEntitlementComputation mode is enabled, but appUserID is nil. " +
             "When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from " +
             "being generated."
 
         case let .custom_entitlements_computation_only_feature(feature):
-            return "ERROR: \(feature) is only available in customEntitlementComputation mode"
+            return "\(feature) is only available in customEntitlementComputation mode"
         }
     }
 

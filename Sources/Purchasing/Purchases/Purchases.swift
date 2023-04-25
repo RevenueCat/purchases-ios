@@ -650,7 +650,7 @@ public extension Purchases {
     @objc(switchUserTo:)
     func switchUser(to newAppUserID: String) {
         guard self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            Logger.error(Strings.configure.custom_entitlements_computation_only_feature(feature: "Switch users"))
+            Logger.error(Strings.configure.custom_entitlements_computation_only_feature("Switch users"))
             return
         }
 
