@@ -25,10 +25,6 @@ class InstallationTests: XCTestCase {
                                                                appUserID: "Integration Tests")
     }
 
-    func testCanFetchCustomerInfo() async throws {
-        _ = try await Purchases.shared.customerInfo()
-    }
-
     func testCanSwitchUser() throws {
         let userID = "new_user_ID"
 

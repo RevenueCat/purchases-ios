@@ -208,7 +208,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// Current version of the ``Purchases`` framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     @objc public let attribution: Attribution
+
+    #endif
 
     @objc public var finishTransactions: Bool {
         get { self.systemInfo.finishTransactions }
@@ -456,7 +460,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
         self.systemInfo = systemInfo
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution = subscriberAttributes
+        #endif
         self.operationDispatcher = operationDispatcher
         self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
@@ -487,7 +493,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.subscribeToAppStateNotifications()
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
+        #endif
 
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
             guard let self = self else { return }
@@ -539,6 +547,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
 extension Purchases {
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     private func post(attributionData data: [String: Any],
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
@@ -552,7 +561,7 @@ extension Purchases {
         }
         attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
-
+    #endif
 }
 
 // MARK: Identity
@@ -562,6 +571,35 @@ public extension Purchases {
     @objc var appUserID: String { self.identityManager.currentAppUserID }
 
     @objc var isAnonymous: Bool { self.identityManager.currentUserIsAnonymous }
+
+    @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        self.getOfferings(fetchPolicy: .default, completion: completion)
+    }
+
+    internal func getOfferings(
+        fetchPolicy: OfferingsManager.FetchPolicy,
+        completion: @escaping (Offerings?, PublicError?) -> Void
+    ) {
+        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { @Sendable result in
+            completion(result.value, result.error?.asPublicError)
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func offerings() async throws -> Offerings {
+        return try await self.offerings(fetchPolicy: .default)
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
+        return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
+    }
+
+}
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+public extension Purchases {
 
     func logIn(_ appUserID: StaticString, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         Logger.warn(Strings.identity.logging_in_with_static_string)
@@ -636,7 +674,13 @@ public extension Purchases {
         return try await logOutAsync()
     }
 
-    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+}
+
+#else
+
+// - MARK: - Custom entitlement computation API
+
+public extension Purchases {
 
     ///
     /// Updates the current appUserID to a new one, without associating the two.
@@ -646,44 +690,18 @@ public extension Purchases {
     ///
     @objc(switchUserToNewAppUserID:)
     func switchUser(to newAppUserID: String) {
-        guard self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            Logger.error(Strings.configure.custom_entitlements_computation_only_feature("Switch users"))
-            return
-        }
-
         self.identityManager.switchUser(to: newAppUserID)
-    }
-
-    #endif
-
-    @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
-        self.getOfferings(fetchPolicy: .default, completion: completion)
-    }
-
-    internal func getOfferings(
-        fetchPolicy: OfferingsManager.FetchPolicy,
-        completion: @escaping (Offerings?, PublicError?) -> Void
-    ) {
-        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { @Sendable result in
-            completion(result.value, result.error?.asPublicError)
-        }
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func offerings() async throws -> Offerings {
-        return try await self.offerings(fetchPolicy: .default)
-    }
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
-        return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
 
 }
 
+#endif
+
 // MARK: Purchasing
 
 public extension Purchases {
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc func getCustomerInfo(completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
         self.getCustomerInfo(fetchPolicy: .default, completion: completion)
@@ -708,6 +726,8 @@ public extension Purchases {
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await self.customerInfoAsync(fetchPolicy: fetchPolicy)
     }
+
+    #endif
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
@@ -743,6 +763,8 @@ public extension Purchases {
     func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
@@ -819,6 +841,8 @@ public extension Purchases {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
 
+    #endif
+
 #if os(iOS) || targetEnvironment(macCatalyst)
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded() {
@@ -842,6 +866,8 @@ public extension Purchases {
     }
 #endif
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
@@ -863,6 +889,8 @@ public extension Purchases {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
+
+    #endif
 
 #if os(iOS) || os(macOS)
 
@@ -1201,12 +1229,14 @@ public extension Purchases {
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Deprecated
      */
     @available(*, deprecated, message: "Use the set<NetworkId> functions instead")
     @objc static func addAttributionData(_ data: [String: Any], fromNetwork network: AttributionNetwork) {
-        addAttributionData(data, from: network, forNetworkUserId: nil)
+        self.addAttributionData(data, from: network, forNetworkUserId: nil)
     }
 
     /**
@@ -1233,6 +1263,8 @@ public extension Purchases {
                                     forNetworkUserId: networkUserId)
         }
     }
+
+    #endif
 
 }
 
@@ -1284,6 +1316,8 @@ internal extension Purchases {
 
     #endif
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
@@ -1298,6 +1332,8 @@ internal extension Purchases {
             completion: completion
         )
     }
+
+    #endif
 
 }
 
@@ -1345,13 +1381,16 @@ private extension Purchases {
         self.updateAllCachesIfNeeded()
         self.dispatchSyncSubscriberAttributes()
 
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
-#if os(iOS) || os(macOS)
+        #if os(iOS) || os(macOS)
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             self.attribution.postAdServicesTokenIfNeeded()
         }
-#endif
+        #endif
+
+        #endif
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
@@ -1369,9 +1408,11 @@ private extension Purchases {
     }
 
     func dispatchSyncSubscriberAttributes() {
-        operationDispatcher.dispatchOnWorkerThread {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.operationDispatcher.dispatchOnWorkerThread {
             self.syncSubscriberAttributes()
         }
+        #endif
     }
 
     func updateCachesIfInForeground() {
@@ -1449,4 +1490,6 @@ private protocol DeprecatedSearchAdsAttribution {
 
 }
 
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 extension Purchases: DeprecatedSearchAdsAttribution {}
+#endif

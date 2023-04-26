@@ -76,7 +76,9 @@ extension PurchasesDiagnostics {
     public func testSDKHealth() async throws {
         do {
             try await self.unauthenticatedRequest()
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
             try await self.authenticatedRequest()
+            #endif
             try await self.offeringsRequest()
         } catch let error as Error {
             throw error
@@ -102,6 +104,7 @@ private extension PurchasesDiagnostics {
         }
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func authenticatedRequest() async throws {
         do {
             _ = try await self.purchases.customerInfo()
@@ -111,6 +114,7 @@ private extension PurchasesDiagnostics {
             throw Error.unknown(error)
         }
     }
+    #endif
 
     func offeringsRequest() async throws {
         do {

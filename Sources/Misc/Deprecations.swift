@@ -16,6 +16,8 @@ import StoreKit
 
 // swiftlint:disable line_length missing_docs
 
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
 public extension Purchases {
 
     @available(iOS, deprecated: 1, renamed: "checkTrialOrIntroDiscountEligibility(productIdentifiers:)")
@@ -345,6 +347,8 @@ public extension StoreProduct {
     }
 
 }
+
+#endif
 
 extension CustomerInfo {
 
