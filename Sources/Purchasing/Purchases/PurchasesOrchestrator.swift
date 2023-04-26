@@ -413,9 +413,11 @@ final class PurchasesOrchestrator {
                     productIdentifier: product.id,
                     error: error
                 ))
+                let publicError = ErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                let userCancelled = publicError.code == ErrorCode.purchaseCancelledError.rawValue
 
                 DispatchQueue.main.async {
-                    completion(nil, nil, ErrorUtils.purchasesError(withUntypedError: error).asPublicError, false)
+                    completion(nil, nil, publicError, userCancelled)
                 }
             }
         }
@@ -449,6 +451,9 @@ final class PurchasesOrchestrator {
                     return try await sk2Product.purchase(options: options)
                 }
         } catch StoreKitError.userCancelled {
+            if self.systemInfo.dangerousSettings.customEntitlementComputation {
+                throw ErrorUtils.purchaseCancelledError()
+            }
             return (
                 transaction: nil,
                 customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
@@ -466,6 +471,9 @@ final class PurchasesOrchestrator {
         // This detects if `Product.PurchaseResult.userCancelled` is true.
         let (userCancelled, sk2Transaction) = try await self.storeKit2TransactionListener
             .handle(purchaseResult: result)
+        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+            throw ErrorUtils.purchaseCancelledError()
+        }
         let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
         let customerInfo: CustomerInfo
 
@@ -746,13 +754,22 @@ private extension PurchasesOrchestrator {
             let isCancelled = purchasesError.isCancelledError
 
             if isCancelled {
-                self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                      fetchPolicy: .cachedOrFetched) { @Sendable customerInfo in
+                if self.systemInfo.dangerousSettings.customEntitlementComputation {
                     self.operationDispatcher.dispatchOnMainActor {
                         completion(storeTransaction,
-                                   customerInfo.value,
+                                   nil,
                                    purchasesError.asPublicError,
                                    true)
+                    }
+                } else {
+                    self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                          fetchPolicy: .cachedOrFetched) { @Sendable customerInfo in
+                        self.operationDispatcher.dispatchOnMainActor {
+                            completion(storeTransaction,
+                                       customerInfo.value,
+                                       purchasesError.asPublicError,
+                                       true)
+                        }
                     }
                 }
             } else {
