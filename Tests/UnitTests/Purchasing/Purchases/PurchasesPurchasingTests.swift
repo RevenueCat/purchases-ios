@@ -827,8 +827,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testReceiptsSendsAsRestoreWhenAnon() throws {
         self.setupAnonPurchases()
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -848,8 +847,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
 
         var deprecated = purchases.deprecated
         deprecated.allowSharingAppStoreAccount = false
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -871,8 +870,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
                                              dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -897,8 +895,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
                                              dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -919,8 +916,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntFinishTransactionsIfObserverModeIsSet() throws {
         try self.setupPurchasesObserverModeOn()
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -940,8 +936,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testReceiptsSendsObserverModeWhenObserverMode() throws {
         try self.setupPurchasesObserverModeOn()
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -959,8 +954,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testRestoredPurchasesArePosted() throws {
         try self.setupPurchasesObserverModeOn()
 
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
+        self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
         let transaction = MockTransaction()
         transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
@@ -972,5 +966,84 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(self.backend.postedInitiationSource) == .restore
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
+
+    func testCancelledErrorInCustomEntitlementComputationModeForSK1Purchase() throws {
+        self.setUpPurchasesCustomEntitlementMode()
+
+        var receivedTransaction: StoreTransaction?
+        var receivedCustomerInfo: CustomerInfo?
+        var receivedUserCancelled: Bool?
+        var receivedError: NSError?
+
+        self.purchases.purchase(product: Self.mockProduct) { (transaction, customerInfo, error, userCancelled) in
+            receivedTransaction = transaction
+            receivedCustomerInfo = customerInfo
+            receivedError = error as NSError?
+            receivedUserCancelled = userCancelled
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .failed
+        transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedTransaction).toNot(beNil())
+        expect(receivedCustomerInfo).to(beNil())
+        expect(receivedUserCancelled) == true
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+
+        let underlyingError = try XCTUnwrap(receivedError?.userInfo[NSUnderlyingErrorKey] as? NSError)
+        expect(underlyingError.domain) == SKErrorDomain
+        expect(underlyingError.code) == SKError.Code.paymentCancelled.rawValue
+
+        expect(self.backend.getSubscriberCallCount) == 0
+    }
+
+    @MainActor
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testThrowsUserCancelledErrorIfSK1AsyncPurchaseCancelledWithCustomEntitlementComputation() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.setUpPurchasesCustomEntitlementMode()
+
+        var result: PurchaseResultData?
+        var receivedError: NSError?
+
+        // Need to do this async so the code below can invoke the `updatedTransaction` delegate method.
+        _ = Task<Void, Never> {
+            do {
+                result = try await self.purchases.purchase(product: Self.mockProduct)
+            } catch {
+                receivedError = error as NSError
+            }
+        }
+
+        expect(self.storeKit1Wrapper.payment).toEventuallyNot(beNil())
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .failed
+        transaction.mockError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentCancelled.rawValue)
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(receivedError).toEventuallyNot(beNil())
+        expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
+        expect(result).to(beNil())
+
+        expect(self.backend.getSubscriberCallCount) == 0
+    }
+
+    // MARK: -
+
+    private func setUpPurchasesCustomEntitlementMode() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         storeKit2Setting: .disabled,
+                                         customEntitlementsComputation: true)
+        self.initializePurchasesInstance(appUserId: "user")
+    }
+
+    private static let mockProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
 }
