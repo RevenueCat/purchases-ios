@@ -340,6 +340,78 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData
 
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
+     *  Going forward, either ``appUserID`` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same ``appUserID`` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     *
+     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
+     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
+     * to confirm that they are active.
+     */
+    func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?)
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and become
+     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
+     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
+     *  Going forward, either ``appUserID`` will be able to reference the same user.
+     *
+     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
+     * by your app passing the same ``appUserID`` used to purchase originally.
+     *
+     * - Note: This may force your users to enter the App Store password so should only be performed on request of
+     * the user. Typically with a button in settings or near your purchase UI. Use
+     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
+     *
+     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
+     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
+     * to confirm that they are active.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func restorePurchases() async throws -> CustomerInfo
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and
+     * become associated with the current ``appUserID``.
+     *
+     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
+     * the ``appUserID`` of the existing user.
+     * Going forward, either ``appUserID`` will be able to reference the same user.
+     *
+     * - Warning: This function should only be called if you're not calling any purchase method.
+     *
+     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
+     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
+     */
+    func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?)
+
+    /**
+     * This method will post all purchases associated with the current App Store account to RevenueCat and
+     * become associated with the current ``appUserID``.
+     *
+     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
+     * the ``appUserID`` of the existing user.
+     * Going forward, either ``appUserID`` will be able to reference the same user.
+     *
+     * - Warning: This function should only be called if you're not calling any purchase method.
+     *
+     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
+     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
+     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
+     */
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func syncPurchases() async throws -> CustomerInfo
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
@@ -442,78 +514,6 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
-
-    /**
-     * This method will post all purchases associated with the current App Store account to RevenueCat and become
-     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
-     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
-     *  Going forward, either ``appUserID`` will be able to reference the same user.
-     *
-     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same ``appUserID`` used to purchase originally.
-     *
-     * - Note: This may force your users to enter the App Store password so should only be performed on request of
-     * the user. Typically with a button in settings or near your purchase UI. Use
-     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
-     *
-     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
-     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
-     * to confirm that they are active.
-     */
-    func restorePurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?)
-
-    /**
-     * This method will post all purchases associated with the current App Store account to RevenueCat and become
-     * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
-     * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
-     *  Going forward, either ``appUserID`` will be able to reference the same user.
-     *
-     * You shouldn't use this method if you have your own account system. In that case "restoration" is provided
-     * by your app passing the same ``appUserID`` used to purchase originally.
-     *
-     * - Note: This may force your users to enter the App Store password so should only be performed on request of
-     * the user. Typically with a button in settings or near your purchase UI. Use
-     * ``Purchases/syncPurchases(completion:)`` if you need to restore transactions programmatically.
-     *
-     * - Warning: Receiving a ``CustomerInfo`` instead of an error does not imply that the user has any
-     * entitlements, simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
-     * to confirm that they are active.
-     */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func restorePurchases() async throws -> CustomerInfo
-
-    /**
-     * This method will post all purchases associated with the current App Store account to RevenueCat and
-     * become associated with the current ``appUserID``.
-     *
-     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
-     * the ``appUserID`` of the existing user.
-     * Going forward, either ``appUserID`` will be able to reference the same user.
-     *
-     * - Warning: This function should only be called if you're not calling any purchase method.
-     *
-     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
-     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
-     */
-    func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?)
-
-    /**
-     * This method will post all purchases associated with the current App Store account to RevenueCat and
-     * become associated with the current ``appUserID``.
-     *
-     * If the receipt is being used by an existing user, the current ``appUserID`` will be aliased together with
-     * the ``appUserID`` of the existing user.
-     * Going forward, either ``appUserID`` will be able to reference the same user.
-     *
-     * - Warning: This function should only be called if you're not calling any purchase method.
-     *
-     * - Note: This method will not trigger a login prompt from App Store. However, if the receipt currently
-     * on the device does not contain subscriptions, but the user has made subscription purchases, this method
-     * won't be able to restore them. Use ``Purchases/restorePurchases(completion:)`` to cover those cases.
-     */
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func syncPurchases() async throws -> CustomerInfo
 
     /**
      * Computes whether or not a user is eligible for the introductory pricing period of a given product.
