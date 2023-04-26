@@ -441,7 +441,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             callOrder.updatedGet = true
         }
 
-        expect(callOrder).toEventually(equal((true, true, true)), timeout: .seconds(2))
+        expect(callOrder).toEventually(equal((true, true, true)))
 
         expect(updatedSubscriberInfo).toNot(beNil())
         expect(updatedSubscriberInfo).to(equal(postSubscriberInfo))
