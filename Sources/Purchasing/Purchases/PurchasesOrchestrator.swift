@@ -395,7 +395,7 @@ final class PurchasesOrchestrator {
                                                                          package: package,
                                                                          promotionalOffer: promotionalOffer)
 
-                if !result.userCancelled {
+                if !result._userCancelled {
                     Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
                         productIdentifier: product.id
                     ))
@@ -405,8 +405,8 @@ final class PurchasesOrchestrator {
                     completion(result.transaction,
                                result.customerInfo,
                                // Forward an error if purchase was cancelled to match SK1 behavior.
-                               result.userCancelled ? ErrorUtils.purchaseCancelledError().asPublicError : nil,
-                               result.userCancelled)
+                               result._userCancelled ? ErrorUtils.purchaseCancelledError().asPublicError : nil,
+                               result._userCancelled)
                 }
             } catch let error {
                 Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
@@ -455,7 +455,7 @@ final class PurchasesOrchestrator {
                 throw ErrorUtils.purchaseCancelledError()
             }
 
-            return (
+            return .init(
                 transaction: nil,
                 customerInfo: try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
                                                                               fetchPolicy: .cachedOrFetched),
@@ -489,7 +489,7 @@ final class PurchasesOrchestrator {
                                                                            fetchPolicy: .cachedOrFetched)
         }
 
-        return (transaction, customerInfo, userCancelled)
+        return .init(transaction, customerInfo, userCancelled)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

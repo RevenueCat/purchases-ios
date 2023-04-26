@@ -98,9 +98,13 @@ private func checkTypealiases(
     customerInfo: CustomerInfo,
     userCancelled: Bool
 ) {
-    let purchaseResultData: PurchaseResultData = (transaction: transaction,
-                                                  customerInfo: customerInfo,
-                                                  userCancelled: userCancelled)
+    let purchaseResultData = PurchaseResultData(transaction: transaction,
+                                                customerInfo: customerInfo,
+                                                userCancelled: userCancelled)
+
+    let _: StoreTransaction? = purchaseResultData.transaction
+    let _: CustomerInfo = purchaseResultData.customerInfo
+    let _: Bool = purchaseResultData.userCancelled
 
     // swiftlint:disable:next line_length
     let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
@@ -220,12 +224,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: Offerings = try await purchases.offerings()
 
         let _: [StoreProduct] = await purchases.products([])
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack,
-                                                                                      promotionalOffer: offer)
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
-        let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp,
-                                                                                      promotionalOffer: offer)
+        let _: PurchaseResultData = try await purchases.purchase(package: pack)
+        let _: PurchaseResultData = try await purchases.purchase(package: pack,
+                                                                 promotionalOffer: offer)
+        let _: PurchaseResultData = try await purchases.purchase(product: stp)
+        let _: PurchaseResultData = try await purchases.purchase(product: stp,
+                                                                 promotionalOffer: offer)
         let _: CustomerInfo = try await purchases.customerInfo()
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()

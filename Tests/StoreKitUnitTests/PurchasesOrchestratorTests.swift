@@ -382,15 +382,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                               storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering")
 
-        let (transaction, customerInfo, userCancelled) = try await orchestrator.purchase(sk2Product: product,
-                                                                                         package: package,
-                                                                                         promotionalOffer: nil)
+        let result = try await orchestrator.purchase(sk2Product: product,
+                                                     package: package,
+                                                     promotionalOffer: nil)
 
-        expect(transaction?.sk2Transaction) == mockTransaction
-        expect(userCancelled) == false
+        expect(result.transaction?.sk2Transaction) == mockTransaction
+        expect(result.userCancelled) == false
 
         let expectedCustomerInfo: CustomerInfo = .emptyInfo
-        expect(customerInfo) == expectedCustomerInfo
+        expect(result.customerInfo) == expectedCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -590,13 +590,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
-        let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
-                                                                                          package: nil,
-                                                                                          promotionalOffer: nil)
+        let result = try await self.orchestrator.purchase(sk2Product: product,
+                                                          package: nil,
+                                                          promotionalOffer: nil)
 
-        expect(transaction).to(beNil())
-        expect(customerInfo) == self.mockCustomerInfo
-        expect(cancelled) == false
+        expect(result.transaction).to(beNil())
+        expect(result.customerInfo) == self.mockCustomerInfo
+        expect(result.userCancelled) == false
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

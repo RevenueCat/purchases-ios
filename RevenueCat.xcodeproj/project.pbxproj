@@ -207,6 +207,7 @@
 		57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		57069A5428E3918400B86355 /* AsyncExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5328E3918400B86355 /* AsyncExtensions.swift */; };
 		57069A5E28E398E100B86355 /* AsyncExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */; };
+		570EC37C29F994E50036A023 /* PurchaseResultData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570EC37B29F994E50036A023 /* PurchaseResultData.swift */; };
 		570FAF4B2864EC2300D3C769 /* NonSubscriptionTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */; };
 		5712BE9029241EB500A83F15 /* TimingUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE8F29241EB500A83F15 /* TimingUtil.swift */; };
 		5712BE9229241F7900A83F15 /* TimingUtilTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5712BE9129241F7900A83F15 /* TimingUtilTests.swift */; };
@@ -870,6 +871,7 @@
 		570896B527595C8100296F1C /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = Tests/TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
 		570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftAPITester.xcodeproj; path = Tests/APITesters/SwiftAPITester/SwiftAPITester.xcodeproj; sourceTree = "<group>"; };
 		570896BD27596E8800296F1C /* ObjCAPITester.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ObjCAPITester.xcodeproj; path = Tests/APITesters/ObjCAPITester/ObjCAPITester.xcodeproj; sourceTree = "<group>"; };
+		570EC37B29F994E50036A023 /* PurchaseResultData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseResultData.swift; sourceTree = "<group>"; };
 		570FAF4A2864EC2300D3C769 /* NonSubscriptionTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransaction.swift; sourceTree = "<group>"; };
 		5712BE8F29241EB500A83F15 /* TimingUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtil.swift; sourceTree = "<group>"; };
 		5712BE9129241F7900A83F15 /* TimingUtilTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimingUtilTests.swift; sourceTree = "<group>"; };
@@ -2338,6 +2340,7 @@
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
+				570EC37B29F994E50036A023 /* PurchaseResultData.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -3013,6 +3016,7 @@
 				579415D2293689DD00218FBC /* Codable+Extensions.swift in Sources */,
 				2DDF41B424F6F387005BC22D /* ASN1ContainerBuilder.swift in Sources */,
 				57F3C10529B7B22E0004FD7E /* CustomerInfo+ActiveDates.swift in Sources */,
+				570EC37C29F994E50036A023 /* PurchaseResultData.swift in Sources */,
 				B35F9E0926B4BEED00095C3F /* String+Extensions.swift in Sources */,
 				574A2EE7282C3F0800150D40 /* AnyDecodable.swift in Sources */,
 				57488B7F29CB70E50000EE7E /* ProductEntitlementMapping.swift in Sources */,

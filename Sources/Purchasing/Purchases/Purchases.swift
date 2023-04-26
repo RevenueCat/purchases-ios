@@ -23,14 +23,6 @@ import StoreKit
 // MARK: Block definitions
 
 /**
- Result for ``Purchases/purchase(product:)``.
- Counterpart of `PurchaseCompletedBlock` for `async` APIs.
- */
-public typealias PurchaseResultData = (transaction: StoreTransaction?,
-                                       customerInfo: CustomerInfo,
-                                       userCancelled: Bool)
-
-/**
  Completion block for ``Purchases/purchase(product:completion:)``
  */
 public typealias PurchaseCompletedBlock = @MainActor @Sendable (StoreTransaction?,
