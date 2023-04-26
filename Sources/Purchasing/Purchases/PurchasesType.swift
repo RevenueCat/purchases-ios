@@ -284,9 +284,10 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter product: The ``StoreProduct`` the user intends to purchase.
      *
-     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
-     * If the user cancelled, `userCancelled` will be `true`.
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct) async throws -> PurchaseResultData
@@ -327,9 +328,10 @@ public protocol PurchasesType: AnyObject {
      *
      * - Parameter package: The ``Package`` the user intends to purchase
      *
-     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
-     * If the user cancelled, `userCancelled` will be `true`.
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData
@@ -384,9 +386,10 @@ public protocol PurchasesType: AnyObject {
      * - Parameter product: The ``StoreProduct`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      *
-     * If the purchase was successful there will be a ``StoreTransaction`` and a ``CustomerInfo``.
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
      *
-     * If the user cancelled, `userCancelled` will be `true`.
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
@@ -426,7 +429,10 @@ public protocol PurchasesType: AnyObject {
      * - Parameter package: The ``Package`` the user intends to purchase
      * - Parameter promotionalOffer: The ``PromotionalOffer`` to apply to the purchase
      *
-     * If the user cancelled, `userCancelled` will be `true`.
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while purchasing
+     *
+     * - Returns: A tuple with ``StoreTransaction`` and a ``CustomerInfo`` if the purchase was successful.
+     * If the user cancelled the purchase, `userCancelled` will be `true`.
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
