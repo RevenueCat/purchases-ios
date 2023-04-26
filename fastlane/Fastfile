@@ -22,11 +22,11 @@ files_with_version_number = {
 }
 PLIST_VERSION_PATTERNS = ['<string>{x}</string>']
 files_with_version_number_without_prerelease_modifiers = {
-  './Sources/Info.plist' => [PLIST_VERSION_PATTERNS],
-  './Tests/BackendIntegrationTestApp/Info.plist' => [PLIST_VERSION_PATTERNS],
-  './Tests/BackendIntegrationTests/Info.plist' => [PLIST_VERSION_PATTERNS],
-  './Tests/UnitTests/Info.plist' => [PLIST_VERSION_PATTERNS],
-  './Tests/UnitTestsHostApp/Info.plist' => [PLIST_VERSION_PATTERNS],
+  './Sources/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/BackendIntegrationTestApp/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/BackendIntegrationTests/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
 repo_name = 'purchases-ios'
 changelog_latest_path = './CHANGELOG.latest.md'
