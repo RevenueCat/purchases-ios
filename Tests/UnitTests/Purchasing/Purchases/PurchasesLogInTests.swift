@@ -134,7 +134,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         self.purchases.switchUser(to: appUserId)
 
         expect(self.identityManager.invokedSwitchUser) == false
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toNever(equal(1))
     }
 
     #endif
