@@ -696,7 +696,7 @@ public extension Purchases {
     @objc(switchUserToNewAppUserID:)
     func switchUser(to newAppUserID: String) {
         guard self.identityManager.currentAppUserID != newAppUserID else {
-            self.logger.warn(Strings.identity.switching_user_same_app_user_id(newUserID: newAppUserID))
+            Logger.warn(Strings.identity.switching_user_same_app_user_id(newUserID: newAppUserID))
             return
         }
 
