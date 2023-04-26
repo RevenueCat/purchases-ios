@@ -72,6 +72,8 @@ extension Purchases {
         }
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await withCheckedThrowingContinuation { continuation in
             purchase(product: product,
@@ -91,8 +93,6 @@ extension Purchases {
             }
         }
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
