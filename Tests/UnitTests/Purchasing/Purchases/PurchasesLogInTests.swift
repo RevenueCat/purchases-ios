@@ -102,7 +102,7 @@ class PurchasesLogInTests: BasePurchasesTests {
 
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    func testSwitchUser() {
+    func testSwitchUserSwitchesUser() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: "old-test-user-id")
@@ -111,6 +111,30 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         expect(self.identityManager.invokedSwitchUser) == true
         expect(self.identityManager.invokedSwitchUserParametersList) == ["test-user-id"]
+    }
+
+    func testRefreshesOfferingsCache() {
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 0
+
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: "old-test-user-id")
+
+        self.purchases.switchUser(to: "test-user-id")
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+    }
+
+    func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        let appUserId = "test-user-id"
+        self.initializePurchasesInstance(appUserId: appUserId)
+
+        self.purchases.switchUser(to: appUserId)
+
+        expect(self.identityManager.invokedSwitchUser) == false
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(0))
     }
 
     #endif

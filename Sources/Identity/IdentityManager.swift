@@ -92,7 +92,7 @@ class IdentityManager: CurrentUserProvider {
     }
 
     func switchUser(to newAppUserID: String) {
-        Logger.debug(Strings.identity.switching_user(newUserId: newAppUserID))
+        Logger.debug(Strings.identity.switching_user(newUserID: newAppUserID))
         self.resetCacheAndSave(newUserID: newAppUserID)
     }
 

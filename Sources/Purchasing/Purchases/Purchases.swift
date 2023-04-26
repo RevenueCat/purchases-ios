@@ -695,7 +695,18 @@ public extension Purchases {
     ///
     @objc(switchUserToNewAppUserID:)
     func switchUser(to newAppUserID: String) {
+        guard self.identityManager.currentAppUserID != newAppUserID else {
+            self.logger.warn(Strings.identity.switching_user_same_app_user_id(newUserID: newAppUserID))
+            return
+        }
+
         self.identityManager.switchUser(to: newAppUserID)
+
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                       isAppBackgrounded: isBackgrounded,
+                                                       completion: nil)
+        }
     }
 
 }
