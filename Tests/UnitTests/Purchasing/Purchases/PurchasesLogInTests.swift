@@ -102,17 +102,7 @@ class PurchasesLogInTests: BasePurchasesTests {
 
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    func testSwitchUserWontDoAnythingIfNotOnCustomEntitlementComputationMode() {
-        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
-        Purchases.clearSingleton()
-        self.initializePurchasesInstance(appUserId: "old-test-user-id")
-
-        self.purchases.switchUser(to: "test-user-id")
-
-        expect(self.identityManager.invokedSwitchUser) == false
-    }
-
-    func testSwitchUserWillSwitchUserIfOnCustomEntitlementComputationMode() {
+    func testSwitchUser() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: "old-test-user-id")

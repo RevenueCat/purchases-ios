@@ -46,6 +46,8 @@ public protocol PurchasesType: AnyObject {
      */
     var delegate: PurchasesDelegate? { get set }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * This function will log in the current user with an ``appUserID``.
      *
@@ -165,6 +167,8 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo
+
+    #endif
 
     /**
      * Fetch the configured ``Offerings`` for this user.
@@ -335,6 +339,8 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * Initiates a purchase of a ``StoreProduct`` with a ``PromotionalOffer``.
@@ -655,6 +661,8 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer]
 
+    #endif
+
     /**
      * Invalidates the cache for customer information.
      *
@@ -804,6 +812,8 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * ``Attribution`` object that is responsible for all explicit attribution APIs
      * as well as subscriber attributes that RevenueCat offers.
@@ -870,6 +880,8 @@ public protocol PurchasesType: AnyObject {
     func collectDeviceIdentifiers()
 
     // swiftlint:enable missing_docs
+
+    #endif
 
 }
 

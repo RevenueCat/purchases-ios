@@ -228,6 +228,7 @@ public extension StoreProduct {
 
 }
 
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public extension StoreProduct {
     /// Finds the subset of ``discounts`` that's eligible for the current user.
@@ -240,6 +241,7 @@ public extension StoreProduct {
         return await Purchases.shared.eligiblePromotionalOffers(forProduct: self)
     }
 }
+#endif
 
 // MARK: - Wrapper constructors / getters
 

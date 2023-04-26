@@ -79,6 +79,7 @@ struct ContentView: View {
             .task {
                 Purchases.configureInCustomEntitlementsComputationMode(apiKey: Constants.apiKey,
                                                                        appUserID: appUserID)
+                subscribeToCustomerInfoStream()
                 do {
                     self.offerings = try await Purchases.shared.offerings()
                     print("offerings: \(String(describing: offerings))")
@@ -118,9 +119,6 @@ struct ContentView: View {
                                 .foregroundColor(.primary)
                         }
                     }
-                }
-                .task {
-                    subscribeToCustomerInfoStream()
                 }
             }
         }
