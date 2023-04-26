@@ -72,6 +72,22 @@ extension Purchases {
         }
     }
 
+    func syncPurchasesAsync() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncPurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
+    func restorePurchasesAsync() async throws -> CustomerInfo {
+        return try await withCheckedThrowingContinuation { continuation in
+            restorePurchases { customerInfo, error in
+                continuation.resume(with: Result(customerInfo, error))
+            }
+        }
+    }
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     func purchaseAsync(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
@@ -97,22 +113,6 @@ extension Purchases {
     func customerInfoAsync(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
             getCustomerInfo(fetchPolicy: fetchPolicy) { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    func syncPurchasesAsync() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    func restorePurchasesAsync() async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
-            restorePurchases { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
