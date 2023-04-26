@@ -111,7 +111,30 @@ do {
 
 ```swift
 Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
-    // code to handle here
+    if let error = error {
+        if error.code == ErrorCode.receiptAlreadyInUseError.rawValue {
+            print("The receipt is already in use by another subscriber. " +
+                  "Log in with the previous account or contact support to get your purchases transferred to " +
+                  "regain access")
+        } else if error.code == ErrorCode.paymentPendingError.rawValue {
+            print("The purchase is pending and may be completed at a later time." +
+                  "This can happen when awaiting parental approval or going through extra authentication flows " +
+                  "for credit cards in some countries.")
+        } else if error.code == ErrorCode.purchaseCancelledError.rawValue {
+            print("Purchase was cancelled by the user.")
+        } else {
+            print("FAILED TO PURCHASE: \(error.localizedDescription)")
+        }
+        return
+    } else {
+        print(
+            """
+            Purchase finished:
+            Transaction: \(transaction.debugDescription)
+            CustomerInfo: \(customerInfo.debugDescription)
+            """
+        )
+    }
 }
 ```
 
