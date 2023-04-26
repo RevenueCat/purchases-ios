@@ -340,6 +340,8 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     /**
      * Initiates a purchase of a ``StoreProduct`` with a ``PromotionalOffer``.
      *
@@ -440,8 +442,6 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and become

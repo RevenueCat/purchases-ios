@@ -769,6 +769,8 @@ public extension Purchases {
         return try await purchaseAsync(package: package)
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
@@ -798,8 +800,6 @@ public extension Purchases {
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.purchasesOrchestrator.syncPurchases { @Sendable in
