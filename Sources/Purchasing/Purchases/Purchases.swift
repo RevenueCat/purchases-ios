@@ -687,7 +687,7 @@ public extension Purchases {
 
 extension Purchases {
 
-#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     ///
     /// Updates the current appUserID to a new one, without associating the two.
     /// - Important: This method is **only available** in Custom Entitlements Computation mode.
