@@ -100,20 +100,43 @@ class PurchasesLogInTests: BasePurchasesTests {
 
     // MARK: - Switch user
 
-    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    func testSwitchUser() {
+    func testSwitchUserSwitchesUser() {
         self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: "old-test-user-id")
 
-        self.purchases.switchUser(to: "test-user-id")
+        self.purchases.internalSwitchUser(to: "test-user-id")
 
         expect(self.identityManager.invokedSwitchUser) == true
         expect(self.identityManager.invokedSwitchUserParametersList) == ["test-user-id"]
     }
 
-    #endif
+    func testSwitchUserRefreshesOfferingsCache() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: "old-test-user-id")
+
+        let baselineOfferingsCallCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
+
+        self.purchases.internalSwitchUser(to: "test-user-id")
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCallCount + 1
+    }
+
+    func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        let appUserId = "test-user-id"
+        self.initializePurchasesInstance(appUserId: appUserId)
+
+        let baselineOfferingsCallCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
+        self.identityManager.mockAppUserID = appUserId
+        self.identityManager.mockIsAnonymous = false
+        self.purchases.internalSwitchUser(to: appUserId)
+
+        expect(self.identityManager.invokedSwitchUser) == false
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCallCount
+    }
 
     // MARK: - Update offerings cache
 

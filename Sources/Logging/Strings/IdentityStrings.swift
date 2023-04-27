@@ -36,7 +36,9 @@ enum IdentityStrings {
 
     case invalidating_cached_customer_info
 
-    case switching_user(newUserId: String)
+    case switching_user(newUserID: String)
+
+    case switching_user_same_app_user_id(newUserID: String)
 
 }
 
@@ -68,8 +70,11 @@ extension IdentityStrings: CustomStringConvertible {
             return "Attempt to delete attributes for user, but there were none to delete"
         case .invalidating_cached_customer_info:
             return "Detected unverified cached CustomerInfo but verification is enabled. Invalidating cache."
-        case let .switching_user(newUserId):
-            return "Switching to user '\(newUserId)'."
+        case let .switching_user(newUserID):
+            return "Switching to user '\(newUserID)'."
+        case let .switching_user_same_app_user_id(newUserID):
+            return "switchUser(to:) called with the same appUserID as the current user (\(newUserID)). " +
+            "This has no effect."
         }
     }
 

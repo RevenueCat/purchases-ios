@@ -681,12 +681,13 @@ public extension Purchases {
 
 }
 
-#else
+#endif
 
 // - MARK: - Custom entitlement computation API
 
-public extension Purchases {
+extension Purchases {
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     ///
     /// Updates the current appUserID to a new one, without associating the two.
     /// - Important: This method is **only available** in Custom Entitlements Computation mode.
@@ -694,13 +695,27 @@ public extension Purchases {
     /// with the newAppUserID.
     ///
     @objc(switchUserToNewAppUserID:)
-    func switchUser(to newAppUserID: String) {
+    public func switchUser(to newAppUserID: String) {
+        self.internalSwitchUser(to: newAppUserID)
+    }
+#endif
+
+    internal func internalSwitchUser(to newAppUserID: String) {
+        guard self.identityManager.currentAppUserID != newAppUserID else {
+            Logger.warn(Strings.identity.switching_user_same_app_user_id(newUserID: newAppUserID))
+            return
+        }
+
         self.identityManager.switchUser(to: newAppUserID)
+
+        self.systemInfo.isApplicationBackgrounded { isBackgrounded in
+            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                       isAppBackgrounded: isBackgrounded,
+                                                       completion: nil)
+        }
     }
 
 }
-
-#endif
 
 // MARK: Purchasing
 
