@@ -110,7 +110,7 @@ do {
 ```
 
 ```swift
-PPurchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
+Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
     if let error = error as? ErrorCode {
         switch error {
         case .receiptAlreadyInUseError:
@@ -127,15 +127,18 @@ PPurchases.shared.purchase(package: package) { (transaction, customerInfo, error
             print("FAILED TO PURCHASE: \(error.localizedDescription)")
         }
         return
-    } else {
-        print(
-            """
-            Purchase finished:
-            Transaction: \(transaction.debugDescription)
-            CustomerInfo: \(customerInfo.debugDescription)
-            """
-        )
+    } else if let error = error {
+        print("FAILED TO PURCHASE: \(error.localizedDescription)")
+        return
     }
+
+    print(
+        """
+        Purchase finished:
+        Transaction: \(transaction.debugDescription)
+        CustomerInfo: \(customerInfo.debugDescription)
+        """
+    )
 }
 ```
 
