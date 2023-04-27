@@ -120,8 +120,7 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         self.purchases.internalSwitchUser(to: "test-user-id")
 
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount)
-            .toEventually(equal(baselineOfferingsCallCount + 1))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCallCount + 1
     }
 
     func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
@@ -136,8 +135,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         self.purchases.internalSwitchUser(to: appUserId)
 
         expect(self.identityManager.invokedSwitchUser) == false
-        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount)
-            .toNever(equal(baselineOfferingsCallCount + 1))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == baselineOfferingsCallCount
     }
 
     // MARK: - Update offerings cache
