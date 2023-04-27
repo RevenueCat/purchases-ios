@@ -696,7 +696,7 @@ extension Purchases {
     ///
     @objc(switchUserToNewAppUserID:)
     public func switchUser(to newAppUserID: String) {
-       internalSwitchUser(to: newAppUserID)
+        self.internalSwitchUser(to: newAppUserID)
     }
 #endif
 
