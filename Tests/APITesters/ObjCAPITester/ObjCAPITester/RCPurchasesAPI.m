@@ -66,12 +66,6 @@ BOOL isAnonymous;
                     dangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:NO
                                                                 customEntitlementComputation:NO]];
 
-    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    [RCPurchases configureInCustomEntitlementsModeWithApiKey:@""
-                                                   appUserID:@""];
-    #endif
-
-    
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
     canI = [RCPurchases canMakePayments];
     version = [RCPurchases frameworkVersion];
@@ -178,10 +172,6 @@ BOOL isAnonymous;
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
-
-    #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    [p switchUserToNewAppUserID:@""];
-    #endif
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
     [p.delegate purchases:p

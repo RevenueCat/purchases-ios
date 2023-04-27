@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 
 func checkConfigurationAPI() {
     let configuration = Configuration
@@ -20,8 +20,9 @@ func checkConfigurationAPI() {
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
-        .with(usesStoreKit2IfAvailable: false)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
+        // Trusted Entitlements: internal until ready to be made public.
+        // .with(entitlementVerificationMode: .informational)
         .build()
 
     print(configuration)
