@@ -160,8 +160,16 @@ struct ContentView: View {
                 CustomerInfo: \(customerInfo.debugDescription)
                 """
             )
+        } catch ErrorCode.receiptAlreadyInUseError {
+            print("The receipt is already in use by another subscriber. " +
+                  "Log in with the previous account or contact support to get your purchases transferred to " +
+                  "regain access")
+        } catch ErrorCode.paymentPendingError {
+            print("The purchase is pending and may be completed at a later time." +
+                  "This can happen when awaiting parental approval or going through extra authentication flows " +
+                  "for credit cards in some countries.")
         } catch ErrorCode.purchaseCancelledError {
-            print("Purchase was cancelled")
+            print("Purchase was cancelled by the user.")
         } catch {
             print("FAILED TO PURCHASE: \(error.localizedDescription)")
         }
