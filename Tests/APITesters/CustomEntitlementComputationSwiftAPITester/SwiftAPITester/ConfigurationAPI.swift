@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 
 func checkConfigurationAPI() {
     let configuration = Configuration

@@ -295,6 +295,11 @@ jobs:
           name: SPM Custom Entitlement Computation Build
           command: swift build --target RevenueCat_CustomEntitlementComputation
           no_output_timeout: 30m
+      - update-spm-installation-commit
+      - run:
+          name: Custom Entitlement Computation API Tests
+          working_directory: Tests/APITesters/CustomEntitlementComputationSwiftAPITester
+          command: bundle exec fastlane build_ios_app --skip_archive --destination "generic/platform=ios" --skip_codesigning
 
   spm-receipt-parser:
     <<: *base-job
