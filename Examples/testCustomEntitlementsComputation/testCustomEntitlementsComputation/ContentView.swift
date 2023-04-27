@@ -152,6 +152,7 @@ struct ContentView: View {
         }
 
         do {
+            Purchases.shared.attribution.setAttributes(["originalPurchaserAppUserID": appUserID])
             let (transaction, customerInfo, _) = try await Purchases.shared.purchase(package: package)
             print(
                 """

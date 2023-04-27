@@ -208,11 +208,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     /// Current version of the ``Purchases`` framework.
     @objc public static var frameworkVersion: String { SystemInfo.frameworkVersion }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
     @objc public let attribution: Attribution
-
-    #endif
 
     @objc public var finishTransactions: Bool {
         get { self.systemInfo.finishTransactions }
@@ -466,9 +462,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
         self.systemInfo = systemInfo
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution = subscriberAttributes
-        #endif
         self.operationDispatcher = operationDispatcher
         self.customerInfoManager = customerInfoManager
         self.productsManager = productsManager
