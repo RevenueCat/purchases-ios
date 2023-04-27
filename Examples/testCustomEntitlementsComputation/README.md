@@ -85,12 +85,60 @@ After calling this method, you might need to call your backend to refresh entitl
 Call `purchase(package:)` through either the Async / Await or completion blocks alternatives:
 
 ```swift
-let (transaction, customerInfo, userCancelled) = try await Purchases.shared.purchase(package: package)
+do {
+    let (transaction, customerInfo, _) = try await Purchases.shared.purchase(package: package)
+    print(
+        """
+        Purchase finished:
+        Transaction: \(transaction.debugDescription)
+        CustomerInfo: \(customerInfo.debugDescription)
+        """
+    )
+} catch ErrorCode.receiptAlreadyInUseError {
+    print("The receipt is already in use by another subscriber. " +
+          "Log in with the previous account or contact support to get your purchases transferred to " +
+          "regain access")
+} catch ErrorCode.paymentPendingError {
+    print("The purchase is pending and may be completed at a later time." +
+          "This can happen when awaiting parental approval or going through extra authentication flows " +
+          "for credit cards in some countries.")
+} catch ErrorCode.purchaseCancelledError {
+    print("Purchase was cancelled by the user.")
+} catch {
+    print("FAILED TO PURCHASE: \(error.localizedDescription)")
+}
 ```
 
 ```swift
 Purchases.shared.purchase(package: package) { (transaction, customerInfo, error, userCancelled) in
-    // code to handle here
+    if let error = error as? ErrorCode {
+        switch error {
+        case .receiptAlreadyInUseError:
+            print("The receipt is already in use by another subscriber. " +
+                  "Log in with the previous account or contact support to get your purchases transferred to " +
+                  "regain access")
+        case .paymentPendingError:
+            print("The purchase is pending and may be completed at a later time." +
+                  "This can happen when awaiting parental approval or going through extra authentication flows " +
+                  "for credit cards in some countries.")
+        case .purchaseCancelledError:
+            print("Purchase was cancelled by the user.")
+        default:
+            print("FAILED TO PURCHASE: \(error.localizedDescription)")
+        }
+        return
+    } else if let error = error {
+        print("FAILED TO PURCHASE: \(error.localizedDescription)")
+        return
+    }
+
+    print(
+        """
+        Purchase finished:
+        Transaction: \(transaction.debugDescription)
+        CustomerInfo: \(customerInfo.debugDescription)
+        """
+    )
 }
 ```
 
