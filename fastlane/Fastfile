@@ -20,7 +20,7 @@ files_with_version_number = {
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
 }
-PLIST_VERSION_PATTERNS = ['<string>{x}</string>']
+PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
   './Sources/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/BackendIntegrationTestApp/Info.plist' => PLIST_VERSION_PATTERNS,
