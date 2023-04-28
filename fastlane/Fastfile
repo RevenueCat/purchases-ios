@@ -12,22 +12,22 @@
 
 default_platform(:ios)
 
-files_with_version_number = [
-  './RevenueCat.podspec',
-  './Sources/Misc/SystemInfo.swift',
-  './.jazzy.yaml',
-  './.version',
-  './scripts/docs/index.html',
-  './scripts/docs/v4_api_migration_guide.html',
-  './Sources/Misc/SystemInfo.swift'
-]
-files_with_version_number_without_prerelease_modifiers = [
-  './Sources/Info.plist',
-  './Tests/BackendIntegrationTestApp/Info.plist',
-  './Tests/BackendIntegrationTests/Info.plist',
-  './Tests/UnitTests/Info.plist',
-  './Tests/UnitTestsHostApp/Info.plist'
-]
+files_with_version_number = {
+  './RevenueCat.podspec' => ['s.version          = "{x}"'],
+  './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
+  './.jazzy.yaml' => ['module_version: {x}'],
+  './.version' => ['{x}'],
+  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
+}
+PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
+files_with_version_number_without_prerelease_modifiers = {
+  './Sources/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/BackendIntegrationTestApp/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/BackendIntegrationTests/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
+  './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
+}
 repo_name = 'purchases-ios'
 changelog_latest_path = './CHANGELOG.latest.md'
 changelog_path = './CHANGELOG.md'
