@@ -1,17 +1,24 @@
-### Bugfixes
-* `DispatchTimeInterval` & `Date`: avoid 32-bit overflows, fix `watchOS` crashes (#2342) via NachoSoto (@NachoSoto)
-* Fix issue with missing subscriber attributes if set after login but before login callback (#2313) via @tonidero
+### New Features
+* Introduced Custom Entitlements Computation mode (#2439) via Andy Boedo (@aboedo)
+* Create separate `SPM` library to enable custom entitlement computation (#2440) via NachoSoto (@NachoSoto)
 
-### Performance Improvements
-* `AppleReceipt.mostRecentActiveSubscription`: performance optimization (#2332) via NachoSoto (@NachoSoto)
+This new library allows apps to use a smaller version of the RevenueCat SDK, intended for apps that will do their own entitlement computation separate from RevenueCat.
+
+Apps using this mode rely on webhooks to signal their backends to refresh entitlements with RevenueCat.
+
+See the [demo app for an example and usage instructions](https://github.com/RevenueCat/purchases-ios/tree/main/Examples/testCustomEntitlementsComputation).
+
+### Bugfixes
+* `PurchaseOrchestrator`: fix incorrect `InitiationSource` for SK1 queue transactions (#2430) via NachoSoto (@NachoSoto)
 
 ### Other Changes
-* `CI`: also run tests on `watchOS` (#2340) via NachoSoto (@NachoSoto)
-* `RELEASING.md`: added GitHub rate limiting parameter (#2336) via NachoSoto (@NachoSoto)
-* Add additional logging on init (#2324) via Cody Kerns (@codykerns)
-* Replace `iff` with `if and only if` (#2323) via @aboedo
-* Fix typo in log (#2315) via @nickkohrn
-* `Purchases.restorePurchases`: added docstring about successful results (#2316) via NachoSoto (@NachoSoto)
-* `RELEASING.md`: fixed hotfix instructions (#2304) via NachoSoto (@NachoSoto)
-* `PurchaseTester`: fixed leak when reconfiguring `Purchases` (#2311) via NachoSoto (@NachoSoto)
-* `ProductsFetcherSK2`: add underlying error to description (#2281) via Chris Vasselli (@chrisvasselli)
+* Update offerings cache when switchUser(to:) is called (#2455) via Andy Boedo (@aboedo)
+* Updated example code for the sample app for Custom Entitlements (#2454) via Andy Boedo (@aboedo)
+* Custom Entitlement Computation: API testers (#2452) via NachoSoto (@NachoSoto)
+* Custom Entitlement Computation: avoid `getCustomerInfo` requests for cancelled purchases (#2449) via NachoSoto (@NachoSoto)
+* Custom Entitlement Computation: disabled unnecessary APIs (#2442) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: added log when adding payment to queue (#2423) via NachoSoto (@NachoSoto)
+* `StoreKit1Wrapper`: added debug log when transaction is removed but no callbacks to notify (#2418) via NachoSoto (@NachoSoto)
+* `customEntitlementsComputation`: update the copy in the sample app to explain the new usage (#2443) via Andy Boedo (@aboedo)
+* Clarify reasoning for `disfavoredOverload` in logIn (#2434) via Andy Boedo (@aboedo)
+* Documentation: improved `async` API docs (#2432) via Kaunteya Suryawanshi (@kaunteya)
