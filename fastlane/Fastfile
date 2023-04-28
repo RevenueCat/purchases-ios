@@ -673,9 +673,10 @@ end
 def check_no_git_tag_exists(version_number)
   if git_tag_exists(tag: version_number, remote: true, remote_name: 'origin')
     raise "git tag with version #{version_number} already exists!"
+  else
+    UI.message("git tag with version #{version_number} doesn't exist")
   end
 end
-
 
 def check_no_github_release_exists(version_number)
   found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
