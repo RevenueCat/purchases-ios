@@ -70,6 +70,33 @@ class SubscriptionPeriodTests: TestCase {
         }
     }
 
+    func testPricePerYear() {
+        let expectations: [(period: SubscriptionPeriod, price: Decimal, expected: Decimal)] = [
+            (p(1, .day), 1, 365),
+            (p(1, .day), 2, 730),
+            (p(15, .day), 5, 121.66),
+            (p(1, .week), 10, 521.4),
+            (p(2, .week), 10, 260.7),
+            (p(1, .month), 14.99, 179.88),
+            (p(1, .month), 5, 60),
+            (p(2, .month), 30, 180),
+            (p(3, .month), 40, 160),
+            (p(1, .year), 120, 120),
+            (p(1, .year), 29.99, 29.99),
+            (p(2, .year), 50, 25),
+            (p(3, .year), 720, 240)
+        ]
+
+        for expectation in expectations {
+            let pricePerYear = expectation.period.pricePerYear(withTotalPrice: expectation.price) as NSDecimalNumber
+            let result = Double(truncating: pricePerYear)
+            let expected = Double(truncating: expectation.expected as NSDecimalNumber)
+
+            expect(result).to(beCloseTo(expected),
+                              description: "\(expectation.price) / \(expectation.period.debugDescription)")
+        }
+    }
+
     private func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
         return .init(value: value, unit: unit)
     }
