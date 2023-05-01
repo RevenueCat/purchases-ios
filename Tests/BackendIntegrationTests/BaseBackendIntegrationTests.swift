@@ -34,6 +34,8 @@ class BaseBackendIntegrationTests: XCTestCase {
     // swiftlint:disable:next weak_delegate
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
+    private var mainThreadMonitor: MainThreadMonitor!
+
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
     class var responseVerificationMode: Signing.ResponseVerificationMode {
@@ -56,6 +58,9 @@ class BaseBackendIntegrationTests: XCTestCase {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
+        self.mainThreadMonitor = .init()
+        self.mainThreadMonitor.run()
+
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             // Despite calling `SKTestSession.clearTransactions` tests sometimes
             // begin with leftover transactions. This ensures that we remove them
@@ -73,6 +78,12 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
         self.verifyPurchasesDoesNotLeak()
         await self.waitForAnonymousUser()
+    }
+
+    override func tearDown() {
+        super.tearDown()
+
+        self.mainThreadMonitor = nil
     }
 
     // MARK: - Configuration
