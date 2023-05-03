@@ -13,7 +13,7 @@
 
 import Nimble
 @testable import RevenueCat
-@preconcurrency import StoreKit // `PurchaseResult` is not `Sendable`
+import StoreKit
 import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
