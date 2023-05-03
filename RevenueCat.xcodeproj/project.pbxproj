@@ -856,6 +856,7 @@
 		37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SystemInfoTests.swift; sourceTree = "<group>"; };
 		37E35F783903362B65FB7AF3 /* MockProductsRequestFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockProductsRequestFactory.swift; sourceTree = "<group>"; };
 		37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ExtensionsTests.swift"; sourceTree = "<group>"; };
+		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -934,7 +935,6 @@
 		5759B321296DEF56002472D5 /* OptionalExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionalExtensionsTests.swift; sourceTree = "<group>"; };
 		5759B323296DF3C2002472D5 /* PurchasesReceiptParser+Fetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PurchasesReceiptParser+Fetching.swift"; sourceTree = "<group>"; };
 		5759B401296DF65D002472D5 /* ReceiptParserTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReceiptParserTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		5759B402296DF65D002472D5 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ReceiptParserTests-Info.plist"; path = "/Users/nachosoto/dev/purchases-ios/ReceiptParserTests-Info.plist"; sourceTree = "<absolute>"; };
 		5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptParserFetchingTests.swift; sourceTree = "<group>"; };
 		5759B407296DFA75002472D5 /* FileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReader.swift; sourceTree = "<group>"; };
 		5759B41D296DFD4C002472D5 /* MockFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFileReader.swift; sourceTree = "<group>"; };
@@ -2063,7 +2063,7 @@
 			isa = PBXGroup;
 			children = (
 				5759B462296E1A3E002472D5 /* Helpers */,
-				5759B402296DF65D002472D5 /* ReceiptParserTests-Info.plist */,
+				4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */,
 				5759B404296DF6C4002472D5 /* ReceiptParserFetchingTests.swift */,
 			);
 			name = ReceiptParserTests;
@@ -3934,7 +3934,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = "ReceiptParserTests-Info.plist";
+				INFOPLIST_FILE = "Tests/ReceiptParserTests/ReceiptParserTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3963,7 +3963,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
-				INFOPLIST_FILE = "ReceiptParserTests-Info.plist";
+				INFOPLIST_FILE = "Tests/ReceiptParserTests/ReceiptParserTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
