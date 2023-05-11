@@ -132,6 +132,7 @@ internal protocol StoreProductType: Sendable {
     ///
     /// #### Related Symbols
     /// - ``pricePerMonth``
+    /// - ``pricePerYear``
     var price: Decimal { get }
 
     /// The price of this product using ``priceFormatter``.
@@ -202,6 +203,7 @@ public extension StoreProduct {
     ///
     /// #### Related Symbols
     /// - ``pricePerMonth``
+    /// - ``pricePerYear``
     @objc(price) var priceDecimalNumber: NSDecimalNumber {
         return self.price as NSDecimalNumber
     }
@@ -211,6 +213,13 @@ public extension StoreProduct {
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var pricePerMonth: NSDecimalNumber? {
         return self.subscriptionPeriod?.pricePerMonth(withTotalPrice: self.price) as NSDecimalNumber?
+    }
+
+    /// Calculates the price of this subscription product per year.
+    /// - Returns: `nil` if the product is not a subscription.
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var pricePerYear: NSDecimalNumber? {
+        return self.subscriptionPeriod?.pricePerYear(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
