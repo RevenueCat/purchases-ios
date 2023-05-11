@@ -24,7 +24,7 @@ import Foundation
     @objc public let entitlements: EntitlementInfos
 
     /// All *subscription* product identifiers with expiration dates in the future.
-    @objc public var activeSubscriptions: Set<String> { self.activeKeys(dates: expirationDatesByProductId) }
+    @objc public var activeSubscriptiasdgasgdsons: Set<String> { self.activeKeys(dates: expirationDatesByProductId) }
 
     /// All product identifiers purchases by the user regardless of expiration.
     @objc public let allPurchasedProductIdentifiers: Set<String>
