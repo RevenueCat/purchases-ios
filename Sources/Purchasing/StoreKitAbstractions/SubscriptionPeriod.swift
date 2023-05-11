@@ -102,18 +102,38 @@ extension SubscriptionPeriod.Unit: Sendable {}
 extension SubscriptionPeriod: Sendable {}
 
 extension SubscriptionPeriod {
-    func pricePerMonth(withTotalPrice price: Decimal) -> Decimal {
-        let periodsPerMonth: Decimal = {
-            switch self.unit {
-            case .day: return 1 / 30
-            case .week: return 1 / 4
-            case .month: return 1
-            case .year: return 12
-            }
-        }() * Decimal(self.value)
 
-        return (price as NSDecimalNumber)
-            .dividing(by: periodsPerMonth as NSDecimalNumber,
+    func pricePerMonth(withTotalPrice price: Decimal) -> Decimal {
+        return self.pricePerPeriod(for: self.unitsPerMonth, totalPrice: price)
+    }
+
+    func pricePerYear(withTotalPrice price: Decimal) -> Decimal {
+        return self.pricePerPeriod(for: self.unitsPerYear, totalPrice: price)
+    }
+
+    private var unitsPerMonth: Decimal {
+        switch self.unit {
+        case .day: return 1 / 30
+        case .week: return 1 / 4
+        case .month: return 1
+        case .year: return 12
+        }
+    }
+
+    private var unitsPerYear: Decimal {
+        switch self.unit {
+        case .day: return 1 / 365
+        case .week: return 1 / 52.14 // Number of weeks in a year
+        case .month: return 1 / 12
+        case .year: return 1
+        }
+    }
+
+    private func pricePerPeriod(for units: Decimal, totalPrice: Decimal) -> Decimal {
+        let periods: Decimal = units * Decimal(self.value)
+
+        return (totalPrice as NSDecimalNumber)
+            .dividing(by: periods as NSDecimalNumber,
                       withBehavior: Self.roundingBehavior) as Decimal
     }
 
@@ -125,6 +145,7 @@ extension SubscriptionPeriod {
         raiseOnUnderflow: false,
         raiseOnDivideByZero: false
     )
+
 }
 
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
