@@ -15,6 +15,6 @@
       ]
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/offers"
+    "url" : "https://api.revenuecat.com/v1/offers23"
   }
 }
