@@ -47,6 +47,8 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(package2.platformProductIdentifier) == "com.revenuecat.yearly_10.99.2_week_intro"
     }
 
+    //
+
     func testDecodesSecondOffering() throws {
         let offering = try XCTUnwrap(self.response.offerings.last)
 

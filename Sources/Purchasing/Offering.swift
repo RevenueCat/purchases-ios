@@ -14,6 +14,12 @@
 
 import Foundation
 
+extension Offering {
+    struct Metadata {
+        let data: [String: Any]
+    }
+}
+
 /**
  * An offering is a collection of ``Package``s, and they let you control which products
  * are shown to users without requiring an app update.
@@ -37,6 +43,12 @@ import Foundation
      Offering description defined in RevenueCat dashboard.
      */
     @objc public let serverDescription: String
+
+    /**
+     Offering metadata defined in RevenueCat dashboard.
+     */
+    private let _metadata: Metadata
+    @objc var metadata: [String: Any] { self._metadata.data }
 
     /**
      Array of ``Package`` objects available for purchase.
@@ -110,10 +122,11 @@ import Foundation
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    init(identifier: String, serverDescription: String, availablePackages: [Package]) {
+    init(identifier: String, serverDescription: String, metadata: [String: Any], availablePackages: [Package]) {
         self.identifier = identifier
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages
+        self._metadata = Metadata(data: metadata)
 
         var foundPackages: [PackageType: Package] = [:]
 

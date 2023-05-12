@@ -1,0 +1,49 @@
+{
+    "current_offering_id": "default",
+    "offerings": [
+        {
+            "description": "standard set of packages",
+            "identifier": "default",
+            "metadata": {
+                "int": 5,
+                "double": 5.5,
+                "boolean": true,
+                "string": "five",
+                "array": ["five"],
+                "dictionary": {
+                    "string": "five"
+                }
+            },
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                },
+                {
+                    "identifier": "$rc_annual",
+                    "platform_product_identifier": "com.revenuecat.yearly_10.99.2_week_intro"
+                }
+            ]
+        },
+        {
+            "description": "alternate offering",
+            "identifier": "alternate",
+            "metadata": {
+                "int": 5,
+                "double": 5.5,
+                "boolean": true,
+                "string": "five",
+                "array": ["five"],
+                "dictionary": {
+                    "string": "five"
+                }
+            }
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ]
+        }
+    ]
+}
