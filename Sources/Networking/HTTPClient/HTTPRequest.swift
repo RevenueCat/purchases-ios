@@ -176,7 +176,7 @@ extension HTTPRequest.Path: CustomStringConvertible {
     var description: String {
         switch self {
         case let .getCustomerInfo(appUserID):
-            return "subscribers/\(appUserID)"
+            return "subscribers/\(appUserID)P"
 
         case let .getOfferings(appUserID):
             return "subscribers/\(appUserID)/offerings"
@@ -194,7 +194,7 @@ extension HTTPRequest.Path: CustomStringConvertible {
             return "subscribers/\(appUserID)/adservices_attribution"
 
         case .postOfferForSigning:
-            return "offers"
+            return "offers23"
 
         case .postReceiptData:
             return "receipts"
