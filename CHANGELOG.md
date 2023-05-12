@@ -4,6 +4,7 @@
 
 <details>
 <summary><b>Other Changes</b></summary>
+
 * Introduced `Configuration.EntitlementVerificationMode` and `VerificationResult` (#2277) via NachoSoto (@NachoSoto)
 * `PurchasesDiagnostics`: added step to verify signature verification (#2267) via NachoSoto (@NachoSoto)
 * `HTTPClient`: added signature validation and introduced `ErrorCode.signatureVerificationFailed` (#2272) via NachoSoto (@NachoSoto)
