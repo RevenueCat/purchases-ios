@@ -45,7 +45,7 @@ internal struct SK1StoreProduct: StoreProductType {
     var price: Decimal { return underlyingSK1Product.price as Decimal }
 
     var localizedPriceString: String {
-        return self.priceFormatter.string(from: underlyingSK1Product.price) ?? ""
+        return self.priceFormatter?.string(from: underlyingSK1Product.price) ?? ""
     }
 
     var productIdentifier: String { return underlyingSK1Product.productIdentifier }
@@ -58,8 +58,8 @@ internal struct SK1StoreProduct: StoreProductType {
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
-    var priceFormatter: NumberFormatter {
-        return self.priceFormatterProvider.priceFormatterForSK1(with: underlyingSK1Product.priceLocale)
+    var priceFormatter: NumberFormatter? {
+        return self.priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Product.priceLocale)
     }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)

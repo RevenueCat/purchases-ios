@@ -58,8 +58,13 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedTitle: String { underlyingSK2Product.displayName }
 
-    var priceFormatter: NumberFormatter {
-        return self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: self._currencyCode)
+    var priceFormatter: NumberFormatter? {
+        guard let currencyCode = self.currencyCode else {
+            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+            return nil
+        }
+
+        return self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
     }
 
     var subscriptionGroupIdentifier: String? {
@@ -88,16 +93,15 @@ internal struct SK2StoreProduct: StoreProductType {
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension SK2StoreProduct {
 
-    var _currencyCode: String {
+    var _currencyCode: String? {
         if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *) {
-            // This is marked as `@_backDeploy`, but it's not actually working before iOS 16.0
             return self.currencyCodeFromPriceFormat
         } else {
             // note: if we ever need more information from the jsonRepresentation object, we
             // should use Codable or another decoding method to clean up this code.
             let attributes = jsonDict["attributes"] as? [String: Any]
             let offers = attributes?["offers"] as? [[String: Any]]
-            return offers?.first?["currencyCode"] as? String ?? self.currencyCodeFromPriceFormat
+            return offers?.first?["currencyCode"] as? String
         }
     }
 
@@ -106,6 +110,8 @@ private extension SK2StoreProduct {
         return decoded as? [String: Any] ?? [:]
     }
 
+    // This is marked as `@_backDeploy`, but it's only visible when compiling with Xcode 14.x
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     private var currencyCodeFromPriceFormat: String {
         return self.underlyingSK2Product.priceFormatStyle.currencyCode
     }
