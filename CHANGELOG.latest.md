@@ -1,3 +1,6 @@
+### New Features
+* New `ErrorCode.signatureVerificationFailed` which will be used for an upcoming feature
+
 ### Bugfixes
 * `Purchases.deinit`: don't reset `Purchases.proxyURL` (#2346) via NachoSoto (@NachoSoto)
 
