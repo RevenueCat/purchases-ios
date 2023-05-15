@@ -311,6 +311,8 @@ private extension HTTPClient {
             case let .success(response):
                 Logger.debug(Strings.network.api_request_completed(
                     request.httpRequest,
+                    // Getting status code from the original response to detect 304s
+                    // If that can't be extracted, get status code from the parsed response.
                     httpCode: urlResponse?.httpStatusCode ?? response.statusCode
                 ))
             case let .failure(error):
