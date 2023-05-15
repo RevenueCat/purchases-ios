@@ -309,7 +309,10 @@ private extension HTTPClient {
         if let response = response {
             switch response {
             case let .success(response):
-                Logger.debug(Strings.network.api_request_completed(request.httpRequest, httpCode: response.statusCode))
+                Logger.debug(Strings.network.api_request_completed(
+                    request.httpRequest,
+                    httpCode: urlResponse?.httpStatusCode ?? response.statusCode
+                ))
             case let .failure(error):
                 Logger.debug(Strings.network.api_request_failed(request.httpRequest, error: error))
             }
