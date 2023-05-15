@@ -164,6 +164,7 @@ internal protocol StoreProductType: Sendable {
 
     /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
     /// - Note: This creates a new formatter for every product, which can be slow.
+    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
     var priceFormatter: NumberFormatter? { get }
 
     /// The period details for products that are subscriptions.
@@ -225,12 +226,13 @@ public extension StoreProduct {
     /// - Returns: `nil` if there is no `introductoryPrice`.
     @objc var localizedIntroductoryPriceString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
+              let formatter = self.priceFormatter,
               let intro = self.introductoryDiscount
         else {
             return nil
         }
 
-        return self.priceFormatter?.string(from: intro.price as NSDecimalNumber)
+        return formatter.string(from: intro.price as NSDecimalNumber)
     }
 
 }
