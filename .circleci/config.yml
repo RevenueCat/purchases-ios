@@ -654,9 +654,9 @@ jobs:
           # install without building, then remove the tests and build, so that carthage
           # doesn't try to build the other installation tests
           command: |
-              ./carthage.sh update --no-build
+              carthage update --no-build
               rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
-              ./carthage.sh build --use-xcframeworks
+              carthage build --use-xcframeworks --verbose
 
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
