@@ -7,8 +7,6 @@ import XCTest
 class ProductRequestDataTests: TestCase {
 
     func testAsDictionaryConvertsProductIdentifierCorrectly() throws {
-
-
         let productIdentifier = "cool_product"
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier)
 
