@@ -123,6 +123,8 @@ platform :ios do
 
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
     scan(
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
@@ -130,11 +132,12 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
-      number_of_retries: 5,
       result_bundle: true,
-      testplan: "CI-AllTests",
+      testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
+      output_directory: "fastlane/test_output/xctest/ios",
+      number_of_retries: generate_snapshots ? 0 : 5,
+      fail_build: !generate_snapshots
     )
   end
 
@@ -313,6 +316,68 @@ platform :ios do
     rescue => e
       commit_current_changes(commit_message: "Update RevenueCat-Swift.h for version #{current_version_number}")
       push_to_git_remote
+    end
+  end
+
+  desc "Trigger CircleCI job to generate snapshots"
+  lane :generate_snapshots do 
+    require 'rest-client'
+
+    # Prompt branch
+    default_branch = git_branch
+    branch = UI.input("Branch (defaults to #{default_branch}): ")
+    branch = default_branch if branch == ""
+
+    # Get CircleCI token
+    circle_token = ENV["CIRCLE_TOKEN"]
+    UI.user_error! "Please set the CIRCLE_TOKEN environment variable" unless circle_token
+
+    # Make request
+    headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
+    data = {parameters: {generate_snapshots: true}, branch: branch}
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+
+    resp = RestClient.post url, data.to_json, headers
+
+    # Print workflow url
+    number = JSON.parse(resp.body)["number"]
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+
+    UI.important "Workflow: #{workflow_url}"
+  end
+
+  desc "Creates a new PR after new snapshot files were generated"
+  lane :create_snapshot_pr do |options|
+    version = options[:version]
+    base_branch = ENV["CIRCLE_BRANCH"]
+
+    build_number = ENV["CIRCLE_BUILD_NUM"] 
+
+    branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
+    sh("git", "checkout", "-b", branch_name)
+
+    sh("git", "add", "../Tests")
+    file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
+
+    if file_count == 0
+      UI.important("No files to be committed")
+    else
+      sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
+      push_to_git_remote
+
+      circle_user = ENV["CIRCLE_USERNAME"]
+      branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
+      body = "Requested by @#{circle_user} for [#{base_branch}](#{branch_link})"
+
+      create_pull_request(
+        repo: "revenuecat/purchases-ios",
+        title: "Generating new test snapshots for `#{base_branch}` - #{version}",
+        body: body,
+        base: base_branch,
+        api_token: ENV["GITHUB_TOKEN"],
+        head: branch_name,
+        labels: ["test"]
+      )
     end
   end
 
