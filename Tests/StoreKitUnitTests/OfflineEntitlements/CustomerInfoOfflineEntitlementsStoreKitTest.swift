@@ -217,7 +217,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
 
     func verifyInfo(_ info: CustomerInfo) {
         expect(info.firstSeen).to(beCloseToNow())
-        expect(info.managementURL) == CustomerInfo.defaultManagementURL
+        expect(info.managementURL) == SystemInfo.appleSubscriptionsURL
         expect(info.originalAppUserId).toNot(beEmpty())
         expect(info.originalAppUserId) == Self.userID
         expect(info.originalApplicationVersion) == SystemInfo.buildVersion

@@ -23,7 +23,7 @@ extension CustomerInfo {
     ) {
         let subscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: userID,
-            managementUrl: Self.defaultManagementURL,
+            managementUrl: SystemInfo.appleSubscriptionsURL,
             originalApplicationVersion: SystemInfo.buildVersion,
             originalPurchaseDate: Date(),
             firstSeen: Date(),
@@ -46,12 +46,6 @@ extension CustomerInfo {
             sandboxEnvironmentDetector: sandboxEnvironmentDetector
         )
     }
-
-}
-
-extension CustomerInfo {
-
-    static let defaultManagementURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 
 }
 
