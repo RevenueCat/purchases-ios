@@ -172,6 +172,12 @@ class SystemInfo {
         return host.contains("apple.com")
     }
 
+    #if DEBUG
+
+    var forceServerErrors: Bool { self.dangerousSettings.internalSettings.forceServerErrors }
+
+    #endif
+
 }
 
 extension SystemInfo: SandboxEnvironmentDetector {}
