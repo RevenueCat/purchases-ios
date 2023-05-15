@@ -89,6 +89,24 @@ internal struct SK2StoreProduct: StoreProductType {
 private extension SK2StoreProduct {
 
     var _currencyCode: String {
+        if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *) {
+            // This is marked as `@_backDeploy`, but it's not actually working before iOS 16.0
+            return self.currencyCodeFromPriceFormat
+        } else {
+            // note: if we ever need more information from the jsonRepresentation object, we
+            // should use Codable or another decoding method to clean up this code.
+            let attributes = jsonDict["attributes"] as? [String: Any]
+            let offers = attributes?["offers"] as? [[String: Any]]
+            return offers?.first?["currencyCode"] as? String ?? self.currencyCodeFromPriceFormat
+        }
+    }
+
+    private var jsonDict: [String: Any] {
+        let decoded = try? JSONSerialization.jsonObject(with: self.underlyingSK2Product.jsonRepresentation, options: [])
+        return decoded as? [String: Any] ?? [:]
+    }
+
+    private var currencyCodeFromPriceFormat: String {
         return self.underlyingSK2Product.priceFormatStyle.currencyCode
     }
 
