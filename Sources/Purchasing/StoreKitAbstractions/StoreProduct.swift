@@ -84,7 +84,7 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { self.product.subscriptionGroupIdentifier}
 
-    @objc public var priceFormatter: NumberFormatter? { self.product.priceFormatter }
+    @objc public var priceFormatter: NumberFormatter { self.product.priceFormatter }
 
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
@@ -164,8 +164,7 @@ internal protocol StoreProductType: Sendable {
 
     /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
     /// - Note: This creates a new formatter for every product, which can be slow.
-    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
-    var priceFormatter: NumberFormatter? { get }
+    var priceFormatter: NumberFormatter { get }
 
     /// The period details for products that are subscriptions.
     /// - Returns: `nil` if the product is not a subscription.
@@ -226,13 +225,12 @@ public extension StoreProduct {
     /// - Returns: `nil` if there is no `introductoryPrice`.
     @objc var localizedIntroductoryPriceString: String? {
         guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
-              let formatter = self.priceFormatter,
               let intro = self.introductoryDiscount
         else {
             return nil
         }
 
-        return formatter.string(from: intro.price as NSDecimalNumber)
+        return self.priceFormatter.string(from: intro.price as NSDecimalNumber)
     }
 
 }

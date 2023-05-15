@@ -801,7 +801,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
                 expect(postedDiscount.paymentMode.rawValue).to(equal(expectedPaymentMode))
             }
 
-            expect(self.backend.postedCurrencyCode) == product.priceFormatter!.currencyCode
+            expect(self.backend.postedCurrencyCode) == product.priceFormatter.currencyCode
 
             expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
         }

@@ -46,13 +46,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedDescription: String { underlyingSK2Product.description }
 
-    var currencyCode: String? {
-        // note: if we ever need more information from the jsonRepresentation object, we
-        // should use Codable or another decoding method to clean up this code.
-        let attributes = jsonDict["attributes"] as? [String: Any]
-        let offers = attributes?["offers"] as? [[String: Any]]
-        return offers?.first?["currencyCode"] as? String
-    }
+    var currencyCode: String? { self._currencyCode }
 
     var price: Decimal { underlyingSK2Product.price }
 
@@ -64,21 +58,12 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedTitle: String { underlyingSK2Product.displayName }
 
-    var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
-            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
-            return nil
-        }
-        return priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
+    var priceFormatter: NumberFormatter {
+        return self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: self._currencyCode)
     }
 
     var subscriptionGroupIdentifier: String? {
         underlyingSK2Product.subscription?.subscriptionGroupID
-    }
-
-    private var jsonDict: [String: Any] {
-        let decoded = try? JSONSerialization.jsonObject(with: self.underlyingSK2Product.jsonRepresentation, options: [])
-        return decoded as? [String: Any] ?? [:]
     }
 
     var subscriptionPeriod: SubscriptionPeriod? {
@@ -96,6 +81,15 @@ internal struct SK2StoreProduct: StoreProductType {
     var discounts: [StoreProductDiscount] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
             .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension SK2StoreProduct {
+
+    var _currencyCode: String {
+        return self.underlyingSK2Product.priceFormatStyle.currencyCode
     }
 
 }
