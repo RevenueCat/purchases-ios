@@ -568,7 +568,7 @@ jobs:
           name: Install Pods
           working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
-              pod install
+              bundle exec pod install
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
 
