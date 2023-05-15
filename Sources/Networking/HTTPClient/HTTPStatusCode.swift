@@ -93,3 +93,13 @@ extension HTTPStatusCode {
     }
 
 }
+
+extension URLResponse {
+
+    var httpStatusCode: HTTPStatusCode? {
+        guard let response = self as? HTTPURLResponse else { return nil }
+
+        return .init(rawValue: response.statusCode)
+    }
+
+}
