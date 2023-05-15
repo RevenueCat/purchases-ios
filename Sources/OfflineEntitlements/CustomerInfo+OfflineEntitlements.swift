@@ -15,6 +15,10 @@ import Foundation
 
 extension CustomerInfo {
 
+    typealias OfflineCreator = ([PurchasedSK2Product],
+                                ProductEntitlementMapping,
+                                String) -> CustomerInfo
+
     convenience init(
         from purchasedSK2Products: [PurchasedSK2Product],
         mapping: ProductEntitlementMapping,
@@ -47,7 +51,33 @@ extension CustomerInfo {
         )
     }
 
+    /// Creates an offline `CustomerInfo`
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    static func createOffline(
+        with mapping: ProductEntitlementMapping?,
+        fetcher: PurchasedProductsFetcherType,
+        creator: OfflineCreator,
+        userID: String
+    ) async throws -> CustomerInfo {
+        Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
+
+        guard let mapping = mapping, !mapping.entitlementsByProduct.isEmpty else {
+            Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
+            throw Error.noEntitlementMappingAvailable
+        }
+
+        let products = try await fetcher.fetchPurchasedProducts()
+
+        let offlineCustomerInfo = creator(products, mapping, userID)
+
+        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(offlineCustomerInfo.entitlements))
+
+        return offlineCustomerInfo
+    }
+
 }
+
+// MARK: - Private
 
 private extension CustomerInfo {
 
@@ -88,5 +118,36 @@ private extension CustomerInfo {
 
     /// Purchases are verified with StoreKit 2.
     private static let verification: VerificationResult = .verifiedOnDevice
+
+}
+
+// MARK: - Errors
+
+private extension CustomerInfo {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    enum Error: Swift.Error {
+
+        case noEntitlementMappingAvailable
+
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension CustomerInfo.Error: DescribableError, CustomNSError {
+
+    var description: String {
+        switch self {
+        case .noEntitlementMappingAvailable:
+            return Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping.description
+        }
+    }
+
+    var errorUserInfo: [String: Any] {
+        return [
+            NSLocalizedDescriptionKey: self.description
+        ]
+    }
 
 }

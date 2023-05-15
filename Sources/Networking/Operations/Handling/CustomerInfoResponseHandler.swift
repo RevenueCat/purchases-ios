@@ -15,13 +15,9 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    typealias CustomerInfoCreator = ([PurchasedSK2Product],
-                                     ProductEntitlementMapping,
-                                     String) -> CustomerInfo
-
     private let purchasedProductsFetcher: PurchasedProductsFetcherType
     private let productEntitlementMapping: ProductEntitlementMapping?
-    private let customerInfoCreator: CustomerInfoCreator
+    private let customerInfoCreator: CustomerInfo.OfflineCreator
     private let userID: String
 
     convenience init(
@@ -41,7 +37,7 @@ class CustomerInfoResponseHandler {
     init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
         productEntitlementMapping: ProductEntitlementMapping?,
-        customerInfoCreator: @escaping CustomerInfoCreator,
+        customerInfoCreator: @escaping CustomerInfo.OfflineCreator,
         userID: String
     ) {
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -88,6 +84,16 @@ class CustomerInfoResponseHandler {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func computeOfflineCustomerInfo() async throws -> CustomerInfo {
+        return try await CustomerInfo.createOffline(
+            with: self.productEntitlementMapping,
+            fetcher: self.purchasedProductsFetcher,
+            creator: self.customerInfoCreator,
+            userID: self.userID
+        )
+    }
+
 }
 
 extension CustomerInfoResponseHandler {
@@ -109,55 +115,6 @@ extension CustomerInfoResponseHandler {
             return copy
         }
 
-    }
-
-}
-
-private extension CustomerInfoResponseHandler {
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    enum Error: Swift.Error {
-
-        case noEntitlementMappingAvailable
-
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func computeOfflineCustomerInfo() async throws -> CustomerInfo {
-        Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
-
-        guard let mapping = self.productEntitlementMapping, !mapping.entitlementsByProduct.isEmpty else {
-            Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
-            throw Error.noEntitlementMappingAvailable
-        }
-
-        let products = try await self.purchasedProductsFetcher.fetchPurchasedProducts()
-
-        let offlineCustomerInfo = self.customerInfoCreator(products, mapping, self.userID)
-
-        // Fixme: merge with existing one?
-
-        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(offlineCustomerInfo.entitlements))
-
-        return offlineCustomerInfo
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension CustomerInfoResponseHandler.Error: DescribableError, CustomNSError {
-
-    var description: String {
-        switch self {
-        case .noEntitlementMappingAvailable:
-            return Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping.description
-        }
-    }
-
-    var errorUserInfo: [String: Any] {
-        return [
-            NSLocalizedDescriptionKey: self.description
-        ]
     }
 
 }
