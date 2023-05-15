@@ -604,7 +604,7 @@ jobs:
           name: Install Pods
           working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
-              pod install
+              bundle exec pod install
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
 
@@ -869,9 +869,7 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
-          # Cocoapods breaks with Xcode 14.3.0 (https://github.com/CocoaPods/CocoaPods/issues/11808)
-          # That's fixed in CP 1.12.1, but not included in the CircleCI image for 14.3.0
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-swift-package-manager:
           xcode_version: '14.3.0'
