@@ -10,6 +10,9 @@ parameters:
     type: enum
     enum: [default, bump]
     default: default
+  generate_snapshots:
+    default: false
+    type: boolean
 
 aliases:
   base-job: &base-job
@@ -19,6 +22,8 @@ aliases:
     parameters:
       xcode_version:
         type: string
+    environment:
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >> 
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   release-branches: &release-branches
@@ -326,6 +331,12 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-16"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -346,6 +357,12 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-15"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -402,11 +419,18 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-14"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
   run-test-ios-13:
     <<: *base-job
     steps:
@@ -426,6 +450,12 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-13"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -451,6 +481,12 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-12"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -647,7 +683,7 @@ jobs:
       - run:
           name: Run fastlane swiftlint lane
           command: |
-            fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
+            bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
           path: fastlane/test_output
@@ -766,10 +802,28 @@ jobs:
 
 workflows:
   version: 2
+  generate-snapshot:
+    when: << pipeline.parameters.generate_snapshots >>
+    jobs:
+      - run-test-ios-16:
+          xcode_version: '14.3.0'
+      - run-test-ios-15:
+          xcode_version: '14.3.0'
+      - run-test-ios-14:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
+      - run-test-ios-13:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
+      - run-test-ios-12:
+          # Simulator fails to install on Xcode 14
+          xcode_version: '13.4.1'
   build-test:
     when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+      and:
+        - not:
+            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        - not: << pipeline.parameters.generate_snapshots >>
     jobs:
       - lint:
           xcode_version: '14.3.0'
