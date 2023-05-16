@@ -541,7 +541,7 @@ class ETagManagerTests: TestCase {
         expect(response[ETagManager.eTagResponseHeaderName]) == eTag
     }
 
-    func testETagHeaderContainsCreationTime() {
+    func testETagHeaderContainsValidationTime() {
         let eTag = "the_etag"
         let request = URLRequest(url: Self.testURL)
         let cacheKey = Self.testURL.absoluteString
@@ -561,6 +561,27 @@ class ETagManagerTests: TestCase {
         expect(response) == [
             ETagManager.eTagRequestHeaderName: eTag,
             ETagManager.eTagValidationTimeRequestHeaderName: validationTime.millisecondsSince1970.description
+        ]
+    }
+
+    func testETagHeaderDoesNotContainValidationTimeIfNotPresent() {
+        let eTag = "the_etag"
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = Self.testURL.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = ETagManager.Response(
+            eTag: eTag,
+            statusCode: .success,
+            data: actualResponse,
+            validationTime: nil,
+            verificationResult: .notRequested
+        ).asData()
+
+        let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
+        expect(response) == [
+            ETagManager.eTagRequestHeaderName: eTag
         ]
     }
 
@@ -616,6 +637,33 @@ class ETagManagerTests: TestCase {
             retried: false
         )
         expect(response?.verificationResult) == .notRequested
+        expect(response?.body) == actualResponse
+    }
+
+    func testCachedResponseWithNoValidationTimeIsNotIgnored() {
+        let eTag = "the_etag"
+        let request = URLRequest(url: Self.testURL)
+        let cacheKey = Self.testURL.absoluteString
+
+        let actualResponse = "response".asData
+
+        self.mockUserDefaults.mockValues[cacheKey] = """
+        {
+        "e_tag": "\(eTag)",
+        "status_code": 200,
+        "data": "\(actualResponse.asFetchToken)"
+        }
+        """.asData
+
+        let response = self.eTagManager.httpResultFromCacheOrBackend(
+            with: self.responseForTest(url: Self.testURL,
+                                       body: nil,
+                                       eTag: eTag,
+                                       statusCode: .notModified),
+            request: request,
+            retried: false
+        )
+        expect(response?.requestDate).to(beNil())
         expect(response?.body) == actualResponse
     }
 
@@ -759,7 +807,7 @@ private extension ETagManagerTests {
     func mockStoredETagResponse(for url: URL,
                                 statusCode: HTTPStatusCode = .success,
                                 eTag: String = "an_etag",
-                                validationTime: Date = Date(),
+                                validationTime: Date? = nil,
                                 verificationResult: RevenueCat.VerificationResult = .defaultValue) -> Data {
         // swiftlint:disable:next force_try
         let data = try! JSONSerialization.data(withJSONObject: ["arg": "value"])

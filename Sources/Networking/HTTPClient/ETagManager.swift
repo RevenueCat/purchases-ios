@@ -44,7 +44,7 @@ class ETagManager {
         withSignatureVerification: Bool,
         refreshETag: Bool = false
     ) -> [String: String] {
-        func eTag() -> (tag: String, date: String)? {
+        func eTag() -> (tag: String, date: String?)? {
             if refreshETag { return nil }
             guard let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) else { return nil }
 
@@ -56,18 +56,19 @@ class ETagManager {
 
             if shouldUseETag {
                 return (tag: storedETagAndResponse.eTag,
-                        date: storedETagAndResponse.validationTime.millisecondsSince1970.description)
+                        date: storedETagAndResponse.validationTime?.millisecondsSince1970.description)
             } else {
                 return nil
             }
         }
 
-        let (etag, date) = eTag() ?? ("", "")
+        let (etag, date) = eTag() ?? ("", nil)
 
         return [
             HTTPClient.RequestHeader.eTag.rawValue: etag,
             HTTPClient.RequestHeader.eTagValidationTime.rawValue: date
         ]
+            .compactMapValues { $0 }
     }
 
     func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
@@ -194,8 +195,8 @@ extension ETagManager {
         var statusCode: HTTPStatusCode
         var data: Data
         /// Used by the backend for advanced load shedding techniques.
-        @DefaultDecodable.Now
-        var validationTime: Date
+        @DefaultValue<Date?>
+        var validationTime: Date?
         @DefaultValue<VerificationResult>
         var verificationResult: VerificationResult
 
@@ -203,7 +204,7 @@ extension ETagManager {
             eTag: String,
             statusCode: HTTPStatusCode,
             data: Data,
-            validationTime: Date = Date(),
+            validationTime: Date? = nil,
             verificationResult: VerificationResult
         ) {
             self.eTag = eTag
