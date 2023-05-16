@@ -23,6 +23,7 @@
 * `Integration Tests`: fixed flaky errors when loading offerings (#2420) via NachoSoto (@NachoSoto)
 * `PurchaseTester`: fixed compilation for `internal` entitlement verification (#2417) via NachoSoto (@NachoSoto)
 * `ETagManager`/`HTTPClient`: sending new `X-RC-Last-Refresh-Time` header (#2373) via NachoSoto (@NachoSoto)
+* `ETagManager`: don't send validation time if not present (#2490) via NachoSoto (@NachoSoto)
 * SwiftUI Sample Project: Refactor Package terms method to a computed property (#2405) via Joseph Kokenge (@JOyo246)
 * Clean up v3 load shedder integration tests (#2402) via Andy Boedo (@aboedo)
 * Fix iOS 12 compilation (#2394) via NachoSoto (@NachoSoto)
