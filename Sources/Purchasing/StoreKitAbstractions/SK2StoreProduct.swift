@@ -95,16 +95,14 @@ private extension SK2StoreProduct {
 
     var _currencyCode: String? {
         #if swift(>=5.7)
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return self.currencyCodeFromPriceFormat
-        }
-        #endif
-
+        return self.currencyCodeFromPriceFormat
+        #else
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
         let attributes = jsonDict["attributes"] as? [String: Any]
         let offers = attributes?["offers"] as? [[String: Any]]
         return offers?.first?["currencyCode"] as? String
+        #endif
     }
 
     private var jsonDict: [String: Any] {
