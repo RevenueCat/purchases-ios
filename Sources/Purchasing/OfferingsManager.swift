@@ -129,11 +129,7 @@ private extension OfferingsManager {
             let products = result.value ?? []
 
             guard products.isEmpty == false else {
-                self.handleOfferingsUpdateError(
-                    .configurationError(Strings.offering.configuration_error_products_not_found.description,
-                                        underlyingError: result.error as NSError?),
-                    completion: completion
-                )
+                self.handleOfferingsUpdateError(Self.createErrorForEmptyResult(result.error), completion: completion)
                 return
             }
 
@@ -165,6 +161,16 @@ private extension OfferingsManager {
             } else {
                 self.handleOfferingsUpdateError(.noOfferingsFound(), completion: completion)
             }
+        }
+    }
+
+    private static func createErrorForEmptyResult(_ error: PurchasesError?) -> OfferingsManager.Error {
+        if let purchasesError = error,
+           case ErrorCode.productRequestTimedOut = purchasesError.error {
+            return .timeout(purchasesError)
+        } else {
+            return .configurationError(Strings.offering.configuration_error_products_not_found.description,
+                                       underlyingError: error?.asPublicError)
         }
     }
 
@@ -213,10 +219,11 @@ extension OfferingsManager: @unchecked Sendable {}
 
 extension OfferingsManager {
 
-    enum Error: Swift.Error, Equatable {
+    enum Error: Swift.Error {
 
         case backendError(BackendError)
-        case configurationError(String, NSError?, ErrorSource)
+        case configurationError(String, PublicError?, ErrorSource)
+        case timeout(PurchasesError)
         case noOfferingsFound(ErrorSource)
         case missingProducts(identifiers: Set<String>, ErrorSource)
 
@@ -230,6 +237,9 @@ extension OfferingsManager.Error: PurchasesErrorConvertible {
         switch self {
         case let .backendError(backendError):
             return backendError.asPurchasesError
+
+        case let .timeout(underlyingError):
+            return underlyingError
 
         case let .configurationError(errorMessage, underlyingError, source):
             return ErrorUtils.configurationError(message: errorMessage,
@@ -293,6 +303,7 @@ extension OfferingsManager.Error: CustomNSError {
     var errorDescription: String? {
         switch self {
         case .backendError: return nil
+        case let .timeout(underlyingError): return underlyingError.error.localizedDescription
         case let .configurationError(message, _, _): return message
         case .noOfferingsFound: return nil
         case .missingProducts: return nil
@@ -303,6 +314,7 @@ extension OfferingsManager.Error: CustomNSError {
         switch self {
         case let .backendError(.networkError(error)): return error
         case let .backendError(error): return error
+        case let .timeout(underlyingError): return underlyingError
         case let .configurationError(_, error, _): return error
         case .noOfferingsFound: return nil
         case .missingProducts: return nil
