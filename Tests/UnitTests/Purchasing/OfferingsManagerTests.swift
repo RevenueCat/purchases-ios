@@ -151,7 +151,13 @@ extension OfferingsManagerTests {
 
         // then
         expect(result).to(beFailure())
-        expect(result?.error) == .backendError(.unexpectedBackendResponse(.customerInfoNil))
+
+        switch result?.error {
+        case .backendError(.unexpectedBackendResponse(.customerInfoNil, _, _)):
+            break
+        default:
+            fail("Unexpected result")
+        }
     }
 
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
@@ -178,6 +184,30 @@ extension OfferingsManagerTests {
         default:
             fail("Unexpected result")
         }
+    }
+
+    func testOfferingsReturnsTimeoutErrorIfProductRequestTimesOut() throws {
+        // given
+        let timeoutError = ErrorUtils.productRequestTimedOutError()
+
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
+            MockData.anyBackendOfferingsResponse
+        )
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(timeoutError)
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfferingsManager.Error.timeout(timeoutError)))
+
+        let underlyingError = try XCTUnwrap(result?.error?.errorUserInfo[NSUnderlyingErrorKey] as? NSError)
+        expect(underlyingError).to(matchError(timeoutError))
     }
 
     func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
@@ -274,7 +304,13 @@ extension OfferingsManagerTests {
 
         // then
         expect(result).to(beFailure())
-        expect(result?.error) == .noOfferingsFound()
+
+        switch result?.error {
+        case .noOfferingsFound:
+            break
+        default:
+            fail("Unexpected result")
+        }
     }
 
     func testOfferingsForAppUserIDReturnsUnexpectedBackendErrorIfBadBackendRequest() throws {
@@ -291,7 +327,13 @@ extension OfferingsManagerTests {
 
         // then
         expect(result).to(beFailure())
-        expect(result?.error) == .backendError(MockData.unexpectedBackendResponseError)
+
+        switch result?.error {
+        case .backendError(MockData.unexpectedBackendResponseError):
+            break
+        default:
+            fail("Unexpected result")
+        }
     }
 
     func testFailBackendDeviceCacheClearsOfferingsCache() {
