@@ -35,6 +35,9 @@
          <TestPlanReference
             reference = "container:Tests/TestPlans/CI-BackendIntegration.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/TestPlans/CI-BackendIntegration-Snapshots.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

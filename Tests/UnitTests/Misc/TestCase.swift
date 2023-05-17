@@ -51,17 +51,3 @@ class TestCase: XCTestCase {
     // MARK: -
 
 }
-
-private enum SnapshotTests {
-
-    private static var environmentVariableChecked = false
-
-    static func updateSnapshotsIfNeeded() {
-        guard !Self.environmentVariableChecked else { return }
-
-        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
-            isRecording = true
-        }
-    }
-
-}

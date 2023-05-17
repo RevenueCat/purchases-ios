@@ -440,17 +440,20 @@ platform :ios do
 
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
     replace_api_key_integration_tests
     scan(
       scheme: "BackendIntegrationTests",
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
-      number_of_retries: 3,
+      number_of_retries: generate_snapshots ? 0 : 3,
       result_bundle: true,
-      testplan: "CI-BackendIntegration",
+      testplan: generate_snapshots ? "CI-BackendIntegration-Snapshots" : "CI-BackendIntegration",
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
+      output_directory: "fastlane/test_output/xctest/ios",
+      fail_build: !generate_snapshots
     )
   end
 

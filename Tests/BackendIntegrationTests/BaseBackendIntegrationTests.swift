@@ -86,6 +86,10 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.mainThreadMonitor = nil
     }
 
+    override class func setUp() {
+        SnapshotTests.updateSnapshotsIfNeeded()
+    }
+
     // MARK: - Configuration
 
     var apiKey: String { return Constants.apiKey }

@@ -202,6 +202,9 @@
 		4FA696BD2A0020A000D228B1 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
+		4FCBA8542A153CD0004134BD /* SnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCBA8532A153CD0004134BD /* SnapshotTests.swift */; };
+		4FCBA8552A153CD0004134BD /* SnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCBA8532A153CD0004134BD /* SnapshotTests.swift */; };
+		4FCBA8562A153CD0004134BD /* SnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCBA8532A153CD0004134BD /* SnapshotTests.swift */; };
 		57032ABF28C13CE4004FF47A /* StoreKit2SettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
@@ -863,6 +866,8 @@
 		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
 		4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadMonitor.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
+		4FCBA8532A153CD0004134BD /* SnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTests.swift; sourceTree = "<group>"; };
+		4FCBA8572A153D25004134BD /* CI-BackendIntegration-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-BackendIntegration-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-BackendIntegration-Snapshots.xctestplan"; sourceTree = "<group>"; };
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -1770,6 +1775,7 @@
 				57ACB12328174B9F000DCC9F /* CustomerInfo+TestExtensions.swift */,
 				57FDAABD28493A29009A48F1 /* SandboxEnvironmentDetectorTests.swift */,
 				579189E828F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift */,
+				4FCBA8532A153CD0004134BD /* SnapshotTests.swift */,
 				57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */,
 				5712BE9129241F7900A83F15 /* TimingUtilTests.swift */,
 			);
@@ -2169,6 +2175,7 @@
 				570814C128A308050018BAE3 /* BackendIntegrationTests.xctestplan */,
 				B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */,
 				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
+				4FCBA8572A153D25004134BD /* CI-BackendIntegration-Snapshots.xctestplan */,
 				57910CBD29C393A6006209D5 /* CI-RevenueCat.xctestplan */,
 				2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */,
 				570896B427595C8100296F1C /* Coverage.xctestplan */,
@@ -2840,6 +2847,7 @@
 				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
+				4FCBA8562A153CD0004134BD /* SnapshotTests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
 				F535515F286B5BE5009CA47A /* MockOfferingsManager.swift in Sources */,
 				F52CFAFC28290AE500E8ABC5 /* StoreKit2StorefrontListenerTests.swift in Sources */,
@@ -3318,6 +3326,7 @@
 				351B514526D449E600BD2BD7 /* MockAttributionTypeFactory.swift in Sources */,
 				575A8EE12922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				572247F727BF1ADF00C524A7 /* ArrayExtensionsTests.swift in Sources */,
+				4FCBA8542A153CD0004134BD /* SnapshotTests.swift in Sources */,
 				F55FFA5A27634C3F00995146 /* MockTransactionsManager.swift in Sources */,
 				F575858F26C0893600C12B97 /* MockOfferingsManager.swift in Sources */,
 				A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
@@ -3342,6 +3351,7 @@
 				575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
 				2D3BFAD326DEA47100370B11 /* MockSKProductDiscount.swift in Sources */,
+				4FCBA8552A153CD0004134BD /* SnapshotTests.swift in Sources */,
 				57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */,
 				2D3BFAD426DEA49200370B11 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */,
