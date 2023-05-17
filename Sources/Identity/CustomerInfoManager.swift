@@ -47,7 +47,11 @@ class CustomerInfoManager {
 
             case let .success(info):
                 self.cache(customerInfo: info, appUserID: appUserID)
-                Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
+                Logger.rcSuccess(
+                    info.isComputedOffline
+                    ? Strings.customerInfo.customerinfo_updated_offline
+                    : Strings.customerInfo.customerinfo_updated_from_network
+                )
             }
 
             if let completion = completion {

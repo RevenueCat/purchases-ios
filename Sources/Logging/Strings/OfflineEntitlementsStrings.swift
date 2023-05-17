@@ -64,7 +64,7 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
             "Creation error: \(error.localizedDescription)"
 
         case let .computed_offline_customer_info(entitlements):
-            return "Computed offline CustomerInfo with \(entitlements.active) active entitlements."
+            return "Computed offline CustomerInfo with \(entitlements.active.count) active entitlements."
         }
     }
 
