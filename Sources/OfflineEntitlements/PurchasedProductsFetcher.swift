@@ -16,13 +16,12 @@ import StoreKit
 
 protocol PurchasedProductsFetcherType {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product]
 
 }
 
 /// A type that can fetch purchased products from StoreKit 2.
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     private let sandboxDetector: SandboxEnvironmentDetector
@@ -31,6 +30,7 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         self.sandboxDetector = sandboxDetector
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
@@ -64,22 +64,9 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private static func forceSyncToEnsureAllTransactionsAreAccountedFor() async throws {
         try await AppStore.sync()
-    }
-
-}
-
-// MARK: -
-
-/// An empty implementation of `PurchasedProductsFetcherType` for platforms
-/// that don't support `PurchasedProductsFetcher`.
-final class VoidPurchasedProductsFetcher: PurchasedProductsFetcherType {
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
-        assertionFailure("This should never be used")
-        return []
     }
 
 }
