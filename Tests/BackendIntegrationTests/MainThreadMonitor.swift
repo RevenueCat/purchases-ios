@@ -30,7 +30,7 @@ final class MainThreadMonitor {
 
     func run() {
         guard !Self.debuggerIsAttached else {
-            Logger.verbose("Debugger is attached, ignoring")
+            Logger.verbose("\(type(of: self)): debugger is attached, ignoring")
             return
         }
 
