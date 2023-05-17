@@ -78,34 +78,43 @@ class MockDeviceCache: DeviceCache {
     // MARK: offerings
 
     var cacheOfferingsCount = 0
+    var cacheOfferingsInMemoryCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
     var stubbedOfferings: Offerings?
+    var stubbedCachedOfferingsData: Data?
 
     override var cachedOfferings: Offerings? {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings) {
-        cacheOfferingsCount += 1
+    override func cache(offerings: Offerings, appUserID: String) {
+        self.cacheOfferingsCount += 1
+    }
+    override func cacheInMemory(offerings: Offerings) {
+        self.cacheOfferingsInMemoryCount += 1
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
-        return stubbedIsOfferingsCacheStale
+        return self.stubbedIsOfferingsCacheStale
     }
 
     override func clearOfferingsCacheTimestamp() {
-        clearOfferingsCacheTimestampCount += 1
+        self.clearOfferingsCacheTimestampCount += 1
     }
 
     override func setOfferingsCacheTimestampToNow() {
-        setOfferingsCacheTimestampToNowCount += 1
+        self.setOfferingsCacheTimestampToNowCount += 1
     }
 
-    override func clearCachedOfferings() {
-        clearCachedOfferingsCount += 1
+    override func clearOfferingsCache(appUserID: String) {
+        self.clearCachedOfferingsCount += 1
+    }
+
+    override func cachedOfferingsData(appUserID: String) -> Data? {
+        return self.stubbedCachedOfferingsData
     }
 
     // MARK: SubscriberAttributes

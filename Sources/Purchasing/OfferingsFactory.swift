@@ -29,7 +29,9 @@ class OfferingsFactory {
             return nil
         }
 
-        return Offerings(offerings: offerings, currentOfferingID: data.currentOfferingId)
+        return Offerings(offerings: offerings,
+                         currentOfferingID: data.currentOfferingId,
+                         response: data)
     }
 
     func createOffering(
