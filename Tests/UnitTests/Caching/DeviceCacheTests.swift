@@ -64,11 +64,16 @@ class DeviceCacheTests: TestCase {
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDRemovesCachedOfferings() {
-        let offerings = Offerings(offerings: [:], currentOfferingID: "")
-        self.deviceCache.cache(offerings: offerings)
-        expect(self.deviceCache.cachedOfferings).to(equal(offerings))
+        let offerings: Offerings = .empty
+        self.deviceCache.cache(offerings: offerings, appUserID: "cesar")
+        expect(self.deviceCache.cachedOfferings) == offerings
+
         self.deviceCache.clearCaches(oldAppUserID: "cesar", andSaveWithNewUserID: "newUser")
+
         expect(self.deviceCache.cachedOfferings).to(beNil())
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain([
+            "com.revenuecat.userdefaults.offerings.cesar"
+        ]))
     }
 
     func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
@@ -183,15 +188,14 @@ class DeviceCacheTests: TestCase {
         self.deviceCache = DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
-        let offerings = Offerings(offerings: [:], currentOfferingID: "")
-        self.deviceCache.cache(offerings: offerings)
+        self.deviceCache.cache(offerings: .empty, appUserID: "user")
         let isAppBackgrounded = false
 
         mockCachedObject.stubbedIsCacheStaleResult = false
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded)).to(beFalse())
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded)) == false
 
         mockCachedObject.stubbedIsCacheStaleResult = true
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded)).to(beTrue())
+        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded)) == true
     }
 
     func testCustomerInfoIsProperlyCached() {
@@ -207,41 +211,22 @@ class DeviceCacheTests: TestCase {
     }
 
     func testOfferingsAreProperlyCached() throws {
-        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
-        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
-        let products = [
-            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
-            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
-        ]
+        let expectedOfferings = try Self.createSampleOfferings()
 
-        let offeringIdentifier = "offering_a"
-        let serverDescription = "This is the base offering"
-
-        let offeringsJSON = """
-            {
-                "identifier": "\(offeringIdentifier)",
-                "description": "\(serverDescription)",
-                "packages": [
-                    {"identifier": "$rc_monthly",
-                     "platform_product_identifier": "com.myproduct.monthly"},
-                    {"identifier": "$rc_annual",
-                     "platform_product_identifier": "com.myproduct.annual"},
-                    {"identifier": "$rc_six_month",
-                     "platform_product_identifier": "com.myproduct.sixMonth"}
-                ]
-            }
-        """
-        let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
-            jsonData: offeringsJSON.asData
-        )
-
-        let offering = try XCTUnwrap(
-            OfferingsFactory().createOffering(from: products, offering: offeringsData)
-        )
-        let expectedOfferings = Offerings(offerings: ["offering1": offering], currentOfferingID: "base")
-        self.deviceCache.cache(offerings: expectedOfferings)
+        self.deviceCache.cache(offerings: expectedOfferings, appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
+        try expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.offerings.user"] as? Data)
+        == expectedOfferings.response.asJSONEncodedData()
+    }
+
+    func testCacheOfferingsInMemory() throws {
+        let offerings = try Self.createSampleOfferings()
+
+        self.deviceCache.cacheInMemory(offerings: offerings)
+
+        expect(self.deviceCache.cachedOfferings) === offerings
+        expect(self.mockUserDefaults.mockValues).to(beEmpty())
     }
 
     func testNewDeviceCacheInstanceWithExistingValidCustomerInfoCacheIsntStale() {
@@ -367,9 +352,12 @@ class DeviceCacheTests: TestCase {
                                        userDefaults: self.mockUserDefaults,
                                        offeringsCachedObject: mockCachedObject)
 
-        self.deviceCache.clearCachedOfferings()
+        self.deviceCache.clearOfferingsCache(appUserID: "user")
 
         expect(mockCachedObject.invokedClearCache) == true
+        expect(self.mockUserDefaults.removeObjectForKeyCalledValues).to(contain([
+            "com.revenuecat.userdefaults.offerings.user"
+        ]))
     }
 
     func testSetLatestAdvertisingIdsByNetworkSentMapsAttributionNetworksToStringKeys() {
@@ -490,5 +478,57 @@ private extension DeviceCacheTests {
         return DeviceCache(sandboxEnvironmentDetector: self.sandboxEnvironmentDetector,
                            userDefaults: self.mockUserDefaults)
     }
+
+    static func createSampleOfferings() throws -> Offerings {
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
+        let products = [
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
+        ]
+
+        let offeringIdentifier = "offering_a"
+        let serverDescription = "This is the base offering"
+
+        let offeringsJSON = """
+            {
+                "identifier": "\(offeringIdentifier)",
+                "description": "\(serverDescription)",
+                "packages": [
+                    {"identifier": "$rc_monthly",
+                     "platform_product_identifier": "com.myproduct.monthly"},
+                    {"identifier": "$rc_annual",
+                     "platform_product_identifier": "com.myproduct.annual"},
+                    {"identifier": "$rc_six_month",
+                     "platform_product_identifier": "com.myproduct.sixMonth"}
+                ]
+            }
+        """
+        let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
+            jsonData: offeringsJSON.asData
+        )
+
+        let offering = try XCTUnwrap(
+            OfferingsFactory().createOffering(from: products, offering: offeringsData)
+        )
+        return Offerings(
+            offerings: [offeringIdentifier: offering],
+            currentOfferingID: "base",
+            response: .init(currentOfferingId: "base", offerings: [offeringsData])
+        )
+    }
+
+}
+
+private extension Offerings {
+
+    static let empty: Offerings = .init(
+        offerings: [:],
+        currentOfferingID: "",
+        response: .init(
+            currentOfferingId: "",
+            offerings: []
+        )
+    )
 
 }

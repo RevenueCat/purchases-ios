@@ -45,14 +45,32 @@ import Foundation
         return all[currentOfferingID]
     }
 
+    internal let response: OfferingsResponse
+
     private let currentOfferingID: String?
+
+    init(
+        offerings: [String: Offering],
+        currentOfferingID: String?,
+        response: OfferingsResponse
+    ) {
+        self.all = offerings
+        self.currentOfferingID = currentOfferingID
+        self.response = response
+    }
+
+}
+
+extension Offerings: Sendable {}
+
+public extension Offerings {
 
     /**
      Retrieves a specific offering by its identifier, use this to access additional offerings configured in the
      RevenueCat dashboard, e.g. `offerings.offering(identifier: "offering_id")` or `offerings[@"offering_id"]`.
      To access the current offering use ``Offerings/current``.
      */
-    @objc public func offering(identifier: String?) -> Offering? {
+    @objc func offering(identifier: String?) -> Offering? {
         guard let identifier = identifier else {
             return nil
         }
@@ -62,11 +80,11 @@ import Foundation
 
     /// #### Related Symbols
     /// - ``offering(identifier:)``
-    @objc public subscript(key: String) -> Offering? {
+    @objc subscript(key: String) -> Offering? {
         return offering(identifier: key)
     }
 
-    @objc public override var description: String {
+    @objc override var description: String {
         var description = "<Offerings {\n"
         for offering in all.values {
             description += "\t\(offering)\n"
@@ -75,11 +93,4 @@ import Foundation
         return description
     }
 
-    init(offerings: [String: Offering], currentOfferingID: String?) {
-        all = offerings
-        self.currentOfferingID = currentOfferingID
-    }
-
 }
-
-extension Offerings: Sendable {}

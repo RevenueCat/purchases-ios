@@ -60,4 +60,8 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
     }
 
+    func testEncoding() throws {
+        expect(try self.response.encodeAndDecode()) == self.response
+    }
+
 }
