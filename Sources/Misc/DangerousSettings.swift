@@ -13,14 +13,11 @@ import Foundation
  */
 @objc(RCDangerousSettings) public final class DangerousSettings: NSObject {
 
-    /// Dangerous settings not exposed outside of the SDK.
-    internal struct InternalSettings {
+    internal struct Internal: InternalDangerousSettingsType {
 
-        /// Whether `ReceiptFetcher` can retry fetching receipts.
         let enableReceiptFetchRetry: Bool
 
         #if DEBUG
-        /// Whether `HTTPClient` will fake server errors
         let forceServerErrors: Bool
 
         init(enableReceiptFetchRetry: Bool = false, forceServerErrors: Bool = false) {
@@ -60,7 +57,7 @@ import Foundation
      */
     @objc public let customEntitlementComputation: Bool
 
-    internal let internalSettings: InternalSettings
+    internal let internalSettings: InternalDangerousSettingsType
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -84,14 +81,14 @@ import Foundation
     @objc internal convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
-                  internalSettings: .default)
+                  internalSettings: Internal.default)
 
     }
 
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
-                  internalSettings: InternalSettings) {
+                  internalSettings: InternalDangerousSettingsType) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
@@ -100,3 +97,16 @@ import Foundation
 }
 
 extension DangerousSettings: Sendable {}
+
+/// Dangerous settings not exposed outside of the SDK.
+internal protocol InternalDangerousSettingsType: Sendable {
+
+    /// Whether `ReceiptFetcher` can retry fetching receipts.
+    var enableReceiptFetchRetry: Bool { get }
+
+    #if DEBUG
+    /// Whether `HTTPClient` will fake server errors
+    var forceServerErrors: Bool { get }
+    #endif
+
+}

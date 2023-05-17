@@ -65,8 +65,8 @@ func waitUntilValue<Value>(
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait(
     until condition: @Sendable () async -> Bool,
-    timeout: DispatchTimeInterval,
-    pollInterval: DispatchTimeInterval,
+    timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+    pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
     description: String? = nil,
     file: FileString = #fileID,
     line: UInt = #line

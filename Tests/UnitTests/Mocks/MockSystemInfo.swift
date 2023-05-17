@@ -50,12 +50,6 @@ class MockSystemInfo: SystemInfo {
         return self.stubbedIsSandbox ?? super.isSandbox
     }
 
-    var stubbedForceServerErrors: Bool?
-
-    override var forceServerErrors: Bool {
-        return self.stubbedForceServerErrors ?? super.forceServerErrors
-    }
-
 }
 
 extension OperatingSystemVersion: Comparable {

@@ -61,7 +61,8 @@ class HTTPClient {
         completionHandler: Completion<Value>?
     ) {
         #if DEBUG
-        guard !self.systemInfo.forceServerErrors else {
+        guard !self.systemInfo.dangerousSettings.internalSettings.forceServerErrors else {
+            Logger.warn(Strings.network.api_request_forcing_server_error(request))
             completionHandler?(
                 .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
             )
