@@ -16,12 +16,12 @@ class InstallationTests: XCTestCase {
 
         Purchases.logLevel = .debug
 
-        let proxyURL = "REVENUECAT_PROXY_URL"
-        if proxyURL != "REVENUECAT_PROXY_URL", !proxyURL.isEmpty {
+        let proxyURL = ""
+        if proxyURL != "", !proxyURL.isEmpty {
             Purchases.proxyURL = URL(string: proxyURL)!
         }
 
-        Purchases.configureInCustomEntitlementsComputationMode(apiKey: "REVENUECAT_API_KEY",
+        Purchases.configureInCustomEntitlementsComputationMode(apiKey: "rGogYWEdzrENUEzEoYXZNUkzoPEbEvfb",
                                                                appUserID: "Integration Tests")
     }
 

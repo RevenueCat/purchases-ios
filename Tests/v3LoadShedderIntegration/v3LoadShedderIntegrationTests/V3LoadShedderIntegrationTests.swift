@@ -18,7 +18,7 @@ import StoreKitTest
 import XCTest
 
 final class V3LoadShedderIntegrationTests: XCTestCase {
-    let apiKey = "REVENUECAT_LOAD_SHEDDER_API_KEY"
+    let apiKey = "appl_aRfhwrmSlzrSrQagvIipFKcFLKv"
 
     let skConfigFileName = "V3LoadShedderIntegrationTestsConfiguration"
     let entitlementIdentifier = "premium"
