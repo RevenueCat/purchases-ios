@@ -464,7 +464,7 @@ class DeviceCacheTests: TestCase {
         let key = DeviceCache.CacheKeys.productEntitlementMappingLastUpdated.rawValue
         let lastUpdated = try XCTUnwrap(self.mockUserDefaults.mockValues[key] as? Date)
 
-        expect(lastUpdated).to(beCloseTo(Date(), within: 1))
+        expect(lastUpdated).to(beCloseToNow())
     }
 
     func testIsProductEntitlementMappingCacheStaleWithRecentUpdate() {

@@ -258,14 +258,6 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
 
 // MARK: -
 
-func beCloseToNow() -> Predicate<Date> {
-    return beCloseToDate(Date())
-}
-
-func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
-    return beCloseTo(expectedValue, within: 1)
-}
-
 private extension Data {
 
     static func encodeJSON(_ value: Any) -> Data? {

@@ -51,9 +51,9 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(receipt.originalApplicationVersion).to(beNil())
         expect(receipt.opaqueValue).toNot(beNil())
         expect(receipt.sha1Hash).toNot(beNil())
-        expect(receipt.creationDate).to(beCloseTo(Date(), within: 1))
+        expect(receipt.creationDate).to(beCloseToNow())
         expect(receipt.expirationDate).toNot(beNil())
-        expect(receipt.expirationDate).toNot(beCloseTo(Date(), within: 1))
+        expect(receipt.expirationDate).toNot(beCloseToNow())
         expect(receipt.inAppPurchases).to(beEmpty())
     }
 
@@ -80,7 +80,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(firstPurchase.originalPurchaseDate).to(beNil())
 
         expect(firstPurchase.expiresDate).toNot(beNil())
-        expect(firstPurchase.expiresDate).toNot(beCloseTo(Date(), within: 1))
+        expect(firstPurchase.expiresDate).toNot(beCloseToNow())
 
         expect(firstPurchase.isSubscription) == true
 
