@@ -433,6 +433,7 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
         expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 1
+        expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount) == 1
     }
 
     func testFailsToCreateOfferingsFromDiskCache() throws {

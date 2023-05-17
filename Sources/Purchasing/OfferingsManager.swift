@@ -146,7 +146,10 @@ private extension OfferingsManager {
                 case let .success(offerings):
                     Logger.debug(Strings.offering.vending_offerings_cache_from_disk)
 
+                    // Cache in memory but as stale, so it can be re-updated when possible
                     cache.cacheInMemory(offerings: offerings)
+                    cache.clearOfferingsCacheTimestamp()
+
                     completion(offerings)
 
                 case .failure:
