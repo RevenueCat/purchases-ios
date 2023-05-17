@@ -357,7 +357,7 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == false
     }
 
-    func testUpdateOfferingsCacheOK() {
+    func testUpdateOfferingsCacheOK() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         self.mockSystemInfo.stubbedIsApplicationBackgrounded = true
@@ -365,9 +365,9 @@ extension OfferingsManagerTests {
         let expectedCallCount = 1
 
         // when
-        waitUntil { completed in
-            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _ in
-                completed()
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
             }
         }
 
@@ -375,6 +375,16 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
         expect(self.mockDeviceCache.cacheOfferingsCount) == expectedCallCount
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == true
+        expect(result).to(beSuccess())
+
+        let offerings = try XCTUnwrap(result?.value)
+        expect(offerings.all).to(haveCount(1))
+        expect(offerings.current?.identifier) == "base"
+        expect(offerings.current?.availablePackages).to(haveCount(1))
+
+        let package = try XCTUnwrap(offerings.current?.availablePackages.onlyElement)
+        expect(package.packageType) == .monthly
+        expect(package.storeProduct.productIdentifier) == "monthly_freetrial"
     }
 
     func testGetMissingProductIDs() {
@@ -387,6 +397,64 @@ extension OfferingsManagerTests {
                                                           productIDsFromBackend: [])) == []
         expect(self.offeringsManager.getMissingProductIDs(productIDsFromStore: productsFromStore,
                                                           productIDsFromBackend: productIDs)) == ["c"]
+    }
+
+    func testOfferingsFromMemoryCache() {
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value) === MockData.sampleOfferings
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == false
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 0
+    }
+
+    func testReturnsOfferingsFromDiskCacheIfNetworkRequestWithServerDown() throws {
+        self.mockDeviceCache.stubbedOfferings = nil
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.asJSONEncodedData()
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.all).to(haveCount(1))
+        expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsResponse.currentOfferingId
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 0
+        expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 1
+    }
+
+    func testFailsToCreateOfferingsFromDiskCache() throws {
+        let error: BackendError = .networkError(.serverDown())
+
+        self.mockDeviceCache.stubbedOfferings = nil
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.asJSONEncodedData()
+        self.mockOfferingsFactory.nilOfferings = true
+
+        let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
+                completed(result)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfferingsManager.Error.backendError(error)))
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 0
+        expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 0
     }
 
 }
@@ -419,6 +487,28 @@ private extension OfferingsManagerTests {
         )
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
+        )
+        static let sampleOfferings: Offerings = .init(
+            offerings: MockData.anyBackendOfferingsResponse.offerings
+                .map { offering in
+                    Offering(
+                        identifier: offering.identifier,
+                        serverDescription: offering.description,
+                        availablePackages: offering.packages.map { package in
+                                .init(
+                                    identifier: package.identifier,
+                                    packageType: Package.packageType(from: package.identifier),
+                                    storeProduct: StoreProduct(sk1Product: MockSK1Product(
+                                        mockProductIdentifier: package.platformProductIdentifier
+                                    )),
+                                    offeringIdentifier: offering.identifier
+                                )
+                        }
+                    )
+                }
+                .dictionaryWithKeys(\.identifier),
+            currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
+            response: MockData.anyBackendOfferingsResponse
         )
     }
 

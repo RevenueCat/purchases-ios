@@ -67,6 +67,7 @@ class DeviceCache {
 
             // Clear offerings cache.
             self.offeringsCachedObject.clearCache()
+            userDefaults.removeObject(forKey: CacheKey.offerings(oldAppUserID))
 
             // Delete attributes if synced for the old app user id.
             if Self.unsyncedAttributesByKey(userDefaults, appUserID: oldAppUserID).isEmpty {
@@ -113,10 +114,6 @@ class DeviceCache {
         }
     }
 
-    func clearCachedOfferings() {
-        self.offeringsCachedObject.clearCache()
-    }
-
     func clearCustomerInfoCacheTimestamp(appUserID: String) {
         self.userDefaults.write {
             Self.clearCustomerInfoCacheTimestamp($0, appUserID: appUserID)
@@ -142,25 +139,48 @@ class DeviceCache {
         }
     }
 
-    // MARK: - offerings
+    // MARK: - Offerings
 
-    func cache(offerings: Offerings) {
-        offeringsCachedObject.cache(instance: offerings)
+    func cachedOfferingsData(appUserID: String) -> Data? {
+        return self.userDefaults.read {
+            $0.data(forKey: CacheKey.offerings(appUserID))
+        }
+    }
+
+    func cache(offerings: Offerings, appUserID: String) {
+        self.cacheInMemory(offerings: offerings)
+
+        if let jsonData = try? JSONEncoder.default.encode(value: offerings.response, logErrors: true) {
+            self.userDefaults.write {
+                $0.set(jsonData, forKey: CacheKey.offerings(appUserID))
+            }
+        }
+    }
+
+    func cacheInMemory(offerings: Offerings) {
+        self.offeringsCachedObject.cache(instance: offerings)
+    }
+
+    func clearOfferingsCache(appUserID: String) {
+        self.offeringsCachedObject.clearCache()
+        self.userDefaults.write {
+            $0.removeObject(forKey: CacheKey.offerings(appUserID))
+        }
     }
 
     func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
-        return offeringsCachedObject.isCacheStale(
+        return self.offeringsCachedObject.isCacheStale(
             durationInSeconds: self.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded,
                                                            isSandbox: self.sandboxEnvironmentDetector.isSandbox)
         )
     }
 
     func clearOfferingsCacheTimestamp() {
-        offeringsCachedObject.clearCacheTimestamp()
+        self.offeringsCachedObject.clearCacheTimestamp()
     }
 
     func setOfferingsCacheTimestampToNow() {
-        offeringsCachedObject.updateCacheTimestamp(date: Date())
+        self.offeringsCachedObject.updateCacheTimestamp(date: Date())
     }
 
     // MARK: - subscriber attributes
@@ -330,6 +350,7 @@ class DeviceCache {
 
         case customerInfo(String)
         case customerInfoLastUpdated(String)
+        case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
 
@@ -337,6 +358,7 @@ class DeviceCache {
             switch self {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
+            case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             }
@@ -547,7 +569,7 @@ fileprivate extension UserDefaults {
             return nil
         }
 
-        return try? JSONDecoder.default.decode(jsonData: data)
+        return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
     }
 
     func set(_ value: Any?, forKey key: CacheKeyType) {
