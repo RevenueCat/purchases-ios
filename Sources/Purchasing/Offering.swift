@@ -48,7 +48,7 @@ extension Offering {
      Offering metadata defined in RevenueCat dashboard.
      */
     private let _metadata: Metadata
-    @objc var metadata: [String: Any] { self._metadata.data }
+    @objc public var metadata: [String: Any] { self._metadata.data }
 
     /**
      Array of ``Package`` objects available for purchase.
