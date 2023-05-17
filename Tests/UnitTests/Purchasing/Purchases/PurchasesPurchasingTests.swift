@@ -148,6 +148,36 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
+    func testDoesntFinishTransactionIfComputingCustomerInfoOffline() throws {
+        var finished = false
+
+        let productID = "com.product.id1"
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))
+
+        self.purchases.purchase(product: product) { (_, _, _, _) in
+            expect(self.storeKit1Wrapper.finishCalled) == false
+
+            finished = true
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        transaction.mockState = .purchasing
+
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        self.backend.postReceiptResult = .success(
+            try CustomerInfo(data: Self.emptyCustomerInfoData)
+                .copy(with: .verifiedOnDevice)
+        )
+
+        transaction.mockState = SKPaymentTransactionState.purchased
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(finished).toEventually(beTrue())
+    }
+
     func testAfterSendingDoesntFinishTransactionIfBackendError() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
