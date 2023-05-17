@@ -132,7 +132,7 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (Offerings?) -> Void)
     ) {
-        guard let data = self.deviceCache.cachedOfferingsData(appUserID: appUserID),
+        guard let data = self.deviceCache.cachedOfferingsResponseData(appUserID: appUserID),
               let response: OfferingsResponse = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
             completion(nil)
             return

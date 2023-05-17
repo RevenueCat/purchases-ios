@@ -141,7 +141,7 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsData(appUserID: String) -> Data? {
+    func cachedOfferingsResponseData(appUserID: String) -> Data? {
         return self.userDefaults.read {
             $0.data(forKey: CacheKey.offerings(appUserID))
         }

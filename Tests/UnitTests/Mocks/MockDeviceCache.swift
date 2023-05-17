@@ -113,7 +113,7 @@ class MockDeviceCache: DeviceCache {
         self.clearCachedOfferingsCount += 1
     }
 
-    override func cachedOfferingsData(appUserID: String) -> Data? {
+    override func cachedOfferingsResponseData(appUserID: String) -> Data? {
         return self.stubbedCachedOfferingsData
     }
 
