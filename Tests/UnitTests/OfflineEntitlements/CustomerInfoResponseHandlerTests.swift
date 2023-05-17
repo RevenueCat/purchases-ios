@@ -33,6 +33,8 @@ class BaseCustomerInfoResponseHandlerTests: TestCase {
         self.factory = CustomerInfoFactory()
     }
 
+    var offlineEntitlementsEnabled: Bool { return false }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -121,9 +123,29 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             throw XCTSkip("This test is for older versions")
         }
 
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        self.fetcher.stubbedResult = .success([
+            Self.purchasedProduct
+        ])
+        self.factory.stubbedResult = Self.offlineCustomerInfo
 
-        let result = await self.handle(.failure(error), nil)
+        let error: NetworkError = .serverDown()
+
+        let result = await self.handle(.failure(error), Self.mapping)
+        expect(result).to(beFailure())
+        expect(result.error).to(matchError(BackendError.networkError(error)))
+
+        expect(self.factory.createRequested) == false
+    }
+
+    func testServerErrorDoesNotComputeOfflineEntitlementsIfDisabled() async throws {
+        self.fetcher.stubbedResult = .success([
+            Self.purchasedProduct
+        ])
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+
+        let error: NetworkError = .serverDown()
+
+        let result = await self.handle(.failure(error), Self.mapping)
         expect(result).to(beFailure())
         expect(result.error).to(matchError(BackendError.networkError(error)))
 
@@ -140,11 +162,13 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
+    override var offlineEntitlementsEnabled: Bool { return true }
+
     func testServerErrorWithNoEntitlementMappingAndNoProducts() async {
         self.fetcher.stubbedResult = .success([])
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let error: NetworkError = .serverDown()
         let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
@@ -163,7 +187,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.fetcher.stubbedResult = .success([])
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let error: NetworkError = .serverDown()
         let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
@@ -182,7 +206,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.fetcher.stubbedResult = .success([])
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let error: NetworkError = .serverDown()
         let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), .empty)
@@ -204,7 +228,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
         let logger = TestLogHandler()
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let error: NetworkError = .serverDown()
 
         let result = await self.handle(.failure(error), Self.mapping)
         expect(result).to(beSuccess())
@@ -227,7 +251,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         let logger = TestLogHandler()
 
         let fetcherError = StoreKitError.systemError(StoreKitError.unknown)
-        let error: NetworkError = .errorResponse(.default, .internalServerError)
+        let error: NetworkError = .serverDown()
 
         self.fetcher.stubbedResult = .failure(fetcherError)
 
@@ -250,7 +274,8 @@ private extension BaseCustomerInfoResponseHandlerTests {
         return .init(purchasedProductsFetcher: self.fetcher,
                      productEntitlementMapping: mapping,
                      customerInfoCreator: self.factory.create,
-                     userID: self.userID)
+                     userID: self.userID,
+                     offlineEntitlementsEnabled: self.offlineEntitlementsEnabled)
     }
 
     func handle(

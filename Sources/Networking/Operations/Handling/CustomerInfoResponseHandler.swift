@@ -19,11 +19,14 @@ class CustomerInfoResponseHandler {
     private let productEntitlementMapping: ProductEntitlementMapping?
     private let customerInfoCreator: CustomerInfo.OfflineCreator
     private let userID: String
+    // Allows temporarily disabling the feature until it's fully ready
+    private let offlineEntitlementsEnabled: Bool
 
     convenience init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
         productEntitlementMapping: ProductEntitlementMapping?,
-        userID: String
+        userID: String,
+        offlineEntitlementsEnabled: Bool = false
     ) {
         self.init(
             purchasedProductsFetcher: purchasedProductsFetcher,
@@ -31,19 +34,23 @@ class CustomerInfoResponseHandler {
             customerInfoCreator: { products, mapping, userID in
                 CustomerInfo(from: products, mapping: mapping, userID: userID)
             },
-            userID: userID)
+            userID: userID,
+            offlineEntitlementsEnabled: offlineEntitlementsEnabled
+        )
     }
 
     init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
         productEntitlementMapping: ProductEntitlementMapping?,
         customerInfoCreator: @escaping CustomerInfo.OfflineCreator,
-        userID: String
+        userID: String,
+        offlineEntitlementsEnabled: Bool = false
     ) {
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.productEntitlementMapping = productEntitlementMapping
         self.customerInfoCreator = customerInfoCreator
         self.userID = userID
+        self.offlineEntitlementsEnabled = offlineEntitlementsEnabled
     }
 
     func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
@@ -68,8 +75,9 @@ class CustomerInfoResponseHandler {
         result: Result<CustomerInfo, BackendError>,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
-        guard result.error?.isServerDown == true,
-        #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+        guard self.offlineEntitlementsEnabled,
+              result.error?.isServerDown == true,
+              #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
             completion(result)
             return
         }
