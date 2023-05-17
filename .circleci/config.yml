@@ -517,6 +517,12 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"integration-tests"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -805,6 +811,8 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - backend-integration-tests:
+          xcode_version: '14.3.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
