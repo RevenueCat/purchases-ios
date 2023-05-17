@@ -32,7 +32,9 @@ class PurchasesDiagnosticsTests: TestCase {
 
         self.purchases.mockedHealthRequestResponse = .success(())
         self.purchases.mockedCustomerInfoResponse = .success(.emptyInfo)
-        self.purchases.mockedOfferingsResponse = .success(.init(offerings: [:], currentOfferingID: nil))
+        self.purchases.mockedOfferingsResponse = .success(.init(offerings: [:],
+                                                                currentOfferingID: nil,
+                                                                response: .init(currentOfferingId: nil, offerings: [])))
     }
 
     func testFailingHealthRequest() async throws {
