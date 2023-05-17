@@ -1,0 +1,33 @@
+{
+  "current_offering_id" : "default",
+  "offerings" : [
+    {
+      "description" : "standard set of packages",
+      "identifier" : "default",
+      "packages" : [
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.monthly_4.99.1_week_intro"
+        },
+        {
+          "identifier" : "$rc_annual",
+          "platform_product_identifier" : "com.revenuecat.annual_39.99.2_week_intro"
+        },
+        {
+          "identifier" : "$rc_weekly",
+          "platform_product_identifier" : "com.revenuecat.weekly_1.99.3_day_intro"
+        }
+      ]
+    },
+    {
+      "description" : "Coins",
+      "identifier" : "coins",
+      "packages" : [
+        {
+          "identifier" : "10.coins",
+          "platform_product_identifier" : "consumable.10_coins"
+        }
+      ]
+    }
+  ]
+}

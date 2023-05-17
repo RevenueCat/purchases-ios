@@ -8,6 +8,7 @@
 
 import Nimble
 @testable import RevenueCat
+import SnapshotTesting
 import StoreKit
 import StoreKitTest
 import UniformTypeIdentifiers
@@ -39,7 +40,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
+
         expect(receivedOfferings.all).toNot(beEmpty())
+        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
     }
 
     func testCanPurchasePackage() async throws {
