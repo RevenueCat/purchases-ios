@@ -13,6 +13,9 @@
 
 import Foundation
 import Nimble
+@testable import RevenueCat
+
+// MARK: - Dates
 
 func beCloseToNow() -> Predicate<Date> {
     return beCloseToDate(Date())
@@ -20,4 +23,54 @@ func beCloseToNow() -> Predicate<Date> {
 
 func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
     return beCloseTo(expectedValue, within: 1)
+}
+
+// MARK: - Errors
+
+// Overloads for `Nimble.matchError` that allows comparing the domain/code between 2 errors
+// without failures because `ErrorCode` does not contain `userInfo`.
+
+/// Overload for `Nimble.matchError` that ignores the `PurchasesError` type and compares them as `Error`
+/// (comparing the domain and code)
+func matchError(_ error: PurchasesError) -> Predicate<Error> {
+    return Nimble.matchError(error as Error)
+}
+
+/// Overload for `Nimble.matchError` that ignores the `ErrorCode` type and compares them as `Error`
+/// (comparing the domain and code)
+func matchError(_ error: ErrorCode) -> Predicate<Error> {
+    return Nimble.matchError(error as Error)
+}
+
+/// Overload for `Nimble.throwError` that ignores the `PurchasesError` type and compares them as `Error`
+/// (comparing the domain and code)
+public func throwError<Out>(_ error: PurchasesError) -> Predicate<Out> {
+    return Nimble.throwError(error as Error)
+}
+
+/// Overload for `Nimble.throwError` that ignores the `ErrorCode` type and compares them as `Error`
+/// (comparing the domain and code)
+public func throwError<Out>(_ error: ErrorCode) -> Predicate<Out> {
+    return Nimble.throwError(error as Error)
+}
+
+// MARK: - Data
+
+func matchJSONData(_ other: Data) -> Predicate<Data> {
+    return equal(other.serialized)
+}
+
+extension Data {
+
+    static func encodeJSON(_ value: Any) -> Data? {
+        return try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .prettyPrinted])
+    }
+
+    /// Decodes and encodes the data to obtain a sorted and pretty printed JSON
+    /// This allows comparing 2 different JSON to verify that their contents are equal
+    fileprivate var serialized: Data? {
+        guard let json = try? JSONSerialization.jsonObject(with: self) else { return nil }
+        return Self.encodeJSON(json)
+    }
+
 }

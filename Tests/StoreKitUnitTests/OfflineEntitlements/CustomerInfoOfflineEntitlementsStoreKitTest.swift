@@ -255,26 +255,3 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
     }
 
 }
-
-// MARK: -
-
-private extension Data {
-
-    static func encodeJSON(_ value: Any) -> Data? {
-        return try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .prettyPrinted])
-    }
-
-    /// Decodes and encodes the data to obtain a sorted and pretty printed JSON
-    /// This allows comparing 2 different JSON to verify that their contents are equal
-    var serialized: Data? {
-        guard let json = try? JSONSerialization.jsonObject(with: self) else {
-            return nil
-        }
-        return Self.encodeJSON(json)
-    }
-
-}
-
-private func matchJSONData(_ other: Data) -> Predicate<Data> {
-    return equal(other.serialized)
-}
