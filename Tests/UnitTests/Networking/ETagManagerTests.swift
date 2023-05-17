@@ -83,7 +83,7 @@ class ETagManagerTests: TestCase {
 
         let newCachedResponse = try self.getCachedResponse(url: Self.testURL)
         expect(newCachedResponse.validationTime).toNot(beCloseTo(validationTime, within: 1))
-        expect(newCachedResponse.validationTime).to(beCloseTo(Date(), within: 1))
+        expect(newCachedResponse.validationTime).to(beCloseToNow())
     }
 
     func testStoredResponseIsNotUsedIfResponseCodeIs200() throws {
