@@ -84,7 +84,7 @@ extension CustomerInfo {
     }
 
     /// Purchases are verified with StoreKit 2.
-    private static let verification: VerificationResult = .verified
+    private static let verification: VerificationResult = .verifiedOnDevice
 
     static let defaultManagementURL = URL(string: "https://apps.apple.com/account/subscriptions")!
 

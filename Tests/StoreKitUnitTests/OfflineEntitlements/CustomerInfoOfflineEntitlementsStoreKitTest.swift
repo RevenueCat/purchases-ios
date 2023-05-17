@@ -251,7 +251,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
         expect(entitlement.periodType) == periodType
         expect(entitlement.store) == .appStore
         expect(entitlement.unsubscribeDetectedAt).to(beNil())
-        expect(entitlement.verification) == .verified
+        expect(entitlement.verification) == .verifiedOnDevice
     }
 
 }

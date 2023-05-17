@@ -181,13 +181,18 @@ class CustomerInfoManager {
     }
 
     func cache(customerInfo: CustomerInfo, appUserID: String) {
-        do {
-            let jsonData = try JSONEncoder.default.encode(customerInfo)
-            self.withData { $0.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID) }
-            self.sendUpdateIfChanged(customerInfo: customerInfo)
-        } catch {
-            Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
+        if customerInfo.shouldCache {
+            do {
+                let jsonData = try JSONEncoder.default.encode(customerInfo)
+                self.withData { $0.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID) }
+            } catch {
+                Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
+            }
+        } else {
+            Logger.debug(Strings.customerInfo.not_caching_offline_customer_info)
         }
+
+        self.sendUpdateIfChanged(customerInfo: customerInfo)
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -313,4 +318,28 @@ private extension CustomerInfoManager {
     func modifyData<Result>(_ action: (inout Data) -> Result) -> Result {
         return self.data.modify(action)
     }
+
+}
+
+private extension CustomerInfo {
+
+    var shouldCache: Bool {
+        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
+            return true
+        }
+
+        return self.entitlements.verification.shouldCache
+    }
+
+}
+
+private extension VerificationResult {
+
+    var shouldCache: Bool {
+        switch self {
+        case .failed, .verified, .notRequested: return true
+        case .verifiedOnDevice: return false
+        }
+    }
+
 }
