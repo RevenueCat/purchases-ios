@@ -194,6 +194,7 @@ class CustomerInfoManager {
             }
         } else {
             Logger.debug(Strings.customerInfo.not_caching_offline_customer_info)
+            self.clearCustomerInfoCache(forAppUserID: appUserID)
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo)

@@ -431,6 +431,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
 
         logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }
