@@ -184,12 +184,50 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchasingTwoProductsWhileOffline() async throws {
+    func testPurchaseAgainAfterServerRecovers() async throws {
+        // 1. Purchase while server is down
         self.serverDown()
+        try await self.purchaseMonthlyProduct()
+
+        // 2. Purchase again when the server is back up
+        // (maybe the app failed the first time?)
+        self.serverUp()
+        try await self.purchaseMonthlyProduct()
+
+        // 3. `CustomerInfo` should contain the purchase
+        let info = try await Purchases.shared.customerInfo()
+        try await self.verifyEntitlementWentThrough(info)
+        expect(info.activeSubscriptions).to(haveCount(1))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasingTwoProductsWhileServerIsDown() async throws {
         let product1 = try await self.monthlyPackage.storeProduct
         let product2 = try await self.annualPackage.storeProduct
 
+        self.serverDown()
+
         _ = try await Purchases.shared.purchase(product: product1)
+        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+
+        try await self.verifyEntitlementWentThrough(info)
+        expect(info.allPurchasedProductIdentifiers) == [
+            product1.productIdentifier,
+            product2.productIdentifier
+        ]
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasingSecondProductAfterServerIsUp() async throws {
+        let product1 = try await self.monthlyPackage.storeProduct
+        let product2 = try await self.annualPackage.storeProduct
+
+        self.serverDown()
+
+        _ = try await Purchases.shared.purchase(product: product1)
+
+        self.serverUp()
+
         let info = try await Purchases.shared.purchase(product: product2).customerInfo
 
         try await self.verifyEntitlementWentThrough(info)
