@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockOfflineEntitlementsManager.swift
+//  MockOfflineEntitlementsManager.swiftz
 //
 //  Created by Nacho Soto on 3/22/23.
 
@@ -15,6 +15,12 @@ import Foundation
 @testable import RevenueCat
 
 class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
+
+    init() {
+        super.init(deviceCache: MockDeviceCache(),
+                   operationDispatcher: MockOperationDispatcher(),
+                   api: MockOfflineEntitlementsAPI())
+    }
 
     var invokedUpdateProductsEntitlementsCacheIfStale = false
     var invokedUpdateProductsEntitlementsCacheIfStaleCount = 0
@@ -29,6 +35,12 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
         self.invokedUpdateProductsEntitlementsCacheIfStaleCount += 1
         self.invokedUpdateProductsEntitlementsCacheIfStaleParameters = isAppBackgrounded
         self.invokedUpdateProductsEntitlementsCacheIfStaleParametersList.append(isAppBackgrounded)
+    }
+
+    var stubbedShouldComputeOfflineCustomerInfo: Bool = false
+
+    override func shouldComputeOfflineCustomerInfo(appUserID: String) -> Bool {
+        return self.stubbedShouldComputeOfflineCustomerInfo
     }
 
 }

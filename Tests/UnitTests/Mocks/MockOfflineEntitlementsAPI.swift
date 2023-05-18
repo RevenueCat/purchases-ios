@@ -16,6 +16,10 @@ import Foundation
 
 class MockOfflineEntitlementsAPI: OfflineEntitlementsAPI {
 
+    init() {
+        super.init(backendConfig: MockBackendConfiguration())
+    }
+
     var invokedGetProductEntitlementMapping = false
     var invokedGetProductEntitlementMappingCount = 0
     var invokedGetProductEntitlementMappingParameter: Bool?

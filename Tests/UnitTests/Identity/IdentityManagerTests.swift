@@ -36,10 +36,13 @@ class IdentityManagerTests: TestCase {
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
-        self.mockCustomerInfoManager = MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                               deviceCache: self.mockDeviceCache,
-                                                               backend: MockBackend(),
-                                                               systemInfo: systemInfo)
+        self.mockCustomerInfoManager = MockCustomerInfoManager(
+            offlineEntitlementsManager: MockOfflineEntitlementsManager(),
+            operationDispatcher: MockOperationDispatcher(),
+            deviceCache: self.mockDeviceCache,
+            backend: MockBackend(),
+            systemInfo: systemInfo
+        )
         self.mockAttributeSyncing = MockAttributeSyncing()
     }
 

@@ -294,7 +294,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
-        let customerInfoManager = CustomerInfoManager(operationDispatcher: operationDispatcher,
+
+        let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
+                                                                    operationDispatcher: operationDispatcher,
+                                                                    api: backend.offlineEntitlements)
+        let customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
+                                                      operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       systemInfo: systemInfo)
@@ -331,9 +336,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 backend: backend,
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager)
-        let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
-                                                                    operationDispatcher: operationDispatcher,
-                                                                    api: backend.offlineEntitlements)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)

@@ -30,6 +30,7 @@ final class CustomerAPI {
 
     func getCustomerInfo(appUserID: String,
                          withRandomDelay randomDelay: Bool,
+                         allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -37,7 +38,9 @@ final class CustomerAPI {
         let factory = GetCustomerInfoOperation.createFactory(
             configuration: config,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            offlineCreator: self.backendConfig.createOfflineCustomerInfoCreator()
+            offlineCreator: allowComputingOffline
+                ? self.backendConfig.createOfflineCustomerInfoCreator()
+                : nil
         )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,

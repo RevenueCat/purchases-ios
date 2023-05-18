@@ -29,23 +29,11 @@ class MockBackend: Backend {
         let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
-        let mockAPIKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: mockAPIKey,
-                                        systemInfo: systemInfo,
-                                        eTagManager: MockETagManager(),
-                                        requestTimeout: 7)
-        let backendConfig = BackendConfiguration(
-            httpClient: httpClient,
-            operationDispatcher: MockOperationDispatcher(),
-            operationQueue: QueueProvider.createBackendQueue(),
-            systemInfo: systemInfo,
-            productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
-            purchasedProductsFetcher: MockPurchasedProductsFetcher(),
-            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
-        )
+
+        let backendConfig = MockBackendConfiguration()
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
-        let offlineEntitlements = MockOfflineEntitlementsAPI(backendConfig: backendConfig)
+        let offlineEntitlements = MockOfflineEntitlementsAPI()
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
 
@@ -96,20 +84,23 @@ class MockBackend: Backend {
     var invokedGetSubscriberDataCount = 0
     var invokedGetSubscriberDataParameters: (appUserID: String?,
                                              randomDelay: Bool,
+                                             allowComputingOffline: Bool,
                                              completion: CustomerAPI.CustomerInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
                                                    randomDelay: Bool,
+                                                   allowComputingOffline: Bool,
                                                    completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func getCustomerInfo(appUserID: String,
                                   withRandomDelay randomDelay: Bool,
+                                  allowComputingOffline: Bool,
                                   completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
-        invokedGetSubscriberDataParameters = (appUserID, randomDelay, completion)
-        invokedGetSubscriberDataParametersList.append((appUserID, randomDelay, completion))
+        invokedGetSubscriberDataParameters = (appUserID, randomDelay, allowComputingOffline, completion)
+        invokedGetSubscriberDataParametersList.append((appUserID, randomDelay, allowComputingOffline, completion))
 
         completion(self.stubbedGetCustomerInfoResult)
     }

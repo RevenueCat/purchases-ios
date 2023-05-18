@@ -15,10 +15,11 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    private let offlineCreator: OfflineCustomerInfoCreator
+    private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
 
-    init(offlineCreator: OfflineCustomerInfoCreator, userID: String) {
+    /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't be computed.
+    init(offlineCreator: OfflineCustomerInfoCreator?, userID: String) {
         self.offlineCreator = offlineCreator
         self.userID = userID
     }
@@ -45,7 +46,8 @@ class CustomerInfoResponseHandler {
         result: Result<CustomerInfo, BackendError>,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
-        guard result.error?.isServerDown == true,
+        guard let offlineCreator = self.offlineCreator,
+              result.error?.isServerDown == true,
               #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
             completion(result)
             return
@@ -53,7 +55,7 @@ class CustomerInfoResponseHandler {
 
         _ = Task<Void, Never> {
             do {
-                completion(.success(try await self.offlineCreator.create(for: self.userID)))
+                completion(.success(try await offlineCreator.create(for: self.userID)))
             } catch {
                 Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
                 completion(result)

@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class BackendConfiguration {
+class BackendConfiguration {
 
     let httpClient: HTTPClient
 
@@ -71,4 +71,5 @@ extension BackendConfiguration {
 
 // @unchecked because:
 // - `OperationQueue` is not `Sendable` as of Swift 5.7
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension BackendConfiguration: @unchecked Sendable {}

@@ -7,7 +7,7 @@
 
 class MockDeviceCache: DeviceCache {
 
-    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector) {
+    convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector = MockSandboxEnvironmentDetector()) {
         self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
                   userDefaults: .computeDefault())
     }

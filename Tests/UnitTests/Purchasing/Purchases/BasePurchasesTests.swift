@@ -77,7 +77,9 @@ class BasePurchasesTests: TestCase {
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster)
-        self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+                                                       operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
                                                        systemInfo: self.systemInfo)
@@ -87,11 +89,6 @@ class BasePurchasesTests: TestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
                                                          productsManager: self.mockProductsManager)
-        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager(
-            deviceCache: self.deviceCache,
-            operationDispatcher: self.mockOperationDispatcher,
-            api: self.backend.offlineEntitlements
-        )
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -402,6 +399,7 @@ extension BasePurchasesTests {
 
         override func getCustomerInfo(appUserID: String,
                                       withRandomDelay randomDelay: Bool,
+                                      allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1
             self.userID = appUserID

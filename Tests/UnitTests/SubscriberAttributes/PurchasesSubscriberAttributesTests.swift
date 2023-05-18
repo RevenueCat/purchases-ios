@@ -104,21 +104,18 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
                                        currentUserProvider: self.mockIdentityManager,
                                        attributionPoster: self.mockAttributionPoster)
-        self.customerInfoManager = CustomerInfoManager(operationDispatcher: mockOperationDispatcher,
-                                                       deviceCache: mockDeviceCache,
-                                                       backend: mockBackend,
-                                                       systemInfo: systemInfo)
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+                                                       operationDispatcher: self.mockOperationDispatcher,
+                                                       deviceCache: self.mockDeviceCache,
+                                                       backend: self.mockBackend,
+                                                       systemInfo: self.systemInfo)
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
                                                          operationDispatcher: mockOperationDispatcher,
                                                          systemInfo: systemInfo,
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
                                                          productsManager: mockProductsManager)
-        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager(
-            deviceCache: mockDeviceCache,
-            operationDispatcher: mockOperationDispatcher,
-            api: mockBackend.offlineEntitlements
-        )
         self.mockReceiptFetcher = MockReceiptFetcher(
             requestFetcher: mockRequestFetcher,
             systemInfo: systemInfoAttribution
