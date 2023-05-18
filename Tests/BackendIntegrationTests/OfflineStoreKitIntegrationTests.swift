@@ -16,26 +16,46 @@ import Nimble
 import StoreKit
 import XCTest
 
+// swiftlint:disable type_name
+
+class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
+
+    fileprivate var serverIsDown: Bool = false
+    override var forceServerErrors: Bool { return self.serverIsDown }
+
+    override func setUp() async throws {
+        self.serverIsDown = false
+        try await super.setUp()
+
+        await self.waitForPendingCustomerInfoRequests()
+    }
+
+}
+
 class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
     override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
 
 }
 
-class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
-
-    private var serverIsDown: Bool = false
-    override var forceServerErrors: Bool { return self.serverIsDown }
+class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     override func setUp() async throws {
-        self.serverIsDown = false
-
         try await super.setUp()
 
-        await self.waitForPendingCustomerInfoRequests()
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             try await self.ensureEntitlementMappingIsAvailable()
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
+        Purchases.shared.invalidateCustomerInfoCache()
+
+        self.serverDown()
+
+        let info = try await Purchases.shared.customerInfo()
+        expect(info.entitlements.all).to(beEmpty())
     }
 
     func testOfferingsAreCachedInMemory() async throws {
@@ -154,17 +174,37 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
 }
 
-private extension OfflineStoreKit1IntegrationTests {
+class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
+        self.serverDown()
+
+        do {
+            _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+            fail("Fetch should have failed")
+        } catch let error as ErrorCode {
+            expect(error).to(matchError(ErrorCode.unknownBackendError))
+        } catch let error {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+}
+
+// MARK: -
+
+private extension BaseOfflineStoreKitIntegrationTests {
 
     final func serverDown() { self.serverIsDown = true }
     final func serverUp() { self.serverIsDown = false }
 
-    private func waitForPendingCustomerInfoRequests() async {
+    func waitForPendingCustomerInfoRequests() async {
         _ = try? await Purchases.shared.customerInfo()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func ensureEntitlementMappingIsAvailable() async throws {
+    func ensureEntitlementMappingIsAvailable() async throws {
         _ = try await Purchases.shared.productEntitlementMapping()
     }
 
