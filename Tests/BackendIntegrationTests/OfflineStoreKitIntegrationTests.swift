@@ -95,7 +95,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithOnePurchase() async throws {
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyOffering()
 
         Purchases.shared.invalidateCustomerInfoCache()
         self.serverDown()
@@ -170,6 +170,22 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 3. `CustomerInfo` should contain offline purchase
         let info = try await Purchases.shared.customerInfo()
         try await self.verifyEntitlementWentThrough(info)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasingTwoProductsWhileOffline() async throws {
+        self.serverDown()
+        let product1 = try await self.monthlyPackage.storeProduct
+        let product2 = try await self.annualPackage.storeProduct
+
+        _ = try await Purchases.shared.purchase(product: product1)
+        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+
+        try await self.verifyEntitlementWentThrough(info)
+        expect(info.allPurchasedProductIdentifiers) == [
+            product1.productIdentifier,
+            product2.productIdentifier
+        ]
     }
 
 }
