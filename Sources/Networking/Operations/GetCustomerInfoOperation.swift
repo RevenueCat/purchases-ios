@@ -22,14 +22,12 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
     static func createFactory(
         configuration: UserSpecificConfiguration,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
-        purchasedProductsFetcher: PurchasedProductsFetcherType,
-        productEntitlementMapping: ProductEntitlementMapping?
+        offlineCreator: OfflineCustomerInfoCreator
     ) -> CacheableNetworkOperationFactory<GetCustomerInfoOperation> {
         return Self.createFactory(
             configuration: configuration,
             customerInfoResponseHandler: .init(
-                purchasedProductsFetcher: purchasedProductsFetcher,
-                productEntitlementMapping: productEntitlementMapping,
+                offlineCreator: offlineCreator,
                 userID: configuration.appUserID
             ),
             customerInfoCallbackCache: customerInfoCallbackCache)

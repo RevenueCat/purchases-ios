@@ -21,8 +21,9 @@ final class BackendConfiguration {
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
-    let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
-    let purchasedProductsFetcher: PurchasedProductsFetcherType
+
+    private let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
+    private let purchasedProductsFetcher: PurchasedProductsFetcherType
 
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
@@ -42,6 +43,11 @@ final class BackendConfiguration {
 
     func clearCache() {
         self.httpClient.clearCaches()
+    }
+
+    func createOfflineCustomerInfoCreator() -> OfflineCustomerInfoCreator {
+        return .init(purchasedProductsFetcher: self.purchasedProductsFetcher,
+                     productEntitlementMapping: self.productEntitlementMappingFetcher.productEntitlementMapping)
     }
 
 }

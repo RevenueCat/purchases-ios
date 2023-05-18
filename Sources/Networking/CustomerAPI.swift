@@ -37,8 +37,7 @@ final class CustomerAPI {
         let factory = GetCustomerInfoOperation.createFactory(
             configuration: config,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            purchasedProductsFetcher: self.backendConfig.purchasedProductsFetcher,
-            productEntitlementMapping: self.backendConfig.productEntitlementMappingFetcher.productEntitlementMapping
+            offlineCreator: self.backendConfig.createOfflineCustomerInfoCreator()
         )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
@@ -121,8 +120,7 @@ final class CustomerAPI {
             configuration: config,
             postData: postData,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            purchasedProductsFetcher: self.backendConfig.purchasedProductsFetcher,
-            productEntitlementMapping: self.backendConfig.productEntitlementMappingFetcher.productEntitlementMapping
+            offlineCustomerInfoCreator: self.backendConfig.createOfflineCustomerInfoCreator()
         )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,

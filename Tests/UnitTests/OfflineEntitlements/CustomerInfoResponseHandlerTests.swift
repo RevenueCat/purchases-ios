@@ -137,20 +137,6 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
         expect(self.factory.createRequested) == false
     }
 
-    func testServerErrorDoesNotComputeOfflineEntitlementsIfDisabled() async throws {
-        self.fetcher.stubbedResult = .success([
-            Self.purchasedProduct
-        ])
-        self.factory.stubbedResult = Self.offlineCustomerInfo
-
-        let error: NetworkError = .serverDown()
-
-        let result = await self.handle(.failure(error), Self.mapping)
-        expect(result).to(beFailure())
-        expect(result.error).to(matchError(BackendError.networkError(error)))
-
-        expect(self.factory.createRequested) == false
-    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -271,11 +257,14 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 private extension BaseCustomerInfoResponseHandlerTests {
 
     private func create(_ mapping: ProductEntitlementMapping?) -> CustomerInfoResponseHandler {
-        return .init(purchasedProductsFetcher: self.fetcher,
-                     productEntitlementMapping: mapping,
-                     customerInfoCreator: self.factory.create,
-                     userID: self.userID,
-                     offlineEntitlementsEnabled: self.offlineEntitlementsEnabled)
+        return .init(
+            offlineCreator: .init(
+                purchasedProductsFetcher: self.fetcher,
+                productEntitlementMapping: mapping,
+                creator: self.factory.create
+            ),
+            userID: self.userID
+        )
     }
 
     func handle(
@@ -350,6 +339,7 @@ private final class CustomerInfoFactory {
         userID: String
     )?
 
+    @Sendable
     func create(products: [PurchasedSK2Product], mapping: ProductEntitlementMapping, userID: String) -> CustomerInfo {
         guard let result = self.stubbedResult else {
             fatalError("Creation requested without stub")

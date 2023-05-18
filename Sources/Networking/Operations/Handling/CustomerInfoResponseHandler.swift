@@ -15,42 +15,12 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    private let purchasedProductsFetcher: PurchasedProductsFetcherType
-    private let productEntitlementMapping: ProductEntitlementMapping?
-    private let customerInfoCreator: CustomerInfo.OfflineCreator
+    private let offlineCreator: OfflineCustomerInfoCreator
     private let userID: String
-    // Allows temporarily disabling the feature until it's fully ready
-    private let offlineEntitlementsEnabled: Bool
 
-    convenience init(
-        purchasedProductsFetcher: PurchasedProductsFetcherType,
-        productEntitlementMapping: ProductEntitlementMapping?,
-        userID: String,
-        offlineEntitlementsEnabled: Bool = false
-    ) {
-        self.init(
-            purchasedProductsFetcher: purchasedProductsFetcher,
-            productEntitlementMapping: productEntitlementMapping,
-            customerInfoCreator: { products, mapping, userID in
-                CustomerInfo(from: products, mapping: mapping, userID: userID)
-            },
-            userID: userID,
-            offlineEntitlementsEnabled: offlineEntitlementsEnabled
-        )
-    }
-
-    init(
-        purchasedProductsFetcher: PurchasedProductsFetcherType,
-        productEntitlementMapping: ProductEntitlementMapping?,
-        customerInfoCreator: @escaping CustomerInfo.OfflineCreator,
-        userID: String,
-        offlineEntitlementsEnabled: Bool = false
-    ) {
-        self.purchasedProductsFetcher = purchasedProductsFetcher
-        self.productEntitlementMapping = productEntitlementMapping
-        self.customerInfoCreator = customerInfoCreator
+    init(offlineCreator: OfflineCustomerInfoCreator, userID: String) {
+        self.offlineCreator = offlineCreator
         self.userID = userID
-        self.offlineEntitlementsEnabled = offlineEntitlementsEnabled
     }
 
     func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
@@ -75,8 +45,7 @@ class CustomerInfoResponseHandler {
         result: Result<CustomerInfo, BackendError>,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
-        guard self.offlineEntitlementsEnabled,
-              result.error?.isServerDown == true,
+        guard result.error?.isServerDown == true,
               #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
             completion(result)
             return
@@ -84,22 +53,12 @@ class CustomerInfoResponseHandler {
 
         _ = Task<Void, Never> {
             do {
-                completion(.success(try await self.computeOfflineCustomerInfo()))
+                completion(.success(try await self.offlineCreator.create(for: self.userID)))
             } catch {
                 Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
                 completion(result)
             }
         }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func computeOfflineCustomerInfo() async throws -> CustomerInfo {
-        return try await CustomerInfo.createOffline(
-            with: self.productEntitlementMapping,
-            fetcher: self.purchasedProductsFetcher,
-            creator: self.customerInfoCreator,
-            userID: self.userID
-        )
     }
 
 }
