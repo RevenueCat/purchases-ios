@@ -62,7 +62,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/v3LoadShedderIntegrationTestsConfiguration.storekit">
+         identifier = "../Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTestsConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
