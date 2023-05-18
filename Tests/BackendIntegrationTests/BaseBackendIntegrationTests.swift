@@ -89,7 +89,7 @@ class BaseBackendIntegrationTests: XCTestCase {
     }
 
     /// Simulates closing the app and re-opening with a fresh instance of `Purchases`.
-    final func resetPurchases() async {
+    final func resetSingleton() async {
         Logger.warn("Resetting Purchases.shared")
 
         Purchases.clearSingleton()

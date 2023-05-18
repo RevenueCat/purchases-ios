@@ -53,7 +53,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(onlineOfferings.all).toNot(beEmpty())
 
         self.serverDown()
-        await self.resetPurchases()
+        await self.resetSingleton()
 
         let offlineOfferings = try await Purchases.shared.offerings()
         expect(offlineOfferings.response) == onlineOfferings.response
@@ -107,7 +107,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 2. "Re-open" the app after the server is back
         self.serverUp()
         Purchases.shared.invalidateCustomerInfoCache()
-        await self.resetPurchases()
+        await self.resetSingleton()
 
         logger.verifyMessageWasNotLogged("Finishing transaction")
 
@@ -131,7 +131,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 5. Restart app again
         Purchases.shared.invalidateCustomerInfoCache()
-        await self.resetPurchases()
+        await self.resetSingleton()
 
         // 6. To ensure (with a clean cache) that the receipt was posted
         let info = try await Purchases.shared.customerInfo()
@@ -145,7 +145,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
 
         // 2. "Re-open" the app
-        await self.resetPurchases()
+        await self.resetSingleton()
 
         // 3. `CustomerInfo` should contain offline purchase
         let info = try await Purchases.shared.customerInfo()
