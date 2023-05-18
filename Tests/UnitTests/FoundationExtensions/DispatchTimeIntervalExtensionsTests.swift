@@ -20,6 +20,12 @@ import XCTest
 
 class DispatchTimeIntervalExtensionsTests: TestCase {
 
+    func testMinutes() {
+        expect(DispatchTimeInterval.minutes(0)) == .seconds(0)
+        expect(DispatchTimeInterval.minutes(1)) == .seconds(60)
+        expect(DispatchTimeInterval.minutes(5)) == .seconds(60 * 5)
+    }
+
     func testHours() {
         expect(DispatchTimeInterval.hours(0)) == .seconds(0)
         expect(DispatchTimeInterval.hours(1)) == .seconds(3600)

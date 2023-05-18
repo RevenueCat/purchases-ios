@@ -30,6 +30,10 @@ enum OfflineEntitlementsStrings {
     case computing_offline_customer_info_failed(Error)
     case computed_offline_customer_info(EntitlementInfos)
 
+    case purchased_products_fetching
+    case purchased_products_returning_cache(count: Int)
+    case purchased_products_invalidating_cache
+
 }
 
 extension OfflineEntitlementsStrings: CustomStringConvertible {
@@ -68,6 +72,14 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
 
         case let .computed_offline_customer_info(entitlements):
             return "Computed offline CustomerInfo with \(entitlements.active.count) active entitlements."
+        case .purchased_products_fetching:
+            return "PurchasedProductsFetcher: fetching products from StoreKit"
+
+        case let .purchased_products_returning_cache(count):
+            return "PurchasedProductsFetcher: returning \(count) cached products"
+
+        case .purchased_products_invalidating_cache:
+            return "PurchasedProductsFetcher: invalidating cache"
         }
     }
 
