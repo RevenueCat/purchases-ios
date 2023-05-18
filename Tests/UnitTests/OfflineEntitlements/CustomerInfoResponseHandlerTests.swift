@@ -188,25 +188,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         )
     }
 
-    func testServerErrorFailsWhenCreatingOfflineCustomerInfoWithEmptyMapping() async {
-        self.fetcher.stubbedResult = .success([])
-        self.factory.stubbedResult = Self.offlineCustomerInfo
-
-        let error: NetworkError = .serverDown()
-        let logger = TestLogHandler()
-
-        let result = await self.handle(.failure(error), .empty)
-        expect(result).to(beFailure())
-        expect(result.error).to(matchError(BackendError.networkError(error)))
-
-        expect(self.factory.createRequested) == false
-
-        logger.verifyMessageWasLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
-            level: .warn
-        )
-    }
-
     func testServerErrorCreatesOfflineCustomerInfo() async {
         self.fetcher.stubbedResult = .success([
             Self.purchasedProduct
@@ -231,6 +212,19 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
             Strings.offlineEntitlements.computed_offline_customer_info(Self.offlineCustomerInfo.entitlements),
             level: .info
         )
+    }
+
+    func testCreatesOfflineCustomerInfoWithEmptyMapping() async {
+        self.fetcher.stubbedResult = .success([])
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+
+        let error: NetworkError = .serverDown()
+
+        let result = await self.handle(.failure(error), .empty)
+        expect(result).to(beSuccess())
+        expect(result.value) == Self.offlineCustomerInfo
+
+        expect(self.factory.createRequested) == true
     }
 
     func testServerErrorWithFailingPurchasedProductsFetcher() async {
