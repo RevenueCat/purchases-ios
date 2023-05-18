@@ -111,10 +111,10 @@ extension TestLogHandler {
         pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
         file: FileString = #file,
         line: UInt = #line
-    ) async {
+    ) async throws {
         let condition = Self.entryCondition(message: message, level: level)
 
-        await asyncWait(
+        try await asyncWait(
             until: { self.messages.contains(where: condition) },
             timeout: timeout, pollInterval: pollInterval,
             description: "Message '\(message)' not found. Logged messages: \(self.messages)",

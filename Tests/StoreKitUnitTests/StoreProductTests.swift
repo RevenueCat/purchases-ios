@@ -224,7 +224,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
         testSession.locale = Locale(identifier: "es_ES")
-        await self.changeStorefront("ESP")
+        try await self.changeStorefront("ESP")
 
         let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
 
@@ -241,7 +241,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
-        await self.changeStorefront("USA")
+        try await self.changeStorefront("USA")
 
         // Note: this test passes only because the cache is manually
         // cleared. `ProductsFetcherSK1` does not detect Storefront
@@ -265,7 +265,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
-        await self.changeStorefront("ESP")
+        try await self.changeStorefront("ESP")
 
         let sk2Fetcher = ProductsFetcherSK2()
 
@@ -282,7 +282,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.currencyCode) == "EUR"
 
         testSession.locale = Locale(identifier: "en_EN")
-        await self.changeStorefront("USA")
+        try await self.changeStorefront("USA")
 
         storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
 

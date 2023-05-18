@@ -24,10 +24,12 @@ class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
 class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
-    var serverIsDown: Bool = false
+    private var serverIsDown: Bool = false
     override var forceServerErrors: Bool { return self.serverIsDown }
 
     override func setUp() async throws {
+        self.serverIsDown = false
+
         try await super.setUp()
 
         await self.waitForPendingCustomerInfoRequests()
@@ -94,7 +96,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         logger.verifyMessageWasNotLogged("Finishing transaction")
     }
 
-    @available(iOS 15.2, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownPostsReceiptAfterServerComesBack() async throws {
         let logger = TestLogHandler()
 
@@ -110,7 +112,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         logger.verifyMessageWasNotLogged("Finishing transaction")
 
         // 3. Ensure delegate is notified of subscription
-        await asyncWait(
+        try await asyncWait(
             until: { [delegate = self.purchasesDelegate] in
                 delegate?.customerInfo?.activeSubscriptions.isEmpty == false
             },
@@ -120,7 +122,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         )
 
         // 4. Ensure transaction is eventually finished
-        await logger.verifyMessageIsEventuallyLogged(
+        try await logger.verifyMessageIsEventuallyLogged(
             "Finishing transaction",
             level: .info,
             timeout: .seconds(5),
@@ -136,7 +138,7 @@ class OfflineStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info)
     }
 
-    @available(iOS 15.2, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testReopeningAppWithOfflineEntitlementsDoesNotReturnStaleCache() async throws {
         // 1. Purchase while server is down
         self.serverDown()
