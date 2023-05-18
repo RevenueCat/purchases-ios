@@ -25,16 +25,27 @@ protocol PurchasedProductsFetcherType {
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
+    private let appStoreSync: () async throws -> Void
     private let sandboxDetector: SandboxEnvironmentDetector
 
-    init(sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()) {
+    init(
+        appStoreSync: @escaping () async throws -> Void = PurchasedProductsFetcher.defaultAppStoreSync,
+        sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    ) {
+        self.appStoreSync = appStoreSync
         self.sandboxDetector = sandboxDetector
     }
 
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
-        try await Self.forceSyncToEnsureAllTransactionsAreAccountedFor()
+        let syncError: Error?
+        do {
+            try await self.appStoreSync()
+            syncError = nil
+        } catch {
+            syncError = error
+        }
 
         for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
@@ -49,11 +60,15 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
             }
         }
 
-        return result
+        if result.isEmpty, let error = syncError {
+            // Only throw errors when syncing with the store if there were no entitlements found
+            throw error
+        } else {
+            // If there are any entitlements, ignore the error.
+            return result
+        }
     }
 
-    private static func forceSyncToEnsureAllTransactionsAreAccountedFor() async throws {
-        try await AppStore.sync()
-    }
+    static let defaultAppStoreSync = AppStore.sync
 
 }
