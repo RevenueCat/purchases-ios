@@ -94,6 +94,17 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testReturnsCachedCustomerInfo() async throws {
+        let logger = TestLogHandler()
+
+        self.serverDown()
+
+       _ = try await Purchases.shared.customerInfo()
+
+        logger.verifyMessageWasNotLogged(Strings.customerInfo.customerinfo_updated_offline)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithOnePurchase() async throws {
         try await self.purchaseMonthlyOffering()
 
