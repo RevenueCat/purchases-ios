@@ -202,6 +202,8 @@
 		4F69EB092A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4FA696BD2A0020A000D228B1 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */; };
+		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
+		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
 		57032ABF28C13CE4004FF47A /* StoreKit2SettingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
@@ -860,6 +862,7 @@
 		4F69EB082A14406E00ED6D4B /* Matchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matchers.swift; sourceTree = "<group>"; };
 		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
 		4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadMonitor.swift; sourceTree = "<group>"; };
+		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -1235,6 +1238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D803F6626F144BF0069D717 /* Nimble in Frameworks */,
+				4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */,
 				2DA85A8C26DEA7FB00F1136D /* RevenueCat.framework in Frameworks */,
 				2DE20B7626408807004C597D /* StoreKitTest.framework in Frameworks */,
 			);
@@ -1675,6 +1679,7 @@
 		2DE20B6D264087FB004C597D /* BackendIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				4FCBA8522A1539D0004134BD /* __Snapshots__ */,
 				579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */,
 				5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */,
 				5753EE0D294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift */,
@@ -2521,6 +2526,7 @@
 			name = BackendIntegrationTests;
 			packageProductDependencies = (
 				2D803F6526F144BF0069D717 /* Nimble */,
+				4FCBA8502A153940004134BD /* SnapshotTesting */,
 			);
 			productName = BackendIntegrationTests;
 			productReference = 2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */;
@@ -3339,6 +3345,7 @@
 				2D3BFAD426DEA49200370B11 /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				579234E327F7788900B39C68 /* BaseBackendIntegrationTests.swift in Sources */,
 				2DE20B6F264087FB004C597D /* StoreKitIntegrationTests.swift in Sources */,
+				4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */,
 				4FA696BD2A0020A000D228B1 /* MainThreadMonitor.swift in Sources */,
 				2D3BFAD126DEA45C00370B11 /* MockSK1Product.swift in Sources */,
 				57DD426E2926B9A50026DF09 /* StoreKitTestHelpers.swift in Sources */,
@@ -4214,6 +4221,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
+		};
+		4FCBA8502A153940004134BD /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
 		};
 		5759B335296DF65D002472D5 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
