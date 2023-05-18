@@ -28,8 +28,7 @@ class MockBackendConfiguration: BackendConfiguration {
             operationDispatcher: MockOperationDispatcher(),
             operationQueue: Backend.QueueProvider.createBackendQueue(),
             systemInfo: systemInfo,
-            productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
-            purchasedProductsFetcher: MockPurchasedProductsFetcher(),
+            offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
     }

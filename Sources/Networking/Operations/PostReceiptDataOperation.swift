@@ -37,7 +37,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         configuration: UserSpecificConfiguration,
         postData: PostData,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
-        offlineCustomerInfoCreator: OfflineCustomerInfoCreator
+        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
         return Self.createFactory(
             configuration: configuration,

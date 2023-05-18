@@ -30,8 +30,7 @@ class Backend {
         eTagManager: ETagManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
-        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
-        purchasedProductsFetcher: PurchasedProductsFetcherType = Backend.createDefaultProductFetcher(),
+        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(apiKey: apiKey,
@@ -42,8 +41,7 @@ class Backend {
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           systemInfo: systemInfo,
-                                          productEntitlementMappingFetcher: productEntitlementMappingFetcher,
-                                          purchasedProductsFetcher: purchasedProductsFetcher,
+                                          offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
@@ -189,10 +187,6 @@ extension Backend {
             return operationQueue
         }
 
-    }
-
-    static func createDefaultProductFetcher() -> PurchasedProductsFetcherType {
-        return PurchasedProductsFetcher()
     }
 
 }

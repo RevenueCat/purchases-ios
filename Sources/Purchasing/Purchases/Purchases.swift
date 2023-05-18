@@ -285,7 +285,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                               eTagManager: eTagManager,
                               operationDispatcher: operationDispatcher,
                               attributionFetcher: attributionFetcher,
-                              productEntitlementMappingFetcher: deviceCache)
+                              offlineCustomerInfoCreator: .createDefault(productEntitlementMappingFetcher: deviceCache))
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
             ? .right(.init())

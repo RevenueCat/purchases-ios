@@ -16,8 +16,9 @@ import StoreKit
 
 // swiftlint:disable identifier_name
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 enum OfflineEntitlementsStrings {
+
+    case offline_entitlements_not_available
 
     case product_entitlement_mapping_stale_updating
     case product_entitlement_mapping_updated_from_network
@@ -31,11 +32,13 @@ enum OfflineEntitlementsStrings {
 
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 extension OfflineEntitlementsStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case .offline_entitlements_not_available:
+            return "OS version does not support offline entitlements."
+
         case .product_entitlement_mapping_stale_updating:
             return "ProductEntitlementMapping cache is stale, updating from network."
 

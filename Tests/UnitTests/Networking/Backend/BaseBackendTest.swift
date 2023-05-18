@@ -55,8 +55,7 @@ class BaseBackendTests: TestCase {
             operationDispatcher: self.operationDispatcher,
             operationQueue: MockBackend.QueueProvider.createBackendQueue(),
             systemInfo: self.systemInfo,
-            productEntitlementMappingFetcher: self.mockProductEntitlementMappingFetcher,
-            purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
+            offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
 

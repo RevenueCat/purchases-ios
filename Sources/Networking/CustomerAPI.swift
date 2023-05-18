@@ -39,7 +39,7 @@ final class CustomerAPI {
             configuration: config,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
             offlineCreator: allowComputingOffline
-                ? self.backendConfig.createOfflineCustomerInfoCreator()
+                ? self.backendConfig.offlineCustomerInfoCreator
                 : nil
         )
 
@@ -123,7 +123,7 @@ final class CustomerAPI {
             configuration: config,
             postData: postData,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            offlineCustomerInfoCreator: self.backendConfig.createOfflineCustomerInfoCreator()
+            offlineCustomerInfoCreator: self.backendConfig.offlineCustomerInfoCreator
         )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,

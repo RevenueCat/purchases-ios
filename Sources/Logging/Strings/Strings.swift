@@ -23,7 +23,6 @@ enum Strings {
     static let identity = IdentityStrings.self
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     static let offlineEntitlements = OfflineEntitlementsStrings.self
     static let purchase = PurchaseStrings.self
     static let receipt = ReceiptStrings.self

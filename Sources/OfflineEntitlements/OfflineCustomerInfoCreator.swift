@@ -14,21 +14,35 @@
 import Foundation
 
 /// Holds the necessary dependencies to create a `CustomerInfo` while offline.
-final class OfflineCustomerInfoCreator {
+class OfflineCustomerInfoCreator {
 
     typealias Creator = @Sendable ([PurchasedSK2Product],
                                    ProductEntitlementMapping,
                                    String) -> CustomerInfo
 
     private let purchasedProductsFetcher: PurchasedProductsFetcherType
-    private let productEntitlementMapping: ProductEntitlementMapping?
+    private let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
     private let creator: Creator
 
+    static func createDefault(
+        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
+    ) -> OfflineCustomerInfoCreator? {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            return .init(
+                purchasedProductsFetcher: PurchasedProductsFetcher(),
+                productEntitlementMappingFetcher: productEntitlementMappingFetcher
+            )
+        } else {
+            Logger.debug(Strings.offlineEntitlements.offline_entitlements_not_available)
+            return nil
+        }
+    }
+
     convenience init(purchasedProductsFetcher: PurchasedProductsFetcherType,
-                     productEntitlementMapping: ProductEntitlementMapping?) {
+                     productEntitlementMappingFetcher: ProductEntitlementMappingFetcher) {
         self.init(
             purchasedProductsFetcher: purchasedProductsFetcher,
-            productEntitlementMapping: productEntitlementMapping,
+            productEntitlementMappingFetcher: productEntitlementMappingFetcher,
             creator: { products, mapping, userID in
                 CustomerInfo(from: products, mapping: mapping, userID: userID)
             }
@@ -37,11 +51,11 @@ final class OfflineCustomerInfoCreator {
 
     init(
         purchasedProductsFetcher: PurchasedProductsFetcherType,
-        productEntitlementMapping: ProductEntitlementMapping?,
+        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
         creator: @escaping Creator
     ) {
         self.purchasedProductsFetcher = purchasedProductsFetcher
-        self.productEntitlementMapping = productEntitlementMapping
+        self.productEntitlementMappingFetcher = productEntitlementMappingFetcher
         self.creator = creator
     }
 
@@ -49,7 +63,8 @@ final class OfflineCustomerInfoCreator {
     func create(for userID: String) async throws -> CustomerInfo {
         Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
-        guard let mapping = self.productEntitlementMapping, !mapping.entitlementsByProduct.isEmpty else {
+        guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping,
+              !mapping.entitlementsByProduct.isEmpty else {
             Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
             throw Error.noEntitlementMappingAvailable
         }

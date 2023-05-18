@@ -59,8 +59,7 @@ class BackendSubscriberAttributesTests: TestCase {
                                           operationDispatcher: MockOperationDispatcher(),
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
                                           systemInfo: self.systemInfo,
-                                          productEntitlementMappingFetcher: MockProductEntitlementMappingFetcher(),
-                                          purchasedProductsFetcher: MockPurchasedProductsFetcher(),
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: self.dateProvider)
 
         self.backend = Backend(backendConfig: config, attributionFetcher: attributionFetcher)

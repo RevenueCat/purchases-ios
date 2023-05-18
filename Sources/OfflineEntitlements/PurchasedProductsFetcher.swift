@@ -22,6 +22,7 @@ protocol PurchasedProductsFetcherType {
 }
 
 /// A type that can fetch purchased products from StoreKit 2.
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     private let sandboxDetector: SandboxEnvironmentDetector
@@ -30,7 +31,6 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         self.sandboxDetector = sandboxDetector
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
@@ -52,7 +52,6 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         return result
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private static func forceSyncToEnsureAllTransactionsAreAccountedFor() async throws {
         try await AppStore.sync()
     }

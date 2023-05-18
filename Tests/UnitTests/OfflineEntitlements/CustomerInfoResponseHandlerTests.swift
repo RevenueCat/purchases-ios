@@ -256,11 +256,15 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseCustomerInfoResponseHandlerTests {
 
+    private struct MappingFetcher: ProductEntitlementMappingFetcher {
+        let productEntitlementMapping: ProductEntitlementMapping?
+    }
+
     private func create(_ mapping: ProductEntitlementMapping?) -> CustomerInfoResponseHandler {
         return .init(
             offlineCreator: .init(
                 purchasedProductsFetcher: self.fetcher,
-                productEntitlementMapping: mapping,
+                productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
                 creator: self.factory.create
             ),
             userID: self.userID

@@ -18,7 +18,7 @@ class CustomerInfoResponseHandler {
     private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
 
-    /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't be computed.
+    /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't or can't be computed.
     init(offlineCreator: OfflineCustomerInfoCreator?, userID: String) {
         self.offlineCreator = offlineCreator
         self.userID = userID
