@@ -124,12 +124,12 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
+        logger.verifyMessageWasNotLogged("Finishing transaction")
+
         // 2. "Re-open" the app after the server is back
         self.serverUp()
         Purchases.shared.invalidateCustomerInfoCache()
         await self.resetSingleton()
-
-        logger.verifyMessageWasNotLogged("Finishing transaction")
 
         // 3. Ensure delegate is notified of subscription
         try await asyncWait(
