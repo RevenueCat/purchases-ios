@@ -34,13 +34,7 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
-        let syncError: Error?
-        do {
-            try await Self.forceSyncToEnsureAllTransactionsAreAccountedFor()
-            syncError = nil
-        } catch {
-            syncError = error
-        }
+        try await Self.forceSyncToEnsureAllTransactionsAreAccountedFor()
 
         for await transaction in StoreKit.Transaction.currentEntitlements {
             switch transaction {
@@ -55,13 +49,7 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
             }
         }
 
-        if result.isEmpty, let error = syncError {
-            // Only throw errors when syncing with the store if there were no entitlements found
-            throw error
-        } else {
-            // If there are any entitlements, ignore the error.
-            return result
-        }
+        return result
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
