@@ -18,20 +18,26 @@ class OfflineEntitlementsManager {
     private let deviceCache: DeviceCache
     private let operationDispatcher: OperationDispatcher
     private let api: OfflineEntitlementsAPI
+    private let systemInfo: SystemInfo
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
-         api: OfflineEntitlementsAPI) {
+         api: OfflineEntitlementsAPI,
+         systemInfo: SystemInfo) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.api = api
+        self.systemInfo = systemInfo
     }
 
     func updateProductsEntitlementsCacheIfStale(
         isAppBackgrounded: Bool,
         completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
     ) {
-        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+              !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_unavailable)
+
             self.dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(.notAvailable))
             return
         }
@@ -72,7 +78,7 @@ extension OfflineEntitlementsManager {
     enum Error: Swift.Error {
 
         case backend(BackendError)
-        /// Offline entitlements require iOS 15+
+        /// Offline entitlements require iOS 15+, and not available for custom entitlements computation
         case notAvailable
 
     }

@@ -297,7 +297,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
                                                                     operationDispatcher: operationDispatcher,
-                                                                    api: backend.offlineEntitlements)
+                                                                    api: backend.offlineEntitlements,
+                                                                    systemInfo: systemInfo)
         let customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
                                                       operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,

@@ -20,7 +20,7 @@ import XCTest
 class BaseOfflineEntitlementsManagerTests: TestCase {
 
     let mockBackend = MockBackend()
-    let mockSystemInfo = MockSystemInfo(finishTransactions: true)
+    var mockSystemInfo: MockSystemInfo!
 
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
@@ -31,13 +31,19 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
         self.mockOfflineEntitlements = try XCTUnwrap(
             self.mockBackend.offlineEntitlements as? MockOfflineEntitlementsAPI
         )
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
-        self.manager = OfflineEntitlementsManager(deviceCache: self.mockDeviceCache,
-                                                  operationDispatcher: self.mockOperationDispatcher,
-                                                  api: self.mockOfflineEntitlements)
+        self.manager = self.createManager()
+    }
+
+    fileprivate func createManager() -> OfflineEntitlementsManager {
+        return OfflineEntitlementsManager(deviceCache: self.mockDeviceCache,
+                                          operationDispatcher: self.mockOperationDispatcher,
+                                          api: self.mockOfflineEntitlements,
+                                          systemInfo: self.mockSystemInfo)
     }
 
 }
@@ -49,6 +55,20 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
 
         // These tests only run on iOS 15+
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
+    func testUpdateEntitlementsCacheForCustomEntitlementComputation() {
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: false, customEntitlementsComputation: true)
+        self.manager = self.createManager()
+
+        let result = waitUntilValue { completion in
+            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
+                completion($0)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
     }
 
     func testUpdateProductsEntitlementsCacheDoesNotUpdateIfNotStale() {
