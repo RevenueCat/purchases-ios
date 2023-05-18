@@ -86,7 +86,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
 
             self.privateDelegate = newValue
-            Logger.debug(Strings.configure.delegate_set)
+
+            if newValue != nil {
+                Logger.debug(Strings.configure.delegate_set)
+            }
 
             if !self.systemInfo.dangerousSettings.customEntitlementComputation {
                 // Sends cached customer info (if exists) to delegate as latest
