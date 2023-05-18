@@ -103,6 +103,15 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMappingCount) == 1
     }
 
+    func testShouldComputeOfflineCustomerInfo() {
+        expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == true
+    }
+
+    func testShouldNotComputeOfflineCustomerInfo() {
+        self.mockDeviceCache.cachedCustomerInfo["test"] = Data()
+        expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
+    }
+
 }
 
 // swiftlint:disable:next type_name
