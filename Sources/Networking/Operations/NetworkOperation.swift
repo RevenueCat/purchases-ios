@@ -107,19 +107,15 @@ class NetworkOperation: Operation {
     }
 
     deinit {
-        #if DEBUG
-        if ProcessInfo.isRunningRevenueCatTests {
-            precondition(
-                self.didStart,
-                "\(type(of: self)) was deallocated but it never started. Did it need to be created?"
-            )
-            precondition(
-                self.isFinished,
-                "\(type(of: self)) started but never finished. " +
-                "Did the operation not call `completion` in its `begin` implementation?"
-            )
-        }
-        #endif
+        RCTestAssert(
+            self.didStart,
+            "\(type(of: self)) was deallocated but it never started. Did it need to be created?"
+        )
+        RCTestAssert(
+            self.isFinished,
+            "\(type(of: self)) started but never finished. " +
+            "Did the operation not call `completion` in its `begin` implementation?"
+        )
     }
 
     override final func main() {

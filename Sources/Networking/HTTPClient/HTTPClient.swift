@@ -299,6 +299,8 @@ private extension HTTPClient {
                 urlRequest: URLRequest,
                 data: Data?,
                 error networkError: Error?) {
+        RCTestAssertNotMainThread()
+
         let response = self.parse(
             urlResponse: urlResponse,
             request: request,
