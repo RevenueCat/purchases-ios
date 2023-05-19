@@ -71,7 +71,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../Tests/TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit">
+         identifier = "../Tests/TestingApps/PurchaseTester/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
