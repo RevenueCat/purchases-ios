@@ -22,7 +22,7 @@ struct ProxyView: View {
     var body: some View {
         if let proxyURL {
             VStack {
-                Text(verbatim: "Proxy status: \(self.viewModel.proxyStatus?.description ?? "loading...")")
+                Text(verbatim: "\(self.viewModel.proxyStatus?.description ?? "loading...")")
                     .task(id: proxyURL) {
                         await self.viewModel.refreshStatus(proxyURL: proxyURL)
                     }
