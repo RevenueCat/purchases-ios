@@ -63,8 +63,7 @@ class OfflineCustomerInfoCreator {
     func create(for userID: String) async throws -> CustomerInfo {
         Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
-        guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping,
-              !mapping.entitlementsByProduct.isEmpty else {
+        guard let mapping = self.productEntitlementMappingFetcher.productEntitlementMapping else {
             Logger.warn(Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping)
             throw Error.noEntitlementMappingAvailable
         }

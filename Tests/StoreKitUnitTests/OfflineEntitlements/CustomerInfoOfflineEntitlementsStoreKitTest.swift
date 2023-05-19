@@ -128,6 +128,18 @@ class CustomerInfoOfflineEntitlementsStoreKitTest: StoreKitConfigTestCase {
         expect(info.entitlements.all).to(beEmpty())
     }
 
+    func testEmptyMapping() async throws {
+        let transaction = try await self.createTransactionWithPurchase()
+        let mapping: ProductEntitlementMapping = .empty
+
+        let info = self.create(with: [transaction], mapping: mapping)
+
+        self.verifyInfo(info)
+        expect(info.activeSubscriptions) == [transaction.productID]
+        expect(info.nonSubscriptions).to(beEmpty())
+        expect(info.entitlements.all).to(beEmpty())
+    }
+
     func testMultiplePurchasedProducts() async throws {
         let product1 = try await self.fetchSk2Product(Self.productID)
         let product2 = try await self.fetchSk2Product("com.revenuecat.annual_39.99_no_trial")
