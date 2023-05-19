@@ -22,6 +22,7 @@ enum OfflineEntitlementsStrings {
 
     case product_entitlement_mapping_stale_updating
     case product_entitlement_mapping_updated_from_network
+    case product_entitlement_mapping_unavailable
     case product_entitlement_mapping_fetching_error(BackendError)
     case found_unverified_transactions_in_sk2(transactionID: UInt64, Error)
 
@@ -44,6 +45,9 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
 
         case .product_entitlement_mapping_updated_from_network:
             return "ProductEntitlementMapping cache updated from network."
+
+        case .product_entitlement_mapping_unavailable:
+            return "Offline entitlements aren't available, won't fetch ProductEntitlementMapping."
 
         case let .product_entitlement_mapping_fetching_error(error):
             return "Failed updating ProductEntitlementMapping from network: \(error.localizedDescription)"

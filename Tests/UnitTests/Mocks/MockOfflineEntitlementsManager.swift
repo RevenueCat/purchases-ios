@@ -19,7 +19,8 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
     init() {
         super.init(deviceCache: MockDeviceCache(),
                    operationDispatcher: MockOperationDispatcher(),
-                   api: MockOfflineEntitlementsAPI())
+                   api: MockOfflineEntitlementsAPI(),
+                   systemInfo: MockSystemInfo(finishTransactions: false))
     }
 
     var invokedUpdateProductsEntitlementsCacheIfStale = false
