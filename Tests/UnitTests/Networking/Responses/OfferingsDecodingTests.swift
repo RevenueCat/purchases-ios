@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(2))
+        expect(self.response.offerings).to(haveCount(4))
     }
 
     func testDecodesFirstOffering() throws {
@@ -35,6 +35,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(offering.identifier) == "default"
         expect(offering.description) == "standard set of packages"
+        expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(2))
 
         let package1 = offering.packages[0]
@@ -47,13 +48,49 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(package2.platformProductIdentifier) == "com.revenuecat.yearly_10.99.2_week_intro"
     }
 
-    //
-
     func testDecodesSecondOffering() throws {
-        let offering = try XCTUnwrap(self.response.offerings.last)
+        let offering = try XCTUnwrap(self.response.offerings[1])
 
         expect(offering.identifier) == "alternate"
         expect(offering.description) == "alternate offering"
+        expect(offering.metadata) == [:]
+        expect(offering.packages).to(haveCount(1))
+
+        let package = offering.packages[0]
+
+        expect(package.identifier) == PackageType.lifetime.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+    }
+
+    func testDecodesMetadataOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings[2])
+
+        expect(offering.identifier) == "metadata"
+        expect(offering.description) == "offering with metadata"
+        expect(offering.metadata) == [
+            "int": 5,
+            "double": 5.5,
+            "boolean": true,
+            "string": "five",
+            "array": ["five"],
+            "dictionary": [
+                "string": "five"
+            ]
+        ]
+        expect(offering.packages).to(haveCount(1))
+
+        let package = offering.packages[0]
+
+        expect(package.identifier) == PackageType.lifetime.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+    }
+
+    func testDecodesNullMetadataOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings[3])
+
+        expect(offering.identifier) == "nullmetadata"
+        expect(offering.description) == "offering with null metadata"
+        expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(1))
 
         let package = offering.packages[0]
