@@ -241,9 +241,13 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
+    override var forceServerErrors: Bool { return true }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
-        self.serverDown()
+        let logger = TestLogHandler()
+
+        Purchases.shared.invalidateCustomerInfoCache()
 
         do {
             _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
@@ -253,6 +257,10 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
         } catch let error {
             fail("Unexpected error: \(error)")
         }
+
+        logger.verifyMessageWasLogged(
+            Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping
+        )
     }
 
 }
