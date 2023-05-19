@@ -18,10 +18,10 @@ import XCTest
 @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-class PurchasedProductsFetcherTests: StoreKitConfigTestCase {
+class BasePurchasedProductsFetcherTests: StoreKitConfigTestCase {
 
-    private var sandboxDetector: SandboxEnvironmentDetector!
-    private var fetcher: PurchasedProductsFetcher!
+    fileprivate var sandboxDetector: SandboxEnvironmentDetector!
+    fileprivate var fetcher: PurchasedProductsFetcher!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -29,8 +29,20 @@ class PurchasedProductsFetcherTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: .random())
-        self.fetcher = PurchasedProductsFetcher(sandboxDetector: self.sandboxDetector)
+        self.fetcher = PurchasedProductsFetcher(
+            appStoreSync: { try await self.syncAppStore() },
+            sandboxDetector: self.sandboxDetector
+        )
     }
+
+    fileprivate func syncAppStore() async throws {
+        try await PurchasedProductsFetcher.defaultAppStoreSync()
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class PurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
 
     func testNoPurchasedProducts() async throws {
         let products = try await self.fetcher.fetchPurchasedProducts()
@@ -77,5 +89,33 @@ class PurchasedProductsFetcherTests: StoreKitConfigTestCase {
             product2.id
         ]))
     }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+class FailingSyncPurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
+
+    override func syncAppStore() async throws {
+        throw Self.error
+    }
+
+    func testThrowsIfNoPurchasedProducts() async throws {
+        do {
+            let result = try await self.fetcher.fetchPurchasedProducts()
+            fail("Expected error. Found \(result.count) products")
+        } catch let error {
+            expect(error).to(matchError(Self.error))
+        }
+    }
+
+    func testReturnsProductsEvenIfSyncingFailed() async throws {
+        _ = try await self.createTransactionWithPurchase()
+
+        let products = try await self.fetcher.fetchPurchasedProducts()
+        expect(products).to(haveCount(1))
+
+    }
+
+    private static let error = ErrorUtils.storeProblemError()
 
 }
