@@ -40,7 +40,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     func testPurchaseInDevicePostsReceipt() async throws {
         try await self.purchaseProductFromStoreKit()
 
-        await asyncWait(
+        try await asyncWait(
             until: {
                 let entitlement = try? await Purchases.shared
                     .customerInfo(fetchPolicy: .fetchCurrent)

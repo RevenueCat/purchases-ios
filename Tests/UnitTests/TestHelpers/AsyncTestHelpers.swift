@@ -65,12 +65,12 @@ func waitUntilValue<Value>(
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait(
     until condition: @Sendable () async -> Bool,
-    timeout: DispatchTimeInterval,
-    pollInterval: DispatchTimeInterval,
+    timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+    pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
     description: String? = nil,
     file: FileString = #fileID,
     line: UInt = #line
-) async {
+) async throws {
     let start = Date()
     var foundCorrectValue = false
 
@@ -90,4 +90,13 @@ func asyncWait(
         line: line,
         foundCorrectValue
     ).to(beTrue(), description: description)
+
+    if !foundCorrectValue {
+        struct ConditionFailedError: Error {}
+
+        // Because this method is `async`, for some reason Swift is continuing execution of the test
+        // despite the expectation failing, so we throw to ensure this doesn't happen
+        // leading to an inconsistent state.
+        throw ConditionFailedError()
+    }
 }

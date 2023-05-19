@@ -499,7 +499,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             finishTransactions: false,
             storeKit2Setting: .enabledForCompatibleDevices,
             dangerousSettings: .init(autoSyncPurchases: true,
-                                     internalSettings: .init(enableReceiptFetchRetry: true))
+                                     internalSettings: DangerousSettings.Internal(enableReceiptFetchRetry: true))
         )
 
         self.setUpOrchestrator()

@@ -73,10 +73,10 @@ extension StoreKitConfigTestCase {
         _ new: String,
         file: FileString = #fileID,
         line: UInt = #line
-    ) async {
+    ) async throws {
         self.testSession.storefront = new
 
-        await asyncWait(
+        try await asyncWait(
             until: { await Storefront.currentStorefront?.countryCode == new },
             timeout: .seconds(1),
             pollInterval: .milliseconds(100),

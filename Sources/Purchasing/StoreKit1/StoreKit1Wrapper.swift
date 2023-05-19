@@ -55,6 +55,8 @@ class StoreKit1Wrapper: NSObject {
     weak var delegate: StoreKit1WrapperDelegate? {
         didSet {
             if self.delegate != nil {
+                self.notifyDelegateOfExistingTransactionsIfNeeded()
+
                 self.paymentQueue.add(self)
             } else {
                 self.paymentQueue.remove(self)
@@ -110,6 +112,34 @@ class StoreKit1Wrapper: NSObject {
         let payment = self.payment(with: product)
         payment.paymentDiscount = discount
         return payment
+    }
+
+    private func notifyDelegateOfExistingTransactionsIfNeeded() {
+        // Here be dragons. Explanation:
+        // When initializing the SDK after an app opens, `SKPaymentQueue` notifies its
+        // transaction observers of _existing_ transactions, so this method is normally not required.
+        //
+        // However: `BaseOfflineStoreKitIntegrationTests` simulates restarting apps.
+        // When it re-creates `Purchases` to do that, `StoreKit 1` doesn't know to re-notify
+        // its observers. This does so manually.
+        // This isn't required in StoreKit 2 because resubscribing to
+        // `StoreKit.Transaction.updates` does forward existing transactions.
+
+        #if DEBUG
+        guard ProcessInfo.isRunningIntegrationTests, let delegate = self.delegate else { return }
+
+        let transactions = self.paymentQueue.transactions
+        guard !transactions.isEmpty else { return }
+
+        Logger.appleWarning(
+            "StoreKit1Wrapper: sending delegate \(transactions.count) existing transactions " +
+            "for Integration Tests."
+        )
+
+        for transaction in transactions {
+            delegate.storeKit1Wrapper(self, updatedTransaction: transaction)
+        }
+        #endif
     }
 
 }

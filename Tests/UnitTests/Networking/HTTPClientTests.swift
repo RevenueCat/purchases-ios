@@ -1349,7 +1349,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             finishTransactions: false,
             dangerousSettings: .init(
                 autoSyncPurchases: true,
-                internalSettings: .init(forceServerErrors: true)
+                internalSettings: DangerousSettings.Internal(forceServerErrors: true)
             )
         )
         self.client = self.createClient()

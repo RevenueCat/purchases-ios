@@ -35,6 +35,10 @@ enum NetworkStrings {
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
 
+    #if DEBUG
+    case api_request_forcing_server_error(HTTPRequest)
+    #endif
+
 }
 
 extension NetworkStrings: CustomStringConvertible {
@@ -98,6 +102,11 @@ extension NetworkStrings: CustomStringConvertible {
 
         case let .api_request_redirect(from, to):
             return "Performing redirect from '\(from.absoluteString)' to '\(to.absoluteString)'"
+
+        #if DEBUG
+        case let .api_request_forcing_server_error(request):
+            return "Returning fake HTTP 500 error for '\(request.description)'"
+        #endif
         }
     }
 

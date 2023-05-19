@@ -15,15 +15,18 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-final class TestPurchaseDelegate: NSObject, PurchasesDelegate {
+final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 
-    var customerInfo: CustomerInfo?
-    var customerInfoUpdateCount = 0
+    private let _customerInfo: Atomic<CustomerInfo?> = nil
+    private let _customerInfoUpdateCount: Atomic<Int> = .init(0)
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-        self.customerInfo = customerInfo
-        customerInfoUpdateCount += 1
+        self._customerInfo.value = customerInfo
+        self._customerInfoUpdateCount.value += 1
     }
+
+    var customerInfo: CustomerInfo? { return self._customerInfo.value }
+    var customerInfoUpdateCount: Int { return self._customerInfoUpdateCount.value }
 
 }
 
@@ -75,15 +78,22 @@ class BaseBackendIntegrationTests: XCTestCase {
         }
 
         self.clearReceiptIfExists()
-        self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
+        await self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
         self.verifyPurchasesDoesNotLeak()
-        await self.waitForAnonymousUser()
     }
 
     override func tearDown() {
         super.tearDown()
 
         self.mainThreadMonitor = nil
+    }
+
+    /// Simulates closing the app and re-opening with a fresh instance of `Purchases`.
+    final func resetSingleton() async {
+        Logger.warn("Resetting Purchases.shared")
+
+        Purchases.clearSingleton()
+        await self.createPurchases()
     }
 
     // MARK: - Configuration
@@ -108,13 +118,17 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
-    func configurePurchases(apiKey: String, proxyURL: String?) {
+    func configurePurchases(apiKey: String, proxyURL: String?) async {
         self.purchasesDelegate = TestPurchaseDelegate()
 
         Purchases.proxyURL = proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
 
-        Purchases.configure(withAPIKey: apiKey,
+        await self.createPurchases()
+    }
+
+    func createPurchases() async {
+        Purchases.configure(withAPIKey: self.apiKey,
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
@@ -125,6 +139,8 @@ private extension BaseBackendIntegrationTests {
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings)
         Purchases.shared.delegate = self.purchasesDelegate
+
+        await self.waitForAnonymousUser()
     }
 
     func verifyPurchasesDoesNotLeak() {
@@ -156,7 +172,14 @@ private extension BaseBackendIntegrationTests {
 
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
-                     internalSettings: .init(enableReceiptFetchRetry: true))
+                     internalSettings: self)
     }
+
+}
+
+extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
+
+    var enableReceiptFetchRetry: Bool { return true }
+    var forceServerErrors: Bool { return false }
 
 }

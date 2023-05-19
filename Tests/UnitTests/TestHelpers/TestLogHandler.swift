@@ -103,6 +103,26 @@ extension TestLogHandler {
         )
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func verifyMessageIsEventuallyLogged(
+        _ message: String,
+        level: LogLevel? = nil,
+        timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+        pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let condition = Self.entryCondition(message: message, level: level)
+
+        try await asyncWait(
+            until: { self.messages.contains(where: condition) },
+            timeout: timeout, pollInterval: pollInterval,
+            description: "Message '\(message)' not found. Logged messages: \(self.messages)",
+            file: file,
+            line: line
+        )
+    }
+
     func verifyMessageWasNotLogged(
         _ message: CustomStringConvertible,
         level: LogLevel? = nil,
@@ -117,7 +137,9 @@ extension TestLogHandler {
         .toNot(containElementSatisfying(Self.entryCondition(message: message, level: level)))
     }
 
-    private static func entryCondition(message: CustomStringConvertible, level: LogLevel?) -> (MessageData) -> Bool {
+    private static func entryCondition(
+        message: CustomStringConvertible, level: LogLevel?
+    ) -> @Sendable (MessageData) -> Bool {
         return { entry in
             guard entry.message.contains(message.description) else {
                 return false

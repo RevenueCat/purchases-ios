@@ -64,7 +64,7 @@ extension OfferingsManagerStoreKitTests {
         expect(receivedProduct.currencyCode) == "USD"
 
         testSession.locale = Locale(identifier: "es_ES")
-        await changeStorefront("ESP")
+        try await changeStorefront("ESP")
 
         fetchedStoreProduct = try await fetchSk2StoreProduct()
         storeProduct = StoreProduct(sk2Product: fetchedStoreProduct.underlyingSK2Product)
