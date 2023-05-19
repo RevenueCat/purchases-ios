@@ -55,7 +55,7 @@ class StoreKit1Wrapper: NSObject {
     weak var delegate: StoreKit1WrapperDelegate? {
         didSet {
             if self.delegate != nil {
-                self.notifyDelegateOfExistingTransactions()
+                self.notifyDelegateOfExistingTransactionsIfNeeded()
 
                 self.paymentQueue.add(self)
             } else {
@@ -114,7 +114,7 @@ class StoreKit1Wrapper: NSObject {
         return payment
     }
 
-    private func notifyDelegateOfExistingTransactions() {
+    private func notifyDelegateOfExistingTransactionsIfNeeded() {
         // Here be dragons. Explanation:
         // When initializing the SDK after an app opens, `SKPaymentQueue` notifies its
         // transaction observers of _existing_ transactions, so this method is normally not required.
