@@ -14,12 +14,6 @@
 
 import Foundation
 
-extension Offering {
-    struct Metadata {
-        let data: [String: Any]
-    }
-}
-
 /**
  * An offering is a collection of ``Package``s, and they let you control which products
  * are shown to users without requiring an app update.
@@ -174,6 +168,14 @@ extension Offering {
         self.weekly = weekly
 
         super.init()
+    }
+
+}
+
+extension Offering {
+
+    struct Metadata {
+        let data: [String: Any]
     }
 
 }
