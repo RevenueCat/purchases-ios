@@ -269,6 +269,8 @@ private struct CustomerInfoHeaderView: View {
                 #if targetEnvironment(macCatalyst) || os(macOS)
                 if #available(macCatalyst 16.0, *) {
                     OpenWindowButton()
+
+                    OpenProxyWindowButton()
                 }
                 #else
                 NavigationLink(destination: LoggerView(logger: ConfiguredPurchases.logger)) {
@@ -309,5 +311,19 @@ private struct OpenWindowButton: View {
         }
     }
     
+}
+
+@available(macCatalyst 16.0, *)
+private struct OpenProxyWindowButton: View {
+
+    @Environment(\.openWindow)
+    private var openWindow
+
+    var body: some View {
+        Button("Proxy") {
+            self.openWindow(id: Windows.proxy.rawValue)
+        }
+    }
+
 }
 #endif

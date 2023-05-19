@@ -23,6 +23,9 @@
 		2DD2CBB129831A09004A3A6A /* ReceiptInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */; };
 		2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */; };
 		4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */; };
+		4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E982A18124500C4EB88 /* ProxyManager.swift */; };
+		4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */; };
+		4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */; };
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B471296F9B3B002472D5 /* LocalReceiptView.swift */; };
@@ -134,6 +137,9 @@
 		2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptInspector.swift; sourceTree = "<group>"; };
 		2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptVerifier.swift; sourceTree = "<group>"; };
 		4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
+		4F1F5E982A18124500C4EB88 /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
+		4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyViewModel.swift; sourceTree = "<group>"; };
+		4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyView.swift; sourceTree = "<group>"; };
 		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
@@ -251,6 +257,7 @@
 				2CF428672863EE9D007E6A78 /* Extensions */,
 				57B5794F29536B8C003EAA40 /* Helpers */,
 				2C10F18727A9952B0078444D /* Views */,
+				4F1F5E902A18123300C4EB88 /* Proxy */,
 				2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -274,6 +281,16 @@
 				57ED6A85290893B6009580C6 /* Extensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		4F1F5E902A18123300C4EB88 /* Proxy */ = {
+			isa = PBXGroup;
+			children = (
+				4F1F5E982A18124500C4EB88 /* ProxyManager.swift */,
+				4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */,
+				4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */,
+			);
+			path = Proxy;
 			sourceTree = "<group>";
 		};
 		578DAA0A2947DD21001700FD /* PurchaseTesterWatchOS */ = {
@@ -483,12 +500,14 @@
 				2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */,
 				4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */,
 				2C10F17F27A993EA0078444D /* OfferingDetailView.swift in Sources */,
+				4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */,
 				57B5795529536B8C003EAA40 /* ProductFetcherSK2.swift in Sources */,
 				2C10F18527A995150078444D /* HomeView.swift in Sources */,
 				2C10F19127AC31610078444D /* TransactionsView.swift in Sources */,
 				57B5795429536B8C003EAA40 /* PurchasesOrchestrator.swift in Sources */,
 				2C10F18B27A997570078444D /* CustomerView.swift in Sources */,
 				5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */,
+				4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */,
 				2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */,
 				57B5795629536B8C003EAA40 /* ObserverModeManager.swift in Sources */,
 				2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */,
@@ -501,6 +520,7 @@
 				2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */,
 				57ED6A86290893B6009580C6 /* Extensions.swift in Sources */,
 				57ED6A8229089111009580C6 /* Identifiable.swift in Sources */,
+				4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

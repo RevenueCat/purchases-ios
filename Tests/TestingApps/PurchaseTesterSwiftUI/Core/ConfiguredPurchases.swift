@@ -12,10 +12,12 @@ import RevenueCat
 public final class ConfiguredPurchases {
 
     public let purchases: Purchases
+    public let proxyURL: URL?
     private let delegate: Delegate
 
-    public init(purchases: Purchases) {
+    public init(purchases: Purchases, proxyURL: URL?) {
         self.purchases = purchases
+        self.proxyURL = proxyURL
         self.delegate = Delegate()
 
         self.purchases.delegate = self.delegate
@@ -47,7 +49,7 @@ public final class ConfiguredPurchases {
                 .build()
         )
 
-        self.init(purchases: purchases)
+        self.init(purchases: purchases, proxyURL: Purchases.proxyURL)
     }
 
     // MARK: -
