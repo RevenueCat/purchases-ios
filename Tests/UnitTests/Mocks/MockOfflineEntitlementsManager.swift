@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  MockOfflineEntitlementsManager.swiftz
+//  MockOfflineEntitlementsManager.swift
 //
 //  Created by Nacho Soto on 3/22/23.
 
