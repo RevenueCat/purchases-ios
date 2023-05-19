@@ -38,10 +38,11 @@ import Foundation
      */
     @objc public let serverDescription: String
 
+    private let _metadata: Metadata
+
     /**
      Offering metadata defined in RevenueCat dashboard.
      */
-    private let _metadata: Metadata
     @objc public var metadata: [String: Any] { self._metadata.data }
 
     /**

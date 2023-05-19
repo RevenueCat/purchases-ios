@@ -495,6 +495,7 @@ private extension OfferingsManagerTests {
                     Offering(
                         identifier: offering.identifier,
                         serverDescription: offering.description,
+                        metadata: [:],
                         availablePackages: offering.packages.map { package in
                                 .init(
                                     identifier: package.identifier,

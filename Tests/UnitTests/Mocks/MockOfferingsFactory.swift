@@ -30,6 +30,7 @@ class MockOfferingsFactory: OfferingsFactory {
                 "base": Offering(
                     identifier: "base",
                     serverDescription: "This is the base offering",
+                    metadata: [:],
                     availablePackages: [
                         Package(identifier: "$rc_monthly",
                                 packageType: PackageType.monthly,
