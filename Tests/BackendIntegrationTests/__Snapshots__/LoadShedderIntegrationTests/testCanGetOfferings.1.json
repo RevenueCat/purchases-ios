@@ -4,6 +4,9 @@
     {
       "description" : "standard set of packages",
       "identifier" : "default",
+      "metadata" : {
+
+      },
       "packages" : [
         {
           "identifier" : "$rc_monthly",
