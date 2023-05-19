@@ -149,6 +149,10 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     func testDoesntFinishTransactionIfComputingCustomerInfoOffline() throws {
+        // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
+        // but offline CustomerInfo isn't supported anyway.
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         var finished = false
 
         let productID = "com.product.id1"

@@ -895,7 +895,11 @@ class BasicCustomerInfoTests: TestCase {
         expect(self.customerInfo.copy(with: .failed).isComputedOffline) == false
     }
 
-    func testIsComputedOffline() {
+    func testIsComputedOffline() throws {
+        // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
+        // but offline CustomerInfo isn't supported anyway.
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
     }
 
