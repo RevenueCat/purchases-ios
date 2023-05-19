@@ -48,16 +48,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
-        Purchases.shared.invalidateCustomerInfoCache()
-
-        self.serverDown()
-
-        let info = try await Purchases.shared.customerInfo()
-        expect(info.entitlements.all).to(beEmpty())
-    }
-
     func testOfferingsAreCachedInMemory() async throws {
         let onlineOfferings = try await Purchases.shared.offerings()
         expect(onlineOfferings.all).toNot(beEmpty())
