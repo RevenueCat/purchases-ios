@@ -235,6 +235,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
+    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
@@ -279,13 +280,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
-        let backend = Backend(apiKey: apiKey,
-                              systemInfo: systemInfo,
-                              httpClientTimeout: networkTimeout,
-                              eTagManager: eTagManager,
-                              operationDispatcher: operationDispatcher,
-                              attributionFetcher: attributionFetcher,
-                              offlineCustomerInfoCreator: .createDefault(productEntitlementMappingFetcher: deviceCache))
+
+        let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
+
+        let backend = Backend(
+            apiKey: apiKey,
+            systemInfo: systemInfo,
+            httpClientTimeout: networkTimeout,
+            eTagManager: eTagManager,
+            operationDispatcher: operationDispatcher,
+            attributionFetcher: attributionFetcher,
+            offlineCustomerInfoCreator: .createIfAvailable(
+                with: purchasedProductsFetcher,
+                productEntitlementMappingFetcher: deviceCache
+            )
+        )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
             ? .right(.init())
@@ -412,6 +421,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   offeringsManager: offeringsManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
+                  purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
     // swiftlint:disable:next function_body_length
@@ -435,6 +445,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          offeringsManager: OfferingsManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
+         purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
     ) {
 
@@ -481,6 +492,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.offeringsManager = offeringsManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
+        self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = .create(with: trialOrIntroPriceEligibilityChecker)
 
         super.init()
@@ -1407,6 +1419,7 @@ private extension Purchases {
 
     func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
         self.trialOrIntroPriceEligibilityChecker.clearCache()
+        self.purchasedProductsFetcher?.clearCache()
         self.delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 

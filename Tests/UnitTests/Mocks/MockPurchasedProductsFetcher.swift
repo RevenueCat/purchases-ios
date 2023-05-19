@@ -29,4 +29,12 @@ final class MockPurchasedProductsFetcher: PurchasedProductsFetcherType {
         return try self.stubbedResult.get()
     }
 
+    var invokedClearCache = false
+    var invokedClearCacheCount = 0
+
+    func clearCache() {
+        self.invokedClearCache = true
+        self.invokedClearCacheCount += 1
+    }
+
 }
