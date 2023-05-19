@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: fe4529988aa6dd9ec1d507950416091302e6f56e
+  revision: 13773d2ca53d371633088198b827a3699fe90df3
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
 
@@ -309,6 +309,7 @@ GEM
       CFPropertyList
       naturally
     sqlite3 (1.6.0-arm64-darwin)
+    sqlite3 (1.6.0-x86_64-linux)
     terminal-notifier (2.0.0)
     terminal-table (1.8.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
@@ -344,6 +345,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
   cocoapods
