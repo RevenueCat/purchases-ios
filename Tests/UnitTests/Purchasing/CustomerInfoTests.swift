@@ -875,6 +875,30 @@ class BasicCustomerInfoTests: TestCase {
         expect(updatedCustomerInfo.entitlements["expired_pro"]?.isActive) == true
     }
 
+    func testIsNeverComputedOfflinePriorToIOS13() throws {
+        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
+            throw XCTSkip("Test only for iOS 12.")
+        }
+
+        expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == false
+    }
+
+    func testIsNotComputedOfflineIfVerificationNotRequested() {
+        expect(self.customerInfo.copy(with: .notRequested).isComputedOffline) == false
+    }
+
+    func testIsNotComputedOfflineIfVerified() {
+        expect(self.customerInfo.copy(with: .verified).isComputedOffline) == false
+    }
+
+    func testIsNotComputedOfflineIfFailedVerification() {
+        expect(self.customerInfo.copy(with: .failed).isComputedOffline) == false
+    }
+
+    func testIsComputedOffline() {
+        expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
+    }
+
     // MARK: - Private
 
     private func verifyCopy(

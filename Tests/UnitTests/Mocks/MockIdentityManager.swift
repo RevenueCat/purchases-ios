@@ -27,10 +27,13 @@ class MockIdentityManager: IdentityManager {
 
         super.init(deviceCache: mockDeviceCache,
                    backend: mockBackend,
-                   customerInfoManager: MockCustomerInfoManager(operationDispatcher: MockOperationDispatcher(),
-                                                                deviceCache: mockDeviceCache,
-                                                                backend: mockBackend,
-                                                                systemInfo: mockSystemInfo),
+                   customerInfoManager: MockCustomerInfoManager(
+                    offlineEntitlementsManager: MockOfflineEntitlementsManager(),
+                    operationDispatcher: MockOperationDispatcher(),
+                    deviceCache: mockDeviceCache,
+                    backend: mockBackend,
+                    systemInfo: mockSystemInfo
+                   ),
                    attributeSyncing: self.mockAttributeSyncing,
                    appUserID: mockAppUserID)
     }

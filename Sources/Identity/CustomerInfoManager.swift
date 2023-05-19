@@ -19,16 +19,19 @@ class CustomerInfoManager {
 
     var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
 
+    private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
     private let systemInfo: SystemInfo
     /// Underlying synchronized data.
     private let data: Atomic<Data>
 
-    init(operationDispatcher: OperationDispatcher,
+    init(offlineEntitlementsManager: OfflineEntitlementsManager,
+         operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
          backend: Backend,
          systemInfo: SystemInfo) {
+        self.offlineEntitlementsManager = offlineEntitlementsManager
         self.operationDispatcher = operationDispatcher
         self.backend = backend
         self.systemInfo = systemInfo
@@ -38,8 +41,13 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
                                    completion: CustomerInfoCompletion?) {
+        let allowComputingOffline = self.offlineEntitlementsManager.shouldComputeOfflineCustomerInfo(
+            appUserID: appUserID
+        )
+
         self.backend.getCustomerInfo(appUserID: appUserID,
-                                     withRandomDelay: isAppBackgrounded) { result in
+                                     withRandomDelay: isAppBackgrounded,
+                                     allowComputingOffline: allowComputingOffline) { result in
             switch result {
             case let .failure(error):
                 self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
@@ -47,7 +55,11 @@ class CustomerInfoManager {
 
             case let .success(info):
                 self.cache(customerInfo: info, appUserID: appUserID)
-                Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
+                Logger.rcSuccess(
+                    info.isComputedOffline
+                    ? Strings.customerInfo.customerinfo_updated_offline
+                    : Strings.customerInfo.customerinfo_updated_from_network
+                )
             }
 
             if let completion = completion {
@@ -189,6 +201,7 @@ class CustomerInfoManager {
             }
         } else {
             Logger.debug(Strings.customerInfo.not_caching_offline_customer_info)
+            self.clearCustomerInfoCache(forAppUserID: appUserID)
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo)

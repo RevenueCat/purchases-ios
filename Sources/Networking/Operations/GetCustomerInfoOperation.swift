@@ -21,7 +21,21 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        customerInfoResponseHandler: CustomerInfoResponseHandler = CustomerInfoResponseHandler(),
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        offlineCreator: OfflineCustomerInfoCreator?
+    ) -> CacheableNetworkOperationFactory<GetCustomerInfoOperation> {
+        return Self.createFactory(
+            configuration: configuration,
+            customerInfoResponseHandler: .init(
+                offlineCreator: offlineCreator,
+                userID: configuration.appUserID
+            ),
+            customerInfoCallbackCache: customerInfoCallbackCache)
+    }
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        customerInfoResponseHandler: CustomerInfoResponseHandler,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     ) -> CacheableNetworkOperationFactory<GetCustomerInfoOperation> {
         return .init({

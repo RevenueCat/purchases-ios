@@ -61,6 +61,10 @@ class OfflineEntitlementsManager {
         }
     }
 
+    func shouldComputeOfflineCustomerInfo(appUserID: String) -> Bool {
+        return self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil
+    }
+
 }
 
 extension OfflineEntitlementsManager {

@@ -28,6 +28,7 @@ enum CustomerInfoStrings {
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
     case customerinfo_updated_from_network_error(BackendError)
+    case customerinfo_updated_offline
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
@@ -68,6 +69,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
             }
 
             return result
+        case .customerinfo_updated_offline:
+            return "CustomerInfo computed offline."
         case let .updating_request_date(info, newRequestDate):
             return "Updating CustomerInfo '\(info.originalAppUserId)' request date: \(newRequestDate)"
         case .sending_latest_customerinfo_to_delegate:

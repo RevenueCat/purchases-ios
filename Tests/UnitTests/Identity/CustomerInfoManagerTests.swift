@@ -7,6 +7,7 @@ import XCTest
 class BaseCustomerInfoManagerTests: TestCase {
     fileprivate static let appUserID = "app_user_id"
 
+    fileprivate var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     fileprivate var mockBackend = MockBackend()
     fileprivate var mockOperationDispatcher = MockOperationDispatcher()
     fileprivate var mockDeviceCache: MockDeviceCache!
@@ -35,10 +36,12 @@ class BaseCustomerInfoManagerTests: TestCase {
             ]  as [String: Any]
         ])
 
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
         self.customerInfoManagerChangesCallCount = 0
         self.customerInfoManagerLastCustomerInfo = nil
-        self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
+        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+                                                       operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.mockDeviceCache,
                                                        backend: self.mockBackend,
                                                        systemInfo: self.mockSystemInfo)
@@ -61,6 +64,28 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         super.tearDown()
 
         self.customerInfoMonitorDisposable?()
+    }
+
+    func testFetchAndCacheCustomerInfoAllowOfflineCustomerInfo() {
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                           isAppBackgrounded: true,
+                                                           completion: nil)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.allowComputingOffline) == true
+    }
+
+    func testFetchAndCacheCustomerInfoDontAllowOfflineCustomerInfo() {
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = false
+
+        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.appUserID,
+                                                           isAppBackgrounded: true,
+                                                           completion: nil)
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.allowComputingOffline) == false
     }
 
     func testFetchAndCacheCustomerInfoCallsBackendWithRandomDelayIfAppBackgrounded() {
@@ -431,6 +456,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         expect(self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)).to(beNil())
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
 
         logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }

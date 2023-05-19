@@ -62,7 +62,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          offeringsFactory: OfferingsFactory(),
                                                          productsManager: self.productsManager)
 
-        self.customerInfoManager = MockCustomerInfoManager(operationDispatcher: OperationDispatcher(),
+        self.customerInfoManager = MockCustomerInfoManager(offlineEntitlementsManager: MockOfflineEntitlementsManager(),
+                                                           operationDispatcher: OperationDispatcher(),
                                                            deviceCache: self.deviceCache,
                                                            backend: self.backend,
                                                            systemInfo: self.systemInfo)

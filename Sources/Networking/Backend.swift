@@ -23,13 +23,16 @@ class Backend {
 
     private let config: BackendConfiguration
 
-    convenience init(apiKey: String,
-                     systemInfo: SystemInfo,
-                     httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
-                     eTagManager: ETagManager,
-                     operationDispatcher: OperationDispatcher,
-                     attributionFetcher: AttributionFetcher,
-                     dateProvider: DateProvider = DateProvider()) {
+    convenience init(
+        apiKey: String,
+        systemInfo: SystemInfo,
+        httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+        eTagManager: ETagManager,
+        operationDispatcher: OperationDispatcher,
+        attributionFetcher: AttributionFetcher,
+        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+        dateProvider: DateProvider = DateProvider()
+    ) {
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
@@ -37,8 +40,9 @@ class Backend {
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
-                                          dateProvider: dateProvider,
-                                          systemInfo: systemInfo)
+                                          systemInfo: systemInfo,
+                                          offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                                          dateProvider: dateProvider)
         self.init(backendConfig: config, attributionFetcher: attributionFetcher)
     }
 
@@ -96,9 +100,11 @@ class Backend {
 
     func getCustomerInfo(appUserID: String,
                          withRandomDelay randomDelay: Bool,
+                         allowComputingOffline: Bool = true,
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.getCustomerInfo(appUserID: appUserID,
                                       withRandomDelay: randomDelay,
+                                      allowComputingOffline: allowComputingOffline,
                                       completion: completion)
     }
 

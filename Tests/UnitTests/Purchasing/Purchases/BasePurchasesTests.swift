@@ -49,14 +49,17 @@ class BasePurchasesTests: TestCase {
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfoAttribution)
         self.attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                          systemInfo: systemInfoAttribution)
+        self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
+        self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
 
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
-                                          systemInfo: self.systemInfo)
+                                          systemInfo: self.systemInfo,
+                                          offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+                                          dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
@@ -73,7 +76,9 @@ class BasePurchasesTests: TestCase {
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster)
-        self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
+        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+                                                       operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
                                                        systemInfo: self.systemInfo)
@@ -83,11 +88,6 @@ class BasePurchasesTests: TestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
                                                          productsManager: self.mockProductsManager)
-        self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager(
-            deviceCache: self.deviceCache,
-            operationDispatcher: self.mockOperationDispatcher,
-            api: self.backend.offlineEntitlements
-        )
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -143,6 +143,7 @@ class BasePurchasesTests: TestCase {
             self.identityManager = nil
             self.mockOfferingsManager = nil
             self.mockOfflineEntitlementsManager = nil
+            self.mockPurchasedProductsFetcher = nil
             self.mockManageSubsHelper = nil
             self.mockBeginRefundRequestHelper = nil
             self.purchasesOrchestrator = nil
@@ -180,6 +181,8 @@ class BasePurchasesTests: TestCase {
     var customerInfoManager: CustomerInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
+    var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
+    var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
@@ -395,6 +398,7 @@ extension BasePurchasesTests {
 
         override func getCustomerInfo(appUserID: String,
                                       withRandomDelay randomDelay: Bool,
+                                      allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getSubscriberCallCount += 1
             self.userID = appUserID

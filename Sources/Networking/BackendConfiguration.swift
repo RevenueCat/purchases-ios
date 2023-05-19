@@ -13,7 +13,7 @@
 
 import Foundation
 
-final class BackendConfiguration {
+class BackendConfiguration {
 
     let httpClient: HTTPClient
 
@@ -21,15 +21,18 @@ final class BackendConfiguration {
     let operationQueue: OperationQueue
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
+    let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
 
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
-         dateProvider: DateProvider = DateProvider(),
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+         dateProvider: DateProvider = DateProvider()) {
         self.httpClient = httpClient
         self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
+        self.offlineCustomerInfoCreator = offlineCustomerInfoCreator
         self.dateProvider = dateProvider
         self.systemInfo = systemInfo
     }
@@ -59,4 +62,5 @@ extension BackendConfiguration {
 
 // @unchecked because:
 // - `OperationQueue` is not `Sendable` as of Swift 5.7
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension BackendConfiguration: @unchecked Sendable {}

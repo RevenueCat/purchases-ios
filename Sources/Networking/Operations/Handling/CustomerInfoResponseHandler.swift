@@ -15,10 +15,17 @@ import Foundation
 
 class CustomerInfoResponseHandler {
 
-    init() { }
+    private let offlineCreator: OfflineCustomerInfoCreator?
+    private let userID: String
+
+    /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't or can't be computed.
+    init(offlineCreator: OfflineCustomerInfoCreator?, userID: String) {
+        self.offlineCreator = offlineCreator
+        self.userID = userID
+    }
 
     func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
-                completion: CustomerAPI.CustomerInfoResponseHandler) {
+                completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let result: Result<CustomerInfo, BackendError> = response
             .map { response in
                 // If the response was successful we always want to return the `CustomerInfo`.
@@ -32,7 +39,28 @@ class CustomerInfoResponseHandler {
             }
             .mapError(BackendError.networkError)
 
-        completion(result)
+        self.handle(result: result, completion: completion)
+    }
+
+    private func handle(
+        result: Result<CustomerInfo, BackendError>,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+    ) {
+        guard let offlineCreator = self.offlineCreator,
+              result.error?.isServerDown == true,
+              #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else {
+            completion(result)
+            return
+        }
+
+        _ = Task<Void, Never> {
+            do {
+                completion(.success(try await offlineCreator.create(for: self.userID)))
+            } catch {
+                Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
+                completion(result)
+            }
+        }
     }
 
 }

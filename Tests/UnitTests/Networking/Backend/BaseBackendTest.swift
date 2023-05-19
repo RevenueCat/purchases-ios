@@ -23,6 +23,8 @@ class BaseBackendTests: TestCase {
     private(set) var systemInfo: SystemInfo!
     private(set) var httpClient: MockHTTPClient!
     private(set) var operationDispatcher: MockOperationDispatcher!
+    private(set) var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
+    private(set) var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
@@ -43,14 +45,19 @@ class BaseBackendTests: TestCase {
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
+        self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
+        self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
 
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
-        let backendConfig = BackendConfiguration(httpClient: self.httpClient,
-                                                 operationDispatcher: operationDispatcher,
-                                                 operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
-                                                 systemInfo: self.systemInfo)
+        let backendConfig = BackendConfiguration(
+            httpClient: self.httpClient,
+            operationDispatcher: self.operationDispatcher,
+            operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+            systemInfo: self.systemInfo,
+            offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
+        )
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)

@@ -1000,8 +1000,12 @@ private extension PurchasesOrchestrator {
             case let .success(customerInfo):
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
 
-                self.finishTransactionIfNeeded(transaction) {
+                if customerInfo.isComputedOffline {
                     completion?(transaction, customerInfo, nil, false)
+                } else {
+                    self.finishTransactionIfNeeded(transaction) {
+                        completion?(transaction, customerInfo, nil, false)
+                    }
                 }
 
             case let .failure(error):

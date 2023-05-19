@@ -17,19 +17,7 @@ import Foundation
 class MockIdentityAPI: IdentityAPI {
 
     public convenience init() {
-        // swiftlint:disable:next force_try
-        let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
-        let mockAPIKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: mockAPIKey,
-                                        systemInfo: systemInfo,
-                                        eTagManager: MockETagManager(),
-                                        requestTimeout: 7)
-        let backendConfig = BackendConfiguration(httpClient: httpClient,
-                                                 operationDispatcher: MockOperationDispatcher(),
-                                                 operationQueue: Backend.QueueProvider.createBackendQueue(),
-                                                 dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
-                                                 systemInfo: systemInfo)
-        self.init(backendConfig: backendConfig)
+        self.init(backendConfig: MockBackendConfiguration())
     }
 
     var invokedLogIn = false

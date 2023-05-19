@@ -30,12 +30,18 @@ final class CustomerAPI {
 
     func getCustomerInfo(appUserID: String,
                          withRandomDelay randomDelay: Bool,
+                         allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
-        let factory = GetCustomerInfoOperation.createFactory(configuration: config,
-                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
+        let factory = GetCustomerInfoOperation.createFactory(
+            configuration: config,
+            customerInfoCallbackCache: self.customerInfoCallbackCache,
+            offlineCreator: allowComputingOffline
+                ? self.backendConfig.offlineCustomerInfoCreator
+                : nil
+        )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
                                             source: factory.operationType,
@@ -113,9 +119,12 @@ final class CustomerAPI {
                                                          observerMode: observerMode,
                                                          initiationSource: initiationSource,
                                                          subscriberAttributesByKey: subscriberAttributesToPost)
-        let factory = PostReceiptDataOperation.createFactory(configuration: config,
-                                                             postData: postData,
-                                                             customerInfoCallbackCache: self.customerInfoCallbackCache)
+        let factory = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData,
+            customerInfoCallbackCache: self.customerInfoCallbackCache,
+            offlineCustomerInfoCreator: self.backendConfig.offlineCustomerInfoCreator
+        )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,
                                                   source: PostReceiptDataOperation.self,

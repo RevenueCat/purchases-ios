@@ -13,8 +13,11 @@
 
 import Foundation
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 extension CustomerInfo {
+
+    typealias OfflineCreator = ([PurchasedSK2Product],
+                                ProductEntitlementMapping,
+                                String) -> CustomerInfo
 
     convenience init(
         from purchasedSK2Products: [PurchasedSK2Product],
@@ -24,7 +27,7 @@ extension CustomerInfo {
     ) {
         let subscriber = CustomerInfoResponse.Subscriber(
             originalAppUserId: userID,
-            managementUrl: Self.defaultManagementURL,
+            managementUrl: SystemInfo.appleSubscriptionsURL,
             originalApplicationVersion: SystemInfo.buildVersion,
             originalPurchaseDate: Date(),
             firstSeen: Date(),
@@ -48,7 +51,13 @@ extension CustomerInfo {
         )
     }
 
-    private static func createEntitlements(
+}
+
+// MARK: - Private
+
+private extension CustomerInfo {
+
+    static func createEntitlements(
         with products: [PurchasedSK2Product],
         mapping: ProductEntitlementMapping
     ) -> [String: CustomerInfoResponse.Entitlement] {
@@ -86,6 +95,16 @@ extension CustomerInfo {
     /// Purchases are verified with StoreKit 2.
     private static let verification: VerificationResult = .verifiedOnDevice
 
-    static let defaultManagementURL = URL(string: "https://apps.apple.com/account/subscriptions")!
+}
+
+internal extension CustomerInfo {
+
+    var isComputedOffline: Bool {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            return self.entitlements.verification == .verifiedOnDevice
+        } else {
+            return false
+        }
+    }
 
 }
