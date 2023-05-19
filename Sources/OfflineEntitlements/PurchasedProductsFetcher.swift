@@ -60,11 +60,17 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
             }
         }
 
-        if result.isEmpty, let error = syncError {
-            // Only throw errors when syncing with the store if there were no entitlements found
-            throw error
+        if let error = syncError {
+            if result.isEmpty {
+                // Only throw errors when syncing with the store if there were no entitlements found
+                throw error
+            } else {
+                Logger.appleError(error.localizedDescription)
+
+                // If there are any entitlements, ignore the error.
+                return result
+            }
         } else {
-            // If there are any entitlements, ignore the error.
             return result
         }
     }

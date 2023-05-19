@@ -30,7 +30,7 @@ class BasePurchasedProductsFetcherTests: StoreKitConfigTestCase {
 
         self.sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: .random())
         self.fetcher = PurchasedProductsFetcher(
-            appStoreSync: self.syncAppStore,
+            appStoreSync: { try await self.syncAppStore() },
             sandboxDetector: self.sandboxDetector
         )
     }
@@ -101,8 +101,8 @@ class FailingSyncPurchasedProductsFetcherTests: BasePurchasedProductsFetcherTest
 
     func testThrowsIfNoPurchasedProducts() async throws {
         do {
-            _ = try await self.fetcher.fetchPurchasedProducts()
-            fail("Expected error")
+            let result = try await self.fetcher.fetchPurchasedProducts()
+            fail("Expected error. Found \(result.count) products")
         } catch let error {
             expect(error).to(matchError(Self.error))
         }
