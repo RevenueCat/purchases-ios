@@ -99,17 +99,27 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
                 return cache
             }
 
-            var result: Transactions = []
-
-            Logger.debug(Strings.offlineEntitlements.purchased_products_fetching)
-
-            for await transaction in StoreKit.Transaction.currentEntitlements {
-                result.append(transaction)
+            let result = await TimingUtil.measureAndLogIfTooSlow(
+                threshold: .purchasedProducts,
+                message: Strings.offlineEntitlements.purchased_products_fetching_too_slow
+            ) {
+                return await Self.fetchTransactions()
             }
 
             self.cache.cache(instance: result)
             return result
         }
+    }
+
+    private static func fetchTransactions() async -> Transactions {
+        var result: Transactions = []
+
+        Logger.debug(Strings.offlineEntitlements.purchased_products_fetching)
+        for await transaction in StoreKit.Transaction.currentEntitlements {
+            result.append(transaction)
+        }
+
+        return result
     }
 
 }
