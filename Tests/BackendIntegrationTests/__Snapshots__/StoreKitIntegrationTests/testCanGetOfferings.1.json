@@ -5,7 +5,7 @@
       "description" : "standard set of packages",
       "identifier" : "default",
       "metadata" : {
-
+        "meta" : "data"
       },
       "packages" : [
         {
