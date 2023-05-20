@@ -271,6 +271,7 @@ class BasePurchasesTests: TestCase {
                                    offeringsManager: self.mockOfferingsManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
+                                   purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
                                    trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker)
 
         self.purchasesOrchestrator.delegate = self.purchases

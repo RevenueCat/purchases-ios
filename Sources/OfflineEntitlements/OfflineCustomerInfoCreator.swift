@@ -24,18 +24,25 @@ class OfflineCustomerInfoCreator {
     private let productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
     private let creator: Creator
 
-    static func createDefault(
+    static func createPurchasedProductsFetcherIfAvailable() -> PurchasedProductsFetcherType? {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            return PurchasedProductsFetcher()
+        } else {
+            return nil
+        }
+    }
+
+    static func createIfAvailable(
+        with purchasedProductsFetcher: PurchasedProductsFetcherType?,
         productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
     ) -> OfflineCustomerInfoCreator? {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            return .init(
-                purchasedProductsFetcher: PurchasedProductsFetcher(),
-                productEntitlementMappingFetcher: productEntitlementMappingFetcher
-            )
-        } else {
+        guard let fetcher = purchasedProductsFetcher else {
             Logger.debug(Strings.offlineEntitlements.offline_entitlements_not_available)
             return nil
         }
+
+        return .init(purchasedProductsFetcher: fetcher,
+                     productEntitlementMappingFetcher: productEntitlementMappingFetcher)
     }
 
     convenience init(purchasedProductsFetcher: PurchasedProductsFetcherType,

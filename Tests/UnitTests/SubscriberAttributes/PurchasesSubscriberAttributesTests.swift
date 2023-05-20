@@ -57,6 +57,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     var mockOfferingsManager: MockOfferingsManager!
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
+    var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
 
@@ -105,6 +106,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                        currentUserProvider: self.mockIdentityManager,
                                        attributionPoster: self.mockAttributionPoster)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.mockDeviceCache,
@@ -187,6 +189,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               offeringsManager: mockOfferingsManager,
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
+                              purchasedProductsFetcher: mockPurchasedProductsFetcher,
                               trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate

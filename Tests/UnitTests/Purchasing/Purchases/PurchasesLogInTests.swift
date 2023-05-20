@@ -249,6 +249,19 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount) == 1
     }
 
+    func testLogInClearsPurchasedProductsFetcherCache() {
+        expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
+
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID) { _, _, _ in completed() }
+        }
+
+        expect(self.mockPurchasedProductsFetcher.invokedClearCache).toEventually(beTrue())
+        expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount) == 1
+    }
+
 }
 
 // MARK: -
