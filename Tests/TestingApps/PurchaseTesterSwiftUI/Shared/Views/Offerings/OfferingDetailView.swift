@@ -34,6 +34,9 @@ struct OfferingDetailView: View {
         @EnvironmentObject private var observerModeManager: ObserverModeManager
         @State private var eligibility: IntroEligibilityStatus? = nil
         
+        @State private var error: Error?
+        @State private var purchaseSucceeded: Bool = false
+
         private func checkIntroEligibility() async {
             guard self.eligibility == nil else { return }
             
@@ -105,6 +108,20 @@ struct OfferingDetailView: View {
                 }
             }
             .disabled(self.isPurchasing)
+            .alert(isPresented: self.$purchaseSucceeded) {
+                Alert(title: Text("Purchased!"))
+            }
+            .alert(
+                isPresented: .init(get: { self.error != nil },
+                                   set: { if $0 == false { self.error = nil } }),
+                error: self.error.map(LocalizedAlertError.init),
+                actions: { _ in
+                    Button("OK") {
+                        self.error = nil
+                    }
+                },
+                message: { Text($0.subtitle) }
+            )
             .task {
                 await self.checkIntroEligibility()
             }
@@ -151,7 +168,10 @@ struct OfferingDetailView: View {
                 Task<Void, Never> {
                     do {
                         try await action()
+
+                        self.purchaseSucceeded = true
                     } catch {
+                        self.error = error
                         print("🚀 Error: \(error)")
                     }
                 }
