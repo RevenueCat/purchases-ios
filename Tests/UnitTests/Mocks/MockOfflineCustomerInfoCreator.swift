@@ -23,4 +23,16 @@ class MockOfflineCustomerInfoCreator: OfflineCustomerInfoCreator {
         )
     }
 
+    var stubbedCreatedResult: Result<CustomerInfo, Error> = .failure(ErrorUtils.customerInfoError())
+    var createRequested = false
+    var createRequestCount = 0
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    override func create(for userID: String) async throws -> CustomerInfo {
+        self.createRequested = true
+        self.createRequestCount += 1
+
+        return try self.stubbedCreatedResult.get()
+    }
+
 }

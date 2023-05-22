@@ -227,6 +227,20 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         ]
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasingConsumableInvalidatesOfflineMode() async throws {
+        self.serverDown()
+
+        do {
+            _ = try await self.purchaseConsumablePackage()
+            fail("Expected error")
+        } catch let error as ErrorCode {
+            expect(error).to(matchError(ErrorCode.unknownBackendError))
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
 }
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
