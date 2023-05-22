@@ -38,7 +38,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(2))
 
-        let package1 = try XCTUnwrap(offering.packages[safe: 0])
+        let package1 = try XCTUnwrap(offering.packages.first)
         let package2 = try XCTUnwrap(offering.packages[safe: 1])
 
         expect(package1.identifier) == PackageType.monthly.description
@@ -56,7 +56,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(1))
 
-        let package = try XCTUnwrap(offering.packages[safe: 0])
+        let package = try XCTUnwrap(offering.packages.first)
 
         expect(package.identifier) == PackageType.lifetime.description
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
@@ -79,7 +79,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         ]
         expect(offering.packages).to(haveCount(1))
 
-        let package = try XCTUnwrap(offering.packages[safe: 0])
+        let package = try XCTUnwrap(offering.packages.first)
 
         expect(package.identifier) == PackageType.lifetime.description
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
@@ -93,7 +93,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(1))
 
-        let package = try XCTUnwrap(offering.packages[safe: 0])
+        let package = try XCTUnwrap(offering.packages.first)
 
         expect(package.identifier) == PackageType.lifetime.description
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
