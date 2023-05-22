@@ -299,6 +299,7 @@ extension Configuration {
         case productRequest = 3
         case purchase = 7
         case introEligibility = 2
+        case purchasedProducts = 1
 
     }
 
