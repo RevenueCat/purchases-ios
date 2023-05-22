@@ -11,5 +11,6 @@ enum Windows: String {
 
     case `default`
     case logs
+    case proxy
 
 }

@@ -68,6 +68,13 @@ struct PurchaseTesterApp: App {
             LoggerView(logger: ConfiguredPurchases.logger)
         }
 
+        #if os(macOS) || targetEnvironment(macCatalyst)
+        WindowGroup(id: Windows.proxy.rawValue) {
+            ProxyView(proxyURL: self.configuration?.proxyURL)
+                .navigationTitle("Proxy Status")
+        }
+        #endif
+
         #if os(macOS)
         MenuBarExtra("ReceiptParser", systemImage: "doc.text.magnifyingglass") {
             VStack {
