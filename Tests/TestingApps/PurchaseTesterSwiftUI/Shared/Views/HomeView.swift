@@ -127,13 +127,9 @@ struct HomeView: View {
                     #endif
                 }
             }
-            #if os(macOS)
-                .padding()
-            #endif
-                .task {
-                    await self.fetchData()
-                }
-
+            .task {
+                await self.fetchData()
+            }
         }
         .alert(
             isPresented: .init(get: { self.error != nil },
