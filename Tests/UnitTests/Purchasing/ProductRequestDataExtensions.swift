@@ -10,6 +10,7 @@ extension ProductRequestData {
 
     static func createMockProductData(productIdentifier: String = "product_id",
                                       paymentMode: StoreProductDiscount.PaymentMode? = nil,
+                                      productCategory: StoreProduct.ProductCategory = .subscription,
                                       currencyCode: String = "UYU",
                                       storefrontCountryCode: String = "ESP",
                                       price: Decimal = 15.99,
@@ -21,6 +22,7 @@ extension ProductRequestData {
                                       discounts: [StoreProductDiscountType]? = nil) -> ProductRequestData {
         ProductRequestData(productIdentifier: productIdentifier,
                            paymentMode: paymentMode,
+                           productCategory: productCategory,
                            currencyCode: currencyCode,
                            storefront: MockStorefront(countryCode: storefrontCountryCode),
                            price: price,

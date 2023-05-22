@@ -32,6 +32,7 @@ extension ProductRequestData {
         self.init(
             productIdentifier: product.productIdentifier,
             paymentMode: paymentMode,
+            productCategory: product.productCategory,
             currencyCode: product.priceFormatter?.currencyCode,
             storefront: storefront,
             price: product.price as Decimal,

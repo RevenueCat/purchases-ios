@@ -24,6 +24,7 @@ class BaseBackendTests: TestCase {
     private(set) var httpClient: MockHTTPClient!
     private(set) var operationDispatcher: MockOperationDispatcher!
     private(set) var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
+    private(set) var mockOfflineCustomerInfoCreator: MockOfflineCustomerInfoCreator!
     private(set) var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     private(set) var backend: Backend!
     private(set) var offerings: OfferingsAPI!
@@ -46,6 +47,7 @@ class BaseBackendTests: TestCase {
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
+        self.mockOfflineCustomerInfoCreator = MockOfflineCustomerInfoCreator()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
 
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -55,7 +57,7 @@ class BaseBackendTests: TestCase {
             operationDispatcher: self.operationDispatcher,
             operationQueue: MockBackend.QueueProvider.createBackendQueue(),
             systemInfo: self.systemInfo,
-            offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
+            offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
 
