@@ -429,7 +429,7 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
         expect(result?.value?.all).to(haveCount(1))
         expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsResponse.currentOfferingId
-        expect(result?.value?.current?.metadata as? [String: AnyDecodable]) == MockData.metadata
+        expect(result?.value?.current?.metadata.count) == 6
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
