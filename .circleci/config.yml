@@ -168,7 +168,7 @@ commands:
       - run:
           name: Compress result bundle
           command: |
-             tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
+             tar -czf << parameters.bundle_name >>.xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
              rm -r << parameters.bundle_name >>.xcresult
           working_directory: << parameters.directory >>
           when: always
