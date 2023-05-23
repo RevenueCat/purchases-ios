@@ -199,11 +199,16 @@ class OfferingsTests: TestCase {
         expect(offerings.current) == offerings["offering_a"]
 
         let offeringA = try XCTUnwrap(offerings["offering_a"])
-        expect(offeringA.metadata.count) == metadata.count
-        expect(offeringA.getMetadataValue(for: "int", defaultValue: 0)) == 5
-        expect(offeringA.getMetadataValue(for: "double", defaultValue: 0.0)) == 5.5
-        expect(offeringA.getMetadataValue(for: "boolean", defaultValue: false)) == true
-        expect(offeringA.getMetadataValue(for: "string", defaultValue: "")) == "five"
+        expect(offeringA.metadata).to(haveCount(6))
+        expect(offeringA.getMetadataValue(for: "int", default: 0)) == 5
+        expect(offeringA.getMetadataValue(for: "double", default: 0.0)) == 5.5
+        expect(offeringA.getMetadataValue(for: "boolean", default: false)) == true
+        expect(offeringA.getMetadataValue(for: "string", default: "")) == "five"
+
+        expect(offeringA.getMetadataValue(for: "pizza", default: "no pizza")) == "no pizza"
+
+        let wrongMetadataType = offeringA.getMetadataValue(for: "string", default: 5.5)
+        expect(wrongMetadataType) == 5.5
     }
 
     func testLifetimePackage() throws {
