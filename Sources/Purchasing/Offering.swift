@@ -176,10 +176,14 @@ import Foundation
 extension Offering {
 
     /**
-     Gets a value from `metadata` and falls back to a specified default value.
+     - Returns: the `metadata` value associated to `key` for the expected type,
+     or `defaultValue` if not found, or it's not the expected type.
      */
-    public func getMetadataValue<T>(for key: String, defaultValue: T) -> T {
-        return self.metadata[key] as? T ?? defaultValue
+    public func getMetadataValue<T>(for key: String, default: T) -> T {
+        guard let rawValue = self.metadata[key], let value = rawValue as? T else {
+            return `default`
+        }
+        return value
     }
 
 }
