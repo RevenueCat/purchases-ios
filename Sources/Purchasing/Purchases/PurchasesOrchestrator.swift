@@ -166,6 +166,12 @@ final class PurchasesOrchestrator {
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
+
+        Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
+    }
+
+    deinit {
+        Logger.verbose(Strings.purchase.purchases_orchestrator_deinit(self))
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
