@@ -497,4 +497,31 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     private static let customUserDefaults: UserDefaults = .init(suiteName: "com.revenuecat.testing_user_defaults")!
 
+    // MARK: - OfflineCustomerInfoCreator
+
+    func testObserverModeDoesNotCreateOfflineCustomerInfoCreator() {
+        expect(Self.create(observerMode: true).offlineCustomerInfoEnabled) == false
+    }
+
+    func testOlderVersionsDoNoCreateOfflineCustomerInfo() throws {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            throw XCTSkip("Test for older versions")
+        }
+
+        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == false
+    }
+
+    func testCustomerInfoEnabled() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == true
+    }
+
+    private static func create(observerMode: Bool) -> Purchases {
+        return Purchases.configure(
+            with: .init(withAPIKey: "")
+                .with(observerMode: observerMode)
+        )
+    }
+
 }

@@ -43,7 +43,7 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
     var description: String {
         switch self {
         case .offline_entitlements_not_available:
-            return "OS version does not support offline entitlements."
+            return "Offline entitlements not available."
 
         case .product_entitlement_mapping_stale_updating:
             return "ProductEntitlementMapping cache is stale, updating from network."

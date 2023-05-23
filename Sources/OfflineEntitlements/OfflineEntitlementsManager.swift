@@ -68,8 +68,7 @@ class OfflineEntitlementsManager {
     }
 
     func shouldComputeOfflineCustomerInfo(appUserID: String) -> Bool {
-        return (!self.systemInfo.observerMode &&
-                self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil)
+        return (self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil)
     }
 
 }
