@@ -738,7 +738,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             self.backend.post(receiptData: Self.receiptData,
                               appUserID: Self.userID,
                               isRestore: false,
-                              productData: .createMockProductData(productCategory: .subscription),
+                              productData: .createMockProductData(),
                               presentedOfferingIdentifier: nil,
                               observerMode: false,
                               initiationSource: .purchase,
@@ -753,35 +753,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         expect(self.mockOfflineCustomerInfoCreator.createRequested) == true
         expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 1
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPostingConsumableWithServerErrorDoesNotComputeOfflineCustomerInfo() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        self.httpClient.mock(
-            requestPath: .postReceiptData,
-            response: .init(error: .serverDown())
-        )
-
-        let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
-                              productData: .createMockProductData(productCategory: .nonSubscription),
-                              presentedOfferingIdentifier: nil,
-                              observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
-                              completion: { result in
-                completed(result)
-            })
-        }
-
-        expect(result).to(beFailure())
-        expect(result?.error).to(matchError(BackendError.networkError(.serverDown())))
-
-        expect(self.mockOfflineCustomerInfoCreator.createRequested) == false
     }
 
 }

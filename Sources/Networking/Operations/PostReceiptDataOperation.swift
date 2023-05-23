@@ -39,16 +39,11 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
-        // Can't compute offline CustomerInfo when purchasing non-consumables
-        let offlineCreator: OfflineCustomerInfoCreator? = postData.isNonSubscriptionProduct
-            ? nil
-            : offlineCustomerInfoCreator
-
         return Self.createFactory(
             configuration: configuration,
             postData: postData,
             customerInfoResponseHandler: .init(
-                offlineCreator: offlineCreator,
+                offlineCreator: offlineCustomerInfoCreator,
                 userID: configuration.appUserID
             ),
             customerInfoCallbackCache: customerInfoCallbackCache
@@ -193,12 +188,6 @@ extension PostReceiptDataOperation.PostData: Encodable {
                 .map(AnyEncodable.init),
             forKey: .attributes
         )
-    }
-
-    fileprivate var isNonSubscriptionProduct: Bool {
-        guard let data = self.productData else { return false }
-
-        return data.productCategory == .nonSubscription
     }
 
 }

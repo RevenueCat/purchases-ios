@@ -36,7 +36,6 @@ struct ProductRequestData {
 
     let productIdentifier: String
     let paymentMode: StoreProductDiscount.PaymentMode?
-    let productCategory: StoreProduct.ProductCategory
     let currencyCode: String?
     let storefront: StorefrontType?
     let price: Decimal

@@ -231,11 +231,20 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 
+        let logger = TestLogHandler()
+
         do {
             _ = try await self.purchaseConsumablePackage()
             fail("Expected error")
         } catch let error as ErrorCode {
             expect(error).to(matchError(ErrorCode.unknownBackendError))
+
+            logger.verifyMessageWasLogged(
+                Strings.offlineEntitlements.computing_offline_customer_info_failed(
+                    PurchasedProductsFetcher.Error.foundConsumablePurchase
+                ),
+                level: .error
+            )
         } catch {
             fail("Unexpected error: \(error)")
         }
