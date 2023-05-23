@@ -429,7 +429,6 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
         expect(result?.value?.all).to(haveCount(1))
         expect(result?.value?.current?.identifier) == MockData.anyBackendOfferingsResponse.currentOfferingId
-        expect(result?.value?.current?.metadata.count) == 6
 
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
@@ -466,18 +465,6 @@ private extension OfferingsManagerTests {
     enum MockData {
         static let anyAppUserID = ""
 
-        @DefaultDecodable.EmptyDictionary
-        static var metadata: [String: AnyDecodable] = [
-          "int": 5,
-          "double": 5.5,
-          "boolean": true,
-          "string": "five",
-          "array": ["five"],
-          "dictionary": [
-              "string": "five"
-          ]
-        ]
-
         static let anyBackendOfferingsResponse: OfferingsResponse = .init(
             currentOfferingId: "base",
             offerings: [
@@ -485,8 +472,7 @@ private extension OfferingsManagerTests {
                       description: "This is the base offering",
                       packages: [
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                      ],
-                      metadata: _metadata)
+                      ])
             ]
         )
         static let backendOfferingsResponseWithUnknownProducts: OfferingsResponse = .init(

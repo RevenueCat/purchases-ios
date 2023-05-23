@@ -153,6 +153,55 @@ class OfferingsTests: TestCase {
         expect(offerings.current) == offerings["offering_a"]
     }
 
+    func testOfferingsWithMetadataIsCreated() throws {
+        @DefaultDecodable.EmptyDictionary
+        var metadata: [String: AnyDecodable] = [
+            "int": 5,
+            "double": 5.5,
+            "boolean": true,
+            "string": "five",
+            "array": ["five"],
+            "dictionary": [
+                "string": "five"
+            ]
+        ]
+
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
+        let products = [
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
+        ]
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: products,
+                data: .init(
+                    currentOfferingId: "offering_a",
+                    offerings: [
+                        .init(identifier: "offering_a",
+                              description: "This is the base offering",
+                              packages: [
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                              ],
+                             metadata: _metadata),
+                        .init(identifier: "offering_b",
+                              description: "This is the base offering b",
+                              packages: [
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                              ])
+                    ]
+                )
+            )
+        )
+
+        expect(offerings["offering_a"]).toNot(beNil())
+        expect(offerings["offering_b"]).toNot(beNil())
+        expect(offerings.current) == offerings["offering_a"]
+
+        let offeringA = try XCTUnwrap(offerings["offering_a"])
+        expect(offeringA.metadata.count) == metadata.count
+    }
+
     func testLifetimePackage() throws {
         try testPackageType(packageType: PackageType.lifetime)
     }
