@@ -528,7 +528,7 @@ private extension HTTPResponse {
 
 }
 
-private extension HTTPResponse<Data> {
+private extension HTTPResponse where Body == Data {
 
     func parseUnsuccessfulResponse() -> NetworkError {
         let isJSON = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType.rawValue) == "application/json"
