@@ -739,7 +739,7 @@ jobs:
           command: bundle exec fastlane v3_loadshedder_integration_tests
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
-          bundle_name: V3LoadShedderIntegrationTests
+          bundle_name: v3LoadShedderIntegration
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests
