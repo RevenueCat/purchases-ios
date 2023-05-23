@@ -110,7 +110,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 // This test requires no previously stored user
-                .with(userDefaults: .init(suiteName: UUID().uuidString)!)
+                .with(userDefaults: .emptyNewUserDefaults())
                 .with(appUserID: "")
         )
         expect(purchases.appUserID).toNot(beEmpty())
@@ -120,7 +120,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testUserIdOverridesPreviouslyConfiguredUser() {
         // This test requires no previously stored user
-        let userDefaults: UserDefaults = .init(suiteName: UUID().uuidString)!
+        let userDefaults: UserDefaults = .emptyNewUserDefaults()
 
         let newUserID = Self.appUserID + "_new"
 
@@ -141,7 +141,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testNilUserIdIsIgnoredIfPreviousUserExists() {
         // This test requires no previously stored user
-        let userDefaults: UserDefaults = .init(suiteName: UUID().uuidString)!
+        let userDefaults: UserDefaults = .emptyNewUserDefaults()
 
         _ = Purchases.configure(
             with: .init(withAPIKey: "")
@@ -413,7 +413,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expectFatalError(expectedMessage: expectedMessage) {
             _ = Purchases(apiKey: "",
                           appUserID: nil,
-                          userDefaults: .init(suiteName: UUID().uuidString)!,
+                          userDefaults: .emptyNewUserDefaults(),
                           observerMode: false,
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true))
@@ -498,5 +498,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     private static let customUserDefaults: UserDefaults = .init(suiteName: "com.revenuecat.testing_user_defaults")!
+
+}
+
+private extension UserDefaults {
+
+    static func emptyNewUserDefaults() -> Self {
+        return .init(suiteName: UUID().uuidString)!
+    }
 
 }
