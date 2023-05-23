@@ -29,29 +29,18 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     private typealias Transactions = [StoreKit.VerificationResult<StoreKit.Transaction>]
 
-    private let appStoreSync: () async throws -> Void
     private let sandboxDetector: SandboxEnvironmentDetector
     private let cache: InMemoryCachedObject<Transactions>
 
     init(
-        appStoreSync: @escaping () async throws -> Void = PurchasedProductsFetcher.defaultAppStoreSync,
         sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
     ) {
-        self.appStoreSync = appStoreSync
         self.sandboxDetector = sandboxDetector
         self.cache = .init()
     }
 
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
-
-        let syncError: Error?
-        do {
-            try await self.appStoreSync()
-            syncError = nil
-        } catch {
-            syncError = error
-        }
 
         for transaction in await self.transactions {
             switch transaction {
@@ -66,19 +55,7 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
             }
         }
 
-        if let error = syncError {
-            if result.isEmpty {
-                // Only throw errors when syncing with the store if there were no entitlements found
-                throw error
-            } else {
-                Logger.appleError(error.localizedDescription)
-
-                // If there are any entitlements, ignore the error.
-                return result
-            }
-        } else {
-            return result
-        }
+        return result
     }
 
     func clearCache() {
@@ -86,8 +63,6 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
         self.cache.clearCache()
     }
-
-    static let defaultAppStoreSync = AppStore.sync
 
     private static let cacheDuration: DispatchTimeInterval = .minutes(5)
 
