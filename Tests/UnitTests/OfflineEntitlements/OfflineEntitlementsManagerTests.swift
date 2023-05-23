@@ -58,7 +58,21 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
     }
 
     func testUpdateEntitlementsCacheForCustomEntitlementComputation() {
-        self.mockSystemInfo = MockSystemInfo(finishTransactions: false, customEntitlementsComputation: true)
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        self.manager = self.createManager()
+
+        let result = waitUntilValue { completion in
+            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
+                completion($0)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
+    }
+
+    func testUpdateEntitlementsCacheForObserverMode() {
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
         self.manager = self.createManager()
 
         let result = waitUntilValue { completion in

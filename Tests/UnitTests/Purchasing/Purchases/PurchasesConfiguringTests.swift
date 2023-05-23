@@ -511,7 +511,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == false
     }
 
-    func testCustomerInfoEnabled() throws {
+    func testOfflineCustomerInfoEnabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == true
