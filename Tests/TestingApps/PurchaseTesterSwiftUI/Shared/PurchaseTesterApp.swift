@@ -112,18 +112,35 @@ struct PurchaseTesterApp: App {
         ContentView(configuration: configuration)
             .environmentObject(self.revenueCatCustomerData)
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItemGroup(placement: Self.toolbarPlacement) {
                     Button {
                         self.configuration = nil
                     } label: {
                         Text("Reconfigure")
                     }
+
+                    #if os(iOS)
+                    NavigationLink {
+                        ProxyView(proxyURL: self.configuration?.proxyURL)
+                            .navigationTitle("Proxy Status")
+                    } label: {
+                        Text("Proxy")
+                    }
+                    #endif
                 }
             }
     }
 
     private var isConfigured: Bool {
         return self.configuration != nil
+    }
+
+    private static var toolbarPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        return .navigation
+        #else
+        return .principal
+        #endif
     }
 
 }

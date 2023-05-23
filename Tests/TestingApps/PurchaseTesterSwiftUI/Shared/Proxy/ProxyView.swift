@@ -8,8 +8,6 @@
 import Foundation
 import SwiftUI
 
-#if os(macOS) || targetEnvironment(macCatalyst)
-
 struct ProxyView: View {
 
     @StateObject
@@ -53,9 +51,8 @@ struct ProxyView: View {
         } label: {
             Text(mode.description)
         }
+        .buttonStyle(.borderedProminent)
         .disabled(self.changingMode)
     }
 
 }
-
-#endif

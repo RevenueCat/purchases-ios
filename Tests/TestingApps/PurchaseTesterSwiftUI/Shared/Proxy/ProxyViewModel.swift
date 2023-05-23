@@ -7,8 +7,6 @@
 
 import Foundation
 
-#if os(macOS) || targetEnvironment(macCatalyst)
-
 @MainActor
 final class ProxyViewModel: NSObject, ObservableObject {
 
@@ -30,5 +28,3 @@ final class ProxyViewModel: NSObject, ObservableObject {
     }
 
 }
-
-#endif
