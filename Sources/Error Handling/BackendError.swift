@@ -16,7 +16,7 @@
 import Foundation
 
 /// An `Error` produced by ``Backend``.
-enum BackendError: Error, Equatable {
+enum BackendError: Error {
 
     case networkError(NetworkError)
     case missingAppUserID(Source)
@@ -179,7 +179,7 @@ extension BackendError {
 
 extension BackendError {
 
-    enum UnexpectedBackendResponseError: Error, Equatable {
+    enum UnexpectedBackendResponseError: Error {
 
         /// Login call failed due to a problem with the response.
         case loginResponseDecoding

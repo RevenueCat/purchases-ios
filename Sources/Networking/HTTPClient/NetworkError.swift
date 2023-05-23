@@ -16,7 +16,7 @@
 import Foundation
 
 /// Represents an error created by `HTTPClient`.
-enum NetworkError: Swift.Error, Equatable {
+enum NetworkError: Swift.Error {
 
     case decoding(NSError, Source)
     case offlineConnection(Source)
