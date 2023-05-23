@@ -174,11 +174,7 @@ import Foundation
 }
 
 extension Offering {
-
-    struct Metadata {
-        let data: [String: Any]
-    }
-
+    
     func getMetadataValue<T>(for key: String, defaultValue: T) -> T {
         return self.metadata[key] as? T ?? defaultValue
     }
@@ -195,6 +191,14 @@ extension Offering: Identifiable {
 extension Offering: Sendable {}
 
 // MARK: - Private
+
+private extension Offering {
+
+    struct Metadata {
+        let data: [String: Any]
+    }
+
+}
 
 private extension Offering {
 
