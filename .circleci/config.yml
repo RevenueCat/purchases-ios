@@ -737,9 +737,20 @@ jobs:
       - run:
           name: V3 LoadShedder integration tests
           command: bundle exec fastlane v3_loadshedder_integration_tests
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: V3LoadShedderIntegrationTests
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
   
   deploy-purchase-tester:
     <<: *base-job
