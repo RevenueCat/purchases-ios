@@ -29,6 +29,8 @@ func checkOfferingAPI() {
     var pPack: Package? = off.package(identifier: "")
     pPack = off.package(identifier: nil)
     let package: Package? = off[""]
+    let metadata: [String: Any] = off.metadata
 
-    print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!, mPack!, wPack!, pPack!, package!)
+    print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!,
+          twmPack!, mPack!, wPack!, pPack!, package!, metadata)
 }

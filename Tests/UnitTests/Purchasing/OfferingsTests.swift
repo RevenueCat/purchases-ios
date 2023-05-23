@@ -183,7 +183,7 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
                               ],
-                             metadata: _metadata),
+                              metadata: _metadata),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
@@ -200,6 +200,10 @@ class OfferingsTests: TestCase {
 
         let offeringA = try XCTUnwrap(offerings["offering_a"])
         expect(offeringA.metadata.count) == metadata.count
+        expect(offeringA.getMetadataValue(for: "int", defaultValue: 0)) == 5
+        expect(offeringA.getMetadataValue(for: "double", defaultValue: 0.0)) == 5.5
+        expect(offeringA.getMetadataValue(for: "boolean", defaultValue: false)) == true
+        expect(offeringA.getMetadataValue(for: "string", defaultValue: "")) == "five"
     }
 
     func testLifetimePackage() throws {

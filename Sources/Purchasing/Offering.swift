@@ -179,6 +179,10 @@ extension Offering {
         let data: [String: Any]
     }
 
+    func getMetadataValue<T>(for key: String, defaultValue: T) -> T {
+        return self.metadata[key] as? T ?? defaultValue
+    }
+
 }
 
 extension Offering: Identifiable {
