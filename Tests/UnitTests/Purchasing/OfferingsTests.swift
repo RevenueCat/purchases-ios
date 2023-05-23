@@ -154,7 +154,6 @@ class OfferingsTests: TestCase {
     }
 
     func testOfferingsWithMetadataIsCreated() throws {
-        @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable] = [
             "int": 5,
             "double": 5.5,
@@ -183,7 +182,9 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
                               ],
-                              metadata: _metadata),
+                              metadata: .init(
+                                wrappedValue: metadata
+                              )),
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
