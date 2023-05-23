@@ -13,7 +13,26 @@
 
 import Foundation
 
-// swiftlint:disable nesting
+enum CodableError: Error, CustomStringConvertible, LocalizedError {
+
+    case unexpectedValue(Any.Type, Any)
+    case valueNotFound(value: Any.Type, context: DecodingError.Context)
+    case invalidJSONObject(value: [String: Any])
+
+    var description: String {
+        switch self {
+        case let .unexpectedValue(type, value):
+            return Strings.codable.unexpectedValueError(type: type, value: value).description
+        case let .valueNotFound(value, context):
+            return Strings.codable.valueNotFoundError(value: value, context: context).description
+        case let .invalidJSONObject(value):
+            return Strings.codable.invalid_json_error(jsonData: value).description
+        }
+    }
+
+    var errorDescription: String? { return self.description }
+
+}
 
 extension Decoder {
 
@@ -26,226 +45,142 @@ extension Decoder {
 
 }
 
-// MARK: - DefaultValueProvider
+extension JSONDecoder {
 
-/// A type that can provide a default value.
-protocol DefaultValueProvider {
-
-    associatedtype Value
-
-    static var defaultValue: Value { get }
-
-}
-
-// MARK: - DefaultValue
-
-/// A property wrapper for providing a default value to properties that conform to `DefaultValueProvider`.
-/// This is similar to `@IgnoreDecodeErrors` but it will not ignore decoding errors.
-/// - Example:
-/// ```
-/// struct Data {
-///     @DefaultValue<E> var e: E
-/// }
-/// ```
-@propertyWrapper
-struct DefaultValue<Source: DefaultValueProvider> {
-
-    typealias Value = Source.Value
-
-    var wrappedValue = Source.defaultValue
-
-}
-
-extension DefaultValue: Equatable where Value: Equatable {}
-extension DefaultValue: Hashable where Value: Hashable {}
-
-extension DefaultValue: Decodable where Value: Decodable {
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.wrappedValue = try container.decode(Value.self)
-    }
-
-}
-
-extension DefaultValue: Encodable where Value: Encodable {
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.wrappedValue)
-    }
-
-}
-
-extension Optional: DefaultValueProvider {
-
-    static var defaultValue: Wrapped? { return .none }
-
-}
-
-// MARK: - IgnoreEncodable
-
-/// A property wrapper that allows not encoding a value.
-/// - Example:
-/// ```
-/// struct Data {
-///     @IgnoreEncodable var data: String // this value won't be encoded
-/// }
-/// ```
-@propertyWrapper
-struct IgnoreEncodable<Value> {
-
-    var wrappedValue: Value
-
-}
-
-extension IgnoreEncodable: Decodable where Value: Decodable {
-
-    init(from decoder: Decoder) throws {
-        self.wrappedValue = try decoder.singleValueContainer().decode(Value.self)
-    }
-
-}
-
-extension IgnoreEncodable: Encodable {
-
-    func encode(to encoder: Encoder) throws {}
-
-}
-
-extension IgnoreEncodable: Equatable where Value: Equatable {}
-extension IgnoreEncodable: Hashable where Value: Hashable {}
-
-extension KeyedEncodingContainer {
-
-    mutating func encode<T>(_ value: IgnoreEncodable<T>, forKey key: K) throws {}
-
-}
-
-// MARK: - IgnoreDecodeErrors
-
-/// A property wrapper that allows ignoring decoding errors for `DefaultValueProvider` properties (like `Optional`)
-/// This is similar to `@DefaultValue` but it will also decode as `Source.defaultValue` if there are any errors
-/// - Example:
-/// ```
-/// struct Data {
-///     @IgnoreDecodingErrors<URL?> var url: URL? // becomes `nil` if url is invalid
-/// }
-/// ```
-@propertyWrapper
-struct IgnoreDecodeErrors<Source: DefaultValueProvider> {
-
-    typealias Value = Source.Value
-
-    var wrappedValue: Value = Source.defaultValue
-
-}
-
-extension IgnoreDecodeErrors: Equatable where Value: Equatable {}
-extension IgnoreDecodeErrors: Hashable where Value: Hashable {}
-
-extension IgnoreDecodeErrors: Decodable where Value: Decodable {
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.wrappedValue = try container.decode(Value.self)
-    }
-
-}
-
-extension IgnoreDecodeErrors: Encodable where Value: Encodable {
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(self.wrappedValue)
-    }
-
-}
-
-extension KeyedDecodingContainer {
-
-    func decode<T>(
-        _ type: IgnoreDecodeErrors<T>.Type,
-        forKey key: Key
-    ) -> IgnoreDecodeErrors<T> where T.Value: Decodable {
+    /// Decodes a top-level value of the given type from the given Data containing a JSON representation of `type`.
+    ///
+    /// - Parameters:
+    ///   - type: The type of the value to decode. The default is `T.self`.
+    ///   - data: The data to decode from.
+    /// - Returns: A value of the requested type.
+    /// - throws: `CodableError` or `DecodableError` if the data is invalid or can't be deserialized.
+    func decode<T: Decodable>(
+        _ type: T.Type = T.self,
+        jsonData: Data,
+        logErrors: Bool = true
+    ) throws -> T {
         do {
-            return try self.decodeIfPresent(type, forKey: key) ?? .init()
+            return try self.decode(type, from: jsonData)
         } catch {
-            return .init()
+            if logErrors {
+                ErrorUtils.logDecodingError(error, type: type)
+            }
+            throw error
+        }
+    }
+
+    /// Decodes a top-level value of the given type from the given Dictionary.
+    ///
+    /// - Parameters:
+    ///   - type: The type of the value to decode. The default is `T.self`.
+    ///   - dictionary: The dictionary to decode from.
+    /// - Returns: A value of the requested type.
+    /// - Throws: `CodableError` or `DecodableError` if the data is invalid or can't be deserialized.
+    /// - Note: this method logs the error before throwing, so it's "safe" to use with `try?`
+    func decode<T: Decodable>(
+        _ type: T.Type = T.self,
+        dictionary: [String: Any],
+        logErrors: Bool = true
+    ) throws -> T {
+        if JSONSerialization.isValidJSONObject(dictionary) {
+            return try self.decode(type,
+                                   jsonData: try JSONSerialization.data(withJSONObject: dictionary),
+                                   logErrors: logErrors)
+        } else {
+            throw CodableError.invalidJSONObject(value: dictionary)
         }
     }
 
 }
 
-// MARK: - DefaultDecodable
+extension JSONEncoder {
 
-// Inspired by https://swiftbysundell.com/tips/default-decoding-values/
-
-extension KeyedDecodingContainer {
-
-    func decode<T>(_ type: DefaultValue<T>.Type, forKey key: Key) throws -> DefaultValue<T> where T.Value: Decodable {
-        return try self.decodeIfPresent(type, forKey: key) ?? .init()
+    /// Encodes a top-level value containing a JSON representation of `type`
+    ///
+    /// - Parameters:
+    ///   - type: The type of the value to encode. The default is `T.self`.
+    ///   - data: The data to encode.
+    /// - Returns: The encoded `Data`
+    /// - throws: `CodableError` or `EncodableError` if the data is invalid or can't be deserialized.
+    func encode<T: Encodable>(
+        _ type: T.Type = T.self,
+        value: T,
+        logErrors: Bool = true
+    ) throws -> Data {
+        do {
+            return try self.encode(value)
+        } catch {
+            if logErrors {
+                ErrorUtils.logEncodingError(error, type: type)
+            }
+            throw error
+        }
     }
 
 }
 
-/// Empty namespace for default decodable wrappers.
-enum DefaultDecodable {
+// MARK: Decoding Error handling
 
-    typealias List = Decodable & ExpressibleByArrayLiteral
-    typealias Map = Decodable & ExpressibleByDictionaryLiteral
+extension ErrorUtils {
 
-    enum Sources {
-
-        enum True: DefaultValueProvider {
-            static var defaultValue: Bool { true }
+    static func logDecodingError(_ error: Error, type: Any.Type) {
+        guard let decodingError = error as? DecodingError else {
+            Logger.error(Strings.codable.decoding_error(error))
+            return
         }
 
-        enum False: DefaultValueProvider {
-            static var defaultValue: Bool { false }
+        switch decodingError {
+        case let .dataCorrupted(context):
+            Logger.error(Strings.codable.corrupted_data_error(context: context))
+        case let .keyNotFound(key, context):
+            // This is expected to happen occasionally, the backend doesn't always populate all key/values.
+            Logger.debug(Strings.codable.keyNotFoundError(type: type, key: key, context: context))
+        case let .valueNotFound(value, context):
+            Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
+        case let .typeMismatch(type, context):
+            Logger.error(Strings.codable.typeMismatch(type: type, context: context))
+        @unknown default:
+            Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
+        }
+    }
+
+    static func logEncodingError(_ error: Error, type: Any.Type) {
+        guard let encodingError = error as? EncodingError else {
+            Logger.error(Strings.codable.encoding_error(error))
+            return
         }
 
-        enum EmptyString: DefaultValueProvider {
-            static var defaultValue: String { "" }
+        switch encodingError {
+        case .invalidValue:
+            Logger.error(Strings.codable.encoding_error(encodingError))
+        @unknown default:
+            Logger.error("Unhandled EncodingError: \(encodingError)\n\(Strings.codable.encoding_error(encodingError))")
         }
+    }
 
-        enum EmptyArray<T: List>: DefaultValueProvider {
-            static var defaultValue: T { [] }
-        }
+}
 
-        enum EmptyDictionary<T: Map>: DefaultValueProvider {
-            static var defaultValue: T { [:] }
-        }
+extension Encodable {
 
-        enum Now: DefaultValueProvider {
-            static var defaultValue: Date { Date() }
-        }
+    func asDictionary() throws -> [String: Any] {
+        return try JSONEncoder.default
+            .encode(self)
+            .asJSONDictionary()
 
     }
 
 }
 
-/**
- * Property wrappers to allow providing default values to properties in `Decodable` types.
- * Example usage:
- * ```
- * struct Data {
- *   @DefaultDecodable.True var bool1: Bool
- *   @DefaultDecodable.False var bool2: Bool
- *   @DefaultDecodable.EmptyString var identifier: String
- *   @DefaultDecodable.EmptyArray var values: [String]
- *   @DefaultDecodable.EmptyDictionary var dictionary: [String: Int]
- *   @DefaultDecodable.Now var date: Date
- * }
- * ```
- */
-extension DefaultDecodable {
+extension Data {
 
-    typealias True = DefaultValue<Sources.True>
-    typealias False = DefaultValue<Sources.False>
-    typealias EmptyString = DefaultValue<Sources.EmptyString>
-    typealias EmptyArray<T: List> = DefaultValue<Sources.EmptyArray<T>>
-    typealias EmptyDictionary<T: Map> = DefaultValue<Sources.EmptyDictionary<T>>
-    typealias Now = DefaultValue<Sources.Now>
+    func asJSONDictionary() throws -> [String: Any] {
+        let result = try JSONSerialization.jsonObject(with: self, options: [])
+
+        guard let result = result as? [String: Any] else {
+            throw CodableError.unexpectedValue(type(of: result), result)
+        }
+
+        return result
+    }
 
 }
