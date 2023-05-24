@@ -35,6 +35,7 @@ class OfflineEntitlementsManager {
         completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
     ) {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+              !self.systemInfo.observerMode,
               !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_unavailable)
 

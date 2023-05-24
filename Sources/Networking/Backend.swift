@@ -165,11 +165,6 @@ extension Backend {
 
 extension Backend {
 
-    // For testing
-    var networkTimeout: TimeInterval {
-        return self.config.httpClient.timeout
-    }
-
     @objc var signatureVerificationEnabled: Bool {
         return self.config.httpClient.signatureVerificationEnabled
     }
@@ -187,6 +182,20 @@ extension Backend {
             return operationQueue
         }
 
+    }
+
+}
+
+// MARK: - Testing extensions
+
+extension Backend {
+
+    var networkTimeout: TimeInterval {
+        return self.config.httpClient.timeout
+    }
+
+    var offlineCustomerInfoEnabled: Bool {
+        return self.config.offlineCustomerInfoCreator != nil
     }
 
 }

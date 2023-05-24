@@ -34,9 +34,10 @@ class OfflineCustomerInfoCreator {
 
     static func createIfAvailable(
         with purchasedProductsFetcher: PurchasedProductsFetcherType?,
-        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher
+        productEntitlementMappingFetcher: ProductEntitlementMappingFetcher,
+        observerMode: Bool
     ) -> OfflineCustomerInfoCreator? {
-        guard let fetcher = purchasedProductsFetcher else {
+        guard let fetcher = purchasedProductsFetcher, !observerMode else {
             Logger.debug(Strings.offlineEntitlements.offline_entitlements_not_available)
             return nil
         }

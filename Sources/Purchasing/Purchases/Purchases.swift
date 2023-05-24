@@ -292,7 +292,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             attributionFetcher: attributionFetcher,
             offlineCustomerInfoCreator: .createIfAvailable(
                 with: purchasedProductsFetcher,
-                productEntitlementMappingFetcher: deviceCache
+                productEntitlementMappingFetcher: deviceCache,
+                observerMode: observerMode
             )
         )
 
@@ -1404,6 +1405,10 @@ internal extension Purchases {
 
     var configuredUserDefaults: UserDefaults {
         return self.userDefaults
+    }
+
+    var offlineCustomerInfoEnabled: Bool {
+        return self.backend.offlineCustomerInfoEnabled
     }
 
     var publicKey: Signing.PublicKey? {

@@ -31,7 +31,7 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: true)
         self.mockOfflineEntitlements = try XCTUnwrap(
             self.mockBackend.offlineEntitlements as? MockOfflineEntitlementsAPI
         )
@@ -58,7 +58,21 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
     }
 
     func testUpdateEntitlementsCacheForCustomEntitlementComputation() {
-        self.mockSystemInfo = MockSystemInfo(finishTransactions: false, customEntitlementsComputation: true)
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        self.manager = self.createManager()
+
+        let result = waitUntilValue { completion in
+            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
+                completion($0)
+            }
+        }
+
+        expect(result).to(beFailure())
+        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
+    }
+
+    func testUpdateEntitlementsCacheForObserverMode() {
+        self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
         self.manager = self.createManager()
 
         let result = waitUntilValue { completion in
@@ -127,8 +141,9 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == true
     }
 
-    func testShouldNotComputeOfflineCustomerInfo() {
+    func testShouldNotComputeOfflineCustomerInfoIfThereIsACachedCustomerInfo() {
         self.mockDeviceCache.cachedCustomerInfo["test"] = Data()
+
         expect(self.manager.shouldComputeOfflineCustomerInfo(appUserID: "test")) == false
     }
 
