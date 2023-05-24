@@ -7,8 +7,6 @@
 
 import Foundation
 
-#if os(macOS) || targetEnvironment(macCatalyst)
-
 enum ProxyStatus {
 
     enum Mode: String, Decodable, CaseIterable {
@@ -105,5 +103,3 @@ private struct ProxyChangeModeResponse: Decodable {
     let mode: ProxyStatus.Mode
 
 }
-
-#endif

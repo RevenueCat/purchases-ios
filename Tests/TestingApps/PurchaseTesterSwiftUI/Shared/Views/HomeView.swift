@@ -78,7 +78,13 @@ struct HomeView: View {
                                 Text(policy.label).tag(policy)
                             }
                         }
+                        #if os(iOS)
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(height: 80)
+                        #endif
                         
+                        Spacer()
+
                         Button {
                             Task<Void, Never> {
                                 do {
