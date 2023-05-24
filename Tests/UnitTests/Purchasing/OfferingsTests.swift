@@ -208,6 +208,9 @@ class OfferingsTests: TestCase {
 
         expect(offeringA.getMetadataValue(for: "pizza", default: "no pizza")) == "no pizza"
 
+        let optionalInt: Int? = offeringA.getMetadataValue(for: "optionalInt", default: nil)
+        expect(optionalInt).to(beNil())
+
         let wrongMetadataType = offeringA.getMetadataValue(for: "string", default: 5.5)
         expect(wrongMetadataType) == 5.5
     }
