@@ -145,8 +145,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
         Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
 
         self.mockIdentityManager.mockIsAnonymous = false
+
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = .left(self.mockStoreKit1Wrapper)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: self.mockProductsManager,
-                                                          paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
+                                                          paymentQueueWrapper: paymentQueueWrapper,
                                                           systemInfo: self.systemInfo,
                                                           subscriberAttributes: self.attribution,
                                                           operationDispatcher: self.mockOperationDispatcher,
@@ -154,6 +156,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           receiptParser: self.mockReceiptParser,
                                                           customerInfoManager: self.customerInfoManager,
                                                           backend: self.mockBackend,
+                                                          transactionPoster: .init(
+                                                            productsManager: self.mockProductsManager,
+                                                            receiptFetcher: self.mockReceiptFetcher,
+                                                            currentUserProvider: self.mockIdentityManager,
+                                                            attribution: self.attribution,
+                                                            backend: self.mockBackend,
+                                                            paymentQueueWrapper: paymentQueueWrapper,
+                                                            systemInfo: self.systemInfo,
+                                                            operationDispatcher: self.mockOperationDispatcher
+                                                          ),
                                                           currentUserProvider: self.mockIdentityManager,
                                                           transactionsManager: self.mockTransactionsManager,
                                                           deviceCache: self.mockDeviceCache,

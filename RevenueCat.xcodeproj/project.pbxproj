@@ -206,6 +206,7 @@
 		4F69EB092A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */; };
+		4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8038322A1EA7C300D21039 /* TransactionPoster.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F8A58182A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4FA4C8DA2A168956007D2803 /* OfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */; };
@@ -882,6 +883,7 @@
 		4F2017D42A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineStoreKitIntegrationTests.swift; sourceTree = "<group>"; };
 		4F69EB082A14406E00ED6D4B /* Matchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matchers.swift; sourceTree = "<group>"; };
 		4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
+		4F8038322A1EA7C300D21039 /* TransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionPoster.swift; sourceTree = "<group>"; };
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBackendConfiguration.swift; sourceTree = "<group>"; };
@@ -2397,6 +2399,7 @@
 				B35042C326CDB79A00905B95 /* Purchases.swift */,
 				B35042C526CDD3B100905B95 /* PurchasesDelegate.swift */,
 				2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */,
+				4F8038322A1EA7C300D21039 /* TransactionPoster.swift */,
 			);
 			path = Purchases;
 			sourceTree = "<group>";
@@ -3138,6 +3141,7 @@
 				2D971CC12744364C0093F35F /* SKError+Extensions.swift in Sources */,
 				57F2C60C29784C11009EE527 /* SwiftVersionCheck.swift in Sources */,
 				57EAE527274324C60060EB74 /* Lock.swift in Sources */,
+				4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */,
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				578DAA482948EEAD001700FD /* Clock.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,

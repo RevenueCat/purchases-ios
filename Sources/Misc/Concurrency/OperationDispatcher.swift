@@ -68,7 +68,5 @@ extension OperationDispatcher {
 
 }
 
-#if swift(<5.8)
-// `DispatchQueue` is not `Sendable` as of Swift 5.7, but this class performs no mutations.
+// `DispatchQueue` is not `Sendable` as of Swift 5.8, but this class performs no mutations.
 extension OperationDispatcher: @unchecked Sendable {}
-#endif

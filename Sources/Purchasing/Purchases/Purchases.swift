@@ -353,6 +353,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
+        let transactionPoster = TransactionPoster(
+            productsManager: productsManager,
+            receiptFetcher: receiptFetcher,
+            currentUserProvider: identityManager,
+            attribution: subscriberAttributes,
+            backend: backend,
+            paymentQueueWrapper: paymentQueueWrapper,
+            systemInfo: systemInfo,
+            operationDispatcher: operationDispatcher
+        )
+
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
@@ -365,6 +376,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     receiptParser: receiptParser,
                     customerInfoManager: customerInfoManager,
                     backend: backend,
+                    transactionPoster: transactionPoster,
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
                     deviceCache: deviceCache,
@@ -385,6 +397,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     receiptParser: receiptParser,
                     customerInfoManager: customerInfoManager,
                     backend: backend,
+                    transactionPoster: transactionPoster,
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
                     deviceCache: deviceCache,
