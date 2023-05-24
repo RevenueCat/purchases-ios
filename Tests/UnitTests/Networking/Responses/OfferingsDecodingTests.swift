@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(2))
+        expect(self.response.offerings).to(haveCount(4))
     }
 
     func testDecodesFirstOffering() throws {
@@ -35,10 +35,11 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(offering.identifier) == "default"
         expect(offering.description) == "standard set of packages"
+        expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(2))
 
-        let package1 = offering.packages[0]
-        let package2 = offering.packages[1]
+        let package1 = try XCTUnwrap(offering.packages.first)
+        let package2 = try XCTUnwrap(offering.packages[safe: 1])
 
         expect(package1.identifier) == PackageType.monthly.description
         expect(package1.platformProductIdentifier) == "com.revenuecat.monthly_4.99.1_week_intro"
@@ -48,13 +49,51 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testDecodesSecondOffering() throws {
-        let offering = try XCTUnwrap(self.response.offerings.last)
+        let offering = try XCTUnwrap(self.response.offerings[safe: 1])
 
         expect(offering.identifier) == "alternate"
         expect(offering.description) == "alternate offering"
+        expect(offering.metadata) == [:]
         expect(offering.packages).to(haveCount(1))
 
-        let package = offering.packages[0]
+        let package = try XCTUnwrap(offering.packages.first)
+
+        expect(package.identifier) == PackageType.lifetime.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+    }
+
+    func testDecodesMetadataOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 2])
+
+        expect(offering.identifier) == "metadata"
+        expect(offering.description) == "offering with metadata"
+        expect(offering.metadata) == [
+            "int": 5,
+            "double": 5.5,
+            "boolean": true,
+            "string": "five",
+            "array": ["five"],
+            "dictionary": [
+                "string": "five"
+            ]
+        ]
+        expect(offering.packages).to(haveCount(1))
+
+        let package = try XCTUnwrap(offering.packages.first)
+
+        expect(package.identifier) == PackageType.lifetime.description
+        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+    }
+
+    func testDecodesNullMetadataOffering() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 3])
+
+        expect(offering.identifier) == "nullmetadata"
+        expect(offering.description) == "offering with null metadata"
+        expect(offering.metadata) == [:]
+        expect(offering.packages).to(haveCount(1))
+
+        let package = try XCTUnwrap(offering.packages.first)
 
         expect(package.identifier) == PackageType.lifetime.description
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
@@ -62,6 +101,15 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testEncoding() throws {
         expect(try self.response.encodeAndDecode()) == self.response
+    }
+
+}
+
+private extension Collection {
+
+    /// Returns the element at the specified index if it exists, otherwise nil.
+    subscript (safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 
 }

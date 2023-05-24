@@ -49,6 +49,7 @@ class OfferingsFactory {
 
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
+                        metadata: offering.metadata.mapValues(\.asAny),
                         availablePackages: availablePackages)
     }
 
