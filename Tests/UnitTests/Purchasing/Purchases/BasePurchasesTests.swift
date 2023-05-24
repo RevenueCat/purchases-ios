@@ -101,54 +101,20 @@ class BasePurchasesTests: TestCase {
         // this level it should be moved to `StoreKitUnitTests`, which runs serially.
         Purchases.logLevel = .verbose
 
-        // See `addTeardownBlock` docs:
-        // - These run *before* `tearDown`.
-        // - They run in LIFO order.
         self.addTeardownBlock {
-            expect { [weak purchases = self.purchases] in purchases }
-                .toEventually(beNil(), description: "Purchases has leaked")
-        }
-        self.addTeardownBlock {
-            expect { [weak orchestrator = self.purchasesOrchestrator] in orchestrator }
-                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
-        }
-        self.addTeardownBlock {
-            expect { [weak deviceCache = self.deviceCache] in deviceCache }
-                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
-        }
+            weak var purchases = self.purchases
+            weak var orchestrator = self.purchasesOrchestrator
+            weak var deviceCache = self.deviceCache
 
-        self.addTeardownBlock {
             Purchases.clearSingleton()
+            self.clearReferences()
 
-            self.mockOperationDispatcher = nil
-            self.paymentQueueWrapper = nil
-            self.requestFetcher = nil
-            self.receiptFetcher = nil
-            self.mockProductsManager = nil
-            self.mockIntroEligibilityCalculator = nil
-            self.mockTransactionsManager = nil
-            self.backend = nil
-            self.attributionFetcher = nil
-            self.purchasesDelegate.makeDeferredPurchase = nil
-            self.purchasesDelegate = nil
-            self.storeKit1Wrapper.delegate = nil
-            self.storeKit1Wrapper = nil
-            self.systemInfo = nil
-            self.notificationCenter = nil
-            self.subscriberAttributesManager = nil
-            self.trialOrIntroPriceEligibilityChecker = nil
-            self.attributionPoster = nil
-            self.attribution = nil
-            self.customerInfoManager = nil
-            self.identityManager = nil
-            self.mockOfferingsManager = nil
-            self.mockOfflineEntitlementsManager = nil
-            self.mockPurchasedProductsFetcher = nil
-            self.mockManageSubsHelper = nil
-            self.mockBeginRefundRequestHelper = nil
-            self.purchasesOrchestrator = nil
-            self.deviceCache = nil
-            self.purchases = nil
+            expect(purchases)
+                .toEventually(beNil(), description: "Purchases has leaked")
+            expect(orchestrator)
+                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
+            expect(deviceCache)
+                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
         }
     }
 
@@ -496,5 +462,41 @@ extension OfferingsResponse {
                   ])
         ]
     )
+
+}
+
+private extension BasePurchasesTests {
+
+    func clearReferences() {
+        self.mockOperationDispatcher = nil
+        self.paymentQueueWrapper = nil
+        self.requestFetcher = nil
+        self.receiptFetcher = nil
+        self.mockProductsManager = nil
+        self.mockIntroEligibilityCalculator = nil
+        self.mockTransactionsManager = nil
+        self.backend = nil
+        self.attributionFetcher = nil
+        self.purchasesDelegate.makeDeferredPurchase = nil
+        self.purchasesDelegate = nil
+        self.storeKit1Wrapper.delegate = nil
+        self.storeKit1Wrapper = nil
+        self.systemInfo = nil
+        self.notificationCenter = nil
+        self.subscriberAttributesManager = nil
+        self.trialOrIntroPriceEligibilityChecker = nil
+        self.attributionPoster = nil
+        self.attribution = nil
+        self.customerInfoManager = nil
+        self.identityManager = nil
+        self.mockOfferingsManager = nil
+        self.mockOfflineEntitlementsManager = nil
+        self.mockPurchasedProductsFetcher = nil
+        self.mockManageSubsHelper = nil
+        self.mockBeginRefundRequestHelper = nil
+        self.purchasesOrchestrator = nil
+        self.deviceCache = nil
+        self.purchases = nil
+    }
 
 }

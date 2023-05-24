@@ -23,6 +23,8 @@ enum PurchaseStrings {
     case storekit1_wrapper_deinit(StoreKit1Wrapper)
     case device_cache_init(DeviceCache)
     case device_cache_deinit(DeviceCache)
+    case purchases_orchestrator_init(PurchasesOrchestrator)
+    case purchases_orchestrator_deinit(PurchasesOrchestrator)
     case updating_all_caches
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
@@ -91,6 +93,12 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case let .device_cache_deinit(instance):
             return "DeviceCache.deinit: \(Strings.objectDescription(instance))"
+
+        case let .purchases_orchestrator_init(instance):
+            return "PurchasesOrchestrator.init: \(Strings.objectDescription(instance))"
+
+        case let .purchases_orchestrator_deinit(instance):
+            return "PurchasesOrchestrator.deinit: \(Strings.objectDescription(instance))"
 
         case .updating_all_caches:
             return "Updating all caches"
