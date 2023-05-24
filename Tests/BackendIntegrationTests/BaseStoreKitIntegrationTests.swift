@@ -147,19 +147,27 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> EntitlementInfo {
-        let entitlements = customerInfo.entitlements.all
+        // This is used to throw an error when the test fails.
+        // For some reason XCTest is continuing execution even after a test failure
+        // despite having `self.continueAfterFailure = false`
+        //
+        // By doing this, instead of only calling `fail`, we ensure that
+        // Swift stops executing code when an assertion has failed,
+        // and therefore avoid code running after the test has already failed.
+        // This prevents test crashes from code calling `Purchases.shared` after the test has ended.
+        func failTest(_ message: String) async throws {
+            struct ExpectationFailure: Swift.Error {}
 
-        if entitlements.isEmpty {
             await self.printReceiptContent()
+
+            fail(message, file: file, line: line)
+            throw ExpectationFailure()
         }
 
-        expect(
-            file: file, line: line,
-            entitlements
-        ).to(
-            haveCount(1),
-            description: "Expected Entitlement. Got: \(entitlements)"
-        )
+        let entitlements = customerInfo.entitlements.all
+        if entitlements.count != 1 {
+            try await failTest("Expected 1 Entitlement. Got: \(entitlements)")
+        }
 
         let entitlement: EntitlementInfo
 
@@ -174,11 +182,8 @@ extension BaseStoreKitIntegrationTests {
         }
 
         if !entitlement.isActive {
-            await self.printReceiptContent()
+            try await failTest("Entitlement is not active")
         }
-
-        expect(file: file, line: line, entitlement.isActive)
-            .to(beTrue(), description: "Entitlement is not active")
 
         return entitlement
     }
