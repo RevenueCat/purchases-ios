@@ -24,6 +24,37 @@
                     "platform_product_identifier": "com.revenuecat.other_product"
                 }
             ]
+        },
+        {
+            "description": "offering with metadata",
+            "identifier": "metadata",
+            "metadata": {
+                "int": 5,
+                "double": 5.5,
+                "boolean": true,
+                "string": "five",
+                "array": ["five"],
+                "dictionary": {
+                    "string": "five"
+                }
+            },
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ]
+        },
+        {
+            "description": "offering with null metadata",
+            "identifier": "nullmetadata",
+            "metadata": null,
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ]
         }
     ]
 }

@@ -38,6 +38,13 @@ import Foundation
      */
     @objc public let serverDescription: String
 
+    private let _metadata: Metadata
+
+    /**
+     Offering metadata defined in RevenueCat dashboard.
+     */
+    @objc public var metadata: [String: Any] { self._metadata.data }
+
     /**
      Array of ``Package`` objects available for purchase.
      */
@@ -110,10 +117,11 @@ import Foundation
     }
 
     // swiftlint:disable:next cyclomatic_complexity
-    init(identifier: String, serverDescription: String, availablePackages: [Package]) {
+    init(identifier: String, serverDescription: String, metadata: [String: Any], availablePackages: [Package]) {
         self.identifier = identifier
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages
+        self._metadata = Metadata(data: metadata)
 
         var foundPackages: [PackageType: Package] = [:]
 
@@ -165,6 +173,21 @@ import Foundation
 
 }
 
+extension Offering {
+
+    /**
+     - Returns: the `metadata` value associated to `key` for the expected type,
+     or `defaultValue` if not found, or it's not the expected type.
+     */
+    public func getMetadataValue<T>(for key: String, default: T) -> T {
+        guard let rawValue = self.metadata[key], let value = rawValue as? T else {
+            return `default`
+        }
+        return value
+    }
+
+}
+
 extension Offering: Identifiable {
 
     /// The stable identity of the entity associated with this instance.
@@ -175,6 +198,14 @@ extension Offering: Identifiable {
 extension Offering: Sendable {}
 
 // MARK: - Private
+
+private extension Offering {
+
+    struct Metadata {
+        let data: [String: Any]
+    }
+
+}
 
 private extension Offering {
 

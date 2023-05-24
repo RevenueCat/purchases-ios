@@ -29,6 +29,8 @@ struct OfferingsResponse {
         let identifier: String
         let description: String
         let packages: [Package]
+        @DefaultDecodable.EmptyDictionary
+        var metadata: [String: AnyDecodable]
 
     }
 

@@ -32,8 +32,9 @@
     RCPackage *p = [o packageWithIdentifier:nil];
     p = [o packageWithIdentifier:@""];
     RCPackage *ok = [o objectForKeyedSubscript:@""];
+    NSDictionary<NSString *, id> *md = o.metadata;
 
-    NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok);
+    NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok, md);
 }
 
 @end

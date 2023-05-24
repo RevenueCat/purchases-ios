@@ -153,6 +153,68 @@ class OfferingsTests: TestCase {
         expect(offerings.current) == offerings["offering_a"]
     }
 
+    func testOfferingsWithMetadataIsCreated() throws {
+        let metadata: [String: AnyDecodable] = [
+            "int": 5,
+            "double": 5.5,
+            "boolean": true,
+            "string": "five",
+            "array": ["five"],
+            "dictionary": [
+                "string": "five"
+            ]
+        ]
+
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
+        let products = [
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
+        ]
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: products,
+                data: .init(
+                    currentOfferingId: "offering_a",
+                    offerings: [
+                        .init(identifier: "offering_a",
+                              description: "This is the base offering",
+                              packages: [
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                              ],
+                              metadata: .init(
+                                wrappedValue: metadata
+                              )),
+                        .init(identifier: "offering_b",
+                              description: "This is the base offering b",
+                              packages: [
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                              ])
+                    ]
+                )
+            )
+        )
+
+        expect(offerings["offering_a"]).toNot(beNil())
+        expect(offerings["offering_b"]).toNot(beNil())
+        expect(offerings.current) == offerings["offering_a"]
+
+        let offeringA = try XCTUnwrap(offerings["offering_a"])
+        expect(offeringA.metadata).to(haveCount(6))
+        expect(offeringA.getMetadataValue(for: "int", default: 0)) == 5
+        expect(offeringA.getMetadataValue(for: "double", default: 0.0)) == 5.5
+        expect(offeringA.getMetadataValue(for: "boolean", default: false)) == true
+        expect(offeringA.getMetadataValue(for: "string", default: "")) == "five"
+
+        expect(offeringA.getMetadataValue(for: "pizza", default: "no pizza")) == "no pizza"
+
+        let optionalInt: Int? = offeringA.getMetadataValue(for: "optionalInt", default: nil)
+        expect(optionalInt).to(beNil())
+
+        let wrongMetadataType = offeringA.getMetadataValue(for: "string", default: 5.5)
+        expect(wrongMetadataType) == 5.5
+    }
+
     func testLifetimePackage() throws {
         try testPackageType(packageType: PackageType.lifetime)
     }
