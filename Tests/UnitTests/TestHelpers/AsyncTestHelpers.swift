@@ -17,18 +17,6 @@ import Nimble
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-internal extension AsyncSequence {
-
-    /// Returns the elements of the asynchronous sequence.
-    func extractValues() async rethrows -> [Element] {
-        return try await self.reduce(into: []) {
-            $0.append($1)
-        }
-    }
-
-}
-
 /// Waits for `action` to be invoked, and returns the provided value, or `nil` on timeout.
 /// Usage:
 /// ```swift
