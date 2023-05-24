@@ -177,7 +177,7 @@ final class PurchasesOrchestrator {
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
         self.syncPurchases(receiptRefreshPolicy: .never,
-                           isRestore: allowSharingAppStoreAccount,
+                           isRestore: self.allowSharingAppStoreAccount,
                            initiationSource: .restore,
                            completion: completion)
     }
@@ -481,7 +481,7 @@ final class PurchasesOrchestrator {
         let customerInfo: CustomerInfo
 
         if let transaction = transaction {
-            customerInfo = try await self.handlePurchasedTransaction(transaction)
+            customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase)
         } else {
             // `transaction` would be `nil` for `Product.PurchaseResult.pending` and
             // `Product.PurchaseResult.userCancelled`.
@@ -725,9 +725,20 @@ extension PurchasesOrchestrator: @unchecked Sendable {}
 
 private extension PurchasesOrchestrator {
 
-    func handlePurchasedTransaction(_ transaction: StoreTransaction,
+    func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
+        self.handlePurchasedTransaction(
+            transaction,
+            storefront: storefront,
+            initiationSource: self.initiationSource(for: transaction.productIdentifier,
+                                                    restored: restored)
+        )
+    }
+
+    func handlePurchasedTransaction(_ transaction: StoreTransactionType,
+                                    storefront: StorefrontType?,
+                                    initiationSource: ProductRequestData.InitiationSource) {
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
         ) { receiptData in
@@ -735,8 +746,7 @@ private extension PurchasesOrchestrator {
                 self.fetchProductsAndPostReceipt(
                     withTransaction: transaction,
                     receiptData: receiptData,
-                    initiationSource: self.initiationSource(for: transaction.productIdentifier,
-                                                            restored: restored),
+                    initiationSource: initiationSource,
                     storefront: storefront
                 )
             } else {
@@ -858,17 +868,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListener,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        let isRestore = self.systemInfo.observerMode
-
-        _ = try await self.syncPurchases(receiptRefreshPolicy: .always,
-                                         isRestore: isRestore,
-                                         initiationSource: .queue)
-
-        await Async.call { completion in
-            self.finishTransactionIfNeeded(transaction) { @MainActor in
-                completion(())
-            }
-        }
+        _ = try await self.handlePurchasedTransaction(transaction, .queue)
     }
 
 }
@@ -920,7 +920,7 @@ private extension PurchasesOrchestrator {
     }
 
     func getAndRemovePurchaseCompletedCallback(
-        forTransaction transaction: StoreTransaction
+        forTransaction transaction: StoreTransactionType
     ) -> PurchaseCompletedBlock? {
         return self.purchaseCompleteCallbacksByProductID.modify {
             $0.removeValue(forKey: transaction.productIdentifier)
@@ -929,7 +929,7 @@ private extension PurchasesOrchestrator {
 
     /// Called as a result a purchase.
     func fetchProductsAndPostReceipt(
-        withTransaction transaction: StoreTransaction,
+        withTransaction transaction: StoreTransactionType,
         receiptData: Data,
         initiationSource: ProductRequestData.InitiationSource,
         storefront: StorefrontType?
@@ -949,7 +949,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func postReceipt(withTransaction transaction: StoreTransaction,
+    func postReceipt(withTransaction transaction: StoreTransactionType,
                      receiptData: Data,
                      products: Set<StoreProduct>,
                      initiationSource: ProductRequestData.InitiationSource,
@@ -982,9 +982,11 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func handleReceiptPost(withTransaction transaction: StoreTransaction,
+    func handleReceiptPost(withTransaction transaction: StoreTransactionType,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?) {
+        let transaction = StoreTransaction.from(transaction: transaction)
+
         self.operationDispatcher.dispatchOnMainActor {
             let appUserID = self.appUserID
             self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
@@ -1220,7 +1222,10 @@ private extension PurchasesOrchestrator {
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
-    private func handlePurchasedTransaction(_ transaction: StoreTransaction) async throws -> CustomerInfo {
+    private func handlePurchasedTransaction(
+        _ transaction: StoreTransactionType,
+        _ initiationSource: ProductRequestData.InitiationSource
+    ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -1233,7 +1238,7 @@ extension PurchasesOrchestrator {
 
             self.handlePurchasedTransaction(transaction,
                                             storefront: storefront,
-                                            restored: false)
+                                            initiationSource: initiationSource)
         }
     }
 

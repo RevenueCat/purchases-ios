@@ -199,6 +199,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
         expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
     }
 
@@ -725,7 +726,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
         expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
     }
 
