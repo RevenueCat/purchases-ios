@@ -168,7 +168,7 @@ commands:
       - run:
           name: Compress result bundle
           command: |
-             tar -czf xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
+             tar -czf << parameters.bundle_name >>.xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
              rm -r << parameters.bundle_name >>.xcresult
           working_directory: << parameters.directory >>
           when: always
@@ -737,9 +737,20 @@ jobs:
       - run:
           name: V3 LoadShedder integration tests
           command: bundle exec fastlane v3_loadshedder_integration_tests
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: v3LoadShedderIntegration
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
   
   deploy-purchase-tester:
     <<: *base-job
