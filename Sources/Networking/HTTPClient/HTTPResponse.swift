@@ -243,8 +243,8 @@ extension ErrorResponse {
         }
     }
 
-    private static let defaultResponse: Self = .init(code: .unknownError,
-                                                     originalCode: BackendErrorCode.unknownError.rawValue,
-                                                     message: nil)
+    static let defaultResponse: Self = .init(code: .unknownError,
+                                             originalCode: BackendErrorCode.unknownError.rawValue,
+                                             message: nil)
 
 }
