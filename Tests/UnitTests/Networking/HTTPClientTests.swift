@@ -322,7 +322,9 @@ final class HTTPClientTests: BaseHTTPClientTests {
             return HTTPStubsResponse(
                 data: json.data(using: String.Encoding.utf8)!,
                 statusCode: Int32(errorCode),
-                headers: nil
+                headers: [
+                    HTTPClient.ResponseHeader.contentType.rawValue: "application/json"
+                ]
             )
         }
 
@@ -356,7 +358,9 @@ final class HTTPClientTests: BaseHTTPClientTests {
             return HTTPStubsResponse(
                 data: json.asData,
                 statusCode: Int32(errorCode),
-                headers: nil
+                headers: [
+                    HTTPClient.ResponseHeader.contentType.rawValue: "application/json"
+                ]
             )
         }
 
@@ -382,6 +386,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
     }
 
     func testServerSide500sWithUnknownBody() throws {
+        let logger = TestLogHandler()
+
         let request = HTTPRequest(method: .get, path: .mockPath)
         let errorCode = 500 + Int.random(in: 0..<50)
 
@@ -413,6 +419,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(error.isServerDown) == true
 
         expect(MockSigning.requests).to(beEmpty())
+
+        logger.verifyMessageWasNotLogged("Couldn't decode data from json")
     }
 
     func testInvalidJSONAsDataDoesNotFail() {

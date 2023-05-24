@@ -114,7 +114,10 @@ extension TestLogHandler {
             line: line,
             self.messages
         )
-        .toNot(containElementSatisfying(Self.entryCondition(message: message, level: level)))
+        .toNot(
+            containElementSatisfying(Self.entryCondition(message: message, level: level)),
+            description: "Message '\(message)' should not have been logged"
+        )
     }
 
     private static func entryCondition(message: CustomStringConvertible, level: LogLevel?) -> (MessageData) -> Bool {

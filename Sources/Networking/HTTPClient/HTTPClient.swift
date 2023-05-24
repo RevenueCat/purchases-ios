@@ -110,6 +110,7 @@ extension HTTPClient {
         case eTag = "X-RevenueCat-ETag"
         case signature = "X-Signature"
         case requestDate = "X-RevenueCat-Request-Time"
+        case contentType = "Content-Type"
 
     }
 
@@ -491,12 +492,7 @@ extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
         return self.flatMap { response in
             response.statusCode.isSuccessfulResponse
             ? .success(response)
-            : .failure(
-                .errorResponse(
-                    ErrorResponse.from(response.body),
-                    response.statusCode
-                )
-            )
+            : .failure(response.parseUnsuccessfulResponse())
         }
     }
 
@@ -516,15 +512,30 @@ extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
 
 }
 
-extension HTTPResponse {
+private extension HTTPResponse {
 
-    fileprivate func copyWithNewRequestDate() -> Self {
+    func copyWithNewRequestDate() -> Self {
         // Update request time from server unless it failed verification.
         guard self.verificationResult != .failed, let requestDate = self.requestDate else { return self }
 
         return self.mapBody {
             return $0.copy(with: requestDate)
         }
+    }
+
+}
+
+private extension HTTPResponse where Body == Data {
+
+    func parseUnsuccessfulResponse() -> NetworkError {
+        let isJSON = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType.rawValue) == "application/json"
+
+        return .errorResponse(
+            isJSON
+                ? .from(self.body)
+                : .defaultResponse,
+            self.statusCode
+        )
     }
 
 }
