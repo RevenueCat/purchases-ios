@@ -5,17 +5,19 @@ import XCTest
 
 @MainActor
 class BaseCustomerInfoManagerTests: TestCase {
-    fileprivate static let appUserID = "app_user_id"
+    static let appUserID = "app_user_id"
 
-    fileprivate var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
-    fileprivate var mockBackend = MockBackend()
-    fileprivate var mockOperationDispatcher = MockOperationDispatcher()
-    fileprivate var mockDeviceCache: MockDeviceCache!
-    fileprivate var mockSystemInfo = MockSystemInfo(finishTransactions: true)
+    var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
+    var mockBackend = MockBackend()
+    var mockOperationDispatcher = MockOperationDispatcher()
+    var mockDeviceCache: MockDeviceCache!
+    var mockSystemInfo = MockSystemInfo(finishTransactions: true)
+    var mockTransationFetcher: MockStoreKit2TransactionFetcher!
+    var mockTransactionPoster: MockTransactionPoster!
 
-    fileprivate var mockCustomerInfo: CustomerInfo!
+    var mockCustomerInfo: CustomerInfo!
 
-    fileprivate var customerInfoManager: CustomerInfoManager!
+    var customerInfoManager: CustomerInfoManager!
 
     fileprivate var customerInfoManagerChangesCallCount = 0
     fileprivate var customerInfoManagerLastCustomerInfo: CustomerInfo?
@@ -38,13 +40,21 @@ class BaseCustomerInfoManagerTests: TestCase {
 
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.mockSystemInfo)
+        self.mockTransationFetcher = MockStoreKit2TransactionFetcher()
+        self.mockTransactionPoster = MockTransactionPoster()
+
         self.customerInfoManagerChangesCallCount = 0
         self.customerInfoManagerLastCustomerInfo = nil
-        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
-                                                       operationDispatcher: self.mockOperationDispatcher,
-                                                       deviceCache: self.mockDeviceCache,
-                                                       backend: self.mockBackend,
-                                                       systemInfo: self.mockSystemInfo)
+
+        self.customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.mockDeviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo
+        )
     }
 
     @discardableResult

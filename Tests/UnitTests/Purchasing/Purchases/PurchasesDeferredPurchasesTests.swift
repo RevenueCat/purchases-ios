@@ -151,7 +151,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
 
     private var paymentQueueWrapperDelegate: PaymentQueueWrapperDelegate {
         get throws {
-            return try XCTUnwrap(self.paymentQueueWrapper.delegate)
+            return try XCTUnwrap(self.mockPaymentQueueWrapper.delegate)
         }
     }
     private var product: MockSK1Product!
@@ -174,7 +174,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
         let payment = SKPayment(product: self.product)
 
         _ = try self.paymentQueueWrapperDelegate.paymentQueueWrapper(
-            self.paymentQueueWrapper,
+            self.mockPaymentQueueWrapper,
             shouldAddStorePayment: payment,
             for: self.product
         )

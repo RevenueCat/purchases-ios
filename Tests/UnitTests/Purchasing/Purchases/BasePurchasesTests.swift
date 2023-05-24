@@ -29,7 +29,7 @@ class BasePurchasesTests: TestCase {
         self.notificationCenter = MockNotificationCenter()
         self.purchasesDelegate = MockPurchasesDelegate()
 
-        self.paymentQueueWrapper = MockPaymentQueueWrapper()
+        self.mockPaymentQueueWrapper = MockPaymentQueueWrapper()
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.systemInfo = MockSystemInfo(finishTransactions: true, storeKit2Setting: self.storeKit2Setting)
@@ -51,6 +51,7 @@ class BasePurchasesTests: TestCase {
                                                          systemInfo: systemInfoAttribution)
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
+        self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
 
         let apiKey = "mockAPIKey"
         let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
@@ -77,10 +78,20 @@ class BasePurchasesTests: TestCase {
                                        currentUserProvider: self.identityManager,
                                        attributionPoster: self.attributionPoster)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.transactionPoster = TransactionPoster(
+            productsManager: self.mockProductsManager,
+            receiptFetcher: self.receiptFetcher,
+            backend: self.backend,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.mockOperationDispatcher
+        )
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
+                                                       transactionFetcher: self.mockTransactionFetcher,
+                                                       transactionPoster: self.transactionPoster,
                                                        systemInfo: self.systemInfo)
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
@@ -129,7 +140,7 @@ class BasePurchasesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     var backend: MockBackend!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
-    var paymentQueueWrapper: MockPaymentQueueWrapper!
+    var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
     var notificationCenter: MockNotificationCenter!
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
@@ -149,6 +160,8 @@ class BasePurchasesTests: TestCase {
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
     var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
+    var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
+    var transactionPoster: TransactionPoster!
     var purchasesOrchestrator: PurchasesOrchestrator!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
@@ -159,6 +172,13 @@ class BasePurchasesTests: TestCase {
     var purchasesDelegate: MockPurchasesDelegate!
 
     var purchases: Purchases!
+
+    private var paymentQueueWrapper: EitherPaymentQueueWrapper {
+        // Note: this logic must match `Purchases`.
+        return self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+            ? .right(self.mockPaymentQueueWrapper)
+            : .left(self.storeKit1Wrapper)
+    }
 
     func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
         Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
@@ -184,14 +204,10 @@ class BasePurchasesTests: TestCase {
     }
 
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
-        // Note: this logic must match `Purchases`.
-        let paymentQueueWrapper: EitherPaymentQueueWrapper = self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
-            ? .right(self.paymentQueueWrapper)
-            : .left(self.storeKit1Wrapper)
 
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
-            paymentQueueWrapper: paymentQueueWrapper,
+            paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
             subscriberAttributes: self.attribution,
             operationDispatcher: self.mockOperationDispatcher,
@@ -199,14 +215,7 @@ class BasePurchasesTests: TestCase {
             receiptParser: self.mockReceiptParser,
             customerInfoManager: self.customerInfoManager,
             backend: self.backend,
-            transactionPoster: .init(
-                productsManager: self.mockProductsManager,
-                receiptFetcher: self.receiptFetcher,
-                backend: self.backend,
-                paymentQueueWrapper: paymentQueueWrapper,
-                systemInfo: self.systemInfo,
-                operationDispatcher: self.mockOperationDispatcher
-            ),
+            transactionPoster: self.transactionPoster,
             currentUserProvider: self.identityManager,
             transactionsManager: self.mockTransactionsManager,
             deviceCache: self.deviceCache,
@@ -473,7 +482,7 @@ private extension BasePurchasesTests {
 
     func clearReferences() {
         self.mockOperationDispatcher = nil
-        self.paymentQueueWrapper = nil
+        self.mockPaymentQueueWrapper = nil
         self.requestFetcher = nil
         self.receiptFetcher = nil
         self.mockProductsManager = nil
@@ -496,8 +505,10 @@ private extension BasePurchasesTests {
         self.mockOfferingsManager = nil
         self.mockOfflineEntitlementsManager = nil
         self.mockPurchasedProductsFetcher = nil
+        self.mockTransactionFetcher = nil
         self.mockManageSubsHelper = nil
         self.mockBeginRefundRequestHelper = nil
+        self.transactionPoster = nil
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
         self.purchases = nil

@@ -40,6 +40,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
+    var transactionPoster: TransactionPoster!
 
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate = MockPurchasesDelegate()
@@ -107,10 +108,26 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                        attributionPoster: self.mockAttributionPoster)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
+        self.mockReceiptFetcher = MockReceiptFetcher(
+            requestFetcher: self.mockRequestFetcher,
+            systemInfo: systemInfoAttribution
+        )
+
+        self.transactionPoster = TransactionPoster(
+            productsManager: self.mockProductsManager,
+            receiptFetcher: self.mockReceiptFetcher,
+            backend: self.mockBackend,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.mockOperationDispatcher
+        )
+
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.mockDeviceCache,
                                                        backend: self.mockBackend,
+                                                       transactionFetcher: MockStoreKit2TransactionFetcher(),
+                                                       transactionPoster: self.transactionPoster,
                                                        systemInfo: self.systemInfo)
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: mockDeviceCache,
                                                          operationDispatcher: mockOperationDispatcher,
@@ -118,10 +135,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
                                                          productsManager: mockProductsManager)
-        self.mockReceiptFetcher = MockReceiptFetcher(
-            requestFetcher: mockRequestFetcher,
-            systemInfo: systemInfoAttribution
-        )
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
                                                                   currentUserProvider: mockIdentityManager)
@@ -146,9 +159,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockIdentityManager.mockIsAnonymous = false
 
-        let paymentQueueWrapper: EitherPaymentQueueWrapper = .left(self.mockStoreKit1Wrapper)
         let purchasesOrchestrator = PurchasesOrchestrator(productsManager: self.mockProductsManager,
-                                                          paymentQueueWrapper: paymentQueueWrapper,
+                                                          paymentQueueWrapper: self.paymentQueueWrapper,
                                                           systemInfo: self.systemInfo,
                                                           subscriberAttributes: self.attribution,
                                                           operationDispatcher: self.mockOperationDispatcher,
@@ -156,14 +168,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           receiptParser: self.mockReceiptParser,
                                                           customerInfoManager: self.customerInfoManager,
                                                           backend: self.mockBackend,
-                                                          transactionPoster: .init(
-                                                            productsManager: self.mockProductsManager,
-                                                            receiptFetcher: self.mockReceiptFetcher,
-                                                            backend: self.mockBackend,
-                                                            paymentQueueWrapper: paymentQueueWrapper,
-                                                            systemInfo: self.systemInfo,
-                                                            operationDispatcher: self.mockOperationDispatcher
-                                                          ),
+                                                          transactionPoster: self.transactionPoster,
                                                           currentUserProvider: self.mockIdentityManager,
                                                           transactionsManager: self.mockTransactionsManager,
                                                           deviceCache: self.mockDeviceCache,
@@ -204,6 +209,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
+    }
+
+    private var paymentQueueWrapper: EitherPaymentQueueWrapper {
+        return .left(self.mockStoreKit1Wrapper)
     }
 
     // MARK: Notifications

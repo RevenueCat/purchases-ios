@@ -227,6 +227,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         ]
     }
 
+    // TODO: cover scenario for double POST by getCustomerInfo + pending transaction on queue
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
@@ -248,6 +250,35 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         } catch {
             fail("Unexpected error: \(error)")
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseWhileServerIsDownPostsReceiptWhenForegroundingApp() async throws {
+        let logger = TestLogHandler()
+
+        // 1. Purchase while server is down
+        self.serverDown()
+        try await self.purchaseMonthlyProduct()
+
+        logger.verifyMessageWasNotLogged("Finishing transaction")
+
+        // 2. Server is back
+        self.serverUp()
+
+        // 3. Request current CustomerInfo
+        let info1 = try await Purchases.shared.customerInfo()
+        try await self.verifyEntitlementWentThrough(info1)
+
+        // 4. Ensure transaction is finished
+        logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+
+        // 5. Restart app
+        Purchases.shared.invalidateCustomerInfoCache()
+        await self.resetSingleton()
+
+        // 6. To ensure (with a clean cache) that the receipt was posted
+        let info2 = try await Purchases.shared.customerInfo()
+        try await self.verifyEntitlementWentThrough(info2)
     }
 
 }

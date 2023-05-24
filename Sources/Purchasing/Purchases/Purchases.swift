@@ -305,6 +305,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptParser = PurchasesReceiptParser.default
         let transactionsManager = TransactionsManager(receiptParser: receiptParser)
 
+        let productsRequestFactory = ProductsRequestFactory()
+        let productsManager = CachingProductsManager(
+            manager: ProductsManager(productsRequestFactory: productsRequestFactory,
+                                     systemInfo: systemInfo,
+                                     requestTimeout: storeKitTimeout)
+        )
+
+        let transactionPoster = TransactionPoster(
+            productsManager: productsManager,
+            receiptFetcher: receiptFetcher,
+            backend: backend,
+            paymentQueueWrapper: paymentQueueWrapper,
+            systemInfo: systemInfo,
+            operationDispatcher: operationDispatcher
+        )
+
         let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
                                                                     operationDispatcher: operationDispatcher,
                                                                     api: backend.offlineEntitlements,
@@ -313,6 +329,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
+                                                      transactionFetcher: StoreKit2TransactionFetcher(),
+                                                      transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
@@ -334,12 +352,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster)
-        let productsRequestFactory = ProductsRequestFactory()
-        let productsManager = CachingProductsManager(
-            manager: ProductsManager(productsRequestFactory: productsRequestFactory,
-                                     systemInfo: systemInfo,
-                                     requestTimeout: storeKitTimeout)
-        )
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -353,14 +365,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let beginRefundRequestHelper = BeginRefundRequestHelper(systemInfo: systemInfo,
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
-        let transactionPoster = TransactionPoster(
-            productsManager: productsManager,
-            receiptFetcher: receiptFetcher,
-            backend: backend,
-            paymentQueueWrapper: paymentQueueWrapper,
-            systemInfo: systemInfo,
-            operationDispatcher: operationDispatcher
-        )
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {

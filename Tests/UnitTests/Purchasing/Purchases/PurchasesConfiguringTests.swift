@@ -376,7 +376,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.paymentQueueWrapper.delegate).to(beNil())
+        expect(self.mockPaymentQueueWrapper.delegate).to(beNil())
     }
 
     func testSetsPaymentQueueWrapperDelegateToPaymentQueueWrapperIfSK1IsNotEnabled() throws {
@@ -387,7 +387,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.paymentQueueWrapper.delegate) === self.purchasesOrchestrator
+        expect(self.mockPaymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
     // MARK: - Custom Entitlement Computation
