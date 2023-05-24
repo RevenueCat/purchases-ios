@@ -27,6 +27,7 @@ enum OfflineEntitlementsStrings {
     case found_unverified_transactions_in_sk2(transactionID: UInt64, Error)
 
     case computing_offline_customer_info_with_no_entitlement_mapping
+    case computing_offline_customer_info_for_consumable_product
     case computing_offline_customer_info
     case computing_offline_customer_info_failed(Error)
     case computed_offline_customer_info(EntitlementInfos)
@@ -67,6 +68,9 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
 
         case .computing_offline_customer_info_with_no_entitlement_mapping:
             return "Unable to compute offline CustomerInfo with no product entitlement mapping."
+
+        case .computing_offline_customer_info_for_consumable_product:
+            return "Unable to compute offline CustomerInfo when purchasing consumable products."
 
         case .computing_offline_customer_info:
             return "Encountered a server error. Will attempt to compute an offline CustomerInfo from local purchases."

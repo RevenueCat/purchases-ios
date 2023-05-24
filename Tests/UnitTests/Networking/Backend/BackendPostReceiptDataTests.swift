@@ -453,7 +453,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         ]
     }
 
-    func testPostingReceiptCreatesASubscriberInfoObject() {
+    func testPostingReceiptCreatesACustomerInfoObject() {
         httpClient.mock(
             requestPath: .postReceiptData,
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
@@ -687,6 +687,72 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             expect(result?.value?.entitlements.verification) == .failed
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPostingReceiptWithNoProductDataAndServerErrorComputesOfflineUser() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(error: .serverDown())
+        )
+        self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: nil,
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .purchase,
+                              subscriberAttributes: nil,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value) === customerInfo
+
+        expect(self.mockOfflineCustomerInfoCreator.createRequested) == true
+        expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 1
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPostingReceiptForSubscriptionAndServerErrorComputesOfflineUser() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(error: .serverDown())
+        )
+        self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              appUserID: Self.userID,
+                              isRestore: false,
+                              productData: .createMockProductData(),
+                              presentedOfferingIdentifier: nil,
+                              observerMode: false,
+                              initiationSource: .purchase,
+                              subscriberAttributes: nil,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value) === customerInfo
+
+        expect(self.mockOfflineCustomerInfoCreator.createRequested) == true
+        expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 1
     }
 
 }
