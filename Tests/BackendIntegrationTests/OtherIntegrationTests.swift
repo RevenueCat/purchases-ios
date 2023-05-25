@@ -44,7 +44,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         try await logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
-            level: .debug
+            level: .debug,
+            timeout: .seconds(3),
+            pollInterval: .milliseconds(200)
         )
     }
 
