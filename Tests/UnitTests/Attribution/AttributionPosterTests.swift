@@ -306,6 +306,16 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
     }
 
+    func testAdServicesTokenToPostIfNeededReturnsNilIfAlreadySent() {
+        self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+
+        expect(self.attributionPoster.adServicesTokenToPostIfNeeded).toNot(beNil())
+
+        self.attributionPoster.postAdServicesTokenIfNeeded()
+
+        expect(self.attributionPoster.adServicesTokenToPostIfNeeded).to(beNil())
+    }
+
     func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
         backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 

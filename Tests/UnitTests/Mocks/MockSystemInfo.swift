@@ -14,7 +14,6 @@ import Foundation
 class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
-    var customEntitlementsComputation: Bool?
 
     convenience init(finishTransactions: Bool,
                      storeKit2Setting: StoreKit2Setting = .default,

@@ -111,6 +111,7 @@ class Backend {
               observerMode: Bool,
               initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
+              aadAttributionToken: String? = nil,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receiptData: receiptData,
                            appUserID: appUserID,
@@ -120,6 +121,7 @@ class Backend {
                            observerMode: observerMode,
                            initiationSource: initiationSource,
                            subscriberAttributes: subscriberAttributesByKey,
+                           aadAttributionToken: aadAttributionToken,
                            completion: completion)
     }
 

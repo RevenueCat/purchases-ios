@@ -28,6 +28,8 @@ import Foundation
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let currentUserProvider: CurrentUserProvider
     private let attributionPoster: AttributionPoster
+    private let systemInfo: SystemInfo
+
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var automaticAdServicesAttributionTokenCollection: Bool = false
 
@@ -35,10 +37,12 @@ import Foundation
 
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
-         attributionPoster: AttributionPoster) {
+         attributionPoster: AttributionPoster,
+         systemInfo: SystemInfo) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
         self.attributionPoster = attributionPoster
+        self.systemInfo = systemInfo
 
         super.init()
 
@@ -58,16 +62,25 @@ public extension Attribution {
      */
     @objc func enableAdServicesAttributionTokenCollection() {
         self.automaticAdServicesAttributionTokenCollection = true
+
         self.postAdServicesTokenIfNeeded()
     }
 
     internal func postAdServicesTokenIfNeeded() {
-        if self.automaticAdServicesAttributionTokenCollection {
+        if self.automaticAdServicesAttributionTokenCollection,
+           self.automaticAdServicesTokenPostingEnabled {
             self.attributionPoster.postAdServicesTokenIfNeeded()
         }
     }
 
+    private var automaticAdServicesTokenPostingEnabled: Bool {
+        /// In custom entitlements computation mode, ad services token is sent only through `PostReceiptOperation`
+        return !self.systemInfo.dangerousSettings.customEntitlementComputation
+    }
+
 }
+
+#if !CUSTOM_ENTITLEMENTS_COMPUTATION
 
 public extension Attribution {
 
@@ -352,6 +365,8 @@ public extension Attribution {
 
 }
 
+#endif
+
 // @unchecked because:
 // - It contains mutable state (`weak var delegate`).
 extension Attribution: @unchecked Sendable {}
@@ -387,6 +402,14 @@ extension Attribution {
         self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
+    var unsyncedAdServicesToken: String? {
+        guard self.automaticAdServicesAttributionTokenCollection else {
+            return nil
+        }
+
+        return self.attributionPoster.adServicesTokenToPostIfNeeded
+    }
+
     @discardableResult
     func syncAttributesForAllUsers(currentAppUserID: String,
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
@@ -398,6 +421,10 @@ extension Attribution {
 
     func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         self.subscriberAttributesManager.markAttributesAsSynced(attributesToSync, appUserID: appUserID)
+    }
+
+    func markAdServicesTokenAsSynced(_ token: String, appUserID: String) {
+        self.attributionPoster.markAdServicesToken(token, asSyncedFor: appUserID)
     }
 
 }
