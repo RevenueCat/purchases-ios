@@ -1,12 +1,5 @@
 ## 4.20.0
 ### New Features
-* `Offering` metadata (#2498) via Josh Holtz (@joshdholtz)
-
-This new feature allows you to read metadata from the RevenueCat dashboard. For example, you can use this to configure your paywall dynamically, and even test variants with experiments:
-```swift
-Text(offering.getMetadataValue(for: "title", default: "Upgrade to PRO"))
-```
-
 * Add `StoreProduct.pricePerYear` (#2462) via NachoSoto (@NachoSoto)
 
 ### Bugfixes
