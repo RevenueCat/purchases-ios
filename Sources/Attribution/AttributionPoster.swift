@@ -39,7 +39,7 @@ final class AttributionPoster {
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
         Logger.debug(Strings.attribution.instance_configured_posting_attribution)
-        if data["rc_appsflyer_id"] != nil {
+        if data[AttributionKey.AppsFlyer.id.rawValue] != nil {
             Logger.warn(Strings.attribution.appsflyer_id_deprecated)
         }
 
@@ -63,21 +63,21 @@ final class AttributionPoster {
         var newData = data
 
         if let identifierForAdvertisers = identifierForAdvertisers {
-            newData["rc_idfa"] = identifierForAdvertisers
+            newData[AttributionKey.idfa.rawValue] = identifierForAdvertisers
         } else {
-            newData.removeValue(forKey: "rc_idfa")
+            newData.removeValue(forKey: AttributionKey.idfa.rawValue)
         }
 
         if let identifierForVendor = attributionFetcher.identifierForVendor {
-            newData["rc_idfv"] = identifierForVendor
+            newData[AttributionKey.idfv.rawValue] = identifierForVendor
         } else {
-            newData.removeValue(forKey: "rc_idfv")
+            newData.removeValue(forKey: AttributionKey.idfv.rawValue)
         }
 
         if let networkUserId = networkUserId {
-            newData["rc_attribution_network_id"] = networkUserId
+            newData[AttributionKey.networkID.rawValue] = networkUserId
         } else {
-            newData.removeValue(forKey: "rc_attribution_network_id")
+            newData.removeValue(forKey: AttributionKey.networkID.rawValue)
         }
 
         if !newData.isEmpty {
