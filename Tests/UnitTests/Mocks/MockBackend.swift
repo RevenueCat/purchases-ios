@@ -9,13 +9,9 @@
 class MockBackend: Backend {
 
     typealias PostReceiptParameters = (data: Data?,
-                                       appUserID: String?,
-                                       isRestore: Bool,
                                        productData: ProductRequestData?,
-                                       offeringIdentifier: String?,
+                                       transactionData: PurchasedTransactionData,
                                        observerMode: Bool,
-                                       initiationSource: ProductRequestData.InitiationSource,
-                                       subscriberAttributesByKey: [String: SubscriberAttribute]?,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -46,33 +42,21 @@ class MockBackend: Backend {
     }
 
     override func post(receiptData: Data,
-                       appUserID: String,
-                       isRestore: Bool,
                        productData: ProductRequestData?,
-                       presentedOfferingIdentifier offeringIdentifier: String?,
+                       transactionData: PurchasedTransactionData,
                        observerMode: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
         invokedPostReceiptDataParameters = (receiptData,
-                                            appUserID,
-                                            isRestore,
                                             productData,
-                                            offeringIdentifier,
+                                            transactionData,
                                             observerMode,
-                                            initiationSource,
-                                            subscriberAttributesByKey,
                                             completion)
         invokedPostReceiptDataParametersList.append((receiptData,
-                                                     appUserID,
-                                                     isRestore,
                                                      productData,
-                                                     offeringIdentifier,
+                                                     transactionData,
                                                      observerMode,
-                                                     initiationSource,
-                                                     subscriberAttributesByKey,
                                                      completion))
 
         self.onPostReceipt?()

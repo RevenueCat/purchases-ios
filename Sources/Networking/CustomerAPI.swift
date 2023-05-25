@@ -87,20 +87,15 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    // swiftlint:disable:next function_parameter_count
     func post(receiptData: Data,
-              appUserID: String,
-              isRestore: Bool,
               productData: ProductRequestData?,
-              presentedOfferingIdentifier offeringIdentifier: String?,
+              transactionData: PurchasedTransactionData,
               observerMode: Bool,
-              initiationSource: ProductRequestData.InitiationSource,
-              subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
         if !self.backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {
-            subscriberAttributesToPost = subscriberAttributesByKey ?? [:]
+            subscriberAttributesToPost = transactionData.unsyncedAttributes ?? [:]
             let attributionStatus = self.attributionFetcher.authorizationStatus
             let consentStatus = SubscriberAttribute(attribute: ReservedSubscriberAttribute.consentStatus,
                                                     value: attributionStatus.description,
@@ -109,16 +104,14 @@ final class CustomerAPI {
         }
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+                                                                appUserID: transactionData.appUserID)
 
-        let postData = PostReceiptDataOperation.PostData(appUserID: appUserID,
-                                                         receiptData: receiptData,
-                                                         isRestore: isRestore,
-                                                         productData: productData,
-                                                         presentedOfferingIdentifier: offeringIdentifier,
-                                                         observerMode: observerMode,
-                                                         initiationSource: initiationSource,
-                                                         subscriberAttributesByKey: subscriberAttributesToPost)
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
+            productData: productData,
+            receiptData: receiptData,
+            observerMode: observerMode
+        )
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,
             postData: postData,
@@ -133,6 +126,17 @@ final class CustomerAPI {
         let cacheStatus = customerInfoCallbackCache.add(callbackObject)
 
         self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+    }
+
+}
+
+private extension PurchasedTransactionData {
+
+    func withAttributesToPost(_ newAttributes: SubscriberAttribute.Dictionary?) -> Self {
+        var copy = self
+        copy.unsyncedAttributes = newAttributes
+
+        return copy
     }
 
 }

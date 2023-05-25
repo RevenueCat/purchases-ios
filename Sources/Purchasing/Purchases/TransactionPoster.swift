@@ -21,16 +21,25 @@ struct PurchaseSource {
 
 }
 
+/// Encapsulates data used when posting transactions to the backend.
+struct PurchasedTransactionData {
+
+    var appUserID: String
+    var presentedOfferingID: String?
+    var unsyncedAttributes: SubscriberAttribute.Dictionary?
+    var storefront: StorefrontType?
+    var source: PurchaseSource
+
+}
+
 /// A type that can post receipts as a result of a purchased transaction.
 protocol TransactionPosterType: AnyObject, Sendable {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
     func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
-        presentedOfferingID: String?,
-        storefront: StorefrontType?,
-        source: PurchaseSource,
-        completion: @escaping PurchaseCompletedBlock
+        data: PurchasedTransactionData,
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
 
     /// Finishes the transaction if not in observer mode.
@@ -41,21 +50,12 @@ protocol TransactionPosterType: AnyObject, Sendable {
         completion: @escaping @Sendable @MainActor () -> Void
     )
 
-    func markSyncedIfNeeded(
-        subscriberAttributes: SubscriberAttribute.Dictionary?,
-        error: BackendError?
-    )
-
 }
-
-// swiftlint:disable function_parameter_count
 
 final class TransactionPoster: TransactionPosterType {
 
     private let productsManager: ProductsManagerType
     private let receiptFetcher: ReceiptFetcher
-    private let currentUserProvider: CurrentUserProvider
-    private let attribution: Attribution
     private let backend: Backend
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
@@ -64,8 +64,6 @@ final class TransactionPoster: TransactionPosterType {
     init(
         productsManager: ProductsManagerType,
         receiptFetcher: ReceiptFetcher,
-        currentUserProvider: CurrentUserProvider,
-        attribution: Attribution,
         backend: Backend,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
@@ -73,8 +71,6 @@ final class TransactionPoster: TransactionPosterType {
     ) {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
-        self.currentUserProvider = currentUserProvider
-        self.attribution = attribution
         self.backend = backend
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
@@ -82,20 +78,16 @@ final class TransactionPoster: TransactionPosterType {
     }
 
     func handlePurchasedTransaction(_ transaction: StoreTransaction,
-                                    presentedOfferingID: String?,
-                                    storefront: StorefrontType?,
-                                    source: PurchaseSource,
-                                    completion: @escaping PurchaseCompletedBlock) {
+                                    data: PurchasedTransactionData,
+                                    completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
         ) { receiptData in
             if let receiptData = receiptData, !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(
-                    withTransaction: transaction,
+                    transaction: transaction,
+                    data: data,
                     receiptData: receiptData,
-                    source: source,
-                    storefront: storefront,
-                    presentedOfferingID: presentedOfferingID,
                     completion: completion
                 )
             } else {
@@ -126,46 +118,24 @@ final class TransactionPoster: TransactionPosterType {
         transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType, completion: complete)
     }
 
-    func markSyncedIfNeeded(
-        subscriberAttributes: SubscriberAttribute.Dictionary?,
-        error: BackendError?
-    ) {
-        if let error = error {
-            guard error.successfullySynced else { return }
-
-            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
-                Logger.error(Strings.attribution.subscriber_attributes_error(
-                    errors: attributeErrors
-                ))
-            }
-        }
-
-        self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: self.appUserID)
-    }
-
 }
 
 // MARK: - Implementation
 
 private extension TransactionPoster {
 
-    /// Called as a result a purchase.
     func fetchProductsAndPostReceipt(
-        withTransaction transaction: StoreTransaction,
+        transaction: StoreTransaction,
+        data: PurchasedTransactionData,
         receiptData: Data,
-        source: PurchaseSource,
-        storefront: StorefrontType?,
-        presentedOfferingID: String?,
-        completion: @escaping PurchaseCompletedBlock
+        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
             self.product(with: productIdentifier) { products in
-                self.postReceipt(withTransaction: transaction,
+                self.postReceipt(transaction: transaction,
+                                 purchasedTransactionData: data,
                                  receiptData: receiptData,
                                  product: products,
-                                 source: source,
-                                 storefront: storefront,
-                                 presentedOfferingID: presentedOfferingID,
                                  completion: completion)
             }
         } else {
@@ -179,56 +149,44 @@ private extension TransactionPoster {
     func handleReceiptPost(withTransaction transaction: StoreTransaction,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?,
-                           completion: @escaping PurchaseCompletedBlock) {
+                           completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.operationDispatcher.dispatchOnMainActor {
-            self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
-                                    error: result.error)
-
             switch result {
             case let .success(customerInfo):
                 if customerInfo.isComputedOffline {
-                    completion(transaction, customerInfo, nil, false)
+                    completion(result)
                 } else {
                     self.finishTransactionIfNeeded(transaction) {
-                        completion(transaction, customerInfo, nil, false)
+                        completion(result)
                     }
                 }
 
             case let .failure(error):
-                let publicError = error.asPublicError
-
                 if error.finishable {
                     self.finishTransactionIfNeeded(transaction) {
-                        completion(transaction, nil, publicError, false)
+                        completion(result)
                     }
                 } else {
-                    completion(transaction, nil, publicError, false)
+                    completion(result)
                 }
             }
         }
     }
 
-    func postReceipt(withTransaction transaction: StoreTransaction,
+    func postReceipt(transaction: StoreTransaction,
+                     purchasedTransactionData: PurchasedTransactionData,
                      receiptData: Data,
                      product: StoreProduct?,
-                     source: PurchaseSource,
-                     storefront: StorefrontType?,
-                     presentedOfferingID: String?,
-                     completion: @escaping PurchaseCompletedBlock) {
-        let productData = product.map { ProductRequestData(with: $0, storefront: storefront) }
-        let unsyncedAttributes = self.unsyncedAttributes
+                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
         self.backend.post(receiptData: receiptData,
-                          appUserID: self.appUserID,
-                          isRestore: source.isRestore,
                           productData: productData,
-                          presentedOfferingIdentifier: presentedOfferingID,
-                          observerMode: self.observerMode,
-                          initiationSource: source.initiationSource,
-                          subscriberAttributes: unsyncedAttributes) { result in
+                          transactionData: purchasedTransactionData,
+                          observerMode: self.observerMode) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result,
-                                   subscriberAttributes: unsyncedAttributes,
+                                   subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
                                    completion: completion)
         }
     }
@@ -238,14 +196,6 @@ private extension TransactionPoster {
 // MARK: - Properties
 
 private extension TransactionPoster {
-
-    private var appUserID: String {
-        self.currentUserProvider.currentAppUserID
-    }
-
-    var unsyncedAttributes: SubscriberAttribute.Dictionary {
-        self.attribution.unsyncedAttributesByKey(appUserID: self.appUserID)
-    }
 
     var observerMode: Bool {
         self.systemInfo.observerMode

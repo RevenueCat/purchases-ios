@@ -202,8 +202,6 @@ class BasePurchasesTests: TestCase {
             transactionPoster: .init(
                 productsManager: self.mockProductsManager,
                 receiptFetcher: self.receiptFetcher,
-                currentUserProvider: self.identityManager,
-                attribution: self.attribution,
                 backend: self.backend,
                 paymentQueueWrapper: paymentQueueWrapper,
                 systemInfo: self.systemInfo,
@@ -402,17 +400,13 @@ extension BasePurchasesTests {
         var postReceiptResult: Result<CustomerInfo, BackendError>?
 
         override func post(receiptData: Data,
-                           appUserID: String,
-                           isRestore: Bool,
                            productData: ProductRequestData?,
-                           presentedOfferingIdentifier: String?,
+                           transactionData: PurchasedTransactionData,
                            observerMode: Bool,
-                           initiationSource: ProductRequestData.InitiationSource,
-                           subscriberAttributes: [String: SubscriberAttribute]?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receiptData
-            self.postedIsRestore = isRestore
+            self.postedIsRestore = transactionData.source.isRestore
 
             if let productData = productData {
                 self.postedProductID = productData.productIdentifier
@@ -426,9 +420,9 @@ extension BasePurchasesTests {
                 self.postedDiscounts = productData.discounts
             }
 
-            self.postedOfferingIdentifier = presentedOfferingIdentifier
+            self.postedOfferingIdentifier = transactionData.presentedOfferingID
             self.postedObserverMode = observerMode
-            self.postedInitiationSource = initiationSource
+            self.postedInitiationSource = transactionData.source.initiationSource
 
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }

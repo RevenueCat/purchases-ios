@@ -126,6 +126,28 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
 
 }
 
+extension PostReceiptDataOperation.PostData {
+
+    init(
+        transactionData data: PurchasedTransactionData,
+        productData: ProductRequestData?,
+        receiptData: Data,
+        observerMode: Bool
+    ) {
+        self.init(
+            appUserID: data.appUserID,
+            receiptData: receiptData,
+            isRestore: data.source.isRestore,
+            productData: productData,
+            presentedOfferingIdentifier: data.presentedOfferingID,
+            observerMode: observerMode,
+            initiationSource: data.source.initiationSource,
+            subscriberAttributesByKey: data.unsyncedAttributes
+        )
+    }
+
+}
+
 // MARK: - Private
 
 private extension PostReceiptDataOperation {
