@@ -5,6 +5,7 @@
       "description" : "standard set of packages",
       "identifier" : "default",
       "metadata" : {
+        "dontdeletethis" : "useforintegrationtesting",
         "meta" : "data"
       },
       "packages" : [
