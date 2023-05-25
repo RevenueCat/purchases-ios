@@ -90,7 +90,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
 
         let isRestore = true
         let observerMode = false
@@ -103,7 +103,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      observerMode: observerMode,
                      initiationSource: .purchase,
                      subscriberAttributes: nil) { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         }
 
         backend.post(receiptData: Self.receiptData,
@@ -115,11 +115,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
@@ -129,7 +129,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
 
         let isRestore = false
         let observerMode = false
@@ -143,7 +143,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .purchase,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData,
@@ -155,11 +155,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     func testDoesntCacheForDifferentReceipts() {
@@ -168,7 +168,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
 
         let isRestore = true
         let observerMode = true
@@ -182,7 +182,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData2,
@@ -194,11 +194,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     func testDoesntCacheForDifferentCurrency() {
@@ -207,7 +207,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
 
         let isRestore = false
         let observerMode = true
@@ -221,7 +221,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .purchase,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
@@ -234,11 +234,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .purchase,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     func testDoesntCacheForDifferentOffering() {
@@ -247,7 +247,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
 
         let isRestore = true
         let observerMode = false
@@ -261,7 +261,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData2,
@@ -273,11 +273,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     func testPostsReceiptDataWithProductRequestDataCorrectly() throws {
@@ -408,16 +408,16 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         self.httpClient.mock(requestPath: .postReceiptData, response: postResponse)
         self.httpClient.mock(requestPath: getCustomerInfoPath, response: initialCustomerInfoResponse)
 
-        var originalSubscriberInfo: CustomerInfo?
-        var updatedSubscriberInfo: CustomerInfo?
-        var postSubscriberInfo: CustomerInfo?
+        let originalSubscriberInfo: Atomic<CustomerInfo?> = nil
+        let updatedSubscriberInfo: Atomic<CustomerInfo?> = nil
+        let postSubscriberInfo: Atomic<CustomerInfo?> = nil
 
-        var callOrder: (initialGet: Bool,
-                        postResponse: Bool,
-                        updatedGet: Bool) = (false, false, false)
+        let callOrder: Atomic<(initialGet: Bool,
+                               postResponse: Bool,
+                               updatedGet: Bool)> = .init((false, false, false))
         backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
-            originalSubscriberInfo = result.value
-            callOrder.initialGet = true
+            originalSubscriberInfo.value = result.value
+            callOrder.value.initialGet = true
 
             self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath)
         }
@@ -431,21 +431,21 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil) { result in
             self.httpClient.mock(requestPath: getCustomerInfoPath, response: updatedCustomerInfoResponse)
-            callOrder.postResponse = true
-            postSubscriberInfo = result.value
+            callOrder.value.postResponse = true
+            postSubscriberInfo.value = result.value
         }
 
         backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
-            expect(callOrder) == (true, true, false)
-            updatedSubscriberInfo = result.value
-            callOrder.updatedGet = true
+            expect(callOrder.value) == (true, true, false)
+            updatedSubscriberInfo.value = result.value
+            callOrder.value.updatedGet = true
         }
 
-        expect(callOrder).toEventually(equal((true, true, true)))
+        expect(callOrder.value).toEventually(equal((true, true, true)))
 
-        expect(updatedSubscriberInfo).toNot(beNil())
-        expect(updatedSubscriberInfo).to(equal(postSubscriberInfo))
-        expect(updatedSubscriberInfo).toNot(equal(originalSubscriberInfo))
+        expect(updatedSubscriberInfo.value).toNot(beNil())
+        expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
+        expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
         expect(self.httpClient.calls.map { $0.request.path }) == [
             getCustomerInfoPath,
@@ -508,7 +508,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
         let isRestore = true
         let observerMode = false
 
@@ -521,7 +521,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         let discount = MockStoreProductDiscount(offerIdentifier: "offerid",
@@ -542,11 +542,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     @available(iOS 11.2, *)
@@ -599,7 +599,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        var completionCalled = 0
+        let completionCalled: Atomic<Int> = .init(0)
         let isRestore = false
         let observerMode = true
 
@@ -612,7 +612,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData,
@@ -624,11 +624,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      initiationSource: .queue,
                      subscriberAttributes: nil,
                      completion: { _ in
-            completionCalled += 1
+            completionCalled.value += 1
         })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
-        expect(completionCalled).toEventually(equal(2))
+        expect(completionCalled.value).toEventually(equal(2))
     }
 
     func testGetsEntitlementsWithVerifiedResponse() {
@@ -797,8 +797,8 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
 
 private extension BaseBackendPostReceiptDataTests {
 
-    static let receiptData = "an awesome receipt".data(using: String.Encoding.utf8)!
-    static let receiptData2 = "an awesomeer receipt".data(using: String.Encoding.utf8)!
+    static let receiptData = "an awesome receipt".asData
+    static let receiptData2 = "an awesomeer receipt".asData
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)

@@ -135,20 +135,20 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         let customerInfoResponse = MockHTTPClient.Response(statusCode: .success, response: customerResponse)
         httpClient.mock(requestPath: path, response: customerInfoResponse)
 
-        var firstResult: Result<CustomerInfo, BackendError>?
-        var secondResult: Result<CustomerInfo, BackendError>?
+        let firstResult: Atomic<Result<CustomerInfo, BackendError>?> = nil
+        let secondResult: Atomic<Result<CustomerInfo, BackendError>?> = nil
 
         backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
-            firstResult = $0
+            firstResult.value = $0
         }
 
         backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
-            secondResult = $0
+            secondResult.value = $0
         }
 
-        expect(firstResult).toEventuallyNot(beNil())
-        expect(firstResult?.value).toNot(beNil())
-        expect(secondResult?.value) == firstResult?.value
+        expect(firstResult.value).toEventuallyNot(beNil())
+        expect(firstResult.value).to(beSuccess())
+        expect(secondResult.value?.value) == firstResult.value?.value
 
         expect(self.httpClient.calls.map { $0.request.path }) == [path]
     }

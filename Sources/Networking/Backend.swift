@@ -159,7 +159,7 @@ extension Backend: @unchecked Sendable {}
 
 extension Backend {
 
-    typealias ResponseHandler<Response> = (Swift.Result<Response, BackendError>) -> Void
+    typealias ResponseHandler<Response> = @Sendable (Swift.Result<Response, BackendError>) -> Void
 
 }
 
