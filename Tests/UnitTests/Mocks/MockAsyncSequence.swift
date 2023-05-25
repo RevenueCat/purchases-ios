@@ -22,7 +22,7 @@ final class MockAsyncSequence<Element>: AsyncSequence, AsyncIteratorProtocol {
         self.elements = elements.reversed()
     }
 
-    func next() async throws -> Element? {
+    func next() async -> Element? {
         return self.getNextElement()
     }
 

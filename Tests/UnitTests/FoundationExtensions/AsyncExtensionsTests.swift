@@ -130,4 +130,24 @@ class AsyncExtensionsTests: TestCase {
         expect(result) == expected
     }
 
+    func testExtractValuesFromEmptyAsyncSequence() async {
+        let result = await MockAsyncSequence<Int>(with: []).extractValues()
+
+        expect(result) == []
+    }
+
+    func testExtractValuesFromAsyncSequenceWithOneElement() async {
+        let elements = [1]
+        let result = await MockAsyncSequence(with: elements).extractValues()
+
+        expect(result) == elements
+    }
+
+    func testExtractValuesFromAsyncSequence() async {
+        let elements = [1, 2, 3]
+        let result = await MockAsyncSequence(with: elements).extractValues()
+
+        expect(result) == elements
+    }
+
 }
