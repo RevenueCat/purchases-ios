@@ -25,17 +25,20 @@ protocol PurchasedProductsFetcherType {
 
 /// A type that can fetch purchased products from StoreKit 2.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-class PurchasedProductsFetcher: PurchasedProductsFetcherType {
+final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     private typealias Transactions = [StoreKit.VerificationResult<StoreKit.Transaction>]
 
+    private let transactionFetcher: StoreKit2TransactionFetcherType
     private let sandboxDetector: SandboxEnvironmentDetector
     private let cache: InMemoryCachedObject<Transactions>
 
     init(
+        storeKit2TransactionFetcher: StoreKit2TransactionFetcherType = StoreKit2TransactionFetcher(),
         sandboxDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
     ) {
         self.sandboxDetector = sandboxDetector
+        self.transactionFetcher = storeKit2TransactionFetcher
         self.cache = .init()
     }
 
@@ -78,7 +81,7 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
                 threshold: .purchasedProducts,
                 message: Strings.offlineEntitlements.purchased_products_fetching_too_slow
             ) {
-                return try await Self.fetchTransactions()
+                return try await self.fetchTransactions()
             }
 
             self.cache.cache(instance: result)
@@ -86,8 +89,8 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         }
     }
 
-    private static func fetchTransactions() async throws -> Transactions {
-        guard await !Self.hasPendingConsumablePurchase else {
+    private func fetchTransactions() async throws -> Transactions {
+        guard await !self.transactionFetcher.hasPendingConsumablePurchase else {
             throw Error.foundConsumablePurchase
         }
 
@@ -101,15 +104,11 @@ class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         return result
     }
 
-    private static var hasPendingConsumablePurchase: Bool {
-        get async {
-            return await StoreKit.Transaction.unfinished.contains {
-                $0.productType.productCategory == .nonSubscription
-            }
-        }
-    }
-
 }
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension PurchasedProductsFetcher: Sendable {}
+
 // MARK: - Error
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -126,23 +125,6 @@ extension PurchasedProductsFetcher {
             ]
         }
 
-    }
-
-}
-// MARK: - Extensions
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
-
-    var productType: StoreProduct.ProductType {
-        return .init(self.underlyingTransaction.productType)
-    }
-
-    private var underlyingTransaction: StoreKit.Transaction {
-        switch self {
-        case let .unverified(transaction, _): return transaction
-        case let .verified(transaction): return transaction
-        }
     }
 
 }

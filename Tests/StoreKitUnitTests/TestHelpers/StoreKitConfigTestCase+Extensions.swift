@@ -19,6 +19,25 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension StoreKitConfigTestCase {
 
+    @MainActor
+    @_disfavoredOverload
+    @discardableResult
+    func simulateAnyPurchase(
+        productID: String? = nil,
+        finishTransaction: Bool = false
+    ) async throws -> SK2Transaction {
+        let product: SK2Product?
+
+        if let productID = productID {
+            product = try await self.fetchSk2Product(productID)
+        } else {
+            product = nil
+        }
+
+        return try await self.simulateAnyPurchase(product: product,
+                                                  finishTransaction: finishTransaction)
+    }
+
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
     @MainActor
     @discardableResult

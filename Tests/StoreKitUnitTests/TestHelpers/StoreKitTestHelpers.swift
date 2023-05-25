@@ -63,18 +63,6 @@ extension XCTestCase {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension StoreKit.VerificationResult where SignedType == Transaction {
-
-    var underlyingTransaction: Transaction {
-        switch self {
-        case let .unverified(transaction, _): return transaction
-        case let .verified(transaction): return transaction
-        }
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension Product.PurchaseResult {
 
     var verificationResult: StoreKit.VerificationResult<Transaction>? {
