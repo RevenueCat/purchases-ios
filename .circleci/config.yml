@@ -743,6 +743,9 @@ jobs:
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (16.4)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
