@@ -97,6 +97,28 @@ class BackendSubscriberAttributesTests: TestCase {
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
 
+    func testPostReceiptWithAdServicesToken() throws {
+        let token = "token"
+
+        waitUntil { completion in
+            self.backend.post(receiptData: self.receiptData,
+                              productData: nil,
+                              transactionData: .init(
+                                 appUserID: self.appUserID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: [:],
+                                 aadAttributionToken: token,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .restore)
+                              ),
+                              observerMode: false) { _ in
+                completion()
+            }
+        }
+
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
+    }
+
     func testPostReceiptWithSubscriberAttributesReturnsBadJson() throws {
         let subscriberAttributesByKey: [String: SubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,

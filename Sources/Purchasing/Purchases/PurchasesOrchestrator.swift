@@ -903,6 +903,7 @@ private extension PurchasesOrchestrator {
 
     func markSyncedIfNeeded(
         subscriberAttributes: SubscriberAttribute.Dictionary?,
+        adServicesToken: String?,
         error: BackendError?
     ) {
         if let error = error {
@@ -916,6 +917,9 @@ private extension PurchasesOrchestrator {
         }
 
         self.attribution.markAttributesAsSynced(subscriberAttributes, appUserID: self.appUserID)
+        if let adServicesToken = adServicesToken {
+            self.attribution.markAdServicesTokenAsSynced(adServicesToken, appUserID: self.appUserID)
+        }
     }
 
     // swiftlint:disable:next function_body_length
@@ -931,6 +935,8 @@ private extension PurchasesOrchestrator {
 
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
+        let adServicesToken = self.attribution.unsyncedAdServicesToken
+
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
         self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
@@ -978,6 +984,7 @@ private extension PurchasesOrchestrator {
                                       observerMode: self.observerMode) { result in
                         self.handleReceiptPost(result: result,
                                                subscriberAttributes: unsyncedAttributes,
+                                               adServicesToken: adServicesToken,
                                                completion: completion)
                     }
                 }
@@ -987,10 +994,12 @@ private extension PurchasesOrchestrator {
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary,
+                           adServicesToken: String?,
                            completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         self.handlePostReceiptResult(
             result,
-            subscriberAttributes: subscriberAttributes
+            subscriberAttributes: subscriberAttributes,
+            adServicesToken: adServicesToken
         )
 
         if let completion = completion {
@@ -1001,12 +1010,14 @@ private extension PurchasesOrchestrator {
     }
 
     func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
-                                 subscriberAttributes: SubscriberAttribute.Dictionary) {
+                                 subscriberAttributes: SubscriberAttribute.Dictionary,
+                                 adServicesToken: String?) {
         if let customerInfo = result.value {
             self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
         }
 
         self.markSyncedIfNeeded(subscriberAttributes: subscriberAttributes,
+                                adServicesToken: adServicesToken,
                                 error: result.error)
     }
 
@@ -1015,6 +1026,7 @@ private extension PurchasesOrchestrator {
                                     restored: Bool) {
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
         let unsyncedAttributes = self.unsyncedAttributes
+        let adServicesToken = self.attribution.unsyncedAdServicesToken
 
         self.transactionPoster.handlePurchasedTransaction(
             purchasedTransaction,
@@ -1022,12 +1034,15 @@ private extension PurchasesOrchestrator {
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringID,
                 unsyncedAttributes: unsyncedAttributes,
+                aadAttributionToken: adServicesToken,
                 storefront: storefront,
                 source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                             restored: restored)
             )
         ) { result in
-            self.handlePostReceiptResult(result, subscriberAttributes: unsyncedAttributes)
+            self.handlePostReceiptResult(result,
+                                         subscriberAttributes: unsyncedAttributes,
+                                         adServicesToken: adServicesToken)
 
             if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
                 self.operationDispatcher.dispatchOnMainActor {
@@ -1135,6 +1150,7 @@ extension PurchasesOrchestrator {
         let storefront = await Storefront.currentStorefront
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: transaction)
         let unsyncedAttributes = self.unsyncedAttributes
+        let adServicesToken = self.attribution.unsyncedAdServicesToken
 
         return try await withCheckedThrowingContinuation { continuation in
             self.transactionPoster.handlePurchasedTransaction(
@@ -1143,12 +1159,15 @@ extension PurchasesOrchestrator {
                     appUserID: self.appUserID,
                     presentedOfferingID: offeringID,
                     unsyncedAttributes: unsyncedAttributes,
+                    aadAttributionToken: adServicesToken,
                     storefront: storefront,
                     source: .init(isRestore: self.allowSharingAppStoreAccount,
                                   initiationSource: initiationSource)
                 )
             ) { result in
-                self.handlePostReceiptResult(result, subscriberAttributes: unsyncedAttributes)
+                self.handlePostReceiptResult(result,
+                                             subscriberAttributes: unsyncedAttributes,
+                                             adServicesToken: adServicesToken)
 
                 continuation.resume(with: result.mapError(\.asPurchasesError))
             }

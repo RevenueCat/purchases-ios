@@ -76,7 +76,8 @@ class BasePurchasesTests: TestCase {
                                                    subscriberAttributesManager: self.subscriberAttributesManager)
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
-                                       attributionPoster: self.attributionPoster)
+                                       attributionPoster: self.attributionPoster,
+                                       systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
