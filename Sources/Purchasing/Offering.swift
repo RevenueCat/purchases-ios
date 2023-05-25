@@ -177,7 +177,7 @@ extension Offering {
 
     /**
      - Returns: the `metadata` value associated to `key` for the expected type,
-     or `defaultValue` if not found, or it's not the expected type.
+     or `default` if not found, or it's not the expected type.
      */
     public func getMetadataValue<T>(for key: String, default: T) -> T {
         guard let rawValue = self.metadata[key], let value = rawValue as? T else {
