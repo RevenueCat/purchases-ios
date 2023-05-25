@@ -41,7 +41,10 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         get async {
             return await StoreKit.Transaction
                 .unfinished
-                .contains { $0.productType.productCategory == .nonSubscription }
+                .compactMap { $0.verifiedTransaction }
+                .map(\.productType)
+                .map { StoreProduct.ProductType($0) }
+                .contains {  $0.productCategory == .nonSubscription }
         }
     }
 
@@ -64,15 +67,6 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
         case let .verified(transaction): return transaction
         case .unverified: return nil
         }
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
-
-    var productType: StoreProduct.ProductType {
-        return .init(self.underlyingTransaction.productType)
     }
 
 }
