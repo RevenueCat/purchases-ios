@@ -16,6 +16,10 @@
         "value" : "1"
       },
       {
+        "key" : "RCMockAdServicesToken",
+        "value" : "G9i5hC8lQJeGOfmS+MFycll"
+      },
+      {
         "key" : "RCRunningIntegrationTests",
         "value" : "1"
       }

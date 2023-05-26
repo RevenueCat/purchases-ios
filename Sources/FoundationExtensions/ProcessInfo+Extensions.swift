@@ -13,11 +13,14 @@
 
 import Foundation
 
+#if DEBUG
+
 enum EnvironmentKey: String {
 
     case XCTestConfigurationFile = "XCTestConfigurationFilePath"
     case RCRunningTests = "RCRunningTests"
     case RCRunningIntegrationTests = "RCRunningIntegrationTests"
+    case RCMockAdServicesToken = "RCMockAdServicesToken"
 
 }
 
@@ -28,8 +31,6 @@ extension ProcessInfo {
     }
 
 }
-
-#if DEBUG
 
 extension ProcessInfo {
 
@@ -45,6 +46,10 @@ extension ProcessInfo {
     /// `true` when running integration tests (configured in .xctestplan files).
     static var isRunningIntegrationTests: Bool {
         return self[.RCRunningIntegrationTests] == "1"
+    }
+
+    static var mockAdServicesToken: String? {
+        return self[.RCMockAdServicesToken]?.notEmptyOrWhitespaces
     }
 
 }

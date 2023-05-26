@@ -36,4 +36,18 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(result.entitlementsByProduct["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
     }
 
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    func testEnableAdServicesAttributionTokenCollection() async throws {
+        let logger = TestLogHandler()
+
+        Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
+
+        try await logger.verifyMessageIsEventuallyLogged(
+            Strings.attribution.adservices_token_post_succeeded.description,
+            level: .debug,
+            timeout: .seconds(3),
+            pollInterval: .milliseconds(200)
+        )
+    }
+
 }

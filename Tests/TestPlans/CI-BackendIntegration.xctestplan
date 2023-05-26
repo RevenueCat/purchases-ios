@@ -12,6 +12,10 @@
     "codeCoverage" : false,
     "environmentVariableEntries" : [
       {
+        "key" : "RCMockAdServicesToken",
+        "value" : "G9i5hC8lQJeGOfmS+MFycll"
+      },
+      {
         "key" : "RCRunningTests",
         "value" : "1"
       },

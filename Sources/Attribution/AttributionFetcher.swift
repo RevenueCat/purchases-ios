@@ -85,6 +85,13 @@ class AttributionFetcher {
 #if canImport(AdServices)
         do {
             #if targetEnvironment(simulator)
+            #if DEBUG
+            if let mockToken = ProcessInfo.mockAdServicesToken {
+                Logger.warn(Strings.attribution.adservices_mocking_token(mockToken))
+                return mockToken
+            }
+            #endif
+
                 // See https://github.com/RevenueCat/purchases-ios/issues/2121
                 Logger.appleWarning(Strings.attribution.adservices_token_unavailable_in_simulator)
                 return nil
