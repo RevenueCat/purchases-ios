@@ -29,6 +29,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var receiptFetcher: MockReceiptFetcher!
     private var receiptParser: MockReceiptParser!
     private var customerInfoManager: MockCustomerInfoManager!
+    private var paymentQueueWrapper: EitherPaymentQueueWrapper!
     private var backend: MockBackend!
     private var offerings: MockOfferingsAPI!
     private var currentUserProvider: MockCurrentUserProvider!
@@ -37,6 +38,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     private var mockOfferingsManager: MockOfferingsManager!
+    private var transactionPoster: TransactionPoster!
 
     private var orchestrator: PurchasesOrchestrator!
 
@@ -91,7 +93,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
-        self.setupStoreKit1Wrapper()
+        self.setUpStoreKit1Wrapper()
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
     }
@@ -119,15 +121,28 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.systemInfo.stubbedIsSandbox = true
     }
 
-    fileprivate func setupStoreKit1Wrapper() {
-        storeKit1Wrapper = MockStoreKit1Wrapper()
-        storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
-        storeKit1Wrapper.mockCallUpdatedTransactionInstantly = true
+    fileprivate func setUpStoreKit1Wrapper() {
+        self.storeKit1Wrapper = MockStoreKit1Wrapper()
+        self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
+        self.storeKit1Wrapper.mockCallUpdatedTransactionInstantly = true
+
+        self.paymentQueueWrapper = .left(self.storeKit1Wrapper)
     }
 
     fileprivate func setUpOrchestrator() {
+        self.transactionPoster = .init(
+            productsManager: self.productsManager,
+            receiptFetcher: self.receiptFetcher,
+            currentUserProvider: self.currentUserProvider,
+            attribution: self.attribution,
+            backend: self.backend,
+            paymentQueueWrapper: paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.operationDispatcher
+        )
+
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  paymentQueueWrapper: .left(self.storeKit1Wrapper),
+                                                  paymentQueueWrapper: self.paymentQueueWrapper,
                                                   systemInfo: self.systemInfo,
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
@@ -135,6 +150,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   receiptParser: self.receiptParser,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
+                                                  transactionPoster: self.transactionPoster,
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
                                                   deviceCache: self.deviceCache,
@@ -150,7 +166,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         storeKit2StorefrontListener: StoreKit2StorefrontListener
     ) {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  paymentQueueWrapper: .left(self.storeKit1Wrapper),
+                                                  paymentQueueWrapper: self.paymentQueueWrapper,
                                                   systemInfo: self.systemInfo,
                                                   subscriberAttributes: self.attribution,
                                                   operationDispatcher: self.operationDispatcher,
@@ -158,6 +174,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   receiptParser: self.receiptParser,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
+                                                  transactionPoster: self.transactionPoster,
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
                                                   deviceCache: self.deviceCache,
@@ -521,8 +538,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.receiptFetcher.receiptDataCalled) == true
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .retryUntilProductIsFound(
             productIdentifier: product.id,
-            maximumRetries: PurchasesOrchestrator.receiptRetryCount,
-            sleepDuration: PurchasesOrchestrator.receiptRetrySleepDuration
+            maximumRetries: TransactionPoster.receiptRetryCount,
+            sleepDuration: TransactionPoster.receiptRetrySleepDuration
         )
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
@@ -725,7 +742,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
         expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
     }
 

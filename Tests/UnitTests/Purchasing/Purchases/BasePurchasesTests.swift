@@ -199,6 +199,16 @@ class BasePurchasesTests: TestCase {
             receiptParser: self.mockReceiptParser,
             customerInfoManager: self.customerInfoManager,
             backend: self.backend,
+            transactionPoster: .init(
+                productsManager: self.mockProductsManager,
+                receiptFetcher: self.receiptFetcher,
+                currentUserProvider: self.identityManager,
+                attribution: self.attribution,
+                backend: self.backend,
+                paymentQueueWrapper: paymentQueueWrapper,
+                systemInfo: self.systemInfo,
+                operationDispatcher: self.mockOperationDispatcher
+            ),
             currentUserProvider: self.identityManager,
             transactionsManager: self.mockTransactionsManager,
             deviceCache: self.deviceCache,
