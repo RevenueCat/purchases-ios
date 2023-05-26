@@ -1,3 +1,6 @@
+## 4.19.1
+### Other Changes
+* `PostReceiptOperation`: added ability to also post `AdServices` token (#2549) via NachoSoto (@NachoSoto)
 ## 4.18.1
 ### New Features
 * New `ErrorCode.signatureVerificationFailed` which will be used for an upcoming feature
