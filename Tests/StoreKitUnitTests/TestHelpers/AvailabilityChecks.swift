@@ -37,6 +37,12 @@ enum AvailabilityChecks {
         }
     }
 
+    static func iOS14_3APIAvailableOrSkipTest() throws {
+        guard #available(iOS 14.3, tvOS 14.3, macOS 11.1, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
     static func iOS15APIAvailableOrSkipTest() throws {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
@@ -48,6 +54,12 @@ enum AvailabilityChecks {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             throw XCTSkip("Test only for older devices")
         }
+    }
+
+    static func skipIfTVOrWatchOS() throws {
+        #if os(watchOS) || os(tvOS)
+        throw XCTSkip("Test not for watchOS or tvOS")
+        #endif
     }
 
 }

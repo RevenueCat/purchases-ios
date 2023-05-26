@@ -90,6 +90,7 @@ final class CustomerAPI {
               observerMode: Bool,
               initiationSource: ProductRequestData.InitiationSource,
               subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
+              aadAttributionToken: String?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
@@ -112,7 +113,8 @@ final class CustomerAPI {
                                                          presentedOfferingIdentifier: offeringIdentifier,
                                                          observerMode: observerMode,
                                                          initiationSource: initiationSource,
-                                                         subscriberAttributesByKey: subscriberAttributesToPost)
+                                                         subscriberAttributesByKey: subscriberAttributesToPost,
+                                                         aadAttributionToken: aadAttributionToken)
         let factory = PostReceiptDataOperation.createFactory(configuration: config,
                                                              postData: postData,
                                                              customerInfoCallbackCache: self.customerInfoCallbackCache)

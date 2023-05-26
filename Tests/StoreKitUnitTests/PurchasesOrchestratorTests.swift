@@ -25,6 +25,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var systemInfo: MockSystemInfo!
     private var subscriberAttributesManager: MockSubscriberAttributesManager!
     private var attribution: Attribution!
+    private var attributionFetcher: MockAttributionFetcher!
     private var operationDispatcher: MockOperationDispatcher!
     private var receiptFetcher: MockReceiptFetcher!
     private var receiptParser: MockReceiptParser!
@@ -40,12 +41,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     private var orchestrator: PurchasesOrchestrator!
 
+    private static let mockUserID = "appUserID"
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         try self.setUpSystemInfo()
 
-        let mockUserID = "appUserID"
         self.productsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                    requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.operationDispatcher = MockOperationDispatcher()
@@ -66,31 +68,24 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                            deviceCache: self.deviceCache,
                                                            backend: self.backend,
                                                            systemInfo: self.systemInfo)
-        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: mockUserID)
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: Self.mockUserID)
         self.transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
-        let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                        systemInfo: self.systemInfo)
+        self.attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                         systemInfo: self.systemInfo)
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
             operationDispatcher: MockOperationDispatcher(),
-            attributionFetcher: attributionFetcher,
+            attributionFetcher: self.attributionFetcher,
             attributionDataMigrator: MockAttributionDataMigrator())
-        let attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
-                                                  currentUserProvider: self.currentUserProvider,
-                                                  backend: self.backend,
-                                                  attributionFetcher: attributionFetcher,
-                                                  subscriberAttributesManager: self.subscriberAttributesManager)
-        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
-                                       currentUserProvider: MockCurrentUserProvider(mockAppUserID: mockUserID),
-                                       attributionPoster: attributionPoster)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.currentUserProvider)
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
-        self.setupStoreKit1Wrapper()
+        self.setUpStoreKit1Wrapper()
+        self.setUpAttribution()
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
     }
@@ -118,10 +113,23 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.systemInfo.stubbedIsSandbox = true
     }
 
-    fileprivate func setupStoreKit1Wrapper() {
+    fileprivate func setUpStoreKit1Wrapper() {
         storeKit1Wrapper = MockStoreKit1Wrapper()
         storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
         storeKit1Wrapper.mockCallUpdatedTransactionInstantly = true
+    }
+
+    fileprivate func setUpAttribution() {
+        let attributionPoster = AttributionPoster(deviceCache: self.deviceCache,
+                                                  currentUserProvider: self.currentUserProvider,
+                                                  backend: self.backend,
+                                                  attributionFetcher: self.attributionFetcher,
+                                                  subscriberAttributesManager: self.subscriberAttributesManager)
+
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.mockUserID),
+                                       attributionPoster: attributionPoster,
+                                       systemInfo: self.systemInfo)
     }
 
     fileprivate func setUpOrchestrator() {
@@ -199,6 +207,89 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
         expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
+    }
+
+    func testPurchaseSK1PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.attributionFetcher.adServicesTokenToReturn = "token"
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.aadAttributionToken).to(beNil())
+    }
+
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    func testPurchaseSK1PackageWithSubscriberAttributesAndAdServicesToken() async throws {
+        try AvailabilityChecks.skipIfTVOrWatchOS()
+        try AvailabilityChecks.iOS14_3APIAvailableOrSkipTest()
+
+        // Test for custom entitlement computation mode.
+        // Without that mode, the token is posted upon calling `enableAdServicesAttributionTokenCollection`
+        self.systemInfo = .init(finishTransactions: true, customEntitlementsComputation: true)
+        self.setUpAttribution()
+        self.setUpOrchestrator()
+
+        let token = "token"
+        let attributes: SubscriberAttribute.Dictionary = [
+            "attribute_1": .init(attribute: .campaign, value: "campaign"),
+            "attribute_2": .init(attribute: .email, value: "email")
+        ]
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.attributionFetcher.adServicesTokenToReturn = "token"
+        self.subscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = attributes
+        self.attribution.enableAdServicesAttributionTokenCollection()
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = StoreProduct(sk1Product: product)
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: storeProduct,
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: package,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.aadAttributionToken) == token
+        expect(self.backend.invokedPostReceiptDataParameters?.subscriberAttributesByKey) == attributes
     }
 
     func testSK1PurchaseDoesNotAlwaysRefreshReceiptInProduction() async throws {
@@ -487,6 +578,87 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, *)
+    func testPurchaseSK2PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipIfTVOrWatchOS()
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+
+        self.attributionFetcher.adServicesTokenToReturn = "token"
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+
+        _ = try await self.orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.aadAttributionToken).to(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    func testPurchaseSK2PackagePostsAdServicesTokenAndAttributes() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipIfTVOrWatchOS()
+
+        // Test for custom entitlement computation mode.
+        // Without that mode, the token is posted upon calling `enableAdServicesAttributionTokenCollection`
+        self.systemInfo = .init(finishTransactions: true, customEntitlementsComputation: true)
+        self.setUpAttribution()
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+
+        let token = "token"
+        let attributes: SubscriberAttribute.Dictionary = [
+            "attribute_1": .init(attribute: .campaign, value: "campaign"),
+            "attribute_2": .init(attribute: .email, value: "email")
+        ]
+
+        self.attributionFetcher.adServicesTokenToReturn = "token"
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        self.attributionFetcher.adServicesTokenToReturn = "token"
+        self.subscriberAttributesManager.stubbedUnsyncedAttributesByKeyResult = attributes
+        self.attribution.enableAdServicesAttributionTokenCollection()
+
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk2Product: product),
+                              offeringIdentifier: "offering")
+
+        _ = try await self.orchestrator.purchase(sk2Product: product, package: package, promotionalOffer: nil)
+
+        expect(self.receiptFetcher.receiptDataCalled) == true
+        expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .always
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.aadAttributionToken) == token
+        expect(self.backend.invokedPostReceiptDataParameters?.subscriberAttributesByKey) == attributes
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

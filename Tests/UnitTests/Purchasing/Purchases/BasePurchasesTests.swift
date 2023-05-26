@@ -72,7 +72,8 @@ class BasePurchasesTests: TestCase {
                                                    subscriberAttributesManager: self.subscriberAttributesManager)
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: self.identityManager,
-                                       attributionPoster: self.attributionPoster)
+                                       attributionPoster: self.attributionPoster,
+                                       systemInfo: self.systemInfo)
         self.customerInfoManager = CustomerInfoManager(operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
                                                        backend: self.backend,
@@ -428,6 +429,7 @@ extension BasePurchasesTests {
                            observerMode: Bool,
                            initiationSource: ProductRequestData.InitiationSource,
                            subscriberAttributes: [String: SubscriberAttribute]?,
+                           aadAttributionToken: String? = nil,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
             self.postedReceiptData = receiptData

@@ -16,6 +16,7 @@ class MockBackend: Backend {
                                        observerMode: Bool,
                                        initiationSource: ProductRequestData.InitiationSource,
                                        subscriberAttributesByKey: [String: SubscriberAttribute]?,
+                                       aadAttributionToken: String?,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -61,6 +62,7 @@ class MockBackend: Backend {
                        observerMode: Bool,
                        initiationSource: ProductRequestData.InitiationSource,
                        subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
+                       aadAttributionToken: String? = nil,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
@@ -72,6 +74,7 @@ class MockBackend: Backend {
                                             observerMode,
                                             initiationSource,
                                             subscriberAttributesByKey,
+                                            aadAttributionToken: aadAttributionToken,
                                             completion)
         invokedPostReceiptDataParametersList.append((receiptData,
                                                      appUserID,
@@ -81,6 +84,7 @@ class MockBackend: Backend {
                                                      observerMode,
                                                      initiationSource,
                                                      subscriberAttributesByKey,
+                                                     aadAttributionToken,
                                                      completion))
 
         self.onPostReceipt?()
