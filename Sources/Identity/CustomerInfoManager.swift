@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
@@ -312,30 +314,23 @@ extension CustomerInfoManager {
 
 private extension CustomerInfoManager {
 
-    // TODO: test
-
     func getCustomerInfo(appUserID: String,
                          isAppBackgrounded: Bool,
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
-                // TODO: only post THE FIRST one, ignore the others
-                // TODO: test what happens if we call this when calling getCustomerInfo and there's
-                // an unfinished transaction in the queue at the same time.
-
                 // Note: this is only able to post a single transaction,
                 // it can be improved in the future once `PostReceiptOperation` accepts multiple ones.
                 if let transaction = await self.transactionFetcher.unfinishedVerifiedTransactions.first {
-                    // TODO: log
+                    Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
 
                     self.transactionPoster.handlePurchasedTransaction(
                         transaction,
                         data: .init(appUserID: appUserID,
                                     presentedOfferingID: nil,
-                                    unsyncedAttributes: [:], // TODO: ?
+                                    unsyncedAttributes: [:],
                                     storefront: await Storefront.currentStorefront,
-                                    // TODO: explain downside of this
-                                    source: .init(isRestore: false, initiationSource: .queue)),
+                                    source: Self.sourceForUnfinishedTransaction),
                         completion: completion
                     )
                 } else {
@@ -363,6 +358,14 @@ private extension CustomerInfoManager {
                                      allowComputingOffline: allowComputingOffline,
                                      completion: completion)
     }
+
+    // Note: this is just a best guess.
+    private static let sourceForUnfinishedTransaction: PurchaseSource = .init(
+        isRestore: false,
+        // This might have been in theory a `.purchase`. The only downside of this is that the server
+        // won't validate that the product is present in the receipt.
+        initiationSource: .queue
+    )
 
 }
 

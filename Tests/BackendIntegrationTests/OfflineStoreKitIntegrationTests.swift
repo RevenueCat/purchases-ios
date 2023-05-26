@@ -227,7 +227,30 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         ]
     }
 
-    // TODO: cover scenario for double POST by getCustomerInfo + pending transaction on queue
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSimultanousCallsToGetCustomerInfoWithPendingTransactionPostsReceiptOnlyOnce() async throws {
+        self.serverDown()
+
+        _ = try await self.purchaseMonthlyProduct()
+
+        self.serverUp()
+
+        let logger = TestLogHandler()
+
+        let task1 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
+        let task2 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
+
+        let info1 = try await task1.value
+        let info2 = try await task2.value
+        try await self.verifyEntitlementWentThrough(info1)
+        try await self.verifyEntitlementWentThrough(info2)
+
+        logger.verifyMessageWasLogged(
+            "API request completed: POST /v1/receipts",
+            level: .debug,
+            expectedCount: 1
+        )
+    }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {

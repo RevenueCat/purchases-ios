@@ -17,29 +17,105 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
-    func testDoesNotTryToPostUnfinishedTransactionIfThereIsNoHandler() async throws {
-        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+    func testDoesNotTryToPostUnfinishedTransactionIfNoneExist() async throws {
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = []
         self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
 
-        let result = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: "user",
+        let result = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
                                                                                   isAppBackgrounded: false)
-
         expect(result) === self.mockCustomerInfo
 
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
     }
 
-    private static func createTransaction() -> StoreTransaction {
+    func testReturnsFailureIfPostingReceiptFails() async throws {
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(
+            .networkError(.serverDown())
+        )
+
+        do {
+            _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                             isAppBackgrounded: false)
+            fail("Expected error")
+        } catch let BackendError.networkError(networkError) {
+            expect(networkError.isServerDown) == true
+
+            expect(self.mockBackend.invokedGetSubscriberData) == false
+            expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testPostsSingleTransaction() async throws {
+        let transaction = Self.createTransaction()
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [transaction]
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                                isAppBackgrounded: false)
+        expect(info) === self.mockCustomerInfo
+
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+
+        let parameters = try XCTUnwrap(self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters.value)
+
+        expect(parameters.transaction) === transaction
+        expect(parameters.data.appUserID) == Self.userID
+        expect(parameters.data.presentedOfferingID).to(beNil())
+        expect(parameters.data.unsyncedAttributes).to(beEmpty())
+        expect(parameters.data.source.isRestore) == false
+        expect(parameters.data.source.initiationSource) == .queue
+    }
+
+    func testPostsOnlyFirstTransaction() async throws {
+        let logger = TestLogHandler()
+
+        let transaction = Self.createTransaction()
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [
+            transaction,
+            Self.createTransaction(),
+            Self.createTransaction()
+        ]
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                         isAppBackgrounded: false)
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters.value?.transaction)
+        === transaction
+
+        logger.verifyMessageWasLogged(
+            Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction),
+            level: .debug
+        )
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension CustomerInfoManagerPostReceiptTests {
+
+    static func createTransaction() -> StoreTransaction {
         return .init(sk1Transaction: MockTransaction())
     }
+
+    static let userID: String = "user"
 
 }

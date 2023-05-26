@@ -23,7 +23,8 @@ final class MockTransactionPoster: TransactionPosterType {
     )
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
-    let invokedHandlePurchasedTransactionParameters: Atomic<(StoreTransaction, PurchasedTransactionData)?> = nil
+    let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransaction,
+                                                             data: PurchasedTransactionData)?> = nil
 
     func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
@@ -45,7 +46,7 @@ final class MockTransactionPoster: TransactionPosterType {
 
     func finishTransactionIfNeeded(
         _ transaction: StoreTransactionType,
-        completion: @escaping @MainActor () -> Void
+        completion: @escaping @Sendable @MainActor () -> Void
     ) {
         self.invokedFinishTransactionIfNeeded.value = true
         self.invokedFinishTransactionIfNeededCount.value += 1
@@ -54,17 +55,6 @@ final class MockTransactionPoster: TransactionPosterType {
         self.operationDispatcher.dispatchOnMainActor {
             completion()
         }
-    }
-
-    let invokedMarkSyncIfNeeded: Atomic<Bool> = false
-    let invokedMarkSyncIfNeededCount: Atomic<Int> = .init(0)
-
-    func markSyncedIfNeeded(
-        subscriberAttributes: SubscriberAttribute.Dictionary?,
-        error: BackendError?
-    ) {
-        self.invokedMarkSyncIfNeeded.value = true
-        self.invokedMarkSyncIfNeededCount.value += 1
     }
 
 }

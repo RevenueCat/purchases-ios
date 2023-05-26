@@ -38,7 +38,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     private var mockOfferingsManager: MockOfferingsManager!
-    private var transactionPoster: TransactionPoster!
 
     private var orchestrator: PurchasesOrchestrator!
 
@@ -64,15 +63,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          offeringsFactory: OfferingsFactory(),
                                                          productsManager: self.productsManager)
         self.setUpStoreKit1Wrapper()
-
-        self.transactionPoster = .init(
-            productsManager: self.productsManager,
-            receiptFetcher: self.receiptFetcher,
-            backend: self.backend,
-            paymentQueueWrapper: self.paymentQueueWrapper,
-            systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
-        )
 
         self.customerInfoManager = MockCustomerInfoManager(
             offlineEntitlementsManager: MockOfflineEntitlementsManager(),
@@ -186,6 +176,17 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener)
         self.storeKit1Wrapper.delegate = self.orchestrator
+    }
+
+    private var transactionPoster: TransactionPoster {
+        return .init(
+            productsManager: self.productsManager,
+            receiptFetcher: self.receiptFetcher,
+            backend: self.backend,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.operationDispatcher
+        )
     }
 
     // MARK: - tests

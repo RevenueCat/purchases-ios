@@ -89,18 +89,35 @@ extension TestLogHandler {
     func verifyMessageWasLogged(
         _ message: CustomStringConvertible,
         level: LogLevel? = nil,
+        expectedCount: Int? = nil,
         file: FileString = #file,
         line: UInt = #line
     ) {
+        precondition(expectedCount == nil || expectedCount! > 0)
+
+        let condition = Self.entryCondition(message: message, level: level)
+
         expect(
             file: file,
             line: line,
             self.messages
         )
         .to(
-            containElementSatisfying(Self.entryCondition(message: message, level: level)),
+            containElementSatisfying(condition),
             description: "Message '\(message)' not found. Logged messages: \(self.messages)"
         )
+
+        if let expectedCount = expectedCount {
+            expect(
+                file: file,
+                line: line,
+                self.messages.lazy.filter(condition).count
+            )
+            .to(
+                equal(expectedCount),
+                description: "Message '\(message)' expected \(expectedCount) times"
+            )
+        }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

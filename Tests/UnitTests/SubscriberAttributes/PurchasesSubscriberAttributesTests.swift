@@ -249,7 +249,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.setupPurchases()
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(1))
         expect(self.mockDeviceCache.cachedCustomerInfo.count) == 1
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
 

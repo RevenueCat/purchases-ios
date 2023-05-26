@@ -257,18 +257,19 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testCustomerInfoReturnsFromCacheAndRefreshesIfStale() {
-        mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
-        mockBackend.stubbedGetCustomerInfoResult = .success(mockCustomerInfo)
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
 
-        customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: Self.appUserID)
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
 
-        waitUntil { completed in
-            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) { _ in
-                completed()
+        let info = waitUntilValue { completed in
+            self.customerInfoManager.customerInfo(appUserID: Self.appUserID, fetchPolicy: .default) {
+                completed($0.value)
             }
         }
 
-        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(info) == self.mockCustomerInfo
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
     func testCustomerInfoFetchesIfNoCache() {
