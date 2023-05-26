@@ -106,14 +106,15 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        var result: Result<OfferingsResponse, BackendError>?
+        let result: Atomic<Result<OfferingsResponse, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
-            result = $0
+            result.value = $0
         }
 
-        expect(result).toEventuallyNot(beNil())
+        expect(result.value).toEventuallyNot(beNil())
 
-        let offerings = try XCTUnwrap(result?.value?.offerings)
+        let response = try XCTUnwrap(result.value?.value)
+        let offerings = try XCTUnwrap(response.offerings)
         let offeringA = try XCTUnwrap(offerings.first)
         let packages = try XCTUnwrap(offeringA.packages)
         let packageA = packages[0]
@@ -126,7 +127,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(packageA.platformProductIdentifier) == "monthly_freetrial"
         expect(packageB.identifier) == "$rc_annual"
         expect(packageB.platformProductIdentifier) == "annual_freetrial"
-        expect(result?.value?.currentOfferingId) == "offering_a"
+        expect(response.currentOfferingId) == "offering_a"
     }
 
     func testGetOfferingsFailSendsNil() {

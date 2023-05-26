@@ -78,8 +78,6 @@ class BackendSubscriberAttributesTests: TestCase {
     // MARK: PostReceipt with subscriberAttributes
 
     func testPostReceiptWithSubscriberAttributesSendsThemCorrectly() throws {
-        var completionCallCount = 0
-
         let subscriberAttributesByKey: [String: SubscriberAttribute] = [
             subscriberAttribute1.key: subscriberAttribute1,
             subscriberAttribute2.key: subscriberAttribute2
@@ -93,9 +91,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      observerMode: false,
                      initiationSource: .restore,
                      subscriberAttributes: subscriberAttributesByKey,
-                     completion: { _ in
-            completionCallCount += 1
-        })
+                     completion: { _ in })
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -106,7 +102,7 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        var receivedResult: Result<CustomerInfo, BackendError>?
+        let receivedResult: Atomic<Result<CustomerInfo, BackendError>?> = nil
 
         // No mocked response, the default response is an empty 200.
 
@@ -118,13 +114,13 @@ class BackendSubscriberAttributesTests: TestCase {
                      observerMode: false,
                      initiationSource: .queue,
                      subscriberAttributes: subscriberAttributesByKey) {
-            receivedResult = $0
+            receivedResult.value = $0
         }
 
-        expect(receivedResult).toEventuallyNot(beNil())
-        expect(receivedResult).to(beFailure())
+        expect(receivedResult.value).toEventuallyNot(beNil())
+        expect(receivedResult.value).to(beFailure())
 
-        let error = try XCTUnwrap(receivedResult?.error)
+        let error = try XCTUnwrap(receivedResult.value?.error)
         guard case .networkError(.decoding) = error else {
             fail("Unexpected error: \(error)")
             return
@@ -132,8 +128,6 @@ class BackendSubscriberAttributesTests: TestCase {
     }
 
     func testPostReceiptWithoutSubscriberAttributesSkipsThem() throws {
-        var completionCallCount = 0
-
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
@@ -141,9 +135,7 @@ class BackendSubscriberAttributesTests: TestCase {
                      presentedOfferingIdentifier: nil,
                      observerMode: false,
                      initiationSource: .purchase,
-                     subscriberAttributes: nil) { _ in
-            completionCallCount += 1
-        }
+                     subscriberAttributes: nil) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -177,7 +169,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let logHandler = TestLogHandler()
 
-        var receivedCustomerInfo: CustomerInfo?
+        let receivedCustomerInfo: Atomic<CustomerInfo?> = nil
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
@@ -186,14 +178,14 @@ class BackendSubscriberAttributesTests: TestCase {
                      observerMode: false,
                      initiationSource: .queue,
                      subscriberAttributes: subscriberAttributesByKey) { result in
-            receivedCustomerInfo = result.value
+            receivedCustomerInfo.value = result.value
         }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
 
         let loggedMessages = logHandler.messages.map(\.message)
 
-        expect(receivedCustomerInfo) == CustomerInfo(testData: self.validSubscriberResponse)
+        expect(receivedCustomerInfo.value) == CustomerInfo(testData: self.validSubscriberResponse)
         expect(loggedMessages).to(
             containElementSatisfying {
                 $0.localizedCaseInsensitiveContains(ErrorCode.invalidSubscriberAttributesError.description)
@@ -226,7 +218,7 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        var receivedError: Error?
+        let receivedError: Atomic<BackendError?> = nil
         backend.post(receiptData: receiptData,
                      appUserID: appUserID,
                      isRestore: false,
@@ -235,12 +227,12 @@ class BackendSubscriberAttributesTests: TestCase {
                      observerMode: false,
                      initiationSource: .restore,
                      subscriberAttributes: subscriberAttributesByKey) { result in
-            receivedError = result.error
+            receivedError.value = result.error
         }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
 
-        expect(receivedError).to(matchError(BackendError.networkError(networkError)))
+        expect(receivedError.value) == .networkError(networkError)
     }
 
     // MARK: PostSubscriberAttributes

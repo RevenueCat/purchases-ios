@@ -30,18 +30,18 @@ func waitUntilValue<Value>(
     timeout: DispatchTimeInterval = AsyncDefaults.timeout,
     file: FileString = #file,
     line: UInt = #line,
-    action: @escaping (@escaping (Value?) -> Void) -> Void
+    action: @escaping (@escaping @Sendable (Value?) -> Void) -> Void
 ) -> Value? {
-    var value: Value?
+    let result: Atomic<Value?> = nil
 
     waitUntil(timeout: timeout, file: file, line: line) { completed in
         action {
-            value = $0
+            result.value = $0
             completed()
         }
     }
 
-    return value
+    return result.value
 }
 
 /// Verifies that the given `async` condition becomes true after `timeout`,
