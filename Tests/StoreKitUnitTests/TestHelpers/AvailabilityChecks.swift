@@ -43,6 +43,12 @@ enum AvailabilityChecks {
         }
     }
 
+    static func iOS16APIAvailableOrSkipTest() throws {
+        guard #available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
     /// Opposite of `iOS15APIAvailableOrSkipTest`.
     static func iOS15APINotAvailableOrSkipTest() throws {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {

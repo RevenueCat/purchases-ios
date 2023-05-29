@@ -1415,6 +1415,18 @@ final class HTTPClientTests: BaseHTTPClientTests {
         )
     }
 
+    func testUsesCorrectSessionConfiguration() {
+        let mockFactory = MockSessionFactory()
+        _ = HTTPClient(apiKey: self.apiKey,
+                       systemInfo: self.systemInfo,
+                       eTagManager: self.eTagManager,
+                       dnsChecker: MockDNSChecker.self,
+                       signing: MockSigning.self,
+                       requestTimeout: 3,
+                       sessionConfigurationFactory: mockFactory)
+        expect(mockFactory.configurationCalled) == true
+    }
+
 }
 
 func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {

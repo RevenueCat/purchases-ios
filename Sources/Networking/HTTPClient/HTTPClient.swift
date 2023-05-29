@@ -37,12 +37,10 @@ class HTTPClient {
          eTagManager: ETagManager,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          signing: SigningType.Type = Signing.self,
-         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault) {
-        let config = URLSessionConfiguration.ephemeral
-        config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = requestTimeout
-        config.timeoutIntervalForResource = requestTimeout
-        self.session = URLSession(configuration: config,
+         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+         sessionConfigurationFactory: URLSessionConfigurationFactoryType = URLSessionConfigurationFactory()) {
+        let sessionConfiguration = sessionConfigurationFactory.urlSessionConfiguration(requestTimeout: requestTimeout)
+        self.session = URLSession(configuration: sessionConfiguration,
                                   delegate: RedirectLoggerSessionDelegate(),
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
