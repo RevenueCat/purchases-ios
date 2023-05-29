@@ -71,6 +71,23 @@ struct HomeView: View {
                     } label: {
                         Text("Sync Purchases")
                     }
+
+                    Button {
+                        Task<Void, Never> {
+                            do {
+                                var customerInfo = try await Purchases.shared.customerInfo()
+                                print("Current Customer Info: \(customerInfo)")
+                                Purchases.shared.invalidateCustomerInfoCache()
+                                print("customer info cache invalidated!")
+                                customerInfo = try await Purchases.shared.customerInfo()
+                                print("Updated Customer Info: \(customerInfo)")
+                            } catch {
+                                print("🚀 Info 💁‍♂️ - Error: \(error)")
+                            }
+                        }
+                    } label: {
+                        Text("Force refresh Customer Info")
+                    }
                     
                     HStack {
                         Picker("CustomerInfo", selection: self.$cacheFetchPolicy) {
