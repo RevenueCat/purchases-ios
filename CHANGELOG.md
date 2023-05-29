@@ -29,6 +29,10 @@
 * `Integration Tests`: add `MainThreadMonitor` to ensure main thread is not blocked (#2463) via NachoSoto (@NachoSoto)
 * Add message indicating tag doesn't exist (#2458) via Cesar de la Vega (@vegaro)
 
+## 4.19.1
+### Other Changes
+`PostReceiptOperation`: added ability to also post `AdServices` token (#2549) via NachoSoto (@NachoSoto)
+
 ## 4.19.0
 ### New Features
 * New `ErrorCode.signatureVerificationFailed` which will be used for an upcoming feature
