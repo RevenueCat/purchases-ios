@@ -304,6 +304,40 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info2)
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        let logger = TestLogHandler()
+
+        // 1. Purchase while server is down
+        self.serverDown()
+
+        try await self.purchaseMonthlyProduct()
+        do {
+            try await self.purchaseConsumablePackage()
+            fail("Consumable purchases should fail while offline")
+        } catch {
+
+        }
+
+        logger.verifyMessageWasNotLogged("Finishing transaction")
+
+        // 2. Server is back
+        self.serverUp()
+
+        // 3. Request current CustomerInfo
+        let info = try await Purchases.shared.customerInfo()
+
+        // 4. Verify subscription is active
+        try await self.verifyEntitlementWentThrough(info)
+
+        // 5. Verify consumable
+        expect(info.nonSubscriptions).to(haveCount(1))
+        expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
+
+        // 6. Ensure transactions are finished
+        logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
+    }
+    
 }
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
