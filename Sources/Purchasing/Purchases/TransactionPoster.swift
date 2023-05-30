@@ -14,7 +14,7 @@
 import Foundation
 
 /// Determines what triggered a purchase and whether it comes from a restore.
-struct PurchaseSource {
+struct PurchaseSource: Equatable {
 
     let isRestore: Bool
     let initiationSource: ProductRequestData.InitiationSource
@@ -37,7 +37,7 @@ protocol TransactionPosterType: AnyObject, Sendable {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
     func handlePurchasedTransaction(
-        _ transaction: StoreTransaction,
+        _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     )
@@ -77,7 +77,7 @@ final class TransactionPoster: TransactionPosterType {
         self.operationDispatcher = operationDispatcher
     }
 
-    func handlePurchasedTransaction(_ transaction: StoreTransaction,
+    func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.receiptFetcher.receiptData(
@@ -125,7 +125,7 @@ final class TransactionPoster: TransactionPosterType {
 private extension TransactionPoster {
 
     func fetchProductsAndPostReceipt(
-        transaction: StoreTransaction,
+        transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         receiptData: Data,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
@@ -146,7 +146,7 @@ private extension TransactionPoster {
         }
     }
 
-    func handleReceiptPost(withTransaction transaction: StoreTransaction,
+    func handleReceiptPost(withTransaction transaction: StoreTransactionType,
                            result: Result<CustomerInfo, BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
@@ -173,7 +173,7 @@ private extension TransactionPoster {
         }
     }
 
-    func postReceipt(transaction: StoreTransaction,
+    func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
                      receiptData: Data,
                      product: StoreProduct?,
