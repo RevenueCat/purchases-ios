@@ -31,3 +31,5 @@ final class WeakBox<T: AnyObject> {
     init(_ value: T) { self.value = value }
 
 }
+
+extension Box: Sendable where T: Sendable {}
