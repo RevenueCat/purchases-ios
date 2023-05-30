@@ -320,9 +320,10 @@ private extension CustomerInfoManager {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
+
                 if !transactions.isEmpty {
+                    var lastResult: Result<CustomerInfo, BackendError> = .failure(.missingCachedCustomerInfo())
                     let storefront = await Storefront.currentStorefront
-                    var lastResult: Result<CustomerInfo, BackendError>?
 
                     Logger.debug(
                         Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
@@ -339,7 +340,7 @@ private extension CustomerInfoManager {
                         )
                     }
 
-                    completion(lastResult!)
+                    completion(lastResult)
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,
