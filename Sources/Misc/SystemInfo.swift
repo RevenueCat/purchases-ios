@@ -163,8 +163,13 @@ class SystemInfo {
 
     #if os(iOS) || os(tvOS)
     var sharedUIApplication: UIApplication? {
-        UIApplication.value(forKey: "sharedApplication") as? UIApplication
+        return Self.sharedUIApplication
     }
+
+    static var sharedUIApplication: UIApplication? {
+        return UIApplication.value(forKey: "sharedApplication") as? UIApplication
+    }
+
     #endif
 
     static func isAppleSubscription(managementURL: URL) -> Bool {
