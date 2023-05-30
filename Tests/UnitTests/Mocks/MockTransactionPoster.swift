@@ -25,6 +25,8 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData)?> = nil
+    let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
+                                                                 data: PurchasedTransactionData)]> = .init([])
 
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
@@ -34,6 +36,7 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.value += 1
         self.invokedHandlePurchasedTransactionParameters.value = (transaction, data)
+        self.invokedHandlePurchasedTransactionParameterList.value.append((transaction, data))
 
         self.operationDispatcher.dispatchOnMainActor { [result = self.stubbedHandlePurchasedTransactionResult.value] in
             completion(result)
