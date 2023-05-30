@@ -141,7 +141,9 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
 
         self.deviceCache.cachedCustomerInfo = [:]
 
-        self.purchases.getCustomerInfo { (_, _) in }
+        waitUntil { completion in
+            self.purchases.getCustomerInfo { (_, _) in completion() }
+        }
 
         expect(self.backend.getSubscriberCallCount) == 2
     }

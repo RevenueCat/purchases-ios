@@ -228,6 +228,31 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSimultanousCallsToGetCustomerInfoWithPendingTransactionPostsReceiptOnlyOnce() async throws {
+        self.serverDown()
+
+        _ = try await self.purchaseMonthlyProduct()
+
+        self.serverUp()
+
+        let logger = TestLogHandler()
+
+        let task1 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
+        let task2 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
+
+        let info1 = try await task1.value
+        let info2 = try await task2.value
+        try await self.verifyEntitlementWentThrough(info1)
+        try await self.verifyEntitlementWentThrough(info2)
+
+        logger.verifyMessageWasLogged(
+            "API request completed: POST /v1/receipts",
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 
@@ -248,6 +273,35 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         } catch {
             fail("Unexpected error: \(error)")
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseWhileServerIsDownPostsReceiptWhenForegroundingApp() async throws {
+        let logger = TestLogHandler()
+
+        // 1. Purchase while server is down
+        self.serverDown()
+        try await self.purchaseMonthlyProduct()
+
+        logger.verifyMessageWasNotLogged("Finishing transaction")
+
+        // 2. Server is back
+        self.serverUp()
+
+        // 3. Request current CustomerInfo
+        let info1 = try await Purchases.shared.customerInfo()
+        try await self.verifyEntitlementWentThrough(info1)
+
+        // 4. Ensure transaction is finished
+        logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+
+        // 5. Restart app
+        Purchases.shared.invalidateCustomerInfoCache()
+        await self.resetSingleton()
+
+        // 6. To ensure (with a clean cache) that the receipt was posted
+        let info2 = try await Purchases.shared.customerInfo()
+        try await self.verifyEntitlementWentThrough(info2)
     }
 
 }

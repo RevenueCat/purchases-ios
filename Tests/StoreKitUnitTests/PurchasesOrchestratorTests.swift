@@ -38,7 +38,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var mockManageSubsHelper: MockManageSubscriptionsHelper!
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     private var mockOfferingsManager: MockOfferingsManager!
-    private var transactionPoster: TransactionPoster!
 
     private var orchestrator: PurchasesOrchestrator!
 
@@ -63,12 +62,17 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: OfferingsFactory(),
                                                          productsManager: self.productsManager)
+        self.setUpStoreKit1Wrapper()
 
-        self.customerInfoManager = MockCustomerInfoManager(offlineEntitlementsManager: MockOfflineEntitlementsManager(),
-                                                           operationDispatcher: OperationDispatcher(),
-                                                           deviceCache: self.deviceCache,
-                                                           backend: self.backend,
-                                                           systemInfo: self.systemInfo)
+        self.customerInfoManager = MockCustomerInfoManager(
+            offlineEntitlementsManager: MockOfflineEntitlementsManager(),
+            operationDispatcher: OperationDispatcher(),
+            deviceCache: self.deviceCache,
+            backend: self.backend,
+            transactionFetcher: MockStoreKit2TransactionFetcher(),
+            transactionPoster: self.transactionPoster,
+            systemInfo: self.systemInfo
+        )
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: mockUserID)
         self.transactionsManager = MockTransactionsManager(receiptParser: MockReceiptParser())
         let attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
@@ -93,7 +97,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
-        self.setUpStoreKit1Wrapper()
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
     }
@@ -130,15 +133,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     fileprivate func setUpOrchestrator() {
-        self.transactionPoster = .init(
-            productsManager: self.productsManager,
-            receiptFetcher: self.receiptFetcher,
-            backend: self.backend,
-            paymentQueueWrapper: paymentQueueWrapper,
-            systemInfo: self.systemInfo,
-            operationDispatcher: self.operationDispatcher
-        )
-
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
                                                   paymentQueueWrapper: self.paymentQueueWrapper,
                                                   systemInfo: self.systemInfo,
@@ -182,6 +176,17 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener)
         self.storeKit1Wrapper.delegate = self.orchestrator
+    }
+
+    private var transactionPoster: TransactionPoster {
+        return .init(
+            productsManager: self.productsManager,
+            receiptFetcher: self.receiptFetcher,
+            backend: self.backend,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            operationDispatcher: self.operationDispatcher
+        )
     }
 
     // MARK: - tests

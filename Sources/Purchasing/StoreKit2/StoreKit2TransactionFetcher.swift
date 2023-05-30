@@ -24,9 +24,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
 
 }
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var unfinishedVerifiedTransactions: [StoreTransaction] {
         get async {
             return await StoreKit.Transaction
@@ -37,6 +37,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var hasPendingConsumablePurchase: Bool {
         get async {
             return await StoreKit.Transaction

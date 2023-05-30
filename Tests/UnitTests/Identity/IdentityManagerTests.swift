@@ -41,6 +41,8 @@ class IdentityManagerTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             deviceCache: self.mockDeviceCache,
             backend: MockBackend(),
+            transactionFetcher: MockStoreKit2TransactionFetcher(),
+            transactionPoster: MockTransactionPoster(),
             systemInfo: systemInfo
         )
         self.mockAttributeSyncing = MockAttributeSyncing()

@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
@@ -23,6 +25,9 @@ class CustomerInfoManager {
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
     private let systemInfo: SystemInfo
+    private let transactionFetcher: StoreKit2TransactionFetcherType
+    private let transactionPoster: TransactionPosterType
+
     /// Underlying synchronized data.
     private let data: Atomic<Data>
 
@@ -30,24 +35,25 @@ class CustomerInfoManager {
          operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
          backend: Backend,
-         systemInfo: SystemInfo) {
+         transactionFetcher: StoreKit2TransactionFetcherType,
+         transactionPoster: TransactionPosterType,
+         systemInfo: SystemInfo
+    ) {
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.operationDispatcher = operationDispatcher
         self.backend = backend
+        self.transactionFetcher = transactionFetcher
+        self.transactionPoster = transactionPoster
         self.systemInfo = systemInfo
+
         self.data = .init(.init(deviceCache: deviceCache))
     }
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
                                    completion: CustomerInfoCompletion?) {
-        let allowComputingOffline = self.offlineEntitlementsManager.shouldComputeOfflineCustomerInfo(
-            appUserID: appUserID
-        )
-
-        self.backend.getCustomerInfo(appUserID: appUserID,
-                                     withRandomDelay: isAppBackgrounded,
-                                     allowComputingOffline: allowComputingOffline) { result in
+        self.getCustomerInfo(appUserID: appUserID,
+                             isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .failure(error):
                 self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
@@ -67,7 +73,6 @@ class CustomerInfoManager {
                     completion(result)
                 }
             }
-
         }
     }
 
@@ -279,19 +284,88 @@ class CustomerInfoManager {
 
 }
 
+// MARK: - async extensions
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension CustomerInfoManager {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func fetchAndCacheCustomerInfo(appUserID: String, isAppBackgrounded: Bool) async throws -> CustomerInfo {
+        return try await Async.call { completion in
+            return self.fetchAndCacheCustomerInfo(appUserID: appUserID,
+                                                  isAppBackgrounded: isAppBackgrounded,
+                                                  completion: completion)
+        }
+    }
+
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy
     ) async throws -> CustomerInfo {
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await Async.call { completion in
             return self.customerInfo(appUserID: appUserID,
                                      fetchPolicy: fetchPolicy,
-                                     completion: { @Sendable in continuation.resume(with: $0) })
+                                     completion: completion)
         }
     }
+
+}
+
+// MARK: -
+
+private extension CustomerInfoManager {
+
+    func getCustomerInfo(appUserID: String,
+                         isAppBackgrounded: Bool,
+                         completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            _ = Task<Void, Never> {
+                // Note: this is only able to post a single transaction,
+                // it can be improved in the future once `PostReceiptOperation` accepts multiple ones.
+                if let transaction = await self.transactionFetcher.unfinishedVerifiedTransactions.first {
+                    Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
+
+                    self.transactionPoster.handlePurchasedTransaction(
+                        transaction,
+                        data: .init(appUserID: appUserID,
+                                    presentedOfferingID: nil,
+                                    unsyncedAttributes: [:],
+                                    storefront: await Storefront.currentStorefront,
+                                    source: Self.sourceForUnfinishedTransaction),
+                        completion: completion
+                    )
+                } else {
+                    self.requestCustomerInfo(appUserID: appUserID,
+                                             isAppBackgrounded: isAppBackgrounded,
+                                             completion: completion)
+                }
+            }
+        } else {
+            return self.requestCustomerInfo(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded,
+                                            completion: completion)
+        }
+    }
+
+    private func requestCustomerInfo(appUserID: String,
+                                     isAppBackgrounded: Bool,
+                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        let allowComputingOffline = self.offlineEntitlementsManager.shouldComputeOfflineCustomerInfo(
+            appUserID: appUserID
+        )
+
+        self.backend.getCustomerInfo(appUserID: appUserID,
+                                     withRandomDelay: isAppBackgrounded,
+                                     allowComputingOffline: allowComputingOffline,
+                                     completion: completion)
+    }
+
+    // Note: this is just a best guess.
+    private static let sourceForUnfinishedTransaction: PurchaseSource = .init(
+        isRestore: false,
+        // This might have been in theory a `.purchase`. The only downside of this is that the server
+        // won't validate that the product is present in the receipt.
+        initiationSource: .queue
+    )
 
 }
 

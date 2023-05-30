@@ -50,6 +50,8 @@ class BeginRefundRequestHelperTests: TestCase {
             operationDispatcher: MockOperationDispatcher(),
             deviceCache: MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo),
             backend: MockBackend(),
+            transactionFetcher: MockStoreKit2TransactionFetcher(),
+            transactionPoster: MockTransactionPoster(),
             systemInfo: self.systemInfo
         )
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "appUserID")

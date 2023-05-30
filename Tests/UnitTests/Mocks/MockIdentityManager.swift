@@ -32,6 +32,8 @@ class MockIdentityManager: IdentityManager {
                     operationDispatcher: MockOperationDispatcher(),
                     deviceCache: mockDeviceCache,
                     backend: mockBackend,
+                    transactionFetcher: MockStoreKit2TransactionFetcher(),
+                    transactionPoster: MockTransactionPoster(),
                     systemInfo: mockSystemInfo
                    ),
                    attributeSyncing: self.mockAttributeSyncing,
