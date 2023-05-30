@@ -625,7 +625,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
             responseHeaders: [
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
             ],
-            body: try response.asJSONEncodedData(),
+            body: try response.jsonEncodedData,
             verificationResult: verificationResult
         )
     }

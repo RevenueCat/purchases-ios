@@ -66,7 +66,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
     func testRestoringPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true
@@ -260,7 +260,7 @@ class PurchasesRestoreNoSetupTests: BasePurchasesTests {
             ] as [String: Any]
         ])
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
 
         self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = object
 

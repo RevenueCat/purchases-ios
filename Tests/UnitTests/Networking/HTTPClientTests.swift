@@ -1285,7 +1285,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
     func testResponseFromServerUpdatesRequestDate() throws {
         let path: HTTPRequest.Path = .mockPath
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-3000000))
-        let encodedResponse = try mockedResponse.asJSONEncodedData()
+        let encodedResponse = try mockedResponse.jsonEncodedData
         let requestDate = Date().addingTimeInterval(-100000)
 
         stub(condition: isPath(path)) { _ in
@@ -1310,7 +1310,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let path: HTTPRequest.Path = .mockPath
         let eTag = "etag"
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
-        let encodedResponse = try mockedResponse.asJSONEncodedData()
+        let encodedResponse = try mockedResponse.jsonEncodedData
         let requestDate = Date().addingTimeInterval(-1000000)
 
         self.eTagManager.stubResponseEtag(eTag)
