@@ -66,6 +66,17 @@ public typealias SK2Transaction = StoreKit.Transaction
         return hasher.finalize()
     }
 
+    public override var description: String {
+        return """
+            <\(String(describing: StoreTransaction.self)):
+                identifier="\(self.transactionIdentifier)"
+                product="\(self.productIdentifier)"
+                date="\(self.purchaseDate)"
+                quantity=\(self.quantity)
+            >
+            """
+    }
+
 }
 
 /// Information that represents the customer’s purchase of a product.
