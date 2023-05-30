@@ -319,20 +319,25 @@ private extension CustomerInfoManager {
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
-                // Note: this is only able to post a single transaction,
-                // it can be improved in the future once `PostReceiptOperation` accepts multiple ones.
-                if let transaction = await self.transactionFetcher.unfinishedVerifiedTransactions.first {
-                    Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
+                let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
+                if !transactions.isEmpty {
+                    let storefront = await Storefront.currentStorefront
+                    var lastResult: Result<CustomerInfo, BackendError>?
 
-                    self.transactionPoster.handlePurchasedTransaction(
-                        transaction,
-                        data: .init(appUserID: appUserID,
-                                    presentedOfferingID: nil,
-                                    unsyncedAttributes: [:],
-                                    storefront: await Storefront.currentStorefront,
-                                    source: Self.sourceForUnfinishedTransaction),
-                        completion: completion
-                    )
+                    for transaction in transactions {
+                        Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
+
+                        lastResult = await self.transactionPoster.handlePurchasedTransaction(
+                            transaction,
+                            data: .init(appUserID: appUserID,
+                                        presentedOfferingID: nil,
+                                        unsyncedAttributes: [:],
+                                        storefront: storefront,
+                                        source: Self.sourceForUnfinishedTransaction)
+                        )
+                    }
+
+                    completion(lastResult!)
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,
