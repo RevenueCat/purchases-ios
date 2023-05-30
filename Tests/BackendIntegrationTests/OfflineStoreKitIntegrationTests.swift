@@ -315,9 +315,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         do {
             try await self.purchaseConsumablePackage()
             fail("Consumable purchases should fail while offline")
-        } catch {
-
-        }
+        } catch {}
 
         logger.verifyMessageWasNotLogged("Finishing transaction")
 
@@ -337,7 +335,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 6. Ensure transactions are finished
         logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
     }
-    
+
 }
 
 class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrationTests {
