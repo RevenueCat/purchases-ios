@@ -325,7 +325,9 @@ private extension CustomerInfoManager {
                     var lastResult: Result<CustomerInfo, BackendError>?
 
                     for transaction in transactions {
-                        Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
+                        Logger.debug(
+                            Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction)
+                        )
 
                         lastResult = await self.transactionPoster.handlePurchasedTransaction(
                             transaction,

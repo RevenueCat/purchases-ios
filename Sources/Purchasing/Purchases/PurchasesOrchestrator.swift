@@ -1152,26 +1152,26 @@ extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
-        return try await withCheckedThrowingContinuation { continuation in
-            self.transactionPoster.handlePurchasedTransaction(
-                transaction,
-                data: .init(
-                    appUserID: self.appUserID,
-                    presentedOfferingID: offeringID,
-                    unsyncedAttributes: unsyncedAttributes,
-                    aadAttributionToken: adServicesToken,
-                    storefront: storefront,
-                    source: .init(isRestore: self.allowSharingAppStoreAccount,
-                                  initiationSource: initiationSource)
-                )
-            ) { result in
-                self.handlePostReceiptResult(result,
-                                             subscriberAttributes: unsyncedAttributes,
-                                             adServicesToken: adServicesToken)
+        let result = await self.transactionPoster.handlePurchasedTransaction(
+            transaction,
+            data: .init(
+                appUserID: self.appUserID,
+                presentedOfferingID: offeringID,
+                unsyncedAttributes: unsyncedAttributes,
+                aadAttributionToken: adServicesToken,
+                storefront: storefront,
+                source: .init(isRestore: self.allowSharingAppStoreAccount,
+                              initiationSource: initiationSource)
+            )
+        )
 
-                continuation.resume(with: result.mapError(\.asPurchasesError))
-            }
-        }
+        self.handlePostReceiptResult(result,
+                                     subscriberAttributes: unsyncedAttributes,
+                                     adServicesToken: adServicesToken)
+
+        return try result
+            .mapError(\.asPurchasesError)
+            .get()
     }
 
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
