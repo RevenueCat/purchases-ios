@@ -17,22 +17,15 @@ import StoreKit
 internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
-        #if swift(<5.7)
         self._underlyingSK2Product = .init(sk2Product)
-        #else
-        self.underlyingSK2Product = sk2Product
-        #endif
     }
 
-    #if swift(<5.7)
     // We can't directly store instances of StoreKit.Product, since that causes
     // linking issues in iOS < 15, even with @available checks correctly in place.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
+    // Those bugs are fixed, but still cause crashes on iOS 12: https://github.com/RevenueCat/purchases-unity/issues/278
     private let _underlyingSK2Product: Box<SK2Product>
     var underlyingSK2Product: SK2Product { self._underlyingSK2Product.value }
-    #else
-    let underlyingSK2Product: SK2Product
-    #endif
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
 
