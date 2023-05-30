@@ -74,7 +74,7 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
         let parameters = try XCTUnwrap(self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters.value)
 
-        expect(parameters.transaction) === transaction
+        expect(parameters.transaction as? StoreTransaction) === transaction
         expect(parameters.data.appUserID) == Self.userID
         expect(parameters.data.presentedOfferingID).to(beNil())
         expect(parameters.data.unsyncedAttributes).to(beEmpty())
@@ -98,8 +98,10 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
                                                                          isAppBackgrounded: false)
         expect(self.mockBackend.invokedGetSubscriberData) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
-        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters.value?.transaction)
-        === transaction
+        expect(
+            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters
+                .value?.transaction as? StoreTransaction
+        ) === transaction
 
         logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction),

@@ -23,11 +23,11 @@ final class MockTransactionPoster: TransactionPosterType {
     )
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
-    let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransaction,
+    let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData)?> = nil
 
     func handlePurchasedTransaction(
-        _ transaction: StoreTransaction,
+        _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
