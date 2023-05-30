@@ -108,24 +108,15 @@ class Backend {
                                       completion: completion)
     }
 
-    // swiftlint:disable:next function_parameter_count
     func post(receiptData: Data,
-              appUserID: String,
-              isRestore: Bool,
               productData: ProductRequestData?,
-              presentedOfferingIdentifier offeringIdentifier: String?,
+              transactionData: PurchasedTransactionData,
               observerMode: Bool,
-              initiationSource: ProductRequestData.InitiationSource,
-              subscriberAttributes subscriberAttributesByKey: SubscriberAttribute.Dictionary?,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receiptData: receiptData,
-                           appUserID: appUserID,
-                           isRestore: isRestore,
                            productData: productData,
-                           presentedOfferingIdentifier: offeringIdentifier,
+                           transactionData: transactionData,
                            observerMode: observerMode,
-                           initiationSource: initiationSource,
-                           subscriberAttributes: subscriberAttributesByKey,
                            completion: completion)
     }
 

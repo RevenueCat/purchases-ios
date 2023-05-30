@@ -159,8 +159,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           transactionPoster: .init(
                                                             productsManager: self.mockProductsManager,
                                                             receiptFetcher: self.mockReceiptFetcher,
-                                                            currentUserProvider: self.mockIdentityManager,
-                                                            attribution: self.attribution,
                                                             backend: self.mockBackend,
                                                             paymentQueueWrapper: paymentQueueWrapper,
                                                             systemInfo: self.systemInfo,
@@ -700,10 +698,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
         expect(self.mockStoreKit1Wrapper.finishCalled).toEventually(beTrue())
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == true
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.syncedAttributes) == mockAttributes
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters!.appUserID) ==
-        mockIdentityManager.currentAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes).toEventually(beTrue())
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.syncedAttributes) == mockAttributes
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.appUserID) ==
+        self.mockIdentityManager.currentAppUserID
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
@@ -731,8 +729,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         transaction.mockState = SKPaymentTransactionState.purchased
         self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
-        expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
-        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes).toEventually(equal(true))
+        expect(self.mockBackend.invokedPostReceiptData).toEventually(beTrue())
+        expect(self.mockSubscriberAttributesManager.invokedMarkAttributes).toEventually(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID

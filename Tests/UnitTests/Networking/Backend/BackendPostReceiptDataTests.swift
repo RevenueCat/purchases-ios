@@ -40,13 +40,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: isRestore,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .queue)
+                              ),
                               observerMode: observerMode,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -69,13 +71,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: isRestore,
                               productData: productData,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
                               observerMode: observerMode,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -96,24 +100,28 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = false
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: observerMode,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil) { _ in
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .purchase)
+                     ),
+                     observerMode: observerMode) { _ in
             completionCalled.value += 1
         }
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -135,25 +143,29 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = false
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .purchase)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: !isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: !isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -174,25 +186,29 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = true
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData2,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -213,26 +229,30 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = true
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .purchase)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
         backend.post(receiptData: Self.receiptData2,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: productData,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .purchase)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -253,25 +273,29 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = false
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: "offering_a",
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: "offering_a",
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData2,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: "offering_b",
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: "offering_b",
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -303,13 +327,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: productData,
-                              presentedOfferingIdentifier: offeringIdentifier,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: offeringIdentifier,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -329,13 +355,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: productData,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .queue)
+                              ),
                               observerMode: false,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -423,13 +451,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         }
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: false,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: true,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil) { result in
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .queue)
+                     ),
+                     observerMode: true) { result in
             self.httpClient.mock(requestPath: getCustomerInfoPath, response: updatedCustomerInfoResponse)
             callOrder.value.postResponse = true
             postSubscriberInfo.value = result.value
@@ -461,13 +491,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let customerInfo = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result.value)
             })
@@ -486,13 +518,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let receivedError = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: true,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: true, initiationSource: .queue)
+                              ),
                               observerMode: false,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result.error)
             })
@@ -513,13 +547,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = false
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -534,13 +570,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                                 type: .promotional)
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: productData,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -578,13 +616,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: productData,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .queue)
+                              ),
                               observerMode: false,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -604,25 +644,29 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = true
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
 
         backend.post(receiptData: Self.receiptData,
-                     appUserID: Self.userID,
-                     isRestore: isRestore,
                      productData: nil,
-                     presentedOfferingIdentifier: "offering_a",
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: "offering_a",
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
                      observerMode: observerMode,
-                     initiationSource: .queue,
-                     subscriberAttributes: nil,
                      completion: { _ in
             completionCalled.value += 1
         })
@@ -641,13 +685,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let result = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result)
             })
@@ -670,13 +716,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let result = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result)
             })
@@ -703,13 +751,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let result = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result)
             })
@@ -736,13 +786,15 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let result = waitUntilValue { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: .createMockProductData(),
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
                               observerMode: false,
-                              initiationSource: .purchase,
-                              subscriberAttributes: nil,
                               completion: { result in
                 completed(result)
             })
@@ -778,13 +830,15 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: nil,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .queue)
+                              ),
                               observerMode: false,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })
@@ -805,13 +859,15 @@ private extension BaseBackendPostReceiptDataTests {
 
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              appUserID: Self.userID,
-                              isRestore: false,
                               productData: productData,
-                              presentedOfferingIdentifier: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .queue)
+                              ),
                               observerMode: false,
-                              initiationSource: .queue,
-                              subscriberAttributes: nil,
                               completion: { _ in
                 completed()
             })

@@ -133,8 +133,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.transactionPoster = .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
-            currentUserProvider: self.currentUserProvider,
-            attribution: self.attribution,
             backend: self.backend,
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: self.systemInfo,
@@ -215,8 +213,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
-        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     func testSK1PurchaseDoesNotAlwaysRefreshReceiptInProduction() async throws {
@@ -343,7 +341,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID) == "offering"
     }
 
     func testPurchaseSK1PackageWithNoProductIdentifierDoesNotPostReceipt() async throws {
@@ -454,8 +452,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier).to(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .purchase
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -504,7 +502,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
-        expect(self.backend.invokedPostReceiptDataParameters?.offeringIdentifier) == "offering"
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID) == "offering"
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -658,8 +656,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(transaction.finishInvoked) == true
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
-        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -687,7 +685,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -742,8 +740,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(transaction.finishInvoked) == false
         expect(self.backend.invokedPostReceiptData) == true
-        expect(self.backend.invokedPostReceiptDataParameters?.isRestore) == false
-        expect(self.backend.invokedPostReceiptDataParameters?.initiationSource) == .queue
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

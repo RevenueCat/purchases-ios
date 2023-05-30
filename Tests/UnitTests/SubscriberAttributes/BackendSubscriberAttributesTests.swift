@@ -84,14 +84,15 @@ class BackendSubscriberAttributesTests: TestCase {
         ]
 
         backend.post(receiptData: self.receiptData,
-                     appUserID: self.appUserID,
-                     isRestore: false,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .restore,
-                     subscriberAttributes: subscriberAttributesByKey,
-                     completion: { _ in })
+                     transactionData: .init(
+                        appUserID: self.appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: subscriberAttributesByKey,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .restore)
+                     ),
+                     observerMode: false) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -106,14 +107,16 @@ class BackendSubscriberAttributesTests: TestCase {
 
         // No mocked response, the default response is an empty 200.
 
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: false,
+        backend.post(receiptData: self.receiptData,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: subscriberAttributesByKey) {
+                     transactionData: .init(
+                        appUserID: self.appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: subscriberAttributesByKey,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .queue)
+                     ),
+                     observerMode: false) {
             receivedResult.value = $0
         }
 
@@ -128,14 +131,16 @@ class BackendSubscriberAttributesTests: TestCase {
     }
 
     func testPostReceiptWithoutSubscriberAttributesSkipsThem() throws {
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: false,
+        backend.post(receiptData: self.receiptData,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .purchase,
-                     subscriberAttributes: nil) { _ in }
+                     transactionData: .init(
+                        appUserID: self.appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .purchase)
+                     ),
+                     observerMode: false) { _ in }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
     }
@@ -170,14 +175,16 @@ class BackendSubscriberAttributesTests: TestCase {
         let logHandler = TestLogHandler()
 
         let receivedCustomerInfo: Atomic<CustomerInfo?> = nil
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: false,
+        backend.post(receiptData: self.receiptData,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .queue,
-                     subscriberAttributes: subscriberAttributesByKey) { result in
+                     transactionData: .init(
+                        appUserID: self.appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: subscriberAttributesByKey,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .queue)
+                     ),
+                     observerMode: false) { result in
             receivedCustomerInfo.value = result.value
         }
 
@@ -219,14 +226,16 @@ class BackendSubscriberAttributesTests: TestCase {
         ]
 
         let receivedError: Atomic<BackendError?> = nil
-        backend.post(receiptData: receiptData,
-                     appUserID: appUserID,
-                     isRestore: false,
+        backend.post(receiptData: self.receiptData,
                      productData: nil,
-                     presentedOfferingIdentifier: nil,
-                     observerMode: false,
-                     initiationSource: .restore,
-                     subscriberAttributes: subscriberAttributesByKey) { result in
+                     transactionData: .init(
+                        appUserID: self.appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: subscriberAttributesByKey,
+                        storefront: nil,
+                        source: .init(isRestore: false, initiationSource: .restore)
+                     ),
+                     observerMode: false) { result in
             receivedError.value = result.error
         }
 
