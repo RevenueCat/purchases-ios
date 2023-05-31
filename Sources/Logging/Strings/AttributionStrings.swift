@@ -43,6 +43,7 @@ enum AttributionStrings {
     case adservices_token_fetch_failed(error: Error)
     case adservices_token_post_failed(error: BackendError)
     case adservices_token_post_succeeded
+    case adservices_marking_as_synced(appUserID: String)
     case adservices_token_unavailable_in_simulator
     case latest_attribution_sent_user_defaults_invalid(networkKey: String)
     case copying_attributes(oldAppUserID: String, newAppUserID: String)
@@ -137,6 +138,9 @@ extension AttributionStrings: CustomStringConvertible {
 
         case .adservices_token_post_succeeded:
             return "AdServices attribution token successfully posted"
+
+        case let .adservices_marking_as_synced(userID):
+            return "Marking AdServices attribution token as synced for App User ID: \(userID)"
 
         case .adservices_token_unavailable_in_simulator:
             return "AdServices attribution token is not available in the simulator"

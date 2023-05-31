@@ -105,7 +105,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
         self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
                                        currentUserProvider: self.mockIdentityManager,
-                                       attributionPoster: self.mockAttributionPoster)
+                                       attributionPoster: self.mockAttributionPoster,
+                                       systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockReceiptFetcher = MockReceiptFetcher(
@@ -743,6 +744,42 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.syncedAttributes) == mockAttributes
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributesParameters?.appUserID) ==
         mockIdentityManager.currentAppUserID
+    }
+
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    func testPostReceiptMarksAdServicesTokenSyncedIfBackendSuccessfullySynced() throws {
+        try AvailabilityChecks.iOS14_3APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipIfTVOrWatchOS()
+
+        self.setupPurchases()
+
+        let token = "token"
+
+        self.mockAttributionFetcher.adServicesTokenToReturn = token
+        self.attribution.enableAdServicesAttributionTokenCollection()
+
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+        self.purchases.purchase(product: product) { (_, _, _, _) in }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = self.mockStoreKit1Wrapper.payment!
+        transaction.mockState = .purchasing
+
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
+
+        self.mockBackend.stubbedPostReceiptResult = .success(try CustomerInfo(data: self.emptyCustomerInfoData))
+
+        transaction.mockState = .purchased
+        self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
+
+        expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
+        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSent) == true
+        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
+        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) == (
+            [.adServices: token], self.mockIdentityManager.currentAppUserID
+        )
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)

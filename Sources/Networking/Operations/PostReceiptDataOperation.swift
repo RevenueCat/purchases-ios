@@ -25,6 +25,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
+        let aadAttributionToken: String?
 
     }
 
@@ -142,7 +143,8 @@ extension PostReceiptDataOperation.PostData {
             presentedOfferingIdentifier: data.presentedOfferingID,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
-            subscriberAttributesByKey: data.unsyncedAttributes
+            subscriberAttributesByKey: data.unsyncedAttributes,
+            aadAttributionToken: data.aadAttributionToken
         )
     }
 
@@ -184,6 +186,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case observerMode
         case initiationSource
         case attributes
+        case aadAttributionToken
         case presentedOfferingIdentifier
 
     }
@@ -210,6 +213,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
                 .map(AnyEncodable.init),
             forKey: .attributes
         )
+
+        try container.encodeIfPresent(self.aadAttributionToken, forKey: .aadAttributionToken)
     }
 
 }

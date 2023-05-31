@@ -437,7 +437,7 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreSubscriberAttributesCount) == 0
     }
 
-    // mark - sync attributes for all users
+    // MARK: - sync attributes for all users
 
     func testSyncAttributesForAllUsersSyncsForEveryUserWithUnsyncedAttributes() {
         let userID1 = "userID1"
