@@ -507,12 +507,14 @@ platform :ios do
     sh("swift",
        "build",
        "--target", "RevenueCat",
+       "--configuration", "debug", # Necessary for debug-only symbols
        # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
        "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
        "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-ios#{ios_version}-simulator",
        "-Xswiftc", "-emit-symbol-graph",
        "-Xswiftc", "-emit-symbol-graph-dir",
-       "-Xswiftc", ".build")
+       "-Xswiftc", ".build",
+       "-Xswiftc", "-emit-extension-block-symbols")
   end
 
   desc "Preview docs"
@@ -529,10 +531,14 @@ platform :ios do
          "preview-documentation",
          "--target",
          "RevenueCat",
+         "--configuration",
+         "debug", # Necessary for debug-only symbols
          "--platform",
          "name=iOS,version=#{ios_version}",
          "--transform-for-static-hosting",
          "--enable-inherited-docs",
+         # Note: this is becoming the default on Swift 5.9: https://github.com/apple/swift-docc-plugin/commit/26ac5758409154cc448d7ab82389c520fa8a8247
+         "--include-extended-types",
          "--additional-symbol-graph-dir", ".build")
     end
   end
@@ -566,6 +572,8 @@ platform :ios do
            "generate-documentation",
            "--target",
            "RevenueCat",
+           "--configuration",
+           "debug", # Necessary for debug-only symbols
            "--disable-indexing", # Produces a DocC archive that is best-suited for hosting online but incompatible with Xcode.
            "--platform",
            "name=iOS,version=#{ios_version}",
@@ -575,6 +583,8 @@ platform :ios do
            hosting_base_path,
            "--transform-for-static-hosting",
            "--enable-inherited-docs",
+           # Note: this is becoming the default on Swift 5.9: https://github.com/apple/swift-docc-plugin/commit/26ac5758409154cc448d7ab82389c520fa8a8247
+           "--include-extended-types",
            "--additional-symbol-graph-dir", ".build")
            
         docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")

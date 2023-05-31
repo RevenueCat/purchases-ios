@@ -25,6 +25,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/configure(withAPIKey:)``
 - ``Purchases/configure(with:)-6oipy``
 - ``PurchasesDiagnostics``
+- ``SwiftUI/View/debugRevenueCatOverlay()``
 
 ### Displaying Products
 - ``Purchases/offerings()``
