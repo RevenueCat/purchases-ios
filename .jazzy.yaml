@@ -2,7 +2,7 @@ clean: true
 author: RevenueCat
 author_url: https://revenuecat.com
 sdk: iphonesimulator
-module_version: 4.21.0
+module_version: 4.20.1
 github_url: https://github.com/revenuecat/purchases-ios
 github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/4.18.0-SNAPSHOT
 output: generated_docs
