@@ -82,29 +82,77 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(parameters.data.source.initiationSource) == .queue
     }
 
-    func testPostsOnlyFirstTransaction() async throws {
+    func testPostsAllTransactions() async throws {
         let logger = TestLogHandler()
 
-        let transaction = Self.createTransaction()
-
-        self.mockTransationFetcher.stubbedUnfinishedTransactions = [
-            transaction,
+        let transactions = [
+            Self.createTransaction(),
             Self.createTransaction(),
             Self.createTransaction()
         ]
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
 
         _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
                                                                          isAppBackgrounded: false)
         expect(self.mockBackend.invokedGetSubscriberData) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
         expect(
-            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameters
-                .value?.transaction as? StoreTransaction
-        ) === transaction
+            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
+                .map(\.transaction)
+                .compactMap { $0 as? StoreTransaction }
+        )
+            == transactions
 
         logger.verifyMessageWasLogged(
-            Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction),
+            Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
+            level: .debug
+        )
+    }
+
+    func testPostingAllTransactionsReturnsLastKnownSuccess() async throws {
+        let otherMockCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2024-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "other user",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ]  as [String: Any]
+        ])
+
+        let logger = TestLogHandler()
+
+        let transactions = [
+            Self.createTransaction(),
+            Self.createTransaction(),
+            Self.createTransaction()
+        ]
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResults.value = [
+            .success(otherMockCustomerInfo),
+            .success(self.mockCustomerInfo),
+            .failure(.networkError(.serverDown()))
+        ]
+
+        _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                         isAppBackgrounded: false)
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
+        expect(
+            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
+                .map(\.transaction)
+                .compactMap { $0 as? StoreTransaction }
+        )
+            == transactions
+
+        logger.verifyMessageWasLogged(
+            Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
             level: .debug
         )
     }

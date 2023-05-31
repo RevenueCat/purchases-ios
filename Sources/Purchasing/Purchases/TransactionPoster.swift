@@ -121,6 +121,22 @@ final class TransactionPoster: TransactionPosterType {
 
 }
 
+/// Async extension
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension TransactionPosterType {
+
+    /// Starts a `PostReceiptDataOperation` for the transaction.
+    func handlePurchasedTransaction(
+        _ transaction: StoreTransaction,
+        data: PurchasedTransactionData
+    ) async -> Result<CustomerInfo, BackendError> {
+        await Async.call { completion in
+            self.handlePurchasedTransaction(transaction, data: data, completion: completion)
+        }
+    }
+
+}
+
 // MARK: - Implementation
 
 private extension TransactionPoster {

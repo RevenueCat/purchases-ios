@@ -18,24 +18,36 @@ final class MockTransactionPoster: TransactionPosterType {
 
     private let operationDispatcher = OperationDispatcher()
 
-    let stubbedHandlePurchasedTransactionResult: Atomic<Swift.Result<CustomerInfo, BackendError>> = .init(
+    let stubbedHandlePurchasedTransactionResult: Atomic<Result<CustomerInfo, BackendError>> = .init(
         .failure(.missingCachedCustomerInfo())
     )
+    let stubbedHandlePurchasedTransactionResults: Atomic<[Result<CustomerInfo, BackendError>]> = .init([])
+
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData)?> = nil
+    let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
+                                                                 data: PurchasedTransactionData)]> = .init([])
 
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
+        // Returns either the first of `stubbedHandlePurchasedTransactionResults`
+        // or `stubbedHandlePurchasedTransactionResult`
+        func result() -> Result<CustomerInfo, BackendError> {
+            return self.stubbedHandlePurchasedTransactionResults.value.popFirst()
+            ?? self.stubbedHandlePurchasedTransactionResult.value
+        }
+
         self.invokedHandlePurchasedTransaction.value = true
         self.invokedHandlePurchasedTransactionCount.value += 1
         self.invokedHandlePurchasedTransactionParameters.value = (transaction, data)
+        self.invokedHandlePurchasedTransactionParameterList.value.append((transaction, data))
 
-        self.operationDispatcher.dispatchOnMainActor { [result = self.stubbedHandlePurchasedTransactionResult.value] in
+        self.operationDispatcher.dispatchOnMainActor { [result = result()] in
             completion(result)
         }
     }

@@ -319,20 +319,37 @@ private extension CustomerInfoManager {
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
-                // Note: this is only able to post a single transaction,
-                // it can be improved in the future once `PostReceiptOperation` accepts multiple ones.
-                if let transaction = await self.transactionFetcher.unfinishedVerifiedTransactions.first {
-                    Logger.debug(Strings.customerInfo.posting_transaction_in_lieu_of_fetching_customerinfo(transaction))
+                let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
-                    self.transactionPoster.handlePurchasedTransaction(
-                        transaction,
-                        data: .init(appUserID: appUserID,
-                                    presentedOfferingID: nil,
-                                    unsyncedAttributes: [:],
-                                    storefront: await Storefront.currentStorefront,
-                                    source: Self.sourceForUnfinishedTransaction),
-                        completion: completion
+                if !transactions.isEmpty {
+                    var results: [Result<CustomerInfo, BackendError>] = []
+                    let storefront = await Storefront.currentStorefront
+
+                    Logger.debug(
+                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
                     )
+
+                    for transaction in transactions {
+                        results.append(
+                            await self.transactionPoster.handlePurchasedTransaction(
+                                transaction,
+                                data: .init(appUserID: appUserID,
+                                            presentedOfferingID: nil,
+                                            unsyncedAttributes: [:],
+                                            storefront: storefront,
+                                            source: Self.sourceForUnfinishedTransaction)
+                            )
+                        )
+                    }
+
+                    // Any of the POST receipt operations will have posted the same receipt contents
+                    // so the resulting `CustomerInfo` will be equivalent.
+                    // For that reason, we can return the last known success if available,
+                    // and otherwise the last result (an error).
+                    let lastSuccess = results.last { $0.value != nil }
+                    let result = lastSuccess ?? results.last!
+
+                    completion(result)
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,
