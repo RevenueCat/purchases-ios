@@ -77,6 +77,7 @@ class LoggerTests: TestCase {
     func testLoggerDoesNotLogMessagesWithLowerLevel() {
         Logger.logLevel = .info
         Logger.debug(Self.logMessage)
+        Logger.info("Other message")
 
         self.logger.verifyMessageWasNotLogged(Self.logMessage)
     }
