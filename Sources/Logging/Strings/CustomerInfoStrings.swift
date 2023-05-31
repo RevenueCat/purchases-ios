@@ -71,7 +71,8 @@ extension CustomerInfoStrings: CustomStringConvertible {
 
             return result
         case .customerinfo_updated_offline:
-            return "CustomerInfo computed offline."
+            return "There was an error communicating with RevenueCat servers. " +
+            "CustomerInfo was temporarily computed offline, and it will be posted again as soon as possible."
         case let .posting_transaction_in_lieu_of_fetching_customerinfo(transaction):
             return "Found unfinished transaction, will post receipt in lieu " +
             "of fetching CustomerInfo:\n\(transaction.description)"
