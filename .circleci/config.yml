@@ -508,6 +508,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
@@ -734,6 +735,7 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: V3 LoadShedder integration tests
           command: bundle exec fastlane v3_loadshedder_integration_tests

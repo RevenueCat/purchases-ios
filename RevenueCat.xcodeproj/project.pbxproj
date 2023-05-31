@@ -212,6 +212,20 @@
 		4F54DF432A1D8D0700FD72BF /* MockTransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */; };
 		4F69EB092A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
+		4F6BEE1F2A27B02400CD9322 /* CustomEntitlementsComputationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEE022A27ADF900CD9322 /* CustomEntitlementsComputationIntegrationTests.swift */; };
+		4F6BEE272A27B02400CD9322 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 4F6BEE092A27B02400CD9322 /* Nimble */; };
+		4F6BEE282A27B02400CD9322 /* RevenueCat_CustomEntitlementComputation in Frameworks */ = {isa = PBXBuildFile; productRef = 4F6BEE0D2A27B02400CD9322 /* RevenueCat_CustomEntitlementComputation */; };
+		4F6BEE292A27B02400CD9322 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4F6BEE0B2A27B02400CD9322 /* SnapshotTesting */; };
+		4F6BEE2B2A27B02400CD9322 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DE20B7526408806004C597D /* StoreKitTest.framework */; };
+		4F6BEE2D2A27B02400CD9322 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */; };
+		4F6BEE362A27B0F200CD9322 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */; };
+		4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
+		4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE61A83264190830021CEA0 /* Constants.swift */; };
+		4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
+		4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE02922C56300936709 /* AsyncTestHelpers.swift */; };
+		4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
+		4F7C37E52A27EFF7001E17D3 /* BaseStoreKitIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */; };
+		4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */; };
 		4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8038322A1EA7C300D21039 /* TransactionPoster.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
@@ -678,6 +692,20 @@
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
 		};
+		4F6BEE062A27B02400CD9322 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DC5621524EC63420031F69B;
+			remoteInfo = RevenueCat;
+		};
+		4F6BEE082A27B02400CD9322 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2DE20B7E26409EB7004C597D;
+			remoteInfo = StoreKitTestApp;
+		};
 		5759B420296DFEE2002472D5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -893,6 +921,8 @@
 		4F54DF3E2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
 		4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionPoster.swift; sourceTree = "<group>"; };
 		4F69EB082A14406E00ED6D4B /* Matchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matchers.swift; sourceTree = "<group>"; };
+		4F6BEE022A27ADF900CD9322 /* CustomEntitlementsComputationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEntitlementsComputationIntegrationTests.swift; sourceTree = "<group>"; };
+		4F6BEE312A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackendCustomEntitlementsIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
 		4F8038322A1EA7C300D21039 /* TransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionPoster.swift; sourceTree = "<group>"; };
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
@@ -1291,6 +1321,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				2DE20B9226409ECF004C597D /* StoreKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F6BEE262A27B02400CD9322 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F6BEE272A27B02400CD9322 /* Nimble in Frameworks */,
+				4F6BEE282A27B02400CD9322 /* RevenueCat_CustomEntitlementComputation in Frameworks */,
+				4F6BEE292A27B02400CD9322 /* SnapshotTesting in Frameworks */,
+				4F6BEE2B2A27B02400CD9322 /* StoreKitTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1728,6 +1769,7 @@
 				4FCBA8522A1539D0004134BD /* __Snapshots__ */,
 				579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */,
 				5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */,
+				4F6BEE022A27ADF900CD9322 /* CustomEntitlementsComputationIntegrationTests.swift */,
 				5753EE0D294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift */,
 				2DE20B6E264087FB004C597D /* StoreKitIntegrationTests.swift */,
 				4F2017D42A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift */,
@@ -1795,6 +1837,7 @@
 				2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */,
 				57D92C33293E4D0C00D1912A /* ReceiptParser.framework */,
 				5759B401296DF65D002472D5 /* ReceiptParserTests.xctest */,
+				4F6BEE312A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2632,6 +2675,30 @@
 			productReference = 2DEAC2DA26EFE46E006914ED /* UnitTestsHostApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		4F6BEE042A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F6BEE2E2A27B02400CD9322 /* Build configuration list for PBXNativeTarget "BackendCustomEntitlementsIntegrationTests" */;
+			buildPhases = (
+				4F6BEE0F2A27B02400CD9322 /* Sources */,
+				4F6BEE262A27B02400CD9322 /* Frameworks */,
+				4F6BEE2C2A27B02400CD9322 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F6BEE052A27B02400CD9322 /* PBXTargetDependency */,
+				4F6BEE072A27B02400CD9322 /* PBXTargetDependency */,
+			);
+			name = BackendCustomEntitlementsIntegrationTests;
+			packageProductDependencies = (
+				4F6BEE092A27B02400CD9322 /* Nimble */,
+				4F6BEE0B2A27B02400CD9322 /* SnapshotTesting */,
+				4F6BEE0D2A27B02400CD9322 /* RevenueCat_CustomEntitlementComputation */,
+			);
+			productName = BackendIntegrationTests;
+			productReference = 4F6BEE312A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		5759B330296DF65D002472D5 /* ReceiptParserTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5759B3FE296DF65D002472D5 /* Build configuration list for PBXNativeTarget "ReceiptParserTests" */;
@@ -2725,6 +2792,7 @@
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				4F6BEDFF2A27ACF400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -2754,6 +2822,7 @@
 				5759B330296DF65D002472D5 /* ReceiptParserTests */,
 				2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */,
 				2DE20B6B264087FB004C597D /* BackendIntegrationTests */,
+				4F6BEE042A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests */,
 				2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */,
 				2DAC5F7126F13C9800C5258F /* StoreKitUnitTests */,
 			);
@@ -2850,6 +2919,14 @@
 			files = (
 				2D735F7E26EFF198004E82A7 /* UnitTestsConfiguration.storekit in Resources */,
 				2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F6BEE2C2A27B02400CD9322 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F6BEE2D2A27B02400CD9322 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3468,6 +3545,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4F6BEE0F2A27B02400CD9322 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */,
+				4F6BEE362A27B0F200CD9322 /* MainThreadMonitor.swift in Sources */,
+				4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */,
+				4F6BEE1F2A27B02400CD9322 /* CustomEntitlementsComputationIntegrationTests.swift in Sources */,
+				4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */,
+				4F7C37E52A27EFF7001E17D3 /* BaseStoreKitIntegrationTests.swift in Sources */,
+				4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */,
+				4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */,
+				4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5759B33C296DF65D002472D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3536,6 +3629,16 @@
 			isa = PBXTargetDependency;
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
 			targetProxy = 2DFF6C54270CA11400ECAFAB /* PBXContainerItemProxy */;
+		};
+		4F6BEE052A27B02400CD9322 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DC5621524EC63420031F69B /* RevenueCat */;
+			targetProxy = 4F6BEE062A27B02400CD9322 /* PBXContainerItemProxy */;
+		};
+		4F6BEE072A27B02400CD9322 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */;
+			targetProxy = 4F6BEE082A27B02400CD9322 /* PBXContainerItemProxy */;
 		};
 		5759B421296DFEE2002472D5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4027,6 +4130,61 @@
 			};
 			name = Release;
 		};
+		4F6BEE2F2A27B02400CD9322 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.BackendCustomEntitlementsIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTestsHostApp.app/BackendIntegrationTestsHostApp";
+				TVOS_DEPLOYMENT_TARGET = 14.1;
+				WATCHOS_DEPLOYMENT_TARGET = 7.1;
+			};
+			name = Debug;
+		};
+		4F6BEE302A27B02400CD9322 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.BackendCustomEntitlementsIntegrationTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BackendIntegrationTestsHostApp.app/BackendIntegrationTestsHostApp";
+				TVOS_DEPLOYMENT_TARGET = 14.1;
+				WATCHOS_DEPLOYMENT_TARGET = 7.1;
+			};
+			name = Release;
+		};
 		5759B3FF296DF65D002472D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4223,6 +4381,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4F6BEE2E2A27B02400CD9322 /* Build configuration list for PBXNativeTarget "BackendCustomEntitlementsIntegrationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F6BEE2F2A27B02400CD9322 /* Debug */,
+				4F6BEE302A27B02400CD9322 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5759B3FE296DF65D002472D5 /* Build configuration list for PBXNativeTarget "ReceiptParserTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -4258,6 +4425,38 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 9.0.0;
+			};
+		};
+		4F6BEDFF2A27ACF400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		4F6BEE0A2A27B02400CD9322 /* XCRemoteSwiftPackageReference "nimble" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/quick/nimble";
+			requirement = {
+				kind = upToNextMinorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
+		4F6BEE0C2A27B02400CD9322 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.11.0;
+			};
+		};
+		4F6BEE0E2A27B02400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 		5759B336296DF65D002472D5 /* XCRemoteSwiftPackageReference "nimble" */ = {
@@ -4313,6 +4512,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
+		};
+		4F6BEE092A27B02400CD9322 /* Nimble */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4F6BEE0A2A27B02400CD9322 /* XCRemoteSwiftPackageReference "nimble" */;
+			productName = Nimble;
+		};
+		4F6BEE0B2A27B02400CD9322 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4F6BEE0C2A27B02400CD9322 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4F6BEE0D2A27B02400CD9322 /* RevenueCat_CustomEntitlementComputation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4F6BEE0E2A27B02400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat_CustomEntitlementComputation;
 		};
 		4FCBA8502A153940004134BD /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;

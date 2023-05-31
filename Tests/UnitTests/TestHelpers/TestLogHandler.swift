@@ -11,8 +11,13 @@
 //
 //  Created by Nacho Soto on 8/19/22.
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
 @testable import RevenueCat
+#endif
 
+import Foundation
 import Nimble
 
 /// Provides a `Logger.VerboseLogHandler` that wraps the default implementation
@@ -146,6 +151,17 @@ extension TestLogHandler {
         file: FileString = #file,
         line: UInt = #line
     ) {
+        expect(
+            file: file,
+            line: line,
+            self.messages
+        )
+        .toNot(
+            beEmpty(),
+            description: "Tried to verify message was not logged, but found no messages. " +
+            "This is likely a false positive."
+        )
+
         expect(
             file: file,
             line: line,
