@@ -322,7 +322,7 @@ private extension CustomerInfoManager {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
                 if !transactions.isEmpty {
-                    var lastResult: Result<CustomerInfo, BackendError> = .failure(.missingCachedCustomerInfo())
+                    var results: [Result<CustomerInfo, BackendError>] = []
                     let storefront = await Storefront.currentStorefront
 
                     Logger.debug(
@@ -330,17 +330,26 @@ private extension CustomerInfoManager {
                     )
 
                     for transaction in transactions {
-                        lastResult = await self.transactionPoster.handlePurchasedTransaction(
-                            transaction,
-                            data: .init(appUserID: appUserID,
-                                        presentedOfferingID: nil,
-                                        unsyncedAttributes: [:],
-                                        storefront: storefront,
-                                        source: Self.sourceForUnfinishedTransaction)
+                        results.append(
+                            await self.transactionPoster.handlePurchasedTransaction(
+                                transaction,
+                                data: .init(appUserID: appUserID,
+                                            presentedOfferingID: nil,
+                                            unsyncedAttributes: [:],
+                                            storefront: storefront,
+                                            source: Self.sourceForUnfinishedTransaction)
+                            )
                         )
                     }
 
-                    completion(lastResult)
+                    // Any of the POST receipt operations will have posted the same receipt contents
+                    // so the resulting `CustomerInfo` will be equivalent.
+                    // For that reason, we can return the last known success if available,
+                    // and otherwise the last result (an error).
+                    let lastSuccess = results.last { $0.value != nil }
+                    let result = lastSuccess ?? results.last!
+
+                    completion(result)
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,

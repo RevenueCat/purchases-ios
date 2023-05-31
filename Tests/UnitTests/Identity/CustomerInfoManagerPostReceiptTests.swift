@@ -112,6 +112,51 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         )
     }
 
+    func testPostingAllTransactionsReturnsLastKnownSuccess() async throws {
+        let otherMockCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2024-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "other user",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ]  as [String: Any]
+        ])
+
+        let logger = TestLogHandler()
+
+        let transactions = [
+            Self.createTransaction(),
+            Self.createTransaction(),
+            Self.createTransaction()
+        ]
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResults.value = [
+            .success(otherMockCustomerInfo),
+            .success(self.mockCustomerInfo),
+            .failure(.networkError(.serverDown()))
+        ]
+
+        _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                         isAppBackgrounded: false)
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
+        expect(
+            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
+                .map(\.transaction)
+                .compactMap { $0 as? StoreTransaction }
+        )
+            == transactions
+
+        logger.verifyMessageWasLogged(
+            Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
+            level: .debug
+        )
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
