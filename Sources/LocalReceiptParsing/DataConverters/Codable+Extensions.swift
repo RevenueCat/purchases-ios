@@ -23,9 +23,25 @@ extension Encodable {
         }
     }
 
+    /// - Throws: if encoding failed
+    /// - Returns: `nil` if the encoded `Data` can't be serialized into a `String`.
+    var encodedJSON: String? {
+        get throws {
+            return String(data: try self.jsonEncodedData, encoding: .utf8)
+        }
+    }
+
+    // MARK: -
+
     var prettyPrintedData: Data {
         get throws {
             return try JSONEncoder.prettyPrinted.encode(self)
+        }
+    }
+
+    var jsonEncodedData: Data {
+        get throws {
+            return try JSONEncoder.default.encode(self)
         }
     }
 

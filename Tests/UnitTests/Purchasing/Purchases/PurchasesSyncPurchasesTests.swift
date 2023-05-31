@@ -44,7 +44,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
             ] as [String: Any]
         ])
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = false
@@ -65,7 +65,7 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
     func testSyncPurchasesPostsIfReceiptHasTransactionsAndCustomerInfoLoaded() throws {
         let info: CustomerInfo = .emptyInfo
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
 
         self.mockTransactionsManager.stubbedCustomerHasTransactionsCompletionParameter = true

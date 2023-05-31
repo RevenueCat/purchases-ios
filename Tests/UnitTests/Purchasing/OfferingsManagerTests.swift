@@ -418,7 +418,7 @@ extension OfferingsManagerTests {
     func testReturnsOfferingsFromDiskCacheIfNetworkRequestWithServerDown() throws {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.asJSONEncodedData()
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { result in
@@ -441,7 +441,7 @@ extension OfferingsManagerTests {
 
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
-        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.asJSONEncodedData()
+        self.mockDeviceCache.stubbedCachedOfferingsData = try MockData.anyBackendOfferingsResponse.jsonEncodedData
         self.mockOfferingsFactory.nilOfferings = true
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in

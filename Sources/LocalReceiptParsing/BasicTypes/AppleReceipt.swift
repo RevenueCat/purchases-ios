@@ -120,7 +120,7 @@ extension AppleReceipt: CustomDebugStringConvertible {
 
     /// swiftlint:disable:next missing_docs
     public var debugDescription: String {
-        return (try? self.prettyPrintedJSON) ?? "<null>"
+        return (try? self.encodedJSON) ?? "<null>"
     }
 
 }

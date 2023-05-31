@@ -386,7 +386,7 @@ private extension HTTPClient {
         urlRequest.allHTTPHeaderFields = self.headers(for: request, urlRequest: urlRequest)
 
         do {
-            urlRequest.httpBody = try request.httpRequest.requestBody?.asData()
+            urlRequest.httpBody = try request.httpRequest.requestBody?.jsonEncodedData
         } catch {
             Logger.error(Strings.network.creating_json_error(error: error.localizedDescription))
             return nil
@@ -456,14 +456,6 @@ extension HTTPRequest.Path {
     }
 
     private static let pathPrefix: String = "/v1"
-
-}
-
-private extension Encodable {
-
-    func asData() throws -> Data {
-        return try JSONEncoder.default.encode(self)
-    }
 
 }
 

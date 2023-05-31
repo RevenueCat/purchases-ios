@@ -199,7 +199,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
         let info: CustomerInfo = .emptyInfo
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -210,7 +210,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() throws {
         let oldInfo: CustomerInfo = .emptyInfo
 
-        var object = try oldInfo.asJSONEncodedData()
+        var object = try oldInfo.jsonEncodedData
 
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
@@ -226,7 +226,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             ] as [String: Any]
         ])
 
-        object = try newInfo.asJSONEncodedData()
+        object = try newInfo.jsonEncodedData
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -236,7 +236,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() throws {
         let oldInfo: CustomerInfo = .emptyInfo
 
-        let object = try oldInfo.asJSONEncodedData()
+        let object = try oldInfo.jsonEncodedData
         mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
@@ -302,7 +302,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             ]  as [String: Any]
         ])
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
 
         let receivedCustomerInfo = try XCTUnwrap(self.customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID))
@@ -333,7 +333,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             ]  as [String: Any]
         ])
 
-        let object = try info.asJSONEncodedData()
+        let object = try info.jsonEncodedData
         mockDeviceCache.cachedCustomerInfo["firstUser"] = object
 
         let receivedCustomerInfo = customerInfoManager.cachedCustomerInfo(appUserID: "secondUser")
