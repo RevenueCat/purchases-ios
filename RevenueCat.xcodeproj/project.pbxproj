@@ -692,13 +692,6 @@
 			remoteGlobalIDString = 2DEAC2D926EFE46E006914ED;
 			remoteInfo = UnitTestsHostApp;
 		};
-		4F6BEE062A27B02400CD9322 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 2DC5621524EC63420031F69B;
-			remoteInfo = RevenueCat;
-		};
 		4F6BEE082A27B02400CD9322 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -2686,7 +2679,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				4F6BEE052A27B02400CD9322 /* PBXTargetDependency */,
 				4F6BEE072A27B02400CD9322 /* PBXTargetDependency */,
 			);
 			name = BackendCustomEntitlementsIntegrationTests;
@@ -3629,11 +3621,6 @@
 			isa = PBXTargetDependency;
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
 			targetProxy = 2DFF6C54270CA11400ECAFAB /* PBXContainerItemProxy */;
-		};
-		4F6BEE052A27B02400CD9322 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 2DC5621524EC63420031F69B /* RevenueCat */;
-			targetProxy = 4F6BEE062A27B02400CD9322 /* PBXContainerItemProxy */;
 		};
 		4F6BEE072A27B02400CD9322 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
