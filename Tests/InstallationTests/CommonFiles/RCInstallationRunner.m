@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    [RCPurchases setDebugLogsEnabled:true];
+    RCPurchases.logLevel = RCLogLevelVerbose;
 
     // Server URL for the tests. If set to empty string, we'll use the default URL.
     NSString *proxyURL = @"REVENUECAT_PROXY_URL";
