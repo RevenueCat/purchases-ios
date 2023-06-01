@@ -1,8 +1,10 @@
+### New Features
+* `Offline Entitlements`: use offline-computed `CustomerInfo` when server is down (#2368) via NachoSoto (@NachoSoto)
+
 ### Bugfixes
 * `AppleReceipt.debugDescription`: don't pretty-print JSON (#2564) via NachoSoto (@NachoSoto)
 * `SK2StoreProduct`: fix crash on iOS 12 (#2565) via NachoSoto (@NachoSoto)
 * `GetCustomerInfo` posts receipts if there are pending transactions (#2533) via NachoSoto (@NachoSoto)
-* `Offline Entitlements`: use offline-computed `CustomerInfo` when server is down (#2368) via NachoSoto (@NachoSoto)
 ### Performance Improvements
 * `PurchasedProductsFetcher`: cache current entitlements (#2507) via NachoSoto (@NachoSoto)
 * Performance: new check to ensure serialization / deserialization is done from background thread (#2496) via NachoSoto (@NachoSoto)
