@@ -12,6 +12,7 @@
 //  Created by Juanpe Catalán on 8/9/21.
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable identifier_name
 enum StoreKitStrings {
@@ -48,6 +49,8 @@ enum StoreKitStrings {
 
     case sk1_payment_queue_too_many_transactions(count: Int, isSandbox: Bool)
 
+    case sk1_finish_transaction_called_with_existing_completion(SKPaymentTransaction)
+
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
@@ -58,7 +61,6 @@ extension StoreKitStrings: CustomStringConvertible {
 
     var description: String {
         switch self {
-
         case .sk_receipt_request_started:
             return "SKReceiptRefreshRequest started"
 
@@ -116,6 +118,10 @@ extension StoreKitStrings: CustomStringConvertible {
             : "This is a very high number and might impact performance."
 
             return "SKPaymentQueue sent \(count) updated transactions. " + messageSuffix
+
+        case let .sk1_finish_transaction_called_with_existing_completion(transaction):
+            return "StoreKit1Wrapper.finishTransaction was called for '\(transaction.productIdentifier ?? "")' " +
+            "but found an existing completion block."
 
         case .sk1_product_request_too_slow:
             return "StoreKit 1 product request took longer than expected"

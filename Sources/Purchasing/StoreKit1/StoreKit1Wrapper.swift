@@ -156,7 +156,9 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
             return existingCompletion
         }
 
-        if !existingCompletion {
+        if existingCompletion {
+            Logger.debug(Strings.storeKit.sk1_finish_transaction_called_with_existing_completion(transaction))
+        } else {
             self.paymentQueue.finishTransaction(transaction)
         }
     }
