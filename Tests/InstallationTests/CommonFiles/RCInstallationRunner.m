@@ -13,6 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation RCInstallationRunner
 
 - (void)start {
+    if (RCPurchases.isConfigured) {
+        return;
+    }
+
     [RCPurchases setDebugLogsEnabled:true];
 
     // Server URL for the tests. If set to empty string, we'll use the default URL.
