@@ -20,9 +20,9 @@ enum StoreKitStrings {
 
     case sk_receipt_request_finished
 
-    case skrequest_failed(error: Error)
+    case skrequest_failed(NSError)
 
-    case store_products_request_failed(error: Error)
+    case store_products_request_failed(NSError)
 
     case skproductsrequest_timed_out(after: Int)
 
@@ -66,10 +66,10 @@ extension StoreKitStrings: CustomStringConvertible {
             return "SKReceiptRefreshRequest finished"
 
         case .skrequest_failed(let error):
-            return "SKRequest failed: \(error.localizedDescription)"
+            return "SKRequest failed: \(error.description)"
 
         case .store_products_request_failed(let error):
-            return "Store products request failed! Error: \(error.localizedDescription)"
+            return "Store products request failed! Error: \(error.description)"
 
         case .skproductsrequest_timed_out(let afterTimeInSeconds):
             return "SKProductsRequest took longer than \(afterTimeInSeconds) seconds, " +

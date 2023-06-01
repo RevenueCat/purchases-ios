@@ -157,7 +157,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
 
         self.queue.async { [self] in
-            Logger.appleError(Strings.storeKit.store_products_request_failed(error: error))
+            Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError))
 
             guard let productRequest = self.productsByRequests[request] else {
                 Logger.error(Strings.purchase.requested_products_not_found(request: request))

@@ -67,7 +67,7 @@ extension StoreKitRequestFetcher: SKRequestDelegate {
     func request(_ request: SKRequest, didFailWithError error: Error) {
         guard request is SKReceiptRefreshRequest else { return }
 
-        Logger.appleError(Strings.storeKit.skrequest_failed(error: error))
+        Logger.appleError(Strings.storeKit.skrequest_failed(error as NSError))
         self.finishReceiptRequest(request)
         request.cancel()
     }
