@@ -210,6 +210,7 @@
 					2D6C02972549F7700039CB92 = {
 						CreatedOnToolsVersion = 12.1;
 						LastSwiftMigration = 1210;
+						TestTargetID = 2D6C027C2549F76E0039CB92;
 					};
 				};
 			};
@@ -474,6 +475,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -491,6 +493,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarthageInstallation.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CarthageInstallation";
 			};
 			name = Debug;
 		};
@@ -498,6 +501,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8SXR2327BM;
@@ -514,6 +518,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "CarthageInstallationTests/CarthageInstallationTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CarthageInstallation.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CarthageInstallation";
 			};
 			name = Release;
 		};
