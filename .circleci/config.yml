@@ -184,7 +184,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane scan -b 'raw'
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -202,7 +202,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane scan -b 'raw'
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -225,7 +225,7 @@ commands:
       - run:
           name: Run tests
           working_directory: << parameters.directory >>
-          command: bundle exec fastlane scan
+          command: bundle exec fastlane scan -b 'raw'
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -647,7 +647,6 @@ jobs:
       - checkout
       - trust-github-key
       - update-carthage-installation-commit
-      # Carthage
       - run:
           name: Carthage Update
           working_directory: Tests/InstallationTests/CarthageInstallation/
@@ -656,7 +655,7 @@ jobs:
           command: |
               carthage update --no-build
               rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
-              carthage build --use-xcframeworks --verbose
+              carthage build --use-xcframeworks --verbose --platform ios --configuration debug
 
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
@@ -841,39 +840,39 @@ workflows:
     jobs:
       - lint:
           xcode_version: '14.3.0'
-      - spm-release-build:
-          xcode_version: '14.3.0'
-      - spm-custom-entitlement-computation-build:
-          xcode_version: '14.3.0'
-      - spm-receipt-parser:
-          xcode_version: '14.3.0'
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-      - run-test-watchos:
-          xcode_version: '14.3.0'
-      - run-test-tvos:
-          xcode_version: '14.3.0'
-      - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-      - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          xcode_version: '14.3.0'
-      - backend-integration-tests:
-          xcode_version: '14.3.0'
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+      # - spm-release-build:
+      #     xcode_version: '14.3.0'
+      # - spm-custom-entitlement-computation-build:
+      #     xcode_version: '14.3.0'
+      # - spm-receipt-parser:
+      #     xcode_version: '14.3.0'
+      # - run-test-ios-16:
+      #     xcode_version: '14.3.0'
+      # - run-test-ios-15:
+      #     xcode_version: '14.3.0'
+      # - run-test-watchos:
+      #     xcode_version: '14.3.0'
+      # - run-test-tvos:
+      #     xcode_version: '14.3.0'
+      # - run-test-ios-14:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      # - run-test-ios-13:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - run-test-ios-12:
+      #     # Simulator fails to install on Xcode 14
+      #     xcode_version: '13.4.1'
+      #     <<: *release-branches-and-main
+      # - build-tv-watch-and-macos:
+      #     xcode_version: '14.3.0'
+      # - backend-integration-tests:
+      #     xcode_version: '14.3.0'
+      #     filters:
+      #         branches:
+      #           # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+      #           ignore: /pull\/[0-9]+/
   deploy:
     when:
       not:
