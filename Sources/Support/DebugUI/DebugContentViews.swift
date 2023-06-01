@@ -63,6 +63,8 @@ private struct DebugSummaryView: View {
         List {
             self.diagnosticsSection
 
+            self.configurationSection
+
             self.customerInfoSection
 
             self.offeringsSection
@@ -83,6 +85,23 @@ private struct DebugSummaryView: View {
         }
     }
 
+    private var configurationSection: some View {
+        Section("Configuration") {
+            switch self.model.configuration {
+            case .loading:
+                Text("Loading...")
+
+            case let .loaded(config):
+                LabeledContent("Observer mode", value: config.observerMode.description)
+                LabeledContent("Sandbox", value: config.sandbox.description)
+                LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
+                LabeledContent("Offline Customer Info",
+                               value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
+                LabeledContent("Entitlement Verification Mode", value: config.verificationMode.display)
+            }
+        }
+    }
+
     private var customerInfoSection: some View {
         Section("Customer Info") {
             switch self.model.customerInfo {
@@ -90,14 +109,13 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(info):
-                VStack {
-                    LabeledContent("User ID", value: info.originalAppUserId)
+                LabeledContent("User ID", value: info.originalAppUserId)
+                LabeledContent("Active Entitlements", value: info.entitlements.active.count.description)
 
-                    if let latestExpiration = info.latestExpirationDate {
-                        LabeledContent("Latest Expiration Date",
-                                       value: latestExpiration.formatted(date: .abbreviated,
-                                                                         time: .omitted))
-                    }
+                if let latestExpiration = info.latestExpirationDate {
+                    LabeledContent("Latest Expiration Date",
+                                   value: latestExpiration.formatted(date: .abbreviated,
+                                                                     time: .omitted))
                 }
 
             case let .failed(error):
@@ -114,15 +132,13 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(offerings):
-                VStack {
-                    ForEach(Array(offerings.all.values)) { offering in
-                        NavigationLink(value: DebugViewPath.offering(offering)) {
-                            VStack {
-                                LabeledContent(
-                                    offering.identifier,
-                                    value: "\(offering.availablePackages.count) package(s)"
-                                )
-                            }
+                ForEach(Array(offerings.all.values)) { offering in
+                    NavigationLink(value: DebugViewPath.offering(offering)) {
+                        VStack {
+                            LabeledContent(
+                                offering.identifier,
+                                value: "\(offering.availablePackages.count) package(s)"
+                            )
                         }
                     }
                 }
@@ -215,6 +231,18 @@ private struct DebugPackageView: View {
 
     private func purchase() async throws {
         _ = try await Purchases.shared.purchase(package: self.package)
+    }
+
+}
+
+private extension Signing.ResponseVerificationMode {
+
+    var display: String {
+        switch self {
+        case .disabled: return "disabled"
+        case .informational: return "informational"
+        case .enforced: return "enforced"
+        }
     }
 
 }

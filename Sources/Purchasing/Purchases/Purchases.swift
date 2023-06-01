@@ -1413,12 +1413,24 @@ internal extension Purchases {
         return self.systemInfo.isSandbox
     }
 
+    var observerMode: Bool {
+        return self.systemInfo.observerMode
+    }
+
     var configuredUserDefaults: UserDefaults {
         return self.userDefaults
     }
 
     var offlineCustomerInfoEnabled: Bool {
         return self.backend.offlineCustomerInfoEnabled
+    }
+
+    var storeKit2Setting: StoreKit2Setting {
+        return self.systemInfo.storeKit2Setting
+    }
+
+    var responseVerificationMode: Signing.ResponseVerificationMode {
+        return self.systemInfo.responseVerificationMode
     }
 
     var publicKey: Signing.PublicKey? {
