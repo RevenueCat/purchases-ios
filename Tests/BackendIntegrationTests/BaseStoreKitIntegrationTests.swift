@@ -271,7 +271,13 @@ extension BaseStoreKitIntegrationTests {
 
 extension BaseStoreKitIntegrationTests {
 
+    @MainActor
     func printReceiptContent() async {
+        guard Purchases.isConfigured else {
+            Logger.error("Can't print receipt when purchases isn't configured")
+            return
+        }
+
         do {
             let receipt = try await Purchases.shared.fetchReceipt(.always)
             let description = receipt.map { $0.debugDescription } ?? "<null>"
