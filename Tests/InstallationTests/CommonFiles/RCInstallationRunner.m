@@ -13,9 +13,12 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation RCInstallationRunner
 
 - (void)start {
-    [RCPurchases setDebugLogsEnabled:true];
+    if (RCPurchases.isConfigured) {
+        return;
+    }
 
-    // Server URL for the tests. If set to empty string, we'll use the default URL.
+    RCPurchases.logLevel = RCLogLevelVerbose;
+
     // Server URL for the tests. If set to empty string, we'll use the default URL.
     NSString *proxyURL = @"REVENUECAT_PROXY_URL";
     if (![proxyURL isEqualToString:@""]) {

@@ -1,3 +1,51 @@
+## 4.21.0
+### New Features
+* `Offline Entitlements`: use offline-computed `CustomerInfo` when server is down (#2368) via NachoSoto (@NachoSoto)
+
+### Bugfixes
+* `AppleReceipt.debugDescription`: don't pretty-print JSON (#2564) via NachoSoto (@NachoSoto)
+* `SK2StoreProduct`: fix crash on iOS 12 (#2565) via NachoSoto (@NachoSoto)
+* `GetCustomerInfo` posts receipts if there are pending transactions (#2533) via NachoSoto (@NachoSoto)
+### Performance Improvements
+* `PurchasedProductsFetcher`: cache current entitlements (#2507) via NachoSoto (@NachoSoto)
+* Performance: new check to ensure serialization / deserialization is done from background thread (#2496) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump fastlane from 2.212.2 to 2.213.0 (#2544) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `CustomerInfoManager`: post all unfinished transactions (#2563) via NachoSoto (@NachoSoto)
+* `PostReceiptOperation`: added ability to also post `AdServices` token (#2566) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: improved computation log (#2562) via NachoSoto (@NachoSoto)
+* Added `TransactionPoster` tests (#2557) via NachoSoto (@NachoSoto)
+* Refactored `TransactionPoster`: removed 2 dependencies and abstracted parameters (#2542) via NachoSoto (@NachoSoto)
+* `CustomerInfoManagerTests`: wait for `getAndCacheCustomerInfo` to finish (#2555) via NachoSoto (@NachoSoto)
+* `StoreTransaction`: implemented `description` (#2556) via NachoSoto (@NachoSoto)
+* `Backend.ResponseHandler` is now `@Sendable` (#2541) via NachoSoto (@NachoSoto)
+* Extracted `TransactionPoster` from `PurchasesOrchestrator` (#2540) via NachoSoto (@NachoSoto)
+* `enableAdServicesAttributionTokenCollection`: added integration test (#2551) via NachoSoto (@NachoSoto)
+* `AttributionPoster`: replaced hardcoded strings with constants (#2548) via NachoSoto (@NachoSoto)
+* `DefaultDecodable`: moved to `Misc/Codable/DefaultDecodable.swift` (#2528) via NachoSoto (@NachoSoto)
+* `CircleCI`: specify device to run `backend_integration_tests` (#2547) via NachoSoto (@NachoSoto)
+* Created `StoreKit2TransactionFetcher` (#2539) via NachoSoto (@NachoSoto)
+* Fix load shedder integration tests (#2546) via Josh Holtz (@joshdholtz)
+* Fix doc on `Offering.getMetadataValue` (#2545) via Josh Holtz (@joshdholtz)
+* Extracted and tested `AsyncSequence.extractValues` (#2538) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: don't compute offline `CustomerInfo` when purchasing a consumable products (#2522) via NachoSoto (@NachoSoto)
+* `OfflineEntitlementsManager`: disable offline `CustomerInfo` in observer mode (#2520) via NachoSoto (@NachoSoto)
+* `BasePurchasesTests`: fixed leak detection (#2534) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added `ProxyView` to `iOS` (#2531) via NachoSoto (@NachoSoto)
+* `PurchasedProductsFetcher`: removed `AppStore.sync` call (#2521) via NachoSoto (@NachoSoto)
+* `PurchaseTesterSwiftUI`: added new window on Mac to manage proxy (#2518) via NachoSoto (@NachoSoto)
+* `PurchasedProductsFetcher`: added log if fetching purchased products is slow (#2515) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: disable for custom entitlements mode (#2509) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: fixed iOS 12 tests (#2514) via NachoSoto (@NachoSoto)
+* `PurchasedProductsFetcher`: don't throw errors if purchased products were found (#2506) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: allow creating offline `CustomerInfo` with empty `ProductEntitlementMapping` (#2504) via NachoSoto (@NachoSoto)
+* `Offline Entitlements`: integration tests (#2501) via NachoSoto (@NachoSoto)
+* `CustomerInfoManager`: don't cache offline `CustomerInfo` (#2378) via NachoSoto (@NachoSoto)
+* `DangerousSettings`: debug-only `forceServerErrors` (#2486) via NachoSoto (@NachoSoto)
+* `CocoapodsInstallation`: fixed `Xcode 14.3.0` issue (#2489) via NachoSoto (@NachoSoto)
+* `CarthageInstallation`: removed workaround (#2488) via NachoSoto (@NachoSoto)
+
 ## 4.20.0
 ### New Features
 * Add `StoreProduct.pricePerYear` (#2462) via NachoSoto (@NachoSoto)
