@@ -94,6 +94,7 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(config):
+                LabeledContent("SDK version", value: SystemInfo.frameworkVersion)
                 LabeledContent("Observer mode", value: config.observerMode.description)
                 LabeledContent("Sandbox", value: config.sandbox.description)
                 LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
