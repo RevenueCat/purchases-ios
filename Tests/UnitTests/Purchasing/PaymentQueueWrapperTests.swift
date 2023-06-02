@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PaymentQuueWrapperTests.swift
+//  PaymentQueueWrapperTests.swift
 //
 //  Created by Nacho Soto on 9/30/22.
 
