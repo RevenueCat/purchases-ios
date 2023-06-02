@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && os(iOS)
+#if DEBUG && os(iOS) && swift(>=5.8)
 
 import SwiftUI
 
