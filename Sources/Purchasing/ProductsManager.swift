@@ -101,8 +101,8 @@ class ProductsManager: NSObject, ProductsManagerType {
 
                 Logger.debug(Strings.storeKit.store_product_request_finished)
                 return Set(products)
-            } catch {
-                Logger.debug(Strings.storeKit.store_products_request_failed(error: error))
+            } catch let error as NSError {
+                Logger.debug(Strings.storeKit.store_products_request_failed(error))
                 throw ErrorUtils.storeProblemError(error: error)
             }
         }
