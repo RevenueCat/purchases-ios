@@ -18,16 +18,47 @@ import SwiftUI
 @available(iOS 16.0, *)
 public extension View {
 
-    /// Adds a bottom sheet overlay to the current view which allows debugging the current setup
-    /// of ``Offerings`` and ``StoreProduct``s.
+    /// Adds a bottom sheet overlay to the current view which allows debugging the current SDK setup.
+    ///
+    /// Usage:
+    /// ```swift
+    ///  var body: some View {
+    ///    YourViewContent()
+    ///      .debugRevenueCatOverlay()
+    ///  }
+    /// ```
+    ///
+    /// - Note: This will present the overlay automatically on launch.
+    /// To manage the presentation manually, use `debugRevenueCatOverlay(isPresented:)`
     func debugRevenueCatOverlay() -> some View {
+        return self.debugRevenueCatOverlay(isPresented: .constant(true))
+    }
+
+    /// Adds a bottom sheet overlay to the current view which allows debugging the current SDK setup.
+    ///
+    /// Usage:
+    /// ```swift
+    /// @State private var debugOverlayVisible: Bool = false
+    ///
+    /// var body: some View {
+    ///    YourViewContent()
+    ///      .debugRevenueCatOverlay(isPresented: self.debugOverlayVisible)
+    ///
+    ///    Button {
+    ///      self.debugOverlayVisible.toggle()
+    ///    } label: {
+    ///      Text("RevenueCat Debug view")
+    ///    }
+    /// }
+    /// ```
+    func debugRevenueCatOverlay(isPresented: Binding<Bool>) -> some View {
         self.bottomSheet(
             presentationDetents: [
                 .fraction(0.2),
                 .fraction(0.6),
                 .large
             ],
-            isPresented: .constant(true),
+            isPresented: isPresented,
             cornerRadius: 10,
             transparentBackground: true,
             content: {
