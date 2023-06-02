@@ -36,9 +36,11 @@ final class DebugViewModel: ObservableObject {
     @Published
     var diagnosticsResult: LoadingState<(), NSError> = .loading
     @Published
-    var customerInfo: LoadingState<CustomerInfo, NSError> = .loading
-    @Published
     var offerings: LoadingState<Offerings, NSError> = .loading
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    @Published
+    var customerInfo: LoadingState<CustomerInfo, NSError> = .loading
+    #endif
 
     @Published
     var navigationPath = NavigationPath()
@@ -47,8 +49,10 @@ final class DebugViewModel: ObservableObject {
         self.configuration = .loaded(.withSharedPurchases())
 
         self.diagnosticsResult = await .create { try await PurchasesDiagnostics.default.testSDKHealth() }
-        self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
         self.offerings = await .create { try await Purchases.shared.offerings() }
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
+        #endif
     }
 
 }

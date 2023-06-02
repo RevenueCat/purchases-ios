@@ -65,7 +65,9 @@ private struct DebugSummaryView: View {
 
             self.configurationSection
 
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
             self.customerInfoSection
+            #endif
 
             self.offeringsSection
         }
@@ -102,6 +104,7 @@ private struct DebugSummaryView: View {
         }
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     private var customerInfoSection: some View {
         Section("Customer Info") {
             switch self.model.customerInfo {
@@ -123,6 +126,7 @@ private struct DebugSummaryView: View {
             }
         }
     }
+    #endif
 
     @ViewBuilder
     private var offeringsSection: some View {
