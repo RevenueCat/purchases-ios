@@ -132,6 +132,7 @@ platform :ios do
       scheme: "RevenueCat",
       prelaunch_simulator: true,
       output_types: 'junit',
+      output_style: 'raw',
       result_bundle: true,
       testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
       configuration: 'Debug',
