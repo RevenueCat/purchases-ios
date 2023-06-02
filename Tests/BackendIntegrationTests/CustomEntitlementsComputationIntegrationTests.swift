@@ -72,4 +72,18 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
         try await self.purchaseMonthlyOffering()
     }
 
+    @available(iOS 14.3, *)
+    func testPurchasingPostsAdAttributionToken() async throws {
+        Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
+
+        let logger = TestLogHandler()
+
+        let info = try await self.purchaseMonthlyOffering().customerInfo
+
+        logger.verifyMessageWasLogged(
+            Strings.attribution.adservices_marking_as_synced(appUserID: info.originalAppUserId),
+            level: .info
+        )
+    }
+
 }
