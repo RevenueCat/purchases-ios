@@ -147,8 +147,8 @@ extension PurchaseStrings: CustomStringConvertible {
                 .joined(separator: " ")
 
         case let .paymentqueue_removed_transaction_no_callbacks_found(observer, transaction):
-            return "\(observer.debugName) removedTransaction for (\(transaction.payment.productIdentifier) " +
-            "but not callbacks to notify"
+            return "\(observer.debugName) removedTransaction for \(transaction.payment.productIdentifier) " +
+            "but no callbacks to notify"
 
         case let .paymentqueue_updated_transaction(observer, transaction):
             return "\(observer.debugName) updatedTransaction: \(transaction.payment.productIdentifier) " +
