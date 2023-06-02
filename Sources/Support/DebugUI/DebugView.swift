@@ -11,11 +11,11 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && canImport(SwiftUI) && !os(macOS)
+#if DEBUG && os(iOS)
 
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, *)
 public extension View {
 
     /// Adds a bottom sheet overlay to the current view which allows debugging the current setup

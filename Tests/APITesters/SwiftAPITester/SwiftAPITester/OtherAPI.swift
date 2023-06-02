@@ -9,7 +9,7 @@ import Foundation
 
 import SwiftUI
 
-#if DEBUG && !os(macOS)
+#if DEBUG && os(iOS)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct AppView: View {

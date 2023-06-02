@@ -11,11 +11,11 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && canImport(SwiftUI) && !os(macOS)
+#if DEBUG && os(iOS)
 
 import SwiftUI
 
-@available(iOS 16.0, tvOS 16.0, *)
+@available(iOS 16.0, *)
 extension View {
 
     @ViewBuilder

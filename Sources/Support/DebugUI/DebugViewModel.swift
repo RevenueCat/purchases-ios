@@ -13,12 +13,12 @@
 
 import Foundation
 
-#if DEBUG && canImport(SwiftUI) && !os(macOS)
+#if DEBUG && os(iOS)
 
 import SwiftUI
 
 @MainActor
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, *)
 final class DebugViewModel: ObservableObject {
 
     struct Configuration {
