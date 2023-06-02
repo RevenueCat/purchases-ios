@@ -12,11 +12,16 @@
 //  Created by Nacho Soto on 12/15/22.
 
 import Nimble
-@testable import RevenueCat
 import StoreKit
 import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
+
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
+@testable import RevenueCat
+#endif
 
 @MainActor
 class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {

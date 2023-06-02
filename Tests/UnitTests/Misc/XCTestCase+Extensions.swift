@@ -12,8 +12,13 @@
 //  Created by Andrés Boedo on 9/16/21.
 
 import Foundation
-@testable import RevenueCat
 import XCTest
+
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
+@testable import RevenueCat
+#endif
 
 extension XCTestCase {
 

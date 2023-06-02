@@ -38,6 +38,13 @@
         "identifier" : "2DE20B6B264087FB004C597D",
         "name" : "BackendIntegrationTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "4F6BEE042A27B02400CD9322",
+        "name" : "BackendCustomEntitlementsIntegrationTests"
+      }
     }
   ],
   "version" : 1

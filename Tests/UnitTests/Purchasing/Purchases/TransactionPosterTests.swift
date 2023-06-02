@@ -106,8 +106,8 @@ class TransactionPosterTests: TestCase {
     }
 
     func testFinishTransactionDoesNotFinishInObserverMode() throws {
-        self.setUp(observerMode: true)
         let logger = TestLogHandler()
+        self.setUp(observerMode: true)
 
         waitUntil { completed in
             self.poster.finishTransactionIfNeeded(self.mockTransaction) {

@@ -12,8 +12,13 @@
 //  Created by Nacho Soto on 4/1/22.
 
 import Nimble
-@testable import RevenueCat
 import XCTest
+
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
+@testable import RevenueCat
+#endif
 
 final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 
@@ -39,11 +44,31 @@ class BaseBackendIntegrationTests: XCTestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
+    // MARK: - Overridable configuration
+
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
     }
+
+    var apiKey: String { return Constants.apiKey }
+    var proxyURL: String? { return Constants.proxyURL }
+
+    func configurePurchases() {
+        Purchases.configure(withAPIKey: self.apiKey,
+                            appUserID: nil,
+                            observerMode: Self.observerMode,
+                            userDefaults: self.userDefaults,
+                            platformInfo: nil,
+                            responseVerificationMode: Self.responseVerificationMode,
+                            storeKit2Setting: Self.storeKit2Setting,
+                            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
+                            networkTimeout: Configuration.networkTimeoutDefault,
+                            dangerousSettings: self.dangerousSettings)
+    }
+
+    // MARK: -
 
     @MainActor
     override func setUp() async throws {
@@ -52,12 +77,9 @@ class BaseBackendIntegrationTests: XCTestCase {
         // Avoid continuing with potentially bad data after a failed assertion
         self.continueAfterFailure = false
 
-        let apiKey = self.apiKey
-        let proxyURL = self.proxyURL
-
-        guard apiKey != "REVENUECAT_API_KEY",
-                apiKey != "REVENUECAT_LOAD_SHEDDER_API_KEY",
-                proxyURL != "REVENUECAT_PROXY_URL" else {
+        guard self.apiKey != "REVENUECAT_API_KEY",
+              self.apiKey != "REVENUECAT_LOAD_SHEDDER_API_KEY",
+              self.proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
 
@@ -78,7 +100,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         }
 
         self.clearReceiptIfExists()
-        await self.configurePurchases(apiKey: apiKey, proxyURL: proxyURL)
+        await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()
     }
 
@@ -95,11 +117,6 @@ class BaseBackendIntegrationTests: XCTestCase {
         Purchases.clearSingleton()
         await self.createPurchases()
     }
-
-    // MARK: - Configuration
-
-    var apiKey: String { return Constants.apiKey }
-    var proxyURL: String? { return Constants.proxyURL }
 
 }
 
@@ -118,27 +135,13 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
-    func configurePurchases(apiKey: String, proxyURL: String?) async {
+    func createPurchases() async {
         self.purchasesDelegate = TestPurchaseDelegate()
+        self.configurePurchases()
 
+        Purchases.shared.delegate = self.purchasesDelegate
         Purchases.proxyURL = proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
-
-        await self.createPurchases()
-    }
-
-    func createPurchases() async {
-        Purchases.configure(withAPIKey: self.apiKey,
-                            appUserID: nil,
-                            observerMode: Self.observerMode,
-                            userDefaults: self.userDefaults,
-                            platformInfo: nil,
-                            responseVerificationMode: Self.responseVerificationMode,
-                            storeKit2Setting: Self.storeKit2Setting,
-                            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-                            networkTimeout: Configuration.networkTimeoutDefault,
-                            dangerousSettings: self.dangerousSettings)
-        Purchases.shared.delegate = self.purchasesDelegate
 
         await self.waitForAnonymousUser()
     }

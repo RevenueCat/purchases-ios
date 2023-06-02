@@ -191,7 +191,8 @@ class PurchasesLogInTests: BasePurchasesTests {
 
         _ = try await self.purchases.logIn(appUserID)
 
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string,
+                                         allowNoMessages: true)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

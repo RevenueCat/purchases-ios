@@ -18,6 +18,12 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    func testGetCustomerInfo() async throws {
+        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(info.entitlements.all).to(beEmpty())
+        expect(info.isComputedOffline) == false
+    }
+
     func testHealthRequest() async throws {
         try await Purchases.shared.healthRequest(signatureVerification: false)
     }
