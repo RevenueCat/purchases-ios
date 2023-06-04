@@ -11,18 +11,20 @@ import StoreKit
 var storefront: RevenueCat.Storefront!
 
 func checkStorefrontAPI() {
-    let identifier: String = storefront.identifier
-    let countryCode: String = storefront.countryCode
+    let _: String = storefront.identifier
+    let _: String = storefront.countryCode
 
-    let sk1Storefront: SKStorefront? = storefront.sk1Storefront
-    let sk2Storefront: StoreKit.Storefront? = storefront.sk2Storefront
-
-    _ = Task<Void, Never> {
-        let _: RevenueCat.Storefront? = await Storefront.currentStorefront
+    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+        let _: SKStorefront? = storefront.sk1Storefront
     }
 
-    print(identifier,
-          countryCode,
-          sk1Storefront!,
-          sk2Storefront!)
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+        let _: StoreKit.Storefront? = storefront.sk2Storefront
+    }
+
+    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+        _ = Task<Void, Never> {
+            let _: RevenueCat.Storefront? = await Storefront.currentStorefront
+        }
+    }
 }

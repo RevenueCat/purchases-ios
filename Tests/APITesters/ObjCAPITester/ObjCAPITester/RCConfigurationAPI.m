@@ -13,7 +13,7 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config = [[[[[[[[[[[[builder withApiKey:@""]
+    RCConfiguration *config __unused = [[[[[[[[[[[builder withApiKey:@""]
                                          withObserverMode:false]
                                         withUserDefaults:NSUserDefaults.standardUserDefaults]
                                        withAppUserID:@""]
@@ -22,9 +22,12 @@
                                     withNetworkTimeout:1]
                                    withStoreKit1Timeout: 1]
                                   withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
-                                 withEntitlementVerificationMode:RCEntitlementVerificationModeEnforced]
                                 withUsesStoreKit2IfAvailable:false] build];
-    NSLog(@"%@", config);
+
+    if (@available(iOS 13.0, *)) {
+        RCConfiguration *config __unused = [[builder withEntitlementVerificationMode:RCEntitlementVerificationModeEnforced]
+                                   build];
+    }
 }
 
 @end

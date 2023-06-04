@@ -73,6 +73,8 @@ func checkAttributionAPI() {
     attribution.collectDeviceIdentifiers()
 
     #if !os(tvOS) && !os(watchOS)
-    attribution.enableAdServicesAttributionTokenCollection()
+    if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+        attribution.enableAdServicesAttributionTokenCollection()
+    }
     #endif
 }

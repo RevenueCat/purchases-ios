@@ -17,11 +17,13 @@
     NSString *identifier = storefront.identifier;
     NSString *countryCode = storefront.countryCode;
 
-    SKStorefront *sk1storefront = storefront.sk1Storefront;
+    if (@available(iOS 13.0, *)) {
+        SKStorefront *sk1storefront = storefront.sk1Storefront;
 
-    RCStorefront *currentStorefront = [RCStorefront sk1CurrentStorefront];
+        RCStorefront *currentStorefront = [RCStorefront sk1CurrentStorefront];
 
-    NSLog(identifier, countryCode, sk1storefront, currentStorefront);
+        NSLog(identifier, countryCode, sk1storefront, currentStorefront);
+    }
 }
 
 @end

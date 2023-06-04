@@ -131,19 +131,24 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]()) { (_: [String: IntroEligibility]) in
     }
 
-    purchases.getPromotionalOffer(
-        forProductDiscount: discount,
-        product: storeProduct
-    ) { (_: PromotionalOffer?, _: Error?) in }
+    if #available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *) {
+        purchases.getPromotionalOffer(
+            forProductDiscount: discount,
+            product: storeProduct
+        ) { (_: PromotionalOffer?, _: Error?) in }
+        purchases.purchase(product: storeProduct,
+                           promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+        purchases.purchase(package: pack,
+                           promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
-    purchases.purchase(product: storeProduct,
-                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
-    purchases.purchase(package: pack,
-                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    }
+
     purchases.invalidateCustomerInfoCache()
 
 #if os(iOS)
-    purchases.presentCodeRedemptionSheet()
+    if #available(iOS 14.0, *) {
+        purchases.presentCodeRedemptionSheet()
+    }
 #endif
 
     // PurchasesDelegate
@@ -161,11 +166,15 @@ private func checkIdentity(purchases: Purchases) {
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
-    purchases.showManageSubscriptions { _ in }
+    if #available(iOS 13.0, macOS 10.15, *) {
+        purchases.showManageSubscriptions { _ in }
+    }
     #endif
     #if os(iOS) || targetEnvironment(macCatalyst)
-    _ = purchases.showPriceConsentIfNeeded
-    _ = purchases.delegate?.shouldShowPriceConsent
+    if #available(iOS 13.4, macCatalyst 13.4, *) {
+        _ = purchases.showPriceConsentIfNeeded
+        _ = purchases.delegate?.shouldShowPriceConsent
+    }
     #endif
 }
 
@@ -196,6 +205,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -231,9 +241,12 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         #if os(iOS)
         try await purchases.showManageSubscriptions()
-        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
-        let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
-        let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
+
+        if #available(iOS 15.0, *) {
+            let _: RefundRequestStatus = try await purchases.beginRefundRequest(forProduct: "")
+            let _: RefundRequestStatus = try await purchases.beginRefundRequest(forEntitlement: "")
+            let _: RefundRequestStatus = try await purchases.beginRefundRequestForActiveEntitlement()
+        }
 
         let _: [PromotionalOffer] = await purchases.eligiblePromotionalOffers(forProduct: stp)
         #endif
@@ -242,9 +255,11 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
     #if os(iOS)
-    purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
-    purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
-    purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
+    if #available(iOS 15.0, *) {
+        purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+        purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }
+        purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
+    }
     #endif
 }
 
@@ -263,6 +278,7 @@ private func checkConfigure() -> Purchases! {
     return nil
 }
 
+@available(iOS 13.0, *)
 @available(*, deprecated) // Ignore deprecation warnings
 private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StoreProduct) async throws {
     let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)

@@ -163,12 +163,13 @@ BOOL isAnonymous;
     
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    [p getPromotionalOfferForProductDiscount:stpd
-                                 withProduct:storeProduct
-                              withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
-    
-    [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    if (@available(iOS 12.2, *)) {
+        [p getPromotionalOfferForProductDiscount:stpd
+                                     withProduct:storeProduct
+                                  withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
+        [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+        [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    }
     
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
@@ -184,15 +185,22 @@ BOOL isAnonymous;
     }];
 
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
-    [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
-    [p beginRefundRequestForEntitlement:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
-    [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
-    [p showPriceConsentIfNeeded];
-    BOOL consent __unused = [p.delegate shouldShowPriceConsent];
+    if (@available(iOS 15.0, *)) {
+        [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+        [p beginRefundRequestForEntitlement:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+        [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    }
+
+    if (@available(iOS 13.4, *)) {
+        [p showPriceConsentIfNeeded];
+        BOOL consent __unused = [p.delegate shouldShowPriceConsent];
+    }
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
-    [p presentCodeRedemptionSheet];
+    if (@available(iOS 14.0, *)) {
+        [p presentCodeRedemptionSheet];
+    }
 #endif
 }
 

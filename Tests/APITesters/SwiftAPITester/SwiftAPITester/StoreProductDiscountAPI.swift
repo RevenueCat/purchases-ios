@@ -20,8 +20,13 @@ func checkStoreProductDiscountAPI() {
     let priceFormatter: NumberFormatter? = product.priceFormatter
     let subscriptionPeriod: SubscriptionPeriod = discount.subscriptionPeriod
 
-    let sk1Discount: SK1ProductDiscount = discount.sk1Discount!
-    let sk2Discount: SK2ProductDiscount = discount.sk2Discount!
+    if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) {
+        let _: SK1ProductDiscount = discount.sk1Discount!
+    }
+
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+        let _: SK2ProductDiscount = discount.sk2Discount!
+    }
 
     print(
         offerIdentifier!,
@@ -31,9 +36,7 @@ func checkStoreProductDiscountAPI() {
         localizedPriceString,
         paymentMode,
         priceFormatter!,
-        subscriptionPeriod,
-        sk1Discount,
-        sk2Discount
+        subscriptionPeriod
     )
 }
 

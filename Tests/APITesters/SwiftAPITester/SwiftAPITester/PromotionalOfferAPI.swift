@@ -11,17 +11,20 @@ import StoreKit
 
 var offer: PromotionalOffer!
 func checkPromotionalOfferAPI() {
-    let discount: StoreProductDiscount = offer.discount
-    let sk1Discount = offer.discount.sk1Discount
-    let sk2Discount = offer.discount.sk2Discount
+    let _: StoreProductDiscount = offer.discount
 
-    let signedData = offer.signedData
+    if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) {
+        let _: SK1ProductDiscount? = offer.discount.sk1Discount
+    }
+    if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+        let _: SK2ProductDiscount? = offer.discount.sk2Discount
+    }
+
+    let signedData: PromotionalOffer.SignedData = offer.signedData
 
     let _: String = signedData.identifier
     let _: String = signedData.keyIdentifier
     let _: UUID = signedData.nonce
     let _: String = signedData.signature
     let _: Int = signedData.timestamp
-
-    print(discount, sk1Discount!, sk2Discount!)
 }

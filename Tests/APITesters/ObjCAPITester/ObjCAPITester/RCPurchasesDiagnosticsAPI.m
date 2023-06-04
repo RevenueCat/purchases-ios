@@ -12,9 +12,10 @@
 @implementation RCPurchasesDiagnosticsAPI
 
 + (void)checkAPI {
-    RCPurchasesDiagnostics *diagnostics = [RCPurchasesDiagnostics default];
-
-    [diagnostics testSDKHealthWithCompletion:^(NSError * _Nullable error) {}];
+    if (@available(iOS 13.0, *)) {
+        RCPurchasesDiagnostics *diagnostics = [RCPurchasesDiagnostics default];
+        [diagnostics testSDKHealthWithCompletion:^(NSError * _Nullable error) {}];
+    }
 }
 
 @end
