@@ -67,7 +67,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "USD"
 
-        testSession.locale = Locale(identifier: "es_ES")
+        try self.changeLocale(identifier: "es_ES")
         try await changeStorefront("ESP")
 
         // Note: this test passes only because the method `clearCache`
@@ -97,7 +97,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         var unwrappedFirstProduct = try XCTUnwrap(receivedProducts?.first)
         expect(unwrappedFirstProduct.currencyCode) == "USD"
 
-        testSession.locale = Locale(identifier: "es_ES")
+        try self.changeLocale(identifier: "es_ES")
         try await changeStorefront("ESP")
 
         // Note: this test passes only because the method `clearCache`

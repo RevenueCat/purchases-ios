@@ -100,6 +100,40 @@ class StoreKitConfigTestCase: TestCase {
 
 }
 
+// MARK: - Locale
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+extension StoreKitConfigTestCase {
+
+    func changeLocale(identifier: String) throws {
+        try self.changeLocale(locale: .init(identifier: identifier))
+    }
+
+    func changeLocale(locale: Locale) throws {
+        try XCTSkipIf(
+            !Self.supportsChangingLocale,
+            "SKTestSession.locale is broken on this iOS version"
+        )
+
+        self.testSession.locale = locale
+    }
+
+    private static let supportsChangingLocale: Bool = {
+        // See:
+        // - https://github.com/XcodesOrg/xcodes/issues/295
+        // - https://github.com/RevenueCat/purchases-ios/pull/2421
+        // - FB12223404
+
+        let version = ProcessInfo.processInfo
+            .operatingSystemVersion
+            .majorVersion
+
+        return version == 12 || version >= 15
+    }()
+}
+
+// MARK: - Private
+
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreKitConfigTestCase {
 
