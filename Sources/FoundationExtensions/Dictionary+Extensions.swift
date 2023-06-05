@@ -31,14 +31,14 @@ extension Dictionary {
 extension Dictionary {
 
     /// Merge strategy to use for any duplicate keys.
-    enum MergeStrategy<Value> {
+    enum MergeStrategy<NewValue> {
 
         /// Keep the original value.
         case keepOriginalValue
         /// Overwrite the original value.
         case overwriteValue
 
-        var combine: (Value, Value) -> Value {
+        var combine: (NewValue, NewValue) -> NewValue {
             switch self {
             case .keepOriginalValue:
                 return { original, _ in original }
