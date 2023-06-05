@@ -20,7 +20,7 @@ import Foundation
  * To configure your `Purchases` instance using this object, follow these steps.
  *
  * **Steps:**
- * 1. Call ``Configuration/builder(withAPIKey:)`` To obtain a ``Builder`` object.
+ * 1. Call ``Configuration/builder(withAPIKey:)`` To obtain a ``Configuration/Builder`` object.
  * 2. Set this builder's properties using the "`with(`" functions.
  * 3. Call ``Builder/build()`` to obtain the `Configuration` object.
  * 4. Pass the `Configuration` object into ``Purchases/configure(with:)-6oipy``.
