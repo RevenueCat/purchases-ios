@@ -47,8 +47,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try await asyncWait(
             until: {
-                let entitlement = try? await Purchases.shared
-                    .customerInfo(fetchPolicy: .fetchCurrent)
+                let entitlement = await self.purchasesDelegate
+                    .customerInfo?
                     .entitlements[Self.entitlementIdentifier]
 
                 return entitlement?.isActive == true
