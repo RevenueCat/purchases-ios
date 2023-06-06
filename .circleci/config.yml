@@ -315,6 +315,32 @@ jobs:
           command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
 
+  run-test-ios-17:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (17.0)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"ios-17"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
   run-test-ios-16:
     <<: *base-job
     steps:
@@ -821,6 +847,8 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -849,6 +877,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
           xcode_version: '14.3.0'
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
