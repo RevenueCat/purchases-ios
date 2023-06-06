@@ -38,18 +38,23 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseInDevicePostsReceipt() async throws {
-        try await self.purchaseProductFromStoreKit()
+        let result = try await self.purchaseProductFromStoreKit()
+        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
+
+        try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
+
+        XCTExpectFailure("This test currently does not pass (see FB12231111)")
 
         try await asyncWait(
             until: {
-                let entitlement = try? await Purchases.shared
-                    .customerInfo(fetchPolicy: .fetchCurrent)
+                let entitlement = await self.purchasesDelegate
+                    .customerInfo?
                     .entitlements[Self.entitlementIdentifier]
 
                 return entitlement?.isActive == true
             },
-            timeout: .seconds(60),
-            pollInterval: .seconds(2),
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(500),
             description: "Entitlement didn't become active"
         )
     }
