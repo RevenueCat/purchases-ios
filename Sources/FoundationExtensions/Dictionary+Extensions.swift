@@ -31,14 +31,14 @@ extension Dictionary {
 extension Dictionary {
 
     /// Merge strategy to use for any duplicate keys.
-    enum MergeStrategy<NewValue> {
+    enum MergeStrategy {
 
         /// Keep the original value.
         case keepOriginalValue
         /// Overwrite the original value.
         case overwriteValue
 
-        var combine: (NewValue, NewValue) -> NewValue {
+        var combine: (Value, Value) -> Value {
             switch self {
             case .keepOriginalValue:
                 return { original, _ in original }
@@ -59,7 +59,7 @@ extension Dictionary {
     ///   closure that returns the desired value for the final dictionary. The default is `overwriteValue`.
     /// - Returns: A new dictionary with the combined keys and values of this
     ///   dictionary and `other`.
-    func merging(_ other: [Key: Value], strategy: MergeStrategy<Value> = .overwriteValue) -> [Key: Value] {
+    func merging(_ other: [Key: Value], strategy: MergeStrategy = .overwriteValue) -> [Key: Value] {
         return self.merging(other, uniquingKeysWith: strategy.combine)
     }
 
@@ -70,7 +70,7 @@ extension Dictionary {
     ///   - other:  A dictionary to merge.
     ///   - strategy: The merge strategy to use for any duplicate keys. The strategy provides a
     ///   closure that returns the desired value for the final dictionary. The default is `overwriteValue`.
-    mutating func merge(_ other: [Key: Value], strategy: MergeStrategy<Value> = .overwriteValue) {
+    mutating func merge(_ other: [Key: Value], strategy: MergeStrategy = .overwriteValue) {
         self.merge(other, uniquingKeysWith: strategy.combine)
     }
 
