@@ -14,43 +14,34 @@
 + (void)checkAPI {
     RCStoreProduct *product;
 
-    NSString *localizedDescription = product.localizedDescription;
-    NSString *localizedTitle = product.localizedTitle;
-    NSString *currencyCode = product.currencyCode;
-    NSDecimalNumber *price = product.price;
-    NSString *localizedPriceString = product.localizedPriceString;
-    NSString *productIdentifier = product.productIdentifier;
-    BOOL isFamilyShareable = product.isFamilyShareable;
-    NSString *subscriptionGroupIdentifier = product.subscriptionGroupIdentifier;
-    NSNumberFormatter *priceFormatter = product.priceFormatter;
-    RCSubscriptionPeriod *subscriptionPeriod = product.subscriptionPeriod;
-    RCStoreProductDiscount *introductoryPrice = product.introductoryDiscount;
-    NSArray<RCStoreProductDiscount *> *discounts = product.discounts;
-    NSDecimalNumber *pricePerMonth = product.pricePerMonth;
-    NSDecimalNumber *pricePerYear = product.pricePerYear;
-    NSString *localizedIntroductoryPriceString = product.localizedIntroductoryPriceString;
+    NSString *localizedDescription __unused = product.localizedDescription;
+    NSString *localizedTitle __unused = product.localizedTitle;
+    NSString *currencyCode __unused = product.currencyCode;
+    NSDecimalNumber *price __unused = product.price;
+    NSString *localizedPriceString __unused = product.localizedPriceString;
+    NSString *productIdentifier __unused = product.productIdentifier;
+    if (@available(iOS 14.0, *)) {
+        BOOL isFamilyShareable  __unused = product.isFamilyShareable;
+    }
+    if (@available(iOS 12.0, *)) {
+        NSString *subscriptionGroupIdentifier  __unused = product.subscriptionGroupIdentifier;
+    }
+    NSNumberFormatter *priceFormatter  __unused = product.priceFormatter;
 
-    SKProduct *sk1 = product.sk1Product;
+    if (@available(iOS 11.2, *)) {
+        RCSubscriptionPeriod *subscriptionPeriod __unused = product.subscriptionPeriod;
+        RCStoreProductDiscount *introductoryPrice __unused = product.introductoryDiscount;
+        NSDecimalNumber *pricePerMonth __unused = product.pricePerMonth;
+        NSDecimalNumber *pricePerYear __unused = product.pricePerYear;
+    }
 
-    NSLog(
-          product,
-          localizedDescription,
-          localizedTitle,
-          currencyCode,
-          price,
-          localizedPriceString,
-          productIdentifier,
-          isFamilyShareable,
-          subscriptionGroupIdentifier,
-          priceFormatter,
-          subscriptionPeriod,
-          introductoryPrice,
-          discounts,
-          pricePerMonth,
-          pricePerYear,
-          localizedIntroductoryPriceString,
-          sk1
-      );
+    NSString *localizedIntroductoryPriceString __unused = product.localizedIntroductoryPriceString;
+
+    if (@available(iOS 12.2, *)) {
+        NSArray<RCStoreProductDiscount *> *discounts __unused = product.discounts;
+    }
+
+    SKProduct *sk1 __unused = product.sk1Product;
 }
 
 + (void)checkConstructors {
