@@ -25,13 +25,10 @@ extension View {
         largestUndimmedIdentifier: PresentationDetent = .large,
         cornerRadius: CGFloat,
         interactiveDismissDisabled: Bool = false,
-        @ViewBuilder content: @escaping () -> some View,
-        onDismiss: (() -> Void)? = nil
+        @ViewBuilder content: @escaping () -> some View
     ) -> some View {
         self
             .sheet(isPresented: isPresented) {
-                onDismiss?()
-            } content: {
                 let result = content()
                     .presentationDetents(presentationDetents)
                     .presentationDragIndicator(.automatic)

@@ -59,6 +59,7 @@ public extension View {
                 .large
             ],
             isPresented: isPresented,
+            largestUndimmedIdentifier: .fraction(0.6),
             cornerRadius: 10,
             content: {
                 DebugSwiftUIRootView()
