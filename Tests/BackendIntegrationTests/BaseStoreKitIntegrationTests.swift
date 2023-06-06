@@ -315,8 +315,10 @@ extension BaseStoreKitIntegrationTests {
     /// Purchases a product directly with StoreKit.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     @discardableResult
-    func purchaseProductFromStoreKit() async throws -> Product.PurchaseResult {
-        let products = try await StoreKit.Product.products(for: [Self.monthlyNoIntroProductID])
+    func purchaseProductFromStoreKit(
+        productIdentifier: String = BaseStoreKitIntegrationTests.monthlyNoIntroProductID
+    ) async throws -> Product.PurchaseResult {
+        let products = try await StoreKit.Product.products(for: [productIdentifier])
         let product = try XCTUnwrap(products.onlyElement)
 
         return try await product.purchase()

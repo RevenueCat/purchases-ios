@@ -59,6 +59,27 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         )
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testRenewalsPostReceipt() async throws {
+        let productID = Self.monthlyNoIntroProductID
+
+        try await self.purchaseProductFromStoreKit(productIdentifier: productID)
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+
+        try await asyncWait(
+            until: {
+                let entitlement = await self.purchasesDelegate
+                    .customerInfo?
+                    .entitlements[Self.entitlementIdentifier]
+
+                return entitlement?.isActive == true
+            },
+            timeout: .seconds(10),
+            pollInterval: .milliseconds(500),
+            description: "Entitlement didn't become active"
+        )
+    }
+
 }
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
