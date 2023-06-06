@@ -1,8 +1,10 @@
 ## 4.21.1
+_This release is compatible with Xcode 15 beta 1_
+
 ### Bugfixes
 * `Dictionary.MergeStrategy`: fixed Xcode 15 compilation (#2582) via NachoSoto (@NachoSoto)
 ### Other Changes
-* `Custom Entitlement Computation`: added missing scheme to project (#2579) via NachoSoto (@NachoSoto)
+* `Custom Entitlements Computation`: added missing scheme to project (#2579) via NachoSoto (@NachoSoto)
 * `Custom Entitlements Computation`: added Integration Tests (#2568) via NachoSoto (@NachoSoto)
 * `ProductsManager`: improved display of underlying errors (#2575) via NachoSoto (@NachoSoto)
 * `StoreKit1Wrapper`: added debug log for duplicate `finishTransaction` calls (#2577) via NachoSoto (@NachoSoto)
