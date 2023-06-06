@@ -60,7 +60,6 @@ public extension View {
             ],
             isPresented: isPresented,
             cornerRadius: 10,
-            transparentBackground: true,
             content: {
                 DebugSwiftUIRootView()
             }

@@ -22,9 +22,8 @@ extension View {
     func bottomSheet(
         presentationDetents: Set<PresentationDetent>,
         isPresented: Binding<Bool>,
-        largestUndimmedIdentifier: UISheetPresentationController.Detent.Identifier = .large,
+        largestUndimmedIdentifier: PresentationDetent = .large,
         cornerRadius: CGFloat,
-        transparentBackground: Bool = false,
         interactiveDismissDisabled: Bool = false,
         @ViewBuilder content: @escaping () -> some View,
         onDismiss: (() -> Void)? = nil
@@ -33,31 +32,18 @@ extension View {
             .sheet(isPresented: isPresented) {
                 onDismiss?()
             } content: {
-                content()
+                let result = content()
                     .presentationDetents(presentationDetents)
                     .presentationDragIndicator(.automatic)
                     .interactiveDismissDisabled(interactiveDismissDisabled)
-                    .onAppear {
-                        guard let scene = SystemInfo.sharedUIApplication?.connectedScenes.first as? UIWindowScene,
-                              let rootController = scene.windows.first?.rootViewController,
-                              let presentedController = rootController.presentedViewController,
-                              let sheet = presentedController.presentationController
-                                as? UISheetPresentationController else {
-                            Logger.appleWarning("Sheet not found, unable to configure")
-                            return
-                        }
 
-                        // These are only available on `UISheetPresentationController` but not SwiftUI
-                        sheet.largestUndimmedDetentIdentifier = largestUndimmedIdentifier
-                        sheet.preferredCornerRadius = cornerRadius
-
-                        // UIKit workaround: avoid tint breaking after dismissing
-                        presentedController.presentingViewController?.view.tintAdjustmentMode = .normal
-
-                        if transparentBackground {
-                            presentedController.view.backgroundColor = .clear
-                        }
-                    }
+                if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
+                    result
+                        .presentationCornerRadius(cornerRadius)
+                        .presentationBackgroundInteraction(.enabled(upThrough: largestUndimmedIdentifier))
+                } else {
+                    result
+                }
             }
     }
 }
