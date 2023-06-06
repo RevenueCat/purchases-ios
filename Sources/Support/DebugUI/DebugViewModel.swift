@@ -46,7 +46,7 @@ final class DebugViewModel: ObservableObject {
     var navigationPath = NavigationPath()
 
     func load() async {
-        self.configuration = .loaded(.withSharedPurchases())
+        self.configuration = .loaded(.create())
 
         self.diagnosticsResult = await .create { try await PurchasesDiagnostics.default.testSDKHealth() }
         self.offerings = await .create { try await Purchases.shared.offerings() }
@@ -115,13 +115,13 @@ extension LoadingState where Error == NSError {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension DebugViewModel.Configuration {
 
-    static func withSharedPurchases() -> Self {
+    static func create(with purchases: Purchases = .shared) -> Self {
         return .init(
-            observerMode: Purchases.shared.observerMode,
-            sandbox: Purchases.shared.isSandbox,
-            storeKit2Enabled: Purchases.shared.storeKit2Setting.isEnabledAndAvailable,
-            offlineCustomerInfoSupport: Purchases.shared.offlineCustomerInfoEnabled,
-            verificationMode: Purchases.shared.responseVerificationMode
+            observerMode: purchases.observerMode,
+            sandbox: purchases.isSandbox,
+            storeKit2Enabled: purchases.storeKit2Setting.isEnabledAndAvailable,
+            offlineCustomerInfoSupport: purchases.offlineCustomerInfoEnabled,
+            verificationMode: purchases.responseVerificationMode
         )
     }
 
