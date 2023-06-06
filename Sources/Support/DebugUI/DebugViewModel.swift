@@ -52,6 +52,10 @@ final class DebugViewModel: ObservableObject {
         self.offerings = await .create { try await Purchases.shared.offerings() }
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
+
+        for await info in Purchases.shared.customerInfoStream {
+            self.customerInfo = .loaded(info)
+        }
         #endif
     }
 
