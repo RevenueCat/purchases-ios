@@ -21,13 +21,14 @@ import SwiftUI
 @available(iOS 16.0, *)
 final class DebugViewModel: ObservableObject {
 
-    struct Configuration {
+    struct Configuration: Codable {
 
-        let observerMode: Bool
-        let sandbox: Bool
-        let storeKit2Enabled: Bool
-        let offlineCustomerInfoSupport: Bool
-        let verificationMode: Signing.ResponseVerificationMode
+        var sdkVersion: String = SystemInfo.frameworkVersion
+        var observerMode: Bool
+        var sandbox: Bool
+        var storeKit2Enabled: Bool
+        var offlineCustomerInfoSupport: Bool
+        var verificationMode: String
 
     }
 
@@ -121,8 +122,20 @@ private extension DebugViewModel.Configuration {
             sandbox: purchases.isSandbox,
             storeKit2Enabled: purchases.storeKit2Setting.isEnabledAndAvailable,
             offlineCustomerInfoSupport: purchases.offlineCustomerInfoEnabled,
-            verificationMode: purchases.responseVerificationMode
+            verificationMode: purchases.responseVerificationMode.display
         )
+    }
+
+}
+
+private extension Signing.ResponseVerificationMode {
+
+    var display: String {
+        switch self {
+        case .disabled: return "disabled"
+        case .informational: return "informational"
+        case .enforced: return "enforced"
+        }
     }
 
 }
