@@ -804,6 +804,59 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         }
     }
 
+    #if swift(>=5.9)
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
+    func testPurchaseSK1PackageCancelled() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        self.testSession.setSimulatedError(.cancelled, forAPI: .purchase)
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        let product = try await self.fetchSk1Product()
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: StoreProduct(sk1Product: product),
+                              offeringIdentifier: "offering")
+
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        let (transaction, info, error, cancelled) = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(sk1Product: product,
+                                       payment: payment,
+                                       package: package,
+                                       wrapper: self.storeKit1Wrapper) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(info) === self.mockCustomerInfo
+        expect(cancelled) == true
+        expect(error).to(matchError(ErrorCode.purchaseCancelledError))
+
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
+    func testPurchaseSK2ProductCancelled() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        self.testSession.setSimulatedError(.cancelled, forAPI: .purchase)
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        let product = try await self.fetchSk2Product()
+
+        let (info, _, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                        package: nil,
+                                                                        promotionalOffer: nil)
+
+        expect(info) === self.mockCustomerInfo
+        expect(cancelled) == true
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+    #endif
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageWithInvalidPromotionalOfferSignatureThrowsError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
