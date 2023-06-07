@@ -7,6 +7,8 @@
 
 import Foundation
 
+import RevenueCat
+import StoreKit
 import SwiftUI
 
 #if DEBUG && os(iOS) && swift(>=5.8)
@@ -23,5 +25,38 @@ struct AppView: View {
     }
 
 }
+
+#if os(iOS) && swift(>=5.9)
+
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+struct PaywallViews: View {
+
+    let offering: Offering
+
+    var body: some View {
+        StoreView(offering: self.offering)
+        StoreView(offering: self.offering, prefersPromotionalIcon: true)
+
+        StoreView(
+            offering: self.offering,
+            prefersPromotionalIcon: true,
+            icon: { (_: Product) in Text("") },
+            placeholderIcon: { Text("") }
+        )
+
+        SubscriptionStoreView(offering: self.offering)
+        SubscriptionStoreView(offering: self.offering) {
+            Text("Marketing content")
+        }
+
+        CurrentOfferingSubscriptionStoreView()
+        CurrentOfferingSubscriptionStoreView {
+            Text("Marketing content")
+        }
+    }
+
+}
+
+#endif
 
 #endif
