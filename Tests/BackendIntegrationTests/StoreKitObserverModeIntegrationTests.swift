@@ -66,7 +66,11 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         try await self.purchaseProductFromStoreKit(productIdentifier: productID)
 
         self.testSession.timeRate = .realTime
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+        do {
+            try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+        } catch let error as NSError {
+            Logger.appleError("\(error.description) \(error.localizedDescription) \(error.userInfo)")
+        }
 
         try await asyncWait(
             until: {
