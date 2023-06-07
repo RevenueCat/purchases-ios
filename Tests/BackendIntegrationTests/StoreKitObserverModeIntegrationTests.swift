@@ -64,6 +64,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         let productID = Self.monthlyNoIntroProductID
 
         try await self.purchaseProductFromStoreKit(productIdentifier: productID)
+
+        self.testSession.timeRate = .realTime
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
         try await asyncWait(
@@ -74,8 +76,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
                 return entitlement?.isActive == true
             },
-            timeout: .seconds(10),
-            pollInterval: .milliseconds(500),
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100),
             description: "Entitlement didn't become active"
         )
     }
