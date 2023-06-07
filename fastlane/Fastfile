@@ -501,7 +501,7 @@ platform :ios do
     )
   end
 
-  private_lane :build_symbols_for_docs do
+  lane :build_symbols_for_docs do
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
 
     sh("swift",
@@ -531,8 +531,6 @@ platform :ios do
          "preview-documentation",
          "--target",
          "RevenueCat",
-         "--configuration",
-         "debug", # Necessary for debug-only symbols
          "--platform",
          "name=iOS,version=#{ios_version}",
          "--transform-for-static-hosting",

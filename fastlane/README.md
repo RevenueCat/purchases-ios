@@ -242,6 +242,14 @@ Run LoadShedder tests
 
 Update swift package commit
 
+### ios build_symbols_for_docs
+
+```sh
+[bundle exec] fastlane ios build_symbols_for_docs
+```
+
+
+
 ### ios preview_docs
 
 ```sh
