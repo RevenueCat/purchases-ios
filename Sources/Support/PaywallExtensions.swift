@@ -134,10 +134,22 @@ public struct CurrentOfferingSubscriptionStoreView<Content: View>: View {
 
 private extension Offering {
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var subscriptionProductIdentifiers: [String] {
         return self.products
             .filter { $0.productCategory == .subscription }
-            .map(\.productIdentifier)
+            // Filter out products with no subscription periods (non-subscriptions)
+            .compactMap { product in
+                product.subscriptionPeriod.map { period in
+                    (
+                        product: product,
+                        period: period
+                    )
+                }
+            }
+            // Sort by subscription period
+            .sorted(using: KeyPathComparator(\.period.unit.rawValue, order: .forward))
+            .map(\.product.productIdentifier)
     }
 
     var allProductIdentifiers: [String] {
