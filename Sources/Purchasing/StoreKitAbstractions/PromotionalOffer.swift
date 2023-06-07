@@ -31,7 +31,7 @@ public final class PromotionalOffer: NSObject {
 
     /// The ``StoreProductDiscount`` in this offer.
     @objc public let discount: StoreProductDiscount
-    /// The ``SignedData-swift.class`` provides information about the ``PromotionalOffer``'s signature.
+    /// The ``PromotionalOffer/SignedData-swift.class`` provides information about the ``PromotionalOffer``'s signature.
     @objc public let signedData: SignedData
 
     init(discount: StoreProductDiscountType, signedData: SignedData) {
