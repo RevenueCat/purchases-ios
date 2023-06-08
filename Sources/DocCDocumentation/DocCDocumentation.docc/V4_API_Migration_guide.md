@@ -250,7 +250,7 @@ These types replace native StoreKit types in all public API methods that used th
 #### PurchasesDelegate
 | v3 | v4 |
 | ------------ | ------------------------------------- | 
-| purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) | ``PurchasesDelegate/purchases(_:receivedUpdated:)`` |
+| purchases(_ purchases: Purchases, didReceiveUpdated purchaserInfo: PurchaserInfo) | ``RevenueCat/PurchasesDelegate/purchases(_:receivedUpdated:)`` |
 
 ### Error handling
 
@@ -282,7 +282,7 @@ if let error = error as? RevenueCat.ErrorCode {
 - ``Purchases/beginRefundRequest(forProduct:)``: Use this method to begin a refund request for a purchase, specifying the product identifier.
 - ``Purchases/beginRefundRequest(forEntitlement:)``: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
 - You can now use ``Purchases/customerInfoStream`` to be notified whenever there's new ``CustomerInfo`` available, 
-as an alternative to ``PurchasesDelegate/purchases(_:receivedUpdated:)``.
+as an alternative to ``RevenueCat/PurchasesDelegate/purchases(_:receivedUpdated:)``.
 
 ## Reporting undocumented issues:
 

@@ -69,8 +69,8 @@ public protocol PurchasesType: AnyObject {
      *
      * #### Related Articles
      * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
-     * - ``logOut(completion:)``
-     * - ``isAnonymous``
+     * - ``Purchases/logOut(completion:)``
+     * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void)
@@ -95,8 +95,8 @@ public protocol PurchasesType: AnyObject {
      *
      * #### Related Articles
      * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
-     * - ``logOut()``
-     * - ``isAnonymous``
+     * - ``Purchases/logOut()``
+     * - ``Purchases/isAnonymous``
      * - ``Purchases/appUserID``
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -206,7 +206,7 @@ public protocol PurchasesType: AnyObject {
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
      * Use this method if you aren't using ``Purchases/getOfferings(completion:)``.
-     * You should use ``getOfferings(completion:)`` though.
+     * You should use ``Purchases/getOfferings(completion:)`` though.
      *
      * - Note: `completion` may be called without ``StoreProduct``s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
@@ -228,8 +228,8 @@ public protocol PurchasesType: AnyObject {
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.
      *
-     * Use this method if you aren't using ``getOfferings(completion:)``.
-     * You should use ``getOfferings(completion:)`` though.
+     * Use this method if you aren't using ``Purchases/getOfferings(completion:)``.
+     * You should use ``Purchases/getOfferings(completion:)`` though.
      *
      * - Note: The result might not contain the ``StoreProduct``s that you are expecting. This is usually caused by
      * iTunesConnect configuration errors. Ensure your IAPs have the "Ready to Submit" status in iTunesConnect.
@@ -440,7 +440,7 @@ public protocol PurchasesType: AnyObject {
      * #### Related Symbols
      * - ``StoreProduct/discounts``
      * - ``StoreProduct/eligiblePromotionalOffers()``
-     * - ``promotionalOffer(forProductDiscount:product:)``
+     * - ``Purchases/promotionalOffer(forProductDiscount:product:)``
      */
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
@@ -535,7 +535,7 @@ public protocol PurchasesType: AnyObject {
      * - Parameter receiveEligibility: A block that receives a dictionary of `product_id` -> ``IntroEligibility``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(product:completion:)``
+     * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(
@@ -561,7 +561,7 @@ public protocol PurchasesType: AnyObject {
      * - Parameter productIdentifiers: Array of product identifiers for which you want to compute eligibility
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(product:)``
+     * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility]
@@ -586,7 +586,7 @@ public protocol PurchasesType: AnyObject {
      * - Parameter completion: A block that receives an ``IntroEligibilityStatus``.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``
+     * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``
      */
     @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
     func checkTrialOrIntroDiscountEligibility(
@@ -613,14 +613,15 @@ public protocol PurchasesType: AnyObject {
      * - Parameter product: The ``StoreProduct``  for which you want to compute eligibility.
      *
      * ### Related symbols
-     * - ``checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
+     * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
      */
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus
 
     /**
      * Use this method to fetch ``PromotionalOffer``
-     *  to use in ``purchase(package:promotionalOffer:)`` or ``purchase(product:promotionalOffer:)``.
+     *  to use in ``Purchases/purchase(package:promotionalOffer:)``
+     *  or ``Purchases/purchase(product:promotionalOffer:)``.
      * [iOS Promotional Offers](https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers).
      * - Note: If you're looking to use free trials or Introductory Offers instead,
      * use ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)``.
@@ -655,7 +656,7 @@ public protocol PurchasesType: AnyObject {
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),
     ///   that discount will fail silently and be considered not eligible.
     /// #### Related Symbols
-    /// - ``promotionalOffer(forProductDiscount:product:)``
+    /// - ``Purchases/promotionalOffer(forProductDiscount:product:)``
     /// - ``StoreProduct/eligiblePromotionalOffers()``
     /// - ``StoreProduct/discounts``
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -723,8 +724,8 @@ public protocol PurchasesType: AnyObject {
      * or multiple active entitlements were found for the user, an `Error` will be thrown.
      *
      *- important: This method should only be used if your user can only
-     * have a single active entitlement at a given time.
-     * If a user could have more than one entitlement at a time, use ``beginRefundRequest(forEntitlement:)`` instead.
+     * have a single active entitlement at a given time. If a user could have more than one entitlement at a time,
+     * use ``Purchases/beginRefundRequest(forEntitlement:)`` instead.
      */
     @available(iOS 15.0, *)
     @available(macOS, unavailable)

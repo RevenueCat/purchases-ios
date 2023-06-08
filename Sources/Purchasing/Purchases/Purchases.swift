@@ -54,8 +54,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
-    /// ``configure(withAPIKey:)`` or one of its overloads. If there's a chance that may have not happened yet,
-    /// you can use ``isConfigured`` to check if it's safe to call.
+    /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
+    /// If there's a chance that may have not happened yet, you can use ``isConfigured`` to check if it's safe to call.
+    /// 
     /// ### Related symbols
     /// - ``isConfigured``
     @objc(sharedPurchases)
@@ -69,7 +70,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private static let purchases: Atomic<Purchases?> = nil
 
-    /// Returns `true` if RevenueCat has already been initialized through ``configure(withAPIKey:)``
+    /// Returns `true` if RevenueCat has already been initialized through ``Purchases/configure(withAPIKey:)``
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
