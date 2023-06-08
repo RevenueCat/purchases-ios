@@ -17,11 +17,11 @@ import Nimble
 
 // MARK: - Dates
 
-func beCloseToNow() -> Predicate<Date> {
+func beCloseToNow() -> Nimble.Predicate<Date> {
     return beCloseToDate(Date())
 }
 
-func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
+func beCloseToDate(_ expectedValue: Date) -> Nimble.Predicate<Date> {
     return beCloseTo(expectedValue, within: 1)
 }
 
@@ -32,31 +32,31 @@ func beCloseToDate(_ expectedValue: Date) -> Predicate<Date> {
 
 /// Overload for `Nimble.matchError` that ignores the `PurchasesError` type and compares them as `Error`
 /// (comparing the domain and code)
-func matchError(_ error: PurchasesError) -> Predicate<Error> {
+func matchError(_ error: PurchasesError) -> Nimble.Predicate<Error> {
     return Nimble.matchError(error as Error)
 }
 
 /// Overload for `Nimble.matchError` that ignores the `ErrorCode` type and compares them as `Error`
 /// (comparing the domain and code)
-func matchError(_ error: ErrorCode) -> Predicate<Error> {
+func matchError(_ error: ErrorCode) -> Nimble.Predicate<Error> {
     return Nimble.matchError(error as Error)
 }
 
 /// Overload for `Nimble.throwError` that ignores the `PurchasesError` type and compares them as `Error`
 /// (comparing the domain and code)
-public func throwError<Out>(_ error: PurchasesError) -> Predicate<Out> {
+public func throwError<Out>(_ error: PurchasesError) -> Nimble.Predicate<Out> {
     return Nimble.throwError(error as Error)
 }
 
 /// Overload for `Nimble.throwError` that ignores the `ErrorCode` type and compares them as `Error`
 /// (comparing the domain and code)
-public func throwError<Out>(_ error: ErrorCode) -> Predicate<Out> {
+public func throwError<Out>(_ error: ErrorCode) -> Nimble.Predicate<Out> {
     return Nimble.throwError(error as Error)
 }
 
 // MARK: - Data
 
-func matchJSONData(_ other: Data) -> Predicate<Data> {
+func matchJSONData(_ other: Data) -> Nimble.Predicate<Data> {
     return equal(other.serialized)
 }
 
