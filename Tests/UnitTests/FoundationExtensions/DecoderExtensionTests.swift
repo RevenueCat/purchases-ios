@@ -89,7 +89,7 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
     }
 
     func testIgnoresErrors() throws {
-        let json = "{\"url\": \"not a! valid url@\"}"
+        let json = "{\"url\": 1}"
         let data = try Data.decode(json)
 
         expect(data.url).to(beNil())
