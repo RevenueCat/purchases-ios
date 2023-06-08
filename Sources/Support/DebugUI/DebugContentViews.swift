@@ -94,13 +94,19 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(config):
-                LabeledContent("SDK version", value: SystemInfo.frameworkVersion)
+                LabeledContent("SDK version", value: config.sdkVersion)
                 LabeledContent("Observer mode", value: config.observerMode.description)
                 LabeledContent("Sandbox", value: config.sandbox.description)
                 LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
                 LabeledContent("Offline Customer Info",
                                value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
-                LabeledContent("Entitlement Verification Mode", value: config.verificationMode.display)
+                LabeledContent("Entitlement Verification Mode", value: config.verificationMode)
+
+                ShareLink(item: config, preview: .init("Configuration")) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+
+                }
+                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -113,7 +119,8 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(info):
-                LabeledContent("User ID", value: info.originalAppUserId)
+                LabeledContent("User ID", value: Purchases.shared.appUserID)
+                LabeledContent("Original User ID", value: info.originalAppUserId)
                 LabeledContent("Active Entitlements", value: info.entitlements.active.count.description)
 
                 if let latestExpiration = info.latestExpirationDate {
@@ -240,14 +247,16 @@ private struct DebugPackageView: View {
 
 }
 
-private extension Signing.ResponseVerificationMode {
+@available(iOS 16.0, *)
+extension DebugViewModel.Configuration: Transferable {
 
-    var display: String {
-        switch self {
-        case .disabled: return "disabled"
-        case .informational: return "informational"
-        case .enforced: return "enforced"
-        }
+    static var transferRepresentation: some TransferRepresentation {
+        return CodableRepresentation(
+            for: DebugViewModel.Configuration.self,
+            contentType: .plainText,
+            encoder: JSONEncoder.prettyPrinted,
+            decoder: JSONDecoder.default
+        )
     }
 
 }
