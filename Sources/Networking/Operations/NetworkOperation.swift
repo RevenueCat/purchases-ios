@@ -168,7 +168,8 @@ class NetworkOperation: Operation {
     // MARK: -
 
     internal func log(_ message: CustomStringConvertible) {
-        Logger.debug("\(type(of: self)): \(message.description)")
+        Logger.debug(Strings.network.operation_state(type(of: self),
+                                                     state: message.description))
     }
 
     // MARK: -

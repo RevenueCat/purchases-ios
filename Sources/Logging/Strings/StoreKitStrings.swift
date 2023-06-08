@@ -41,6 +41,8 @@ enum StoreKitStrings {
 
     case sk1_no_known_product_type
 
+    case sk1_unknown_transaction_state(SKPaymentTransactionState)
+
     case unknown_sk2_product_discount_type(rawValue: String)
 
     case sk1_discount_missing_locale
@@ -54,6 +56,12 @@ enum StoreKitStrings {
     case sk1_product_request_too_slow
 
     case sk2_product_request_too_slow
+
+    #if DEBUG
+
+    case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
+
+    #endif
 
 }
 
@@ -101,6 +109,9 @@ extension StoreKitStrings: CustomStringConvertible {
             return "This StoreProduct represents an SK1 product, the type of product cannot be determined, " +
             "the value will be undefined. Use `StoreProduct.productCategory` instead."
 
+        case let .sk1_unknown_transaction_state(state):
+            return "Received unknown transaction state: \(state.rawValue)"
+
         case .unknown_sk2_product_discount_type(let rawValue):
             return "Failed to create StoreProductDiscount.DiscountType with unknown value: \(rawValue)"
 
@@ -128,6 +139,13 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .sk2_product_request_too_slow:
             return "StoreKit 2 product request took longer than expected"
+
+        #if DEBUG
+        case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):
+            return "StoreKit1Wrapper: sending delegate \(count) existing transactions " +
+            "for Integration Tests."
+        #endif
+
         }
     }
 

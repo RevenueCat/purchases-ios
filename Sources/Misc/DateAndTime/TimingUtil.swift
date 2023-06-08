@@ -206,10 +206,12 @@ private extension TimingUtil {
         intent: LogIntent
     ) {
         if duration >= threshold {
-            let roundedDuration = (duration * 100).rounded(.down) / 100
-            let message = String(format: "%@ (%.2f seconds)", message.description, roundedDuration)
-
-            Logger.log(level: level, intent: intent, message: message)
+            Logger.log(
+                level: level,
+                intent: intent,
+                message: Strings.diagnostics.timing_message(message: message.description,
+                                                            duration: duration)
+            )
         }
     }
 

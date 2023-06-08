@@ -132,8 +132,7 @@ class StoreKit1Wrapper: NSObject {
         guard !transactions.isEmpty else { return }
 
         Logger.appleWarning(
-            "StoreKit1Wrapper: sending delegate \(transactions.count) existing transactions " +
-            "for Integration Tests."
+            Strings.storeKit.sk1_wrapper_notifying_delegate_of_existing_transactions(count: transactions.count)
         )
 
         for transaction in transactions {
