@@ -104,7 +104,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
         expect(storeProduct.currencyCode) == "USD"
-        expect(storeProduct.price.description) == "4.99"
+        expect(storeProduct.price) == 4.99
         expect(storeProduct.priceDecimalNumber).to(beCloseTo(4.99))
         expect(storeProduct.localizedPriceString) == "$4.99"
         expect(storeProduct.isFamilyShareable) == true
@@ -159,7 +159,11 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.currencyCode) == "USD"
         expect(storeProduct.price.description) == "4.99"
         expect(storeProduct.priceDecimalNumber).to(beCloseTo(4.99))
-        expect(storeProduct.localizedPriceString) == "$4.99"
+        if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
+            expect(storeProduct.localizedPriceString) == "US$4.99"
+        } else {
+            expect(storeProduct.localizedPriceString) == "$4.99"
+        }
         expect(storeProduct.isFamilyShareable) == true
         expect(storeProduct.localizedTitle) == "Monthly Free Trial"
         // open the StoreKit Config file as source code to see the expected value
@@ -208,8 +212,13 @@ class StoreProductTests: StoreKitConfigTestCase {
         let priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
         let productPrice = storeProduct.price as NSNumber
 
-        expect(priceFormatter.string(from: productPrice)) == "$4.99"
-        expect(storeProduct.localizedPriceString) == "$4.99"
+        if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
+            expect(priceFormatter.string(from: productPrice)) == "US$4.99"
+            expect(storeProduct.localizedPriceString) == "US$4.99"
+        } else {
+            expect(priceFormatter.string(from: productPrice)) == "$4.99"
+            expect(storeProduct.localizedPriceString) == "$4.99"
+        }
     }
 
     func testSk1PriceFormatterFormatsCorrectly() async throws {
@@ -351,8 +360,16 @@ private extension StoreProductTests {
         // Note: can't compare productTypes because SK1 doesn't have full information
         expect(productA.productCategory) == productB.productCategory
         expect(productA.localizedDescription) == productB.localizedDescription
-        expect(productA.price) == productB.price
-        expect(productA.localizedPriceString) == productB.localizedPriceString
+        expect(productA.price.asDouble).to(beCloseTo(productB.price.asDouble, within: 0.0001))
+        if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
+            expect(productB.localizedPriceString).to(satisfyAnyOf(
+                equal(productA.localizedPriceString),
+                beginWith(productA.localizedPriceString),
+                endWith(productA.localizedPriceString)
+            ))
+        } else {
+            expect(productA.localizedPriceString) == productB.localizedPriceString
+        }
         expect(productA.productIdentifier) == productB.productIdentifier
         expect(productA.isFamilyShareable) == productB.isFamilyShareable
         expect(productA.localizedTitle) == productB.localizedTitle
@@ -375,6 +392,14 @@ private extension StoreProductTests {
         } else {
             expect(productA.subscriptionGroupIdentifier) == productB.subscriptionGroupIdentifier
         }
+    }
+
+}
+
+private extension Decimal {
+
+    var asDouble: Double {
+        return (self as NSDecimalNumber).doubleValue
     }
 
 }
