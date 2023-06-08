@@ -27,7 +27,7 @@ enum BackendErrorStrings {
 
 }
 
-extension BackendErrorStrings: CustomStringConvertible {
+extension BackendErrorStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -43,5 +43,7 @@ extension BackendErrorStrings: CustomStringConvertible {
             return "Missing 'signatureData' or its structure changed:\n\(String(describing: signatureDataString))"
         }
     }
+
+    var category: String { return "backend" }
 
 }

@@ -30,7 +30,7 @@ extension ManageSubscriptionsHelper {
 
 }
 
-extension ManageSubscriptionsHelper.Strings: CustomStringConvertible {
+extension ManageSubscriptionsHelper.Strings: LogMessage {
 
     var description: String {
         switch self {
@@ -48,5 +48,7 @@ extension ManageSubscriptionsHelper.Strings: CustomStringConvertible {
             return "tried to call AppStore.showManageSubscriptions in a platform that doesn't support it!"
         }
     }
+
+    var category: String { return "manage_subscriptions" }
 
 }

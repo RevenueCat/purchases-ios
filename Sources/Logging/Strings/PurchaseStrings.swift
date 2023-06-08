@@ -85,7 +85,7 @@ enum PurchaseStrings {
 
 }
 
-extension PurchaseStrings: CustomStringConvertible {
+extension PurchaseStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -303,6 +303,8 @@ extension PurchaseStrings: CustomStringConvertible {
             "Are you sure you want to do this?"
         }
     }
+
+    var category: String { return "purchases" }
 
 }
 

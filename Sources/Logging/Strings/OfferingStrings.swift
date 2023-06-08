@@ -46,7 +46,7 @@ enum OfferingStrings {
 
 }
 
-extension OfferingStrings: CustomStringConvertible {
+extension OfferingStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -157,5 +157,7 @@ extension OfferingStrings: CustomStringConvertible {
             return "Package: \(old) already exists, overwriting with: \(new)"
         }
     }
+
+    var category: String { return "offering" }
 
 }

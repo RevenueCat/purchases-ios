@@ -26,7 +26,7 @@ enum EligibilityStrings {
     case sk2_intro_eligibility_too_slow
 }
 
-extension EligibilityStrings: CustomStringConvertible {
+extension EligibilityStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -54,5 +54,7 @@ extension EligibilityStrings: CustomStringConvertible {
             return "StoreKit 2 intro eligibility took longer than expected to determine"
         }
     }
+
+    var category: String { return "eligibility" }
 
 }

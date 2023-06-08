@@ -39,7 +39,7 @@ enum OfflineEntitlementsStrings {
 
 }
 
-extension OfflineEntitlementsStrings: CustomStringConvertible {
+extension OfflineEntitlementsStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -95,5 +95,7 @@ extension OfflineEntitlementsStrings: CustomStringConvertible {
             return "PurchasedProductsFetcher: invalidating cache"
         }
     }
+
+    var category: String { return "offline_entitlements" }
 
 }

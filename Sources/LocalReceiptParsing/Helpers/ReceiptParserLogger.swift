@@ -16,7 +16,7 @@ import Foundation
 final class ReceiptParserLogger: LoggerType {
 
     func verbose(
-        _ message: @autoclosure () -> CustomStringConvertible,
+        _ message: @autoclosure () -> LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
@@ -31,7 +31,7 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func debug(
-        _ message: @autoclosure () -> CustomStringConvertible,
+        _ message: @autoclosure () -> LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
@@ -46,7 +46,7 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func info(
-        _ message: @autoclosure () -> CustomStringConvertible,
+        _ message: @autoclosure () -> LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
@@ -61,7 +61,7 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func warn(
-        _ message: @autoclosure () -> CustomStringConvertible,
+        _ message: @autoclosure () -> LogMessage,
         fileName: String?,
         functionName: String?,
         line: UInt
@@ -76,7 +76,7 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     func error(
-        _ message: @autoclosure () -> CustomStringConvertible,
+        _ message: @autoclosure () -> LogMessage,
         fileName: String,
         functionName: String,
         line: UInt
@@ -91,15 +91,18 @@ final class ReceiptParserLogger: LoggerType {
     }
 
     private static func log(level: LogLevel,
-                            message: @autoclosure () -> CustomStringConvertible,
+                            message: @autoclosure () -> LogMessage,
                             fileName: String? = #fileID,
                             functionName: String? = #function,
                             line: UInt = #line) {
+        let message = message()
+
         defaultLogHandler(
             framework: Self.framework,
             verbose: false,
             level: level,
-            message: message().description,
+            category: message.category,
+            message: message.description,
             file: fileName,
             function: functionName,
             line: line

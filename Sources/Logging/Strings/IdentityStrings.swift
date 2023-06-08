@@ -42,7 +42,7 @@ enum IdentityStrings {
 
 }
 
-extension IdentityStrings: CustomStringConvertible {
+extension IdentityStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -77,5 +77,7 @@ extension IdentityStrings: CustomStringConvertible {
             "This has no effect."
         }
     }
+
+    var category: String { return "identity" }
 
 }

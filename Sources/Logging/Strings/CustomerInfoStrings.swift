@@ -38,7 +38,7 @@ enum CustomerInfoStrings {
 
 }
 
-extension CustomerInfoStrings: CustomStringConvertible {
+extension CustomerInfoStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -89,5 +89,7 @@ extension CustomerInfoStrings: CustomStringConvertible {
         }
 
     }
+
+    var category: String { return "customer" }
 
 }

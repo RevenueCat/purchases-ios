@@ -229,19 +229,19 @@ extension TestLogHandler: LogMessageObserver {
 private final class SharedTestLogHandler {
 
     private let observers: Atomic<[WeakBox<LogMessageObserver>]>
-    private let logHandler: VerboseLogHandler
+    private let logHandler: InternalLogHandler
 
     init() {
         self.observers = .init([])
-        self.logHandler = { [observers] level, message, file, function, line in
-            Logger.defaultLogHandler(level, message, file, function, line)
+        self.logHandler = { [observers] level, message, category, file, function, line in
+            Logger.defaultLogHandler(level, message, category, file, function, line)
 
             Self.notify(observers: observers.value, message: message, level: level)
         }
     }
 
     func install() {
-        Purchases.verboseLogHandler = self.logHandler
+        Logger.internalLogHandler = self.logHandler
     }
 
     func add(observer: LogMessageObserver) {
