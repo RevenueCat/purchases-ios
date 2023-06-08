@@ -241,7 +241,6 @@ private extension OfferingsManager {
     ) {
         Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
                                                                     underlyingError: error.underlyingError))
-        self.deviceCache.clearOfferingsCacheTimestamp()
         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .failure(error))
     }
 
