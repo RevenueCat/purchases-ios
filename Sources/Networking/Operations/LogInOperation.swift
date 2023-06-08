@@ -56,7 +56,9 @@ final class LogInOperation: CacheableNetworkOperation {
 private extension LogInOperation {
 
     func logIn(completion: @escaping () -> Void) {
-        guard let newAppUserID = try? self.newAppUserID.trimmedOrError() else {
+        guard let newAppUserID = self.newAppUserID
+            .trimmingWhitespacesAndNewLines
+            .notEmpty else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }

@@ -19,7 +19,6 @@ extension String {
     enum Error: Swift.Error {
 
         case escapingEmptyString
-        case trimmingEmptyString
 
     }
 
@@ -38,17 +37,6 @@ extension String {
         }
 
         return trimmedAndEscaped
-    }
-
-    func trimmedOrError() throws -> String {
-        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard trimmed.count > 0 else {
-            Logger.warn("Attempting to trim an empty string")
-            throw Error.trimmingEmptyString
-        }
-
-        return trimmed
     }
 
     /// Returns `nil` if `self` is an empty string.
