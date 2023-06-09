@@ -88,7 +88,7 @@ extension ErrorCode: DescribableError {
     public var description: String {
         switch self {
         case .networkError:
-            return "Error performing request."
+            return "A network error has occurred."
         case .unknownError:
             return "Unknown error."
         case .purchaseCancelledError:
