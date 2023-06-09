@@ -96,6 +96,21 @@ public final class StoreProductDiscount: NSObject, StoreProductDiscountType {
         return Data(discount: self).hashValue
     }
 
+    public override var description: String {
+        return """
+            <\(String(describing: StoreProductDiscount.self)):
+                offerIdentifier: \(self.offerIdentifier ?? "")
+                currencyCode: \(self.currencyCode ?? "")
+                price: \(self.price)
+                localizedPriceString: \(self.localizedPriceString)
+                paymentMode: \(self.paymentMode)
+                subscriptionPeriod: \(self.subscriptionPeriod)
+                numberOfPeriods: \(self.numberOfPeriods)
+                type: \(self.type)
+            >
+            """
+    }
+
 }
 
 extension StoreProductDiscount: Sendable {}
