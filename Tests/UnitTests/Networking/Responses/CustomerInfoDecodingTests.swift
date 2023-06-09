@@ -130,11 +130,8 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(parsedData) == ["is_included": "in_raw_data"]
     }
 
-    func testReencoding() throws {
-        let reEncoded = try self.customerInfo.encodeAndDecode()
-
-        expect(reEncoded) == self.customerInfo
-        try expect(reEncoded.jsonEncodedData) == self.customerInfo.jsonEncodedData
+    func testReencoding() {
+        expect(try self.customerInfo.encodeAndDecode()) == self.customerInfo
     }
 
     func testFailsToDecode() {
@@ -220,11 +217,8 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
         expect(entitlement.purchaseDate) == dateFormatter.date(from: "2023-01-12T20:29:44Z")
     }
 
-    func testReencoding() throws {
-        let reEncoded = try self.customerInfo.encodeAndDecode()
-
-        expect(reEncoded) == self.customerInfo
-        try expect(reEncoded.jsonEncodedData) == self.customerInfo.jsonEncodedData
+    func testReencoding() {
+        expect(try self.customerInfo.encodeAndDecode()) == self.customerInfo
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

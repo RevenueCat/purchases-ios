@@ -39,6 +39,8 @@ extension Encodable {
         }
     }
 
+    /// - Note: beginning with iOS 17, the output of this is not guaranteed to be consistent due to key ordering.
+    /// For tests, it's better to compare `prettyPrintedData` which does sort keys.
     var jsonEncodedData: Data {
         get throws {
             return try JSONEncoder.default.encode(self)

@@ -216,8 +216,12 @@ class DeviceCacheTests: TestCase {
         self.deviceCache.cache(offerings: expectedOfferings, appUserID: "user")
 
         expect(self.deviceCache.cachedOfferings) === expectedOfferings
-        try expect(self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.offerings.user"] as? Data)
-        == expectedOfferings.response.jsonEncodedData
+
+        let storedData = try XCTUnwrap(
+            self.mockUserDefaults.mockValues["com.revenuecat.userdefaults.offerings.user"] as? Data
+        )
+        let offerings = try JSONDecoder.default.decode(OfferingsResponse.self, from: storedData)
+        expect(offerings) == expectedOfferings.response
     }
 
     func testCacheOfferingsInMemory() throws {
