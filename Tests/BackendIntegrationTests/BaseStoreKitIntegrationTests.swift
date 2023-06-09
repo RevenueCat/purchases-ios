@@ -46,10 +46,14 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
         try await super.setUp()
     }
 
-    override func tearDown() {
-        self.testSession = nil
+    override func tearDown() async throws {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            await self.deleteAllTransactions(session: self.testSession)
+        }
 
-        super.tearDown()
+        self.testSession.clearTransactions()
+
+        try await super.tearDown()
     }
 
     func configureTestSession() throws {

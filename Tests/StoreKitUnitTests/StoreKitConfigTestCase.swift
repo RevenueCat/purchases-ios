@@ -60,10 +60,15 @@ class StoreKitConfigTestCase: TestCase {
         self.userDefaults.removePersistentDomain(forName: suiteName)
     }
 
-    override func tearDown() {
-        super.tearDown()
-
+    override func tearDown() async throws {
         self.clearReceiptIfExists()
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            await self.deleteAllTransactions(session: self.testSession)
+        }
+        self.testSession.clearTransactions()
+
+        try await super.tearDown()
     }
 
     // MARK: - Transactions observation
