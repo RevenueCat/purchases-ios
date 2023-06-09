@@ -13,6 +13,7 @@
 
 #if DEBUG && os(iOS) && swift(>=5.8)
 
+import StoreKit
 import SwiftUI
 
 @available(iOS 16.0, *)
@@ -166,9 +167,26 @@ private struct DebugSummaryView: View {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private struct DebugOfferingView: View {
 
+    @State private var showingSubscriptionSheet = false
+    @State private var showingStoreSheet = false
+
     var offering: Offering
 
     var body: some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
+            content
+            #if swift(>=5.9)
+                .onInAppPurchaseCompletion { _, _ in
+                    self.showingSubscriptionSheet = false
+                    self.showingStoreSheet = false
+                }
+            #endif
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         List {
             Section("Data") {
                 LabeledContent("Identifier", value: self.offering.id)
@@ -182,9 +200,69 @@ private struct DebugOfferingView: View {
                     }
                 }
             }
+
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
+                Section("Paywalls") {
+                    Button {
+                        self.showingSubscriptionSheet = true
+                    } label: {
+                        Text("Display SubscriptionStoreView")
+                    }
+
+                    Button {
+                        self.showingStoreSheet = true
+                    } label: {
+                        Text("Display StoreView")
+                    }
+                }
+            }
         }
-            .navigationTitle("Offering")
+        .navigationTitle("Offering")
+        #if swift(>=5.9)
+        .sheet(isPresented: self.$showingSubscriptionSheet) {
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
+                self.subscriptionStoreView
+            }
+        }
+        .sheet(isPresented: self.$showingStoreSheet) {
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
+                StoreView(offering: self.offering)
+            }
+        }
+        #endif
     }
+
+    #if swift(>=5.9)
+    @available(iOS 17.0, macOS 14.0, tvOS 17.0, *)
+    private var subscriptionStoreView: some View {
+        SubscriptionStoreView(offering: self.offering) {
+            VStack {
+                VStack {
+                    Text("🐈")
+                    Text("RevenueCat Demo Paywall")
+                }
+                .font(.title)
+
+                Text(self.offering.getMetadataValue(for: "title", default: "Premium Access"))
+                    .font(.title2)
+                    .foregroundStyle(.primary)
+
+                Text(self.offering.getMetadataValue(for: "subtitle",
+                                                    default: "Unlimited access to premium content."))
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
+            }
+            .containerBackground(for: .subscriptionStoreFullHeight) {
+                Rectangle()
+                    .edgesIgnoringSafeArea(.all)
+                    .foregroundStyle(Color.blue.gradient.quaternary)
+            }
+        }
+        .backgroundStyle(.clear)
+        .subscriptionStoreButtonLabel(.multiline)
+        .subscriptionStorePickerItemBackground(.thickMaterial)
+    }
+    #endif
 
 }
 
@@ -226,10 +304,17 @@ private struct DebugPackageView: View {
                         self.purchasing = false
                     }
                 } label: {
-                    Text("Purchase")
+                    Text("Purchase with RevenueCat")
                 }
-                .disabled(self.purchasing)
+
+                #if swift(>=5.9)
+                if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+                    ProductView(id: self.package.storeProduct.productIdentifier)
+                        .productViewStyle(ProductStyle())
+                }
+                #endif
             }
+            .disabled(self.purchasing)
         }
             .navigationTitle("Package")
             .alert(
@@ -260,5 +345,30 @@ extension DebugViewModel.Configuration: Transferable {
     }
 
 }
+
+#if swift(>=5.9)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+private struct ProductStyle: ProductViewStyle {
+
+    func makeBody(configuration: ProductViewStyleConfiguration) -> some View {
+        switch configuration.state {
+        case .loading:
+            ProgressView()
+                .progressViewStyle(.circular)
+
+        case .success:
+            Button {
+                configuration.purchase()
+            } label: {
+                Text("Purchase with StoreKit")
+            }
+
+        default:
+            ProductView(configuration)
+        }
+    }
+
+}
+#endif
 
 #endif
