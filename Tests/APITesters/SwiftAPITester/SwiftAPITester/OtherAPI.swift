@@ -48,11 +48,6 @@ struct PaywallViews: View {
         SubscriptionStoreView(offering: self.offering) {
             Text("Marketing content")
         }
-
-        CurrentOfferingSubscriptionStoreView()
-        CurrentOfferingSubscriptionStoreView {
-            Text("Marketing content")
-        }
     }
 
 }
