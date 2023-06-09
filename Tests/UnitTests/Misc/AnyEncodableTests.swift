@@ -62,7 +62,12 @@ class AnyEncodableTests: TestCase {
             "d": nil
         ]
 
-        assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
+        assertSnapshot(
+            matching: AnyEncodable(dictionary),
+            as: .json,
+            // Formatting `Double`s changed in iOS 17
+            testName: CurrentTestCaseTracker.osVersionAndTestName
+        )
     }
 
     func testEncodingInvalidDataFails() {
