@@ -289,7 +289,7 @@ class NetworkErrorTests: TestCase {
     }
 
     private func check<T>(
-        _ value: T, condition: Predicate<T>, descrition: String,
+        _ value: T, condition: Nimble.Predicate<T>, descrition: String,
         file: FileString = #file, line: UInt = #line
     ) {
         expect(

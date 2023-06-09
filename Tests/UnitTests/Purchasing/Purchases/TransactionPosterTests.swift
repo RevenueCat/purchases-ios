@@ -155,7 +155,7 @@ private extension TransactionPosterTests {
 
 }
 
-private func match(_ data: PurchasedTransactionData) -> Predicate<PurchasedTransactionData> {
+private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<PurchasedTransactionData> {
     return .init {
         let other = try $0.evaluate()
         let matches = (other?.appUserID == data.appUserID &&
