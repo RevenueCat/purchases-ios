@@ -59,6 +59,8 @@ extension SubscriptionStoreView {
     /// with custom marketing content.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
     /// the result automatically. All you need to do is to dismiss the paywall
+    ///
+    /// - Seealso: ``CurrentOfferingSubscriptionStoreView``
     public init(
         offering: Offering,
         @ViewBuilder marketingContent: () -> (Content)
@@ -71,10 +73,61 @@ extension SubscriptionStoreView {
 
     /// Creates a ``SubscriptionStoreView`` from an ``Offering``
     /// that doesn't take a custom view to use for marketing content.
+    ///
+    /// - Seealso: ``CurrentOfferingSubscriptionStoreView``
     public init(
         offering: Offering
     ) where Content == AutomaticSubscriptionStoreMarketingContent {
         self.init(productIDs: offering.subscriptionProductIdentifiers)
+    }
+
+}
+
+/// ``_StoreKit_SwiftUI/SubscriptionStoreView`` that displays subscription products in the current ``Offering``.
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+public struct CurrentOfferingSubscriptionStoreView<Content: View>: View {
+
+    @State
+    private var currentOffering: Offering?
+    private let marketingContent: (() -> Content)?
+
+    /// Creates a view to load all subscriptions in a subscription group from the App Store.
+    ///
+    /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
+    /// the result automatically. All you need to do is to dismiss the paywall
+    public init() where Content == AutomaticSubscriptionStoreMarketingContent {
+        self.marketingContent = nil
+    }
+
+    /// Creates a view to load all subscriptions in a subscription group from the App Store, and merchandise
+    /// them with a custom marketing content.
+    ///
+    /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
+    /// the result automatically. All you need to do is to dismiss the paywall
+    public init(@ViewBuilder marketingContent: @escaping () -> Content) {
+        self.marketingContent = marketingContent
+    }
+
+    // swiftlint:disable:next missing_docs
+    public var body: some View {
+        Group {
+            if let currentOffering {
+                if let marketingContent {
+                    SubscriptionStoreView(offering: currentOffering,
+                                          marketingContent: marketingContent)
+                } else {
+                    SubscriptionStoreView(offering: currentOffering)
+                }
+            } else {
+                ProgressView()
+                    .progressViewStyle(.circular)
+            }
+        }
+        .task {
+            if let offering = try? await Purchases.shared.offerings().current {
+                self.currentOffering = offering
+            }
+        }
     }
 
 }
