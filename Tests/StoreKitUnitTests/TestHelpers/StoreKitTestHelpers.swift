@@ -24,25 +24,26 @@ extension XCTestCase {
         case invalidTransactions([StoreKit.VerificationResult<Transaction>])
     }
 
-    func verifyNoUnfinishedTransactions(line: UInt = #line) async {
+    func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
         let unfinished = await StoreKit.Transaction.unfinished.extractValues()
-        expect(line: line, unfinished).to(beEmpty())
+        expect(file: file, line: line, unfinished).to(beEmpty())
     }
 
     func verifyUnfinishedTransaction(
         withId identifier: Transaction.ID,
+        file: StaticString = #file,
         line: UInt = #line
     ) async throws {
         let unfinishedTransactions = await self.unfinishedTransactions
 
-        expect(line: line, unfinishedTransactions).to(haveCount(1))
+        expect(file: file, line: line, unfinishedTransactions).to(haveCount(1))
 
         guard let transaction = unfinishedTransactions.onlyElement,
               case let .verified(verified) = transaction else {
             throw Error.invalidTransactions(unfinishedTransactions)
         }
 
-        expect(line: line, verified.id) == identifier
+        expect(file: file, line: line, verified.id) == identifier
 
     }
 
