@@ -606,7 +606,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
         case .deferred:
             self.handleDeferredTransaction(transaction)
         @unknown default:
-            Logger.warn("unhandled transaction state!")
+            Logger.appleWarning(Strings.storeKit.sk1_unknown_transaction_state(transaction.transactionState))
         }
     }
 
@@ -678,8 +678,8 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
         // need to be handled as a SK2 purchase.
         // This method converts the `SKPayment` into an SK2 purchase by fetching the product again.
         if self.paymentQueueWrapper.sk1Wrapper != nil {
-            Logger.warn("Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled")
-            assertionFailure("This method should not be invoked if SK1 is enabled")
+            Logger.warn(Strings.purchase.payment_queue_wrapper_delegate_call_sk1_enabled)
+            assertionFailure(Strings.purchase.payment_queue_wrapper_delegate_call_sk1_enabled.description)
         }
 
         guard let delegate = self.delegate else { return false }
@@ -930,7 +930,7 @@ private extension PurchasesOrchestrator {
         // Don't log anything unless the flag was explicitly set.
         let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
         if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
-            Logger.warn(Strings.restore.restorepurchases_called_with_allow_sharing_appstore_account_false_warning)
+            Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
         let currentAppUserID = self.appUserID

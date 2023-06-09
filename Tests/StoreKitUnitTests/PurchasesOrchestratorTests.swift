@@ -1127,8 +1127,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         logger.verifyMessageWasNotLogged(
             Strings
-                .restore
-                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning
+                .purchase
+                .restorepurchases_called_with_allow_sharing_appstore_account_false
         )
     }
 
@@ -1145,8 +1145,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         logger.verifyMessageWasNotLogged(
             Strings
-                .restore
-                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning
+                .purchase
+                .restorepurchases_called_with_allow_sharing_appstore_account_false
         )
     }
 
@@ -1163,8 +1163,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         logger.verifyMessageWasLogged(
             Strings
-                .restore
-                .restorepurchases_called_with_allow_sharing_appstore_account_false_warning,
+                .purchase
+                .restorepurchases_called_with_allow_sharing_appstore_account_false,
             level: .warn
         )
     }

@@ -211,7 +211,8 @@ private extension Offering {
 
     static func checkForNilAndLogReplacement(previousPackages: [PackageType: Package], newPackage: Package) {
         if let package = previousPackages[newPackage.packageType] {
-            Logger.warn("Package: \(package.identifier) already exists, overwriting with: \(newPackage.identifier)")
+            Logger.warn(Strings.offering.overriding_package(old: package.identifier,
+                                                            new: newPackage.identifier))
         }
     }
 

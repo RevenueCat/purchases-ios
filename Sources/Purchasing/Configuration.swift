@@ -202,10 +202,10 @@ import Foundation
         private func clamped(timeout: TimeInterval) -> TimeInterval {
             guard timeout >= Self.minimumTimeout else {
                 Logger.warn(
-                    """
-                    Timeout value: \(timeout) is lower than the minimum, setting it
-                    to the mimimum: (\(Self.minimumTimeout))
-                    """
+                    Strings.configure.timeout_lower_than_minimum(
+                        timeout: timeout,
+                        minimum: Self.minimumTimeout
+                    )
                 )
                 return Self.minimumTimeout
             }

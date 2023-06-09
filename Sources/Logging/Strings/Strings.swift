@@ -19,6 +19,7 @@ enum Strings {
     static let configure = ConfigureStrings.self
     static let backendError = BackendErrorStrings.self
     static let customerInfo = CustomerInfoStrings.self
+    static let diagnostics = DiagnosticsStrings.self
     static let eligibility = EligibilityStrings.self
     static let identity = IdentityStrings.self
     static let network = NetworkStrings.self
@@ -26,7 +27,6 @@ enum Strings {
     static let offlineEntitlements = OfflineEntitlementsStrings.self
     static let purchase = PurchaseStrings.self
     static let receipt = ReceiptStrings.self
-    static let restore = RestoreStrings.self
     static let signing = SigningStrings.self
     static let storeKit = StoreKitStrings.self
 

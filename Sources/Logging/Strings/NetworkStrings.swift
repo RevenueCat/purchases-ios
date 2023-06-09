@@ -34,6 +34,7 @@ enum NetworkStrings {
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
+    case operation_state(NetworkOperation.Type, state: String)
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
@@ -102,6 +103,9 @@ extension NetworkStrings: CustomStringConvertible {
 
         case let .api_request_redirect(from, to):
             return "Performing redirect from '\(from.absoluteString)' to '\(to.absoluteString)'"
+
+        case let .operation_state(operation, state):
+            return "\(operation): \(state)"
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):

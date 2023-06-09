@@ -42,6 +42,7 @@ enum OfferingStrings {
     case product_details_empty_title(productIdentifier: String)
     case unknown_package_type(Package)
     case custom_package_type(Package)
+    case overriding_package(old: String, new: String)
 
 }
 
@@ -151,6 +152,9 @@ extension OfferingStrings: CustomStringConvertible {
             "has a custom duration." +
             "\nYou can reference this package by its identifier ('\(package.identifier)') directly." +
             "\nMore information: https://rev.cat/displaying-products"
+
+        case let .overriding_package(old, new):
+            return "Package: \(old) already exists, overwriting with: \(new)"
         }
     }
 

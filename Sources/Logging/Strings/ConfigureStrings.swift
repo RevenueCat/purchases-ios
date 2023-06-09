@@ -71,6 +71,8 @@ enum ConfigureStrings {
 
     case custom_entitlements_computation_enabled_but_no_app_user_id
 
+    case timeout_lower_than_minimum(timeout: TimeInterval, minimum: TimeInterval)
+
 }
 
 extension ConfigureStrings: CustomStringConvertible {
@@ -167,6 +169,12 @@ extension ConfigureStrings: CustomStringConvertible {
             return "customEntitlementComputation mode is enabled, but appUserID is nil. " +
             "When using customEntitlementComputation, you must set the appUserID to prevent anonymous IDs from " +
             "being generated."
+
+        case let .timeout_lower_than_minimum(timeout, minimum):
+            return """
+                    Timeout value: \(timeout) is lower than the minimum, setting it
+                    to the mimimum: (\(minimum))
+                    """
         }
     }
 
