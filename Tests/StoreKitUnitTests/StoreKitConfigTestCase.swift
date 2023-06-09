@@ -26,11 +26,10 @@ class StoreKitConfigTestCase: TestCase {
         return .seconds(Int(Self.requestTimeout))
     }
 
-    private static var hasWaited = false
-    private static let waitLock = Lock()
-    private static let waitTimeInSeconds: Double? = {
+    private static let hasWaited: Atomic<Bool> = false
+    private static let waitTimeInSeconds: TimeInterval? = {
         ProcessInfo.processInfo.environment["CIRCLECI_STOREKIT_TESTS_DELAY_SECONDS"]
-            .flatMap(Double.init)
+            .flatMap(TimeInterval.init)
     }()
 
     var testSession: SKTestSession!
@@ -47,11 +46,11 @@ class StoreKitConfigTestCase: TestCase {
         self.testSession.disableDialogs = true
         self.testSession.clearTransactions()
 
+        await self.waitForStoreKitTestIfNeeded()
+
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             await self.finishAllUnfinishedTransactions()
         }
-
-        self.waitForStoreKitTestIfNeeded()
 
         let suiteName = "StoreKitConfigTests"
         self.userDefaults = UserDefaults(suiteName: suiteName)
@@ -89,21 +88,16 @@ class StoreKitConfigTestCase: TestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreKitConfigTestCase {
 
-    func waitForStoreKitTestIfNeeded() {
+    func waitForStoreKitTestIfNeeded() async {
         // StoreKitTest seems to take a few seconds to initialize, and running tests before that
         // might result in failure. So we give it a few seconds to load before testing.
 
         guard let waitTime = Self.waitTimeInSeconds else { return }
+        guard !Self.hasWaited.getAndSet(true) else { return }
 
-        Self.waitLock.perform {
-            if !Self.hasWaited {
-                Logger.warn("Delaying tests for \(waitTime) seconds for StoreKit initialization...")
+        Logger.warn("Delaying tests for \(waitTime) seconds for StoreKit initialization...")
 
-                Thread.sleep(forTimeInterval: waitTime)
-
-                Self.hasWaited = true
-            }
-        }
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval(waitTime).nanoseconds)
     }
 
     func clearReceiptIfExists() {

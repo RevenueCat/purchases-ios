@@ -35,6 +35,9 @@ import Foundation
  *     $0.bar = 2
  *     $0.x = "new X"
  * }
+ *
+ * // write value and get previous value
+ * let oldValue = foo.getAndSet(newValue)
  * ```
  *
  * Or for single-line read/writes:
@@ -62,6 +65,14 @@ internal final class Atomic<T> {
     func modify<Result>(_ action: (inout T) throws -> Result) rethrows -> Result {
         return try lock.perform {
             try action(&_value)
+        }
+    }
+
+    @discardableResult
+    func getAndSet(_ newValue: T) -> T {
+        return self.modify { currentValue in
+            defer { currentValue = newValue }
+            return currentValue
         }
     }
 
