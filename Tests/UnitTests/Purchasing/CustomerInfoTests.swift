@@ -284,7 +284,7 @@ class BasicCustomerInfoTests: TestCase {
         customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
-                "management_url": "this isnt' a URL!",
+                "management_url": 3, // Invalid URL
                 "first_seen": "2019-07-17T00:05:54Z",
                 "subscriptions": [:] as [String: Any],
                 "other_purchases": [:] as [String: Any],
