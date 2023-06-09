@@ -840,15 +840,15 @@ workflows:
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
-          xcode_version: '14.3.0'
+          xcode_version: '15.0.0'
       - run-test-watchos:
           xcode_version: '14.3.0'
       - run-test-tvos:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          xcode_version: '14.3.0'
+          xcode_version: '15.0.0'
       - run-test-ios-13:
-          xcode_version: '14.3.0'
+          xcode_version: '15.0.0'
       - run-test-ios-12:
           # Xcode 14's image is macOS 13 which doesn't support iOS 12.
           xcode_version: '13.4.1'
