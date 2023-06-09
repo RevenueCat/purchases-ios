@@ -53,6 +53,7 @@ extension JSONEncoder {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .sortedKeys
 
         return encoder
     }()
@@ -61,7 +62,7 @@ extension JSONEncoder {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
         encoder.dateEncodingStrategy = .iso8601
-        encoder.outputFormatting = .prettyPrinted
+        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
 
         return encoder
     }()
