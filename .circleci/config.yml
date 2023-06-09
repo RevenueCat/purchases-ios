@@ -875,14 +875,11 @@ workflows:
       - run-test-ios-15:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.3.0'
       - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.3.0'
       - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.3.0'
   build-test:
     when:
       and:
