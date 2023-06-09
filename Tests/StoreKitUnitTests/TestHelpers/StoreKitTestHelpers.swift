@@ -14,6 +14,7 @@
 import Nimble
 @testable import RevenueCat
 import StoreKit
+import StoreKitTest
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -45,14 +46,24 @@ extension XCTestCase {
 
     }
 
-    func finishAllUnfinishedTransactions() async {
-        let transactions = await self.unfinishedTransactions
-        guard !transactions.isEmpty else { return }
+    func deleteAllTransactions(session: SKTestSession) async {
+        let sk1Transactions = session.allTransactions()
+        if !sk1Transactions.isEmpty {
+            Logger.debug("Deleting \(sk1Transactions.count) transactions before running tests")
 
-        Logger.debug("Finishing \(transactions.count) transactions before running tests")
+            for transaction in sk1Transactions {
+                try? session.deleteTransaction(identifier: transaction.identifier)
+            }
+        }
 
-        for verificationResult in transactions {
-            await verificationResult.underlyingTransaction.finish()
+        let sk2Transactions = await self.unfinishedTransactions
+        if !sk2Transactions.isEmpty {
+            Logger.debug("Finishing \(sk2Transactions.count) transactions before running tests")
+
+            for transaction in sk2Transactions.map(\.underlyingTransaction) {
+                await transaction.finish()
+                try? session.deleteTransaction(identifier: UInt(transaction.id))
+            }
         }
     }
 
