@@ -17,8 +17,7 @@ struct ConfigurationView: View {
                                                                    with: "")
         var proxy: String = ""
         var storeKit2Enabled: Bool = true
-        // Trusted Entitlements is internal until ready to be made public.
-        // var verificationMode: Configuration.EntitlementVerificationMode = .disabled
+        var verificationMode: Configuration.EntitlementVerificationMode = .disabled
         var observerMode: Bool = false
     }
 
@@ -50,14 +49,11 @@ struct ConfigurationView: View {
             }
 
             Section(header: Text("Settings")) {
-                // Trusted Entitlements is internal until ready to be made public.
-                /*
                 Picker("Entitlement Verification", selection: self.$data.verificationMode) {
                     ForEach(Configuration.EntitlementVerificationMode.all) { mode in
                         Text(mode.label).tag(mode)
                     }
                 }
-                */
 
                 Toggle(isOn: self.$data.storeKit2Enabled) {
                     Text("StoreKit2 enabled")
@@ -138,8 +134,7 @@ struct ConfigurationView: View {
 
 }
 
-// Trusted Entitlements is internal until ready to be made public.
-//extension Configuration.EntitlementVerificationMode: Codable {}
+extension Configuration.EntitlementVerificationMode: Codable {}
 
 // MARK: -
 

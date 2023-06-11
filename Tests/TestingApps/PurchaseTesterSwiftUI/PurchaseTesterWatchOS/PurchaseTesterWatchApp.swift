@@ -17,7 +17,8 @@ struct PurchaseTesterWatchApp: App {
                 configuration: .init(apiKey: Constants.apiKey,
                                      proxyURL: nil,
                                      useStoreKit2: true,
-                                     observerMode: false)
+                                     observerMode: false,
+                                     entitlementVerificationMode: .enforced)
             )
         }
     }

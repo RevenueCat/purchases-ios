@@ -67,8 +67,7 @@ func main() -> Int {
 
     checkStorefrontAPI()
 
-    // Trusted Entitlements: internal until ready to be made public.
-    // checkVerificationResultAPI()
+    checkVerificationResultAPI()
 
     return 0
 }
