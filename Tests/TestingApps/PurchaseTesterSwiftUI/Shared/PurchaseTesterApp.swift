@@ -101,9 +101,8 @@ struct PurchaseTesterApp: App {
                 apiKey: data.apiKey,
                 proxyURL: data.proxy.nonEmpty,
                 useStoreKit2: data.storeKit2Enabled,
-                observerMode: data.observerMode
-                // Trusted Entitlements is internal until ready to be made public.
-                // entitlementVerificationMode: data.verificationMode
+                observerMode: data.observerMode,
+                entitlementVerificationMode: data.verificationMode
             )
         }
     }

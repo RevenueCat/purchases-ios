@@ -47,9 +47,6 @@ extension CacheFetchPolicy: Identifiable {
 
 }
 
-// Trusted Entitlements is internal until ready to be made public.
-
-/*
 extension Configuration.EntitlementVerificationMode {
 
     var label: String {
@@ -62,10 +59,10 @@ extension Configuration.EntitlementVerificationMode {
 
     static let all: [Self] = [
         .disabled,
-        .informational
+        .informational,
         // .enforced is unavailable while the feature is in beta
         // It will be enabled again in a future release.
-        // .enforced
+         .enforced
     ]
 
 }
@@ -82,9 +79,9 @@ extension VerificationResult: CustomStringConvertible {
         switch self {
         case .notRequested: return "Not requested"
         case .verified: return "Verified"
+        case .verifiedOnDevice: return "Verified on device"
         case .failed: return "Failed verification"
         }
     }
 
 }
-*/

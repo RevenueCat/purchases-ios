@@ -25,8 +25,9 @@
                                 withUsesStoreKit2IfAvailable:false] build];
 
     if (@available(iOS 13.0, *)) {
-        RCConfiguration *config __unused = [[builder withEntitlementVerificationMode:RCEntitlementVerificationModeEnforced]
-                                   build];
+        RCConfiguration *config __unused = [[[builder
+                                              withEntitlementVerificationMode:RCEntitlementVerificationModeInformational] withEntitlementVerificationMode:RCEntitlementVerificationModeEnforced]
+                                            build];
     }
 }
 

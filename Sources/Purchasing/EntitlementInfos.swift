@@ -34,9 +34,8 @@ import Foundation
     /// Whether these entitlements were verified.
     /// ### Related Symbols
     /// - ``VerificationResult``
-    // Trusted Entitlements: internal until ready to be made public.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    @objc internal var verification: VerificationResult { return self._verification }
+    @objc public var verification: VerificationResult { return self._verification }
 
     public override var description: String {
         return "<\(NSStringFromClass(Self.self)): " +
