@@ -9,7 +9,7 @@ import Foundation
 import RevenueCat
 
 func checkConfigurationAPI() {
-    let configuration = Configuration
+    let builder = Configuration
         .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: "")
@@ -21,9 +21,13 @@ func checkConfigurationAPI() {
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
-        // Trusted Entitlements: internal until ready to be made public.
-        // .with(entitlementVerificationMode: .informational)
-        .build()
 
-    print(configuration)
+    let _: Configuration = builder.build()
+
+    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+        let _: Configuration = builder
+            .with(entitlementVerificationMode: .informational)
+            .with(entitlementVerificationMode: .enforced)
+            .build()
+    }
 }
