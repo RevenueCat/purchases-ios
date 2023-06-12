@@ -42,6 +42,9 @@ class StoreKitConfigTestCase: TestCase {
 
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
+        // Avoid continuing with potentially bad data after a failed assertion
+        self.continueAfterFailure = false
+
         self.testSession = try SKTestSession(configurationFileNamed: "UnitTestsConfiguration")
         self.testSession.resetToDefaultState()
         self.testSession.disableDialogs = true
