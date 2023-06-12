@@ -967,7 +967,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testDoesNotListenForSK2TransactionsWithSK2Disabled() throws {
+    func testListensForSK2TransactionsWithSK2Disabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()
@@ -977,11 +977,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
 
-        expect(transactionListener.invokedListenForTransactions) == false
+        expect(transactionListener.invokedListenForTransactions) == true
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testDoesNotListenForSK2TransactionsWithSK2EnabledOnlyForOptimizations() throws {
+    func testListensForSK2TransactionsWithSK2EnabledOnlyForOptimizations() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()
@@ -991,7 +991,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
 
-        expect(transactionListener.invokedListenForTransactions) == false
+        expect(transactionListener.invokedListenForTransactions) == true
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
