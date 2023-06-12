@@ -790,6 +790,7 @@ jobs:
       - setup-git-credentials
       - trust-github-key
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: Submit Purchase Tester
           working_directory: "Tests/TestingApps/PurchaseTesterSwiftUI"
