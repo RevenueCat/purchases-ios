@@ -75,6 +75,7 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
+    case transaction_poster_handling_transaction(productID: String)
     case sk1_purchase_too_slow
     case sk2_purchase_too_slow
     case payment_queue_wrapper_delegate_call_sk1_enabled
@@ -284,6 +285,9 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
+
+        case let .transaction_poster_handling_transaction(productID):
+            return "TransactionPoster: handling transaction for product '\(productID)'"
 
         case .sk1_purchase_too_slow:
             return "StoreKit 1 purchase took longer than expected"
