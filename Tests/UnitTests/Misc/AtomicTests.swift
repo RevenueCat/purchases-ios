@@ -39,6 +39,14 @@ class AtomicTests: TestCase {
         expect(result) == false
     }
 
+    func testGetAndSet() {
+        let atomic = Atomic(false)
+        let oldValue = atomic.getAndSet(true)
+
+        expect(oldValue) == false
+        expect(atomic.value) == true
+    }
+
     func testWithValue() {
         let atomic = Atomic(10)
         let result: Int = atomic.withValue { $0 + 10 }
