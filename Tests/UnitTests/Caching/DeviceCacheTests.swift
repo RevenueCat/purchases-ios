@@ -78,7 +78,6 @@ class DeviceCacheTests: TestCase {
 
     func testClearCachesForAppUserIDAndSaveNewUserIDClearsCachesTimestamp() {
         let appUserID = "cesar"
-        self.deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
         self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: false)).to(beTrue())
     }
@@ -136,29 +135,8 @@ class DeviceCacheTests: TestCase {
 
     }
 
-    func testSetCustomerInfoCacheTimestampToNow() {
-        let appUserID = "user"
-        let isBackgrounded = false
-
-        expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
-                                                         isAppBackgrounded: isBackgrounded)) == true
-
-        self.deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
-
-        expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID,
-                                                         isAppBackgrounded: isBackgrounded)) == false
-    }
-
     func testCustomerInfoCacheIsStaleIfNoCaches() {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "user", isAppBackgrounded: false)).to(beTrue())
-    }
-
-    func testSetOfferingsCacheTimestampToNow() {
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)).to(beTrue())
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)).to(beTrue())
-        self.deviceCache.setOfferingsCacheTimestampToNow()
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: false)).to(beFalse())
-        expect(self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: true)).to(beFalse())
     }
 
     func testOfferingsCacheIsStaleIfNoCaches() {

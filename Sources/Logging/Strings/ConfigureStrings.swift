@@ -23,7 +23,7 @@ enum ConfigureStrings {
 
     case adsupport_not_imported
 
-    case application_active
+    case application_foregrounded
 
     case configuring_purchases_proxy_url_set(url: String)
 
@@ -87,8 +87,8 @@ extension ConfigureStrings: CustomStringConvertible {
             "\(Strings.objectDescription(purchases))"
         case .adsupport_not_imported:
             return "AdSupport framework not imported. Attribution data incomplete."
-        case .application_active:
-            return "applicationDidBecomeActive"
+        case .application_foregrounded:
+            return "applicationWillEnterForeground"
         case .configuring_purchases_proxy_url_set(let url):
             return "Purchases is being configured using a proxy for RevenueCat " +
                 "with URL: \(url)"

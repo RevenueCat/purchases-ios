@@ -35,12 +35,25 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.delegate).toNot(beNil())
     }
 
-    func testSubscribesToUIApplicationDidBecomeActive() throws {
+    func testSubscribesToUIApplicationWillEnterForeground() throws {
         expect(self.notificationCenter.observers).to(haveCount(2))
 
         let (_, _, name, _) = try XCTUnwrap(self.notificationCenter.observers.first)
-        expect(name) == SystemInfo.applicationDidBecomeActiveNotification
+        expect(name) == SystemInfo.applicationWillEnterForegroundNotification
     }
+
+    #if os(iOS)
+
+    // We shouldn't use this notification because it's called when
+    // apps lose focus when presenting popups during a purchase.
+    func testDoesNotSubscribeToUIApplicationDidBecomeActive() throws {
+        expect(self.notificationCenter.observers)
+            .toNot(containElementSatisfying { _, _, name, _ in
+                name == UIApplication.didBecomeActiveNotification
+            })
+    }
+
+    #endif
 
     func testTriggersCallToBackend() {
         self.notificationCenter.fireNotifications()

@@ -203,23 +203,23 @@ extension SystemInfo {
 
 extension SystemInfo {
 
-    static var applicationDidBecomeActiveNotification: Notification.Name {
+    static var applicationWillEnterForegroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS)
-            UIApplication.didBecomeActiveNotification
+            UIApplication.willEnterForegroundNotification
         #elseif os(macOS)
-            NSApplication.didBecomeActiveNotification
+            NSApplication.willBecomeActiveNotification
         #elseif os(watchOS)
-            Notification.Name.NSExtensionHostDidBecomeActive
+            Notification.Name.NSExtensionHostWillEnterForeground
         #endif
     }
 
-    static var applicationWillResignActiveNotification: Notification.Name {
+    static var applicationDidEnterBackgroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS)
-            UIApplication.willResignActiveNotification
+            UIApplication.didEnterBackgroundNotification
         #elseif os(macOS)
-            NSApplication.willResignActiveNotification
+            NSApplication.didResignActiveNotification
         #elseif os(watchOS)
-            Notification.Name.NSExtensionHostWillResignActive
+            Notification.Name.NSExtensionHostDidEnterBackground
         #endif
     }
 

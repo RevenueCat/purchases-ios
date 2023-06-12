@@ -133,12 +133,6 @@ class DeviceCache {
         }
     }
 
-    func setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: String) {
-        self.userDefaults.write {
-            Self.setCustomerInfoCacheTimestampToNow($0, appUserID: appUserID)
-        }
-    }
-
     // MARK: - Offerings
 
     func cachedOfferingsResponseData(appUserID: String) -> Data? {
@@ -177,10 +171,6 @@ class DeviceCache {
 
     func clearOfferingsCacheTimestamp() {
         self.offeringsCachedObject.clearCacheTimestamp()
-    }
-
-    func setOfferingsCacheTimestampToNow() {
-        self.offeringsCachedObject.updateCacheTimestamp(date: Date())
     }
 
     // MARK: - subscriber attributes

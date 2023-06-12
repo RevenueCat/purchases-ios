@@ -224,7 +224,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
         expect(self.mockNotificationCenter.observers).to(containElementSatisfying {
-            $0.notificationName == SystemInfo.applicationDidBecomeActiveNotification
+            $0.notificationName == SystemInfo.applicationWillEnterForegroundNotification
         })
 
         self.mockNotificationCenter.fireNotifications()
@@ -237,7 +237,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
         expect(self.mockNotificationCenter.observers).to(containElementSatisfying {
-            $0.notificationName == SystemInfo.applicationWillResignActiveNotification
+            $0.notificationName == SystemInfo.applicationDidEnterBackgroundNotification
         })
 
         self.mockNotificationCenter.fireNotifications()

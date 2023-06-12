@@ -71,10 +71,6 @@ class MockDeviceCache: DeviceCache {
         clearCustomerInfoCacheTimestampCount += 1
     }
 
-    override func setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: String) {
-        setCustomerInfoCacheTimestampToNowCount += 1
-    }
-
     // MARK: offerings
 
     var cacheOfferingsCount = 0
@@ -103,10 +99,6 @@ class MockDeviceCache: DeviceCache {
 
     override func clearOfferingsCacheTimestamp() {
         self.clearOfferingsCacheTimestampCount += 1
-    }
-
-    override func setOfferingsCacheTimestampToNow() {
-        self.setOfferingsCacheTimestampToNowCount += 1
     }
 
     override func clearOfferingsCache(appUserID: String) {

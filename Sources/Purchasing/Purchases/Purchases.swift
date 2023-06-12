@@ -1452,8 +1452,12 @@ private extension Purchases {
         self.delegate?.purchases?(self, receivedUpdated: customerInfo)
     }
 
-    @objc func applicationDidBecomeActive(notification: Notification) {
-        Logger.debug(Strings.configure.application_active)
+    @objc func applicationWillEnterForeground() {
+        Logger.debug(Strings.configure.application_foregrounded)
+
+        // Note: it's important that we observe "will enter foreground" instead of
+        // "did become active" so that we don't trigger cache updates in the middle
+        // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded()
         self.dispatchSyncSubscriberAttributes()
 
@@ -1469,18 +1473,20 @@ private extension Purchases {
         #endif
     }
 
-    @objc func applicationWillResignActive(notification: Notification) {
+    @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
     }
 
     func subscribeToAppStateNotifications() {
-        notificationCenter.addObserver(self,
-                                       selector: #selector(applicationDidBecomeActive(notification:)),
-                                       name: SystemInfo.applicationDidBecomeActiveNotification, object: nil)
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationWillEnterForeground),
+                                            name: SystemInfo.applicationWillEnterForegroundNotification,
+                                            object: nil)
 
-        notificationCenter.addObserver(self,
-                                       selector: #selector(applicationWillResignActive(notification:)),
-                                       name: SystemInfo.applicationWillResignActiveNotification, object: nil)
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationDidEnterBackground),
+                                            name: SystemInfo.applicationDidEnterBackgroundNotification,
+                                            object: nil)
     }
 
     func dispatchSyncSubscriberAttributes() {
