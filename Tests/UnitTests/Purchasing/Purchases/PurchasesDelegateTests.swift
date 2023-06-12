@@ -35,11 +35,11 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.delegate).toNot(beNil())
     }
 
-    func testSubscribesToUIApplicationDidBecomeActive() throws {
+    func testSubscribesToUIApplicationWillEnterForeground() throws {
         expect(self.notificationCenter.observers).to(haveCount(2))
 
         let (_, _, name, _) = try XCTUnwrap(self.notificationCenter.observers.first)
-        expect(name) == SystemInfo.applicationDidBecomeActiveNotification
+        expect(name) == SystemInfo.applicationWillEnterForegroundNotification
     }
 
     func testTriggersCallToBackend() {

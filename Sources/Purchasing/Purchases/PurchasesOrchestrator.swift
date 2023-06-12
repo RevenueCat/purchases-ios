@@ -361,7 +361,6 @@ final class PurchasesOrchestrator {
         }
 
         payment.applicationUsername = self.appUserID
-        self.preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: self.appUserID)
 
         self.cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
 
@@ -1054,11 +1053,6 @@ private extension PurchasesOrchestrator {
                 }
             }
         }
-    }
-
-    func preventPurchasePopupCallFromTriggeringCacheRefresh(appUserID: String) {
-        deviceCache.setCacheTimestampToNowToPreventConcurrentCustomerInfoUpdates(appUserID: appUserID)
-        deviceCache.setOfferingsCacheTimestampToNow()
     }
 
     func purchase(

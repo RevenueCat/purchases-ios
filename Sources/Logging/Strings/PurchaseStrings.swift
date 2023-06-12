@@ -26,6 +26,7 @@ enum PurchaseStrings {
     case purchases_orchestrator_init(PurchasesOrchestrator)
     case purchases_orchestrator_deinit(PurchasesOrchestrator)
     case updating_all_caches
+    case not_updating_caches_while_products_are_in_progress
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case entitlement_expired_outside_grace_period(expiration: Date, reference: Date)
@@ -107,6 +108,9 @@ extension PurchaseStrings: CustomStringConvertible {
 
         case .updating_all_caches:
             return "Updating all caches"
+
+        case .not_updating_caches_while_products_are_in_progress:
+            return "Detected purchase in progress: will skip cache updates"
 
         case .cannot_purchase_product_appstore_configuration_error:
             return "Could not purchase SKProduct. " +
