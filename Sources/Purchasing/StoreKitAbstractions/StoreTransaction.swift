@@ -133,6 +133,18 @@ extension StoreTransaction {
 
 }
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension StoreTransactionType {
+
+    /// - Returns: the `Storefront` associated to this transaction, or `Storefront.currentStorefront` if not available.
+    var storefrontOrCurrent: Storefront? {
+        get async {
+            return await self.storefront ??? (await Storefront.currentStorefront)
+        }
+    }
+
+}
+
 extension StoreTransaction: Identifiable {
 
     /// The stable identity of the entity associated with this instance.
