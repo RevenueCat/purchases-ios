@@ -36,6 +36,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.purchaseDate) == sk1Transaction.mockTransactionDate
         expect(transaction.transactionIdentifier) == sk1Transaction.mockTransactionIdentifier
         expect(transaction.quantity) == payment.quantity
+        expect(transaction.storefront).to(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -53,6 +54,13 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.purchaseDate.timeIntervalSinceNow) <= 5
         expect(transaction.transactionIdentifier) == String(sk2Transaction.id)
         expect(transaction.quantity) == sk2Transaction.purchasedQuantity
+
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            let expected = await Storefront.currentStorefront
+            expect(transaction.storefront) == expected
+        } else {
+            expect(transaction.storefront).to(beNil())
+        }
     }
 
     func testSk1TransactionDateBecomesAnInvalidDateIfNoDate() {

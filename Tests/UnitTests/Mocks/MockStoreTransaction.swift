@@ -20,12 +20,14 @@ final class MockStoreTransaction: StoreTransactionType {
     let purchaseDate: Date
     let transactionIdentifier: String
     let quantity: Int
+    let storefront: RevenueCat.Storefront?
 
     init() {
         self.productIdentifier = UUID().uuidString
         self.purchaseDate = Date()
         self.transactionIdentifier = UUID().uuidString
         self.quantity = 1
+        self.storefront = nil
     }
 
     private let _finishInvoked: Atomic<Bool> = false

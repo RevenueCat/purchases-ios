@@ -41,6 +41,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var purchaseDate: Date { self.transaction.purchaseDate }
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
+    @objc public var storefront: Storefront? { self.transaction.storefront }
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self.transaction.finish(wrapper, completion: completion)
@@ -96,6 +97,10 @@ internal protocol StoreTransactionType: Sendable {
     /// - Note: multi-quantity purchases aren't currently supported.
     var quantity: Int { get }
 
+    /// The App Store storefront associated with the transaction.
+    /// - Note: this is only available for StoreKit 2 transactions starting with iOS 17.
+    var storefront: Storefront? { get }
+
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void)
@@ -124,6 +129,18 @@ extension StoreTransaction {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     public var sk2Transaction: SK2Transaction? {
         return (self.transaction as? SK2StoreTransaction)?.underlyingSK2Transaction
+    }
+
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension StoreTransactionType {
+
+    /// - Returns: the `Storefront` associated to this transaction, or `Storefront.currentStorefront` if not available.
+    var storefrontOrCurrent: Storefront? {
+        get async {
+            return await self.storefront ??? (await Storefront.currentStorefront)
+        }
     }
 
 }

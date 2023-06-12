@@ -376,6 +376,7 @@ extension CustomerInfo {
         let purchaseDate: Date
         let transactionIdentifier: String
         let quantity: Int
+        var storefront: Storefront? { return nil }
 
         init(with transaction: NonSubscriptionTransaction) {
             self.productIdentifier = transaction.productIdentifier

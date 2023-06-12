@@ -824,7 +824,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListener,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        let storefront = await Storefront.currentStorefront
+        let storefront = await transaction.storefrontOrCurrent
 
         _ = try await Async.call { completed in
             self.transactionPoster.handlePurchasedTransaction(

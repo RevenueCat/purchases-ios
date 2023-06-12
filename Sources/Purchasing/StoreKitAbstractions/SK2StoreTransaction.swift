@@ -23,6 +23,16 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.purchaseDate = sk2Transaction.purchaseDate
         self.transactionIdentifier = String(sk2Transaction.id)
         self.quantity = sk2Transaction.purchasedQuantity
+
+        #if swift(>=5.9)
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            self.storefront = .init(sk2Storefront: sk2Transaction.storefront)
+        } else {
+            self.storefront = nil
+        }
+        #else
+        self.storefront = nil
+        #endif
     }
 
     let underlyingSK2Transaction: SK2Transaction
@@ -31,6 +41,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let purchaseDate: Date
     let transactionIdentifier: String
     let quantity: Int
+    let storefront: Storefront?
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         Async.call(with: completion) {
