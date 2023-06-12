@@ -63,14 +63,11 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     func testRenewalsPostReceipt() async throws {
         let productID = Self.monthlyNoIntroProductID
 
-        try await self.purchaseProductFromStoreKit(productIdentifier: productID)
+        let result = try await self.purchaseProductFromStoreKit(productIdentifier: productID)
+        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
+        await transaction.finish()
 
-        self.testSession.timeRate = .realTime
-        do {
-            try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
-        } catch let error as NSError {
-            Logger.appleError("\(error.description) \(error.localizedDescription) \(error.userInfo)")
-        }
+        try? self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
         try await asyncWait(
             until: {
