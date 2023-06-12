@@ -33,6 +33,13 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
             try self.configureTestSession()
         }
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
+        }
+
         // Initialize `Purchases` *after* the fresh new session has been created
         // (and transactions has been cleared), to avoid the SDK posting receipts from
         // a previous test.

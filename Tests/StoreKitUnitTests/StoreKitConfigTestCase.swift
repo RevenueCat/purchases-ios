@@ -52,7 +52,7 @@ class StoreKitConfigTestCase: TestCase {
         await self.waitForStoreKitTestIfNeeded()
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            await self.finishAllUnfinishedTransactions()
+            await self.deleteAllTransactions(session: self.testSession)
         }
 
         let suiteName = "StoreKitConfigTests"
