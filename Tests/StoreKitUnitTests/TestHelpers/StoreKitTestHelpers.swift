@@ -49,7 +49,7 @@ extension XCTestCase {
     func deleteAllTransactions(session: SKTestSession) async {
         let sk1Transactions = session.allTransactions()
         if !sk1Transactions.isEmpty {
-            Logger.debug("Deleting \(sk1Transactions.count) transactions before running tests")
+            Logger.debug("Deleting \(sk1Transactions.count) transactions")
 
             for transaction in sk1Transactions {
                 try? session.deleteTransaction(identifier: transaction.identifier)
@@ -58,7 +58,7 @@ extension XCTestCase {
 
         let sk2Transactions = await self.unfinishedTransactions
         if !sk2Transactions.isEmpty {
-            Logger.debug("Finishing \(sk2Transactions.count) transactions before running tests")
+            Logger.debug("Finishing \(sk2Transactions.count) transactions")
 
             for transaction in sk2Transactions.map(\.underlyingTransaction) {
                 await transaction.finish()
