@@ -12,15 +12,15 @@
 //  Created by Nacho Soto on 6/12/23.
 
 import Foundation
-import UIKit
 
 #if DEBUG && os(iOS) && swift(>=5.8)
 
 import SwiftUI
+import UIKit
 
 /// A view controller which allows debugging the current SDK setup.
 ///
-/// You can present this yourself, or use ``UIViewController/presentDebugViewController``
+/// You can present this yourself, or use `UIViewController.presentDebugRevenueCatOverlay`
 /// for a default presentation using `UISheetPresentationController`.
 ///
 /// - Seealso: `View.debugRevenueCatOverlay` for `SwiftUI`.
@@ -60,7 +60,8 @@ public final class DebugViewController: UIViewController {
 @available(iOS 16.0, *)
 extension UIViewController {
 
-    /// Presents a bottom sheet overlay on top of the current view controller which allows debugging the current SDK setup.
+    /// Presents a bottom sheet overlay on top of the current view controller
+    /// which allows debugging the current SDK setup.
     ///
     /// - Seealso: `DebugViewController`.
     /// - Seealso: `View.debugRevenueCatOverlay` for `SwiftUI`.
