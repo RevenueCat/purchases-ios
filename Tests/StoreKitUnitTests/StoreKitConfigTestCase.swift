@@ -63,10 +63,13 @@ class StoreKitConfigTestCase: TestCase {
     override func tearDown() async throws {
         self.clearReceiptIfExists()
 
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            await self.deleteAllTransactions(session: self.testSession)
+        // `SKTestSession` might have not been initialized if the test was skipped.
+        if let session = self.testSession {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                await self.deleteAllTransactions(session: session)
+            }
+            session.clearTransactions()
         }
-        self.testSession.clearTransactions()
 
         try await super.tearDown()
     }
