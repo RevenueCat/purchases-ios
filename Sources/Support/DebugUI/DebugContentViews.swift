@@ -55,7 +55,7 @@ private enum DebugViewPath: Hashable {
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct DebugSummaryView: View {
+internal struct DebugSummaryView: View {
 
     @ObservedObject
     var model: DebugViewModel
@@ -120,7 +120,7 @@ private struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(info):
-                LabeledContent("User ID", value: Purchases.shared.appUserID)
+                LabeledContent("User ID", value: self.model.currentAppUserID ?? "")
                 LabeledContent("Original User ID", value: info.originalAppUserId)
                 LabeledContent("Active Entitlements", value: info.entitlements.active.count.description)
 

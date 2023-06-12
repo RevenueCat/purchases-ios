@@ -41,6 +41,8 @@ final class DebugViewModel: ObservableObject {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     @Published
     var customerInfo: LoadingState<CustomerInfo, NSError> = .loading
+    @Published
+    var currentAppUserID: String?
     #endif
 
     @Published
@@ -53,6 +55,7 @@ final class DebugViewModel: ObservableObject {
         self.offerings = await .create { try await Purchases.shared.offerings() }
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
+        self.currentAppUserID = Purchases.shared.appUserID
 
         for await info in Purchases.shared.customerInfoStream {
             self.customerInfo = .loaded(info)
