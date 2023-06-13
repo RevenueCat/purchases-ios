@@ -76,7 +76,7 @@ protocol LogMessage: CustomStringConvertible {
 }
 
 /// An in-memory cache of ``os.Logger`` instances based on their category.
-@available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *)
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 final class LoggerStore {
 
     private var loggersByCategory: [String: os.Logger] = [:]
@@ -93,7 +93,7 @@ final class LoggerStore {
 
 }
 
-@available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *)
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
 private let store = LoggerStore()
 
 // swiftlint:disable:next function_parameter_count
