@@ -565,6 +565,48 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response).to(beSuccess())
     }
 
+    func testFakeSignatureFailuresInEnforcedMode() throws {
+        self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
+        MockSigning.stubbedVerificationResult = true
+
+        try self.changeClientToEnforced(forceSignatureFailures: true)
+
+        let response: HTTPResponse<HTTPEmptyResponseBody>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error) == NetworkError.signatureVerificationFailed(path: Self.path)
+    }
+
+    func testFakeSignatureFailuresInInformationalMode() throws {
+        self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
+        MockSigning.stubbedVerificationResult = true
+
+        try self.changeClient(.informational, forceSignatureFailures: true)
+
+        let response: HTTPResponse<HTTPEmptyResponseBody>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+    }
+
+    func testFakeSignatureFailuresWithDisabledVerification() throws {
+        self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
+        MockSigning.stubbedVerificationResult = true
+
+        try self.changeClient(.disabled, forceSignatureFailures: true)
+
+        let response: HTTPResponse<HTTPEmptyResponseBody>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .notRequested
+    }
+
 }
 
 // MARK: - Private
@@ -572,18 +614,32 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseSignatureVerificationHTTPClientTests {
 
-    final func changeClient(_ verificationMode: Configuration.EntitlementVerificationMode) throws {
-        try self.createClient(Signing.verificationMode(with: verificationMode))
+    final func changeClient(
+        _ verificationMode: Configuration.EntitlementVerificationMode,
+        forceSignatureFailures: Bool = false
+    ) throws {
+        try self.createClient(Signing.verificationMode(with: verificationMode),
+                              forceSignatureFailures: forceSignatureFailures)
     }
 
-    final func changeClientToEnforced() throws {
-        try self.createClient(Signing.enforcedVerificationMode())
+    final func changeClientToEnforced(forceSignatureFailures: Bool = false) throws {
+        try self.createClient(Signing.enforcedVerificationMode(),
+                              forceSignatureFailures: forceSignatureFailures)
     }
 
-    private final func createClient(_ mode: Signing.ResponseVerificationMode) throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil,
-                                             finishTransactions: false,
-                                             responseVerificationMode: mode)
+    private final func createClient(
+        _ mode: Signing.ResponseVerificationMode,
+        forceSignatureFailures: Bool = false
+    ) throws {
+        self.systemInfo = try MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            responseVerificationMode: mode,
+            dangerousSettings: .init(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(forceSignatureFailures: forceSignatureFailures)
+            )
+        )
         self.client = self.createClient()
     }
 

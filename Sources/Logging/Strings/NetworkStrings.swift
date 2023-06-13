@@ -38,6 +38,7 @@ enum NetworkStrings {
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
+    case api_request_forcing_signature_failure(HTTPRequest)
     #endif
 
 }
@@ -110,6 +111,9 @@ extension NetworkStrings: CustomStringConvertible {
         #if DEBUG
         case let .api_request_forcing_server_error(request):
             return "Returning fake HTTP 500 error for '\(request.description)'"
+
+        case let .api_request_forcing_signature_failure(request):
+            return "Returning fake signature verification failure for '\(request.description)'"
         #endif
         }
     }
