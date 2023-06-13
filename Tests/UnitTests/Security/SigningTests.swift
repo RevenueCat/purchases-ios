@@ -37,24 +37,9 @@ class SigningTests: TestCase {
         expect(key.rawRepresentation).toNot(beEmpty())
     }
 
-    func testThrowsErrorIfPublicKeyFileDoesNotExist() throws {
-        let url = try XCTUnwrap(URL(string: "not_existing_file.cer"))
-
-        expect {
-            try Signing.loadPublicKey(in: url)
-        }.to(throwError { error in
-            expect(error).to(matchError(ErrorCode.configurationError))
-            expect(error.localizedDescription) == "There is an issue with your configuration. " +
-            "Check the underlying error for more details. Could not find public key 'not_existing_file.cer'"
-        })
-    }
-
     func testThrowsErrorIfPublicKeyFileCannotBeParsed() throws {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "invalid_certificate",
-                                                           withExtension: "cer"))
-
         expect {
-            try Signing.loadPublicKey(in: url)
+            try Signing.loadPublicKey(with: .init([1, 2, 3]))
         }.to(throwError { error in
             expect(error).to(matchError(ErrorCode.configurationError))
             expect(error.localizedDescription) == "There is an issue with your configuration. " +

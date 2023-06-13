@@ -478,7 +478,6 @@
 		57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E415F02846997B00EA5460 /* PurchasesAttributionDataTests.swift */; };
 		57E415FF28469EAB00EA5460 /* PurchasesGetProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E415FE28469EAB00EA5460 /* PurchasesGetProductsTests.swift */; };
 		57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */; };
-		57E6C26C29722EDA001AFE98 /* invalid_certificate.cer in Resources */ = {isa = PBXBuildFile; fileRef = 57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */; };
 		57E6C27C29723A94001AFE98 /* Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6C27B29723A94001AFE98 /* Signing.swift */; };
 		57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E6C27D29723F9E001AFE98 /* SigningTests.swift */; };
 		57E6C2C72975AAE1001AFE98 /* FileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B407296DFA75002472D5 /* FileReader.swift */; };
@@ -1145,7 +1144,6 @@
 		57E415F02846997B00EA5460 /* PurchasesAttributionDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAttributionDataTests.swift; sourceTree = "<group>"; };
 		57E415FE28469EAB00EA5460 /* PurchasesGetProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesGetProductsTests.swift; sourceTree = "<group>"; };
 		57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2CachingProductsManagerTests.swift; sourceTree = "<group>"; };
-		57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = invalid_certificate.cer; sourceTree = "<group>"; };
 		57E6C27B29723A94001AFE98 /* Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Signing.swift; sourceTree = "<group>"; };
 		57E6C27D29723F9E001AFE98 /* SigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SigningTests.swift; sourceTree = "<group>"; };
 		57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
@@ -1638,7 +1636,6 @@
 		2DDE559824C8B5D100DCB087 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				57E6C26A29722EC6001AFE98 /* public_keys */,
 				2DDE559924C8B5E300DCB087 /* receipts */,
 			);
 			path = Resources;
@@ -2329,14 +2326,6 @@
 			path = Responses;
 			sourceTree = "<group>";
 		};
-		57E6C26A29722EC6001AFE98 /* public_keys */ = {
-			isa = PBXGroup;
-			children = (
-				57E6C26B29722EDA001AFE98 /* invalid_certificate.cer */,
-			);
-			path = public_keys;
-			sourceTree = "<group>";
-		};
 		57F3C0C929B7A04D0004FD7E /* Security */ = {
 			isa = PBXGroup;
 			children = (
@@ -2919,7 +2908,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D4D6AF624F7193700B656BE /* verifyReceiptSample1.txt in Resources */,
-				57E6C26C29722EDA001AFE98 /* invalid_certificate.cer in Resources */,
 				2D4D6AF724F7193700B656BE /* base64encodedreceiptsample1.txt in Resources */,
 				5774F9BE2805E71100997128 /* Fixtures in Resources */,
 				5791CE80273F26A000E50C4B /* base64encoded_sandboxReceipt.txt in Resources */,

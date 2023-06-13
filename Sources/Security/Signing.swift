@@ -161,23 +161,6 @@ extension CryptoKit.Curve25519.Signing.PublicKey: SigningPublicKey {}
 
 extension Signing {
 
-    /// Loads the key in `url` and returns a `PublicKey`
-    /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    static func loadPublicKey(in url: URL) throws -> PublicKey {
-        let data: Data
-        do {
-            data = try Data(contentsOf: url)
-        } catch {
-            throw ErrorUtils.configurationError(
-                message: Strings.configure.public_key_could_not_be_found(fileName: url.relativeString).description,
-                underlyingError: error
-            )
-        }
-
-        return try Self.loadPublicKey(with: data)
-    }
-
     /// Parses the binary `key` and returns a `PublicKey`
     /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
