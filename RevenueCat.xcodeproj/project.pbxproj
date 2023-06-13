@@ -4474,7 +4474,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				branch = "os-log";
+				branch = main;
 				kind = branch;
 			};
 		};
