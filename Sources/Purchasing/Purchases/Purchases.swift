@@ -1330,6 +1330,21 @@ extension Purchases: @unchecked Sendable {}
 
 // MARK: Internal
 
+extension Purchases {
+
+    /// Used when purchasing through `SwiftUI` paywalls.
+    func cachePresentedOfferingIdentifier(_ identifier: String, productIdentifier: String) {
+        Logger.debug(Strings.purchase.caching_presented_offering_identifier(offeringID: identifier,
+                                                                            productID: productIdentifier))
+
+        self.purchasesOrchestrator.cachePresentedOfferingIdentifier(
+            identifier,
+            productIdentifier: productIdentifier
+        )
+    }
+
+}
+
 extension Purchases: InternalPurchasesType {
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

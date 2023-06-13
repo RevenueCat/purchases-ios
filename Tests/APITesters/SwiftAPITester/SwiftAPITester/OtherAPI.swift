@@ -43,18 +43,18 @@ struct PaywallViews: View {
     let offering: Offering
 
     var body: some View {
-        StoreView(offering: self.offering)
-        StoreView(offering: self.offering, prefersPromotionalIcon: true)
+        StoreView.forOffering(self.offering)
+        StoreView.forOffering(self.offering, prefersPromotionalIcon: true)
 
-        StoreView(
-            offering: self.offering,
+        StoreView.forOffering(
+            self.offering,
             prefersPromotionalIcon: true,
             icon: { (_: Product) in Text("") },
             placeholderIcon: { Text("") }
         )
 
-        SubscriptionStoreView(offering: self.offering)
-        SubscriptionStoreView(offering: self.offering) {
+        SubscriptionStoreView.forOffering(self.offering)
+        SubscriptionStoreView.forOffering(self.offering) {
             Text("Marketing content")
         }
     }

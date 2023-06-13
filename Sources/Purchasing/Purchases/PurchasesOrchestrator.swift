@@ -512,6 +512,10 @@ final class PurchasesOrchestrator {
         }
     }
 
+    func cachePresentedOfferingIdentifier(_ identifier: String, productIdentifier: String) {
+        self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
+    }
+
 #if os(iOS) || os(macOS)
 
     @available(watchOS, unavailable)
@@ -1083,7 +1087,7 @@ private extension PurchasesOrchestrator {
 
     func cachePresentedOfferingIdentifier(package: Package?, productIdentifier: String) {
         if let package = package {
-            self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = package.offeringIdentifier }
+            self.cachePresentedOfferingIdentifier(package.offeringIdentifier, productIdentifier: productIdentifier)
         }
     }
 

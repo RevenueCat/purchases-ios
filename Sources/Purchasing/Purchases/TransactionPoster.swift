@@ -82,7 +82,8 @@ final class TransactionPoster: TransactionPosterType {
                                     data: PurchasedTransactionData,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
-            productID: transaction.productIdentifier
+            productID: transaction.productIdentifier,
+            offeringID: data.presentedOfferingID
         ))
 
         self.receiptFetcher.receiptData(

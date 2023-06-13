@@ -228,7 +228,7 @@ private struct DebugOfferingView: View {
         }
         .sheet(isPresented: self.$showingStoreSheet) {
             if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
-                StoreView(offering: self.offering)
+                StoreView.forOffering(self.offering)
             }
         }
         #endif
@@ -237,7 +237,7 @@ private struct DebugOfferingView: View {
     #if swift(>=5.9)
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, *)
     private var subscriptionStoreView: some View {
-        SubscriptionStoreView(offering: self.offering) {
+        SubscriptionStoreView.forOffering(self.offering) {
             VStack {
                 VStack {
                     Text("🐈")
