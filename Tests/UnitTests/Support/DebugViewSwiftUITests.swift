@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
+#if DEBUG && os(iOS) && swift(>=5.8)
+
 import Nimble
 @testable import RevenueCat
 import SnapshotTesting
@@ -101,3 +103,5 @@ private extension DebugViewSwiftUITests {
     }
 
 }
+
+#endif
