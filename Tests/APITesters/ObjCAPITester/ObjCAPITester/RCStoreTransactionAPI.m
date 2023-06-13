@@ -15,20 +15,13 @@
 + (void)checkAPI {
     RCStoreTransaction *transaction;
 
-    NSString *productIdentifier = transaction.productIdentifier;
-    NSDate *purchaseDate = transaction.purchaseDate;
-    NSString *transactionIdentifier = transaction.transactionIdentifier;
-    NSInteger quantity = transaction.quantity;
+    NSString *productIdentifier __unused = transaction.productIdentifier;
+    NSDate *purchaseDate __unused = transaction.purchaseDate;
+    NSString *transactionIdentifier __unused = transaction.transactionIdentifier;
+    NSInteger quantity __unused = transaction.quantity;
+    RCStorefront *__nullable storefront __unused = transaction.storefront;
 
-    SKPaymentTransaction *sk1 = transaction.sk1Transaction;
-
-    NSLog(
-          productIdentifier,
-          purchaseDate,
-          transactionIdentifier,
-          quantity,
-          sk1
-          );
+    SKPaymentTransaction *sk1 __unused = transaction.sk1Transaction;
 }
 
 @end
