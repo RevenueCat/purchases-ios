@@ -177,5 +177,6 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
     var enableReceiptFetchRetry: Bool { return true }
     var forceServerErrors: Bool { return false }
+    var forceSignatureFailures: Bool { return false }
 
 }

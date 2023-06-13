@@ -276,7 +276,7 @@ private extension HTTPClient {
             .success(dataIfAvailable(statusCode))
             .mapToResponse(response: httpURLResponse,
                            request: request.httpRequest,
-                           signing: self.signing,
+                           signing: self.signing(for: request.httpRequest),
                            verificationMode: request.verificationMode)
             .map { (response) -> HTTPResponse<Data>? in
                 guard let cachedResponse = self.eTagManager.httpResultFromCacheOrBackend(
@@ -406,6 +406,17 @@ private extension HTTPClient {
         } else {
             return request.headers
         }
+    }
+
+    private func signing(for request: HTTPRequest) -> SigningType.Type {
+        #if DEBUG
+        if self.systemInfo.dangerousSettings.internalSettings.forceSignatureFailures {
+            Logger.warn(Strings.network.api_request_forcing_signature_failure(request))
+            return FakeSigning.self
+        }
+        #endif
+
+        return self.signing
     }
 
 }
