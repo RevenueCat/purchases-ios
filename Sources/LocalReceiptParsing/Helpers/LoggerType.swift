@@ -88,6 +88,7 @@ final class LoggerStore {
     }
 
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.revenuecat.Purchases"
+
 }
 
 @available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *)
