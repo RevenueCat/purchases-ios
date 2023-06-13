@@ -75,6 +75,8 @@ private extension MainThreadMonitor {
 
 }
 
+// MARK: - logs
+
 // swiftlint:disable identifier_name
 
 private enum Message: LogMessage {
@@ -96,8 +98,8 @@ private enum Message: LogMessage {
         }
     }
 
-    var category: String { return "MainThreadMonitor" }
+    var category: String { return Self.name }
 
-    private static let name: String = "\(type(of: MainThreadMonitor.self))"
+    private static let name: String = "\(MainThreadMonitor.self)"
 
 }
