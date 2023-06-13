@@ -40,6 +40,7 @@ protocol LoggerType {
 
 }
 
+/// Contains a message that can be output by ``os.Logger``.
 protocol LogMessage: CustomStringConvertible {
 
     var description: String { get }
@@ -74,6 +75,7 @@ protocol LogMessage: CustomStringConvertible {
     // swiftlint:enable missing_docs
 }
 
+/// An in-memory cache of ``os.Logger`` instances based on their category.
 @available(iOS 14.0.0, tvOS 14.0.0, macOS 11.0.0, *)
 final class LoggerStore {
 

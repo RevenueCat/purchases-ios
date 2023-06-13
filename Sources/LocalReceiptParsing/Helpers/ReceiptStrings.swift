@@ -113,4 +113,5 @@ extension ReceiptStrings: LogMessage {
     }
 
     var category: String { return "receipt" }
+
 }
