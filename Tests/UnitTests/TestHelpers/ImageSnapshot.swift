@@ -16,6 +16,8 @@ import Nimble
 import SnapshotTesting
 import SwiftUI
 
+#if swift(>=5.8)
+
 func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
@@ -48,3 +50,5 @@ func haveValidSnapshot<Value>(
         )
     }
 }
+
+#endif
