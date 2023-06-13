@@ -241,6 +241,8 @@
 		4FA696BD2A0020A000D228B1 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
+		4FCEEA612A379CF9002C2112 /* DebugViewSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */; };
+		4FCEEA632A37A2E9002C2112 /* ImageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */; };
 		4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */; };
 		4FE6669F2A2F95A1004EEAFC /* PaywallExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */; };
 		4FF8464D2A32554300617F00 /* DiagnosticsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */; };
@@ -932,6 +934,8 @@
 		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
 		4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadMonitor.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
+		4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewSwiftUITests.swift; sourceTree = "<group>"; };
+		4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshot.swift; sourceTree = "<group>"; };
 		4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcherTests.swift; sourceTree = "<group>"; };
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
 		4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsStrings.swift; sourceTree = "<group>"; };
@@ -1579,6 +1583,7 @@
 				57F3C0CD29B7A1440004FD7E /* Security */,
 				F591492426B994A100D32E58 /* StoreKitExtensions */,
 				B36824BB268FBB9B00957E4C /* SubscriberAttributes */,
+				4FCEEA5F2A379CD6002C2112 /* Support */,
 				37E35A5970D1604E8C8011FC /* TestHelpers */,
 				2DC5622524EC63430031F69B /* Info.plist */,
 			);
@@ -2068,6 +2073,7 @@
 				57057FF728B0048900995F21 /* TestLogHandler.swift */,
 				575A8EE02922C56300936709 /* AsyncTestHelpers.swift */,
 				4F69EB082A14406E00ED6D4B /* Matchers.swift */,
+				4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */,
 			);
 			path = TestHelpers;
 			sourceTree = "<group>";
@@ -2111,6 +2117,14 @@
 				4F6BEDE12A26B69500CD9322 /* DebugContentViews.swift */,
 			);
 			path = DebugUI;
+			sourceTree = "<group>";
+		};
+		4FCEEA5F2A379CD6002C2112 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */,
+			);
+			path = Support;
 			sourceTree = "<group>";
 		};
 		4FD291BC2A1E9A180098D1B9 /* StoreKit2 */ = {
@@ -3363,6 +3377,7 @@
 				B3CAFF10285CE8E30048A994 /* MockOfferingsAPI.swift in Sources */,
 				351B51BF26D450E800BD2BD7 /* StoreKitRequestFetcherTests.swift in Sources */,
 				2DDF41E224F6F527005BC22D /* MockProductsRequest.swift in Sources */,
+				4FCEEA632A37A2E9002C2112 /* ImageSnapshot.swift in Sources */,
 				A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */,
 				351B514B26D44A4A00BD2BD7 /* MockOperationDispatcher.swift in Sources */,
 				351B514926D44A2F00BD2BD7 /* MockCustomerInfoManager.swift in Sources */,
@@ -3422,6 +3437,7 @@
 				4F54DF3F2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift in Sources */,
 				351B516A26D44CB300BD2BD7 /* ISOPeriodFormatterTests.swift in Sources */,
 				57DC9F4A27CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift in Sources */,
+				4FCEEA612A379CF9002C2112 /* DebugViewSwiftUITests.swift in Sources */,
 				2DDF41DE24F6F527005BC22D /* MockAppleReceiptBuilder.swift in Sources */,
 				578DAA4A2948EF4F001700FD /* TestClock.swift in Sources */,
 				2DDF41E324F6F527005BC22D /* MockASN1ContainerBuilder.swift in Sources */,
