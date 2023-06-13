@@ -60,7 +60,7 @@ public extension View {
             ],
             isPresented: isPresented,
             largestUndimmedIdentifier: .fraction(0.6),
-            cornerRadius: 10,
+            cornerRadius: DebugSwiftUIRootView.cornerRadius,
             content: {
                 DebugSwiftUIRootView()
             }

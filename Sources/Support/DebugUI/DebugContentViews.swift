@@ -45,6 +45,8 @@ struct DebugSwiftUIRootView: View {
         }
     }
 
+    static let cornerRadius: CGFloat = 24
+
 }
 
 private enum DebugViewPath: Hashable {
