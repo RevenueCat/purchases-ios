@@ -26,7 +26,7 @@ public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
 internal typealias InternalLogHandler = (_ level: LogLevel,
-                                         _ message: String, // TODO: interpolation
+                                         _ message: String,
                                          _ category: String,
                                          _ file: String?,
                                          _ function: String?,

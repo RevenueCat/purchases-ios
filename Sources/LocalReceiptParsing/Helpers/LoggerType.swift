@@ -42,7 +42,6 @@ protocol LoggerType {
 
 protocol LogMessage: CustomStringConvertible {
 
-    // TODO: OSLogMessage
     var description: String { get }
     var category: String { get }
 
@@ -100,7 +99,7 @@ func defaultLogHandler(
     verbose: Bool,
     level: LogLevel,
     category: String,
-    message: String, // TODO: OSLogMessage (iOS 14?)
+    message: String,
     file: String?,
     function: String?,
     line: UInt
