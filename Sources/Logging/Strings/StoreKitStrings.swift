@@ -154,6 +154,6 @@ extension StoreKitStrings: LogMessage {
         }
     }
 
-    var category: String { return "storeKit" }
+    var category: String { return "store_kit" }
 
 }
