@@ -665,13 +665,13 @@ SWIFT_CLASS("_TtC10RevenueCat25CacheableNetworkOperation")
 /// <em>Steps:</em>
 /// <ol>
 ///   <li>
-///     Call <code>Configuration/builder(withAPIKey:)</code> To obtain a <code>Builder</code> object.
+///     Call <code>Configuration/builder(withAPIKey:)</code> To obtain a <code>Configuration/Builder</code> object.
 ///   </li>
 ///   <li>
 ///     Set this builder’s properties using the “<code>with(</code>” functions.
 ///   </li>
 ///   <li>
-///     Call <code>Builder/build()</code> to obtain the <code>Configuration</code> object.
+///     Call <code>Configuration/Builder/build()</code> to obtain the <code>Configuration</code> object.
 ///   </li>
 ///   <li>
 ///     Pass the <code>Configuration</code> object into <code>Purchases/configure(with:)-6oipy</code>.
@@ -1554,7 +1554,7 @@ SWIFT_CLASS_NAMED("PromotionalOffer")
 @interface RCPromotionalOffer : NSObject
 /// The <code>StoreProductDiscount</code> in this offer.
 @property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nonnull discount;
-/// The <code>SignedData-swift.class</code> provides information about the <code>PromotionalOffer</code>’s signature.
+/// The <code>PromotionalOffer/SignedData-swift.class</code> provides information about the <code>PromotionalOffer</code>’s signature.
 @property (nonatomic, readonly, strong) RCPromotionalOfferSignedData * _Nonnull signedData;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -1648,10 +1648,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
 ///   </li>
 ///   <li>
-///     <code>logOut(completion:)</code>
+///     <code>Purchases/logOut(completion:)</code>
 ///   </li>
 ///   <li>
-///     <code>isAnonymous</code>
+///     <code>Purchases/isAnonymous</code>
 ///   </li>
 ///   <li>
 ///     <code>Purchases/appUserID</code>
@@ -1675,10 +1675,10 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///     <a href="https://docs.revenuecat.com/docs/user-ids">Identifying Users</a>
 ///   </li>
 ///   <li>
-///     <code>logOut()</code>
+///     <code>Purchases/logOut()</code>
 ///   </li>
 ///   <li>
-///     <code>isAnonymous</code>
+///     <code>Purchases/isAnonymous</code>
 ///   </li>
 ///   <li>
 ///     <code>Purchases/appUserID</code>
@@ -1790,7 +1790,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 - (void)offeringsWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
 /// Use this method if you aren’t using <code>Purchases/getOfferings(completion:)</code>.
-/// You should use <code>getOfferings(completion:)</code> though.
+/// You should use <code>Purchases/getOfferings(completion:)</code> though.
 /// note:
 /// <code>completion</code> may be called without <code>StoreProduct</code>s that you are expecting. This is usually caused by
 /// iTunesConnect configuration errors. Ensure your IAPs have the “Ready to Submit” status in iTunesConnect.
@@ -1808,8 +1808,8 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///
 - (void)getProductsWithIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers completion:(void (^ _Nonnull)(NSArray<RCStoreProduct *> * _Nonnull))completion;
 /// Fetches the <code>StoreProduct</code>s for your IAPs for given <code>productIdentifiers</code>.
-/// Use this method if you aren’t using <code>getOfferings(completion:)</code>.
-/// You should use <code>getOfferings(completion:)</code> though.
+/// Use this method if you aren’t using <code>Purchases/getOfferings(completion:)</code>.
+/// You should use <code>Purchases/getOfferings(completion:)</code> though.
 /// note:
 /// The result might not contain the <code>StoreProduct</code>s that you are expecting. This is usually caused by
 /// iTunesConnect configuration errors. Ensure your IAPs have the “Ready to Submit” status in iTunesConnect.
@@ -1972,7 +1972,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 ///     <code>StoreProduct/eligiblePromotionalOffers()</code>
 ///   </li>
 ///   <li>
-///     <code>promotionalOffer(forProductDiscount:product:)</code>
+///     <code>Purchases/promotionalOffer(forProductDiscount:product:)</code>
 ///   </li>
 /// </ul>
 /// \param product The <code>StoreProduct</code> the user intends to purchase.
@@ -2055,7 +2055,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// <h3>Related symbols</h3>
 /// <ul>
 ///   <li>
-///     <code>checkTrialOrIntroDiscountEligibility(product:completion:)</code>
+///     <code>Purchases/checkTrialOrIntroDiscountEligibility(product:completion:)</code>
 ///   </li>
 /// </ul>
 /// \param productIdentifiers Array of product identifiers for which you want to compute eligibility
@@ -2079,7 +2079,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// <h3>Related symbols</h3>
 /// <ul>
 ///   <li>
-///     <code>checkTrialOrIntroDiscountEligibility(product:)</code>
+///     <code>Purchases/checkTrialOrIntroDiscountEligibility(product:)</code>
 ///   </li>
 /// </ul>
 /// \param productIdentifiers Array of product identifiers for which you want to compute eligibility
@@ -2101,7 +2101,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// <h3>Related symbols</h3>
 /// <ul>
 ///   <li>
-///     <code>checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)</code>
+///     <code>Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:completion:)</code>
 ///   </li>
 /// </ul>
 /// \param product The <code>StoreProduct</code>  for which you want to compute eligibility.
@@ -2125,14 +2125,15 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// <h3>Related symbols</h3>
 /// <ul>
 ///   <li>
-///     <code>checkTrialOrIntroDiscountEligibility(productIdentifiers:)</code>
+///     <code>Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:)</code>
 ///   </li>
 /// </ul>
 /// \param product The <code>StoreProduct</code>  for which you want to compute eligibility.
 ///
 - (void)checkTrialOrIntroDiscountEligibilityWithProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(enum RCIntroEligibilityStatus))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// Use this method to fetch <code>PromotionalOffer</code>
-/// to use in <code>purchase(package:promotionalOffer:)</code> or <code>purchase(product:promotionalOffer:)</code>.
+/// to use in <code>Purchases/purchase(package:promotionalOffer:)</code>
+/// or <code>Purchases/purchase(product:promotionalOffer:)</code>.
 /// <a href="https://docs.revenuecat.com/docs/ios-subscription-offers#promotional-offers">iOS Promotional Offers</a>.
 /// note:
 /// If you’re looking to use free trials or Introductory Offers instead,
@@ -2162,7 +2163,7 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// <h4>Related Symbols</h4>
 /// <ul>
 ///   <li>
-///     <code>promotionalOffer(forProductDiscount:product:)</code>
+///     <code>Purchases/promotionalOffer(forProductDiscount:product:)</code>
 ///   </li>
 ///   <li>
 ///     <code>StoreProduct/eligiblePromotionalOffers()</code>
@@ -2265,8 +2266,8 @@ SWIFT_CLASS_NAMED("Purchases")
 /// Returns the already configured instance of <code>Purchases</code>.
 /// warning:
 /// this method will crash with <code>fatalError</code> if <code>Purchases</code> has not been initialized through
-/// <code>configure(withAPIKey:)</code> or one of its overloads. If there’s a chance that may have not happened yet,
-/// you can use <code>isConfigured</code> to check if it’s safe to call.
+/// <code>Purchases/configure(withAPIKey:)</code> or one of its overloads.
+/// If there’s a chance that may have not happened yet, you can use <code>isConfigured</code> to check if it’s safe to call.
 /// <h3>Related symbols</h3>
 /// <ul>
 ///   <li>
@@ -2275,7 +2276,7 @@ SWIFT_CLASS_NAMED("Purchases")
 /// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCPurchases * _Nonnull sharedPurchases;)
 + (RCPurchases * _Nonnull)sharedPurchases SWIFT_WARN_UNUSED_RESULT;
-/// Returns <code>true</code> if RevenueCat has already been initialized through <code>configure(withAPIKey:)</code>
+/// Returns <code>true</code> if RevenueCat has already been initialized through <code>Purchases/configure(withAPIKey:)</code>
 /// or one of is overloads.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) BOOL isConfigured;)
 + (BOOL)isConfigured SWIFT_WARN_UNUSED_RESULT;
@@ -3147,6 +3148,7 @@ SWIFT_CLASS_NAMED("StoreProductDiscount")
 @property (nonatomic, readonly) enum RCDiscountType type;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
+@property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3201,6 +3203,7 @@ SWIFT_CLASS_NAMED("StoreTransaction")
 @property (nonatomic, readonly, copy) NSDate * _Nonnull purchaseDate;
 @property (nonatomic, readonly, copy) NSString * _Nonnull transactionIdentifier;
 @property (nonatomic, readonly) NSInteger quantity;
+@property (nonatomic, readonly, strong) RCStorefront * _Nullable storefront;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
