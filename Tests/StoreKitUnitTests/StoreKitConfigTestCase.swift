@@ -124,27 +124,3 @@ private extension StoreKitConfigTestCase {
     }
 
 }
-
-enum StoreKitTestMessage: LogMessage {
-
-    case delayingTest(TimeInterval)
-    case errorRemovingReceipt(URL, Error)
-    case deletingTransactions(count: Int)
-    case finishingTransactions(count: Int)
-
-    var description: String {
-        switch self {
-        case let .delayingTest(waitTime):
-            return "Delaying tests for \(waitTime) seconds for StoreKit initialization..."
-        case let .errorRemovingReceipt(url, error):
-            return "Error attempting to remove receipt URL '\(url)': \(error)"
-        case let .deletingTransactions(count):
-            return "Deleting \(count) transactions"
-        case let .finishingTransactions(count):
-            return "Finishing \(count) transactions"
-        }
-    }
-
-    var category: String { return "StoreKitConfigTestCase" }
-
-}
