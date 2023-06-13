@@ -823,7 +823,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListener,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        let storefront = await transaction.storefrontOrCurrent
+        let storefront = await self.storefront(from: transaction)
 
         _ = try await Async.call { completed in
             self.transactionPoster.handlePurchasedTransaction(
@@ -842,6 +842,12 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
                 completed(result.mapError(\.asPurchasesError))
             }
         }
+    }
+
+    private func storefront(from transaction: StoreTransactionType) async -> StorefrontType? {
+        return await transaction.storefrontOrCurrent
+        // If we couldn't determine storefront from SK2, try SK1:
+        ?? self.paymentQueueWrapper.sk1Wrapper?.currentStorefront
     }
 
 }
