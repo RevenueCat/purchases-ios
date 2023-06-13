@@ -235,6 +235,8 @@
 		4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8038322A1EA7C300D21039 /* TransactionPoster.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F8A58182A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
+		4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
+		4F90AFCC2A3915BC0047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
 		4FA4C8DA2A168956007D2803 /* OfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */; };
 		4FA4C9732A16D3AC007D2803 /* MockBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */; };
 		4FA4C9742A16D3AC007D2803 /* MockBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */; };
@@ -932,6 +934,7 @@
 		4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
 		4F8038322A1EA7C300D21039 /* TransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionPoster.swift; sourceTree = "<group>"; };
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
+		4F90AFCA2A3915340047E63F /* TestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestMessage.swift; sourceTree = "<group>"; };
 		4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBackendConfiguration.swift; sourceTree = "<group>"; };
 		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
@@ -1777,6 +1780,7 @@
 		2DE20B6D264087FB004C597D /* BackendIntegrationTests */ = {
 			isa = PBXGroup;
 			children = (
+				4F90AFC92A39152A0047E63F /* Helpers */,
 				4FCBA8522A1539D0004134BD /* __Snapshots__ */,
 				579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */,
 				5753EE0F294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift */,
@@ -2122,6 +2126,14 @@
 				4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */,
 			);
 			path = DebugUI;
+			sourceTree = "<group>";
+		};
+		4F90AFC92A39152A0047E63F /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				4F90AFCA2A3915340047E63F /* TestMessage.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		4FCEEA5F2A379CD6002C2112 /* Support */ = {
@@ -3555,6 +3567,7 @@
 				5753EE10294B93CC00CBAB54 /* BaseStoreKitIntegrationTests.swift in Sources */,
 				579234E527F779FE00B39C68 /* SubscriberAttributesManagerIntegrationTests.swift in Sources */,
 				4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */,
+				4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */,
 				2D3BFAD226DEA46600370B11 /* MockProductsRequest.swift in Sources */,
 				2D1015DB275A4EAE0086173F /* AvailabilityChecks.swift in Sources */,
 				5753EE0E294B938900CBAB54 /* StoreKitObserverModeIntegrationTests.swift in Sources */,
@@ -3590,6 +3603,7 @@
 				4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */,
 				4F7C37E52A27EFF7001E17D3 /* BaseStoreKitIntegrationTests.swift in Sources */,
 				4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */,
+				4F90AFCC2A3915BC0047E63F /* TestMessage.swift in Sources */,
 				4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */,
 				4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */,
 			);
@@ -4460,7 +4474,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				branch = main;
+				branch = "os-log";
 				kind = branch;
 			};
 		};

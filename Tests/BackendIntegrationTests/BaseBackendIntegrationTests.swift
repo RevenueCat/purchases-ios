@@ -105,7 +105,7 @@ class BaseBackendIntegrationTests: XCTestCase {
 
     /// Simulates closing the app and re-opening with a fresh instance of `Purchases`.
     final func resetSingleton() async {
-        Logger.warn("Resetting Purchases.shared")
+        Logger.warn(TestMessage.resetting_purchases_singleton)
 
         Purchases.clearSingleton()
         await self.createPurchases()
@@ -121,10 +121,10 @@ private extension BaseBackendIntegrationTests {
         guard let url = Bundle.main.appStoreReceiptURL, manager.fileExists(atPath: url.path) else { return }
 
         do {
-            Logger.info("Removing receipt from url: \(url)")
+            Logger.info(TestMessage.removing_receipt(url))
             try manager.removeItem(at: url)
         } catch {
-            Logger.appleWarning("Error attempting to remove receipt URL '\(url)': \(error)")
+            Logger.appleWarning(TestMessage.error_removing_url(url, error))
         }
     }
 
