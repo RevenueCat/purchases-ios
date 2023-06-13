@@ -6,7 +6,7 @@
 	<array>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeUserID</string>
+			<string>NSPrivacyCollectedDataTypePurchaseHistory</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
@@ -18,6 +18,6 @@
 		</dict>
 	</array>
 	<key>NSPrivacyTracking</key>
-	<true/>
+	<false/>
 </dict>
 </plist>
