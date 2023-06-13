@@ -15,7 +15,7 @@
 + (void)checkAPI {
     #if DEBUG
     if (@available(iOS 16.0, *)) {
-        RCDebugViewController *controller = [RCDebugViewController new];
+        RCDebugViewController *controller __unused = [RCDebugViewController new];
 
         [UIViewController.new rc_presentDebugRevenueCatOverlayAnimated:NO];
     }

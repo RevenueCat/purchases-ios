@@ -28,7 +28,7 @@ struct AppView: View {
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 func debugViewController() {
-    let controller = DebugViewController()
+    let _: UIViewController = DebugViewController()
     UIViewController().presentDebugRevenueCatOverlay()
     UIViewController().presentDebugRevenueCatOverlay(animated: false)
 }
