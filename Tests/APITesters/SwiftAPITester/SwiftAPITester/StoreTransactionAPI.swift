@@ -11,22 +11,15 @@ import RevenueCat
 
 private var transaction: StoreTransaction!
 func checkStoreTransactionAPI() {
-    let productIdentifier: String = transaction.productIdentifier
-    let purchaseDate: Date = transaction.purchaseDate
-    let transactionIdentifier: String = transaction.transactionIdentifier
-    let quantity: Int = transaction.quantity
+    let _: String = transaction.productIdentifier
+    let _: Date = transaction.purchaseDate
+    let _: String = transaction.transactionIdentifier
+    let _: Int = transaction.quantity
+    let _: RevenueCat.Storefront? = transaction.storefront
 
-    let sk1: SKPaymentTransaction? = transaction.sk1Transaction
+    let _: SKPaymentTransaction? = transaction.sk1Transaction
 
     if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let _: StoreKit.Transaction? = transaction.sk2Transaction
     }
-
-    print(
-        productIdentifier,
-        purchaseDate,
-        transactionIdentifier,
-        quantity,
-        sk1!
-    )
 }
