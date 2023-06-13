@@ -98,6 +98,8 @@ extension HTTPResponse {
     }
 
     func copy(with newVerificationResult: VerificationResult) -> Self {
+        guard newVerificationResult != self.verificationResult else { return self }
+
         return .init(
             statusCode: self.statusCode,
             responseHeaders: self.responseHeaders,

@@ -238,6 +238,8 @@ extension CustomerInfo {
 
     /// Creates a copy of this ``CustomerInfo`` modifying only the ``VerificationResult``.
     func copy(with entitlementVerification: VerificationResult) -> Self {
+        guard entitlementVerification != self.data.entitlementVerification else { return self }
+
         var copy = self.data
         copy.entitlementVerification = entitlementVerification
         return .init(data: copy)
