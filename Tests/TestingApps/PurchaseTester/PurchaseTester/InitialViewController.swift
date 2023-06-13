@@ -53,6 +53,8 @@ class InitialViewController: UIViewController {
             // Present debug screen on top
             if #available(iOS 16.0, *) {
                 controllerToPresent.presentDebugRevenueCatOverlay(animated: true)
+            } else {
+                print("Won't display debug overlay, not supported before iOS 16.0")
             }
         }
         
