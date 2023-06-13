@@ -844,8 +844,7 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testCopyWithSameVerificationResult() throws {
-        self.verifyCopy(of: self.customerInfo.copy(with: .verified),
-                        onlyModifiesEntitlementVerification: .verified)
+        expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
     }
 
     func testCopyWithVerificationResultVerified() throws {
