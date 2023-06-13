@@ -13,7 +13,7 @@
 @implementation RCOtherAPI
 
 + (void)checkAPI {
-    #if DEBUG
+    #if DEBUG && TARGET_OS_IPHONE && defined(__IPHONE_17_0)
     if (@available(iOS 16.0, *)) {
         RCDebugViewController *controller __unused = [RCDebugViewController new];
 
