@@ -1,12 +1,20 @@
-_This release is compatible with Xcode 15 beta 1_
+### New Features
+#### Introducing Trusted Entitlements (beta):
 
-### Bugfixes
-* `Dictionary.MergeStrategy`: fixed Xcode 15 compilation (#2582) via NachoSoto (@NachoSoto)
-### Other Changes
-* `Custom Entitlements Computation`: added missing scheme to project (#2579) via NachoSoto (@NachoSoto)
-* `Custom Entitlements Computation`: added Integration Tests (#2568) via NachoSoto (@NachoSoto)
-* `ProductsManager`: improved display of underlying errors (#2575) via NachoSoto (@NachoSoto)
-* `StoreKit1Wrapper`: added debug log for duplicate `finishTransaction` calls (#2577) via NachoSoto (@NachoSoto)
-* Fixed typo in file name (#2578) via NachoSoto (@NachoSoto)
-* `Integration Tests`: avoid crashes when printing receipt (#2570) via NachoSoto (@NachoSoto)
-* `Package.swift` fix warning for unrecognized `Info.plist` (#2573) via NachoSoto (@NachoSoto)
+Fixes #1900.
+
+This new feature prevents MitM attacks between the SDK and the RevenueCat server.
+With verification enabled, the SDK ensures that the response created by the server was not modified by a third-party, and the entitlements received are exactly what was sent.
+This is 100% opt-in. `EntitlementInfos` have a new `VerificationResult` property, which will indicate the validity of the responses when this feature is enabled.
+
+```swift
+let purchases = Purchases.configure(
+  with: Configuration
+    .builder(withAPIKey: "")
+    .with(entitlementVerificationMode: .informational)
+)
+let customerInfo = try await purchases.customerInfo()
+if customerInfo.entitlements.verification != .verified {
+  print("Entitlements could not be verified")
+}
+```
