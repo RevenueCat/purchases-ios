@@ -63,6 +63,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
 
+    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+
     func testPurchaseOutsideTheAppPostsReceipt() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
 
@@ -82,6 +84,8 @@ class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWith
 /// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeIntegrationTests {
+
+    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
 
     // MARK: - Transactions observation
 

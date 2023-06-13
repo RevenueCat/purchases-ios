@@ -40,6 +40,8 @@ class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
 class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
+    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+
     override func setUp() async throws {
         try await super.setUp()
 
