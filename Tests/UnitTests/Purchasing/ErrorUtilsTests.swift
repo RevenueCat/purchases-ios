@@ -37,7 +37,7 @@ class ErrorUtilsTests: TestCase {
     func testReceiptErrorWithNoURL() {
         let error = ErrorUtils.missingReceiptFileError(nil)
         expect(error).to(matchError(ErrorCode.missingReceiptFileError))
-        expect(error.userInfo["rc_receipt_url"]).to(beNil())
+        expect(error.userInfo["rc_receipt_url"] as? String) == "<null>"
         expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == false
     }
 
@@ -46,7 +46,7 @@ class ErrorUtilsTests: TestCase {
 
         let error = ErrorUtils.missingReceiptFileError(url)
         expect(error).to(matchError(ErrorCode.missingReceiptFileError))
-        expect(error.userInfo["rc_receipt_url"] as? URL) == url
+        expect(error.userInfo["rc_receipt_url"] as? String) == url.absoluteString
         expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == false
     }
 
@@ -55,7 +55,7 @@ class ErrorUtilsTests: TestCase {
 
         let error = ErrorUtils.missingReceiptFileError(url)
         expect(error).to(matchError(ErrorCode.missingReceiptFileError))
-        expect(error.userInfo["rc_receipt_url"] as? URL) == url
+        expect(error.userInfo["rc_receipt_url"] as? String) == url.absoluteString
         expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == true
     }
 
