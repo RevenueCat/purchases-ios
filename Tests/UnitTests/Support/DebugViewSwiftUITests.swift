@@ -43,7 +43,8 @@ class DebugViewSwiftUITests: TestCase {
             sandbox: true,
             storeKit2Enabled: true,
             offlineCustomerInfoSupport: true,
-            verificationMode: "Enforced"
+            verificationMode: "Enforced",
+            receiptURL: URL(string: "file://receipt")
         ))
         model.diagnosticsResult = .loaded(())
         model.customerInfo = .loaded(try Self.mockCustomerInfo)
