@@ -48,10 +48,7 @@ let package = Package(
                 ],
                 swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")]),
         .target(name: "ReceiptParser",
-                path: "LocalReceiptParsing",
-                resources: [
-                    .copy("../Sources/PrivacyInfo.xcprivacy")
-                ]),
+                path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
                     dependencies: ["ReceiptParser", "Nimble"],
                     exclude: ["ReceiptParserTests-Info.plist"])
