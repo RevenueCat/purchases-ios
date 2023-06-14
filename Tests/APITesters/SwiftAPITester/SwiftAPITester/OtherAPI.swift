@@ -11,9 +11,9 @@ import RevenueCat
 import StoreKit
 import SwiftUI
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 struct AppView: View {
 
     @State private var debugOverlayVisible: Bool = false
@@ -26,7 +26,11 @@ struct AppView: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+#endif
+
+#if DEBUG && os(iOS) && swift(>=5.8)
+
+@available(iOS 16.0, *)
 func debugViewController() {
     let _: UIViewController = DebugViewController()
     UIViewController().presentDebugRevenueCatOverlay()
@@ -35,7 +39,7 @@ func debugViewController() {
 
 #endif
 
-#if os(iOS) && swift(>=5.9)
+#if swift(>=5.9)
 
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 struct PaywallViews: View {

@@ -13,12 +13,12 @@
 
 import Foundation
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
 
 import SwiftUI
 
 @MainActor
-@available(iOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 final class DebugViewModel: ObservableObject {
 
     struct Configuration: Codable {
@@ -65,7 +65,7 @@ final class DebugViewModel: ObservableObject {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 extension DebugViewModel {
 
     var diagnosticsStatus: String {
@@ -116,7 +116,7 @@ extension LoadingState where Error == NSError {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 private extension DebugViewModel.Configuration {
 
     static func create(with purchases: Purchases = .shared) -> Self {

@@ -11,12 +11,12 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
 
 import StoreKit
 import SwiftUI
 
-@available(iOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 struct DebugSwiftUIRootView: View {
 
     @StateObject
@@ -56,7 +56,7 @@ private enum DebugViewPath: Hashable {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 internal struct DebugSummaryView: View {
 
     @ObservedObject
@@ -74,7 +74,9 @@ internal struct DebugSummaryView: View {
 
             self.offeringsSection
         }
+        #if os(iOS)
         .listStyle(.insetGrouped)
+        #endif
         .scrollContentBackground(.hidden)
         .navigationTitle("RevenueCat Debug")
     }
@@ -166,7 +168,7 @@ internal struct DebugSummaryView: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 private struct DebugOfferingView: View {
 
     @State private var showingSubscriptionSheet = false
@@ -268,7 +270,7 @@ private struct DebugOfferingView: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 private struct DebugPackageView: View {
 
     var package: Package
@@ -334,7 +336,7 @@ private struct DebugPackageView: View {
 
 }
 
-@available(iOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, *)
 extension DebugViewModel.Configuration: Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
@@ -349,7 +351,7 @@ extension DebugViewModel.Configuration: Transferable {
 }
 
 #if swift(>=5.9)
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+@available(iOS 17.0, macOS 14.0, *)
 private struct ProductStyle: ProductViewStyle {
 
     func makeBody(configuration: ProductViewStyleConfiguration) -> some View {
