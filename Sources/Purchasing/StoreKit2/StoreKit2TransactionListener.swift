@@ -25,7 +25,7 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject {
 }
 
 /// Observes `StoreKit.Transaction.updates`, which receives:
-/// - Updates from outside `Product.purchase()`, like renewals
+/// - Updates from outside `Product.purchase()`, like renewals and purchases made on other devices
 /// - Purchases from SwiftUI's paywalls.
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListener {
