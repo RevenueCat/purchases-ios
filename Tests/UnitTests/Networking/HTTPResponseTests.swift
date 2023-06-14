@@ -94,7 +94,7 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
 
 class HTTPResponseBodyTests: TestCase {
 
-    func copyWithNewRequestDateDefaultsToSameData() {
+    func testCopyWithNewRequestDateDefaultsToSameData() {
         struct Body: Equatable, Codable, HTTPResponseBody {
             var data: String
         }
