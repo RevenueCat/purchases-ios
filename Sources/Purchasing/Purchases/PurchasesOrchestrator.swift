@@ -130,8 +130,9 @@ final class PurchasesOrchestrator {
         storeKit2TransactionListener.delegate = self
         storeKit2StorefrontListener.delegate = self
 
+        storeKit2TransactionListener.listenForTransactions()
+
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            storeKit2TransactionListener.listenForTransactions()
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
     }

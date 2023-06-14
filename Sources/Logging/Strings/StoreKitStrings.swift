@@ -57,6 +57,8 @@ enum StoreKitStrings {
 
     case sk2_product_request_too_slow
 
+    case sk2_observing_transaction_updates
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -139,6 +141,9 @@ extension StoreKitStrings: CustomStringConvertible {
 
         case .sk2_product_request_too_slow:
             return "StoreKit 2 product request took longer than expected"
+
+        case .sk2_observing_transaction_updates:
+            return "Observing StoreKit.Transaction.updates"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):

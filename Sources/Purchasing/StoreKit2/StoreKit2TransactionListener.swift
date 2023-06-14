@@ -24,6 +24,9 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject {
 
 }
 
+/// Observes `StoreKit.Transaction.updates`, which receives:
+/// - Updates from outside `Product.purchase()`, like renewals and purchases made on other devices
+/// - Purchases from SwiftUI's paywalls.
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListener {
 
@@ -31,6 +34,7 @@ class StoreKit2TransactionListener {
     typealias ResultData = (userCancelled: Bool, transaction: SK2Transaction?)
 
     private(set) var taskHandle: Task<Void, Never>?
+
     weak var delegate: StoreKit2TransactionListenerDelegate?
 
     init(delegate: StoreKit2TransactionListenerDelegate?) {
@@ -38,6 +42,8 @@ class StoreKit2TransactionListener {
     }
 
     func listenForTransactions() {
+        Logger.debug(Strings.storeKit.sk2_observing_transaction_updates)
+
         self.taskHandle?.cancel()
         self.taskHandle = Task(priority: .utility) { [weak self] in
             for await result in StoreKit.Transaction.updates {
@@ -103,13 +109,13 @@ private extension StoreKit2TransactionListener {
 
         case let .verified(verifiedTransaction):
             if fromTransactionUpdate, let delegate = self.delegate {
-                let transaction = StoreTransaction(sk2Transaction: verifiedTransaction)
-
-                Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(transaction))
+                Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
+                    productID: verifiedTransaction.productID
+                ))
 
                 try await delegate.storeKit2TransactionListener(
                     self,
-                    updatedTransaction: transaction
+                    updatedTransaction: StoreTransaction(sk2Transaction: verifiedTransaction)
                 )
             }
 
