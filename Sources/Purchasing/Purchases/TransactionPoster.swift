@@ -81,6 +81,10 @@ final class TransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
+            productID: transaction.productIdentifier
+        ))
+
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
         ) { receiptData, receiptURL in

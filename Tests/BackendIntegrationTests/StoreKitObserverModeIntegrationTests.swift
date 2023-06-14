@@ -59,6 +59,25 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         )
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testRenewalsPostReceipt() async throws {
+        self.testSession.timeRate = .realTime
+
+        let productID = Self.monthlyNoIntroProductID
+
+        try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
+
+        let logger = TestLogHandler()
+
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+
+        try await logger.verifyMessageIsEventuallyLogged(
+            Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
+            timeout: .seconds(3),
+            pollInterval: .milliseconds(100)
+        )
+    }
+
 }
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
@@ -70,6 +89,30 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         let info = try await Purchases.shared.restorePurchases()
         try await self.verifyEntitlementWentThrough(info)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSK2RenewalsPostReceiptOnlyOnceWhenSK1IsEnabled() async throws {
+        try XCTSkipIf(Self.storeKit2Setting.isEnabledAndAvailable, "Test only for SK1")
+
+        // `StoreKit2TransactionListener` is always enabled even in SK1 mode.
+        // This test ensures that we don't end up posting receipts multiple times when renewals come through.
+
+        self.testSession.timeRate = .realTime
+
+        let productID = Self.monthlyNoIntroProductID
+
+        try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
+
+        let logger = TestLogHandler()
+
+        try? self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+
+        try await logger.verifyMessageIsEventuallyLogged(
+            "Network operation 'PostReceiptDataOperation' found with the same cache key",
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100)
+        )
     }
 
 }
