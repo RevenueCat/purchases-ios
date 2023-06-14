@@ -76,7 +76,7 @@ internal struct DebugSummaryView: View {
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .navigationTitle("RevenueCat Debug View")
+        .navigationTitle("RevenueCat Debug")
     }
 
     private var diagnosticsSection: some View {
