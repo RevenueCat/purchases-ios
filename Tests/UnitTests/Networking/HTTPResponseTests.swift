@@ -77,6 +77,51 @@ class HTTPResponseTests: TestCase {
         expect(response.requestDate).to(beNil())
     }
 
+    func testCopyWithSameVerificationResult() throws {
+        self.verifyCopy(of: try Self.sampleResponse.copy(with: .verified),
+                        onlyModifiesEntitlementVerification: .verified)
+    }
+
+    func testCopyWithVerificationResultVerified() throws {
+        self.verifyCopy(of: try Self.sampleResponse,
+                        onlyModifiesEntitlementVerification: .verified)
+    }
+
+    func testCopyWithVerificationResultFailedVerified() throws {
+        self.verifyCopy(of: try Self.sampleResponse,
+                        onlyModifiesEntitlementVerification: .failed)
+    }
+
+    func testCopyWithVerificationResultNotRequested() throws {
+        self.verifyCopy(of: try Self.sampleResponse.copy(with: .verified),
+                        onlyModifiesEntitlementVerification: .notRequested)
+    }
+
+    // MARK: -
+
+    private func verifyCopy<T: Equatable>(
+        of response: HTTPResponse<T>,
+        onlyModifiesEntitlementVerification newVerification: VerificationResult
+    ) {
+        let copy = response.copy(with: newVerification)
+        expect(copy.verificationResult) == newVerification
+        expect(copy.statusCode) == response.statusCode
+        expect(copy.responseHeaders).to(haveCount(response.responseHeaders.count))
+        expect(copy.body) == response.body
+        expect(copy.requestDate) == response.requestDate
+    }
+
+    private static var sampleResponse: HTTPResponse<Data> {
+        get throws {
+            return .create(
+                body: try CustomerInfo.emptyInfo.prettyPrintedData,
+                headers: [
+                    "X-Header": "true"
+                ]
+            )
+        }
+    }
+
 }
 
 private extension HTTPResponse where Body == HTTPEmptyResponseBody {
@@ -85,6 +130,18 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
         return .init(statusCode: .success,
                      responseHeaders: headers,
                      body: .init(),
+                     verificationResult: .notRequested)
+    }
+
+}
+
+private extension HTTPResponse where Body == Data {
+
+    static func create(body: Data, headers: HTTPResponse.Headers) -> Self {
+        return .init(statusCode: .success,
+                     responseHeaders: headers,
+                     body: body,
+                     requestDate: Date(),
                      verificationResult: .notRequested)
     }
 

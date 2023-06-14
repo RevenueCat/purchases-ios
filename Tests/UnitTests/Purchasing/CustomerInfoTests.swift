@@ -843,6 +843,10 @@ class BasicCustomerInfoTests: TestCase {
         == Set(["onemonth_freetrial", "twomonth_freetrial", "threemonth_freetrial"])
     }
 
+    func testCopyWithSameVerificationResult() throws {
+        expect(self.customerInfo.copy(with: .notRequested)) === self.customerInfo
+    }
+
     func testCopyWithVerificationResultVerified() throws {
         self.verifyCopy(of: self.customerInfo,
                         onlyModifiesEntitlementVerification: .verified)
