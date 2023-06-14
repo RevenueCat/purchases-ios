@@ -77,6 +77,11 @@ class BasicCustomerInfoTests: TestCase {
                     "product_identifier": "onemonth_freetrial",
                     "purchase_date": "2018-10-26T23:17:53Z"
                 ],
+                "pro_google_play": [
+                    "expires_date": "2100-08-30T02:40:36Z",
+                    "product_identifier": "onemonth_freetrial",
+                    "purchase_date": "2018-10-26T23:17:53Z"
+                ],
                 "expired_pro": [
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "product_identifier": "onemonth",
@@ -876,13 +881,13 @@ class BasicCustomerInfoTests: TestCase {
 
     func testCopyWithNewRequestDateUpdatesEntitlements() throws {
         expect(self.customerInfo.activeSubscriptions).toNot(contain("onemonth"))
-        expect(self.customerInfo.entitlements.active).to(haveCount(2))
+        expect(self.customerInfo.entitlements.active).to(haveCount(3))
         expect(self.customerInfo.entitlements["expired_pro"]?.isActive) == false
 
         let newRequestTime = try Self.date(withDaysAgo: -2)
         let updatedCustomerInfo: CustomerInfo = self.customerInfo.copy(with: newRequestTime)
         expect(updatedCustomerInfo.activeSubscriptions).to(contain("onemonth"))
-        expect(updatedCustomerInfo.entitlements.active).to(haveCount(3))
+        expect(updatedCustomerInfo.entitlements.active).to(haveCount(4))
         expect(updatedCustomerInfo.entitlements["expired_pro"]?.isActive) == true
     }
 
