@@ -16,6 +16,12 @@
 import StoreKit
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
+// swiftlint:disable file_length
+
 @available(iOS 16.0, macOS 13.0, *)
 struct DebugSwiftUIRootView: View {
 
@@ -113,18 +119,35 @@ internal struct DebugSummaryView: View {
                 Text("Loading...")
 
             case let .loaded(config):
-                LabeledContent("SDK version", value: config.sdkVersion)
-                LabeledContent("Observer mode", value: config.observerMode.description)
-                LabeledContent("Sandbox", value: config.sandbox.description)
-                LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
-                LabeledContent("Offline Customer Info",
-                               value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
-                LabeledContent("Entitlement Verification Mode", value: config.verificationMode)
+                Group {
+                    LabeledContent("SDK version", value: config.sdkVersion)
+                    LabeledContent("Observer mode", value: config.observerMode.description)
+                    LabeledContent("Sandbox", value: config.sandbox.description)
+                    LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
+                    LabeledContent("Offline Customer Info",
+                                   value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
+                    LabeledContent("Entitlement Verification Mode", value: config.verificationMode)
+                    LabeledContent("Receipt URL", value: config.receiptURL?.absoluteString ?? "")
+                        #if os(macOS)
+                        .contextMenu {
+                            Button {
+                                if let url = config.receiptURL {
+                                    NSWorkspace.shared.selectFile(
+                                        nil,
+                                        inFileViewerRootedAtPath: url.deletingLastPathComponent().path
+                                    )
+                                }
+                            } label: {
+                                Text("Show in Finder")
+                            }
+                        }
+                        #endif
 
-                ShareLink(item: config, preview: .init("Configuration")) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-
+                    ShareLink(item: config, preview: .init("Configuration")) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
                 }
+                .textSelection(.enabled)
                 .frame(maxWidth: .infinity)
             }
         }

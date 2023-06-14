@@ -29,6 +29,7 @@ final class DebugViewModel: ObservableObject {
         var storeKit2Enabled: Bool
         var offlineCustomerInfoSupport: Bool
         var verificationMode: String
+        var receiptURL: URL?
 
     }
 
@@ -125,7 +126,8 @@ private extension DebugViewModel.Configuration {
             sandbox: purchases.isSandbox,
             storeKit2Enabled: purchases.storeKit2Setting.isEnabledAndAvailable,
             offlineCustomerInfoSupport: purchases.offlineCustomerInfoEnabled,
-            verificationMode: purchases.responseVerificationMode.display
+            verificationMode: purchases.responseVerificationMode.display,
+            receiptURL: purchases.receiptURL
         )
     }
 
