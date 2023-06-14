@@ -1458,7 +1458,7 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded()
+        self.updateAllCachesIfNeeded(isAppBackgrounded: false)
         self.dispatchSyncSubscriberAttributes()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -1507,23 +1507,21 @@ private extension Purchases {
         }
     }
 
-    func updateAllCachesIfNeeded() {
-        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            if !self.systemInfo.dangerousSettings.customEntitlementComputation {
-                self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
-                                                                          isAppBackgrounded: isAppBackgrounded,
-                                                                          completion: nil)
-                self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                    isAppBackgrounded: isAppBackgrounded,
-                    completion: nil
-                )
-            }
+    func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
+        if !self.systemInfo.dangerousSettings.customEntitlementComputation {
+            self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
+                                                                      isAppBackgrounded: isAppBackgrounded,
+                                                                      completion: nil)
+            self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+                isAppBackgrounded: isAppBackgrounded,
+                completion: nil
+            )
+        }
 
-            if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
-                self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                           isAppBackgrounded: isAppBackgrounded,
-                                                           completion: nil)
-            }
+        if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
+            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                       isAppBackgrounded: isAppBackgrounded,
+                                                       completion: nil)
         }
     }
 
