@@ -39,7 +39,9 @@ class ReceiptFetcher {
         self.clock = clock
     }
 
-    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?) -> Void) {
+    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?, URL?) -> Void) {
+        let receiptURL = self.receiptURL
+
         switch refreshPolicy {
         case .always:
             if self.shouldThrottleRefreshRequest() {
@@ -61,7 +63,7 @@ class ReceiptFetcher {
                 Logger.debug(Strings.receipt.refreshing_empty_receipt)
                 self.refreshReceipt(completion)
             } else {
-                completion(receiptData)
+                completion(receiptData, receiptURL)
             }
 
         case let .retryUntilProductIsFound(productIdentifier, maximumRetries, sleepDuration):
@@ -77,14 +79,14 @@ class ReceiptFetcher {
             }
 
         case .never:
-            completion(self.receiptData())
+            completion(self.receiptData(), receiptURL)
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func receiptData(refreshPolicy: ReceiptRefreshPolicy) async -> Data? {
         return await withCheckedContinuation { continuation in
-            self.receiptData(refreshPolicy: refreshPolicy) { result in
+            self.receiptData(refreshPolicy: refreshPolicy) { result, _ in
                 continuation.resume(returning: result)
             }
         }
@@ -152,20 +154,20 @@ private extension ReceiptFetcher {
         }
     }
 
-    func refreshReceipt(_ completion: @escaping (Data) -> Void) {
+    func refreshReceipt(_ completion: @escaping (Data, URL?) -> Void) {
         self.lastReceiptRefreshRequest.value = self.clock.now
 
         self.requestFetcher.fetchReceiptData {
-            completion(self.receiptData() ?? Data())
+            completion(self.receiptData() ?? Data(), self.receiptURL)
         }
     }
 
     /// `async` version of `refreshReceipt(_:)`
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func refreshReceipt() async -> Data {
+    func refreshReceipt() async -> (Data, URL?) {
         await withCheckedContinuation { continuation in
             self.refreshReceipt {
-                continuation.resume(returning: $0)
+                continuation.resume(returning: ($0, $1))
             }
         }
     }
@@ -176,13 +178,14 @@ private extension ReceiptFetcher {
         untilProductIsFound productIdentifier: String,
         maximumRetries: Int,
         sleepDuration: DispatchTimeInterval
-    ) async -> Data {
+    ) async -> (Data, URL?) {
         var retries = 0
         var data: Data = .init()
+        var receiptURL: URL?
 
         repeat {
             retries += 1
-            data = await self.refreshReceipt()
+            (data, receiptURL) = await self.refreshReceipt()
 
             if !data.isEmpty {
                 do {
@@ -192,7 +195,7 @@ private extension ReceiptFetcher {
                     }.value
 
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
-                        return data
+                        return (data, receiptURL)
                     } else {
                         Logger.appleWarning(Strings.receipt.local_receipt_missing_purchase(
                             receipt,
@@ -208,7 +211,7 @@ private extension ReceiptFetcher {
             try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
         } while retries <= maximumRetries && !Task.isCancelled
 
-        return data
+        return (data, receiptURL)
     }
 
 }

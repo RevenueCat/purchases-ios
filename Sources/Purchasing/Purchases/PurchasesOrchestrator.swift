@@ -233,10 +233,10 @@ final class PurchasesOrchestrator {
             return
         }
 
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData in
+        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
-                completion(.failure(ErrorUtils.missingReceiptFileError()))
+                completion(.failure(ErrorUtils.missingReceiptFileError(receiptURL)))
                 return
             }
 
@@ -944,7 +944,7 @@ private extension PurchasesOrchestrator {
 
         // Refresh the receipt and post to backend, this will allow the transactions to be transferred.
         // https://rev.cat/apple-restoring-purchased-products
-        self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData in
+        self.receiptFetcher.receiptData(refreshPolicy: receiptRefreshPolicy) { receiptData, receiptURL in
             guard let receiptData = receiptData,
                   !receiptData.isEmpty else {
                       if self.systemInfo.isSandbox {
@@ -953,7 +953,7 @@ private extension PurchasesOrchestrator {
 
                       if let completion = completion {
                           self.operationDispatcher.dispatchOnMainThread {
-                              completion(.failure(ErrorUtils.missingReceiptFileError()))
+                              completion(.failure(ErrorUtils.missingReceiptFileError(receiptURL)))
                           }
                       }
                       return

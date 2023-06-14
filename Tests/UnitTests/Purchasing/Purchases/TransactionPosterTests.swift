@@ -38,6 +38,7 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionWithMissingReceipt() throws {
+        self.receiptFetcher.mockReceiptURL = URL(string: "file://receipt_file")!
         self.receiptFetcher.shouldReturnReceipt = false
 
         let result = try self.handleTransaction(
@@ -47,7 +48,7 @@ class TransactionPosterTests: TestCase {
             )
         )
         expect(result).to(beFailure())
-        expect(result.error) == BackendError.missingReceiptFile()
+        expect(result.error) == BackendError.missingReceiptFile(self.receiptFetcher.mockReceiptURL)
     }
 
     func testHandlePurchasedTransaction() throws {

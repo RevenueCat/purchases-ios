@@ -138,9 +138,22 @@ enum ErrorUtils {
      * sandbox or if there are no previous purchases.
      */
     static func missingReceiptFileError(
+        _ receiptURL: URL?,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
+        let fileExists: Bool = {
+            if let receiptURL = receiptURL {
+                return FileManager.default.fileExists(atPath: receiptURL.path)
+            } else {
+                return false
+            }
+        }()
+
         return error(with: ErrorCode.missingReceiptFileError,
+                     extraUserInfo: [
+                        "rc_receipt_url": receiptURL?.absoluteString ?? "<null>",
+                        "rc_receipt_file_exists": fileExists
+                     ],
                      fileName: fileName, functionName: functionName, line: line)
     }
 

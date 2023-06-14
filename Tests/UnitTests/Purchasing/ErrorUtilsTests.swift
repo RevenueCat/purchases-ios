@@ -34,6 +34,31 @@ class ErrorUtilsTests: TestCase {
         super.tearDown()
     }
 
+    func testReceiptErrorWithNoURL() {
+        let error = ErrorUtils.missingReceiptFileError(nil)
+        expect(error).to(matchError(ErrorCode.missingReceiptFileError))
+        expect(error.userInfo["rc_receipt_url"] as? String) == "<null>"
+        expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == false
+    }
+
+    func testReceiptErrorWithMissingReceipt() {
+        let url = URL(string: "file://does_not_exist")!
+
+        let error = ErrorUtils.missingReceiptFileError(url)
+        expect(error).to(matchError(ErrorCode.missingReceiptFileError))
+        expect(error.userInfo["rc_receipt_url"] as? String) == url.absoluteString
+        expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == false
+    }
+
+    func testReceiptErrorWithEmptyReceipt() {
+        let url = Self.createEmptyFile()
+
+        let error = ErrorUtils.missingReceiptFileError(url)
+        expect(error).to(matchError(ErrorCode.missingReceiptFileError))
+        expect(error.userInfo["rc_receipt_url"] as? String) == url.absoluteString
+        expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == true
+    }
+
     func testPublicErrorsCanBeConvertedToErrorCode() throws {
         let error = ErrorUtils.customerInfoError().asPublicError
         let errorCode = try XCTUnwrap(error as? ErrorCode, "Error couldn't be converted to ErrorCode")
@@ -264,6 +289,23 @@ class ErrorUtilsTests: TestCase {
             },
             description: "Error '\(expectedMessage)' not found. Logged messages: \(messages)"
         )
+    }
+
+}
+
+private extension ErrorUtilsTests {
+
+    static func createEmptyFile() -> URL {
+        let fileManager = FileManager.default
+        let url = fileManager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+
+        expect(fileManager.createFile(atPath: url.path, contents: nil, attributes: nil))
+            .to(
+                beTrue(),
+                description: "Failed creating file"
+            )
+
+        return url
     }
 
 }

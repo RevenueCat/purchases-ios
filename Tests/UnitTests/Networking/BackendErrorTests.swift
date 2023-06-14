@@ -30,7 +30,7 @@ class BackendErrorTests: BaseErrorTests {
     }
 
     func testMissingReceiptFile() {
-        let error: BackendError = .missingReceiptFile()
+        let error: BackendError = .missingReceiptFile(nil)
 
         verifyPurchasesError(error, expectedCode: .missingReceiptFileError)
     }

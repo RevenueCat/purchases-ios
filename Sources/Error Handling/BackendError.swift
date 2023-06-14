@@ -21,7 +21,7 @@ enum BackendError: Error, Equatable {
     case networkError(NetworkError)
     case missingAppUserID(Source)
     case emptySubscriberAttributes(Source)
-    case missingReceiptFile(Source)
+    case missingReceiptFile(URL?, Source)
     case missingTransactionProductIdentifier(Source)
     case missingCachedCustomerInfo(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
@@ -49,9 +49,10 @@ extension BackendError {
     }
 
     static func missingReceiptFile(
+        _ receiptURL: URL?,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
-        return .missingReceiptFile(.init(file: file, function: function, line: line))
+        return .missingReceiptFile(receiptURL, .init(file: file, function: function, line: line))
     }
 
     static func missingCachedCustomerInfo(
@@ -89,8 +90,9 @@ extension BackendError: PurchasesErrorConvertible {
                                                              functionName: source.function,
                                                              line: source.line)
 
-        case let .missingReceiptFile(source):
-            return ErrorUtils.missingReceiptFileError(fileName: source.file,
+        case let .missingReceiptFile(receiptURL, source):
+            return ErrorUtils.missingReceiptFileError(receiptURL,
+                                                      fileName: source.file,
                                                       functionName: source.function,
                                                       line: source.line)
 

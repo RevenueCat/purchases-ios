@@ -53,45 +53,40 @@ class BaseReceiptFetcherTests: TestCase {
 final class ReceiptFetcherTests: BaseReceiptFetcherTests {
 
     func testReceiptDataWithRefreshPolicyNeverReturnsReceiptData() {
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .never, completion: completion)
-        }
+        let (receivedData, url) = self.receiptData(.never)
 
         expect(receivedData).toNot(beNil())
+        expect(url).toNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyReturnsReceiptData() {
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-        }
+        let (receivedData, url) = self.receiptData(.onlyIfEmpty)
 
         expect(receivedData).toNot(beNil())
+        expect(url).toNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysReturnsReceiptData() {
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        let (receivedData, url) = self.receiptData(.always)
 
         expect(receivedData).toNot(beNil())
+        expect(url).toNot(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyNeverDoesntRefreshIfEmpty() {
         self.mockBundle.receiptURLResult = .emptyReceipt
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .never, completion: completion)
-        }
+        let (receivedData, url) = self.receiptData(.never)
+
         expect(self.mockRequestFetcher.refreshReceiptCalled) == false
         expect(receivedData).to(beNil())
+        expect(url).to(beNil())
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfEmpty() {
         self.mockBundle.receiptURLResult = .emptyReceipt
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.onlyIfEmpty)
 
         expect(receivedData).toNot(beNil())
         expect(receivedData).to(beEmpty())
@@ -101,9 +96,7 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyRefreshesIfNil() {
         self.mockBundle.receiptURLResult = .nilURL
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.onlyIfEmpty)
 
         expect(receivedData).toNot(beNil())
         expect(receivedData).to(beEmpty())
@@ -113,9 +106,7 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyDoesntRefreshIfTheresData() {
         self.mockBundle.receiptURLResult = .receiptWithData
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.onlyIfEmpty)
 
         expect(receivedData).toNot(beNil())
         expect(receivedData).toNot(beEmpty())
@@ -125,9 +116,7 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesEvenIfTheresData() {
         self.mockBundle.receiptURLResult = .receiptWithData
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.always)
 
         expect(receivedData).toNot(beNil())
         expect(receivedData).toNot(beEmpty())
@@ -137,15 +126,11 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysDoesNotRefreshIfRequestedWithinThrottleDuration() {
-        let _: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        _ = self.receiptData(.always)
 
         self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration - .milliseconds(500))
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.always)
 
         expect(receivedData).toNot(beEmpty())
 
@@ -156,15 +141,11 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesWithinThrottleDurationIfNoReceiptData() {
         self.mockBundle.receiptURLResult = .emptyReceipt
 
-        let _: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        _ = self.receiptData(.always)
 
         self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration - .milliseconds(500))
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.always)
 
         expect(receivedData).toNot(beNil())
 
@@ -173,20 +154,26 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesAfterThrottleDuration() {
-        let _: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        _ = self.receiptData(.always)
 
         self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration + .seconds(1))
 
-        let receivedData: Data? = waitUntilValue { completion in
-            self.receiptFetcher.receiptData(refreshPolicy: .always, completion: completion)
-        }
+        let (receivedData, _) = self.receiptData(.always)
 
         expect(receivedData).toNot(beEmpty())
 
         expect(self.mockRequestFetcher.refreshReceiptCalled) == true
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
+    }
+
+    private func receiptData(_ policy: ReceiptRefreshPolicy) -> (data: Data?, receiptURL: URL?) {
+        let result: (Data?, URL?)? = waitUntilValue { completion in
+            self.receiptFetcher.receiptData(refreshPolicy: policy) { data, url in
+                completion((data, url))
+            }
+        }
+
+        return result ?? (nil, nil)
     }
 
 }
@@ -217,15 +204,17 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     func testReturnsAfterFirstTryIfNoReceiptURL() async {
         self.mockBundle.receiptURLResult = .nilURL
 
-        let data = await self.fetch(productIdentifier: "", retries: 1)
+        let (data, url) = await self.fetch(productIdentifier: "", retries: 1)
         expect(data) == Data()
+        expect(url).to(beNil())
     }
 
     func testReturnsAfterFirstTryIfDataIsCorrect() async {
         self.mock(receipt: Self.validReceipt)
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 1)
         expect(data) == Self.validReceipt.asData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             Self.validReceipt.asData
@@ -235,8 +224,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     func testDoesNotRetryIfMaximumIsZeroEvenIfDataIsInvalid() async {
         self.mock(receipt: Self.receiptWithoutPurchases)
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 0)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 0)
         expect(data) == Self.receiptWithoutPurchases.asData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             Self.receiptWithoutPurchases.asData
@@ -248,8 +238,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
 
         let invalidData = Self.receiptWithoutPurchases.asData
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 2)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 2)
         expect(data) == invalidData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockReceiptParser.invokedParseParametersList) == [
             invalidData,
@@ -262,8 +253,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     func testRetriesIfFirstReceiptIsInvalid() async {
         self.mock(receipts: [Self.receiptWithoutPurchases, Self.validReceipt])
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 1)
         expect(data) == Self.validReceipt.asData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
         expect(self.mockReceiptParser.invokedParseParametersList) == [
@@ -276,8 +268,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
         self.mock(receipts: [.failure(.receiptParsingError),
                              .success(Self.validReceipt)])
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 1)
         expect(data) == Self.validReceipt.asData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
         expect(self.mockReceiptParser.invokedParseParametersList) == [
@@ -289,8 +282,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     func testStopsRetryingEvenIfParsingReceiptKeepsThrowingError() async {
         let invalidData = self.mockReceiptWithInvalidData()
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 1)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 1)
         expect(data) == invalidData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
         expect(self.mockReceiptParser.invokedParseParametersList) == [
@@ -302,8 +296,9 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     func testStopsRetryingIfFindsValidReceipt() async {
         self.mock(receipts: [Self.receiptWithoutPurchases, Self.validReceipt])
 
-        let data = await self.fetch(productIdentifier: Self.productID, retries: 2)
+        let (data, url) = await self.fetch(productIdentifier: Self.productID, retries: 2)
         expect(data) == Self.validReceipt.asData
+        expect(url) == self.mockBundle.appStoreReceiptURL
 
         expect(self.mockRequestFetcher.refreshReceiptCalledCount) == 2
         expect(self.mockReceiptParser.invokedParseParametersList) == [
@@ -314,13 +309,13 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
 
     // MARK: -
 
-    private func fetch(productIdentifier: String, retries: Int) async -> Data {
+    private func fetch(productIdentifier: String, retries: Int) async -> (Data, URL?) {
         return await withCheckedContinuation { continuation in
             self.receiptFetcher.receiptData(refreshPolicy: .retryUntilProductIsFound(
                 productIdentifier: productIdentifier,
                 maximumRetries: retries
             )) {
-                continuation.resume(returning: $0 ?? Data())
+                continuation.resume(returning: ($0 ?? Data(), $1))
             }
         }
     }

@@ -83,7 +83,7 @@ final class TransactionPoster: TransactionPosterType {
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
-        ) { receiptData in
+        ) { receiptData, receiptURL in
             if let receiptData = receiptData, !receiptData.isEmpty {
                 self.fetchProductsAndPostReceipt(
                     transaction: transaction,
@@ -93,7 +93,7 @@ final class TransactionPoster: TransactionPosterType {
                 )
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
-                                       result: .failure(.missingReceiptFile()),
+                                       result: .failure(.missingReceiptFile(receiptURL)),
                                        subscriberAttributes: nil,
                                        completion: completion)
             }
