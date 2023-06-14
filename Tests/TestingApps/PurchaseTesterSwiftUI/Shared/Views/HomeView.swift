@@ -18,15 +18,16 @@ struct HomeView: View {
     
     @State var offerings: [RevenueCat.Offering] = []
     
+    @State private var debugOverlayVisible = false
     @State private var showingAlert = false
     @State private var newAppUserID: String = ""
     @State private var cacheFetchPolicy: CacheFetchPolicy = .default
 
     @State private var error: Error?
     
-    var body: some View {
+    private var content: some View {
         VStack(alignment: .leading) {
-            CustomerInfoHeaderView() { action in
+            CustomerInfoHeaderView(debugOverlayVisible: self.$debugOverlayVisible) { action in
                 switch action {
                 case .login: self.showLogin()
                 case .logout: await self.logOut()
@@ -166,6 +167,15 @@ struct HomeView: View {
             }
         }
     }
+
+    var body: some View {
+        if #available(iOS 16.0, macOS 13.0, *) {
+            self.content
+                .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)
+        } else {
+            self.content
+        }
+    }
     
     private func fetchData() async {
         do {
@@ -198,16 +208,19 @@ struct HomeView: View {
 
 private struct CustomerInfoHeaderView: View {
     
-    @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
-    
-    typealias Completion = (Action) async -> ()
     enum Action {
         case login, logout
     }
 
-    let completion: Completion
+    @EnvironmentObject var revenueCatCustomerData: RevenueCatCustomerData
     
-    init(completion: @escaping Completion) {
+    typealias Completion = (Action) async -> ()
+
+    private let debugOverlayVisible: Binding<Bool>
+    private let completion: Completion
+    
+    init(debugOverlayVisible: Binding<Bool>, completion: @escaping Completion) {
+        self.debugOverlayVisible = debugOverlayVisible
         self.completion = completion
     }
     
@@ -283,6 +296,14 @@ private struct CustomerInfoHeaderView: View {
                     Text("View logs")
                 }
                 #endif
+
+                if #available(iOS 16.0, macOS 13.0, *) {
+                    Button {
+                        self.debugOverlayVisible.wrappedValue = true
+                    } label: {
+                        Text("Debug")
+                    }
+                }
 
                 Spacer()
 
