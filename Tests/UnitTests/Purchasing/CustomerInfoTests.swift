@@ -54,6 +54,12 @@ class BasicCustomerInfoTests: TestCase {
                     "period_type": "normal",
                     "is_sandbox": false
                 ] as [String: Any],
+                "gold": [
+                    "expires_date": "2100-07-30T02:40:36Z",
+                    "period_type": "normal",
+                    "is_sandbox": false,
+                    "product_plan_identifier": "monthly"
+                ],
                 "onemonth": [
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "period_type": "normal",
@@ -116,13 +122,14 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testListActiveSubscriptions() {
-        expect(self.customerInfo.activeSubscriptions) == ["onemonth_freetrial"]
+        expect(self.customerInfo.activeSubscriptions) == ["onemonth_freetrial", "gold:monthly"]
     }
 
     func testAllPurchasedProductIdentifier() {
         let allPurchased = self.customerInfo.allPurchasedProductIdentifiers
 
-        expect(allPurchased) == ["onemonth", "onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"]
+        expect(allPurchased) == ["onemonth", "onemonth_freetrial",
+                                 "threemonth_freetrial", "gold:monthly", "onetime_purchase"]
     }
 
     func testLatestExpirationDateHelper() {

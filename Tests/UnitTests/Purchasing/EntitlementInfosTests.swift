@@ -1354,6 +1354,28 @@ private extension EntitlementInfosTests {
         == (expectedEntitlementActive ? [identifier] : [])
     }
 
+    func verifyEntitlementActivePurchasedFromGooglePlay(
+        _ expectedEntitlementActive: Bool = true,
+        entitlement: String = "pro_cat",
+        productPlanIdentifier: String,
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        let subscriberInfo = try CustomerInfo(data: self.response)
+        let proCat = try XCTUnwrap(subscriberInfo.entitlements[entitlement])
+
+        expect(file: file, line: line, proCat.identifier) == entitlement
+        expect(file: file, line: line, subscriberInfo.entitlements.all.keys.contains(entitlement)) == true
+        expect(file: file, line: line, subscriberInfo.entitlements.active.keys.contains(entitlement))
+        == expectedEntitlementActive
+        expect(file: file, line: line, proCat.isActive).to(
+            equal(expectedEntitlementActive),
+            description: expectedEntitlementActive
+            ? "Entitlement should be active"
+            : "Entitlement should not be active"
+        )
+    }
+
     func verifyRenewal(_ expectedWillRenew: Bool = true,
                        expectedUnsubscribeDetectedAt: Date? = nil,
                        expectedBillingIssueDetectedAt: Date? = nil,

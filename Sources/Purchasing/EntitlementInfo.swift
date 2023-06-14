@@ -134,6 +134,11 @@ extension PeriodType: DefaultValueProvider {
     @objc public var productIdentifier: String { self.contents.productIdentifier }
 
     /**
+     The product plan identifier that unlocked this entitlement
+     */
+    @objc public var productPlanIdentifier: String? { self.contents.productPlanIdentifier }
+
+    /**
      False if this entitlement is unlocked via a production purchase
      */
     @objc public var isSandbox: Bool { self.contents.isSandbox }
@@ -236,6 +241,7 @@ extension PeriodType: DefaultValueProvider {
             expirationDate: subscription.expiresDate,
             store: subscription.store,
             productIdentifier: entitlement.productIdentifier,
+            productPlanIdentifier: subscription.productPlanIdentifier,
             isSandbox: subscription.isSandbox,
             unsubscribeDetectedAt: subscription.unsubscribeDetectedAt,
             billingIssueDetectedAt: subscription.billingIssuesDetectedAt,
@@ -321,6 +327,7 @@ private extension EntitlementInfo {
         let expirationDate: Date?
         let store: Store
         let productIdentifier: String
+        let productPlanIdentifier: String?
         let isSandbox: Bool
         let unsubscribeDetectedAt: Date?
         let billingIssueDetectedAt: Date?
