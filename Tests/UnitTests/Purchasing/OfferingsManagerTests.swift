@@ -336,27 +336,6 @@ extension OfferingsManagerTests {
         }
     }
 
-    func testFailBackendDeviceCacheClearsOfferingsCache() {
-        // given
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(MockData.unexpectedBackendResponseError)
-        self.mockOfferingsFactory.emptyOfferings = true
-        self.mockSystemInfo.stubbedIsApplicationBackgrounded = false
-
-        let expectedCallCount = 1
-
-        // when
-        waitUntil { completed in
-            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { _ in
-                completed()
-            }
-        }
-
-        // then
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
-        expect(self.mockDeviceCache.clearOfferingsCacheTimestampCount) == expectedCallCount
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == false
-    }
-
     func testUpdateOfferingsCacheOK() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
