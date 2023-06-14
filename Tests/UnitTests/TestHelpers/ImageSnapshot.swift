@@ -25,8 +25,8 @@ func haveValidSnapshot<Value>(
     timeout: TimeInterval = 5,
     file: StaticString = #file,
     line: UInt = #line
-) -> Predicate<Value> {
-    return Predicate { actualExpression in
+) -> Nimble.Predicate<Value> {
+    return Nimble.Predicate { actualExpression in
         guard let value = try actualExpression.evaluate() else {
             return PredicateResult(status: .fail, message: .fail("have valid snapshot"))
         }
