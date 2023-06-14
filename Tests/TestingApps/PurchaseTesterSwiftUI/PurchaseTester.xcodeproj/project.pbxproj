@@ -22,10 +22,11 @@
 		2CF428692863EEAC007E6A78 /* Package+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF428682863EEAC007E6A78 /* Package+Extensions.swift */; };
 		2DD2CBB129831A09004A3A6A /* ReceiptInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */; };
 		2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */; };
-		4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */; };
 		4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E982A18124500C4EB88 /* ProxyManager.swift */; };
 		4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */; };
 		4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */; };
+		4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */; };
+		4FDA13872A33DBE300C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */; };
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B471296F9B3B002472D5 /* LocalReceiptView.swift */; };
@@ -136,10 +137,11 @@
 		2CF428682863EEAC007E6A78 /* Package+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Package+Extensions.swift"; sourceTree = "<group>"; };
 		2DD2CBB029831A09004A3A6A /* ReceiptInspector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptInspector.swift; sourceTree = "<group>"; };
 		2DD2CBB229831A22004A3A6A /* ReceiptVerifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReceiptVerifier.swift; sourceTree = "<group>"; };
-		4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
 		4F1F5E982A18124500C4EB88 /* ProxyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyManager.swift; sourceTree = "<group>"; };
 		4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyViewModel.swift; sourceTree = "<group>"; };
 		4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyView.swift; sourceTree = "<group>"; };
+		4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
+		4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		575642A5290C7D3100719219 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 		2CD2C4E8278C9B01005D1CC2 = {
 			isa = PBXGroup;
 			children = (
+				4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */,
 				57FA0F7C2908503B00E9EA1B /* PurchaseTester.entitlements */,
 				2C8C610D27CEBEF200F86F21 /* PurchaseTester-Info.plist */,
 				57E9CF08290B0BE500EE12D1 /* AppIcon.xcassets */,
@@ -466,6 +469,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FDA13872A33DBE300C45CFE /* PrivacyInfo.xcprivacy in Resources */,
 				2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */,
 				57E9CF09290B0E0600EE12D1 /* AppIcon.xcassets in Resources */,
 			);

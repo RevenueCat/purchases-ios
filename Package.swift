@@ -36,10 +36,16 @@ let package = Package(
     targets: [
         .target(name: "RevenueCat",
                 path: "Sources",
-                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
+                exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
+                resources: [
+                    .copy("../Sources/PrivacyInfo.xcprivacy")
+                ]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
+                resources: [
+                    .copy("PrivacyInfo.xcprivacy")
+                ],
                 swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")]),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),

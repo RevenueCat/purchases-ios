@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4FDA13832A33D9B900C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13822A33D86100C45CFE /* PrivacyInfo.xcprivacy */; };
 		55413BE725B735AF00ECCA5A /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BE625B735AF00ECCA5A /* UserView.swift */; };
 		55413BEC25B735C500ECCA5A /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BEB25B735C500ECCA5A /* WeatherView.swift */; };
 		55413BF125B73A6F00ECCA5A /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BF025B73A6F00ECCA5A /* PaywallView.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4FDA13822A33D86100C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		55413BE625B735AF00ECCA5A /* UserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserView.swift; sourceTree = "<group>"; };
 		55413BEB25B735C500ECCA5A /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
 		55413BF025B73A6F00ECCA5A /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
@@ -99,6 +101,7 @@
 			children = (
 				559779AB25B72D3200C33DFB /* Constants.swift */,
 				559779B125B72D4C00C33DFB /* Sources */,
+				4FDA13822A33D86100C45CFE /* PrivacyInfo.xcprivacy */,
 				5597797925ACDC3E00C33DFB /* Assets.xcassets */,
 			);
 			path = Shared;
@@ -223,6 +226,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FDA13832A33D9B900C45CFE /* PrivacyInfo.xcprivacy in Resources */,
 				5597798E25ACDC3E00C33DFB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
