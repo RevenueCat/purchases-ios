@@ -33,6 +33,8 @@ enum ConfigureStrings {
 
     case observer_mode_enabled
 
+    case response_verification_mode(Signing.ResponseVerificationMode)
+
     case delegate_set
 
     case purchase_instance_already_set
@@ -98,6 +100,15 @@ extension ConfigureStrings: CustomStringConvertible {
             return "StoreKit 2 support enabled"
         case .observer_mode_enabled:
             return "Purchases is configured in observer mode"
+        case let .response_verification_mode(mode):
+            switch mode {
+            case .disabled:
+                return "Purchases is configured with response verification disabled"
+            case .informational:
+                return "Purchases is configured with informational response verification"
+            case .enforced:
+                return "Purchases is configured with enforced response verification"
+            }
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:
