@@ -20,19 +20,20 @@ class MockReceiptFetcher: ReceiptFetcher {
     var receiptDataTimesCalled = 0
     var receiptDataReceivedRefreshPolicy: ReceiptRefreshPolicy?
     var mockReceiptData: Data = .init(1...3)
+    var mockReceiptURL: URL?
 
-    override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?) -> Void)) {
-        receiptDataReceivedRefreshPolicy = refreshPolicy
-        receiptDataCalled = true
-        receiptDataTimesCalled += 1
-        if shouldReturnReceipt {
-            if shouldReturnZeroBytesReceipt {
-                completion(Data())
+    override func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping ((Data?, URL?) -> Void)) {
+        self.receiptDataReceivedRefreshPolicy = refreshPolicy
+        self.receiptDataCalled = true
+        self.receiptDataTimesCalled += 1
+        if self.shouldReturnReceipt {
+            if self.shouldReturnZeroBytesReceipt {
+                completion(Data(), self.mockReceiptURL)
             } else {
-                completion(self.mockReceiptData)
+                completion(self.mockReceiptData, self.mockReceiptURL)
             }
         } else {
-            completion(nil)
+            completion(nil, self.mockReceiptURL)
         }
     }
 

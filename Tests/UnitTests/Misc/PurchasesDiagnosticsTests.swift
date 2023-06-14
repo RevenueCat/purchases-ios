@@ -109,7 +109,7 @@ class PurchasesDiagnosticsTests: TestCase {
     // MARK: - Errors
 
     func testUnknownError() {
-        let underlyingError = ErrorUtils.missingReceiptFileError()
+        let underlyingError = ErrorUtils.missingReceiptFileError(nil)
         let error = PurchasesDiagnostics.Error.unknown(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))

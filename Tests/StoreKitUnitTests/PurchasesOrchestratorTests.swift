@@ -844,7 +844,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.setUpStoreKit2Listener()
 
-        let expectedError: BackendError = .missingReceiptFile()
+        let expectedError: BackendError = .missingReceiptFile(nil)
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .failure(expectedError)
