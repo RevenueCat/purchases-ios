@@ -46,7 +46,10 @@ class ETagManager {
     ) -> [String: String] {
         func eTag() -> (tag: String, date: String?)? {
             if refreshETag { return nil }
-            guard let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) else { return nil }
+            guard let storedETagAndResponse = self.storedETagAndResponse(for: urlRequest) else {
+                Logger.verbose(Strings.etag.found_no_etag(urlRequest))
+                return nil
+            }
 
             let shouldUseETag = (
                 !withSignatureVerification ||
@@ -55,9 +58,19 @@ class ETagManager {
             )
 
             if shouldUseETag {
+                Logger.verbose(Strings.etag.using_etag(urlRequest,
+                                                       storedETagAndResponse.eTag,
+                                                       storedETagAndResponse.validationTime))
+
                 return (tag: storedETagAndResponse.eTag,
                         date: storedETagAndResponse.validationTime?.millisecondsSince1970.description)
             } else {
+                Logger.verbose(Strings.etag.not_using_etag(
+                    urlRequest,
+                    storedETagAndResponse.verificationResult,
+                    needsSignatureVerification: withSignatureVerification
+
+                ))
                 return nil
             }
         }
@@ -90,7 +103,7 @@ class ETagManager {
             }
             if retried {
                 Logger.warn(
-                    Strings.network.could_not_find_cached_response_in_already_retried(
+                    Strings.etag.could_not_find_cached_response_in_already_retried(
                         response: resultFromBackend?.description ?? ""
                     )
                 )
@@ -108,6 +121,8 @@ class ETagManager {
     }
 
     func clearCaches() {
+        Logger.debug(Strings.etag.clearing_cache)
+
         self.userDefaults.write {
             $0.removePersistentDomain(forName: ETagManager.suiteName)
         }
@@ -140,23 +155,28 @@ private extension ETagManager {
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
                                              response: HTTPResponse<Data?>,
                                              eTag: String) {
-        if let data = response.body,
-           response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors) {
-            self.storeIfPossible(
-                Response(
-                    eTag: eTag,
-                    statusCode: response.statusCode,
-                    data: data,
-                    verificationResult: response.verificationResult
-                ),
-                for: request
-            )
+        if let data = response.body {
+            if response.shouldStore(ignoreVerificationErrors: self.shouldIgnoreVerificationErrors) {
+                self.storeIfPossible(
+                    Response(
+                        eTag: eTag,
+                        statusCode: response.statusCode,
+                        data: data,
+                        verificationResult: response.verificationResult
+                    ),
+                    for: request
+                )
+            } else {
+                Logger.verbose(Strings.etag.not_storing_etag(response))
+            }
         }
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
         if let cacheKey = self.eTagDefaultCacheKey(for: request),
            let dataToStore = response.asData() {
+            Logger.verbose(Strings.etag.storing_response(request, response))
+
             self.userDefaults.write {
                 $0.set(dataToStore, forKey: cacheKey)
             }

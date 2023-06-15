@@ -29,8 +29,6 @@ enum NetworkStrings {
     case starting_next_request(request: String)
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
-    case could_not_find_cached_response
-    case could_not_find_cached_response_in_already_retried(response: String)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -85,14 +83,6 @@ extension NetworkStrings: LogMessage {
 
         case let .retrying_request(httpMethod, path):
             return "Retrying request \(httpMethod) \(path)"
-
-        case .could_not_find_cached_response:
-            return "We were expecting to be able to return a cached response, but we can't find it. " +
-                "Retrying call with a new ETag."
-
-        case .could_not_find_cached_response_in_already_retried(let response):
-            return "We can't find the cached response, but call has already been retried. " +
-                "Returning result from backend \(response)"
 
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"
