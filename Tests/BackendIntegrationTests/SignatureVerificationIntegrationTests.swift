@@ -61,11 +61,49 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         expect(info.entitlements.verification) == .verified
     }
 
+    func testCustomerInfo304ResponseWithValidSignature() async throws {
+        // 1. Fetch user once
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        // 1. Re-fetch user
+        let user = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(user.entitlements.verification) == .verified
+    }
+
+    func testLoggedInCustomerInfo304ResponseWithValidSignature() async throws {
+        // 1. Log-in to force a new user
+        _ = try await Purchases.shared.logIn(UUID().uuidString)
+
+        // 2. Fetch user once
+        let user1 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(user1.entitlements.verification) == .verified
+
+        // 3. Re-fetch user
+        let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(user2.entitlements.verification) == .verified
+    }
+
     func testCustomerInfoWithInvalidSignature() async throws {
         self.invalidSignature = true
 
         let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .failed
+    }
+
+    func testNotModifiedCustomerInfoWithInvalidSignature() async throws {
+        // 1. Log-in to force a new user
+        _ = try await Purchases.shared.logIn(UUID().uuidString)
+
+        // 2. Fetch user once
+        let user1 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(user1.entitlements.verification) == .verified
+
+        // 3. Re-fetch user
+        self.invalidSignature = true
+
+        let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(user2.entitlements.verification) == .failed
+        expect(user2.requestDate) == user1.requestDate
     }
 
 }
