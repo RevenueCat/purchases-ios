@@ -167,6 +167,7 @@ class NetworkErrorTests: TestCase {
 
     func testSuccessfullySyncedTrue() {
         let errors = [
+            error(Self.responseError(.unauthorized)),
             error(Self.responseError(.invalidRequest)),
             error(Self.responseError(.notModified)),
             error(Self.responseError(.success))

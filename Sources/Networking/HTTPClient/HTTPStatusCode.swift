@@ -22,6 +22,7 @@ enum HTTPStatusCode {
     case notModified
     case temporaryRedirect
     case invalidRequest
+    case unauthorized
     case notFoundError
     case internalServerError
     case networkConnectTimeoutError
@@ -35,6 +36,7 @@ enum HTTPStatusCode {
         .notModified,
         .temporaryRedirect,
         .invalidRequest,
+        .unauthorized,
         .notFoundError,
         .internalServerError,
         .networkConnectTimeoutError
@@ -56,6 +58,7 @@ extension HTTPStatusCode: RawRepresentable {
         case .notModified: return 304
         case .temporaryRedirect: return 307
         case .invalidRequest: return 400
+        case .unauthorized: return 401
         case .notFoundError: return 404
         case .internalServerError: return 500
         case .networkConnectTimeoutError: return 599
@@ -88,7 +91,12 @@ extension HTTPStatusCode {
         return 500...599 ~= self.rawValue
     }
 
+    /// Used to determine if we can consider subscriber attributes as synced.
+    /// - Note: whether to finish transactions is determined based on `isServerError` instead.
     var isSuccessfullySynced: Bool {
+        // Note: this means that all 4xx (except 404) are considered as successfully synced.
+        // The reason is because it's likely due to a client error, so continuing to retry
+        // won't yield any different results and instead kill pandas.
         return !(self.isServerError || self == .notFoundError)
     }
 
