@@ -55,6 +55,10 @@ extension CustomerInfo {
                         .map { productID, subscription in
                             let key: String
                             let value = subscription.expiresDate
+
+                            // Products purchased from Google Play will have a product plan identifier (base plan)
+                            // These products get mapped as "productId:productPlanIdentifier" in the Android SDK
+                            // so the same mapping needs to be handled here for cross platform purchases
                             if let productPlanIdentfier = subscription.productPlanIdentifier {
                                 key = "\(productID):\(productPlanIdentfier)"
                             } else {
