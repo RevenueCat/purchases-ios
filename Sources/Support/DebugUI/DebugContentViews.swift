@@ -22,6 +22,9 @@ struct DebugSwiftUIRootView: View {
     @StateObject
     private var model = DebugViewModel()
 
+    @Environment(\.presentationMode)
+    private var presentationMode
+
     var body: some View {
         NavigationStack(path: self.$model.navigationPath) {
             DebugSummaryView(model: self.model)
@@ -39,6 +42,17 @@ struct DebugSwiftUIRootView: View {
                         .foregroundStyle(Material.thinMaterial)
                         .edgesIgnoringSafeArea(.all)
                 )
+                #if os(macOS) || targetEnvironment(macCatalyst)
+                .toolbar {
+                    ToolbarItem(placement: .automatic) {
+                        Button {
+                            self.presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            Label("Close", systemImage: "xmark")
+                        }
+                    }
+                }
+                #endif
         }
         .task {
             await self.model.load()
