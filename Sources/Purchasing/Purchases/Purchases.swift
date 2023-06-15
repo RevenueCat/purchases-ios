@@ -1439,6 +1439,10 @@ internal extension Purchases {
         return self.systemInfo.responseVerificationMode.publicKey
     }
 
+    var receiptURL: URL? {
+        return self.receiptFetcher.receiptURL
+    }
+
 }
 
 #endif
