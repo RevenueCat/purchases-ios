@@ -37,26 +37,42 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         return Signing.enforcedVerificationMode()
     }
 
-    func testCanGetOfferings() async throws {
-        let logger = TestLogHandler()
+    // MARK: -
 
+    private var logger: TestLogHandler!
+
+    override func setUp() async throws {
+        self.logger = TestLogHandler(capacity: 500)
+
+        try await super.setUp()
+    }
+
+    override func tearDown() async throws {
+        self.logger = nil
+
+        try await super.tearDown()
+    }
+
+    func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+    }
 
-        logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(.getOfferings(appUserID: Purchases.shared.appUserID)),
+    func testOfferingsComeFromLoadShedder() async throws {
+        self.logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(
+                .getOfferings(appUserID: try Purchases.shared.appUserID.escapedOrError())
+            ),
             level: .debug
         )
     }
 
     func testCanPurchasePackage() async throws {
-        let logger = TestLogHandler()
-
         try await self.purchaseMonthlyOffering()
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(.postReceiptData),
             level: .debug
         )
@@ -66,15 +82,20 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let logger = TestLogHandler()
-
         let result = try await Purchases.shared.productEntitlementMapping()
         expect(result.entitlementsByProduct).to(haveCount(1))
         expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
+    }
 
-        logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(.getProductEntitlementMapping),
-            level: .debug
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testProductEntitlementMappingComesFromLoadShedder() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.network.request_handled_by_load_shedder(.getProductEntitlementMapping).description,
+            level: .debug,
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100)
         )
     }
 
