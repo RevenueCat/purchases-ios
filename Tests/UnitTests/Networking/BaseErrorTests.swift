@@ -26,6 +26,7 @@ class BaseErrorTests: TestCase {
         expectedCode: ErrorCode,
         underlyingError: Error? = nil,
         userInfoKeys: [NSError.UserInfoKey]? = nil,
+        localizedDescription: String? = nil,
         file: FileString = #file, line: UInt = #line
     ) {
         let nsError = error.asPurchasesError as NSError
@@ -53,7 +54,20 @@ class BaseErrorTests: TestCase {
         }
 
         if let userInfoKeys = userInfoKeys {
-            expect(nsError.userInfo.keys).to(contain(userInfoKeys as [String]))
+            expect(
+                file: file, line: line,
+                nsError.userInfo.keys
+            ).to(contain(userInfoKeys as [String]))
+        }
+
+        if let localizedDescription = localizedDescription {
+            expect(
+                file: file, line: line,
+                // Testing description of the error directly.
+                // This ensures that converting `error as NSError` also produces a good description
+                // and not just "The operation couldn’t be completed."
+                error.localizedDescription
+            ) == localizedDescription
         }
     }
 

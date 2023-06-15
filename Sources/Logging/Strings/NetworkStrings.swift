@@ -20,6 +20,7 @@ enum NetworkStrings {
     case api_request_started(HTTPRequest)
     case api_request_completed(_ request: HTTPRequest, httpCode: HTTPStatusCode)
     case api_request_failed(_ request: HTTPRequest, httpCode: HTTPStatusCode?, error: NetworkError)
+    case api_request_failed_status_code(HTTPStatusCode)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case creating_json_error(error: String)
     case json_data_received(dataString: String)
@@ -54,6 +55,9 @@ extension NetworkStrings: LogMessage {
         case let .api_request_failed(request, statusCode, error):
             return "API request failed: \(request.description) (\(statusCode?.rawValue.description ?? "<>")): " +
             "\(error.description)"
+
+        case let .api_request_failed_status_code(statusCode):
+            return "API request failed with status code \(statusCode.rawValue)"
 
         case let .reusing_existing_request_for_operation(operationType, cacheKey):
             return "Network operation '\(operationType)' found with the same cache key " +
