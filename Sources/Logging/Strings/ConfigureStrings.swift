@@ -77,7 +77,7 @@ enum ConfigureStrings {
 
 }
 
-extension ConfigureStrings: CustomStringConvertible {
+extension ConfigureStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -188,5 +188,7 @@ extension ConfigureStrings: CustomStringConvertible {
                     """
         }
     }
+
+    var category: String { return "configure" }
 
 }

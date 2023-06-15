@@ -55,37 +55,51 @@ class LoggerTests: TestCase {
 
     func testLoggerLogsMessagesWithHigherLevel() {
         Logger.logLevel = .info
-        Logger.warn(Self.logMessage)
+        Logger.warn(Message.test1)
 
-        self.logger.verifyMessageWasLogged(Self.logMessage, level: .warn)
+        self.logger.verifyMessageWasLogged(Message.test1, level: .warn)
     }
 
     func testLoggerLogsMessagesWithHigherLevelThanVerbose() {
         Logger.logLevel = .verbose
-        Logger.info(Self.logMessage)
+        Logger.info(Message.test1)
 
-        self.logger.verifyMessageWasLogged(Self.logMessage, level: .info)
+        self.logger.verifyMessageWasLogged(Message.test1, level: .info)
     }
 
     func testLoggerLogsMessagesWithSameLevel() {
         Logger.logLevel = .info
-        Logger.info(Self.logMessage)
+        Logger.info(Message.test1)
 
-        self.logger.verifyMessageWasLogged(Self.logMessage, level: .info)
+        self.logger.verifyMessageWasLogged(Message.test1, level: .info)
     }
 
     func testLoggerDoesNotLogMessagesWithLowerLevel() {
         Logger.logLevel = .info
-        Logger.debug(Self.logMessage)
-        Logger.info("Other message")
+        Logger.debug(Message.test1)
+        Logger.info(Message.test2)
 
-        self.logger.verifyMessageWasNotLogged(Self.logMessage)
+        self.logger.verifyMessageWasNotLogged(Message.test1)
     }
 
 }
 
 private extension LoggerTests {
 
-    static let logMessage = "Log message"
+    enum Message: LogMessage {
+
+        case test1
+        case test2
+
+        var description: String {
+            switch self {
+            case .test1: return "Log message 1"
+            case .test2: return "Log message 2"
+            }
+        }
+
+        var category: String { return "debug_logs" }
+
+    }
 
 }

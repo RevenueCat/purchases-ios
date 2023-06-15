@@ -67,7 +67,7 @@ enum StoreKitStrings {
 
 }
 
-extension StoreKitStrings: CustomStringConvertible {
+extension StoreKitStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -153,5 +153,7 @@ extension StoreKitStrings: CustomStringConvertible {
 
         }
     }
+
+    var category: String { return "store_kit" }
 
 }

@@ -236,31 +236,25 @@ extension BaseStoreKitIntegrationTests {
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
         guard let expirationDate = entitlement.expirationDate else { return }
 
-        Logger.info("Expiring subscription for product '\(entitlement.productIdentifier)'")
+        Logger.info(TestMessage.expiring_subscription(productID: entitlement.productIdentifier))
 
         // Try expiring using `SKTestSession`
         do {
             try self.testSession.expireSubscription(productIdentifier: entitlement.productIdentifier)
         } catch {
-            Logger.warn(
-                """
-                Failed testSession.expireSubscription, this is probably an Xcode bug.
-                Test will now wait for expiration instead of triggering it.
-                Error: \(error.localizedDescription)
-                """
-            )
+            Logger.warn(TestMessage.expire_subscription_failed(error))
         }
 
         let secondsUntilExpiration = expirationDate.timeIntervalSince(Date())
         guard secondsUntilExpiration > 0 else {
-            Logger.info("Done waiting for subscription expiration, continuing test.")
+            Logger.info(TestMessage.finished_waiting_for_expiration)
             return
         }
 
         let timeToSleep = Int(secondsUntilExpiration.rounded(.up) + 1)
 
         // `SKTestSession.expireSubscription` doesn't seem to work, so force expiration by waiting
-        Logger.warn("Sleeping for \(timeToSleep) seconds to force expiration")
+        Logger.warn(TestMessage.sleeping_to_force_expiration(seconds: timeToSleep))
         try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
     }
 
@@ -290,7 +284,7 @@ extension BaseStoreKitIntegrationTests {
     @MainActor
     func printReceiptContent() async {
         guard Purchases.isConfigured else {
-            Logger.error("Can't print receipt when purchases isn't configured")
+            Logger.error(TestMessage.unable_parse_receipt_without_sdk)
             return
         }
 
@@ -298,7 +292,7 @@ extension BaseStoreKitIntegrationTests {
             let receipt = try await Purchases.shared.fetchReceipt(.always)
             let description = receipt.map { $0.debugDescription } ?? "<null>"
 
-            Logger.appleWarning("Receipt content:\n\(description)")
+            Logger.appleWarning(TestMessage.receipt_content(description))
 
             if let receipt = receipt {
                 let attachment = XCTAttachment(data: try receipt.prettyPrintedData,
@@ -308,7 +302,7 @@ extension BaseStoreKitIntegrationTests {
                 self.add(attachment)
             }
         } catch {
-            Logger.error("Error parsing local receipt: \(error)")
+            Logger.error(TestMessage.error_parsing_receipt(error))
         }
     }
 

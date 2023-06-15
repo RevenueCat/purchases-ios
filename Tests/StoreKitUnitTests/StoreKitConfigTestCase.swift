@@ -106,7 +106,7 @@ private extension StoreKitConfigTestCase {
         guard let waitTime = Self.waitTimeInSeconds else { return }
         guard !Self.hasWaited.getAndSet(true) else { return }
 
-        Logger.warn("Delaying tests for \(waitTime) seconds for StoreKit initialization...")
+        Logger.warn(StoreKitTestMessage.delayingTest(waitTime))
 
         try? await Task.sleep(nanoseconds: DispatchTimeInterval(waitTime).nanoseconds)
     }
@@ -119,7 +119,7 @@ private extension StoreKitConfigTestCase {
         do {
             try manager.removeItem(at: url)
         } catch {
-            Logger.appleWarning("Error attempting to remove receipt URL '\(url)': \(error)")
+            Logger.appleWarning(StoreKitTestMessage.errorRemovingReceipt(url, error))
         }
     }
 

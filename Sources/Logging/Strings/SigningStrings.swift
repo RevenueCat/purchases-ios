@@ -28,7 +28,7 @@ enum SigningStrings {
 
 }
 
-extension SigningStrings: CustomStringConvertible {
+extension SigningStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -50,5 +50,7 @@ extension SigningStrings: CustomStringConvertible {
             "This will be reported as a verification failure."
         }
     }
+
+    var category: String { return "signing" }
 
 }

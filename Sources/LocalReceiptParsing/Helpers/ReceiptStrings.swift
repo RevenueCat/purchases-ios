@@ -40,7 +40,7 @@ enum ReceiptStrings {
 
 }
 
-extension ReceiptStrings: CustomStringConvertible {
+extension ReceiptStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -111,5 +111,7 @@ extension ReceiptStrings: CustomStringConvertible {
 
         }
     }
+
+    var category: String { return "receipt" }
 
 }

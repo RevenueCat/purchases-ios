@@ -50,7 +50,7 @@ enum AttributionStrings {
 
 }
 
-extension AttributionStrings: CustomStringConvertible {
+extension AttributionStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -153,5 +153,7 @@ extension AttributionStrings: CustomStringConvertible {
 
         }
     }
+
+    var category: String { return "attribution" }
 
 }

@@ -43,7 +43,7 @@ enum NetworkStrings {
 
 }
 
-extension NetworkStrings: CustomStringConvertible {
+extension NetworkStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -117,6 +117,8 @@ extension NetworkStrings: CustomStringConvertible {
         #endif
         }
     }
+
+    var category: String { return "network" }
 
 }
 

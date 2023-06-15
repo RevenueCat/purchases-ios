@@ -12,30 +12,39 @@
 //  Created by Nacho Soto on 11/29/22.
 
 import Foundation
+import os
 
 /// A type that can receive logs of different levels.
 protocol LoggerType {
 
-    func verbose(_ message: @autoclosure () -> CustomStringConvertible,
+    func verbose(_ message: @autoclosure () -> LogMessage,
                  fileName: String?,
                  functionName: String?,
                  line: UInt)
-    func debug(_ message: @autoclosure () -> CustomStringConvertible,
+    func debug(_ message: @autoclosure () -> LogMessage,
                fileName: String?,
                functionName: String?,
                line: UInt)
-    func info(_ message: @autoclosure () -> CustomStringConvertible,
+    func info(_ message: @autoclosure () -> LogMessage,
               fileName: String?,
               functionName: String?,
               line: UInt)
-    func warn(_ message: @autoclosure () -> CustomStringConvertible,
+    func warn(_ message: @autoclosure () -> LogMessage,
               fileName: String?,
               functionName: String?,
               line: UInt)
-    func error(_ message: @autoclosure () -> CustomStringConvertible,
+    func error(_ message: @autoclosure () -> LogMessage,
                fileName: String,
                functionName: String,
                line: UInt)
+
+}
+
+/// Contains a message that can be output by ``os.Logger``.
+protocol LogMessage: CustomStringConvertible {
+
+    var description: String { get }
+    var category: String { get }
 
 }
 
@@ -66,11 +75,33 @@ protocol LoggerType {
     // swiftlint:enable missing_docs
 }
 
+/// An in-memory cache of ``os.Logger`` instances based on their category.
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+final class LoggerStore {
+
+    private var loggersByCategory: [String: os.Logger] = [:]
+
+    func logger(for category: String) -> os.Logger {
+        return self.loggersByCategory[category, default: Self.create(for: category)]
+    }
+
+    private static func create(for category: String) -> os.Logger {
+        return .init(subsystem: Self.subsystem, category: category)
+    }
+
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.revenuecat.Purchases"
+
+}
+
+@available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *)
+private let store = LoggerStore()
+
 // swiftlint:disable:next function_parameter_count
 func defaultLogHandler(
     framework: String,
     verbose: Bool,
     level: LogLevel,
+    category: String,
     message: String,
     file: String?,
     function: String?,
@@ -88,7 +119,16 @@ func defaultLogHandler(
         fileContext = ""
     }
 
-    NSLog("%@", "[\(framework)] - \(level.description)\(fileContext): \(message)")
+    if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
+        store
+            .logger(for: category)
+            .log(
+                level: level.logType,
+                "\(level.description, privacy: .public)\(fileContext, privacy: .public): \(message, privacy: .public)"
+            )
+    } else {
+        NSLog("%@", "[\(framework)] - \(level.description)\(fileContext): \(message)")
+    }
 }
 
 // MARK: -
@@ -96,39 +136,53 @@ func defaultLogHandler(
 /// Default overloads to allow implicit values
 extension LoggerType {
 
-    func verbose(_ message: @autoclosure () -> CustomStringConvertible,
+    func verbose(_ message: @autoclosure () -> LogMessage,
                  _ fileName: String? = #fileID,
                  _ functionName: String? = #function,
                  _ line: UInt = #line) {
         self.verbose(message(), fileName: fileName, functionName: functionName, line: line)
     }
 
-    func debug(_ message: @autoclosure () -> CustomStringConvertible,
+    func debug(_ message: @autoclosure () -> LogMessage,
                _ fileName: String? = #fileID,
                _ functionName: String? = #function,
                _ line: UInt = #line) {
         self.debug(message(), fileName: fileName, functionName: functionName, line: line)
     }
 
-    func info(_ message: @autoclosure () -> CustomStringConvertible,
+    func info(_ message: @autoclosure () -> LogMessage,
               _ fileName: String? = #fileID,
               _ functionName: String? = #function,
               _ line: UInt = #line) {
         self.info(message(), fileName: fileName, functionName: functionName, line: line)
     }
 
-    func warn(_ message: @autoclosure () -> CustomStringConvertible,
+    func warn(_ message: @autoclosure () -> LogMessage,
               _ fileName: String? = #fileID,
               _ functionName: String? = #function,
               _ line: UInt = #line) {
         self.warn(message(), fileName: fileName, functionName: functionName, line: line)
     }
 
-    func error(_ message: @autoclosure () -> CustomStringConvertible,
+    func error(_ message: @autoclosure () -> LogMessage,
                _ fileName: String = #fileID,
                _ functionName: String = #function,
                _ line: UInt = #line) {
         self.error(message(), fileName: fileName, functionName: functionName, line: line)
+    }
+
+}
+
+private extension LogLevel {
+
+    var logType: OSLogType {
+        switch self {
+        case .verbose: return .debug
+        case .debug: return .debug
+        case .info: return .info
+        case .warn: return .error
+        case .error: return .error
+        }
     }
 
 }

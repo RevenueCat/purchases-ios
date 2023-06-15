@@ -21,7 +21,7 @@ enum DiagnosticsStrings {
 
 }
 
-extension DiagnosticsStrings: CustomStringConvertible {
+extension DiagnosticsStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -30,5 +30,7 @@ extension DiagnosticsStrings: CustomStringConvertible {
             return String(format: "%@ (%.2f seconds)", message.description, roundedDuration)
         }
     }
+
+    var category: String { return "diagnostics" }
 
 }

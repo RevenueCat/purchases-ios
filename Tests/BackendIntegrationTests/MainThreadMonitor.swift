@@ -21,16 +21,16 @@ final class MainThreadMonitor {
 
     init() {
         self.queue = .init(label: "com.revenuecat.MainThreadMonitor")
-        Logger.verbose("Initializing \(type(of: self)) with a threshold of \(Self.threshold.seconds) seconds")
+        Logger.verbose(Message.initializing_main_thread_monitor(threshold: Self.threshold))
     }
 
     deinit {
-        Logger.verbose("Stopping \(type(of: self))")
+        Logger.verbose(Message.stopping)
     }
 
     func run() {
         guard !Self.debuggerIsAttached else {
-            Logger.verbose("\(type(of: self)): debugger is attached, ignoring")
+            Logger.verbose(Message.ignoring)
             return
         }
 
@@ -72,5 +72,34 @@ private extension MainThreadMonitor {
         // Finally, checks if debugger's flag is present yet.
         return (info.kp_proc.p_flag & P_TRACED) != 0
     }
+
+}
+
+// MARK: - logs
+
+// swiftlint:disable identifier_name
+
+private enum Message: LogMessage {
+
+    case initializing_main_thread_monitor(threshold: DispatchTimeInterval)
+    case stopping
+    case ignoring
+
+    var description: String {
+        switch self {
+        case let .initializing_main_thread_monitor(threshold):
+            return "Initializing \(Self.name) with a threshold of \(threshold.seconds) seconds"
+
+        case .stopping:
+            return "Stopping \(Self.name)"
+
+        case .ignoring:
+            return "\(Self.name): debugger is attached, ignoring"
+        }
+    }
+
+    var category: String { return Self.name }
+
+    private static let name: String = "\(MainThreadMonitor.self)"
 
 }

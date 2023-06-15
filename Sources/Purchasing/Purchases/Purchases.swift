@@ -191,8 +191,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * - ``logLevel``
      */
     @objc public static var verboseLogHandler: VerboseLogHandler {
-        get { Logger.logHandler }
-        set { Logger.logHandler = newValue }
+        get {
+            return { level, message, file, function, line in
+                Logger.internalLogHandler(level, message, "", file, function, line)
+            }
+        }
+
+        set {
+            Logger.internalLogHandler = { level, message, _, file, function, line in
+                newValue(level, message, file, function, line)
+            }
+        }
     }
 
     /**

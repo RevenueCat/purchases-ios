@@ -27,7 +27,7 @@ enum CodableStrings {
 
 }
 
-extension CodableStrings: CustomStringConvertible {
+extension CodableStrings: LogMessage {
 
     var description: String {
         switch self {
@@ -60,5 +60,7 @@ extension CodableStrings: CustomStringConvertible {
             return "Type '\(type)' mismatch, codingPath:\(context.codingPath), description:\n\(description)"
         }
     }
+
+    var category: String { return "codable" }
 
 }
