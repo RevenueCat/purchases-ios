@@ -52,7 +52,7 @@ final class MainThreadMonitor {
         }
     }
 
-    private static let threshold: DispatchTimeInterval = .seconds(5)
+    private static let threshold: DispatchTimeInterval = .seconds(30)
 
 }
 
