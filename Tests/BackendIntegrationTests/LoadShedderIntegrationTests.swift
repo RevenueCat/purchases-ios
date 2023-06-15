@@ -38,23 +38,44 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanGetOfferings() async throws {
+        let logger = TestLogHandler()
+
         let receivedOfferings = try await Purchases.shared.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+
+        logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(.getOfferings(appUserID: Purchases.shared.appUserID)),
+            level: .debug
+        )
     }
 
     func testCanPurchasePackage() async throws {
+        let logger = TestLogHandler()
+
         try await self.purchaseMonthlyOffering()
+
+        logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(.postReceiptData),
+            level: .debug
+        )
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        let logger = TestLogHandler()
+
         let result = try await Purchases.shared.productEntitlementMapping()
         expect(result.entitlementsByProduct).to(haveCount(1))
         expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
+
+        logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(.getProductEntitlementMapping),
+            level: .debug
+        )
     }
 
 }

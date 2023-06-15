@@ -112,6 +112,7 @@ extension HTTPClient {
         case signature = "X-Signature"
         case requestDate = "X-RevenueCat-Request-Time"
         case contentType = "Content-Type"
+        case isLoadShedder = "X-RevenueCat-Fortress"
 
     }
 
@@ -319,6 +320,11 @@ private extension HTTPClient {
                     // If that can't be extracted, get status code from the parsed response.
                     httpCode: urlResponse?.httpStatusCode ?? response.statusCode
                 ))
+
+                if response.isLoadShedder {
+                    Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
+                }
+
             case let .failure(error):
                 Logger.debug(Strings.network.api_request_failed(request.httpRequest,
                                                                 httpCode: urlResponse?.httpStatusCode,
@@ -528,6 +534,10 @@ private extension HTTPResponse {
         return self.mapBody {
             return $0.copy(with: requestDate)
         }
+    }
+
+    var isLoadShedder: Bool {
+        return self.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder.rawValue) == "true"
     }
 
 }

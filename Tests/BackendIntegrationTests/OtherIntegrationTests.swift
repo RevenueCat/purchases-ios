@@ -32,6 +32,14 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await Purchases.shared.healthRequest(signatureVerification: true)
     }
 
+    func testHandledByProductionServer() async throws {
+        let logger = TestLogHandler()
+
+        try await Purchases.shared.healthRequest(signatureVerification: false)
+
+        logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
