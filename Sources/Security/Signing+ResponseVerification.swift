@@ -126,7 +126,7 @@ extension Result where Success == Data?, Failure == NetworkError {
             )
 
             if response.verificationResult == .failed, case .enforced = verificationMode {
-                return .failure(.signatureVerificationFailed(path: request.path))
+                return .failure(.signatureVerificationFailed(path: request.path, code: response.statusCode))
             } else {
                 return .success(response.mapBody(Optional.some))
             }

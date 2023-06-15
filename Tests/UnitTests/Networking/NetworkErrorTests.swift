@@ -312,7 +312,8 @@ class NetworkErrorTests: TestCase {
 
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)
 
-    private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(path: .health)
+    private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(path: .health,
+                                                                                                code: .success)
 
     private static func responseError(_ statusCode: HTTPStatusCode) -> NetworkError {
         return .errorResponse(
