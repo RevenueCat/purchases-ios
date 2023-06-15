@@ -54,6 +54,12 @@ class BasicCustomerInfoTests: TestCase {
                     "period_type": "normal",
                     "is_sandbox": false
                 ] as [String: Any],
+                "gold": [
+                    "expires_date": "2100-07-30T02:40:36Z",
+                    "period_type": "normal",
+                    "is_sandbox": false,
+                    "product_plan_identifier": "monthly"
+                ],
                 "onemonth": [
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
                     "period_type": "normal",
@@ -67,6 +73,11 @@ class BasicCustomerInfoTests: TestCase {
             ],
             "entitlements": [
                 "pro": [
+                    "expires_date": "2100-08-30T02:40:36Z",
+                    "product_identifier": "onemonth_freetrial",
+                    "purchase_date": "2018-10-26T23:17:53Z"
+                ],
+                "pro_google_play": [
                     "expires_date": "2100-08-30T02:40:36Z",
                     "product_identifier": "onemonth_freetrial",
                     "purchase_date": "2018-10-26T23:17:53Z"
@@ -116,13 +127,14 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testListActiveSubscriptions() {
-        expect(self.customerInfo.activeSubscriptions) == ["onemonth_freetrial"]
+        expect(self.customerInfo.activeSubscriptions) == ["onemonth_freetrial", "gold:monthly"]
     }
 
     func testAllPurchasedProductIdentifier() {
         let allPurchased = self.customerInfo.allPurchasedProductIdentifiers
 
-        expect(allPurchased) == ["onemonth", "onemonth_freetrial", "threemonth_freetrial", "onetime_purchase"]
+        expect(allPurchased) == ["onemonth", "onemonth_freetrial",
+                                 "threemonth_freetrial", "gold:monthly", "onetime_purchase"]
     }
 
     func testLatestExpirationDateHelper() {
@@ -869,13 +881,13 @@ class BasicCustomerInfoTests: TestCase {
 
     func testCopyWithNewRequestDateUpdatesEntitlements() throws {
         expect(self.customerInfo.activeSubscriptions).toNot(contain("onemonth"))
-        expect(self.customerInfo.entitlements.active).to(haveCount(2))
+        expect(self.customerInfo.entitlements.active).to(haveCount(3))
         expect(self.customerInfo.entitlements["expired_pro"]?.isActive) == false
 
         let newRequestTime = try Self.date(withDaysAgo: -2)
         let updatedCustomerInfo: CustomerInfo = self.customerInfo.copy(with: newRequestTime)
         expect(updatedCustomerInfo.activeSubscriptions).to(contain("onemonth"))
-        expect(updatedCustomerInfo.entitlements.active).to(haveCount(3))
+        expect(updatedCustomerInfo.entitlements.active).to(haveCount(4))
         expect(updatedCustomerInfo.entitlements["expired_pro"]?.isActive) == true
     }
 

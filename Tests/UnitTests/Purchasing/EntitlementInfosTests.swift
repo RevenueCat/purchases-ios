@@ -324,6 +324,39 @@ class EntitlementInfosTests: TestCase {
         try verifyProduct()
     }
 
+    func testCreatesEntitlementInfosFromGooglePlay() throws {
+        stubResponse(
+            entitlements: [
+                "pro_cat": [
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "product_identifier": "pro",
+                    "purchase_date": "2019-07-26T23:45:40Z"
+                ]
+            ],
+            subscriptions: [
+                "pro": [
+                    "billing_issues_detected_at": nil,
+                    "expires_date": "2200-07-26T23:50:40Z",
+                    "is_sandbox": false,
+                    "product_plan_identifier": "monthly",
+                    "original_purchase_date": "2019-07-26T23:30:41Z",
+                    "period_type": "normal",
+                    "purchase_date": "2019-07-26T23:45:40Z",
+                    "store": "app_store",
+                    "unsubscribe_detected_at": nil
+                ] as [String: Any?]
+            ]
+        )
+
+        try verifySubscriberInfo()
+        try verifyEntitlementActive(productPlanIdentifier: "monthly")
+        try verifyRenewal()
+        try verifyPeriodType()
+        try verifyStore()
+        try verifySandbox()
+        try verifyProduct(expectedIdentifier: "pro")
+    }
+
     func testCreatesEntitlementWithNonSubscriptionsAndSubscription() throws {
         stubResponse(
                 entitlements: [
@@ -1290,6 +1323,7 @@ private extension EntitlementInfosTests {
     func verifyEntitlementActive(
         _ expectedEntitlementActive: Bool = true,
         entitlement: String = "pro_cat",
+        productPlanIdentifier: String? = nil,
         file: FileString = #file,
         line: UInt = #line
     ) throws {
@@ -1306,6 +1340,13 @@ private extension EntitlementInfosTests {
             ? "Entitlement should be active"
             : "Entitlement should not be active"
         )
+
+        if productPlanIdentifier == nil {
+            expect(file: file, line: line, proCat.productPlanIdentifier).to(beNil())
+        } else {
+            expect(file: file, line: line, proCat.productPlanIdentifier) == productPlanIdentifier
+        }
+
     }
 
     private func extractEntitlements(identifier: String,

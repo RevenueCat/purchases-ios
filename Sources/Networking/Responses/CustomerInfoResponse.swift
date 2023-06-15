@@ -60,6 +60,7 @@ extension CustomerInfoResponse {
         var billingIssuesDetectedAt: Date?
         @IgnoreDecodeErrors<PurchaseOwnershipType>
         var ownershipType: PurchaseOwnershipType
+        var productPlanIdentifier: String?
 
     }
 
