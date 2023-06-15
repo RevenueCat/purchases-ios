@@ -115,6 +115,28 @@ class ETagManager {
 
 }
 
+extension ETagManager {
+
+    static func eTag(for request: URLRequest) -> String? {
+        guard let url = request.url else { return nil }
+
+        let apiKey = request.value(forHTTPHeaderField: HTTPClient.RequestHeader.authorization.rawValue) ?? ""
+
+        return [
+            // The core of the ETag content is the request URL.
+            url.absoluteString,
+            // We add the API key to the eTag to make sure that if a request is made with an invalid
+            // key, we can recover from that 401 when the correct one is set in the app.
+            // Hashing here is prone to collisions, but it's worth it to avoid putting the key in user defaults.
+            apiKey.hashValue.description
+        ]
+            .joined(separator: "-")
+    }
+
+}
+
+// MARK: - Private
+
 private extension ETagManager {
 
     func shouldUseCachedVersion(responseCode: HTTPStatusCode) -> Bool {
@@ -123,7 +145,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         return self.userDefaults.read {
-            if let cacheKey = self.eTagDefaultCacheKey(for: request),
+            if let cacheKey = Self.eTag(for: request),
                let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
                 return try? JSONDecoder.default.decode(Response.self, jsonData: data)
@@ -155,16 +177,12 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        if let cacheKey = self.eTagDefaultCacheKey(for: request),
+        if let cacheKey = Self.eTag(for: request),
            let dataToStore = response.asData() {
             self.userDefaults.write {
                 $0.set(dataToStore, forKey: cacheKey)
             }
         }
-    }
-
-    func eTagDefaultCacheKey(for request: URLRequest) -> String? {
-        return request.url?.absoluteString
     }
 
     var shouldIgnoreVerificationErrors: Bool {
@@ -252,6 +270,9 @@ private extension HTTPResponse {
     func shouldStore(ignoreVerificationErrors: Bool) -> Bool {
         return (
             self.statusCode != .notModified &&
+            self.statusCode != .unauthorized &&
+            // Note that we do want to store 400 responses to help the server
+            // If the request was wrong, it will also be wrong the next time.
             !self.statusCode.isServerError &&
             (ignoreVerificationErrors || self.verificationResult != .failed)
         )

@@ -99,7 +99,6 @@ extension HTTPClient {
     enum RequestHeader: String {
 
         case authorization = "Authorization"
-        case location = "Location"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
@@ -109,6 +108,7 @@ extension HTTPClient {
     enum ResponseHeader: String {
 
         case eTag = "X-RevenueCat-ETag"
+        case location = "Location"
         case signature = "X-Signature"
         case requestDate = "X-RevenueCat-Request-Time"
         case contentType = "Content-Type"

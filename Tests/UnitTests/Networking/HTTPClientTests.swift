@@ -1388,7 +1388,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
                 data: .init(),
                 statusCode: .temporaryRedirect,
                 headers: [
-                    HTTPClient.RequestHeader.location.rawValue: pathB.url!.absoluteString
+                    HTTPClient.ResponseHeader.location.rawValue: pathB.url!.absoluteString
                 ]
             )
         }
