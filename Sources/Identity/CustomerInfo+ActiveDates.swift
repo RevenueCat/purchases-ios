@@ -48,17 +48,21 @@ extension CustomerInfo {
     }
 
     static func extractExpirationDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        var map = [String: Date?]()
-
-        for (productId, subscription) in subscriber.subscriptions {
-            if let productPlanIdentfier = subscription.productPlanIdentifier {
-                map["\(productId):\(productPlanIdentfier)"] = subscription.expiresDate
-            } else {
-                map[productId] = subscription.expiresDate
-            }
-        }
-
-        return map
+        return Dictionary(
+                    uniqueKeysWithValues: subscriber
+                        .subscriptions
+                        .lazy
+                        .map { productID, subscription in
+                            let key: String
+                            let value = subscription.expiresDate
+                            if let productPlanIdentfier = subscription.productPlanIdentifier {
+                                key = "\(productID):\(productPlanIdentfier)"
+                            } else {
+                                key = productID
+                            }
+                            return (key, value)
+                        }
+                )
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
