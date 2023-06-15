@@ -41,10 +41,10 @@ extension HTTPResponse: CustomStringConvertible {
         }()
 
         return """
-        HTTPResponse(" +
-        statusCode: \(self.statusCode.rawValue),
-        body: \(body),
-        verification: \(self.verificationResult)
+        HTTPResponse(
+            statusCode: \(self.statusCode.rawValue),
+            body: \(body),
+            verification: \(self.verificationResult)
         )
         """
     }
