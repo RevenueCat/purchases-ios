@@ -533,7 +533,8 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         }
 
         expect(response).to(beFailure())
-        expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: Self.path)))
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
     func testPerformRequestOverridesIt() throws {
@@ -548,7 +549,8 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         }
 
         expect(response).to(beFailure())
-        expect(response?.error).to(matchError(NetworkError.signatureVerificationFailed(path: Self.path)))
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
     func testPerformRequestWithDisabledModeOverridesIt() throws {
@@ -576,7 +578,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         }
 
         expect(response).to(beFailure())
-        expect(response?.error) == NetworkError.signatureVerificationFailed(path: Self.path)
+        expect(response?.error) == NetworkError.signatureVerificationFailed(path: Self.path, code: .success)
     }
 
     func testFakeSignatureFailuresInInformationalMode() throws {

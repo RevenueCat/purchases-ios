@@ -64,13 +64,15 @@ enum ErrorUtils {
      */
     static func signatureVerificationFailedError(
         path: HTTPRequest.Path,
+        code: HTTPStatusCode,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return error(
             with: .signatureVerificationFailed,
             message: "Request to \(path.relativePath) failed verification",
             extraUserInfo: [
-                "request_path": path.relativePath
+                "request_path": path.relativePath,
+                "status_code": code.rawValue
             ],
             fileName: fileName, functionName: functionName, line: line
         )

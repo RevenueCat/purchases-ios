@@ -41,16 +41,18 @@ class BackendSignatureVerificationTests: BaseBackendTests {
     }
 
     func testRequestFailsIfSignatureVerificationFails() throws {
+        let expectedError: NetworkError = .signatureVerificationFailed(path: .health, code: .success)
+
         self.httpClient.mock(
             requestPath: .health,
-            response: .init(error: .signatureVerificationFailed(path: .health))
+            response: .init(error: expectedError)
         )
 
         let error = waitUntilValue { completed in
             self.internalAPI.healthRequest(signatureVerification: true, completion: completed)
         }
 
-        expect(error).to(matchError(BackendError.networkError(.signatureVerificationFailed(path: .health))))
+        expect(error).to(matchError(BackendError.networkError(expectedError)))
     }
 
 }
