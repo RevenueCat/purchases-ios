@@ -42,6 +42,7 @@ class HTTPClient {
         config.httpMaximumConnectionsPerHost = 1
         config.timeoutIntervalForRequest = requestTimeout
         config.timeoutIntervalForResource = requestTimeout
+        config.urlCache = nil // We implement our own caching with `ETagManager`.
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
                                   delegateQueue: nil)
