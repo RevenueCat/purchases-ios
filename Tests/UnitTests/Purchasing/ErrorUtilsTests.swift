@@ -141,7 +141,7 @@ class ErrorUtilsTests: TestCase {
     }
 
     func testNetworkErrorsAreLogged() {
-        let error = ErrorUtils.networkError(message: Strings.network.could_not_find_cached_response.description)
+        let error = ErrorUtils.networkError(message: Strings.network.json_data_received(dataString: "test").description)
 
         self.expectLoggedError(error, .rcError)
     }
