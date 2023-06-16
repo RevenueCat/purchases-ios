@@ -207,6 +207,11 @@
 		4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		4F2F2EFF2A3CDAA800652B24 /* FileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2EFE2A3CDAA800652B24 /* FileHandler.swift */; };
 		4F2F2F142A3CEAB500652B24 /* FileHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F132A3CEAB500652B24 /* FileHandlerTests.swift */; };
+		4F2F2F162A3D00F000652B24 /* DiagnosticsFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F152A3D00F000652B24 /* DiagnosticsFileHandler.swift */; };
+		4F2F2F192A3D02DF00652B24 /* DiagnosticsPostBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F182A3D02DF00652B24 /* DiagnosticsPostBody.swift */; };
+		4F2F2F1B2A3D043D00652B24 /* DiagnosticsPostOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F1A2A3D043D00652B24 /* DiagnosticsPostOperation.swift */; };
+		4F2F2F1D2A3D0B5C00652B24 /* DiagnosticsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F1C2A3D0B5C00652B24 /* DiagnosticsAPI.swift */; };
+		4F2F2F1F2A3D0C3B00652B24 /* DiagnosticsSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2F1E2A3D0C3B00652B24 /* DiagnosticsSynchronizer.swift */; };
 		4F34AEEC2A5DCCBA00F4BCB0 /* VerificationResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */; };
 		4F3C986A2A44FA60009AECA3 /* ErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3C98692A44FA60009AECA3 /* ErrorResponse.swift */; };
 		4F3D56632A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F3D56622A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift */; };
@@ -943,6 +948,11 @@
 		4F2017D42A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineStoreKitIntegrationTests.swift; sourceTree = "<group>"; };
 		4F2F2EFE2A3CDAA800652B24 /* FileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileHandler.swift; sourceTree = "<group>"; };
 		4F2F2F132A3CEAB500652B24 /* FileHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileHandlerTests.swift; sourceTree = "<group>"; };
+		4F2F2F152A3D00F000652B24 /* DiagnosticsFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsFileHandler.swift; sourceTree = "<group>"; };
+		4F2F2F182A3D02DF00652B24 /* DiagnosticsPostBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsPostBody.swift; sourceTree = "<group>"; };
+		4F2F2F1A2A3D043D00652B24 /* DiagnosticsPostOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsPostOperation.swift; sourceTree = "<group>"; };
+		4F2F2F1C2A3D0B5C00652B24 /* DiagnosticsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsAPI.swift; sourceTree = "<group>"; };
+		4F2F2F1E2A3D0C3B00652B24 /* DiagnosticsSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsSynchronizer.swift; sourceTree = "<group>"; };
 		4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationResultTests.swift; sourceTree = "<group>"; };
 		4F3C98692A44FA60009AECA3 /* ErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorResponse.swift; sourceTree = "<group>"; };
 		4F3D56622A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerPostReceiptTests.swift; sourceTree = "<group>"; };
@@ -2029,6 +2039,7 @@
 				B3C4AAD426B8911300E1B3C8 /* Backend.swift */,
 				B37815482857F1E7000A7B93 /* BackendConfiguration.swift */,
 				B34605D0279A6E600031CA74 /* CustomerAPI.swift */,
+				4F2F2F1C2A3D0B5C00652B24 /* DiagnosticsAPI.swift */,
 				B3781567285A79FC000A7B93 /* IdentityAPI.swift */,
 				B378156B285A9729000A7B93 /* OfferingsAPI.swift */,
 				57488BC529CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift */,
@@ -2172,6 +2183,8 @@
 		4F2F2EFD2A3CDA9B00652B24 /* Diagnostics */ = {
 			isa = PBXGroup;
 			children = (
+				4F2F2F172A3D02BD00652B24 /* Networking */,
+				4F2F2F152A3D00F000652B24 /* DiagnosticsFileHandler.swift */,
 				4F2F2EFE2A3CDAA800652B24 /* FileHandler.swift */,
 			);
 			path = Diagnostics;
@@ -2183,6 +2196,16 @@
 				4F2F2F132A3CEAB500652B24 /* FileHandlerTests.swift */,
 			);
 			path = Diagnostics;
+			sourceTree = "<group>";
+		};
+		4F2F2F172A3D02BD00652B24 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				4F2F2F182A3D02DF00652B24 /* DiagnosticsPostBody.swift */,
+				4F2F2F1A2A3D043D00652B24 /* DiagnosticsPostOperation.swift */,
+				4F2F2F1E2A3D0C3B00652B24 /* DiagnosticsSynchronizer.swift */,
+			);
+			path = Networking;
 			sourceTree = "<group>";
 		};
 		4F6BED572A26A13800CD9322 /* DebugUI */ = {
@@ -3070,7 +3093,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "scripts/swiftlint.sh\n";
+			shellScript = "#scripts/swiftlint.sh\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3250,6 +3273,7 @@
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
 				A5F0104E2717B3150090732D /* BeginRefundRequestHelper.swift in Sources */,
 				B378156D285A9772000A7B93 /* OfferingsAPI.swift in Sources */,
+				4F2F2F1F2A3D0C3B00652B24 /* DiagnosticsSynchronizer.swift in Sources */,
 				B34605C0279A6E380031CA74 /* CustomerInfoCallback.swift in Sources */,
 				B33CEAA0268CDCC9008A3144 /* ISOPeriodFormatter.swift in Sources */,
 				2DDF41A324F6F331005BC22D /* PurchasesReceiptParser.swift in Sources */,
@@ -3259,10 +3283,12 @@
 				A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */,
 				4F6EEBD92A38ED76007FD783 /* FakeSigning.swift in Sources */,
 				2DDF41AE24F6F37C005BC22D /* InAppPurchase.swift in Sources */,
+				4F2F2F192A3D02DF00652B24 /* DiagnosticsPostBody.swift in Sources */,
 				B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */,
 				57ABA76D28F08DDA003D9181 /* Either.swift in Sources */,
 				35F82BB426A9A74D0051DF03 /* HTTPClient.swift in Sources */,
 				57488BD429CB7E2D0000EE7E /* OfflineEntitlementsManager.swift in Sources */,
+				4F2F2F1B2A3D043D00652B24 /* DiagnosticsPostOperation.swift in Sources */,
 				B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */,
 				4F8452682A5756CC00084550 /* HTTPRequestBody+Signing.swift in Sources */,
 				5791FE4A2994453500F1FEDA /* Signing+ResponseVerification.swift in Sources */,
@@ -3308,9 +3334,11 @@
 				F530E4FF275646EF001AF6BD /* MacDevice.swift in Sources */,
 				F5714EAC26D7A87B00635477 /* PurchaseOwnershipType+Extensions.swift in Sources */,
 				57CD86DA291C1E2300768DE1 /* UserDefaults+Extensions.swift in Sources */,
+				4F2F2F162A3D00F000652B24 /* DiagnosticsFileHandler.swift in Sources */,
 				F5BE424026962ACF00254A30 /* ReceiptRefreshPolicy.swift in Sources */,
 				9A65E0762591977200DE00B0 /* IdentityStrings.swift in Sources */,
 				F5714EAA26D7A85D00635477 /* PeriodType+Extensions.swift in Sources */,
+				4F2F2F1D2A3D0B5C00652B24 /* DiagnosticsAPI.swift in Sources */,
 				57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */,
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,

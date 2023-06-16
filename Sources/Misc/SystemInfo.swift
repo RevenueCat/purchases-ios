@@ -96,6 +96,10 @@ class SystemInfo {
         return Self.proxyURL ?? Self.defaultServerHostURL
     }
 
+    static var diagnosticsHostURL: URL {
+        return Self.proxyURL ?? Self.diagnosticsServerHostURL
+    }
+
     static var proxyURL: URL? {
         didSet {
             if let privateProxyURLString = proxyURL?.absoluteString {
@@ -104,11 +108,8 @@ class SystemInfo {
         }
     }
 
-    private static let defaultServerHostName = "https://api.revenuecat.com"
-
-    private static var defaultServerHostURL: URL {
-        return URL(string: defaultServerHostName)!
-    }
+    private static let defaultServerHostURL = URL(string: "https://api.revenuecat.com")!
+    private static let diagnosticsServerHostURL = URL(string: "https://api-diagnostics.revenuecat.com")!
 
     init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,

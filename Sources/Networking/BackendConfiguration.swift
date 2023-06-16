@@ -19,6 +19,7 @@ class BackendConfiguration {
 
     let operationDispatcher: OperationDispatcher
     let operationQueue: OperationQueue
+    // TODO: separate queue for diagnostics
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
     let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
@@ -55,6 +56,16 @@ extension BackendConfiguration {
     ) {
         self.operationDispatcher.dispatchOnWorkerThread(withRandomDelay: randomDelay) {
             self.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        }
+    }
+
+    /// Adds the `operation` to the `OperationQueue` potentially adding a random delay.
+    func addOperation(
+        _ operation: NetworkOperation,
+        withRandomDelay randomDelay: Bool
+    ) {
+        self.operationDispatcher.dispatchOnWorkerThread(withRandomDelay: randomDelay) {
+            self.operationQueue.addOperation(operation)
         }
     }
 
