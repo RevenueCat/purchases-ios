@@ -320,7 +320,9 @@ private extension HTTPClient {
                     httpCode: urlResponse?.httpStatusCode ?? response.statusCode
                 ))
             case let .failure(error):
-                Logger.debug(Strings.network.api_request_failed(request.httpRequest, error: error))
+                Logger.debug(Strings.network.api_request_failed(request.httpRequest,
+                                                                httpCode: urlResponse?.httpStatusCode,
+                                                                error: error))
             }
 
             request.completionHandler?(response)
