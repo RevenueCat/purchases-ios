@@ -133,6 +133,17 @@ class ETagManager {
 
 }
 
+extension ETagManager {
+
+    // Visible for tests
+    static func cacheKey(for request: URLRequest) -> String? {
+        return request.url?.absoluteString
+    }
+
+}
+
+// MARK: - Private
+
 private extension ETagManager {
 
     func shouldUseCachedVersion(responseCode: HTTPStatusCode) -> Bool {
@@ -141,7 +152,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         return self.userDefaults.read {
-            if let cacheKey = self.eTagDefaultCacheKey(for: request),
+            if let cacheKey = Self.cacheKey(for: request),
                let value = $0.object(forKey: cacheKey),
                let data = value as? Data {
                 return try? JSONDecoder.default.decode(Response.self, jsonData: data)
@@ -172,7 +183,7 @@ private extension ETagManager {
     }
 
     func storeIfPossible(_ response: Response, for request: URLRequest) {
-        if let cacheKey = self.eTagDefaultCacheKey(for: request),
+        if let cacheKey = Self.cacheKey(for: request),
            let dataToStore = response.asData() {
             Logger.verbose(Strings.etag.storing_response(request, response))
 
@@ -180,10 +191,6 @@ private extension ETagManager {
                 $0.set(dataToStore, forKey: cacheKey)
             }
         }
-    }
-
-    func eTagDefaultCacheKey(for request: URLRequest) -> String? {
-        return request.url?.absoluteString
     }
 
     var shouldIgnoreVerificationErrors: Bool {
@@ -274,6 +281,8 @@ private extension HTTPResponse {
     func shouldStore(ignoreVerificationErrors: Bool) -> Bool {
         return (
             self.statusCode != .notModified &&
+            // Note that we do want to store 400 responses to help the server
+            // If the request was wrong, it will also be wrong the next time.
             !self.statusCode.isServerError &&
             (ignoreVerificationErrors || self.verificationResult != .failed)
         )
