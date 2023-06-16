@@ -1069,11 +1069,16 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let eTag = "tag"
         let requestDate = Date().addingTimeInterval(-1000000)
 
+        let headers: [String: String] = [
+            HTTPClient.ResponseHeader.contentType.rawValue: "application/json",
+            HTTPClient.ResponseHeader.signature.rawValue: UUID().uuidString
+        ]
+
         self.eTagManager.stubResponseEtag(eTag)
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
-            responseHeaders: [:],
+            responseHeaders: headers,
             body: mockedCachedResponse,
             requestDate: requestDate,
             verificationResult: .notRequested
@@ -1084,7 +1089,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
             return .init(data: Data(),
                          statusCode: .notModified,
-                         headers: nil)
+                         headers: headers)
         }
 
         let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
@@ -1098,6 +1103,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response?.value?.body) == mockedCachedResponse
         expect(response?.value?.requestDate) == requestDate
         expect(response?.value?.verificationResult) == .notRequested
+        expect(response?.value?.responseHeaders).to(haveCount(headers.count))
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
         expect(self.eTagManager.invokedETagHeaderParameters?.withSignatureVerification) == false
