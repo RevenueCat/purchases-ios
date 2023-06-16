@@ -31,10 +31,6 @@ class BaseSignatureVerificationIntegrationTests: BaseStoreKitIntegrationTests {
         await self.waitForPendingCustomerInfoRequests()
     }
 
-    private func waitForPendingCustomerInfoRequests() async {
-        _ = try? await Purchases.shared.customerInfo()
-    }
-
 }
 
 class DisabledSignatureVerificationIntegrationTests: BaseSignatureVerificationIntegrationTests {
@@ -206,6 +202,10 @@ private extension BaseSignatureVerificationIntegrationTests {
         } catch {
             fail("Unexpected error: \(error)")
         }
+    }
+
+    func waitForPendingCustomerInfoRequests() async {
+        _ = try? await Purchases.shared.customerInfo()
     }
 
 }
