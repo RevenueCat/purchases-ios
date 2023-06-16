@@ -26,6 +26,10 @@ enum SigningStrings {
 
     case request_date_missing_from_headers(HTTPRequest)
 
+    #if DEBUG
+    case invalid_signature_data(HTTPRequest, Data, HTTPClient.ResponseHeaders, HTTPStatusCode)
+    #endif
+
 }
 
 extension SigningStrings: LogMessage {
@@ -48,6 +52,19 @@ extension SigningStrings: LogMessage {
         case let .signature_was_requested_but_not_provided(request):
             return "Request to '\(request.path)' required a signature but none was provided. " +
             "This will be reported as a verification failure."
+
+        #if DEBUG
+        case let .invalid_signature_data(request, data, responseHeaders, statusCode):
+            return """
+            INVALID SIGNATURE DETECTED:
+            Request: \(request.method.httpMethod) \(request.path)
+            Response: \(statusCode.rawValue)
+            \(responseHeaders.stringRepresentation)
+            Headers: \(responseHeaders.map { "\($0.key.base): \($0.value)" })
+            Body (length: \(data.count)): \(data.hashString)
+            """
+
+        #endif
         }
     }
 

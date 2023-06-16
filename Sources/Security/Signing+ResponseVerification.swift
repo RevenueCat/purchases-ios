@@ -35,21 +35,28 @@ extension HTTPResponse where Body == Data {
                        publicKey: Signing.PublicKey?,
                        signing: SigningType.Type = Signing.self) -> Self {
         let requestDate = Self.parseRequestDate(headers: headers)
+        let verificationResult = Self.verificationResult(
+            body: body,
+            statusCode: statusCode,
+            headers: headers,
+            requestDate: requestDate,
+            request: request,
+            publicKey: publicKey,
+            signing: signing
+        )
+
+        #if DEBUG
+        if verificationResult == .failed, ProcessInfo.isRunningRevenueCatTests {
+            Logger.warn(Strings.signing.invalid_signature_data(request, body, headers, statusCode))
+        }
+        #endif
 
         return .init(
             statusCode: statusCode,
             responseHeaders: headers,
             body: body,
             requestDate: requestDate,
-            verificationResult: Self.verificationResult(
-                body: body,
-                statusCode: statusCode,
-                headers: headers,
-                requestDate: requestDate,
-                request: request,
-                publicKey: publicKey,
-                signing: signing
-            )
+            verificationResult: verificationResult
         )
     }
 
