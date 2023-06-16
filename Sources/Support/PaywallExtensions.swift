@@ -16,41 +16,53 @@ import SwiftUI
 
 #if swift(>=5.9)
 
+// MARK: - StoreView
+
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension StoreView {
-
-    /// Creates a view to load a collection of products from the App Store, and merchandise them.
-    /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
-    /// the result automatically. All you need to do is to dismiss the paywall
-    public init(
-        offering: Offering,
-        prefersPromotionalIcon: Bool = false
-    ) where Icon == EmptyView, PlaceholderIcon == EmptyView {
-        self.init(
-            ids: offering.allProductIdentifiers,
-            prefersPromotionalIcon: prefersPromotionalIcon
-        )
-    }
 
     /// Creates a view to load a collection of products from the App Store, and merchandise them using an
     /// icon and custom placeholder icon.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
     /// the result automatically. All you need to do is to dismiss the paywall
-    public init(
-        offering: Offering,
+    public static func forOffering(
+        _ offering: Offering,
         prefersPromotionalIcon: Bool = false,
         @ViewBuilder icon: @escaping (Product) -> Icon,
         @ViewBuilder placeholderIcon: () -> PlaceholderIcon
-    ) {
-        self.init(
-            ids: offering.allProductIdentifiers,
-            prefersPromotionalIcon: prefersPromotionalIcon,
-            icon: icon,
-            placeholderIcon: placeholderIcon
-        )
+    ) -> some View {
+        return self
+            .init(
+                ids: offering.allProductIdentifiers,
+                prefersPromotionalIcon: prefersPromotionalIcon,
+                icon: icon,
+                placeholderIcon: placeholderIcon
+            )
+            .handlePurchases(offering)
     }
 
 }
+
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+extension StoreView where Icon == EmptyView, PlaceholderIcon == EmptyView {
+
+    /// Creates a view to load a collection of products from the App Store, and merchandise them.
+    /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
+    /// the result automatically. All you need to do is to dismiss the paywall
+    public static func forOffering(
+        _ offering: Offering,
+        prefersPromotionalIcon: Bool = false
+    ) -> some View {
+        return self
+            .init(
+                ids: offering.allProductIdentifiers,
+                prefersPromotionalIcon: prefersPromotionalIcon
+            )
+            .handlePurchases(offering)
+    }
+}
+
+// MARK: - SubscriptionStoreView
 
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension SubscriptionStoreView {
@@ -59,22 +71,48 @@ extension SubscriptionStoreView {
     /// with custom marketing content.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
     /// the result automatically. All you need to do is to dismiss the paywall
-    public init(
-        offering: Offering,
+    public static func forOffering(
+        _ offering: Offering,
         @ViewBuilder marketingContent: () -> (Content)
-    ) {
-        self.init(
-            productIDs: offering.subscriptionProductIdentifiers,
-            marketingContent: marketingContent
-        )
+    ) -> some View {
+        return self
+            .init(
+                productIDs: offering.subscriptionProductIdentifiers,
+                marketingContent: marketingContent
+            )
+            .handlePurchases(offering)
     }
+
+}
+
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarketingContent {
 
     /// Creates a ``SubscriptionStoreView`` from an ``Offering``
     /// that doesn't take a custom view to use for marketing content.
-    public init(
-        offering: Offering
-    ) where Content == AutomaticSubscriptionStoreMarketingContent {
-        self.init(productIDs: offering.subscriptionProductIdentifiers)
+    public static func forOffering(_ offering: Offering) -> some View {
+        return self
+            .init(productIDs: offering.subscriptionProductIdentifiers)
+            .handlePurchases(offering)
+    }
+
+}
+
+// MARK: - Private
+
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+private extension View {
+
+    func handlePurchases(_ offering: Offering) -> some View {
+        return self
+            .onInAppPurchaseStart { product in
+                guard Purchases.isConfigured else { return }
+
+                Purchases.shared.cachePresentedOfferingIdentifier(
+                    offering.identifier,
+                    productIdentifier: product.id
+                )
+            }
     }
 
 }
