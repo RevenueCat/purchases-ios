@@ -84,6 +84,8 @@ class ETagManager {
             .compactMapValues { $0 }
     }
 
+    /// - Returns: `response` if a cached response couldn't be fetched,
+    /// or the cached `HTTPResponse`, always including the headers in `response`.
     func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse<Data>? {
