@@ -140,10 +140,13 @@ extension ErrorResponse {
             userInfo[.attributeErrors] = self.attributeErrors as NSDictionary
         }
 
+        // If the backend didn't provide a message we default to showing the status code.
+        let errorMessage = self.message ?? Strings.network.api_request_failed_status_code(statusCode).description
+
         let message: String? = self.code != .unknownBackendError
-            ? self.message
+            ? errorMessage
             : [
-                self.message,
+                errorMessage,
                 // Append original error code if we couldn't map it to a value.
                 "(\(self.originalCode))"
             ]

@@ -176,7 +176,47 @@ extension NetworkError: PurchasesErrorConvertible {
 
 }
 
-extension NetworkError: DescribableError {}
+extension NetworkError: DescribableError {
+
+    var description: String {
+        switch self {
+        case let .decoding(error, _):
+            return error.localizedDescription
+
+        case .offlineConnection:
+            return ErrorCode.offlineConnectionError.description
+
+        case let .networkError(error, _):
+            return error.localizedDescription
+
+        case let .dnsError(failedURL, resolvedHost, _):
+            return NetworkStrings.blocked_network(url: failedURL, newHost: resolvedHost).description
+
+        case let .unableToCreateRequest(path, _):
+            return "Could not create request to \(path)"
+
+        case let .unexpectedResponse(response, _):
+            return "Unexpected response type: \(response.debugDescription)"
+
+        case .errorResponse:
+            return self.asPurchasesError.localizedDescription
+
+        case .signatureVerificationFailed:
+            return self.asPurchasesError.localizedDescription
+        }
+    }
+
+}
+
+extension NetworkError: CustomNSError {
+
+    var errorUserInfo: [String: Any] {
+        return [
+            NSLocalizedDescriptionKey: self.description
+        ]
+    }
+
+}
 
 extension NetworkError {
 

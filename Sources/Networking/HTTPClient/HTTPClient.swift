@@ -358,11 +358,10 @@ private extension HTTPClient {
         let urlRequest = self.convert(request: request.adding(defaultHeaders: self.defaultHeaders))
 
         guard let urlRequest = urlRequest else {
-            Logger.error("Could not create request to \(request.path)")
+            let error: NetworkError = .unableToCreateRequest(request.httpRequest.path)
 
-            request.completionHandler?(
-                .failure(.unableToCreateRequest(request.httpRequest.path))
-            )
+            Logger.error(error.description)
+            request.completionHandler?(.failure(error))
             return
         }
 

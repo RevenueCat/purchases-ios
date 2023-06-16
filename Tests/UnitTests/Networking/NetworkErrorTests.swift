@@ -25,7 +25,8 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
         verifyPurchasesError(error,
                              expectedCode: .unexpectedBackendResponseError,
-                             underlyingError: underlyingError)
+                             underlyingError: underlyingError,
+                             localizedDescription: error.localizedDescription)
     }
 
     func testNetworkError() {
@@ -34,24 +35,33 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
         verifyPurchasesError(error,
                              expectedCode: .networkError,
-                             underlyingError: underlyingError)
+                             underlyingError: underlyingError,
+                             localizedDescription: underlyingError.localizedDescription)
     }
 
     func testDnsError() {
-        let error: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
-                                            resolvedHost: "https://google.com")
+        let url = URL(string: "https://google.com")!
+        let resolvedHost = "https://google.com"
 
-        verifyPurchasesError(error,
-                             expectedCode: .apiEndpointBlockedError,
-                             underlyingError: error)
+        let error: NetworkError = .dnsError(failedURL: url,
+                                            resolvedHost: resolvedHost)
+
+        verifyPurchasesError(
+            error,
+            expectedCode: .apiEndpointBlockedError,
+            underlyingError: error,
+            localizedDescription: NetworkStrings.blocked_network(url: url, newHost: resolvedHost).description
+        )
     }
 
     func testUnableToCreateRequest() {
-        let error: NetworkError = .unableToCreateRequest(.getCustomerInfo(appUserID: "user ID"))
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user ID")
+        let error: NetworkError = .unableToCreateRequest(path)
 
         verifyPurchasesError(error,
                              expectedCode: .networkError,
-                             userInfoKeys: ["request_url"])
+                             userInfoKeys: ["request_url"],
+                             localizedDescription: "Could not create request to \(path)")
     }
 
     func testUnexpectedResponse() {
@@ -66,7 +76,9 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
         let error: NetworkError = .offlineConnection()
 
         verifyPurchasesError(error,
-                             expectedCode: .offlineConnectionError)
+                             expectedCode: .offlineConnectionError,
+                             userInfoKeys: [],
+                             localizedDescription: ErrorCode.offlineConnectionError.description)
     }
 
     func testErrorResponse() throws {
@@ -157,6 +169,33 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
             errorResponse.message!,
             "(\(unknownCode))"
 
+        ]
+            .joined(separator: " ")
+    }
+
+    func testErrorResponseWithNoCode() throws {
+        let statusCode: HTTPStatusCode = .unauthorized
+        let errorResponse = ErrorResponse(code: .unknownError,
+                                          originalCode: 0,
+                                          message: nil)
+
+        let error: NetworkError = .errorResponse(errorResponse, statusCode)
+        let underlyingError = errorResponse.code
+
+        verifyPurchasesError(error,
+                             expectedCode: .unknownError,
+                             underlyingError: underlyingError,
+                             userInfoKeys: [.statusCode])
+
+        let nsError = error.asPurchasesError as NSError
+
+        expect(
+            nsError.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+        ) == BackendErrorCode.unknownError.rawValue
+        expect(nsError.subscriberAttributesErrors).to(beNil())
+        expect(nsError.localizedDescription) == [
+            errorResponse.code.toPurchasesErrorCode().description,
+            NetworkStrings.api_request_failed_status_code(statusCode).description
         ]
             .joined(separator: " ")
     }
