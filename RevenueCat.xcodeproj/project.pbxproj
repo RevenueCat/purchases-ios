@@ -234,6 +234,7 @@
 		4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */; };
 		4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8038322A1EA7C300D21039 /* TransactionPoster.swift */; };
+		4F82C2682A3CD58200EC98AF /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F8A58182A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
@@ -3557,6 +3558,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F82C2682A3CD58200EC98AF /* Matchers.swift in Sources */,
 				4FB3FE132A38CB1F004789C6 /* SignatureVerificationIntegrationTests.swift in Sources */,
 				57488AFF29CA58050000EE7E /* LoadShedderIntegrationTests.swift in Sources */,
 				575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */,

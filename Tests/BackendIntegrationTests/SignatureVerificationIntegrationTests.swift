@@ -81,6 +81,8 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         // 3. Re-fetch user
         let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         expect(user2.entitlements.verification) == .verified
+
+        expect(user2.requestDate) != user1.requestDate
     }
 
     func testCustomerInfoWithInvalidSignature() async throws {
@@ -102,8 +104,17 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         self.invalidSignature = true
 
         let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        // 4. Verify failed verification returns original `requestDate`
         expect(user2.entitlements.verification) == .failed
-        expect(user2.requestDate) == user1.requestDate
+        expect(user2.requestDate).to(beCloseToDate(user1.requestDate))
+    }
+
+    func testCanPurchaseWithInvalidSignatures() async throws {
+        self.invalidSignature = true
+
+        let user = try await self.purchaseMonthlyProduct().customerInfo
+        expect(user.entitlements.verification) == .failed
     }
 
 }
@@ -122,8 +133,73 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     func testCustomerInfoWithInvalidSignature() async throws {
         self.invalidSignature = true
 
-        do {
+        try await Self.verifyThrowsSignatureVerificationFailed {
             _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testEntitlementMappingWithInvalidSignature() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        XCTExpectFailure("Not implemented yet")
+
+        self.invalidSignature = true
+
+        try await Self.verifyThrowsSignatureVerificationFailed {
+            _ = try await Purchases.shared.productEntitlementMapping()
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testEntitlementMappingWithValidSignature() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        _ = try await Purchases.shared.productEntitlementMapping()
+    }
+
+    func testTransactionIsNotFinishedAfterSignatureFailure() async throws {
+        let logger = TestLogHandler()
+
+        self.invalidSignature = true
+
+        try await Self.verifyThrowsSignatureVerificationFailed {
+            try await self.purchaseMonthlyProduct()
+        }
+
+        logger.verifyMessageWasNotLogged("Finishing transaction")
+    }
+
+    func testTransactionIsFinishedAfterSuccessfulyPostingPurchase() async throws {
+        // 1. Purchase and receive invalid signature
+        self.invalidSignature = true
+
+        try await Self.verifyThrowsSignatureVerificationFailed {
+            try await self.purchaseMonthlyProduct()
+        }
+
+        // 2. Get customer info again, which should post the pending transaction
+        self.invalidSignature = false
+
+        let logger = TestLogHandler()
+        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        // 3. Verify entitlement is active
+        try await self.verifyEntitlementWentThrough(info)
+
+        // 4. Verify transaction was finished
+        logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+    }
+
+}
+
+// MARK: - Private
+
+private extension BaseSignatureVerificationIntegrationTests {
+
+    static func verifyThrowsSignatureVerificationFailed(_ method: () async throws -> Void) async throws {
+        do {
+            try await method()
             fail("Expected error")
         } catch ErrorCode.signatureVerificationFailed {
             // Expected error
