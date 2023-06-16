@@ -24,6 +24,45 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info.isComputedOffline) == false
     }
 
+    func testGetCustomerInfoReturnsNotModified() async throws {
+        // 1. Fetch user once
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        let logger = TestLogHandler()
+
+        // 2. Re-fetch user
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        let expectedRequest = HTTPRequest(method: .get,
+                                          path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
+
+        // 3. Verify response was 304
+        logger.verifyMessageWasLogged(
+            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
+        )
+    }
+
+    func testGetCustomerInfoAfterLogInReturnsNotModified() async throws {
+        // 1. Log-in to force a new user
+        _ = try await Purchases.shared.logIn(UUID().uuidString)
+
+        // 2. Fetch user once
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        let logger = TestLogHandler()
+
+        // 3. Re-fetch user
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+
+        let expectedRequest = HTTPRequest(method: .get,
+                                          path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
+
+        // 4. Verify response was 304
+        logger.verifyMessageWasLogged(
+            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
+        )
+    }
+
     func testHealthRequest() async throws {
         try await Purchases.shared.healthRequest(signatureVerification: false)
     }
