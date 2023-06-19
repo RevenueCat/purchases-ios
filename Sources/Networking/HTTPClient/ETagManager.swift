@@ -84,6 +84,8 @@ class ETagManager {
             .compactMapValues { $0 }
     }
 
+    /// - Returns: `response` if a cached response couldn't be fetched,
+    /// or the cached `HTTPResponse`, always including the headers in `response`.
     func httpResultFromCacheOrBackend(with response: HTTPResponse<Data?>,
                                       request: URLRequest,
                                       retried: Bool) -> HTTPResponse<Data>? {
@@ -99,7 +101,8 @@ class ETagManager {
                 let newResponse = storedResponse.withUpdatedValidationTime()
 
                 self.storeIfPossible(newResponse, for: request)
-                return newResponse.asResponse(withRequestDate: response.requestDate)
+                return newResponse.asResponse(withRequestDate: response.requestDate,
+                                              headers: response.responseHeaders)
             }
             if retried {
                 Logger.warn(
@@ -146,10 +149,6 @@ private extension ETagManager {
 
             return nil
         }
-    }
-
-    func storedHTTPResponse(for request: URLRequest, withRequestDate requestDate: Date?) -> HTTPResponse<Data>? {
-        return self.storedETagAndResponse(for: request)?.asResponse(withRequestDate: requestDate)
     }
 
     func storeStatusCodeAndResponseIfNoError(for request: URLRequest,
@@ -246,10 +245,13 @@ extension ETagManager.Response {
         return try? JSONEncoder.default.encode(self)
     }
 
-    fileprivate func asResponse(withRequestDate requestDate: Date?) -> HTTPResponse<Data> {
+    fileprivate func asResponse(
+        withRequestDate requestDate: Date?,
+        headers: HTTPClient.ResponseHeaders
+    ) -> HTTPResponse<Data> {
         return HTTPResponse(
             statusCode: self.statusCode,
-            responseHeaders: [:],
+            responseHeaders: headers,
             body: self.data,
             requestDate: requestDate,
             verificationResult: self.verificationResult

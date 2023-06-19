@@ -45,17 +45,22 @@ class ETagManagerTests: TestCase {
         let request = URLRequest(url: Self.testURL)
         let cachedResponse = self.mockStoredETagResponse(for: Self.testURL, statusCode: .success, eTag: eTag)
 
-        let response = self.eTagManager.httpResultFromCacheOrBackend(
-            with: self.responseForTest(url: Self.testURL,
-                                       body: nil,
-                                       eTag: eTag,
-                                       statusCode: .notModified),
-            request: request,
-            retried: false
+        let response = try XCTUnwrap(
+            self.eTagManager.httpResultFromCacheOrBackend(
+                with: self.responseForTest(url: Self.testURL,
+                                           body: nil,
+                                           eTag: eTag,
+                                           statusCode: .notModified),
+                request: request,
+                retried: false
+            )
         )
-        expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
-        expect(response?.body) == cachedResponse
+
+        expect(response.statusCode) == .success
+        expect(response.body) == cachedResponse
+        expect(response.responseHeaders).toNot(beEmpty())
+        expect(Set(response.responseHeaders.keys.compactMap { $0 as? String }))
+        == Set(self.getHeaders(eTag: eTag).keys)
     }
 
     func testValidationTimeIsUpdatedWhenUsingStoredResponse() throws {
