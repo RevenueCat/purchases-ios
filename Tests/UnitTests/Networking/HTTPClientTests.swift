@@ -1421,6 +1421,53 @@ final class HTTPClientTests: BaseHTTPClientTests {
         )
     }
 
+    func testNormalResponsesAreNotDetectedAsLoadSheddder() throws {
+        let path: HTTPRequest.Path = .logIn
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .success,
+                headers: [:]
+            )
+        }
+
+        let logger = TestLogHandler()
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+        expect(response).to(beSuccess())
+
+        logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(path))
+    }
+
+    func testLoadShedderResponsesAreLogged() throws {
+        let path: HTTPRequest.Path = .logIn
+
+        stub(condition: isPath(path)) { _ in
+            return HTTPStubsResponse(
+                data: .init(),
+                statusCode: .success,
+                headers: [
+                    HTTPClient.ResponseHeader.isLoadShedder.rawValue: "true"
+                ]
+            )
+        }
+
+        let logger = TestLogHandler()
+
+        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+        expect(response).to(beSuccess())
+
+        logger.verifyMessageWasLogged(
+            Strings.network.request_handled_by_load_shedder(path),
+            level: .debug
+        )
+    }
+
 }
 
 func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
