@@ -829,14 +829,17 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
         let storefront = await self.storefront(from: transaction)
+        let subscriberAttributes = self.unsyncedAttributes
+        let adServicesToken = self.attribution.unsyncedAdServicesToken
 
-        _ = try await Async.call { completed in
+        let result: Result<CustomerInfo, BackendError> = await Async.call { completed in
             self.transactionPoster.handlePurchasedTransaction(
                 StoreTransaction.from(transaction: transaction),
                 data: .init(
                     appUserID: self.appUserID,
                     presentedOfferingID: nil,
-                    unsyncedAttributes: self.unsyncedAttributes,
+                    unsyncedAttributes: subscriberAttributes,
+                    aadAttributionToken: adServicesToken,
                     storefront: storefront,
                     source: .init(
                         isRestore: self.allowSharingAppStoreAccount,
@@ -844,8 +847,16 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
                     )
                 )
             ) { result in
-                completed(result.mapError(\.asPurchasesError))
+                completed(result)
             }
+        }
+
+        self.handlePostReceiptResult(result,
+                                     subscriberAttributes: subscriberAttributes,
+                                     adServicesToken: adServicesToken)
+
+        if let error = result.error {
+            throw error
         }
     }
 
