@@ -36,7 +36,63 @@
     }
   ],
   "settings" : {
-    "_timeRate" : 6
+    "_compatibilityTimeRate" : {
+      "3" : 6
+    },
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : {
+          "index" : 4,
+          "type" : "generic"
+        },
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_timeRate" : 13
   },
   "subscriptionGroups" : [
     {
@@ -57,7 +113,18 @@
             }
           ],
           "codeOffers" : [
-
+            {
+              "eligibility" : [
+                "existing",
+                "expired",
+                "new"
+              ],
+              "internalID" : "4373DD6D",
+              "isStackable" : true,
+              "paymentMode" : "free",
+              "referenceName" : "Offer codes",
+              "subscriptionPeriod" : "P3D"
+            }
           ],
           "displayPrice" : "4.99",
           "familyShareable" : true,
@@ -370,7 +437,7 @@
     "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgMpw0LScUC+8o+WsEAM20KOMzZOMSWKFjUixtwDidPMugCgYIKoZIzj0DAQehRANCAAQIMw4YEVZrDPrk/1dx5WV3hpkuy8enQs+yDAuJRtsrOnzRH6EFgTyiydprKlgUOHW6xBocrRNTMZXioCBQtchg"
   },
   "version" : {
-    "major" : 2,
+    "major" : 3,
     "minor" : 0
   }
 }

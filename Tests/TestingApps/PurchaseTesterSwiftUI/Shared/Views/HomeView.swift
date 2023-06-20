@@ -72,7 +72,13 @@ struct HomeView: View {
                     } label: {
                         Text("Sync Purchases")
                     }
-                    
+
+                    Button {
+                        Purchases.shared.presentCodeRedemptionSheet()
+                    } label: {
+                        Text("present code redemption sheet")
+                    }
+
                     HStack {
                         Picker("CustomerInfo", selection: self.$cacheFetchPolicy) {
                             ForEach(CacheFetchPolicy.all) { policy in
