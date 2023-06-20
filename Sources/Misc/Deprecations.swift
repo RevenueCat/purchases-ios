@@ -116,6 +116,7 @@ public extension Purchases {
             appUserID: appUserID,
             observerMode: observerMode,
             userDefaults: userDefaults,
+            bundle: nil,
             platformInfo: nil,
             responseVerificationMode: .default,
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),

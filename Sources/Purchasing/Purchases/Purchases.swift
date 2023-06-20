@@ -253,6 +253,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     convenience init(apiKey: String,
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
+                     bundle: Bundle? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      responseVerificationMode: Signing.ResponseVerificationMode,
@@ -264,6 +265,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             Logger.debug(Strings.configure.using_custom_user_defaults)
         }
 
+        if bundle != nil {
+            Logger.debug(Strings.configure.using_custom_bundle)
+        }
+
         let operationDispatcher: OperationDispatcher = .default
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
@@ -273,6 +278,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: !observerMode,
                                         operationDispatcher: operationDispatcher,
+                                        bundle: bundle,
                                         storeKit2Setting: storeKit2Setting,
                                         responseVerificationMode: responseVerificationMode,
                                         dangerousSettings: dangerousSettings)
@@ -1042,6 +1048,7 @@ public extension Purchases {
                   appUserID: configuration.appUserID,
                   observerMode: configuration.observerMode,
                   userDefaults: configuration.userDefaults,
+                  bundle: configuration.bundle,
                   platformInfo: configuration.platformInfo,
                   responseVerificationMode: configuration.responseVerificationMode,
                   storeKit2Setting: configuration.storeKit2Setting,
@@ -1207,6 +1214,7 @@ public extension Purchases {
         appUserID: String?,
         observerMode: Bool,
         userDefaults: UserDefaults?,
+        bundle: Bundle?,
         platformInfo: PlatformInfo?,
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKit2Setting: StoreKit2Setting,
@@ -1218,6 +1226,7 @@ public extension Purchases {
             .init(apiKey: apiKey,
                   appUserID: appUserID,
                   userDefaults: userDefaults,
+                  bundle: bundle,
                   observerMode: observerMode,
                   platformInfo: platformInfo,
                   responseVerificationMode: responseVerificationMode,

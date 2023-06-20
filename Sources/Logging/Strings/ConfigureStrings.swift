@@ -59,6 +59,8 @@ enum ConfigureStrings {
 
     case using_custom_user_defaults
 
+    case using_custom_bundle
+
     case using_user_defaults_standard
 
     case using_user_defaults_suite_name
@@ -154,6 +156,9 @@ extension ConfigureStrings: LogMessage {
 
         case .using_custom_user_defaults:
             return "Configuring SDK using provided UserDefaults."
+
+        case .using_custom_bundle:
+            return "Configuring SDK using provided Bundle."
 
         case .using_user_defaults_standard:
             return "Configuring SDK using UserDefaults.standard because we found existing data in it."

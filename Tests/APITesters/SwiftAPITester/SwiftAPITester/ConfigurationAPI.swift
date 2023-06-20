@@ -16,6 +16,7 @@ func checkConfigurationAPI() {
         .with(appUserID: nil)
         .with(observerMode: false)
         .with(userDefaults: UserDefaults.standard)
+        .with(bundle: Bundle.main)
         .with(dangerousSettings: DangerousSettings())
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
         .with(networkTimeout: 1)

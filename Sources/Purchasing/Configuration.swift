@@ -44,6 +44,7 @@ import Foundation
     let appUserID: String?
     let observerMode: Bool
     let userDefaults: UserDefaults?
+    let bundle: Bundle?
     let storeKit2Setting: StoreKit2Setting
     let dangerousSettings: DangerousSettings?
     let networkTimeout: TimeInterval
@@ -58,6 +59,7 @@ import Foundation
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
         self.userDefaults = builder.userDefaults
+        self.bundle = builder.bundle
         self.storeKit2Setting = builder.storeKit2Setting
         self.dangerousSettings = builder.dangerousSettings
         self.storeKit1Timeout = builder.storeKit1Timeout
@@ -81,6 +83,7 @@ import Foundation
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
+        private(set) var bundle: Bundle?
         private(set) var observerMode: Bool = false
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
@@ -141,6 +144,17 @@ import Foundation
          */
         @objc public func with(userDefaults: UserDefaults) -> Builder {
             self.userDefaults = userDefaults
+            return self
+        }
+
+        /**
+         * Set the app `bundle` to configure the SDK with.
+         * - Note: This should only be overriden if you're configuring the SDK from a different target
+         * than the one containing the App Store receipt.
+         * For example, when configuring the SDK from a Safari extension.
+         */
+        @objc public func with(bundle: Bundle) -> Builder {
+            self.bundle = bundle
             return self
         }
 

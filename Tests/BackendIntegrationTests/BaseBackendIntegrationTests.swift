@@ -60,6 +60,7 @@ class BaseBackendIntegrationTests: XCTestCase {
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
+                            bundle: nil,
                             platformInfo: nil,
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,

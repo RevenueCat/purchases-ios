@@ -113,14 +113,14 @@ class SystemInfo {
     init(platformInfo: Purchases.PlatformInfo?,
          finishTransactions: Bool,
          operationDispatcher: OperationDispatcher = .default,
-         bundle: Bundle = .main,
+         bundle: Bundle? = nil,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storeKit2Setting: StoreKit2Setting = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil) throws {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
-        self._bundle = .init(bundle)
+        self._bundle = .init(bundle ?? .main)
 
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
