@@ -416,6 +416,17 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
+    func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
+        let product = try await self.monthlyPackage.storeProduct
+        let discount = try XCTUnwrap(product.discounts.onlyElement)
+
+        do {
+            _ = try await Purchases.shared.promotionalOffer(forProductDiscount: discount, product: product)
+        } catch {
+            expect(error).to(matchError(ErrorCode.ineligibleError))
+        }
+    }
+
     func testUserHasNoEligibleOffersByDefault() async throws {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
         expect(created) == true
