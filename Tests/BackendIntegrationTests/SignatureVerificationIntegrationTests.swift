@@ -40,6 +40,8 @@ class DisabledSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     }
 
     func testFetchingCustomerInfoWithFailedSignature() async throws {
+        self.invalidSignature = true
+
         let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .notRequested
     }
