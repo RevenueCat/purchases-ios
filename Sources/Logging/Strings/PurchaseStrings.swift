@@ -77,8 +77,6 @@ enum PurchaseStrings {
     case sk2_transactions_update_received_transaction(productID: String)
     case transaction_poster_handling_transaction(productID: String, offeringID: String?)
     case caching_presented_offering_identifier(offeringID: String, productID: String)
-    case sk1_purchase_too_slow
-    case sk2_purchase_too_slow
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
 
@@ -296,12 +294,6 @@ extension PurchaseStrings: LogMessage {
 
         case let .caching_presented_offering_identifier(offeringID, productID):
             return "Caching presented offering identifier '\(offeringID)' for product '\(productID)'"
-
-        case .sk1_purchase_too_slow:
-            return "StoreKit 1 purchase took longer than expected"
-
-        case .sk2_purchase_too_slow:
-            return "StoreKit 2 purchase took longer than expected"
 
         case .payment_queue_wrapper_delegate_call_sk1_enabled:
             return "Unexpectedly received PaymentQueueWrapperDelegate call with SK1 enabled"

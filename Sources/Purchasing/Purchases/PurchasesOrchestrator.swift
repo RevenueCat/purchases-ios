@@ -440,24 +440,20 @@ final class PurchasesOrchestrator {
         let result: Product.PurchaseResult
 
         do {
-            result = try await TimingUtil.measureAndLogIfTooSlow(
-                threshold: .purchase,
-                message: Strings.purchase.sk2_purchase_too_slow.description) {
-                    var options: Set<Product.PurchaseOption> = [
-                        .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
-                    ]
+            var options: Set<Product.PurchaseOption> = [
+                .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
+            ]
 
-                    if let signedData = promotionalOffer {
-                        Logger.debug(
-                            Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
-                        )
-                        options.insert(try signedData.sk2PurchaseOption)
-                    }
+            if let signedData = promotionalOffer {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
+                )
+                options.insert(try signedData.sk2PurchaseOption)
+            }
 
-                    self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
+            self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
 
-                    return try await sk2Product.purchase(options: options)
-                }
+            result = try await sk2Product.purchase(options: options)
         } catch StoreKitError.userCancelled {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
