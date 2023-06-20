@@ -836,6 +836,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.isRestore) == false
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
+        expect(self.customerInfoManager.invokedCacheCustomerInfo) == true
+        expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == Self.mockUserID
+        expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.info) === self.mockCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -858,7 +861,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             )
             fail("Expected error")
         } catch {
-            expect(error).to(matchError(expectedError.asPurchasesError))
+            expect(error).to(matchError(expectedError))
         }
 
         expect(transaction.finishInvoked) == false

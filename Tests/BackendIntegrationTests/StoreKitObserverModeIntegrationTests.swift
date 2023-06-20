@@ -91,6 +91,22 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
         try await self.verifyEntitlementWentThrough(info)
     }
 
+    func testPurchaseOutsideTheAppUpdatesCustomerInfoDelegate() async throws {
+        try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
+
+        try await asyncWait(
+            until: {
+                await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
+            },
+            timeout: .seconds(4),
+            pollInterval: .milliseconds(100),
+            description: "Delegate should be notified"
+        )
+
+        let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSK2RenewalsPostReceiptOnlyOnceWhenSK1IsEnabled() async throws {
         try XCTSkipIf(Self.storeKit2Setting.isEnabledAndAvailable, "Test only for SK1")
