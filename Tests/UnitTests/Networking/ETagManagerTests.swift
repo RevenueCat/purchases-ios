@@ -209,7 +209,7 @@ class ETagManagerTests: TestCase {
     func testResponseIsStoredIfResponseCodeIs200AndVerificationSucceded() throws {
         let request = URLRequest(url: Self.testURL)
         let cacheKey = try request.cacheKey
-        
+
         let responseObject = try JSONSerialization.data(withJSONObject: ["a": "response"])
         let response = self.eTagManager.httpResultFromCacheOrBackend(
             with: self.responseForTest(
@@ -781,8 +781,7 @@ private extension ETagManagerTests {
                                 statusCode: HTTPStatusCode = .success,
                                 validationTime: Date? = nil,
                                 verificationResult: RevenueCat.VerificationResult = .defaultValue) throws -> Data {
-        // swiftlint:disable:next force_try
-        let data = try! JSONSerialization.data(withJSONObject: ["arg": "value"])
+        let data = try JSONSerialization.data(withJSONObject: ["arg": "value"])
 
         let etagAndResponse = ETagManager.Response(
             eTag: Self.testETag,
@@ -791,7 +790,7 @@ private extension ETagManagerTests {
             validationTime: validationTime,
             verificationResult: verificationResult
         )
-        self.mockUserDefaults.mockValues[try request.cacheKey] = etagAndResponse.asData()!
+        self.mockUserDefaults.mockValues[try request.cacheKey] = try XCTUnwrap(etagAndResponse.asData())
 
         return data
     }
