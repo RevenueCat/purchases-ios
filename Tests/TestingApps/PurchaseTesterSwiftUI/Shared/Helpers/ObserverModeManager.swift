@@ -34,6 +34,7 @@ final class ObserverModeManager: ObservableObject {
         _ = await self.purchasesOrchestrator.purchase(sk1Product: sk1Product)
     }
 
+    #if !os(xrOS)
     func purchaseAsSK2Product(_ product: StoreProduct) async throws {
         guard let sk2Product = try await self.productFetcherSK2.products(with: [product.productIdentifier]).first else {
             print("Failed to find product")
@@ -42,5 +43,6 @@ final class ObserverModeManager: ObservableObject {
 
         try await self.purchasesOrchestrator.purchase(sk2Product: sk2Product)
     }
+    #endif
 
 }

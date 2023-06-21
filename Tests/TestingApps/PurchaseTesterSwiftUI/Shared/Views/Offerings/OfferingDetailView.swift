@@ -94,9 +94,11 @@ struct OfferingDetailView: View {
                         try await self.purchaseAsSK1Product()
                     }
 
+                    #if !os(xrOS)
                     self.button("Buy directly from SK2 (w/o RevenueCat)") {
                         try await self.purchaseAsSK2Product()
                     }
+                    #endif
 
                     Divider()
                 }
@@ -150,12 +152,14 @@ struct OfferingDetailView: View {
             try await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
         }
 
+        #if !os(xrOS)
         private func purchaseAsSK2Product() async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
 
             try await self.observerModeManager.purchaseAsSK2Product(self.package.storeProduct)
         }
+        #endif
 
         private func completedPurchase(_ data: PurchaseResultData) {
             print("🚀 Info 💁‍♂️ - Transaction: \(data.transaction?.description ?? "")")

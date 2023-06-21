@@ -169,12 +169,16 @@ struct HomeView: View {
     }
 
     var body: some View {
+        #if !os(xrOS)
         if #available(iOS 16.0, macOS 13.0, *) {
             self.content
                 .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)
         } else {
             self.content
         }
+        #else
+        self.content
+        #endif
     }
     
     private func fetchData() async {
@@ -238,7 +242,7 @@ private struct CustomerInfoHeaderView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: self.horizontalAlignment) {
             Text(appUserID ?? "... loading")
             if activeEntitlementInfos.isEmpty {
                 Text("No active entitlements")
@@ -246,7 +250,7 @@ private struct CustomerInfoHeaderView: View {
                 Text(activeEntitlementInfos.map(\.identifier).joined(separator: ", "))
             }
             
-            HStack {
+            AdaptiveStack {
                 Spacer()
 
                 if let customerInfo = self.revenueCatCustomerData.customerInfo {
@@ -311,6 +315,14 @@ private struct CustomerInfoHeaderView: View {
         }
     }
     
+    private var horizontalAlignment: HorizontalAlignment {
+        #if os(xrOS)
+        return .center
+        #else
+        return .leading
+        #endif
+    }
+
 }
 
 private struct OfferingItemView: View {
