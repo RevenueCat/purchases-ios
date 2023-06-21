@@ -458,7 +458,18 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
 
+            // Note: this can be simplified as `#if swift(>=5.9) && os(xrOS)`
+            // once we drop support for Xcode 13.x
+            #if swift(>=5.9)
+                #if os(xrOS)
+                result = try await sk2Product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
+                                                       options: options)
+                #else
+                result = try await sk2Product.purchase(options: options)
+                #endif
+            #else
             result = try await sk2Product.purchase(options: options)
+            #endif
         } catch StoreKitError.userCancelled {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()

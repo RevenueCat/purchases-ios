@@ -179,6 +179,25 @@ class SystemInfo {
 
 }
 
+#if os(iOS)
+extension SystemInfo {
+
+    @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @available(tvOS, unavailable)
+    var currentWindowScene: UIWindowScene {
+        get throws {
+            let scene = self.sharedUIApplication?.currentWindowScene
+
+            return try scene.orThrow(ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene"))
+        }
+    }
+
+}
+#endif
+
 extension SystemInfo: SandboxEnvironmentDetector {}
 
 // @unchecked because:

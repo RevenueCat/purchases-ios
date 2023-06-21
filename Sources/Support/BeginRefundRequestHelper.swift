@@ -69,9 +69,7 @@ class BeginRefundRequestHelper {
     @available(tvOS, unavailable)
     @MainActor
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
-        guard let windowScene = systemInfo.sharedUIApplication?.currentWindowScene else {
-            throw ErrorUtils.storeProblemError(withMessage: "Failed to get UIWindowScene")
-        }
+        let windowScene = try self.systemInfo.currentWindowScene
 
         let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
         return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
