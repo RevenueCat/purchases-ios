@@ -19,8 +19,11 @@ import XCTest
 class LocaleExtensionsTests: TestCase {
 
     func testCurrencyCode() {
-        let locale = Locale(identifier: "en_US")
-        expect(locale.rc_currencyCode) == "USD"
+        expect(Locale(identifier: "en_US").rc_currencyCode) == "USD"
+    }
+
+    func testMissingCurrenctCode() {
+        expect(Locale(identifier: "").rc_currencyCode).to(beNil())
     }
 
 }
