@@ -85,6 +85,8 @@ extension SubscriptionStoreView {
 
 }
 
+#if !os(xrOS)
+
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarketingContent {
 
@@ -97,6 +99,8 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
     }
 
 }
+
+#endif
 
 // MARK: - Private
 

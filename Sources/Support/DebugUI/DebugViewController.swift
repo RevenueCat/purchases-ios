@@ -13,7 +13,7 @@
 
 import Foundation
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && os(iOS) && swift(>=5.8) && !(swift(>=5.9) && os(xrOS))
 
 import SwiftUI
 import UIKit

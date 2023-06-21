@@ -10,8 +10,8 @@
 //  DebugView.swift
 //
 //  Created by Nacho Soto on 5/30/23.
-
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
+ 
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS)) && !(swift(>=5.9) && os(xrOS))
 
 import SwiftUI
 
