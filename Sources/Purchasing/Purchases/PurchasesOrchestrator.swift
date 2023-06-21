@@ -234,10 +234,15 @@ final class PurchasesOrchestrator {
             return
         }
 
-        receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
-            guard let receiptData = receiptData,
-                  !receiptData.isEmpty else {
-                completion(.failure(ErrorUtils.missingReceiptFileError(receiptURL)))
+        self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
+            guard let receiptData = receiptData, !receiptData.isEmpty else {
+                let underlyingError = ErrorUtils.missingReceiptFileError(receiptURL)
+
+                // Promotional offers require existing purchases.
+                // If no receipt is found, this is most likely in sandbox with no purchases,
+                // so producing an "ineligible" error is better.
+                completion(.failure(ErrorUtils.ineligibleError(error: underlyingError)))
+
                 return
             }
 
