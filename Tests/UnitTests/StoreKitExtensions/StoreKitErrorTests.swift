@@ -25,6 +25,14 @@ class StoreKitErrorTests: BaseErrorTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
+    func testErrorUtilsCreation() {
+        let error: StoreKitError = .userCancelled
+
+        expect(
+            ErrorUtils.purchasesError(withStoreKitError: error).error
+        ) == .purchaseCancelledError
+    }
+
     func testUserCancelledError() {
         let error: StoreKitError = .userCancelled
 

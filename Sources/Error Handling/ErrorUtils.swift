@@ -286,7 +286,8 @@ enum ErrorUtils {
         switch error {
         case let skError as SKError:
             return skError.asPurchasesError
-
+        case let purchasesError as PurchasesError:
+            return purchasesError
         default:
             return ErrorUtils.unknownError(
                 error: error,
@@ -309,8 +310,10 @@ enum ErrorUtils {
         switch error {
         case let storeKitError as StoreKitError:
             return storeKitError.asPurchasesError
-        case let purchasesError as Product.PurchaseError:
-            return purchasesError.asPurchasesError
+        case let purchaseError as Product.PurchaseError:
+            return purchaseError.asPurchasesError
+        case let purchasesError as PurchasesError:
+            return purchasesError
         default:
             return ErrorUtils.unknownError(
                 error: error,

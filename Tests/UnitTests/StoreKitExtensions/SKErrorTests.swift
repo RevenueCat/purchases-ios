@@ -18,6 +18,14 @@ import XCTest
 
 class SKErrorTests: BaseErrorTests {
 
+    func testErrorUtilsCreation() {
+        let error: SKError = .init(.paymentNotAllowed)
+
+        expect(
+            ErrorUtils.purchasesError(withSKError: error).error
+        ) == .purchaseNotAllowedError
+    }
+
     func testStoreProblemError() {
         let error: SKError = .init(.cloudServiceNetworkConnectionFailed)
 
