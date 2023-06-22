@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 5/30/23.
 
 #if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
+#if !(swift(>=5.9) && os(xrOS))
 
 import StoreKit
 import SwiftUI
@@ -412,4 +413,5 @@ private struct ProductStyle: ProductViewStyle {
 }
 #endif
 
+#endif
 #endif

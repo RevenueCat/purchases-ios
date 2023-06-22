@@ -85,6 +85,20 @@ extension SubscriptionStoreView {
 
 }
 
+#if os(xrOS)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+extension SubscriptionStoreView where Content == DefaultSubscriptionStoreMarketingContent {
+
+    /// Creates a ``SubscriptionStoreView`` from an ``Offering``
+    /// that doesn't take a custom view to use for marketing content.
+    public static func forOffering(_ offering: Offering) -> some View {
+        return self
+            .init(productIDs: offering.subscriptionProductIdentifiers)
+            .handlePurchases(offering)
+    }
+
+}
+#else
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarketingContent {
 
@@ -97,6 +111,7 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
     }
 
 }
+#endif
 
 // MARK: - Private
 
