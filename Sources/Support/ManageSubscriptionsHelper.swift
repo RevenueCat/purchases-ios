@@ -124,10 +124,12 @@ private extension ManageSubscriptionsHelper {
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
     func showSK2ManageSubscriptions() async -> Result<Void, PurchasesError> {
-        guard let application = systemInfo.sharedUIApplication,
-              let windowScene = application.currentWindowScene else {
-                  let message = Strings.failed_to_get_window_scene
-                  return .failure(ErrorUtils.storeProblemError(withMessage: message.description))
+        let windowScene: UIWindowScene
+
+        do {
+            windowScene = try self.systemInfo.currentWindowScene
+        } catch {
+            return .failure(ErrorUtils.purchasesError(withUntypedError: error))
         }
 
 #if os(iOS)
