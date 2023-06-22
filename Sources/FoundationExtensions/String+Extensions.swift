@@ -61,6 +61,12 @@ extension String {
         return Data(self.utf8)
     }
 
+    func countOccurences(of character: Character) -> Int {
+        return self.reduce(0) {
+            return $1 == character ? $0 + 1 : $0
+        }
+    }
+
 }
 
 private enum ROT13 {

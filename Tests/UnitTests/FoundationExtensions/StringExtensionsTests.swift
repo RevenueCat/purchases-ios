@@ -27,4 +27,14 @@ class StringExtensionsTests: TestCase {
         expect(mangledAuthStatusPropertyName.rot13()) == "trackingAuthorizationStatus"
     }
 
+    func testCountOccurrences() {
+        expect("".countOccurences(of: " ")) == 0
+        expect("1".countOccurences(of: "2")) == 0
+        expect("1".countOccurences(of: "1")) == 1
+        expect("12345".countOccurences(of: "1")) == 1
+        expect("1234512345".countOccurences(of: "1")) == 2
+        expect("123\n123".countOccurences(of: "\n")) == 1
+        expect("123\n123\n".countOccurences(of: "\n")) == 2
+    }
+
 }
