@@ -13,7 +13,8 @@
 
 import Foundation
 
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS)) && !(swift(>=5.9) && os(xrOS))
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
+#if !(swift(>=5.9) && os(xrOS))
 
 import SwiftUI
 
@@ -145,4 +146,5 @@ private extension Signing.ResponseVerificationMode {
 
 }
 
+#endif
 #endif
