@@ -17,28 +17,15 @@ import CommonCrypto
 import CryptoKit
 import Foundation
 
-extension NSData {
-
-    func asString() -> String {
-        // 2 characters per byte
-        let deviceTokenString = NSMutableString(capacity: self.length * 2)
-
-        self.enumerateBytes { bytes, byteRange, _ in
-            for index in stride(from: 0, to: byteRange.length, by: 1) {
-                let byte = bytes.load(fromByteOffset: index, as: UInt8.self)
-                deviceTokenString.appendFormat("%02x", byte)
-            }
-        }
-
-        return deviceTokenString as String
-    }
-
-}
-
 extension Data {
 
     var asString: String {
-        return (self as NSData).asString()
+        return Self.hexString(
+            self
+                .lazy
+                .map { $0 } // Extract byte
+                .makeIterator()
+        )
     }
 
     /// - Returns: `UUID` from the first 16 bytes of the underlying data.

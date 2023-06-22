@@ -516,7 +516,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         let receivedPushToken = self.mockSubscriberAttributesManager.invokedSetPushTokenParameters!.pushToken!
 
-        expect((receivedPushToken as NSData).asString()) == tokenString
+        expect(receivedPushToken.asString) == tokenString
         expect(self.mockSubscriberAttributesManager.invokedSetPushTokenParameters?.appUserID) == mockIdentityManager
             .currentAppUserID
     }
