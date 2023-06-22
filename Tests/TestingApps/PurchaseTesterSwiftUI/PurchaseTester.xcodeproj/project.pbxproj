@@ -26,6 +26,7 @@
 		4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */; };
 		4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */; };
 		4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */; };
+		4F942FA82A449156007D0346 /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F942FA72A449156007D0346 /* AdaptiveStack.swift */; };
 		4FDA13872A33DBE300C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */; };
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
@@ -38,10 +39,10 @@
 		578DAA0C2947DD21001700FD /* PurchaseTesterWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0B2947DD21001700FD /* PurchaseTesterWatchApp.swift */; };
 		578DAA0E2947DD21001700FD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0D2947DD21001700FD /* ContentView.swift */; };
 		578DAA102947DD21001700FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 578DAA0F2947DD21001700FD /* Assets.xcassets */; };
-		578DAA162947DD21001700FD /* PurchaseTesterWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */; platformFilters = (watchos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		578DAA162947DD21001700FD /* PurchaseTesterWatchOS.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		578DAA232947DD8C001700FD /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = 578DAA222947DD8C001700FD /* Core.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); };
-		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; platformFilters = (ios, maccatalyst, macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		578DAA262947DD8C001700FD /* Core.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; };
+		578DAA272947DD8C001700FD /* Core.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 578DAA202947DD8C001700FD /* Core.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		578DAA2D2947DE37001700FD /* ConfiguredPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57ED6A83290891AF009580C6 /* ConfiguredPurchases.swift */; };
 		578DAA2E2947DE59001700FD /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A1290C78DD00719219 /* Logger.swift */; };
 		578DAA2F2947DFA6001700FD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCAF2AB286232EB0004E2CA /* Constants.swift */; };
@@ -141,6 +142,7 @@
 		4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyViewModel.swift; sourceTree = "<group>"; };
 		4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyView.swift; sourceTree = "<group>"; };
 		4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
+		4F942FA72A449156007D0346 /* AdaptiveStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveStack.swift; sourceTree = "<group>"; };
 		4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		575642A1290C78DD00719219 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		575642A3290C7A2700719219 /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
@@ -325,6 +327,7 @@
 				4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */,
 				57B5795229536B8C003EAA40 /* ObserverModeManager.swift */,
 				57B5795329536B8C003EAA40 /* ProductFetcherSK1.swift */,
+				4F942FA72A449156007D0346 /* AdaptiveStack.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -514,6 +517,7 @@
 				4F1F5E992A18124500C4EB88 /* ProxyManager.swift in Sources */,
 				2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */,
 				57B5795629536B8C003EAA40 /* ObserverModeManager.swift in Sources */,
+				4F942FA82A449156007D0346 /* AdaptiveStack.swift in Sources */,
 				2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */,
 				575642A4290C7A2700719219 /* LoggerView.swift in Sources */,
 				2DD2CBB329831A22004A3A6A /* ReceiptVerifier.swift in Sources */,
@@ -556,19 +560,12 @@
 		};
 		578DAA152947DD21001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				watchos,
-			);
+			platformFilter = ios;
 			target = 578DAA082947DD21001700FD /* PurchaseTesterWatchOS */;
 			targetProxy = 578DAA142947DD21001700FD /* PBXContainerItemProxy */;
 		};
 		578DAA252947DD8C001700FD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilters = (
-				ios,
-				maccatalyst,
-				macos,
-			);
 			target = 578DAA1F2947DD8C001700FD /* Core */;
 			targetProxy = 578DAA242947DD8C001700FD /* PBXContainerItemProxy */;
 		};
@@ -751,9 +748,10 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match Development com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
@@ -792,9 +790,10 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match AppStore com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
@@ -884,10 +883,13 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -920,10 +922,13 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "";
 				SDKROOT = auto;
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos watchsimulator watchos appletvsimulator appletvos";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};

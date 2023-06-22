@@ -41,6 +41,8 @@ final class PurchasesOrchestrator: NSObject {
         self.paymentQueue.add(.init(product: product))
     }
 
+    // Fix-me: inject @Environment(\.product) to fix this
+    #if !os(xrOS)
     func purchase(sk2Product product: SK2Product) async throws {
         let result = try await product.purchase()
 
@@ -61,6 +63,7 @@ final class PurchasesOrchestrator: NSObject {
             fatalError()
         }
     }
+    #endif
 
 }
 
