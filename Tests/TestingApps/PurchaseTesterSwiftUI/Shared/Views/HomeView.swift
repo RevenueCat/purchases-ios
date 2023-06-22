@@ -169,7 +169,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        #if !os(xrOS)
+        #if DEBUG && !os(xrOS)
         if #available(iOS 16.0, macOS 13.0, *) {
             self.content
                 .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)
@@ -301,6 +301,7 @@ private struct CustomerInfoHeaderView: View {
                 }
                 #endif
 
+                #if DEBUG
                 if #available(iOS 16.0, macOS 13.0, *) {
                     Button {
                         self.debugOverlayVisible.wrappedValue = true
@@ -308,6 +309,7 @@ private struct CustomerInfoHeaderView: View {
                         Text("Debug")
                     }
                 }
+                #endif
 
                 Spacer()
 
