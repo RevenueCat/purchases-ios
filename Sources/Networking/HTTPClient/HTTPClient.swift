@@ -96,6 +96,10 @@ extension HTTPClient {
     static func nonceHeader(with data: Data) -> RequestHeaders {
         return [RequestHeader.nonce.rawValue: data.base64EncodedString()]
     }
+    
+    static func canaryHeader(with canary: String) -> RequestHeaders {
+        return [RequestHeader.canary.rawValue: canary]
+    }
 
     enum RequestHeader: String {
 
@@ -103,6 +107,7 @@ extension HTTPClient {
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case canary = "X-RC-Canary"
 
     }
 
@@ -148,6 +153,7 @@ private extension HTTPClient {
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
             self.headers = self.httpRequest.headers(with: authHeaders)
+            self.headers += HTTPClient.canaryHeader(with: "sk2test")
             self.verificationMode = verificationMode
 
             if let completionHandler = completionHandler {
