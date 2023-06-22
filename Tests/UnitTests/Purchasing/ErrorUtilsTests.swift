@@ -133,6 +133,23 @@ class ErrorUtilsTests: TestCase {
             .to(matchError(expected))
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasesErrorWithPurchasesErrorStoreKitError() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let error = BackendError.missingAppUserID().asPurchasesError
+
+        expect(ErrorUtils.purchasesError(withStoreKitError: error))
+            .to(matchError(error))
+    }
+
+    func testPurchasesErrorWithPurchasesErrorSKError() {
+        let error = BackendError.missingAppUserID().asPurchasesError
+
+        expect(ErrorUtils.purchasesError(withSKError: error))
+            .to(matchError(error))
+    }
+
     func testPurchaseErrorsAreLoggedAsApppleErrors() {
         let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
         let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
