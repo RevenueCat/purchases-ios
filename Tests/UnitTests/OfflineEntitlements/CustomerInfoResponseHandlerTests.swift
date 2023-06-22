@@ -266,7 +266,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
     }
 
     func handle(
-        _ response: HTTPResponse<CustomerInfoResponseHandler.Response>.Result,
+        _ response: VerifiedHTTPResponse<CustomerInfoResponseHandler.Response>.Result,
         _ mapping: ProductEntitlementMapping?
     ) async -> Result<CustomerInfo, BackendError> {
         let handler = self.create(mapping)

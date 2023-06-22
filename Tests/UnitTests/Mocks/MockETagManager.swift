@@ -14,12 +14,11 @@ import Foundation
 class MockETagManager: ETagManager {
 
     init() {
-        super.init(userDefaults: MockUserDefaults(), verificationMode: .default)
+        super.init(userDefaults: MockUserDefaults())
     }
 
     struct ETagHeaderRequest {
         var urlRequest: URLRequest
-        var withSignatureVerification: Bool
         var refreshETag: Bool
     }
 
@@ -38,12 +37,10 @@ class MockETagManager: ETagManager {
 
     override func eTagHeader(
         for urlRequest: URLRequest,
-        withSignatureVerification: Bool,
         refreshETag: Bool = false
     ) -> [String: String] {
         return self.lock.perform {
             let request: ETagHeaderRequest = .init(urlRequest: urlRequest,
-                                                   withSignatureVerification: withSignatureVerification,
                                                    refreshETag: refreshETag)
 
             self.invokedETagHeader = true
@@ -81,10 +78,18 @@ class MockETagManager: ETagManager {
             )
             self.invokedHTTPResultFromCacheOrBackendParameters = params
             self.invokedHTTPResultFromCacheOrBackendParametersList.append(params)
+
             if self.shouldReturnResultFromBackend {
                 return response.asOptionalResponse
+            } else {
+                // Mimic behavior from `ETagManager`, returning the cached response
+                // with the original headers and request date
+                var result = self.stubbedHTTPResultFromCacheOrBackendResult
+                result?.responseHeaders = response.responseHeaders
+                result?.requestDate = response.requestDate
+
+                return result
             }
-            return self.stubbedHTTPResultFromCacheOrBackendResult
         }
     }
 

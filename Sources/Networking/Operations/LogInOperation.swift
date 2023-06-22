@@ -71,7 +71,7 @@ private extension LogInOperation {
                                                      newAppUserID: newAppUserID)),
                                   path: .logIn)
 
-        self.httpClient.perform(request) { (response: HTTPResponse<CustomerInfo>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<CustomerInfo>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
@@ -80,7 +80,7 @@ private extension LogInOperation {
         }
     }
 
-    func handleLogin(_ result: HTTPResponse<CustomerInfo>.Result,
+    func handleLogin(_ result: VerifiedHTTPResponse<CustomerInfo>.Result,
                      completion: IdentityAPI.LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in

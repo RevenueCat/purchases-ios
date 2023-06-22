@@ -277,26 +277,20 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse.create(with: Data(),
-                                           statusCode: .success,
-                                           headers: [:],
-                                           request: request,
-                                           publicKey: nil)
+        let response = HTTPResponse(statusCode: .success, responseHeaders: [:], body: Data())
+        let verifiedResponse = response.verify(request: request, publicKey: nil)
 
-        expect(response.verificationResult) == .notRequested
+        expect(verifiedResponse.verificationResult) == .notRequested
     }
 
     func testResponseVerificationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let logger = TestLogHandler()
 
-        let response = HTTPResponse.create(with: Data(),
-                                           statusCode: .success,
-                                           headers: [:],
-                                           request: request,
-                                           publicKey: self.publicKey)
+        let response = HTTPResponse(statusCode: .success, responseHeaders: [:], body: Data())
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
-        expect(response.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed
 
         logger.verifyMessageWasLogged(Strings.signing.signature_was_requested_but_not_provided(request),
                                       level: .warn)
@@ -304,17 +298,16 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithInvalidSignature() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse.create(
-            with: Data(),
+        let response = HTTPResponse(
             statusCode: .success,
-            headers: [
+            responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: "invalid_signature"
             ],
-            request: request,
-            publicKey: self.publicKey
+            body: Data()
         )
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
-        expect(response.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed
     }
 
     func testResponseVerificationWithNonceWithValidSignature() throws {
@@ -336,18 +329,17 @@ class SigningTests: TestCase {
         )
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
-        let response = HTTPResponse.create(
-            with: message.asData,
+        let response = HTTPResponse(
             statusCode: .success,
-            headers: [
+            responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
-            request: request,
-            publicKey: self.publicKey
+            body: message.asData
         )
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
-        expect(response.verificationResult) == .verified
+        expect(verifiedResponse.verificationResult) == .verified
     }
 
     func testResponseVerificationWithoutNonceWithValidSignature() throws {
@@ -368,18 +360,17 @@ class SigningTests: TestCase {
         )
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nil)
-        let response = HTTPResponse.create(
-            with: message.asData,
+        let response = HTTPResponse(
             statusCode: .success,
-            headers: [
+            responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
-            request: request,
-            publicKey: self.publicKey
+            body: message.asData
         )
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
-        expect(response.verificationResult) == .verified
+        expect(verifiedResponse.verificationResult) == .verified
     }
 
     func testResponseVerificationWithoutNonceAndNoSignatureReturnsNotRequested() throws {
@@ -389,56 +380,19 @@ class SigningTests: TestCase {
         let logger = TestLogHandler()
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nil)
-        let response = HTTPResponse.create(
-            with: message.asData,
+        let response = HTTPResponse(
             statusCode: .success,
-            headers: [
+            responseHeaders: [
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
-            request: request,
-            publicKey: self.publicKey
+            body: message.asData
         )
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
-        expect(response.verificationResult) == .notRequested
+        expect(verifiedResponse.verificationResult) == .notRequested
 
         logger.verifyMessageWasNotLogged(Strings.signing.signature_was_requested_but_not_provided(request),
                                          allowNoMessages: true)
-    }
-
-    func testVerificationResultWithSameCachedAndResponseResult() {
-        expect(VerificationResult.from(cache: .notRequested, response: .notRequested)) == .notRequested
-        expect(VerificationResult.from(cache: .verified, response: .verified)) == .verified
-        expect(VerificationResult.from(cache: .verifiedOnDevice, response: .verifiedOnDevice)) == .verifiedOnDevice
-        expect(VerificationResult.from(cache: .failed, response: .failed)) == .failed
-    }
-
-    func testVerificationNotRequestedCachedResult() {
-        expect(VerificationResult.from(cache: .notRequested,
-                                       response: .verified)) == .verified
-        expect(VerificationResult.from(cache: .notRequested,
-                                       response: .verifiedOnDevice)) == .verifiedOnDevice
-        expect(VerificationResult.from(cache: .notRequested,
-                                       response: .failed)) == .failed
-    }
-
-    func testVerifiedCachedResult() {
-        expect(VerificationResult.from(cache: .verified,
-                                       response: .notRequested)) == .notRequested
-        expect(VerificationResult.from(cache: .verifiedOnDevice,
-                                       response: .notRequested)) == .notRequested
-        expect(VerificationResult.from(cache: .verified,
-                                       response: .failed)) == .failed
-        expect(VerificationResult.from(cache: .verifiedOnDevice,
-                                       response: .failed)) == .failed
-    }
-
-    func testFailedVerificationCachedResult() {
-        expect(VerificationResult.from(cache: .failed,
-                                       response: .notRequested)) == .notRequested
-        expect(VerificationResult.from(cache: .failed,
-                                       response: .verified)) == .verified
-        expect(VerificationResult.from(cache: .failed,
-                                       response: .verifiedOnDevice)) == .verifiedOnDevice
     }
 
 }

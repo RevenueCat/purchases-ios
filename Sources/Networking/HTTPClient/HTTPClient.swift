@@ -19,7 +19,7 @@ class HTTPClient {
 
     typealias RequestHeaders = HTTPRequest.Headers
     typealias ResponseHeaders = HTTPResponse<HTTPEmptyResponseBody>.Headers
-    typealias Completion<Value: HTTPResponseBody> = (HTTPResponse<Value>.Result) -> Void
+    typealias Completion<Value: HTTPResponseBody> = (VerifiedHTTPResponse<Value>.Result) -> Void
 
     let systemInfo: SystemInfo
     let timeout: TimeInterval
@@ -253,7 +253,7 @@ private extension HTTPClient {
                request: Request,
                urlRequest: URLRequest,
                data: Data?,
-               error networkError: Error?) -> HTTPResponse<Data>.Result? {
+               error networkError: Error?) -> VerifiedHTTPResponse<Data>.Result? {
         if let networkError = networkError {
             return .failure(NetworkError(networkError, dnsChecker: self.dnsChecker))
         }
@@ -262,36 +262,55 @@ private extension HTTPClient {
             return .failure(.unexpectedResponse(urlResponse))
         }
 
-        /// - Returns `nil` if status code is 304, since the response will be empty
-        /// and fetched from the eTag.
-        func dataIfAvailable(_ statusCode: HTTPStatusCode) -> Data? {
-            if statusCode == .notModified {
-                return nil
-            } else {
-                return data
-            }
-        }
+        let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
 
-        let statusCode = HTTPStatusCode(rawValue: httpURLResponse.statusCode)
+        // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
+        let dataIfAvailable = statusCode == .notModified
+            ? nil
+            : data
 
+        return self.createVerifiedResponse(request: request,
+                                           urlRequest: urlRequest,
+                                           data: dataIfAvailable,
+                                           response: httpURLResponse)
+    }
+
+    /// - Returns `Result<VerifiedHTTPResponse<Data>, NetworkError>?`
+    private func createVerifiedResponse(
+        request: Request,
+        urlRequest: URLRequest,
+        data: Data?,
+        response httpURLResponse: HTTPURLResponse
+    ) -> VerifiedHTTPResponse<Data>.Result? {
         return Result
-            .success(dataIfAvailable(statusCode))
-            .mapToResponse(response: httpURLResponse,
-                           request: request.httpRequest,
-                           signing: self.signing(for: request.httpRequest),
-                           verificationMode: request.verificationMode)
+            .success(data)
+            .mapToResponse(response: httpURLResponse, request: request.httpRequest)
+            // Fetch from ETagManager if available
             .map { (response) -> HTTPResponse<Data>? in
-                guard let cachedResponse = self.eTagManager.httpResultFromCacheOrBackend(
+                return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
                     retried: request.retried
-                ) else {
-                    return nil
+                )
+            }
+            // Verify response
+            .map { cachedResponse -> VerifiedHTTPResponse<Data>? in
+                return cachedResponse?.verify(
+                    request: request.httpRequest,
+                    publicKey: request.verificationMode.publicKey,
+                    signing: self.signing(for: request.httpRequest)
+                )
+            }
+            // Upgrade to error in enforced mode
+            .flatMap { response -> Result<VerifiedHTTPResponse<Data>?, NetworkError> in
+                if let response = response,
+                    response.verificationResult == .failed,
+                    case .enforced = request.verificationMode {
+                    return .failure(.signatureVerificationFailed(path: request.httpRequest.path,
+                                                                 code: response.statusCode))
+                } else {
+                    return .success(response)
                 }
-
-                return cachedResponse
-                    .copy(with: .from(cache: cachedResponse.verificationResult,
-                                      response: response.verificationResult))
             }
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
@@ -407,7 +426,6 @@ private extension HTTPClient {
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
-                withSignatureVerification: request.httpRequest.nonce != nil,
                 refreshETag: request.retried
             )
             return request.headers.merging(eTagHeader)
@@ -499,34 +517,58 @@ private extension NetworkError {
 
 }
 
-extension Result where Success == HTTPResponse<Data>, Failure == NetworkError {
+extension Result where Success == Data?, Failure == NetworkError {
 
-    // Converts an unsuccessful response into a `Result.failure`
-    fileprivate func convertUnsuccessfulResponseToError() -> Self {
-        return self.flatMap { response in
-            response.statusCode.isSuccessfulResponse
-            ? .success(response)
-            : .failure(response.parseUnsuccessfulResponse())
-        }
-    }
-
-    // Parses a `Result<HTTPResponse<Data>>` to `Result<HTTPResponse<Value>>`
-    func parseResponse<Value: HTTPResponseBody>() -> HTTPResponse<Value>.Result {
-        return self.flatMap { response in          // Convert the `Result` type
-            Result<HTTPResponse<Value>, Error> {   // Create a new `Result<Value>`
-                try response.mapBody { data in     // Convert the body of `HTTPResponse<Data>` from `Data` -> `Value`
-                    try Value.create(with: data)   // Decode `Data` into `Value`
-                }
-                .copyWithNewRequestDate()         // Update request date for 304 responses
-            }
-            // Convert decoding errors into `NetworkError.decoding`
-            .mapError { NetworkError.decoding($0, response.body) }
+    /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
+    func mapToResponse(
+        response: HTTPURLResponse,
+        request: HTTPRequest
+    ) -> Result<HTTPResponse<Data?>, Failure> {
+        return self.flatMap { body in
+            return .success(
+                .init(
+                    statusCode: .init(rawValue: response.statusCode),
+                    responseHeaders: response.allHeaderFields,
+                    body: body
+                )
+            )
         }
     }
 
 }
 
-private extension HTTPResponse {
+extension Result where Success == VerifiedHTTPResponse<Data>, Failure == NetworkError {
+
+    // Parses a `Result<VerifiedHTTPResponse<Data>>` to `Result<VerifiedHTTPResponse<Value>>`
+    func parseResponse<Value: HTTPResponseBody>() -> VerifiedHTTPResponse<Value>.Result {
+        return self.flatMap { response in                   // Convert the `Result` type
+            Result<VerifiedHTTPResponse<Value>, Error> {    // Create a new `Result<Value>`
+                try response.mapBody { data in              // Convert the from `Data` -> `Value`
+                    try Value.create(with: data)            // Decode `Data` into `Value`
+                }
+                .copyWithNewRequestDate()                   // Update request date for 304 responses
+            }
+            // Convert decoding errors into `NetworkError.decoding`
+            .mapError { NetworkError.decoding($0, response.response.body) }
+        }
+    }
+
+}
+
+extension Result where Success == VerifiedHTTPResponse<Data>, Failure == NetworkError {
+
+    // Converts an unsuccessful response into a `Result.failure`
+    fileprivate func convertUnsuccessfulResponseToError() -> Self {
+        return self.flatMap {
+            $0.response.statusCode.isSuccessfulResponse
+            ? .success($0)
+            : .failure($0.response.parseUnsuccessfulResponse())
+        }
+    }
+
+}
+
+private extension VerifiedHTTPResponse {
 
     func copyWithNewRequestDate() -> Self {
         // Update request time from server unless it failed verification.
@@ -538,7 +580,7 @@ private extension HTTPResponse {
     }
 
     var isLoadShedder: Bool {
-        return self.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder.rawValue) == "true"
+        return self.response.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder.rawValue) == "true"
     }
 
 }

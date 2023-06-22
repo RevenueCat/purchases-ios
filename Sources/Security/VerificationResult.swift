@@ -87,32 +87,3 @@ extension VerificationResult: CustomDebugStringConvertible {
 
 }
 
-extension VerificationResult {
-
-    /// - Returns: the most restrictive ``VerificationResult`` based on the cached verification and
-    /// the response verification.
-    static func from(cache cachedResult: Self, response responseResult: Self) -> Self {
-        switch (cachedResult, responseResult) {
-        case (.notRequested, .notRequested),
-            (.verified, .verified),
-            (.verifiedOnDevice, .verifiedOnDevice),
-            (.failed, .failed):
-            return cachedResult
-
-        case (.verified, .notRequested), (.verifiedOnDevice, .notRequested): return .notRequested
-        case (.verified, .failed), (.verifiedOnDevice, .failed): return .failed
-
-        case (.notRequested, .verified), (.notRequested, .verifiedOnDevice): return responseResult
-        case (.notRequested, .failed): return .failed
-
-        case (.failed, .notRequested): return .notRequested
-        // If the cache verification failed, the etag won't be used
-        // so the response would only be a 200 and not 304.
-        // Therefore the cache verification error can be ignored
-        case (.failed, .verified), (.failed, .verifiedOnDevice): return responseResult
-
-        case (.verifiedOnDevice, .verified), (.verified, .verifiedOnDevice): return responseResult
-        }
-    }
-
-}

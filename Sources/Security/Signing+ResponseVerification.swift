@@ -15,31 +15,16 @@ import Foundation
 
 extension HTTPResponse where Body == Data {
 
-    static func create(with response: HTTPURLResponse,
-                       body: Data,
-                       request: HTTPRequest,
-                       publicKey: Signing.PublicKey?,
-                       signing: SigningType.Type = Signing.self) -> Self {
-        return Self.create(with: body,
-                           statusCode: .init(rawValue: response.statusCode),
-                           headers: response.allHeaderFields,
-                           request: request,
-                           publicKey: publicKey,
-                           signing: signing)
-    }
-
-    static func create(with body: Data,
-                       statusCode: HTTPStatusCode,
-                       headers: HTTPClient.ResponseHeaders,
-                       request: HTTPRequest,
-                       publicKey: Signing.PublicKey?,
-                       signing: SigningType.Type = Signing.self) -> Self {
-        let requestDate = Self.parseRequestDate(headers: headers)
+    func verify(
+        request: HTTPRequest,
+        publicKey: Signing.PublicKey?,
+        signing: SigningType.Type = Signing.self
+    ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
-            body: body,
-            statusCode: statusCode,
-            headers: headers,
-            requestDate: requestDate,
+            body: self.body,
+            statusCode: self.statusCode,
+            headers: self.responseHeaders,
+            requestDate: self.requestDate,
             request: request,
             publicKey: publicKey,
             signing: signing
@@ -47,17 +32,16 @@ extension HTTPResponse where Body == Data {
 
         #if DEBUG
         if verificationResult == .failed, ProcessInfo.isRunningRevenueCatTests {
-            Logger.warn(Strings.signing.invalid_signature_data(request, body, headers, statusCode))
+            Logger.warn(Strings.signing.invalid_signature_data(
+                request,
+                self.body,
+                self.responseHeaders,
+                statusCode
+            ))
         }
         #endif
 
-        return .init(
-            statusCode: statusCode,
-            responseHeaders: headers,
-            body: body,
-            requestDate: requestDate,
-            verificationResult: verificationResult
-        )
+        return self.verified(with: verificationResult)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -107,62 +91,6 @@ extension HTTPResponse where Body == Data {
         } else {
             return .failed
         }
-    }
-
-}
-
-extension Result where Success == Data?, Failure == NetworkError {
-
-    /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
-    func mapToResponse(
-        response: HTTPURLResponse,
-        request: HTTPRequest,
-        signing: SigningType.Type,
-        verificationMode: Signing.ResponseVerificationMode
-    ) -> Result<HTTPResponse<Data?>, Failure> {
-        return self.flatMap { body in
-            let response = HTTPResponse.create(
-                with: response,
-                body: body ?? .init(),
-                request: request,
-                publicKey: verificationMode.publicKey,
-                signing: signing
-            )
-
-            if response.verificationResult == .failed, case .enforced = verificationMode {
-                return .failure(.signatureVerificationFailed(path: request.path, code: response.statusCode))
-            } else {
-                return .success(response.mapBody(Optional.some))
-            }
-        }
-    }
-
-}
-
-extension HTTPResponse {
-
-    /// Creates an `HTTPResponse` extracting the `requestDate` from its headers
-    init(
-        statusCode: HTTPStatusCode,
-        responseHeaders: HTTPClient.ResponseHeaders,
-        body: Body,
-        verificationResult: VerificationResult
-    ) {
-        self.statusCode = statusCode
-        self.responseHeaders = responseHeaders
-        self.body = body
-        self.requestDate = Self.parseRequestDate(headers: responseHeaders)
-        self.verificationResult = verificationResult
-    }
-
-    static func parseRequestDate(headers: Self.Headers) -> Date? {
-        guard let stringValue = Self.value(
-            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestDate.rawValue,
-            in: headers
-        ),
-              let intValue = UInt64(stringValue) else { return nil }
-
-        return .init(millisecondsSince1970: intValue)
     }
 
 }

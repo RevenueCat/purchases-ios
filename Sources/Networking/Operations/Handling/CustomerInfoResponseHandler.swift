@@ -24,7 +24,7 @@ class CustomerInfoResponseHandler {
         self.userID = userID
     }
 
-    func handle(customerInfoResponse response: HTTPResponse<Response>.Result,
+    func handle(customerInfoResponse response: VerifiedHTTPResponse<Response>.Result,
                 completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let result: Result<CustomerInfo, BackendError> = response
             .map { response in

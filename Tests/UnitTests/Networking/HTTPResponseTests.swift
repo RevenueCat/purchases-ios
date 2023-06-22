@@ -21,13 +21,14 @@ class HTTPResponseTests: TestCase {
 
     func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse.create(with: Data(),
-                                           statusCode: .success,
-                                           headers: [:],
-                                           request: request,
-                                           publicKey: nil)
+        let response = HTTPResponse(
+            statusCode: .success,
+            responseHeaders: [:],
+            body: Data()
+        )
+        let verifiedResponse = response.verify(request: request, publicKey: nil)
 
-        expect(response.verificationResult) == .notRequested
+        expect(verifiedResponse.verificationResult) == .notRequested
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -37,13 +38,14 @@ class HTTPResponseTests: TestCase {
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse.create(with: Data(),
-                                           statusCode: .success,
-                                           headers: [:],
-                                           request: request,
-                                           publicKey: key)
+        let response = HTTPResponse(
+            statusCode: .success,
+            responseHeaders: [:],
+            body: Data()
+        )
+        let verifiedResponse = response.verify(request: request, publicKey: key)
 
-        expect(response.verificationResult) == .notRequested
+        expect(verifiedResponse.verificationResult) == .notRequested
     }
 
     func testValueForHeaderFieldWithNonExistingField() {
@@ -77,39 +79,7 @@ class HTTPResponseTests: TestCase {
         expect(response.requestDate).to(beNil())
     }
 
-    func testCopyWithSameVerificationResult() throws {
-        self.verifyCopy(of: try Self.sampleResponse.copy(with: .verified),
-                        onlyModifiesEntitlementVerification: .verified)
-    }
-
-    func testCopyWithVerificationResultVerified() throws {
-        self.verifyCopy(of: try Self.sampleResponse,
-                        onlyModifiesEntitlementVerification: .verified)
-    }
-
-    func testCopyWithVerificationResultFailedVerified() throws {
-        self.verifyCopy(of: try Self.sampleResponse,
-                        onlyModifiesEntitlementVerification: .failed)
-    }
-
-    func testCopyWithVerificationResultNotRequested() throws {
-        self.verifyCopy(of: try Self.sampleResponse.copy(with: .verified),
-                        onlyModifiesEntitlementVerification: .notRequested)
-    }
-
     // MARK: -
-
-    private func verifyCopy<T: Equatable>(
-        of response: HTTPResponse<T>,
-        onlyModifiesEntitlementVerification newVerification: VerificationResult
-    ) {
-        let copy = response.copy(with: newVerification)
-        expect(copy.verificationResult) == newVerification
-        expect(copy.statusCode) == response.statusCode
-        expect(copy.responseHeaders).to(haveCount(response.responseHeaders.count))
-        expect(copy.body) == response.body
-        expect(copy.requestDate) == response.requestDate
-    }
 
     private static var sampleResponse: HTTPResponse<Data> {
         get throws {
@@ -121,6 +91,11 @@ class HTTPResponseTests: TestCase {
             )
         }
     }
+    private static var sampleVerifiedResponse: VerifiedHTTPResponse<Data> {
+        get throws {
+            return .init(response: try Self.sampleResponse, verificationResult: .notRequested)
+        }
+    }
 
 }
 
@@ -129,8 +104,7 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
     static func create(_ headers: HTTPResponse.Headers) -> Self {
         return .init(statusCode: .success,
                      responseHeaders: headers,
-                     body: .init(),
-                     verificationResult: .notRequested)
+                     body: .init())
     }
 
 }
@@ -141,8 +115,7 @@ private extension HTTPResponse where Body == Data {
         return .init(statusCode: .success,
                      responseHeaders: headers,
                      body: body,
-                     requestDate: Date(),
-                     verificationResult: .notRequested)
+                     requestDate: Date())
     }
 
 }

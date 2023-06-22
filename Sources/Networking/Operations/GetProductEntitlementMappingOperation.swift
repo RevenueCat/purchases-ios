@@ -49,7 +49,7 @@ private extension GetProductEntitlementMappingOperation {
     func getResponse(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
-        self.httpClient.perform(request) { (response: HTTPResponse<ProductEntitlementMappingResponse>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ProductEntitlementMappingResponse>.Result) in
             defer {
                 completion()
             }

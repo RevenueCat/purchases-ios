@@ -25,7 +25,6 @@ struct HTTPResponse<Body: HTTPResponseBody> {
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
     var requestDate: Date?
-    var verificationResult: VerificationResult
 
 }
 
@@ -43,13 +42,61 @@ extension HTTPResponse: CustomStringConvertible {
         return """
         HTTPResponse(
             statusCode: \(self.statusCode.rawValue),
-            body: \(body),
+            body: \(body)
+        )
+        """
+    }
+
+}
+
+// MARK: - VerifiedHTTPResponse
+
+struct VerifiedHTTPResponse<Body: HTTPResponseBody> {
+
+    typealias Result = Swift.Result<Self, NetworkError>
+
+    var response: HTTPResponse<Body>
+    var verificationResult: VerificationResult
+
+    init(response: HTTPResponse<Body>, verificationResult: VerificationResult) {
+        self.response = response
+        self.verificationResult = verificationResult
+    }
+
+    init(
+        statusCode: HTTPStatusCode,
+        responseHeaders: HTTPClient.ResponseHeaders,
+        body: Body,
+        requestDate: Date? = nil,
+        verificationResult: VerificationResult
+    ) {
+        self.init(
+            response: .init(
+                statusCode: statusCode,
+                responseHeaders: responseHeaders,
+                body: body,
+                requestDate: requestDate
+            ),
+            verificationResult: verificationResult
+        )
+    }
+
+}
+
+extension VerifiedHTTPResponse: CustomStringConvertible {
+
+    var description: String {
+        return """
+        VerifiedHTTPResponse(
+            response: \(self.response.description),
             verification: \(self.verificationResult)
         )
         """
     }
 
 }
+
+// MARK: - Extensions
 
 extension HTTPResponse {
 
@@ -88,8 +135,7 @@ extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody 
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: body,
-                     requestDate: self.requestDate,
-                     verificationResult: self.verificationResult)
+                     requestDate: self.requestDate)
     }
 
 }
@@ -100,19 +146,55 @@ extension HTTPResponse {
         return .init(statusCode: self.statusCode,
                      responseHeaders: self.responseHeaders,
                      body: try mapping(self.body),
-                     requestDate: self.requestDate,
-                     verificationResult: self.verificationResult)
+                     requestDate: self.requestDate)
     }
 
-    func copy(with newVerificationResult: VerificationResult) -> Self {
-        guard newVerificationResult != self.verificationResult else { return self }
-
+    func verified(with verificationResult: VerificationResult) -> VerifiedHTTPResponse<Body> {
         return .init(
-            statusCode: self.statusCode,
-            responseHeaders: self.responseHeaders,
-            body: self.body,
-            requestDate: self.requestDate,
-            verificationResult: newVerificationResult
+            response: self,
+            verificationResult: verificationResult
+        )
+    }
+
+}
+
+extension HTTPResponse {
+
+    /// Creates an `HTTPResponse` extracting the `requestDate` from its headers
+    init(
+        statusCode: HTTPStatusCode,
+        responseHeaders: HTTPClient.ResponseHeaders,
+        body: Body
+    ) {
+        self.statusCode = statusCode
+        self.responseHeaders = responseHeaders
+        self.body = body
+        self.requestDate = Self.parseRequestDate(headers: responseHeaders)
+    }
+
+    private static func parseRequestDate(headers: Self.Headers) -> Date? {
+        guard let stringValue = Self.value(
+            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.requestDate.rawValue,
+            in: headers
+        ),
+              let intValue = UInt64(stringValue) else { return nil }
+
+        return .init(millisecondsSince1970: intValue)
+    }
+
+}
+
+extension VerifiedHTTPResponse {
+
+    var statusCode: HTTPStatusCode { self.response.statusCode }
+    var responseHeaders: HTTPClient.ResponseHeaders { self.response.responseHeaders }
+    var body: Body { self.response.body }
+    var requestDate: Date? { self.response.requestDate }
+
+    func mapBody<NewBody>(_ mapping: (Body) throws -> NewBody) rethrows -> VerifiedHTTPResponse<NewBody> {
+        return .init(
+            response: try self.response.mapBody(mapping),
+            verificationResult: self.verificationResult
         )
     }
 

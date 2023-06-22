@@ -51,7 +51,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
                                   path: .postSubscriberAttributes(appUserID: appUserID))
 
-        httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
