@@ -22,6 +22,7 @@ class BaseFileHandlerTests: TestCase {
 
     fileprivate var handler: FileHandler!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -30,6 +31,7 @@ class BaseFileHandlerTests: TestCase {
         self.handler = try Self.createWithTemporaryFile()
     }
 
+    @MainActor
     override func tearDown() async throws {
         self.handler = nil
 
