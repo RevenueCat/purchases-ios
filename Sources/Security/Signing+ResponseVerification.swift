@@ -70,20 +70,23 @@ extension HTTPResponse where Body == Data {
         publicKey: Signing.PublicKey?,
         signing: SigningType.Type
     ) -> VerificationResult {
-        guard let nonce = request.nonce,
-              let publicKey = publicKey,
+        guard let publicKey = publicKey,
               statusCode.isSuccessfulResponse,
               #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
             return .notRequested
         }
 
         guard let signature = HTTPResponse.value(
-            forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.signature.rawValue,
+            forCaseInsensitiveHeaderField: .signature,
             in: headers
         ) else {
-            Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
-
-            return .failed
+            let signatureRequested = request.nonce != nil
+            if signatureRequested {
+                Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
+                return .failed
+            } else {
+                return .notRequested
+            }
         }
 
         guard let requestDate = requestDate else {
@@ -92,17 +95,11 @@ extension HTTPResponse where Body == Data {
             return .failed
         }
 
-        let eTag = HTTPResponse.value(forCaseInsensitiveHeaderField: HTTPClient.ResponseHeader.eTag.rawValue,
-                                      in: headers)
-
-        let messageToSign = statusCode == .notModified
-            ? eTag?.asData ?? .init()
-            : body
-
         if signing.verify(signature: signature,
                           with: .init(
-                            message: messageToSign,
-                            nonce: nonce,
+                            message: body,
+                            nonce: request.nonce,
+                            etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),
                             requestDate: requestDate.millisecondsSince1970
                           ),
                           publicKey: publicKey) {

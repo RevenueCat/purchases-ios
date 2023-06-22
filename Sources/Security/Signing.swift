@@ -35,7 +35,8 @@ enum Signing: SigningType {
     struct SignatureParameters {
 
         let message: Data
-        let nonce: Data
+        let nonce: Data?
+        let etag: String?
         let requestDate: UInt64
 
     }
@@ -70,11 +71,28 @@ enum Signing: SigningType {
             return false
         }
 
-        let salt = signature.subdata(in: 0..<Self.saltSize)
-        let signatureToVerify = signature.subdata(in: Self.saltSize..<signature.count)
+        guard signature.count == SignatureComponent.totalSize else {
+            Logger.warn(Strings.signing.signature_invalid_size(signature))
+            return false
+        }
+
+        // Fixme: verify public key
+
+        let salt = signature.component(.salt)
+        let payload = signature.component(.payload)
         let messageToVerify = salt + parameters.asData
 
-        let isValid = publicKey.isValidSignature(signatureToVerify, for: messageToVerify)
+        #if DEBUG
+        Logger.verbose(Strings.signing.verifying_signature(
+            signature: signature,
+            parameters: parameters,
+            salt: salt,
+            payload: payload,
+            message: messageToVerify
+        ))
+        #endif
+
+        let isValid = publicKey.isValidSignature(payload, for: messageToVerify)
 
         if !isValid {
             Logger.warn(Strings.signing.signature_failed_verification)
@@ -103,9 +121,8 @@ enum Signing: SigningType {
 
     // MARK: -
 
-    private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
+    private static let publicKey = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeA="
 
-    internal static let saltSize = 16
 }
 
 extension Signing {
@@ -159,12 +176,59 @@ extension CryptoKit.Curve25519.Signing.PublicKey: SigningPublicKey {}
 
 // MARK: - Internal implementation (visible for tests)
 
+extension Signing {
+
+    enum SignatureComponent: CaseIterable, Comparable {
+
+        case intermediatePublicKey
+        case intermediateKeyExpiration
+        case intermediateKeySignature
+        case salt
+        case payload
+
+        var size: Int {
+            switch self {
+            case .intermediatePublicKey: return 32
+            case .intermediateKeyExpiration: return 4
+            case .intermediateKeySignature: return 64
+            case .salt: return 16
+            case .payload: return 64
+            }
+        }
+
+        static let signedPublicKeySize: Int = [Self]([
+            .intermediatePublicKey,
+            .intermediateKeyExpiration,
+            .intermediateKeySignature
+        ])
+        .map(\.size)
+        .sum()
+
+        static let totalSize: Int = Self.allCases.map(\.size).sum()
+
+        /// Number of bytes where the component begins
+        fileprivate var offset: Int {
+            return Self.offsets[self]!
+        }
+
+        fileprivate static let offsets: [SignatureComponent: Int] = Set(Self.allCases)
+            .dictionaryWithValues { component in
+                Self.allCases
+                    .prefix(while: { $0 != component })
+                    .map(\.size)
+                    .sum()
+            }
+    }
+
+}
+
 extension Signing.SignatureParameters {
 
     var asData: Data {
         return (
-            self.nonce +
+            (self.nonce ?? .init()) +
             String(self.requestDate).asData +
+            (self.etag ?? "").asData +
             self.message
         )
     }
@@ -174,3 +238,17 @@ extension Signing.SignatureParameters {
 // MARK: - Private
 
 private final class BundleToken: NSObject {}
+
+// MARK: - Data extensions
+
+private extension Data {
+
+    /// Extracts `Signing.SignatureComponent` from the receiver.
+    func component(_ component: Signing.SignatureComponent) -> Data {
+        let offset = component.offset
+        let size = component.size
+
+        return self.subdata(in: offset ..< offset + size)
+    }
+
+}

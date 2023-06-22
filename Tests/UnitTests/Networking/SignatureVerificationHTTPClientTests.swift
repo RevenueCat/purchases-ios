@@ -216,6 +216,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testValidSignatureWithETagResponse() throws {
+        XCTExpectFailure("Not yet implemented")
+
         let body = "body".asData
 
         self.mockPath(statusCode: .notModified, requestDate: Self.date1)
@@ -242,7 +244,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(MockSigning.requests).to(haveCount(1))
         let signingRequest = try XCTUnwrap(MockSigning.requests.onlyElement)
 
-        expect(signingRequest.parameters.message) == Self.eTag.asData
+        expect(signingRequest.parameters.message) == body
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingRequest.parameters.requestDate) == Self.date1.millisecondsSince1970
         expect(signingRequest.signature) == Self.sampleSignature

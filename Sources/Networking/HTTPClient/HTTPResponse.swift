@@ -59,6 +59,13 @@ extension HTTPResponse {
         return Self.value(forCaseInsensitiveHeaderField: field, in: self.responseHeaders)
     }
 
+    static func value(
+        forCaseInsensitiveHeaderField field: HTTPClient.ResponseHeader,
+        in headers: Headers
+    ) -> String? {
+        return Self.value(forCaseInsensitiveHeaderField: field.rawValue, in: headers)
+    }
+
     static func value(forCaseInsensitiveHeaderField field: String, in headers: Headers) -> String? {
         let header = headers
             .first { (key, _) in
