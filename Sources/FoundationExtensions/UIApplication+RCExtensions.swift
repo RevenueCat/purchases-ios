@@ -22,6 +22,7 @@ extension UIApplication {
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @available(tvOS, unavailable)
+    @MainActor
     var currentWindowScene: UIWindowScene? {
         var scenes = self
             .connectedScenes

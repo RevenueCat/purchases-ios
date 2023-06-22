@@ -187,6 +187,7 @@ extension SystemInfo {
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @available(tvOS, unavailable)
+    @MainActor
     var currentWindowScene: UIWindowScene {
         get throws {
             let scene = self.sharedUIApplication?.currentWindowScene
