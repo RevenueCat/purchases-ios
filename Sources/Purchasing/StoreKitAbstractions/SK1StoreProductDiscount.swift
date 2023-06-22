@@ -29,7 +29,7 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
         } else {
             self.offerIdentifier = nil
         }
-        self.currencyCode = sk1Discount.optionalLocale?.currencyCode
+        self.currencyCode = sk1Discount.optionalLocale?.rc_currencyCode
         self.price = sk1Discount.price as Decimal
         self.paymentMode = paymentMode
         self.subscriptionPeriod = subscriptionPeriod
