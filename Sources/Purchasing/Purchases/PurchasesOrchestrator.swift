@@ -458,18 +458,7 @@ final class PurchasesOrchestrator {
 
             self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
 
-            // Note: this can be simplified as `#if swift(>=5.9) && os(xrOS)`
-            // once we drop support for Xcode 13.x
-            #if swift(>=5.9)
-                #if os(xrOS)
-                result = try await sk2Product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
-                                                       options: options)
-                #else
-                result = try await sk2Product.purchase(options: options)
-                #endif
-            #else
-            result = try await sk2Product.purchase(options: options)
-            #endif
+            result = try await self.purchase(sk2Product, options)
         } catch StoreKitError.userCancelled {
             guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
                 throw ErrorUtils.purchaseCancelledError()
@@ -510,6 +499,25 @@ final class PurchasesOrchestrator {
         }
 
         return (transaction, customerInfo, userCancelled)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func purchase(
+        _ product: SK2Product,
+        _ options: Set<Product.PurchaseOption>
+    ) async throws -> Product.PurchaseResult {
+        // Note: this can be simplified as `#if swift(>=5.9) && os(xrOS)`
+        // once we drop support for Xcode 13.x
+        #if swift(>=5.9)
+            #if os(xrOS)
+            return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
+                                              options: options)
+            #else
+            return try await product.purchase(options: options)
+            #endif
+        #else
+        return try await product.purchase(options: options)
+        #endif
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
