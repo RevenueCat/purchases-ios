@@ -82,6 +82,22 @@ class LoggerTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Message.test1)
     }
 
+    func testPurchasesLogHandler() {
+        defer { Purchases.restoreLogHandler() }
+
+        var messages: [LoggedMessage] = []
+
+        Purchases.logHandler = { messages.append(.init($0, $1)) }
+
+        Logger.info(Message.test1)
+        Logger.warn(Message.test2)
+
+        expect(messages) == [
+            .init(.info, "\(LogIntent.info.prefix) \(Message.test1.description)"),
+            .init(.warn, "\(LogIntent.warning.prefix) \(Message.test2.description)")
+        ]
+    }
+
 }
 
 private extension LoggerTests {
@@ -99,6 +115,18 @@ private extension LoggerTests {
         }
 
         var category: String { return "debug_logs" }
+
+    }
+
+    struct LoggedMessage: Equatable {
+
+        var level: LogLevel
+        var message: String
+
+        init(_ level: LogLevel, _ message: String) {
+            self.level = level
+            self.message = message
+        }
 
     }
 

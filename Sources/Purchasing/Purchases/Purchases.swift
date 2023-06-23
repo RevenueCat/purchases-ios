@@ -204,6 +204,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
     }
 
+    /// Useful for tests that override the log handler.
+    internal static func restoreLogHandler() {
+        Logger.internalLogHandler = Logger.defaultLogHandler
+    }
+
     /**
      * Setting this to `true` adds additional information to the default log handler:
      *  Filename, line, and method data.
