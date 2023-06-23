@@ -83,7 +83,10 @@ class LoggerTests: TestCase {
     }
 
     func testPurchasesLogHandler() {
-        defer { Purchases.restoreLogHandler() }
+        defer {
+            Purchases.restoreLogHandler()
+            TestLogHandler.restore()
+        }
 
         var messages: [LoggedMessage] = []
 
