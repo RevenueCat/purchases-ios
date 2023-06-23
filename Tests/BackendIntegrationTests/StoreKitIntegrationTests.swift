@@ -376,7 +376,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.expireSubscription(entitlement)
 
-        let info = try await Purchases.shared.syncPurchases()
+        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoActiveSubscription(info)
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
@@ -394,7 +394,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.expireSubscription(entitlement)
 
-        customerInfo = try await Purchases.shared.syncPurchases()
+        customerInfo = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoActiveSubscription(customerInfo)
     }
 
@@ -495,7 +495,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.expireSubscription(entitlement)
 
-        let info = try await Purchases.shared.syncPurchases()
+        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoActiveSubscription(info)
 
         // 3. Get eligible offer
