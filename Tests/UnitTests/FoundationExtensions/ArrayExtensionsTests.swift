@@ -57,4 +57,18 @@ class ArrayExtensionsTests: TestCase {
         expect([1].onlyElement) == 1
     }
 
+    // MARK: - sum
+
+    func testSumEmptyArray() {
+        expect([Int]().sum()) == 0
+    }
+
+    func testSumSingleElementArray() {
+        expect([5].sum()) == 5
+    }
+
+    func testSumArrayWithMultipleElements() {
+        expect([1, 2, 3].sum()) == 6
+    }
+
 }

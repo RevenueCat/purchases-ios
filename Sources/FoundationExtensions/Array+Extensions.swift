@@ -36,3 +36,12 @@ extension Collection {
     }
 
 }
+
+extension Sequence where Element: AdditiveArithmetic {
+
+    /// - Returns: the sum of the elements in the sequence.
+    func sum() -> Element {
+        return reduce(.zero, +)
+    }
+
+}
