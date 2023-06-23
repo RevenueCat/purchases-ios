@@ -184,11 +184,11 @@ private extension ReceiptParsingRealReceiptTests {
     static let receipt1Name = "base64encodedreceiptsample1"
 
     static func sampleReceiptData(receiptName: String) -> Data {
-        NSDataExtensionsTests.sampleReceiptData(receiptName: receiptName)
+        DataExtensionsTests.sampleReceiptData(receiptName: receiptName)
     }
 
     static func readFile(named filename: String) -> String {
-        NSDataExtensionsTests.readFile(named: filename)
+        DataExtensionsTests.readFile(named: filename)
     }
 
 }

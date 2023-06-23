@@ -9,7 +9,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class NSDataExtensionsTests: TestCase {
+class DataExtensionsTests: TestCase {
 
     func testAsString() {
         let data = Data([
@@ -23,14 +23,12 @@ class NSDataExtensionsTests: TestCase {
             0x40, 0xfd, 0x9d, 0x91
         ])
 
-        let nsData = data as NSData
-
-        expect(nsData.asString()) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
+        expect(data.asString) == "e388152d6c67f4d5f7a78edf073946f158357f89a1dc74dff80a796740fd9d91"
     }
 
     func testAsFetchToken() {
-        let storedReceiptText = NSDataExtensionsTests.readFile(named: Self.receiptFilename)
-        let storedReceiptData = NSDataExtensionsTests.sampleReceiptData(receiptName: Self.receiptFilename)
+        let storedReceiptText = Self.readFile(named: Self.receiptFilename)
+        let storedReceiptData = Self.sampleReceiptData(receiptName: Self.receiptFilename)
         let fetchToken = storedReceiptData.asFetchToken
 
         expect(fetchToken).to(equal(storedReceiptText))
@@ -75,7 +73,7 @@ class NSDataExtensionsTests: TestCase {
 
 }
 
-extension NSDataExtensionsTests {
+extension DataExtensionsTests {
 
     static func sampleReceiptData(receiptName: String) -> Data {
         let receiptText = self.readFile(named: receiptName)
