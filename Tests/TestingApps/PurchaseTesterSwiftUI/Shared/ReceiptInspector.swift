@@ -8,12 +8,14 @@
 import SwiftUI
 import ReceiptParser
 
+#if !os(watchOS)
+
 struct ReceiptInspectorView: View {
+
     @State private var encodedReceipt: String = ""
     @State private var parsedReceipt: String = ""
     @State private var verifyReceiptResult: String = ""
     @State private var sharedSecret: String = ""
-
 
     var body: some View {
         VStack {
@@ -85,3 +87,5 @@ struct ReceiptInspectorView_Previews: PreviewProvider {
         ReceiptInspectorView()
     }
 }
+
+#endif

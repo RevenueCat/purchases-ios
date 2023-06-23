@@ -138,6 +138,8 @@ struct PurchaseTesterApp: App {
     private static var toolbarPlacement: ToolbarItemPlacement {
         #if os(iOS)
         return .navigation
+        #elseif os(watchOS)
+        return .automatic
         #else
         return .principal
         #endif
