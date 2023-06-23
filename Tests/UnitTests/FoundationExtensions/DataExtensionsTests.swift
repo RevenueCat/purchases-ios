@@ -48,6 +48,15 @@ class DataExtensionsTests: TestCase {
         != "a relatively long string that ends in 1".asData.hashString
     }
 
+    func testStringDataAsSha1() {
+        expect("sample string".asData.sha1.asString) == "243182b9d0b085c06005bf773212854bf7cd4694"
+    }
+
+    func testDataAsSha1HashesTheEntireData() {
+        expect("a relatively long string that ends in 0".asData.sha1)
+        != "a relatively long string that ends in 1".asData.sha1
+    }
+
     func testReceiptDataAsHashString() {
         let storedReceiptData = Self.sampleReceiptData(receiptName: Self.receiptFilename)
 
