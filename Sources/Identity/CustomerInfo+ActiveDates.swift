@@ -53,7 +53,7 @@ extension CustomerInfo {
                         .subscriptions
                         .lazy
                         .map { productID, subscription in
-                            let key = Self.productID(productID: productID, purchase: subscription)
+                            let key = Self.extractProductIDAndBasePlan(from: productID, purchase: subscription)
                             let value = subscription.expiresDate
                             return (key, value)
                         }
@@ -66,7 +66,7 @@ extension CustomerInfo {
                         .allPurchasesByProductId
                         .lazy
                         .map { productID, purchase in
-                            let key = Self.productID(productID: productID, purchase: purchase)
+                            let key = Self.extractProductIDAndBasePlan(from: productID, purchase: purchase)
                             let value = purchase.purchaseDate
                             return (key, value)
                         }
@@ -79,7 +79,8 @@ extension CustomerInfo {
 
 private extension CustomerInfo {
 
-    static func productID(productID: String, purchase: CustomerInfoResponse.Subscription) -> String {
+    static func extractProductIDAndBasePlan(from productID: String,
+                                            purchase: CustomerInfoResponse.Subscription) -> String {
         // Products purchased from Google Play will have a product plan identifier (base plan)
         // These products get mapped as "productId:productPlanIdentifier" in the Android SDK
         // so the same mapping needs to be handled here for cross platform purchases
