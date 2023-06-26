@@ -139,9 +139,7 @@ public struct TestStoreProduct {
         productType: StoreProduct.ProductType,
         localizedDescription: String,
         subscriptionGroupIdentifier: String? = nil,
-        subscriptionPeriod: SubscriptionPeriod? = nil,
-        introductoryDiscount: TestStoreProductDiscount? = nil,
-        discounts: [TestStoreProductDiscount] = []
+        subscriptionPeriod: SubscriptionPeriod? = nil
     ) {}
 
 }

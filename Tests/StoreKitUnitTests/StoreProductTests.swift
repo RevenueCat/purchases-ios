@@ -345,6 +345,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(nonSubscription.productCategory) == .nonSubscription
     }
 
+    #if DEBUG
+
     func testTestProduct() {
         let title = "Product"
         let price: Decimal = 3.99
@@ -383,6 +385,8 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.priceFormatter).toNot(beNil())
         expect(storeProduct.isFamilyShareable) == false
     }
+
+    #endif
 
 }
 

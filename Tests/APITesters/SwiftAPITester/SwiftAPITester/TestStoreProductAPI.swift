@@ -7,6 +7,8 @@
 
 import RevenueCat
 
+#if DEBUG
+
 // swiftlint:disable syntactic_sugar
 
 private var testProduct: TestStoreProduct!
@@ -62,3 +64,5 @@ private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
         discounts: [discount]
     )
 }
+
+#endif

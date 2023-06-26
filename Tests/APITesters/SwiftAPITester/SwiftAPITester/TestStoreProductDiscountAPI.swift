@@ -7,6 +7,8 @@
 
 import RevenueCat
 
+#if DEBUG
+
 var testProductDiscount: TestStoreProductDiscount!
 
 func checkTestStoreProductDiscountAPI() {
@@ -50,3 +52,5 @@ private func checkCreateStoreProduct() {
         type: .promotional
     )
 }
+
+#endif
