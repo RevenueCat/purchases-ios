@@ -53,24 +53,24 @@ extension CustomerInfo {
                         .subscriptions
                         .lazy
                         .map { productID, subscription in
-                            let key: String
+                            let key = Self.productID(productID: productID, purchase: subscription)
                             let value = subscription.expiresDate
-
-                            // Products purchased from Google Play will have a product plan identifier (base plan)
-                            // These products get mapped as "productId:productPlanIdentifier" in the Android SDK
-                            // so the same mapping needs to be handled here for cross platform purchases
-                            if let productPlanIdentfier = subscription.productPlanIdentifier {
-                                key = "\(productID):\(productPlanIdentfier)"
-                            } else {
-                                key = productID
-                            }
                             return (key, value)
                         }
                 )
     }
 
     static func extractPurchaseDates(_ subscriber: CustomerInfoResponse.Subscriber) -> [String: Date?] {
-        return subscriber.allTransactionsByProductId.mapValues { $0.purchaseDate }
+        return Dictionary(
+                    uniqueKeysWithValues: subscriber
+                        .allPurchasesByProductId
+                        .lazy
+                        .map { productID, purchase in
+                            let key = Self.productID(productID: productID, purchase: purchase)
+                            let value = purchase.purchaseDate
+                            return (key, value)
+                        }
+                )
     }
 
 }
@@ -78,6 +78,17 @@ extension CustomerInfo {
 // MARK: - Private
 
 private extension CustomerInfo {
+
+    static func productID(productID: String, purchase: CustomerInfoResponse.Subscription) -> String {
+        // Products purchased from Google Play will have a product plan identifier (base plan)
+        // These products get mapped as "productId:productPlanIdentifier" in the Android SDK
+        // so the same mapping needs to be handled here for cross platform purchases
+        if let productPlanIdentfier = purchase.productPlanIdentifier {
+            return "\(productID):\(productPlanIdentfier)"
+        } else {
+            return productID
+        }
+    }
 
     static func referenceDate(for requestDate: Date) -> (Date, inGracePeriod: Bool) {
         if Date().timeIntervalSince(requestDate) <= Self.requestDateGracePeriod.seconds {

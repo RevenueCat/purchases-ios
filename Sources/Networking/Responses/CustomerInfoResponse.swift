@@ -233,6 +233,7 @@ extension CustomerInfoResponse.Subscriber {
         return self.allPurchasesByProductId.mapValues { $0.asTransaction }
     }
 
+    // This returns objects of type `Subscription` but also includes non-subscriptions
     var allPurchasesByProductId: [String: CustomerInfoResponse.Subscription] {
         let subscriptions = self.subscriptions
         let latestNonSubscriptionTransactionsByProductId = self.nonSubscriptions
