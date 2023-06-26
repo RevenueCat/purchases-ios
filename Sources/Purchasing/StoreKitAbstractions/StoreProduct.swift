@@ -131,11 +131,11 @@ internal protocol StoreProductType: Sendable {
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
     ///
     /// #### Related Symbols
-    /// - ``pricePerMonth``
-    /// - ``pricePerYear``
+    /// - ``StoreProduct/pricePerMonth``
+    /// - ``StoreProduct/pricePerYear``
     var price: Decimal { get }
 
-    /// The price of this product using ``priceFormatter``.
+    /// The price of this product using ``StoreProduct/priceFormatter``.
     var localizedPriceString: String { get }
 
     /// The string that identifies the product to the Apple App Store.
