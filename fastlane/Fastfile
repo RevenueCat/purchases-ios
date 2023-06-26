@@ -415,20 +415,26 @@ platform :ios do
         'macOS',
         'maccatalyst',
         'tvOS',
-        'watchOS'
+        'watchOS',
+        # Fixme: add xrOS
       ]
 
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
       xcframework_output_directory: output_directory,
-      # bitcode produces issues with Catalyst when validating builds,
-      # with a message: "object not signed at all".
+      # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
       include_debug_symbols: true
     )
+    
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
+
+    # Sign XCFramework for Xcode 15
+    sign_xcframework(
+      file: "#{output_directory_for_sh}/RevenueCat.xcframework"
+    )
 
     xcframeworks_zip_path_for_sh = "../RevenueCat.xcframework.zip"
     sh("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
@@ -498,6 +504,25 @@ platform :ios do
       previous_text: old_branch_line,
       new_text: new_revision_line,
       paths_of_files_to_update: project_file_locations
+    )
+  end
+
+  private_lane :sign_xcframework do |options|
+    match(
+      readonly: true,
+      git_url: ENV['CERTS_REPO_URL'],
+      type: 'appstore',
+      skip_provisioning_profiles: true,
+      # This isn't important, we just need to fetch the certificate
+      app_identifier: "com.revenuecat.CarthageIntegration"
+    )
+
+    sh(
+      "codesign", 
+      "--timestamp",
+      "-v",
+      "--sign", "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)",
+      options[:file]
     )
   end
 
