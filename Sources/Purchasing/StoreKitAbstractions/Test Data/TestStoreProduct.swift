@@ -16,6 +16,35 @@ import Foundation
 #if DEBUG
 
 /// A type that contains the necessary data to create a ``StoreProduct``.
+/// This can be used to create mock data for tests or SwiftUI previews.
+///
+/// Example:
+/// ```swift
+/// let product = TestStoreProduct(
+///     localizedTitle: "PRO monthly",
+///     price: 3.99,
+///     localizedPriceString: "$3.99",
+///     productIdentifier: "com.revenuecat.product",
+///     productType: .autoRenewableSubscription,
+///     localizedDescription: "Description",
+///     subscriptionGroupIdentifier: "group",
+///     subscriptionPeriod: .init(value: 1, unit: .month)
+/// )
+///
+/// let offering = Offering(
+///     identifier: "offering",
+///     serverDescription: "Main offering",
+///     metadata: [:],
+///     availablePackages: [
+///         .init(
+///             identifier: "monthly",
+///             packageType: .monthly,
+///             storeProduct: product.toStoreProduct(),
+///             offeringIdentifier: offering
+///         ),
+///     ]
+/// )
+/// ```
 public struct TestStoreProduct {
 
     // Note: this class inherits its docs from `StoreProductType`
@@ -116,7 +145,5 @@ public struct TestStoreProduct {
     ) {}
 
 }
-
-// swiftlint:enable missing_docs
 
 #endif
