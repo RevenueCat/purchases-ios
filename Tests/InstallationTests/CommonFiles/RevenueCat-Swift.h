@@ -1110,6 +1110,7 @@ typedef SWIFT_ENUM(NSInteger, FakeTrackingManagerAuthorizationStatus, closed) {
 };
 
 
+
 SWIFT_CLASS("_TtC10RevenueCat24GetCustomerInfoOperation")
 @interface GetCustomerInfoOperation : CacheableNetworkOperation
 @end
@@ -1200,7 +1201,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
   RCLogLevelWarn = 2,
   RCLogLevelError = 3,
 };
-
 
 
 
@@ -2385,6 +2385,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 
 
 
+
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
@@ -2411,8 +2412,6 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @end
 
 
-
-
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, strong) RCPlatformInfo * _Nullable platformInfo;)
 + (RCPlatformInfo * _Nullable)platformInfo SWIFT_WARN_UNUSED_RESULT;
@@ -2426,6 +2425,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 
@@ -2910,7 +2910,6 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
@@ -2922,6 +2921,7 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=default) PurchasesReceiptParser * _Nonnull default_;)
 + (PurchasesReceiptParser * _Nonnull)default SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 
@@ -3294,13 +3294,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 

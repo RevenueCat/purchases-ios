@@ -1,12 +1,9 @@
-### New Features
-* `xrOS`: added to list of supported platforms (#2682) via NachoSoto (@NachoSoto)
 ### Bugfixes
-* `xrOS`: fixed compilation by disabling debug overlay (#2681) via NachoSoto (@NachoSoto)
-* `xrOS`: added support for new `purchase(confirmIn:options:)` method (#2683) via NachoSoto (@NachoSoto)
-* `Xcode 15`: handle `Locale.currencyCode` deprecation (#2680) via NachoSoto (@NachoSoto)
+* Fix google play purchases missing purchase date (#2703) via Toni Rico (@tonidero)
 ### Other Changes
-* `PurchaseTester`: fixed release compilation (#2689) via NachoSoto (@NachoSoto)
-* `xrOS`: fixed runtime warning (#2691) via NachoSoto (@NachoSoto)
-* `xrOS`: added support to `PurchaseTester` (#2685) via NachoSoto (@NachoSoto)
-* `Signature Verification`: new `Integration Tests` (#2642) via NachoSoto (@NachoSoto)
-* `ErrorUtils`: handle `PurchasesError` to avoid creating unknown errors (#2686) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: fixed `watchOS` build and ASC deployment (#2701) via NachoSoto (@NachoSoto)
+* Add `Data.sha1` (#2696) via NachoSoto (@NachoSoto)
+* Refactor: extract `ErrorResponse` into its own file (#2697) via NachoSoto (@NachoSoto)
+* Add `Sequence<AdditiveArithmetic>.sum()` (#2694) via NachoSoto (@NachoSoto)
+* Refactored `Data.asString` implementation (#2695) via NachoSoto (@NachoSoto)
+* `Diagnostics`: new `FileHandler` for abstracting file operations (#2673) via NachoSoto (@NachoSoto)
