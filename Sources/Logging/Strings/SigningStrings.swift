@@ -34,6 +34,8 @@ enum SigningStrings {
 
     case request_date_missing_from_headers(HTTPRequest)
 
+    case verification_too_slow
+
     #if DEBUG
     case verifying_signature(signature: Data,
                              publicKey: Data,
@@ -88,6 +90,9 @@ extension SigningStrings: LogMessage {
         case let .signature_was_requested_but_not_provided(request):
             return "Request to '\(request.path)' required a signature but none was provided. " +
             "This will be reported as a verification failure."
+
+        case .verification_too_slow:
+            return "Signature verification was too slow"
 
         #if DEBUG
         case let .invalid_signature_data(request, data, responseHeaders, statusCode):

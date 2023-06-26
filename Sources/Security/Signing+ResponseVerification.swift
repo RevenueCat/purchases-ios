@@ -79,18 +79,25 @@ extension HTTPResponse where Body == Data? {
             return .failed
         }
 
-        if signing.verify(signature: signature,
-                          with: .init(
-                            message: body,
-                            nonce: request.nonce,
-                            etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),
-                            requestDate: requestDate.millisecondsSince1970
-                          ),
-                          publicKey: publicKey) {
-            return .verified
-        } else {
-            return .failed
+        let result = TimingUtil.measureSyncAndLogIfTooSlow(
+            threshold: .signatureVerification,
+            message: Strings.signing.verification_too_slow
+        ) {
+            return signing.verify(
+                signature: signature,
+                with: .init(
+                    message: body,
+                    nonce: request.nonce,
+                    etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),
+                    requestDate: requestDate.millisecondsSince1970
+                ),
+                publicKey: publicKey
+            )
         }
+
+        return result
+            ? .verified
+            : .failed
     }
 
 }
