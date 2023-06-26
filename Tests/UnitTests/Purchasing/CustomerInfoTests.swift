@@ -58,7 +58,8 @@ class BasicCustomerInfoTests: TestCase {
                     "expires_date": "2100-07-30T02:40:36Z",
                     "period_type": "normal",
                     "is_sandbox": false,
-                    "product_plan_identifier": "monthly"
+                    "product_plan_identifier": "monthly",
+                    "purchase_date": "2018-05-20T06:24:50Z"
                 ],
                 "onemonth": [
                     "expires_date": BasicCustomerInfoTests.expiredSubscriptionDate,
@@ -444,6 +445,11 @@ class BasicCustomerInfoTests: TestCase {
 
     func testPurchaseDateForProductIdentifier() throws {
         let purchaseDate = try XCTUnwrap(self.customerInfo.purchaseDate(forProductIdentifier: "threemonth_freetrial"))
+        expect(purchaseDate) == Date(timeIntervalSince1970: 1526797490)
+    }
+
+    func testPurchaseDateForGooglePlayProductIdentifier() throws {
+        let purchaseDate = try XCTUnwrap(self.customerInfo.purchaseDate(forProductIdentifier: "gold:monthly"))
         expect(purchaseDate) == Date(timeIntervalSince1970: 1526797490)
     }
 
