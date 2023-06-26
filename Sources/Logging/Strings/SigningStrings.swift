@@ -24,12 +24,18 @@ enum SigningStrings {
 
     case signature_failed_verification
 
+    case intermediate_key_failed_verification(signature: Data)
+    case intermediate_key_failed_creation(Error)
+    case intermediate_key_expired(Date, Data)
+    case intermediate_key_creating(expiration: Date, data: Data)
+
     case signature_was_requested_but_not_provided(HTTPRequest)
 
     case request_date_missing_from_headers(HTTPRequest)
 
     #if DEBUG
     case verifying_signature(signature: Data,
+                             publicKey: Data,
                              parameters: Signing.SignatureParameters,
                              salt: Data,
                              payload: Data,
@@ -56,6 +62,20 @@ extension SigningStrings: LogMessage {
         case .signature_failed_verification:
             return "Signature failed verification"
 
+        case let .intermediate_key_failed_verification(signature):
+            return "Intermediate key failed verification: \(signature)"
+
+        case let .intermediate_key_failed_creation(error):
+            return "Failed initializing intermediate key: \(error.localizedDescription)\n" +
+            "This will be reported as a verification failure."
+
+        case let .intermediate_key_expired(date, data):
+            return "Intermediate key expired at '\(date)' (parsed from '\(data.asString)'). " +
+            "This will be reported as a verification failure."
+
+        case let .intermediate_key_creating(expiration, data):
+            return "Creating intermediate key with expiration '\(expiration)': \(data.asString)"
+
         case let .request_date_missing_from_headers(request):
             return "Request to '\(request.path)' required a request date but none was provided. " +
             "This will be reported as a verification failure."
@@ -76,6 +96,7 @@ extension SigningStrings: LogMessage {
 
         case let .verifying_signature(
             signature,
+            publicKey,
             parameters,
             salt,
             payload,
@@ -83,6 +104,7 @@ extension SigningStrings: LogMessage {
         ):
             return """
             Verifying signature '\(signature.base64EncodedString())'
+            Public key: '\(publicKey.asString)'
             Parameters: \(parameters),
             Salt: \(salt.base64EncodedString()),
             Payload: \(payload.base64EncodedString()),

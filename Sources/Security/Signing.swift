@@ -55,7 +55,7 @@ enum Signing: SigningType {
         }
 
         do {
-            return try Curve25519.Signing.PublicKey(rawRepresentation: key)
+            return try Self.createPublicKey(with: key)
         } catch {
             fail(Strings.signing.invalid_public_key(error.localizedDescription))
         }
@@ -76,7 +76,12 @@ enum Signing: SigningType {
             return false
         }
 
-        // Fixme: verify public key
+        guard let intermediatePublicKey = Self.extractAndVerifyIntermediateKey(
+            from: signature,
+            publicKey: publicKey
+        ) else {
+            return false
+        }
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
@@ -85,6 +90,7 @@ enum Signing: SigningType {
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
             signature: signature,
+            publicKey: intermediatePublicKey.rawRepresentation,
             parameters: parameters,
             salt: salt,
             payload: payload,
@@ -92,7 +98,7 @@ enum Signing: SigningType {
         ))
         #endif
 
-        let isValid = publicKey.isValidSignature(payload, for: messageToVerify)
+        let isValid = intermediatePublicKey.isValidSignature(payload, for: messageToVerify)
 
         if !isValid {
             Logger.warn(Strings.signing.signature_failed_verification)
@@ -121,7 +127,11 @@ enum Signing: SigningType {
 
     // MARK: -
 
-    private static let publicKey = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeA="
+    /// The actual algorithm used to verify signatures.
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+    fileprivate typealias Algorithm = Curve25519.Signing.PublicKey
+
+    private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
 
 }
 
@@ -168,11 +178,12 @@ extension Signing {
 protocol SigningPublicKey {
 
     func isValidSignature(_ signature: Data, for data: Data) -> Bool
+    var rawRepresentation: Data { get }
 
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-extension CryptoKit.Curve25519.Signing.PublicKey: SigningPublicKey {}
+extension Signing.Algorithm: SigningPublicKey {}
 
 // MARK: - Internal implementation (visible for tests)
 
@@ -195,14 +206,6 @@ extension Signing {
             case .payload: return 64
             }
         }
-
-        static let signedPublicKeySize: Int = [Self]([
-            .intermediatePublicKey,
-            .intermediateKeyExpiration,
-            .intermediateKeySignature
-        ])
-        .map(\.size)
-        .sum()
 
         static let totalSize: Int = Self.allCases.map(\.size).sum()
 
@@ -239,7 +242,50 @@ extension Signing.SignatureParameters {
 
 private final class BundleToken: NSObject {}
 
-// MARK: - Data extensions
+private extension Signing {
+
+    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
+    static func createPublicKey(with data: Data) throws -> PublicKey {
+        return try Algorithm(rawRepresentation: data)
+    }
+
+    static func extractAndVerifyIntermediateKey(
+        from signature: Data,
+        publicKey: Signing.PublicKey
+    ) -> Signing.PublicKey? {
+        guard #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) else { return nil }
+
+        let intermediatePublicKey = signature.component(.intermediatePublicKey)
+        let intermediateKeyExpiration = signature.component(.intermediateKeyExpiration)
+        let intermediateKeySignature = signature.component(.intermediateKeySignature)
+
+        guard publicKey.isValidSignature(intermediateKeySignature,
+                                         for: intermediateKeyExpiration + intermediatePublicKey) else {
+            Logger.warn(Strings.signing.intermediate_key_failed_verification(signature: intermediateKeySignature))
+            return nil
+        }
+
+        let expirationDate = Date(daysSince1970: UInt32(littleEndian32Bits: intermediateKeyExpiration))
+
+        guard expirationDate.timeIntervalSince(Date()) >= 0 else {
+            Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, intermediateKeyExpiration))
+            return nil
+        }
+
+        Logger.verbose(Strings.signing.intermediate_key_creating(expiration: expirationDate,
+                                                                 data: intermediatePublicKey))
+
+        do {
+            return try Self.createPublicKey(with: intermediatePublicKey)
+        } catch {
+            Logger.error(Strings.signing.intermediate_key_failed_creation(error))
+            return nil
+        }
+    }
+
+}
+
+// MARK: - Extensions
 
 private extension Data {
 
@@ -249,6 +295,14 @@ private extension Data {
         let size = component.size
 
         return self.subdata(in: offset ..< offset + size)
+    }
+
+}
+
+private extension Date {
+
+    init(daysSince1970: UInt32) {
+        self.init(timeIntervalSince1970: DispatchTimeInterval.days(Int(daysSince1970)).seconds)
     }
 
 }
