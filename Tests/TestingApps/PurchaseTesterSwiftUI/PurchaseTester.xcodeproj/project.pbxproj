@@ -26,6 +26,7 @@
 		4F1F5E9B2A18124C00C4EB88 /* ProxyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9A2A18124C00C4EB88 /* ProxyViewModel.swift */; };
 		4F1F5E9D2A1814EF00C4EB88 /* ProxyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1F5E9C2A1814EF00C4EB88 /* ProxyView.swift */; };
 		4F4F782F2A18542200689BAA /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4F782E2A18542200689BAA /* LocalizedAlertError.swift */; };
+		4F7EB8C12A460FB900242CF0 /* AppIcon.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57E9CF08290B0BE500EE12D1 /* AppIcon.xcassets */; };
 		4F942FA82A449156007D0346 /* AdaptiveStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F942FA72A449156007D0346 /* AdaptiveStack.swift */; };
 		4FDA13872A33DBE300C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */; };
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
@@ -482,6 +483,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F7EB8C12A460FB900242CF0 /* AppIcon.xcassets in Resources */,
 				578DAA102947DD21001700FD /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -748,13 +750,13 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match Development com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match Development com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match Development com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,6";
 			};
 			name = Debug;
 		};
@@ -790,13 +792,13 @@
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.revenuecat.sampleapp";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "match AppStore com.revenuecat.sampleapp macos";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=watchos*]" = "match AppStore com.revenuecat.sampleapp";
-				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx watchos watchsimulator xros xrsimulator";
+				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator macosx xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
+				TARGETED_DEVICE_FAMILY = "1,2,3,6";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

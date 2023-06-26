@@ -107,6 +107,7 @@ struct HomeView: View {
                     }
                     #endif
                     
+                    #if !os(watchOS)
                     Button {
                         Task<Void, Never> {
                             do {
@@ -118,6 +119,7 @@ struct HomeView: View {
                     } label: {
                         Text("Manage Subscriptions")
                     }
+                    #endif
 
                     #if os(iOS)
                     Button {
@@ -169,7 +171,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        #if DEBUG && !os(xrOS)
+        #if DEBUG && !os(xrOS) && !os(watchOS)
         if #available(iOS 16.0, macOS 13.0, *) {
             self.content
                 .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)

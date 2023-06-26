@@ -35,7 +35,9 @@ struct LoggerView: View {
             self.item(entry)
         }
         .navigationTitle("Logs")
+        #if !os(watchOS)
         .listRowSeparator(.hidden)
+        #endif
         .transition(.slide)
         .animation(.easeInOut(duration: 1), value: self.logger.messages)
         .toolbar {
