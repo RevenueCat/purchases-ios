@@ -37,10 +37,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
         expect(firstPriceFormatter) === secondPriceFormatter
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testReturnsCachedPriceFormatterForSK2() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
         let currencyCode = "USD"
         let firstPriceFormatter = self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
 

@@ -41,7 +41,6 @@ final class PriceFormatterProvider: Sendable {
 
     private let cachedPriceFormatterForSK2: Atomic<NumberFormatter?> = nil
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func priceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
         func makePriceFormatterForSK2(with currencyCode: String) -> NumberFormatter {
             let formatter = NumberFormatter()
