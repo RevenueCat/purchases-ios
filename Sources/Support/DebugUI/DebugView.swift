@@ -12,7 +12,6 @@
 //  Created by Nacho Soto on 5/30/23.
 
 #if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
-#if !(swift(>=5.9) && os(xrOS))
 
 import SwiftUI
 
@@ -54,11 +53,7 @@ public extension View {
     /// ```
     func debugRevenueCatOverlay(isPresented: Binding<Bool>) -> some View {
         self.bottomSheet(
-            presentationDetents: [
-                .fraction(0.2),
-                .fraction(0.6),
-                .large
-            ],
+            presentationDetents: self.detents,
             isPresented: isPresented,
             largestUndimmedIdentifier: .fraction(0.6),
             cornerRadius: DebugSwiftUIRootView.cornerRadius,
@@ -66,12 +61,25 @@ public extension View {
                 DebugSwiftUIRootView()
                 #if os(macOS)
                     .frame(width: 500, height: 600)
+                #elseif swift(>=5.9) && os(xrOS)
+                    .frame(width: 600, height: 700)
                 #endif
             }
         )
     }
 
+    private var detents: Set<PresentationDetent> {
+        #if swift(>=5.9) && os(xrOS)
+            return [.large]
+        #else
+            return [
+                .fraction(0.2),
+                .fraction(0.6),
+                .large
+            ]
+        #endif
+    }
+
 }
 
-#endif
 #endif

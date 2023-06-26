@@ -12,7 +12,6 @@
 //  Created by Nacho Soto on 5/30/23.
 
 #if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
-#if !(swift(>=5.9) && os(xrOS))
 
 import StoreKit
 import SwiftUI
@@ -294,11 +293,13 @@ private struct DebugOfferingView: View {
                 .foregroundStyle(.secondary)
                 .font(.subheadline)
             }
+            #if !(swift(>=5.9) && os(xrOS))
             .containerBackground(for: .subscriptionStoreFullHeight) {
                 Rectangle()
                     .edgesIgnoringSafeArea(.all)
                     .foregroundStyle(Color.blue.gradient.quaternary)
             }
+            #endif
         }
         .backgroundStyle(.clear)
         .subscriptionStoreButtonLabel(.multiline)
@@ -413,5 +414,4 @@ private struct ProductStyle: ProductViewStyle {
 }
 #endif
 
-#endif
 #endif
