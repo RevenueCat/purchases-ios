@@ -88,7 +88,7 @@ public struct TestStoreProduct {
     // swiftlint:enable missing_docs
 
     private let priceFormatterProvider: PriceFormatterProvider = .init()
-    
+
 }
 
 // Ensure consistency with the internal type
