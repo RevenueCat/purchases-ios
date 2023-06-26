@@ -52,9 +52,12 @@ func main() -> Int {
     checkNonSubscriptionTransactionAPI()
     checkTransactionAPI()
 
+    checkTestStoreProductAPI()
     checkStoreProductAPI()
 
+    checkTestStoreProductDiscountAPI()
     checkStoreProductDiscountAPI()
+
     checkPaymentModeEnum()
 
     checkSubscriptionPeriodAPI()

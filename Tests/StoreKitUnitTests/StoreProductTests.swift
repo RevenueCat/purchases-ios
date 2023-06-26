@@ -100,6 +100,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(storeProduct.sk1Product) === sk1Product.underlyingSK1Product
 
+        expect(storeProduct.isTestProduct) == false
+
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
         expect(storeProduct.localizedDescription) == "Monthly subscription with a 1-week free trial"
@@ -151,6 +153,8 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         // Can't use `===` because `SK2Product` is a `struct`
         expect(storeProduct.sk2Product) == storeProduct.sk2Product
+
+        expect(storeProduct.isTestProduct) == false
 
         expect(storeProduct.productIdentifier) == Self.productID
         expect(storeProduct.productCategory) == .subscription
@@ -339,6 +343,45 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         expect(subscription.productCategory) == .subscription
         expect(nonSubscription.productCategory) == .nonSubscription
+    }
+
+    func testTestProduct() {
+        let title = "Product"
+        let price: Decimal = 3.99
+        let localizedPrice = "$3.99"
+        let identifier = "com.revenuecat.product"
+        let type: StoreProduct.ProductType = .autoRenewableSubscription
+        let description = "Description"
+        let subscriptionGroup = "group"
+        let period: SubscriptionPeriod = .init(value: 1, unit: .month)
+
+        let product = TestStoreProduct(
+            localizedTitle: title,
+            price: price,
+            localizedPriceString: localizedPrice,
+            productIdentifier: identifier,
+            productType: type,
+            localizedDescription: description,
+            subscriptionGroupIdentifier: subscriptionGroup,
+            subscriptionPeriod: period,
+            introductoryDiscount: nil,
+            discounts: []
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.isTestProduct) == true
+        expect(storeProduct.localizedTitle) == title
+        expect(storeProduct.price) == price
+        expect(storeProduct.localizedPriceString) == localizedPrice
+        expect(storeProduct.productIdentifier) == identifier
+        expect(storeProduct.productType) == type
+        expect(storeProduct.productCategory) == .subscription
+        expect(storeProduct.localizedDescription) == description
+        expect(storeProduct.subscriptionGroupIdentifier) == subscriptionGroup
+        expect(storeProduct.subscriptionPeriod) == period
+        expect(storeProduct.currencyCode) == Locale.current.rc_currencyCode
+        expect(storeProduct.priceFormatter).toNot(beNil())
+        expect(storeProduct.isFamilyShareable) == false
     }
 
 }

@@ -277,6 +277,14 @@ extension StoreProduct {
         return (self.product as? SK2StoreProduct)?.underlyingSK2Product
     }
 
+    var isTestProduct: Bool {
+        #if DEBUG
+        return self.product is TestStoreProduct
+        #else
+        return false
+        #endif
+    }
+
 }
 
 // MARK: - Renames

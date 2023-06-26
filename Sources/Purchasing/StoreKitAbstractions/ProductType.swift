@@ -88,3 +88,6 @@ extension StoreProduct.ProductType {
     }
 
 }
+
+extension StoreProduct.ProductCategory: Sendable {}
+extension StoreProduct.ProductType: Sendable {}

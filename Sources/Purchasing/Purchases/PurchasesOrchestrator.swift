@@ -289,6 +289,8 @@ final class PurchasesOrchestrator {
                           package: package,
                           promotionalOffer: nil,
                           completion: completion)
+        } else if product.isTestProduct {
+            self.handleTestProduct(completion)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -315,6 +317,8 @@ final class PurchasesOrchestrator {
                           package: package,
                           promotionalOffer: promotionalOffer,
                           completion: completion)
+        } else if product.isTestProduct {
+            self.handleTestProduct(completion)
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -1146,6 +1150,17 @@ private extension PurchasesOrchestrator {
             }
 
             completion(result)
+        }
+    }
+
+    func handleTestProduct(_ completion: @escaping PurchaseCompletedBlock) {
+        self.operationDispatcher.dispatchOnMainActor {
+            completion(
+                nil,
+                nil,
+                ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
+                false
+            )
         }
     }
 

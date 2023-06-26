@@ -45,11 +45,19 @@ import Foundation
         return self.storeProduct.localizedIntroductoryPriceString
     }
 
-    init(identifier: String, packageType: PackageType, storeProduct: StoreProductType, offeringIdentifier: String) {
+    /// Initialize a ``Package``.
+    public init(
+        identifier: String,
+        packageType: PackageType,
+        storeProduct: StoreProduct,
+        offeringIdentifier: String
+    ) {
         self.identifier = identifier
         self.packageType = packageType
-        self.storeProduct = StoreProduct.from(product: storeProduct)
+        self.storeProduct = storeProduct
         self.offeringIdentifier = offeringIdentifier
+
+        super.init()
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
