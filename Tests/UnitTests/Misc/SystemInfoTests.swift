@@ -3,6 +3,10 @@ import XCTest
 
 @testable import RevenueCat
 
+#if os(watchOS)
+import WatchKit
+#endif
+
 class SystemInfoTests: TestCase {
 
     func testProxyURL() {
@@ -85,12 +89,67 @@ class SystemInfoTests: TestCase {
         )) == false
     }
 
-    func testReceiptFetchRetryIsDisabledByDefault() throws {
-        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
-        let settings = systemInfo.dangerousSettings.internalSettings
-
-        expect(settings.enableReceiptFetchRetry) == false
+    func testReceiptFetchRetryIsDisabledByDefault() {
+        expect(SystemInfo.default.dangerousSettings.internalSettings.enableReceiptFetchRetry) == false
     }
+
+    // MARK: - identifierForVendor
+
+    func testOverridenIdentifierForVendor() throws {
+        let override = UUID()
+
+        let info = try SystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: .init(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(identifierForVendorOverride: override))
+        )
+
+        expect(info.identifierForVendor) == override.uuidString
+    }
+
+    #if os(iOS) || os(tvOS)
+
+    func testIdentifierForVendor() {
+        expect(SystemInfo.default.identifierForVendor) == UIDevice.current.identifierForVendor?.uuidString
+    }
+
+    #elseif os(watchOS)
+
+    func testIdentifierForVendor() {
+        expect(SystemInfo.default.identifierForVendor) == WKInterfaceDevice.current().identifierForVendor?.uuidString
+    }
+
+    #elseif os(macOS) || targetEnvironment(macCatalyst)
+
+    func testIdentifierForVendorInSandbox() {
+        let info = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(true)
+        )
+
+        expect(info.identifierForVendor) == MacDevice.identifierForVendor?.uuidString
+    }
+
+    func testIdentifierForVendorNotSandbox() {
+        let info = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(false)
+        )
+
+        expect(info.identifierForVendor).to(beNil())
+    }
+
+    #else
+
+    func testIdentifierForVendorIsNil() {
+        expect(SystemInfo.default.identifierForVendor).to(beNil())
+    }
+
+    #endif
 
 }
 
@@ -109,6 +168,11 @@ private extension SystemInfo {
                               finishTransactions: false,
                               bundle: bundle,
                               sandboxEnvironmentDetector: sandboxDetector)
+    }
+
+    static var `default`: SystemInfo {
+        // swiftlint:disable:next force_try
+        return try! .init(platformInfo: nil, finishTransactions: true)
     }
 
 }

@@ -81,12 +81,18 @@ class SystemInfo {
         // https://developer.apple.com/documentation/uikit/uidevice?language=swift
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
 
+        #if DEBUG
+        if let override = self.dangerousSettings.internalSettings.identifierForVendorOverride {
+            return override.uuidString
+        }
+        #endif
+
         #if os(iOS) || os(tvOS)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
         #elseif os(macOS) || targetEnvironment(macCatalyst)
-            return isSandbox ? MacDevice.identifierForVendor?.uuidString : nil
+            return self.isSandbox ? MacDevice.identifierForVendor?.uuidString : nil
         #else
             return nil
         #endif

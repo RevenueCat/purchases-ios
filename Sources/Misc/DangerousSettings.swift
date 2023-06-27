@@ -20,15 +20,18 @@ import Foundation
         #if DEBUG
         let forceServerErrors: Bool
         let forceSignatureFailures: Bool
+        let identifierForVendorOverride: UUID?
 
         init(
             enableReceiptFetchRetry: Bool = false,
             forceServerErrors: Bool = false,
-            forceSignatureFailures: Bool = false
+            forceSignatureFailures: Bool = false,
+            identifierForVendorOverride: UUID? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.forceServerErrors = forceServerErrors
             self.forceSignatureFailures = forceSignatureFailures
+            self.identifierForVendorOverride = identifierForVendorOverride
         }
         #else
         init(enableReceiptFetchRetry: Bool = false) {
@@ -116,6 +119,9 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }
+
+    /// Returning a non-`nil` value allows overriding the current `SystemInfo.identifierForVendor`
+    var identifierForVendorOverride: UUID? { get }
     #endif
 
 }
