@@ -127,6 +127,9 @@ private extension BaseBackendIntegrationTests {
     func createUserDefaults() {
         self.userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
         self.userDefaults.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
+        // See also `SynchronizedUserDefaults`.
+        // While Apple states `this method is unnecessary and shouldn't be used`, it's still
+        // necessary to call `synchronize` in order for the `removePersistentDomain` changes to take effect.
         self.userDefaults.synchronize()
 
         // Verify that user defaults is indeed empty.
