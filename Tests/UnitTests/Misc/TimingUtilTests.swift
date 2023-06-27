@@ -121,6 +121,72 @@ class TimingUtilAsyncTests: TestCase {
         expect(logger.messages).to(beEmpty())
     }
 
+    func testMeasureSyncAndLogDoesNotLogIfLowerThanThreshold() {
+        let logger = TestLogHandler()
+
+        let expectedResult = Int.random(in: 0..<1000)
+        let threshold: DispatchTimeInterval = .milliseconds(10)
+        let sleepDuration = threshold + .milliseconds(-5)
+
+        let result: Int = TimingUtil.measureSyncAndLogIfTooSlow(threshold: threshold.seconds,
+                                                                message: "Too slow") {
+            Thread.sleep(forTimeInterval: sleepDuration.seconds)
+
+            return expectedResult
+        }
+
+        expect(result) == expectedResult
+        expect(logger.messages).to(beEmpty())
+    }
+
+    func testMeasureSyncAndLogThrowsError() {
+        let logger = TestLogHandler()
+
+        let expectedError: ErrorCode = .storeProblemError
+
+        do {
+            _ = try TimingUtil.measureSyncAndLogIfTooSlow(threshold: 0.001,
+                                                          message: "Too slow") {
+                throw expectedError
+            }
+
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+
+        expect(logger.messages).to(beEmpty())
+    }
+
+    func testMeasureSyncAndLogWithResult() {
+        let logger = TestLogHandler()
+
+        let expectedResult = Int.random(in: 0..<1000)
+        let threshold: DispatchTimeInterval = .milliseconds(10)
+        let sleepDuration = threshold + .milliseconds(10)
+
+        let message = "Computation took too long"
+        let level: LogLevel = .info
+
+        let result = TimingUtil.measureSyncAndLogIfTooSlow(threshold: threshold.seconds,
+                                                           message: message,
+                                                           level: level) { () -> Int in
+            Thread.sleep(forTimeInterval: sleepDuration.seconds)
+
+            return expectedResult
+        }
+
+        expect(result) == expectedResult
+
+        // Expected: 🍎⚠️ Computation took too long (0.02 seconds)
+        logger.verifyMessageWasLogged(
+            String(format: "%@ %@ (%.2f seconds)",
+                   LogIntent.appleWarning.prefix,
+                   message,
+                   sleepDuration.seconds),
+            level: level
+        )
+    }
 }
 
 class TimingUtilCompletionBlockTests: TestCase {

@@ -19,6 +19,8 @@ internal enum TimingUtil {
 
 }
 
+// MARK: - async API
+
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TimingUtil {
 
@@ -104,6 +106,92 @@ extension TimingUtil {
     }
 
 }
+
+// MARK: - Synchronous API
+
+extension TimingUtil {
+
+    /// Measures the time to execute `work` and returns the result and the duration.
+    /// Example:
+    /// ```swift
+    /// let (result, duration) = try TimingUtil.measure {
+    ///    return try method()
+    /// }
+    /// ```
+    static func measureSync<Value>(
+        _ work: () throws -> Value
+    ) rethrows -> (result: Value, duration: Duration) {
+        let start: DispatchTime = .now()
+        let result = try work()
+
+        return (
+            result: result,
+            duration: start.durationUntilNow
+        )
+    }
+
+    /// Measures the time to execute `work`, returns the result,
+    /// and logs `message` if duration exceeded `threshold`.
+    /// Example:
+    /// ```swift
+    /// let result = try TimingUtil.measureAndLogIfTooSlow(
+    ///     threshold: .productRequest,
+    ///     message: "Computation too slow",
+    ///     level: .warn,
+    ///     intent: .appleWarning
+    /// ) {
+    ///    try method()
+    /// }
+    /// ```
+    static func measureSyncAndLogIfTooSlow<Value, Message: CustomStringConvertible & Sendable>(
+        threshold: Configuration.TimingThreshold,
+        message: Message,
+        level: LogLevel = .warn,
+        intent: LogIntent = .appleWarning,
+        _ work: () throws -> Value
+    ) rethrows -> Value {
+        return try self.measureSyncAndLogIfTooSlow(
+            threshold: threshold.rawValue,
+            message: message,
+            level: level,
+            intent: intent,
+            work)
+    }
+
+    /// Measures the time to execute `work`, returns the result,
+    /// and logs `message` if duration exceeded `threshold`.
+    /// Example:
+    /// ```swift
+    /// let result = try TimingUtil.measureAndLogIfTooSlow(
+    ///     threshold: .productRequest,
+    ///     message: "Computation too slow",
+    ///     level: .warn,
+    ///     intent: .appleWarning
+    /// ) {
+    ///    try asyncMethod()
+    /// }
+    /// ```
+    static func measureSyncAndLogIfTooSlow<Value, Message: CustomStringConvertible & Sendable>(
+        threshold: Duration,
+        message: Message,
+        level: LogLevel = .warn,
+        intent: LogIntent = .appleWarning,
+        _ work: () throws -> Value
+    ) rethrows -> Value {
+        let (result, duration) = try self.measureSync(work)
+
+        Self.logIfRequired(duration: duration,
+                           threshold: threshold,
+                           message: message,
+                           level: level,
+                           intent: intent)
+
+        return result
+    }
+
+}
+
+// MARK: - completion-block API
 
 extension TimingUtil {
 
