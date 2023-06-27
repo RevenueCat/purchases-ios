@@ -163,7 +163,7 @@ BOOL isAnonymous;
     
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    if (@available(iOS 12.2, *)) {
+    if (@available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)) {
         [p getPromotionalOfferForProductDiscount:stpd
                                      withProduct:storeProduct
                                   withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
