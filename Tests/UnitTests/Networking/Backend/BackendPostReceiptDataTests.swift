@@ -88,6 +88,50 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithOverridenIDFV() throws {
+        let idfv = UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")
+
+        self.createDependencies(
+            try SystemInfo(
+                platformInfo: nil,
+                finishTransactions: false,
+                dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(identifierForVendorOverride: idfv)
+                )
+            )
+        )
+
+        let path: HTTPRequest.Path = .postReceiptData
+
+        self.httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let observerMode = true
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
+                              observerMode: observerMode,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testCachesRequestsForSameReceipt() {
         httpClient.mock(
             requestPath: .postReceiptData,

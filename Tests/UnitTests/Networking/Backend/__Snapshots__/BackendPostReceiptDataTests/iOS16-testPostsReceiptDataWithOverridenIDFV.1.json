@@ -11,12 +11,15 @@
           "value" : "authorized"
         }
       },
-      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
-      "idfv" : "123F5723-7750-4A15-BF23-C2C35AE34D09",
-      "initiation_source" : "queue",
-      "is_restore" : true,
-      "observer_mode" : false,
-      "presented_offering_identifier" : "offering_b"
+      "currency" : "USD",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "idfv" : "12345678-1234-1234-1234-C2C35AE34D09",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : true,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

@@ -81,12 +81,15 @@ class SystemInfo {
         // https://developer.apple.com/documentation/uikit/uidevice?language=swift
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
 
+        // Note that this value should ignore `InternalDangerousSettingsType.identifierForVendorOverride`,
+        // because `X-Apple-Device-Identifier` must be consistent with `AppleReceipt.sha1Hash`.
+
         #if os(iOS) || os(tvOS)
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
         #elseif os(macOS) || targetEnvironment(macCatalyst)
-            return isSandbox ? MacDevice.identifierForVendor?.uuidString : nil
+            return self.isSandbox ? MacDevice.identifierForVendor?.uuidString : nil
         #else
             return nil
         #endif

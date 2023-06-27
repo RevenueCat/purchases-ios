@@ -110,7 +110,8 @@ final class CustomerAPI {
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
             productData: productData,
             receiptData: receiptData,
-            observerMode: observerMode
+            observerMode: observerMode,
+            identifierForVendor: self.backendConfig.systemInfo.identifierForVendorForReceiptIdentification
         )
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,
@@ -138,5 +139,41 @@ private extension PurchasedTransactionData {
 
         return copy
     }
+
+}
+
+// MARK: -
+
+private extension SystemInfo {
+
+    /// The `X-Apple-Device-Identifier` is never overriden, as that must be consistent with `AppleReceipt.sha1Hash`,
+    /// but this allows the backend to disambiguate between receipts created across
+    /// separate test invocations when in the sandbox.
+    var identifierForVendorForReceiptIdentification: String? {
+        #if DEBUG
+        if let override = self.identifierForVendorOverride {
+            Logger.warn(Strings.receipt.posting_receipt_with_overriden_idfv(override))
+            return override
+        } else {
+            return self.identifierForVendor
+        }
+        #else
+        return self.identifierForVendor
+        #endif
+    }
+
+    #if DEBUG
+    private var identifierForVendorOverride: String? {
+        // Only override in sandbox and when running RC tests
+        guard self.isSandbox, ProcessInfo.isRunningRevenueCatTests else { return nil }
+
+        if let override = self.dangerousSettings.internalSettings.identifierForVendorOverride {
+            return override.uuidString
+        } else {
+            // Produce a consistent UUID for snapshot tests.
+            return "123F5723-7750-4A15-BF23-C2C35AE34D09"
+        }
+    }
+    #endif
 
 }

@@ -39,6 +39,8 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 class BaseBackendIntegrationTests: XCTestCase {
 
     private var userDefaults: UserDefaults!
+    private var testUUID: UUID!
+
     // swiftlint:disable:next weak_delegate
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
@@ -87,6 +89,11 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.mainThreadMonitor.run()
 
         self.createUserDefaults()
+
+        // We use a different IDFV for each test to ensure the backend
+        // doesn't produce conflicts when producing similar receipts across
+        // separate test invocations.
+        self.testUUID = UUID()
 
         self.clearReceiptIfExists()
         await self.createPurchases()
@@ -191,5 +198,6 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var enableReceiptFetchRetry: Bool { return true }
     var forceServerErrors: Bool { return false }
     var forceSignatureFailures: Bool { return false }
+    var identifierForVendorOverride: UUID? { return self.testUUID }
 
 }

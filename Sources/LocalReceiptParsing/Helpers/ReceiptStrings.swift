@@ -28,6 +28,7 @@ enum ReceiptStrings {
     case parsing_receipt
     case refreshing_empty_receipt
     case unable_to_load_receipt(Error)
+    case posting_receipt_with_overriden_idfv(String)
     case posting_receipt(AppleReceipt)
     case receipt_subscription_purchase_equals_expiration(
         productIdentifier: String,
@@ -86,6 +87,9 @@ extension ReceiptStrings: LogMessage {
         case let .unable_to_load_receipt(error):
             return "Unable to load receipt, ensure you are logged in to a valid Apple account.\n" +
             "Error: \(error)"
+
+        case let .posting_receipt_with_overriden_idfv(idfv):
+            return "Posting receipt with an overriden IDFV: \(idfv)"
 
         case let .posting_receipt(receipt):
             return "Posting receipt (note: the contents might not be up-to-date, " +
