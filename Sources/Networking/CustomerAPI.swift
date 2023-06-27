@@ -168,7 +168,7 @@ private extension SystemInfo {
         guard self.isSandbox, ProcessInfo.isRunningRevenueCatTests else { return nil }
 
         if let override = self.dangerousSettings.internalSettings.identifierForVendorOverride {
-            return override.uuidString
+            return override
         } else {
             // Produce a consistent UUID for snapshot tests.
             return "123F5723-7750-4A15-BF23-C2C35AE34D09"

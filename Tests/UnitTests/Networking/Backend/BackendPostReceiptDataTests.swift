@@ -89,7 +89,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     }
 
     func testPostsReceiptDataWithOverridenIDFV() throws {
-        let idfv = UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")
+        let idfv = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
         self.createDependencies(
             try SystemInfo(
@@ -109,21 +109,17 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        let isRestore = false
-        let observerMode = true
-        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
-
         waitUntil { completed in
             self.backend.post(receiptData: Self.receiptData,
-                              productData: productData,
+                              productData: .createMockProductData(),
                               transactionData: .init(
                                  appUserID: Self.userID,
                                  presentedOfferingID: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
-                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                                 source: .init(isRestore: false, initiationSource: .purchase)
                               ),
-                              observerMode: observerMode,
+                              observerMode: true,
                               completion: { _ in
                 completed()
             })

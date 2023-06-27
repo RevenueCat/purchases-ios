@@ -198,6 +198,6 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var enableReceiptFetchRetry: Bool { return true }
     var forceServerErrors: Bool { return false }
     var forceSignatureFailures: Bool { return false }
-    var identifierForVendorOverride: UUID? { return self.testUUID }
+    var identifierForVendorOverride: String? { return self.testUUID.uuidString }
 
 }

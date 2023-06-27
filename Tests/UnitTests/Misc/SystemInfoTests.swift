@@ -177,7 +177,7 @@ private extension SystemInfo {
             finishTransactions: true,
             dangerousSettings: .init(
                 autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(identifierForVendorOverride: UUID())
+                internalSettings: DangerousSettings.Internal(identifierForVendorOverride: UUID().uuidString)
             )
         )
     }

@@ -20,13 +20,13 @@ import Foundation
         #if DEBUG
         let forceServerErrors: Bool
         let forceSignatureFailures: Bool
-        let identifierForVendorOverride: UUID?
+        let identifierForVendorOverride: String?
 
         init(
             enableReceiptFetchRetry: Bool = false,
             forceServerErrors: Bool = false,
             forceSignatureFailures: Bool = false,
-            identifierForVendorOverride: UUID? = nil
+            identifierForVendorOverride: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.forceServerErrors = forceServerErrors
@@ -121,7 +121,7 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var forceSignatureFailures: Bool { get }
 
     /// Returning a non-`nil` value allows overriding the current `SystemInfo.identifierForVendor`
-    var identifierForVendorOverride: UUID? { get }
+    var identifierForVendorOverride: String? { get }
     #endif
 
 }
