@@ -12,6 +12,7 @@
         }
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "idfv" : "123F5723-7750-4A15-BF23-C2C35AE34D09",
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : false
