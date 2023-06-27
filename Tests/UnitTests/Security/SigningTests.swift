@@ -37,17 +37,6 @@ class SigningTests: TestCase {
         expect(key.rawRepresentation).toNot(beEmpty())
     }
 
-    func testThrowsErrorIfPublicKeyFileCannotBeParsed() throws {
-        expect {
-            try Signing.loadPublicKey(with: .init([1, 2, 3]))
-        }.to(throwError { error in
-            expect(error).to(matchError(ErrorCode.configurationError))
-            expect(error.localizedDescription) == "There is an issue with your configuration. " +
-            "Check the underlying error for more details. Failed to load public key. " +
-            "Ensure that it's a valid ed25519 key."
-        })
-    }
-
     func testVerifySignatureWithInvalidSignatureReturnsFalseAndLogsError() throws {
         let logger = TestLogHandler()
 

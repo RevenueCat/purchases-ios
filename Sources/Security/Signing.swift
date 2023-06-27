@@ -159,28 +159,6 @@ extension CryptoKit.Curve25519.Signing.PublicKey: SigningPublicKey {}
 
 // MARK: - Internal implementation (visible for tests)
 
-extension Signing {
-
-    /// Parses the binary `key` and returns a `PublicKey`
-    /// - Throws: ``ErrorCode/configurationError`` if the certificate couldn't be loaded.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    static func loadPublicKey(with data: Data) throws -> PublicKey {
-        guard !data.isEmpty else {
-            throw ErrorUtils.configurationError(message: Strings.configure.public_key_is_empty.description)
-        }
-
-        do {
-            return try CryptoKit.Curve25519.Signing.PublicKey(rawRepresentation: data)
-        } catch {
-            throw ErrorUtils.configurationError(
-                message: Strings.configure.public_key_could_not_load_key.description,
-                underlyingError: error
-            )
-        }
-    }
-
-}
-
 extension Signing.SignatureParameters {
 
     var asData: Data {

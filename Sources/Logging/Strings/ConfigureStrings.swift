@@ -65,10 +65,6 @@ enum ConfigureStrings {
 
     case public_key_could_not_be_found(fileName: String)
 
-    case public_key_is_empty
-
-    case public_key_could_not_load_key
-
     case custom_entitlements_computation_enabled
 
     case custom_entitlements_computation_enabled_but_no_app_user_id
@@ -163,12 +159,6 @@ extension ConfigureStrings: LogMessage {
 
         case let .public_key_could_not_be_found(fileName):
             return "Could not find public key '\(fileName)'"
-
-        case .public_key_is_empty:
-            return "Attempted to load an empty public key."
-
-        case .public_key_could_not_load_key:
-            return "Failed to load public key. Ensure that it's a valid ed25519 key."
 
         case .custom_entitlements_computation_enabled:
             return "Entering customEntitlementComputation mode. CustomerInfo cache will not be " +
