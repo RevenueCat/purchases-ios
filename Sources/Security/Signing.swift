@@ -265,10 +265,7 @@ private extension Signing {
             return nil
         }
 
-        let expirationDate = Date(daysSince1970: UInt32(littleEndian32Bits: intermediateKeyExpiration))
-
-        guard expirationDate.timeIntervalSince(Date()) >= 0 else {
-            Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, intermediateKeyExpiration))
+        guard let expirationDate = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration) else {
             return nil
         }
 
@@ -281,6 +278,24 @@ private extension Signing {
             Logger.error(Strings.signing.intermediate_key_failed_creation(error))
             return nil
         }
+    }
+
+    /// - Returns: `nil` if the key is expired or has an invalid expiration date.
+    private static func extractAndVerifyIntermediateKeyExpiration(_ expirationData: Data) -> Date? {
+        let daysSince1970 = UInt32(littleEndian32Bits: expirationData)
+
+        guard daysSince1970 > 0 else {
+            Logger.warn(Strings.signing.intermediate_key_invalid(expirationData))
+            return nil
+        }
+
+        let expirationDate = Date(daysSince1970: daysSince1970)
+        guard expirationDate.timeIntervalSince(Date()) >= 0 else {
+            Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, expirationData))
+            return nil
+        }
+
+        return expirationDate
     }
 
 }

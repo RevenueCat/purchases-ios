@@ -92,6 +92,39 @@ class SigningTests: TestCase {
         logger.verifyMessageWasLogged("Intermediate key expired", level: .warn)
     }
 
+    func testVerifySignatureWithInvalidIntermediateSignatureExpirationReturnsFalseAndLogsError() throws {
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: nil)
+        let salt = Self.createSalt()
+
+        let signature = try self.sign(parameters: .init(message: message.asData,
+                                                        nonce: nonce.asData,
+                                                        requestDate: requestDate),
+                                      salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let logger = TestLogHandler()
+
+        expect(Signing.verify(
+            signature: fullSignature.base64EncodedString(),
+            with: .init(
+                message: message.asData,
+                nonce: nonce.asData,
+                requestDate: requestDate
+            ),
+            publicKey: self.publicKey
+        )) == false
+
+        logger.verifyMessageWasLogged(Strings.signing.intermediate_key_invalid(Self.invalidIntermediateKeyExpiration),
+                                      level: .warn)
+    }
+
     func testVerifySignatureWithInvalidSignature() throws {
         expect(Signing.verify(
             signature: "invalid signature".asData.base64EncodedString(),
@@ -551,9 +584,10 @@ private extension SigningTests {
         return Array(repeating: "a", count: Signing.SignatureComponent.salt.size).joined()
     }
 
-    func createIntermediatePublicKeyData(expiration: Date) throws -> Data {
+    /// - Parameter expiration: pass `nil` to create a "0" expiration date.
+    func createIntermediatePublicKeyData(expiration: Date?) throws -> Data {
         let intermediateKey = self.publicIntermediateKey.rawRepresentation
-        let expiration = expiration.dataRepresentation
+        let expiration = expiration.map(\.dataRepresentation) ?? Self.invalidIntermediateKeyExpiration
         let signature = try self.privateKey.signature(for: expiration + intermediateKey)
 
         precondition(intermediateKey.count == Signing.SignatureComponent.intermediatePublicKey.size)
@@ -565,6 +599,10 @@ private extension SigningTests {
 
     static let intermediateKeyFutureExpiration = Date().addingTimeInterval(DispatchTimeInterval.days(5).seconds)
     static let intermediateKeyPastExpiration = Date().addingTimeInterval(DispatchTimeInterval.days(5).seconds * -1)
+    static let invalidIntermediateKeyExpiration = Data(
+        repeating: 0,
+        count: Signing.SignatureComponent.intermediateKeyExpiration.size
+    )
 
 }
 

@@ -27,6 +27,7 @@ enum SigningStrings {
     case intermediate_key_failed_verification(signature: Data)
     case intermediate_key_failed_creation(Error)
     case intermediate_key_expired(Date, Data)
+    case intermediate_key_invalid(Data)
     case intermediate_key_creating(expiration: Date, data: Data)
 
     case signature_was_requested_but_not_provided(HTTPRequest)
@@ -63,7 +64,7 @@ extension SigningStrings: LogMessage {
             return "Signature failed verification"
 
         case let .intermediate_key_failed_verification(signature):
-            return "Intermediate key failed verification: \(signature)"
+            return "Intermediate key failed verification: \(signature.asString)"
 
         case let .intermediate_key_failed_creation(error):
             return "Failed initializing intermediate key: \(error.localizedDescription)\n" +
@@ -71,6 +72,10 @@ extension SigningStrings: LogMessage {
 
         case let .intermediate_key_expired(date, data):
             return "Intermediate key expired at '\(date)' (parsed from '\(data.asString)'). " +
+            "This will be reported as a verification failure."
+
+        case let .intermediate_key_invalid(expirationDate):
+            return "Found invalid intermediate key expiration date: \(expirationDate.asString). " +
             "This will be reported as a verification failure."
 
         case let .intermediate_key_creating(expiration, data):
