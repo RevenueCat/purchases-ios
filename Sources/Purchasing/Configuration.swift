@@ -218,7 +218,7 @@ import Foundation
 
 // MARK: - Public Keys
 
-public extension Configuration {
+extension Configuration {
 
     /// Defines how strict ``EntitlementInfo`` verification ought to be.
     ///
@@ -227,7 +227,7 @@ public extension Configuration {
     /// - ``Configuration/Builder/with(entitlementVerificationMode:)``
     /// - ``EntitlementInfos/verification``
     @objc(RCEntitlementVerificationMode)
-    enum EntitlementVerificationMode: Int {
+    public enum EntitlementVerificationMode: Int {
 
         /// The SDK will not perform any entitlement verification.
         case disabled = 0
