@@ -4,19 +4,12 @@
   },
   "request" : {
     "body" : {
+      "aad_attribution_token" : "token",
       "app_user_id" : "abc123",
       "attributes" : {
         "$attConsentStatus" : {
           "updated_at_ms" : 1678307200000,
           "value" : "notDetermined"
-        },
-        "a key" : {
-          "updated_at_ms" : 1678307200000,
-          "value" : "a value"
-        },
-        "another key" : {
-          "updated_at_ms" : 1678307200000,
-          "value" : "another value"
         }
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
