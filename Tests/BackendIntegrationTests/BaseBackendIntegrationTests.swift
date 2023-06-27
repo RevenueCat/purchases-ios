@@ -86,11 +86,7 @@ class BaseBackendIntegrationTests: XCTestCase {
         self.mainThreadMonitor = .init()
         self.mainThreadMonitor.run()
 
-        self.userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
-        self.userDefaults?.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
-        if !Constants.proxyURL.isEmpty {
-            Purchases.proxyURL = URL(string: Constants.proxyURL)
-        }
+        self.createUserDefaults()
 
         self.clearReceiptIfExists()
         await self.createPurchases()
@@ -128,12 +124,26 @@ private extension BaseBackendIntegrationTests {
         }
     }
 
+    func createUserDefaults() {
+        self.userDefaults = UserDefaults(suiteName: Constants.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: Constants.userDefaultsSuiteName)
+        self.userDefaults.synchronize()
+
+        // Verify that user defaults is indeed empty.
+        // Reusing users across tests would lead to flaky failures.
+        expect(self.userDefaults.value(forKey: DeviceCache.CacheKeys.appUserDefaults.rawValue))
+            .to(
+                beNil(),
+                description: "Found existing user after clearing UserDefaults"
+            )
+    }
+
     func createPurchases() async {
         self.purchasesDelegate = TestPurchaseDelegate()
         self.configurePurchases()
 
         Purchases.shared.delegate = self.purchasesDelegate
-        Purchases.proxyURL = proxyURL.flatMap(URL.init(string:))
+        Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
         Purchases.logLevel = .verbose
 
         await self.waitForAnonymousUser()
