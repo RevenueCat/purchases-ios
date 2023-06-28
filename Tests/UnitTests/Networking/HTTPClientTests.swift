@@ -702,22 +702,20 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(headerPresent.value) == true
     }
 
-    func testAppleDeviceIdentifierNilWhenIsNotSandbox() {
-        systemInfo.stubbedIsSandbox = false
+    func testAppleDeviceIdentifierNilWhenIsNotSandboxInMacOS() {
+        self.systemInfo.stubbedIsSandbox = false
 
-        let obtainedIdentifierForVendor = systemInfo.identifierForVendor
-
-        expect(obtainedIdentifierForVendor).to(beNil())
+        expect(self.systemInfo.identifierForVendor).to(beNil())
     }
 
     #else
 
-    func testAlwaysPassesAppleDeviceIdentifier() {
+    func testAlwaysPassesAppleDeviceIdentifier() throws {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
-        let idfv = systemInfo.identifierForVendor!
+        let idfv = try XCTUnwrap(self.systemInfo.identifierForVendor)
 
         stub(condition: hasHeaderNamed("X-Apple-Device-Identifier", value: idfv )) { _ in
             headerPresent.value = true
