@@ -1005,7 +1005,10 @@ private extension PurchasesOrchestrator {
                         self.operationDispatcher.dispatchOnMainThread {
                             completion(
                                 Result(cachedCustomerInfo,
-                                       ErrorUtils.customerInfoError(withMessage: "No cached customer info"))
+                                       ErrorUtils.customerInfoError(withMessage: Strings
+                                        .purchase
+                                        .missing_cached_customer_info
+                                        .description))
                             )
                         }
                     }
