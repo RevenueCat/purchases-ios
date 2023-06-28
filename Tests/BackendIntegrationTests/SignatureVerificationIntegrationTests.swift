@@ -219,7 +219,18 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
         _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
     }
 
-    func testEnablingSignatureVerificationResetsCustomerInfoCache() async throws {
+    func testChangingToInformationalModeResetsCustomerInfoCache() async throws {
+        // 1. Fetch CustomerInfo
+        _ = try await Purchases.shared.customerInfo()
+
+        // 2. Enable signature verification
+        await self.changeMode(to: Signing.verificationMode(with: .informational))
+
+        // 3. Verify CustomerInfo is not cached anymore
+        await self.verifyNoCachedCustomerInfo()
+    }
+
+    func testChangingToEnforcedModeResetsCustomerInfoCache() async throws {
         // 1. Fetch CustomerInfo
         _ = try await Purchases.shared.customerInfo()
 
@@ -227,6 +238,15 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
         await self.changeMode(to: Signing.enforcedVerificationMode())
 
         // 3. Verify CustomerInfo is not cached anymore
+        await self.verifyNoCachedCustomerInfo()
+    }
+
+    private func changeMode(to newMode: Signing.ResponseVerificationMode) async {
+        Self.currentMode = newMode
+        await self.resetSingleton()
+    }
+
+    private func verifyNoCachedCustomerInfo() async {
         do {
             _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
         } catch {
@@ -237,11 +257,6 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
                     description: "Unexpected error: \(error)"
                 )
         }
-    }
-
-    private func changeMode(to newMode: Signing.ResponseVerificationMode) async {
-        Self.currentMode = newMode
-        await self.resetSingleton()
     }
 
 }
