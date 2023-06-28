@@ -18,9 +18,11 @@ import SwiftUI
 
 #if swift(>=5.8)
 
+/// - Parameter separateOSVersions: pass `true` if you want to generate separate snapshots for each version.
 func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
+    separateOSVersions: Bool = false,
     record recording: Bool = false,
     timeout: TimeInterval = 5,
     file: StaticString = #file,
@@ -38,7 +40,9 @@ func haveValidSnapshot<Value>(
             record: recording,
             timeout: timeout,
             file: file,
-            testName: CurrentTestCaseTracker.sanitizedTestName,
+            testName: separateOSVersions
+                ? CurrentTestCaseTracker.osVersionAndTestName
+                : CurrentTestCaseTracker.sanitizedTestName,
             line: line
         ) else {
             return PredicateResult(bool: true, message: .fail("have valid snapshot"))

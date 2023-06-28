@@ -966,6 +966,7 @@
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
 		4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsStrings.swift; sourceTree = "<group>"; };
+		4FFD88BE2A4B56E2008E98AC /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -2182,6 +2183,7 @@
 		4FCEEA5F2A379CD6002C2112 /* Support */ = {
 			isa = PBXGroup;
 			children = (
+				4FFD88BE2A4B56E2008E98AC /* __Snapshots__ */,
 				4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */,
 			);
 			path = Support;
