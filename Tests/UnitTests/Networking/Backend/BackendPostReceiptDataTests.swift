@@ -88,6 +88,46 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithTestReceiptIdentifier() throws {
+        let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
+
+        self.createDependencies(
+            try SystemInfo(
+                platformInfo: nil,
+                finishTransactions: false,
+                dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(testReceiptIdentifier: identifier)
+                )
+            )
+        )
+
+        let path: HTTPRequest.Path = .postReceiptData
+
+        self.httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              productData: .createMockProductData(),
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
+                              observerMode: true,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testCachesRequestsForSameReceipt() {
         httpClient.mock(
             requestPath: .postReceiptData,

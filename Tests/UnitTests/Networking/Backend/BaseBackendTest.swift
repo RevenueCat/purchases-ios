@@ -38,12 +38,18 @@ class BaseBackendTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.systemInfo = try SystemInfo(
-            platformInfo: nil,
-            finishTransactions: true,
-            responseVerificationMode: self.responseVerificationMode,
-            dangerousSettings: self.dangerousSettings
+        self.createDependencies(
+            try SystemInfo(
+                platformInfo: nil,
+                finishTransactions: true,
+                responseVerificationMode: self.responseVerificationMode,
+                dangerousSettings: self.dangerousSettings
+            )
         )
+    }
+
+    final func createDependencies(_ systemInfo: SystemInfo) {
+        self.systemInfo = systemInfo
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
