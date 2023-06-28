@@ -191,6 +191,61 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
 
 }
 
+class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificationIntegrationTests {
+
+    private static var currentMode: Signing.ResponseVerificationMode = .disabled
+
+    override class var responseVerificationMode: Signing.ResponseVerificationMode {
+        return self.currentMode
+    }
+
+    override func setUp() async throws {
+        Self.currentMode = .disabled
+
+        try await super.setUp()
+    }
+
+    func testDisablingSignatureVerificationDoesNotResetCustomerInfoCache() async throws {
+        // 1. Start with enforced mode
+        await self.changeMode(to: Signing.enforcedVerificationMode())
+
+        // 2. Fetch CustomerInfo
+        _ = try await Purchases.shared.customerInfo()
+
+        // 3. Disable verification again
+        await self.changeMode(to: .disabled)
+
+        // 4. Verify CustomerInfo is still cached
+        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
+    }
+
+    func testEnablingSignatureVerificationResetsCustomerInfoCache() async throws {
+        // 1. Fetch CustomerInfo
+        _ = try await Purchases.shared.customerInfo()
+
+        // 2. Enable signature verification
+        await self.changeMode(to: Signing.enforcedVerificationMode())
+
+        // 3. Verify CustomerInfo is not cached anymore
+        do {
+            _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
+        } catch {
+            expect(error).to(matchError(ErrorCode.customerInfoError))
+            expect(error.localizedDescription)
+                .to(
+                    contain(Strings.purchase.missing_cached_customer_info.description),
+                    description: "Unexpected error: \(error)"
+                )
+        }
+    }
+
+    private func changeMode(to newMode: Signing.ResponseVerificationMode) async {
+        Self.currentMode = newMode
+        await self.resetSingleton()
+    }
+
+}
+
 // MARK: - Private
 
 private extension BaseSignatureVerificationIntegrationTests {
