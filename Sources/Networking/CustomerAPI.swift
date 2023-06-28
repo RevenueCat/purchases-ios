@@ -110,7 +110,8 @@ final class CustomerAPI {
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
             productData: productData,
             receiptData: receiptData,
-            observerMode: observerMode
+            observerMode: observerMode,
+            testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier
         )
         let factory = PostReceiptDataOperation.createFactory(
             configuration: config,
@@ -137,6 +138,22 @@ private extension PurchasedTransactionData {
         copy.unsyncedAttributes = newAttributes
 
         return copy
+    }
+
+}
+
+// MARK: -
+
+private extension SystemInfo {
+
+    /// This allows the backend to disambiguate between receipts created across
+    /// separate test invocations when in the sandbox.
+    var testReceiptIdentifier: String? {
+        #if DEBUG
+        return self.dangerousSettings.internalSettings.testReceiptIdentifier
+        #else
+        return nil
+        #endif
     }
 
 }

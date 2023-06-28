@@ -20,15 +20,18 @@ import Foundation
         #if DEBUG
         let forceServerErrors: Bool
         let forceSignatureFailures: Bool
+        let testReceiptIdentifier: String?
 
         init(
             enableReceiptFetchRetry: Bool = false,
             forceServerErrors: Bool = false,
-            forceSignatureFailures: Bool = false
+            forceSignatureFailures: Bool = false,
+            testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.forceServerErrors = forceServerErrors
             self.forceSignatureFailures = forceSignatureFailures
+            self.testReceiptIdentifier = testReceiptIdentifier
         }
         #else
         init(enableReceiptFetchRetry: Bool = false) {
@@ -116,6 +119,10 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }
+
+    /// Allows defining the receipt identifier for `PostReceiptDataOperation`.
+    /// This allows the backend to disambiguate between receipts created across separate test invocations.
+    var testReceiptIdentifier: String? { get }
     #endif
 
 }
