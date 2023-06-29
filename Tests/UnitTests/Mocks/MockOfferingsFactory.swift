@@ -25,6 +25,7 @@ class MockOfferingsFactory: OfferingsFactory {
 
         let product = MockSK1Product(mockProductIdentifier: "monthly_freetrial")
         let storeProduct = SK1StoreProduct(sk1Product: product)
+
         return Offerings(
             offerings: [
                 "base": Offering(
@@ -33,8 +34,8 @@ class MockOfferingsFactory: OfferingsFactory {
                     metadata: [:],
                     availablePackages: [
                         Package(identifier: "$rc_monthly",
-                                packageType: PackageType.monthly,
-                                storeProduct: storeProduct,
+                                packageType: .monthly,
+                                storeProduct: .from(product: storeProduct),
                                 offeringIdentifier: "base")
                     ]
                 )],

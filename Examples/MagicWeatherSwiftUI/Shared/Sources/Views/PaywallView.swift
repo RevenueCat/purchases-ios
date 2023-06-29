@@ -17,10 +17,6 @@ struct PaywallView: View {
     /// - This binding is passed from ContentView: `paywallPresented`
     @Binding var isPresented: Bool
     
-    /// - State for displaying an overlay view
-    @State
-    private(set) var isPurchasing: Bool = false
-    
     /// - This can change during the lifetime of the PaywallView (e.g. if poor network conditions mean that loading offerings is slow)
     /// So set this as an observed object to trigger view updates as necessary
     @ObservedObject var userViewModel = UserViewModel.shared
@@ -30,9 +26,20 @@ struct PaywallView: View {
     private var offering: Offering? {
         userViewModel.offerings?.current
     }
-    
-    private let footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
-    
+
+    var body: some View {
+        PaywallContent(offering: self.offering, isPresented: self.$isPresented)
+    }
+
+}
+
+private struct PaywallContent: View {
+
+    var offering: Offering?
+    var isPresented: Binding<Bool>
+
+    /// - State for displaying an overlay view
+    @State private var isPurchasing: Bool = false
     @State private var error: NSError?
     @State private var displayError: Bool = false
 
@@ -41,13 +48,13 @@ struct PaywallView: View {
             ZStack {
                 /// - The paywall view list displaying each package
                 List {
-                    Section(header: Text("\nMagic Weather Premium"), footer: Text(footerText)) {
+                    Section(header: Text("\nMagic Weather Premium"), footer: Text(Self.footerText)) {
                         ForEach(offering?.availablePackages ?? []) { package in
                             PackageCellView(package: package) { (package) in
-                                
+
                                 /// - Set 'isPurchasing' state to `true`
                                 isPurchasing = true
-                                
+
                                 /// - Purchase a package
                                 do {
                                     let result = try await Purchases.shared.purchase(package: package)
@@ -56,7 +63,7 @@ struct PaywallView: View {
                                     self.isPurchasing = false
 
                                     if !result.userCancelled {
-                                        self.isPresented = false
+                                        self.isPresented.wrappedValue = false
                                     }
                                 } catch {
                                     self.isPurchasing = false
@@ -72,7 +79,7 @@ struct PaywallView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .edgesIgnoringSafeArea(.bottom)
-                
+
                 /// - Display an overlay during a purchase
                 Rectangle()
                     .foregroundColor(Color.black)
@@ -93,10 +100,13 @@ struct PaywallView: View {
             message: { Text($0.recoverySuggestion ?? "Please try again") }
         )
     }
+
+    private static let footerText = "Don't forget to add your subscription terms and conditions. Read more about this here: https://www.revenuecat.com/blog/schedule-2-section-3-8-b"
+
 }
 
 /* The cell view for each package */
-struct PackageCellView: View {
+private struct PackageCellView: View {
 
     let package: Package
     let onSelection: (Package) async -> Void
@@ -146,6 +156,69 @@ extension NSError: LocalizedError {
 
     public var errorDescription: String? {
         return self.localizedDescription
+    }
+
+}
+
+struct PaywallView_Previews: PreviewProvider {
+
+    private static let product1 = TestStoreProduct(
+        localizedTitle: "PRO monthly",
+        price: 3.99,
+        localizedPriceString: "$3.99",
+        productIdentifier: "com.revenuecat.product",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "Description",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 1, unit: .week),
+            numberOfPeriods: 1,
+            type: .introductory
+        ),
+        discounts: []
+    )
+    private static let product2 = TestStoreProduct(
+        localizedTitle: "PRO annual",
+        price: 34.99,
+        localizedPriceString: "$34.99",
+        productIdentifier: "com.revenuecat.product",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "Description",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: nil,
+        discounts: []
+    )
+
+    private static let offering = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Main offering",
+        metadata: [:],
+        availablePackages: [
+            .init(
+                identifier: "monthly",
+                packageType: .monthly,
+                storeProduct: product1.toStoreProduct(),
+                offeringIdentifier: Self.offeringIdentifier
+            ),
+            .init(
+                identifier: "annual",
+                packageType: .annual,
+                storeProduct: product2.toStoreProduct(),
+                offeringIdentifier: Self.offeringIdentifier
+            )
+        ]
+    )
+
+    private static let offeringIdentifier = "offering"
+
+    static var previews: some View {
+        PaywallContent(offering: Self.offering, isPresented: .constant(true))
     }
 
 }

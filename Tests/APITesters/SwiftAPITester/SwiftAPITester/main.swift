@@ -53,8 +53,13 @@ func main() -> Int {
     checkTransactionAPI()
 
     checkStoreProductAPI()
-
     checkStoreProductDiscountAPI()
+
+    #if DEBUG
+    checkTestStoreProductAPI()
+    checkTestStoreProductDiscountAPI()
+    #endif
+
     checkPaymentModeEnum()
 
     checkSubscriptionPeriodAPI()

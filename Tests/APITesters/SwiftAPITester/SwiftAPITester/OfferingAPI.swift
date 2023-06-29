@@ -37,3 +37,11 @@ func checkOfferingAPI() {
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!,
           mPack!, wPack!, pPack!, package!, metadata, metadataString, metadataInt, metadataOptionalInt!)
 }
+
+private func checkCreateOfferingAPI(package: Package) {
+    _ = Offering(identifier: "",
+                 serverDescription: "",
+                 metadata: [String: Any](),
+                 availablePackages: [package]
+    )
+}

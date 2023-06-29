@@ -26,6 +26,14 @@ func checkPackageAPI() {
     print(pack!, ident, pType, prod, lps, lips!)
 }
 
+private func checkCreatePackageAPI(product: StoreProduct) {
+    _ = Package(
+        identifier: "", packageType: PackageType.annual,
+        storeProduct: product,
+        offeringIdentifier: ""
+    )
+}
+
 var packageType: PackageType!
 func checkPackageEnums() {
     switch packageType! {

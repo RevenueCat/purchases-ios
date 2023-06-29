@@ -200,15 +200,43 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     // MARK: - tests
 
-    func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
-        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
-        backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+    func testPurchasingTestProductFails() async throws {
+        let error = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(product: Self.testProduct, package: nil) { _, _, error, _ in
+                continuation.resume(returning: error)
+            }
+        }
+        expect(error).to(matchError(ErrorCode.productNotAvailableForPurchaseError))
+    }
 
-        let product = try await fetchSk1Product()
-        let storeProduct = try await fetchSk1StoreProduct()
+    func testPurchasingTestProductWithPromotionalOfferFails() async throws {
+        let offer = PromotionalOffer.SignedData(identifier: "",
+                                                keyIdentifier: "",
+                                                nonce: UUID(),
+                                                signature: "",
+                                                timestamp: 0)
+
+        let error = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                product: Self.testProduct,
+                package: nil,
+                promotionalOffer: offer
+            ) { _, _, error, _ in
+                continuation.resume(returning: error)
+            }
+        }
+        expect(error).to(matchError(ErrorCode.productNotAvailableForPurchaseError))
+    }
+
+    func testPurchaseSK1PackageSendsReceiptToBackendIfSuccessful() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let storeProduct = try await self.fetchSk1StoreProduct()
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              storeProduct: storeProduct,
+                              storeProduct: .from(product: storeProduct),
                               offeringIdentifier: "offering")
 
         let payment = storeKit1Wrapper.payment(with: product)
@@ -322,9 +350,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk1Product()
         let storeProduct = try await self.fetchSk1StoreProduct()
+
         let package = Package(identifier: "package",
                               packageType: .monthly,
-                              storeProduct: storeProduct,
+                              storeProduct: .from(product: storeProduct),
                               offeringIdentifier: "offering")
 
         let payment = self.storeKit1Wrapper.payment(with: product)
@@ -1217,5 +1246,14 @@ private extension PurchasesOrchestratorTests {
     }
 
     var mockCustomerInfo: CustomerInfo { .emptyInfo }
+
+    static let testProduct = TestStoreProduct(
+        localizedTitle: "Product",
+        price: 3.99,
+        localizedPriceString: "$3.99",
+        productIdentifier: "product",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "Description"
+    ).toStoreProduct()
 
 }
