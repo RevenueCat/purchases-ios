@@ -963,7 +963,6 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // swiftlint:disable:next function_body_length
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource,
@@ -998,17 +997,14 @@ private extension PurchasesOrchestrator {
             self.operationDispatcher.dispatchOnWorkerThread {
                 let hasTransactions = self.transactionsManager.customerHasTransactions(receiptData: receiptData)
                 let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
-                let hasOriginalPurchaseDate = cachedCustomerInfo?.originalPurchaseDate != nil
 
-                if !hasTransactions && hasOriginalPurchaseDate {
+                if !hasTransactions, let customerInfo = cachedCustomerInfo, customerInfo.originalPurchaseDate != nil {
                     if let completion = completion {
                         self.operationDispatcher.dispatchOnMainThread {
-                            completion(
-                                Result(cachedCustomerInfo,
-                                       ErrorUtils.customerInfoError(withMessage: "No cached customer info"))
-                            )
+                            completion(.success(customerInfo))
                         }
                     }
+
                     return
                 }
 
