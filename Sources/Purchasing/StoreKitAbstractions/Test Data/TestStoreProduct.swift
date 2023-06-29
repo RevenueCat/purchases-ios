@@ -58,6 +58,7 @@ public struct TestStoreProduct {
     public var localizedDescription: String
     public var subscriptionGroupIdentifier: String?
     public var subscriptionPeriod: SubscriptionPeriod?
+    public var isFamilyShareable: Bool
     public var introductoryDiscount: StoreProductDiscount?
     public var discounts: [StoreProductDiscount]
 
@@ -70,6 +71,7 @@ public struct TestStoreProduct {
         localizedDescription: String,
         subscriptionGroupIdentifier: String? = nil,
         subscriptionPeriod: SubscriptionPeriod? = nil,
+        isFamilyShareable: Bool = false,
         introductoryDiscount: TestStoreProductDiscount? = nil,
         discounts: [TestStoreProductDiscount] = []
     ) {
@@ -81,6 +83,7 @@ public struct TestStoreProduct {
         self.localizedDescription = localizedDescription
         self.subscriptionGroupIdentifier = subscriptionGroupIdentifier
         self.subscriptionPeriod = subscriptionPeriod
+        self.isFamilyShareable = isFamilyShareable
         self.introductoryDiscount = introductoryDiscount?.toStoreProductDiscount()
         self.discounts = discounts.map { $0.toStoreProductDiscount() }
     }
@@ -100,8 +103,6 @@ extension TestStoreProduct: StoreProductType {
         // Test currency defaults to current locale
         return Locale.current.rc_currencyCode
     }
-
-    internal var isFamilyShareable: Bool { return false }
 
     internal var priceFormatter: NumberFormatter? {
         return self.currencyCode.map {

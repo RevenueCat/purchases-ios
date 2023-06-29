@@ -356,6 +356,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let description = "Description"
         let subscriptionGroup = "group"
         let period: SubscriptionPeriod = .init(value: 1, unit: .month)
+        let isFamilyShareable = Bool.random()
 
         let product = TestStoreProduct(
             localizedTitle: title,
@@ -366,6 +367,7 @@ class StoreProductTests: StoreKitConfigTestCase {
             localizedDescription: description,
             subscriptionGroupIdentifier: subscriptionGroup,
             subscriptionPeriod: period,
+            isFamilyShareable: isFamilyShareable,
             introductoryDiscount: nil,
             discounts: []
         )
@@ -383,7 +385,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.subscriptionPeriod) == period
         expect(storeProduct.currencyCode) == Locale.current.rc_currencyCode
         expect(storeProduct.priceFormatter).toNot(beNil())
-        expect(storeProduct.isFamilyShareable) == false
+        expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
     #endif
