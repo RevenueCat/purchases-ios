@@ -517,8 +517,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
 
         stub(condition: isPath(request.path)) { request in
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeaderName])
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,
@@ -577,7 +577,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubResponseEtag(eTag)
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName] == eTag
+            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue] == eTag
             return .emptySuccessResponse()
         }
 
@@ -594,7 +594,9 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let headerPresent: Atomic<Bool?> = nil
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagRequestHeaderName) == true
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(
+                ETagManager.eTagRequestHeader.rawValue
+            ) == true
             return .emptySuccessResponse()
         }
 
@@ -1080,11 +1082,12 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
             statusCode: .success,
             responseHeaders: headers,
-            body: mockedCachedResponse
+            body: mockedCachedResponse,
+            verificationResult: .verified
         )
 
         stub(condition: isPath(path)) { response in
-            expect(response.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
 
             return .init(data: Data(),
                          statusCode: .notModified,
@@ -1323,7 +1326,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
             statusCode: .success,
             responseHeaders: [:],
             body: encodedResponse,
-            requestDate: requestDate
+            requestDate: requestDate,
+            verificationResult: .notRequested
         )
 
         stub(condition: isPath(path)) { _ in

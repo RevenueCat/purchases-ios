@@ -275,9 +275,41 @@ class SigningTests: TestCase {
         ) == true
     }
 
+    func testVerifyKnownSignatureOf304Response() throws {
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/login' \
+        -X GET \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi'
+        -H 'Authorization: Bearer {apo_key}'
+        -H 'X-RevenueCat-ETag: 97d4f0d2353d784a'
+         */
+
+        // swiftlint:disable line_length
+        let expectedSignature = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeAAAAAA0FnsHKjqgSrOj+YkdU2TZfLfpMfx8w9miUkqxyWMI0h2z0weWLNlF1MPG7ZrL+vOEQi+LvYkcffxprzcn1uSAVfQSkHeWl4NJ4IDusH1ieiX91GsXy90APKsUAnLepcvRnhQSawwj+7Cm7936jAMoaRinYxd0utkyhZXdLlkXZJ/EU5UDAfdGzMaNpYX9aYO"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1687455094309
+        let etag = "97d4f0d2353d784a"
+
+        expect(
+            Signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    message: nil, // 304 response
+                    nonce: nonce,
+                    etag: etag,
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse(statusCode: .success, responseHeaders: [:], body: Data())
+        let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
         let verifiedResponse = response.verify(request: request, publicKey: nil)
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -287,7 +319,7 @@ class SigningTests: TestCase {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let logger = TestLogHandler()
 
-        let response = HTTPResponse(statusCode: .success, responseHeaders: [:], body: Data())
+        let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
         let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -298,7 +330,7 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithInvalidSignature() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: "invalid_signature"
@@ -329,13 +361,46 @@ class SigningTests: TestCase {
         )
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
             body: message.asData
+        )
+        let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
+
+        expect(verifiedResponse.verificationResult) == .verified
+    }
+
+    func testResponseVerificationWithNonceAndEtag() throws {
+        let nonce = "0123456789ab"
+        let etag = "97d4f0d2353d784a"
+        let requestDate = Date().millisecondsSince1970
+        let publicKey = Self.createSignedPublicKey()
+        let salt = Self.createSalt()
+
+        let signature = try self.sign(parameters: .init(message: nil,
+                                                        nonce: nonce.asData,
+                                                        etag: etag,
+                                                        requestDate: requestDate),
+                                      salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            publicKey: publicKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
+        let response = HTTPResponse<Data?>(
+            statusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate),
+                HTTPClient.ResponseHeader.eTag.rawValue: etag
+            ],
+            body: nil
         )
         let verifiedResponse = response.verify(request: request, publicKey: self.publicKey)
 
@@ -360,7 +425,7 @@ class SigningTests: TestCase {
         )
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nil)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
@@ -380,7 +445,7 @@ class SigningTests: TestCase {
         let logger = TestLogHandler()
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nil)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)

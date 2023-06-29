@@ -34,7 +34,7 @@ enum Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        let message: Data
+        let message: Data?
         let nonce: Data?
         let etag: String?
         let requestDate: UInt64
@@ -229,7 +229,7 @@ extension Signing.SignatureParameters {
             (self.nonce ?? .init()) +
             String(self.requestDate).asData +
             (self.etag ?? "").asData +
-            self.message
+            (self.message ?? .init())
         )
     }
 

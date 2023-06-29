@@ -13,7 +13,7 @@
 
 import Foundation
 
-extension HTTPResponse where Body == Data {
+extension HTTPResponse where Body == Data? {
 
     func verify(
         request: HTTPRequest,
@@ -46,7 +46,7 @@ extension HTTPResponse where Body == Data {
 
     // swiftlint:disable:next function_parameter_count
     private static func verificationResult(
-        body: Data,
+        body: Data?,
         statusCode: HTTPStatusCode,
         headers: HTTPClient.ResponseHeaders,
         requestDate: Date?,

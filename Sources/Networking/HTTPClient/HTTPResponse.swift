@@ -14,14 +14,26 @@
 
 import Foundation
 
-struct HTTPResponse<Body: HTTPResponseBody> {
+/// A type that represents an HTTP response
+protocol HTTPResponseType {
+
+    associatedtype Body: HTTPResponseBody
 
     typealias Result = Swift.Result<Self, NetworkError>
     typealias Headers = [AnyHashable: Any]
 
-    var statusCode: HTTPStatusCode
+    var statusCode: HTTPStatusCode { get }
     /// Because this property is a standard Swift dictionary, its keys are case-sensitive.
     /// To perform a case-insensitive header lookup, use the `value(forHeaderField:)` method instead.
+    var responseHeaders: HTTPClient.ResponseHeaders { get }
+    var body: Body { get }
+    var requestDate: Date? { get }
+
+}
+
+struct HTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
+
+    var statusCode: HTTPStatusCode
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
     var requestDate: Date?
@@ -30,19 +42,20 @@ struct HTTPResponse<Body: HTTPResponseBody> {
 
 extension HTTPResponse: CustomStringConvertible {
 
-    var description: String {
-        let body: String = {
-            if let bodyDescription = (self.body as? CustomStringConvertible)?.description {
-                return bodyDescription
-            } else {
-                return "\(type(of: self.body))"
-            }
-        }()
+    fileprivate var bodyDescription: String {
+        if let bodyDescription = (self.body as? CustomStringConvertible)?.description {
+            return bodyDescription
+        } else {
+            return "\(type(of: self.body))"
+        }
+    }
 
+    var description: String {
         return """
         HTTPResponse(
             statusCode: \(self.statusCode.rawValue),
-            body: \(body)
+            body: \(self.bodyDescription),
+            requestDate: \(self.requestDate?.description ?? "<>")
         )
         """
     }
@@ -51,9 +64,7 @@ extension HTTPResponse: CustomStringConvertible {
 
 // MARK: - VerifiedHTTPResponse
 
-struct VerifiedHTTPResponse<Body: HTTPResponseBody> {
-
-    typealias Result = Swift.Result<Self, NetworkError>
+struct VerifiedHTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
 
     var response: HTTPResponse<Body>
     var verificationResult: VerificationResult
@@ -88,7 +99,9 @@ extension VerifiedHTTPResponse: CustomStringConvertible {
     var description: String {
         return """
         VerifiedHTTPResponse(
-            response: \(self.response.description),
+            statusCode: \(self.statusCode.rawValue),
+            body: \(self.response.bodyDescription),
+            requestDate: \(self.requestDate?.description ?? "<>")
             verification: \(self.verificationResult)
         )
         """
@@ -98,11 +111,11 @@ extension VerifiedHTTPResponse: CustomStringConvertible {
 
 // MARK: - Extensions
 
-extension HTTPResponse {
+extension HTTPResponseType {
 
     /// Equivalent to `HTTPURLResponse.value(forHTTPHeaderField:)`
     /// In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
-    func value(forHeaderField field: String) -> String? {
+    func value(forHeaderField field: HTTPClient.ResponseHeader) -> String? {
         return Self.value(forCaseInsensitiveHeaderField: field, in: self.responseHeaders)
     }
 
@@ -124,18 +137,15 @@ extension HTTPResponse {
 
 }
 
-extension HTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody {
+extension VerifiedHTTPResponse where Body: OptionalType, Body.Wrapped: HTTPResponseBody {
 
-    /// Converts a `HTTPResponse<Body?>` into a `HTTPResponse<Body>?`
-    var asOptionalResponse: HTTPResponse<Body.Wrapped>? {
+    /// Converts a `VerifiedHTTPResponse<Body?>` into a `VerifiedHTTPResponse<Body>?`
+    var asOptionalResponse: VerifiedHTTPResponse<Body.Wrapped>? {
         guard let body = self.body.asOptional else {
             return nil
         }
 
-        return .init(statusCode: self.statusCode,
-                     responseHeaders: self.responseHeaders,
-                     body: body,
-                     requestDate: self.requestDate)
+        return self.mapBody { _ in body }
     }
 
 }

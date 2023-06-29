@@ -21,7 +21,7 @@ enum ETagStrings {
     case found_no_etag(URLRequest)
     case could_not_find_cached_response_in_already_retried(response: String)
     case storing_response(URLRequest, ETagManager.Response)
-    case not_storing_etag(HTTPResponse<Data?>)
+    case not_storing_etag(VerifiedHTTPResponse<Data?>)
     case using_etag(URLRequest, String, Date?)
     case not_using_etag(URLRequest,
                         VerificationResult,

@@ -285,20 +285,20 @@ private extension HTTPClient {
         return Result
             .success(data)
             .mapToResponse(response: httpURLResponse, request: request.httpRequest)
+            // Verify response
+            .map { cachedResponse -> VerifiedHTTPResponse<Data?> in
+                return cachedResponse.verify(
+                    request: request.httpRequest,
+                    publicKey: request.verificationMode.publicKey,
+                    signing: self.signing(for: request.httpRequest)
+                )
+            }
             // Fetch from ETagManager if available
-            .map { (response) -> HTTPResponse<Data>? in
+            .map { (response) -> VerifiedHTTPResponse<Data>? in
                 return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
                     retried: request.retried
-                )
-            }
-            // Verify response
-            .map { cachedResponse -> VerifiedHTTPResponse<Data>? in
-                return cachedResponse?.verify(
-                    request: request.httpRequest,
-                    publicKey: request.verificationMode.publicKey,
-                    signing: self.signing(for: request.httpRequest)
                 )
             }
             // Upgrade to error in enforced mode
@@ -426,6 +426,7 @@ private extension HTTPClient {
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
+                withSignatureVerification: request.verificationMode.isEnabled,
                 refreshETag: request.retried
             )
             return request.headers.merging(eTagHeader)
@@ -580,7 +581,7 @@ private extension VerifiedHTTPResponse {
     }
 
     var isLoadShedder: Bool {
-        return self.response.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder.rawValue) == "true"
+        return self.response.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder) == "true"
     }
 
 }
@@ -588,7 +589,7 @@ private extension VerifiedHTTPResponse {
 private extension HTTPResponse where Body == Data {
 
     func parseUnsuccessfulResponse() -> NetworkError {
-        let isJSON = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType.rawValue) == "application/json"
+        let isJSON = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType) == "application/json"
 
         return .errorResponse(
             isJSON

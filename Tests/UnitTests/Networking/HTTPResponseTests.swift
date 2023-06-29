@@ -21,7 +21,7 @@ class HTTPResponseTests: TestCase {
 
     func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [:],
             body: Data()
@@ -38,7 +38,7 @@ class HTTPResponseTests: TestCase {
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .health)
-        let response = HTTPResponse(
+        let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [:],
             body: Data()
@@ -49,15 +49,17 @@ class HTTPResponseTests: TestCase {
     }
 
     func testValueForHeaderFieldWithNonExistingField() {
-        expect(HTTPResponse.create([:]).value(forHeaderField: "test")).to(beNil())
+        expect(HTTPResponse.create([:]).value(forHeaderField: HTTPClient.ResponseHeader.contentType)).to(beNil())
     }
 
     func testValueForHeaderFieldWithCaseSensitiveFieldName() {
-        expect(HTTPResponse.create(["TeSt": "test"]).value(forHeaderField: "TeSt")) == "test"
+        let header = HTTPClient.ResponseHeader.contentType
+        expect(HTTPResponse.create([header.rawValue: "test"]).value(forHeaderField: header)) == "test"
     }
 
     func testValueForHeaderFieldIsCaseInsensitive() {
-        expect(HTTPResponse.create(["x-signature": "test"]).value(forHeaderField: "X-Signature")) == "test"
+        let header = HTTPClient.ResponseHeader.contentType
+        expect(HTTPResponse.create([header.rawValue.lowercased(): "test"]).value(forHeaderField: header)) == "test"
     }
 
     func testRequestDate() {
