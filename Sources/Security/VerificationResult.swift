@@ -72,6 +72,21 @@ extension VerificationResult: DefaultValueProvider {
 
 }
 
+extension VerificationResult: CustomDebugStringConvertible {
+
+    var debugDescription: String {
+        let prefix = "\(type(of: self))"
+
+        switch self {
+        case .notRequested: return "\(prefix).notRequested"
+        case .verified: return "\(prefix).verified"
+        case .verifiedOnDevice: return "\(prefix).verifiedOnDevice"
+        case .failed: return "\(prefix).failed"
+        }
+    }
+
+}
+
 extension VerificationResult {
 
     /// - Returns: the most restrictive ``VerificationResult`` based on the cached verification and
