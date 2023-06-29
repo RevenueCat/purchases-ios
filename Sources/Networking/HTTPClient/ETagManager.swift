@@ -246,7 +246,7 @@ extension ETagManager.Response: Codable {}
 extension ETagManager.Response {
 
     func asData() -> Data? {
-        return try? JSONEncoder.default.encode(self)
+        return try? self.jsonEncodedData
     }
 
     /// - Parameter responseVerificationResult: the result of the 304 response

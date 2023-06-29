@@ -21,12 +21,29 @@ import XCTest
 // swiftlint:disable type_name
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests {
+class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager> {
+
+    private var userDefaultsSuiteName: String!
+    fileprivate var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
+        // Note: these tests use the real `ETagManager`
+        self.userDefaultsSuiteName = UUID().uuidString
+        self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
+        self.eTagManager = ETagManager(userDefaults: self.userDefaults)
+
         try super.setUpWithError()
+    }
+
+    override func tearDown() {
+        // Clean up to avoid leaving leftover data in the simulator
+        if let defaults = self.userDefaults, let suiteName = self.userDefaultsSuiteName {
+            defaults.removePersistentDomain(forName: suiteName)
+        }
+
+        super.tearDown()
     }
 
     fileprivate static let path: HTTPRequest.Path = .mockPath
@@ -142,12 +159,17 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(
-            response: cachedResponse,
-            requestDate: Self.date1,
-            verificationResult: .verified
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: try cachedResponse.jsonEncodedData,
+                validationTime: Self.date1,
+                verificationResult: .verified
+            )
         )
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -158,7 +180,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
         expect(response).to(beSuccess())
         expect(response?.value?.body.data) == cachedResponse.data
-        expect(response?.value?.body.requestDate).to(beCloseToDate(Self.date1))
+        expect(response?.value?.body.requestDate).to(beCloseToDate(Self.date2))
         expect(response?.value?.verificationResult) == .notRequested
     }
 
@@ -218,16 +240,18 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testValidSignatureWithETagResponse() throws {
         let body = "body".asData
 
-        self.mockPath(statusCode: .notModified, requestDate: Self.date1)
-        MockSigning.stubbedVerificationResult = true
-
-        self.eTagManager.shouldReturnResultFromBackend = false
-        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
-            statusCode: .success,
-            responseHeaders: [:],
-            body: body,
-            verificationResult: .verified
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date1,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: body,
+                verificationResult: .verified
+            )
         )
+
+        MockSigning.stubbedVerificationResult = true
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -267,18 +291,17 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
         MockSigning.stubbedVerificationResult = true
 
-        stub(condition: isPath(Self.path)) { request in
-            expect(request.allHTTPHeaderFields?.keys).toNot(contain(ETagManager.eTagResponseHeader.rawValue))
-
-            return .init(data: Data(),
-                         statusCode: .success,
-                         headers: [
-                            HTTPClient.ResponseHeader.signature.rawValue: Self.sampleSignature,
-                            HTTPClient.ResponseHeader.requestDate.rawValue: String(Self.date1.millisecondsSince1970)
-                         ])
-        }
-
-        self.eTagManager.shouldReturnResultFromBackend = true
+        self.mockPath(
+            statusCode: .success,
+            requestDate: Self.date1,
+            signature: Self.sampleSignature,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: .init(),
+                verificationResult: .notRequested
+            )
+        )
 
         let response: VerifiedHTTPResponse<Data>.Result? = waitUntilValue { completion in
             self.client.perform(
@@ -286,10 +309,6 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 completionHandler: completion
             )
         }
-
-        expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
-        expect(self.eTagManager.invokedETagHeaderParameters?.withSignatureVerification) == true
-        expect(self.eTagManager.invokedETagHeaderParameters?.refreshETag) == false
 
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
@@ -299,10 +318,16 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testCachedResponseDoesNotUpdateRequestDateIfNewResponseVerificationFails() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date1,
-                               verificationResult: .verified)
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                verificationResult: .verified
+            )
+        )
         MockSigning.stubbedVerificationResult = false
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
@@ -312,17 +337,25 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(response).to(beSuccess())
         expect(response?.value?.body.data) == cachedResponse.data
-        expect(response?.value?.body.requestDate).to(beCloseTo(cachedResponse.requestDate, within: 1))
+        expect(response?.value?.body.requestDate).to(beCloseToDate(cachedResponse.requestDate))
         expect(response?.value?.verificationResult) == .failed
     }
 
     func testCachedResponseWithVerifiedResponse() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
-                               verificationResult: .verified)
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                validationTime: Self.date1,
+                verificationResult: .verified
+            )
+        )
+
         MockSigning.stubbedVerificationResult = true
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
@@ -339,10 +372,17 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testNotModifiedResponseFailedVerification() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
-                               verificationResult: .verified)
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                validationTime: Self.date1,
+                verificationResult: .verified
+            )
+        )
 
         MockSigning.stubbedVerificationResult = false
 
@@ -361,10 +401,18 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
         MockSigning.stubbedVerificationResult = true
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
-                               verificationResult: .verified)
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                validationTime: Self.date1,
+                verificationResult: .verified
+            )
+        )
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -379,10 +427,18 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testCachedResponseWithFailedVerificationAndFailedResponse() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
-                               verificationResult: .failed)
-        self.mockPath(statusCode: .notModified, requestDate: Self.date2)
+        self.mockPath(
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                validationTime: Self.date1,
+                verificationResult: .failed
+            )
+        )
+
         MockSigning.stubbedVerificationResult = false
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
@@ -396,10 +452,9 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.value?.verificationResult) == .failed
     }
 
-    func testIgnoredCachedResponseAndNotVerifiedResponse() throws {
+    func testNoCachedResponseAndNotVerifiedResponse() throws {
         let path: HTTPRequest.Path = .getOfferings(appUserID: "user")
 
-        self.eTagManager.shouldReturnResultFromBackend = true
         self.mockPath(path, statusCode: .success, requestDate: Self.date2, signature: nil)
 
         let response: DataResponse? = waitUntilValue { completion in
@@ -413,8 +468,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response?.value?.verificationResult) == .notRequested
     }
 
-    func testIgnoredCachedResponseAndVerifiedResponse() throws {
-        self.eTagManager.shouldReturnResultFromBackend = true
+    func testNoCachedResponseAndVerifiedResponse() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date2)
         MockSigning.stubbedVerificationResult = true
 
@@ -432,10 +486,21 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testIgnoredCachedResponseWithFailedVerificationAndFailedResponse() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        try self.mockETagCache(response: cachedResponse,
-                               requestDate: Self.date2,
-                               verificationResult: .failed)
-        self.mockPath(statusCode: .success, requestDate: Self.date2)
+        self.mockResponse(
+            path: Self.path,
+            signature: Self.sampleSignature,
+            requestDate: Self.date2,
+            body: try cachedResponse.jsonEncodedData,
+            statusCode: .success,
+            eTagResponse: try .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                validationTime: Self.date1,
+                verificationResult: .verified
+            )
+        )
+
         MockSigning.stubbedVerificationResult = false
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
@@ -445,7 +510,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(MockSigning.requests).to(haveCount(1))
         expect(response).to(beSuccess())
-        expect(response?.value?.body.requestDate).to(beCloseTo(Self.date1, within: 1))
+        expect(response?.value?.body.requestDate).to(beCloseToDate(Self.date1))
         expect(response?.value?.verificationResult) == .failed
     }
 
@@ -608,14 +673,20 @@ private extension BaseSignatureVerificationHTTPClientTests {
         requestDate: Date?,
         eTag: String? = nil,
         body: Data = .init(),
-        statusCode: HTTPStatusCode = .success
+        statusCode: HTTPStatusCode = .success,
+        eTagResponse: ETagManager.Response? = nil
     ) {
-        stub(condition: isPath(path)) { _ in
+        stub(condition: isPath(path)) { [weak self] request in
             let headers: [String: String?] = [
                 HTTPClient.ResponseHeader.signature.rawValue: signature,
                 HTTPClient.ResponseHeader.eTag.rawValue: eTag,
                 HTTPClient.ResponseHeader.requestDate.rawValue: requestDate.map { String($0.millisecondsSince1970) }
             ]
+
+            if let eTagResponse = eTagResponse {
+                // swiftlint:disable:next force_try
+                try! self?.setETagCache(eTagResponse, for: request)
+            }
 
             return .init(data: body,
                          statusCode: statusCode,
@@ -623,26 +694,12 @@ private extension BaseSignatureVerificationHTTPClientTests {
         }
     }
 
-    final func mockETagCache(response: BodyWithDate,
-                             requestDate: Date,
-                             verificationResult: VerificationResult) throws {
-        self.eTagManager.stubResponseEtag(Self.eTag)
-        self.eTagManager.shouldReturnResultFromBackend = false
-        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
-            statusCode: .success,
-            responseHeaders: [
-                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
-            ],
-            body: try response.jsonEncodedData,
-            verificationResult: verificationResult
-        )
-    }
-
-    func mockPath(
+    final func mockPath(
         _ path: HTTPRequest.Path = BaseSignatureVerificationHTTPClientTests.path,
         statusCode: HTTPStatusCode,
         requestDate: Date,
-        signature: String? = BaseSignatureVerificationHTTPClientTests.sampleSignature
+        signature: String? = BaseSignatureVerificationHTTPClientTests.sampleSignature,
+        eTagResponse: ETagManager.Response? = nil
     ) {
         self.mockResponse(
             path: path,
@@ -650,7 +707,32 @@ private extension BaseSignatureVerificationHTTPClientTests {
             requestDate: requestDate,
             eTag: Self.eTag,
             body: .init(),
-            statusCode: statusCode
+            statusCode: statusCode,
+            eTagResponse: eTagResponse
+        )
+    }
+
+    private func setETagCache(_ response: ETagManager.Response, for request: URLRequest) throws {
+        self.userDefaults.set(try response.jsonEncodedData,
+                              forKey: try XCTUnwrap(ETagManager.cacheKey(for: request)))
+    }
+
+}
+
+private extension ETagManager.Response {
+
+    init(
+        eTag: String,
+        statusCode: HTTPStatusCode,
+        data: Encodable,
+        validationTime: Date? = nil,
+        verificationResult: VerificationResult
+    ) throws {
+        self.init(eTag: eTag,
+                  statusCode: statusCode,
+                  data: try data.jsonEncodedData,
+                  validationTime: validationTime,
+                  verificationResult: verificationResult
         )
     }
 

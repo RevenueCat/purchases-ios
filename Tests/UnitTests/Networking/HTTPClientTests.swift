@@ -13,7 +13,9 @@ import XCTest
 
 @testable import RevenueCat
 
-class BaseHTTPClientTests: TestCase {
+/// Generic `ETagManager` type allows subclasses to use either `MockETagManager`
+/// or the real `ETagManager`.
+class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
 
     typealias EmptyResponse = VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result
     typealias DataResponse = VerifiedHTTPResponse<Data>.Result
@@ -21,7 +23,7 @@ class BaseHTTPClientTests: TestCase {
 
     var systemInfo: MockSystemInfo!
     var client: HTTPClient!
-    var eTagManager: MockETagManager!
+    var eTagManager: ETag!
     var operationDispatcher: OperationDispatcher!
 
     fileprivate let apiKey = "MockAPIKey"
@@ -35,11 +37,11 @@ class BaseHTTPClientTests: TestCase {
         #endif
 
         self.systemInfo = MockSystemInfo(finishTransactions: true)
-        self.eTagManager = MockETagManager()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
         MockSigning.resetData()
 
+        // Subclasses must initialize `self.eTagManager` before this
         self.client = self.createClient()
     }
 
@@ -60,7 +62,13 @@ class BaseHTTPClientTests: TestCase {
 
 }
 
-final class HTTPClientTests: BaseHTTPClientTests {
+final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
+
+    override func setUpWithError() throws {
+        self.eTagManager = MockETagManager()
+
+        try super.setUpWithError()
+    }
 
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
@@ -1507,7 +1515,7 @@ private extension BaseHTTPClientTests {
         }
     }
 
-    static let requestNumberKeyName = "request_number"
+    static var requestNumberKeyName: String { "request_number" }
 
 }
 
@@ -1517,7 +1525,7 @@ extension BaseHTTPClientTests {
         var data: String
         var requestDate: Date
 
-        func copy(with newRequestDate: Date) -> HTTPClientTests.BodyWithDate {
+        func copy(with newRequestDate: Date) -> Self {
             var copy = self
             copy.requestDate = newRequestDate
             return copy
