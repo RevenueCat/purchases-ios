@@ -147,6 +147,7 @@ private extension ETagManager {
         switch response.verificationResult {
         case .verified: return true
         case .notRequested: return !withSignatureVerification
+        // This is theoretically impossible since we won't store these responses anyway.
         case .failed, .verifiedOnDevice: return false
         }
     }
