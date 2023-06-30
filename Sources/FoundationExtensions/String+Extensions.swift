@@ -16,27 +16,14 @@ import Foundation
 
 extension String {
 
-    enum Error: Swift.Error {
-
-        case escapingEmptyString
-
-    }
-
     func rot13() -> String {
         ROT13.string(self)
     }
 
-    func escapedOrError() throws -> String {
-        let trimmedAndEscaped = self
+    var trimmedAndEscaped: String {
+        return self
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-
-        guard trimmedAndEscaped.count > 0 else {
-            Logger.error("Attempting to escape an empty string")
-            throw Error.escapingEmptyString
-        }
-
-        return trimmedAndEscaped
     }
 
     /// Returns `nil` if `self` is an empty string.

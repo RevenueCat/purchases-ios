@@ -63,7 +63,9 @@ private extension GetIntroEligibilityOperation {
             return
         }
 
-        guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
+        let appUserID = self.configuration.appUserID
+
+        guard !self.configuration.appUserID.trimmedAndEscaped.isEmpty else {
             self.responseHandler(unknownEligibilities, .missingAppUserID())
             completion()
 

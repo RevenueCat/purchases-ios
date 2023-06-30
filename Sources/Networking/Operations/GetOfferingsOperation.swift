@@ -50,7 +50,9 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
 private extension GetOfferingsOperation {
 
     func getOfferings(completion: @escaping () -> Void) {
-        guard let appUserID = try? configuration.appUserID.escapedOrError() else {
+        let userID = self.configuration.appUserID
+
+        guard !userID.trimmedAndEscaped.isEmpty else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
@@ -59,7 +61,7 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: userID))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<OfferingsResponse>.Result) in
             defer {
