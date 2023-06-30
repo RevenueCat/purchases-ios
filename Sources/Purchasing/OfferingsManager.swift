@@ -114,9 +114,13 @@ class OfferingsManager {
         return productIDsFromBackend.subtracting(productIDsFromStore)
     }
 
+    func invalidateCachedOfferings(appUserID: String) {
+        self.deviceCache.clearOfferingsCache(appUserID: appUserID)
+    }
+
     func invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: String) {
         let cachedOfferings = self.deviceCache.cachedOfferings
-        self.deviceCache.clearOfferingsCache(appUserID: appUserID)
+        self.invalidateCachedOfferings(appUserID: appUserID)
 
         if cachedOfferings != nil {
             self.offerings(appUserID: appUserID, fetchPolicy: .ignoreNotFoundProducts) { @Sendable _ in }

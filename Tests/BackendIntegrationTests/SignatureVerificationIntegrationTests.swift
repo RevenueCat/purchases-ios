@@ -117,6 +117,26 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         expect(user.entitlements.verification) == .failed
     }
 
+    func testOfferingsWithInvalidSignatureDontThrowError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.invalidSignature = true
+
+        Purchases.shared.invalidateOfferingsCache()
+
+        // Currently there's no API to detect signature failures
+        // See also `EnforcedSignatureVerificationIntegrationTests.testOfferingsWithInvalidSignature`
+        _ = try await Purchases.shared.offerings()
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testEntitlementMappingWithInvalidSignatureDontThrowError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.invalidSignature = true
+        _ = try await Purchases.shared.productEntitlementMapping()
+    }
+
 }
 
 class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIntegrationTests {
@@ -138,11 +158,28 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         }
     }
 
+    func testOfferingsWithInvalidSignature() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.invalidSignature = true
+
+        Purchases.shared.invalidateOfferingsCache()
+
+        try await Self.verifyThrowsSignatureVerificationFailed {
+            _ = try await Purchases.shared.offerings()
+        }
+    }
+
+    func testOfferingsWithValidSignature() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        Purchases.shared.invalidateOfferingsCache()
+        _ = try await Purchases.shared.offerings()
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testEntitlementMappingWithInvalidSignature() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        XCTExpectFailure("Not implemented yet")
 
         self.invalidSignature = true
 
