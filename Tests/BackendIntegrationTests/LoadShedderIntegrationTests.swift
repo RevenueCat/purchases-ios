@@ -34,7 +34,9 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
-        return Signing.enforcedVerificationMode()
+        // Disabled until backend deploys signature verification
+        // return Signing.enforcedVerificationMode()
+        return .disabled
     }
 
     // MARK: -
