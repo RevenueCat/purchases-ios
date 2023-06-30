@@ -278,6 +278,7 @@ platform :ios do
     version_number = current_version_number
     # making it its own lane until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
     # push_pods 
+    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
