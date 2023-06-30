@@ -16,9 +16,9 @@ import Foundation
 extension HTTPResponse where Body == Data? {
 
     func verify(
+        signing: SigningType,
         request: HTTPRequest,
-        publicKey: Signing.PublicKey?,
-        signing: SigningType.Type = Signing.self
+        publicKey: Signing.PublicKey?
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -52,7 +52,7 @@ extension HTTPResponse where Body == Data? {
         requestDate: Date?,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
-        signing: SigningType.Type
+        signing: SigningType
     ) -> VerificationResult {
         guard let publicKey = publicKey,
               statusCode.isSuccessfulResponse,
@@ -81,6 +81,7 @@ extension HTTPResponse where Body == Data? {
 
         if signing.verify(signature: signature,
                           with: .init(
+                            path: request.path,
                             message: body,
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),

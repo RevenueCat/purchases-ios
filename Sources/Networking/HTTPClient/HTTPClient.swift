@@ -30,13 +30,13 @@ class HTTPClient {
     private let state: Atomic<State> = .init(.initial)
     private let eTagManager: ETagManager
     private let dnsChecker: DNSCheckerType.Type
-    private let signing: SigningType.Type
+    private let signing: SigningType
 
     init(apiKey: String,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         signing: SigningType,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         signing: SigningType.Type = Signing.self,
          requestTimeout: TimeInterval = Configuration.networkTimeoutDefault) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
@@ -48,8 +48,8 @@ class HTTPClient {
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
-        self.dnsChecker = dnsChecker
         self.signing = signing
+        self.dnsChecker = dnsChecker
         self.timeout = requestTimeout
         self.apiKey = apiKey
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: apiKey)
@@ -288,9 +288,9 @@ private extension HTTPClient {
             // Verify response
             .map { cachedResponse -> VerifiedHTTPResponse<Data?> in
                 return cachedResponse.verify(
+                    signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
-                    publicKey: request.verificationMode.publicKey,
-                    signing: self.signing(for: request.httpRequest)
+                    publicKey: request.verificationMode.publicKey
                 )
             }
             // Fetch from ETagManager if available
@@ -435,11 +435,11 @@ private extension HTTPClient {
         }
     }
 
-    private func signing(for request: HTTPRequest) -> SigningType.Type {
+    private func signing(for request: HTTPRequest) -> SigningType {
         #if DEBUG
         if self.systemInfo.dangerousSettings.internalSettings.forceSignatureFailures {
             Logger.warn(Strings.network.api_request_forcing_signature_failure(request))
-            return FakeSigning.self
+            return FakeSigning.default
         }
         #endif
 

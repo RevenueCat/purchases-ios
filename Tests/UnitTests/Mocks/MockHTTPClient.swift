@@ -65,6 +65,7 @@ class MockHTTPClient: HTTPClient {
         super.init(apiKey: apiKey,
                    systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   signing: FakeSigning.default,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout)
     }

@@ -19,13 +19,15 @@ import Foundation
 /// - Seealso: `InternalDangerousSettingsType.forceSignatureFailures`
 final class FakeSigning: SigningType {
 
-    static func verify(
+    func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> Bool {
         return false
     }
+
+    static let `default`: FakeSigning = .init()
 
 }
 
