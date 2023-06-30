@@ -33,8 +33,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchasesDiagnostics() async throws {
-        try XCTSkipIf(true, "Signature Verification disabled until backend is updated")
-
         let diagnostics = PurchasesDiagnostics(purchases: Purchases.shared)
 
         try await diagnostics.testSDKHealth()
