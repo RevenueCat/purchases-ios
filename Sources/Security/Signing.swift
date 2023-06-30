@@ -237,11 +237,20 @@ extension Signing.SignatureParameters {
     var asData: Data {
         return (
             (self.nonce ?? .init()) +
-            self.path.relativePath.asData +
+            self.path.unescapedPath.asData +
             String(self.requestDate).asData +
             (self.etag ?? "").asData +
             (self.message ?? .init())
         )
+    }
+
+}
+
+private extension HTTPRequest.Path {
+
+    // Signatures remove percent encoding from the paths.
+    var unescapedPath: String {
+        return self.relativePath.removingPercentEncoding ?? ""
     }
 
 }

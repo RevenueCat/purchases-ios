@@ -437,6 +437,41 @@ class SigningTests: TestCase {
         ) == true
     }
 
+    func testVerifyKnownSignatureWithAnonymousUser() throws {
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b ' \
+        -X GET \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
+        -H 'Authorization: Bearer {api_key}'
+         */
+
+        // swiftlint:disable line_length
+        let response = """
+        {"request_date":"2023-06-30T23:37:00Z","request_date_ms":1688168220782,"subscriber":{"entitlements":{},"first_seen":"2023-06-30T23:06:23Z","last_seen":"2023-06-30T23:06:23Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        """
+        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBd7KiUCEJTjINdtwp/JQnyicaDVRm1+NoytWsv40T8I19xx1tnfhL4msRwK5R1YTNxcjBp1r3GRTjRS2agP29hBfdEF+Bi5hL/YoXrYJ52MA"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1688168220782
+        let etag = "a896a69e4b31304d"
+
+        expect(
+            self.signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+                    message: response.asData,
+                    nonce: nonce,
+                    etag: etag,
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
