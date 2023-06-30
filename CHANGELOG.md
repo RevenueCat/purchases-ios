@@ -1,3 +1,27 @@
+## 4.24.0
+### New Features
+* New `TestStoreProduct` for creating mock `StoreProduct`s and `Offering`s (#2711) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `13773d2` to `b2108fb` (#2706) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `VerificationResult: CustomDebugStringConvertible` (#2739) via NachoSoto (@NachoSoto)
+* Refactor: simplified `PurchasesOrchestrator.syncPurchases` (#2731) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: add integration tests to verify `CustomerInfo` cache invalidation (#2730) via NachoSoto (@NachoSoto)
+* `SystemInfo.identifierForVendor`: add tests (#2732) via NachoSoto (@NachoSoto)
+* `Tests`: disabled `iOS 11.x` tests to fix `Xcode 15` tests (#2720) via NachoSoto (@NachoSoto)
+* `DebugViewSwiftUITests`: create separate snapshots for each OS version (#2721) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fix clearing `UserDefaults` before each test (#2719) via NachoSoto (@NachoSoto)
+* Remove unused `Signing.loadPublicKey(with:)` (#2714) via NachoSoto (@NachoSoto)
+* Add `UInt32(littleEndian32Bits:)` and `UInt32.littleEndianData` (#2713) via NachoSoto (@NachoSoto)
+* `TimingUtil`: added synchronous API (#2716) via NachoSoto (@NachoSoto)
+* `XCFramework`: sign archive for `Xcode 15` (#2709) via NachoSoto (@NachoSoto)
+* `CI`: removed `carthage_archive` from `release` lane (#2710) via NachoSoto (@NachoSoto)
+* `PriceFormatterProvider.priceFormatterForSK2`: enable on all versions (#2712) via NachoSoto (@NachoSoto)
+* `xrOS`: add support for `debugRevenueCatOverlay` (#2702) via NachoSoto (@NachoSoto)
+* Refactor method to get product ID including plan ID in android purchases (#2708) via Toni Rico (@tonidero)
+* `Purchases.restoreLogHandler` (#2699) via NachoSoto (@NachoSoto)
+* Remove alpha from purchase tester icon to upload to testflight (#2705) via Toni Rico (@tonidero)
+
 ## 4.23.1
 ### Bugfixes
 * Fix google play purchases missing purchase date (#2703) via Toni Rico (@tonidero)
