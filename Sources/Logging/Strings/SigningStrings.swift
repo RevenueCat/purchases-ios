@@ -20,6 +20,8 @@ enum SigningStrings {
 
     case signature_not_base64(String)
 
+    case signature_invalid_size(Data)
+
     case signature_failed_verification
 
     case signature_was_requested_but_not_provided(HTTPRequest)
@@ -27,6 +29,11 @@ enum SigningStrings {
     case request_date_missing_from_headers(HTTPRequest)
 
     #if DEBUG
+    case verifying_signature(signature: Data,
+                             parameters: Signing.SignatureParameters,
+                             salt: Data,
+                             payload: Data,
+                             message: Data)
     case invalid_signature_data(HTTPRequest, Data, HTTPClient.ResponseHeaders, HTTPStatusCode)
     #endif
 
@@ -41,6 +48,10 @@ extension SigningStrings: LogMessage {
 
         case let .signature_not_base64(signature):
             return "Signature is not base64: \(signature)"
+
+        case let .signature_invalid_size(signature):
+            return "Signature '\(signature)' does not have expected size (\(Signing.SignatureComponent.totalSize)). " +
+            "Verification failed."
 
         case .signature_failed_verification:
             return "Signature failed verification"
@@ -62,6 +73,21 @@ extension SigningStrings: LogMessage {
             \(responseHeaders.stringRepresentation)
             Headers: \(responseHeaders.map { "\($0.key.base): \($0.value)" })
             Body (length: \(data.count)): \(data.hashString)
+            """
+
+        case let .verifying_signature(
+            signature,
+            parameters,
+            salt,
+            payload,
+            message
+        ):
+            return """
+            Verifying signature '\(signature.base64EncodedString())'
+            Parameters: \(parameters),
+            Salt: \(salt.base64EncodedString()),
+            Payload: \(payload.base64EncodedString()),
+            Message: \(message.base64EncodedString())
             """
 
         #endif

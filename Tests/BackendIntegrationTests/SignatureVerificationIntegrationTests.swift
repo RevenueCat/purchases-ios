@@ -25,6 +25,8 @@ class BaseSignatureVerificationIntegrationTests: BaseStoreKitIntegrationTests {
     fileprivate var invalidSignature: Bool = false
 
     override func setUp() async throws {
+        try XCTSkipIf(true, "Tests disabled until backend deploys new signature format")
+
         self.invalidSignature = false
         try await super.setUp()
 

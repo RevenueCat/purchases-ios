@@ -20,8 +20,8 @@ import XCTest
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class SigningTests: TestCase {
 
-    private typealias PrivateKey = Curve25519.Signing.PrivateKey
-    private typealias PublicKey = Curve25519.Signing.PublicKey
+    fileprivate typealias PrivateKey = Curve25519.Signing.PrivateKey
+    fileprivate typealias PublicKey = Curve25519.Signing.PublicKey
 
     private let (privateKey, publicKey) = SigningTests.createRandomKey()
 
@@ -50,6 +50,7 @@ class SigningTests: TestCase {
             with: .init(
                 message: message.asData,
                 nonce: nonce.asData,
+                etag: nil,
                 requestDate: requestDate
             ),
             publicKey: Signing.loadPublicKey()
@@ -64,6 +65,7 @@ class SigningTests: TestCase {
             with: .init(
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
+                etag: nil,
                 requestDate: 1677005916012
             ),
             publicKey: Signing.loadPublicKey()
@@ -73,63 +75,130 @@ class SigningTests: TestCase {
     func testVerifySignatureLogsWarningWhenFail() throws {
         let logger = TestLogHandler()
 
-        _ = Signing.verify(signature: "invalid signature".asData.base64EncodedString(),
+        let signature = String(repeating: "x", count: Signing.SignatureComponent.totalSize)
+            .asData
+
+        _ = Signing.verify(signature: signature.base64EncodedString(),
                            with: .init(
                             message: "Hello World".asData,
                             nonce: "nonce".asData,
+                            etag: nil,
                             requestDate: 1677005916012
                            ),
                            publicKey: Signing.loadPublicKey())
 
-        logger.verifyMessageWasLogged("Signature failed verification", level: .warn)
+        logger.verifyMessageWasLogged(Strings.signing.signature_failed_verification,
+                                      level: .warn)
+    }
+
+    func testVerifySignatureLogsWarningWhenSizeIsIncorrect() throws {
+        let logger = TestLogHandler()
+
+        let signature = "invalid signature".asData
+
+        _ = Signing.verify(signature: signature.base64EncodedString(),
+                           with: .init(
+                            message: "Hello World".asData,
+                            nonce: "nonce".asData,
+                            etag: nil,
+                            requestDate: 1677005916012
+                           ),
+                           publicKey: Signing.loadPublicKey())
+
+        logger.verifyMessageWasLogged(Strings.signing.signature_invalid_size(signature),
+                                      level: .warn)
     }
 
     func testVerifySignatureWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "nonce"
         let requestDate: UInt64 = 1677005916012
+        let publicKey = Self.createSignedPublicKey()
         let salt = Self.createSalt()
 
         let signature = try self.sign(
             parameters: .init(
                 message: message.asData,
                 nonce: nonce.asData,
+                etag: nil,
                 requestDate: requestDate
             ),
             salt: salt.asData
         )
-        let fullSignature = salt.asData + signature
+        let fullSignature = Self.fullSignature(
+            publicKey: publicKey,
+            salt: salt,
+            signature: signature
+        )
 
         expect(Signing.verify(
             signature: fullSignature.base64EncodedString(),
             with: .init(
                 message: message.asData,
                 nonce: nonce.asData,
+                etag: nil,
                 requestDate: requestDate
             ),
             publicKey: self.publicKey
         )) == true
     }
 
-    func testVerifyKnownSignatureWithNoETag() throws {
+    func testVerifySignatureWithValidSignatureIncludingEtag() throws {
+        let message = "Hello World"
+        let nonce = "nonce"
+        let requestDate: UInt64 = 1677005916012
+        let etag = "97d4f0d2353d784a"
+        let publicKey = Self.createSignedPublicKey()
+        let salt = Self.createSalt()
+
+        let signature = try self.sign(
+            parameters: .init(
+                message: message.asData,
+                nonce: nonce.asData,
+                etag: etag,
+                requestDate: requestDate
+            ),
+            salt: salt.asData
+        )
+        let fullSignature = Self.fullSignature(
+            publicKey: publicKey,
+            salt: salt,
+            signature: signature
+        )
+
+        expect(Signing.verify(
+            signature: fullSignature.base64EncodedString(),
+            with: .init(
+                message: message.asData,
+                nonce: nonce.asData,
+                etag: etag,
+                requestDate: requestDate
+            ),
+            publicKey: self.publicKey
+        )) == true
+    }
+
+    func testVerifyKnownSignatureWithNonceAndEtag() throws {
         /*
          Signature retrieved with:
         curl -v 'https://api.revenuecat.com/v1/subscribers/login' \
         -X GET \
         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-        -H 'Authorization: Bearer {api_key}' \
-        -H 'Host: api.revenuecat.com'
+        -H 'Authorization: Bearer {api_key}'
          */
+
+        Logger.logLevel = .verbose
 
         // swiftlint:disable line_length
         let response = """
-        {"request_date":"2023-02-21T18:58:36Z","request_date_ms":1677005916011,"subscriber":{"entitlements":{},"first_seen":"2023-02-21T18:58:35Z","last_seen":"2023-02-21T18:58:35Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"login","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        {"request_date":"2023-06-28T22:13:01Z","request_date_ms":1687990381493,"subscriber":{"entitlements":{},"first_seen":"2023-06-22T19:28:22Z","last_seen":"2023-06-22T19:28:22Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"login","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
         """
-        let expectedSignature = "2bm3QppRywK5ULyCRLS5JJy9sq+84IkMk0Ue4LsywEp87t0tDObpzPlu30l4Desq9X65UFuosqwCLMizruDHbKvPqQLce0hrIuZpgic+cQ8="
+        let expectedSignature = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeAAAAAA0FnsHKjqgSrOj+YkdU2TZfLfpMfx8w9miUkqxyWMI0h2z0weWLNlF1MPG7ZrL+vOEQi+LvYkcffxprzcn1uSAVfQSkHeWl4NJ4IDusH1iegbiDI+RFt7hpFD70vgXYNE0GZEVLL5wezXhzoTI1ob3Q5ccYJHZ9oBEgqysz8dvNgYrrWCtezaHu5pgvHfBc8E"
         // swiftlint:enable line_length
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate: UInt64 = 1677005916012
+        let requestDate: UInt64 = 1687455094309
+        let etag = "97d4f0d2353d784a"
 
         expect(
             Signing.verify(
@@ -137,6 +206,7 @@ class SigningTests: TestCase {
                 with: .init(
                     message: response.asData,
                     nonce: nonce,
+                    etag: etag,
                     requestDate: requestDate
                 ),
                 publicKey: Signing.loadPublicKey()
@@ -144,30 +214,60 @@ class SigningTests: TestCase {
         ) == true
     }
 
-    func testVerifyKnownSignatureWithETag() throws {
+    func testVerifyKnownSignatureWithNoNonceAndNoEtag() throws {
         /*
          Signature retrieved with:
-         curl -v 'https://api.revenuecat.com/v1/subscribers/login' \
-         -X GET \
-         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-         -H 'Authorization: Bearer {api_key}' \
-         -H 'X-RevenueCat-ETag: b7bd9a697c7fd1a2 \
-         -H 'Host: api.revenuecat.com'
+        curl -v 'https://api.revenuecat.com/v1/subscribers/test/offerings' \
+        -X GET \
+        -H 'Authorization: Bearer {api_key}'
          */
 
-        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate: UInt64 = 1677013582768
-        let eTag = "b7bd9a697c7fd1a2"
+        // swiftlint:disable line_length
+        let response = """
+        {"current_offering_id":"default","offerings":[{"description":"Default","identifier":"default","packages":[]}]}\n
+        """
+        let expectedSignature = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeAAAAAA0FnsHKjqgSrOj+YkdU2TZfLfpMfx8w9miUkqxyWMI0h2z0weWLNlF1MPG7ZrL+vOEQi+LvYkcffxprzcn1uSAVfQSkHeWl4NJ4IDusH1iegd46IlIRN+o2Ej9KsKv+NWQUgQZ5gMt5GJ25GydlA772xmGGFGgxCnfa+/mFDQ4WpODkbtkiFheRxEsbUs8zQJ"
+        // swiftlint:enable line_length
 
-        // swiftlint:disable:next line_length
-        let expectedSignature = "IbHvwMBfhgF6Et6AH2KigMF9to3O8Ioh/z9GlG/8mhBInfd8wkzdhp/p/QOucYJZYe7nwKRCtuGjC5d3iBqdX53WUHCpT0IVFo1dzZFAegU="
+        let requestDate: UInt64 = 1687455094309
 
         expect(
             Signing.verify(
                 signature: expectedSignature,
                 with: .init(
-                    message: eTag.asData,
+                    message: response.asData,
+                    nonce: nil,
+                    etag: nil,
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
+    func testVerifyKnownSignatureOfEmptyResponseWithNonceAndNoEtag() throws {
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/health/static' \
+        -X GET \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi'
+         */
+
+        // swiftlint:disable line_length
+        let response = "\"\"\n"
+        let expectedSignature = "drCCA+6YAKOAjT7b2RosYNTrRexVWnu+dR5fw/JuKeAAAAAA0FnsHKjqgSrOj+YkdU2TZfLfpMfx8w9miUkqxyWMI0h2z0weWLNlF1MPG7ZrL+vOEQi+LvYkcffxprzcn1uSAVfQSkHeWl4NJ4IDusH1ieiOuhvZ8lHxC5ntXQ+U3wzInufFUkwNChuNwXQ4eEw5tifm45bUv4S0DsKwnBYaHWQzVcVbJ7NUQZKD7I8k23MI"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1687455094309
+
+        expect(
+            Signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    message: response.asData,
                     nonce: nonce,
+                    etag: nil,
                     requestDate: requestDate
                 ),
                 publicKey: Signing.loadPublicKey()
@@ -188,6 +288,8 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
+        let logger = TestLogHandler()
+
         let response = HTTPResponse.create(with: Data(),
                                            statusCode: .success,
                                            headers: [:],
@@ -195,6 +297,9 @@ class SigningTests: TestCase {
                                            publicKey: self.publicKey)
 
         expect(response.verificationResult) == .failed
+
+        logger.verifyMessageWasLogged(Strings.signing.signature_was_requested_but_not_provided(request),
+                                      level: .warn)
     }
 
     func testResponseVerificationWithInvalidSignature() throws {
@@ -212,17 +317,23 @@ class SigningTests: TestCase {
         expect(response.verificationResult) == .failed
     }
 
-    func testResponseVerificationWithValidSignature() throws {
+    func testResponseVerificationWithNonceWithValidSignature() throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let requestDate = Date().millisecondsSince1970
+        let publicKey = Self.createSignedPublicKey()
         let salt = Self.createSalt()
 
         let signature = try self.sign(parameters: .init(message: message.asData,
                                                         nonce: nonce.asData,
+                                                        etag: nil,
                                                         requestDate: requestDate),
                                       salt: salt.asData)
-        let fullSignature = salt.asData + signature
+        let fullSignature = Self.fullSignature(
+            publicKey: publicKey,
+            salt: salt,
+            signature: signature
+        )
 
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
         let response = HTTPResponse.create(
@@ -239,26 +350,29 @@ class SigningTests: TestCase {
         expect(response.verificationResult) == .verified
     }
 
-    func testResponseVerificationWithETagValidSignature() throws {
+    func testResponseVerificationWithoutNonceWithValidSignature() throws {
         let message = "Hello World"
-        let nonce = "0123456789ab"
-        let etag = "etag"
         let requestDate = Date().millisecondsSince1970
+        let publicKey = Self.createSignedPublicKey()
         let salt = Self.createSalt()
 
-        let signature = try self.sign(parameters: .init(message: etag.asData,
-                                                        nonce: nonce.asData,
+        let signature = try self.sign(parameters: .init(message: message.asData,
+                                                        nonce: nil,
+                                                        etag: nil,
                                                         requestDate: requestDate),
                                       salt: salt.asData)
-        let fullSignature = salt.asData + signature
+        let fullSignature = Self.fullSignature(
+            publicKey: publicKey,
+            salt: salt,
+            signature: signature
+        )
 
-        let request = HTTPRequest(method: .get, path: .logIn, nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
         let response = HTTPResponse.create(
             with: message.asData,
-            statusCode: .notModified,
+            statusCode: .success,
             headers: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
-                HTTPClient.ResponseHeader.eTag.rawValue: etag,
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],
             request: request,
@@ -266,6 +380,29 @@ class SigningTests: TestCase {
         )
 
         expect(response.verificationResult) == .verified
+    }
+
+    func testResponseVerificationWithoutNonceAndNoSignatureReturnsNotRequested() throws {
+        let message = "Hello World"
+        let requestDate = Date().millisecondsSince1970
+
+        let logger = TestLogHandler()
+
+        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        let response = HTTPResponse.create(
+            with: message.asData,
+            statusCode: .success,
+            headers: [
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            request: request,
+            publicKey: self.publicKey
+        )
+
+        expect(response.verificationResult) == .notRequested
+
+        logger.verifyMessageWasNotLogged(Strings.signing.signature_was_requested_but_not_provided(request),
+                                         allowNoMessages: true)
     }
 
     func testVerificationResultWithSameCachedAndResponseResult() {
@@ -307,24 +444,32 @@ class SigningTests: TestCase {
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-extension SigningTests {
+private extension SigningTests {
 
-    private static func createRandomKey() -> (PrivateKey, PublicKey) {
+    static func createRandomKey() -> (PrivateKey, PublicKey) {
         let key = PrivateKey()
 
         return (key, key.publicKey)
     }
 
-    private func sign(parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
+    func sign(parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
         return try self.sign(key: self.privateKey, parameters: parameters, salt: salt)
     }
 
-    private func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
+    func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
         return try key.signature(for: salt + parameters.asData)
     }
 
-    private static func createSalt() -> String {
-        return Array(repeating: "a", count: Signing.saltSize).joined()
+    static func fullSignature(publicKey: String, salt: String, signature: Data) -> Data {
+        return publicKey.asData + salt.asData + signature
+    }
+
+    static func createSalt() -> String {
+        return Array(repeating: "a", count: Signing.SignatureComponent.salt.size).joined()
+    }
+
+    static func createSignedPublicKey() -> String {
+        return Array(repeating: "b", count: Signing.SignatureComponent.signedPublicKeySize).joined()
     }
 
 }
