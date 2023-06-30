@@ -76,7 +76,7 @@ private extension GetIntroEligibilityOperation {
 
         httpClient.perform(
             request
-        ) { (response: HTTPResponse<GetIntroEligibilityResponse>.Result) in
+        ) { (response: VerifiedHTTPResponse<GetIntroEligibilityResponse>.Result) in
             self.handleIntroEligibility(result: response,
                                         productIdentifiers: self.productIdentifiers,
                                         completion: self.responseHandler)
@@ -85,7 +85,7 @@ private extension GetIntroEligibilityOperation {
     }
 
     func handleIntroEligibility(
-        result: Result<HTTPResponse<GetIntroEligibilityResponse>, NetworkError>,
+        result: VerifiedHTTPResponse<GetIntroEligibilityResponse>.Result,
         productIdentifiers: [String],
         completion: OfferingsAPI.IntroEligibilityResponseHandler
     ) {

@@ -43,7 +43,7 @@ class PostAdServicesTokenOperation: NetworkOperation {
         let request = HTTPRequest(method: .post(Body(aadAttributionToken: self.token)),
                                   path: .postAdServicesToken(appUserID: appUserID))
 
-        self.httpClient.perform(request) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }

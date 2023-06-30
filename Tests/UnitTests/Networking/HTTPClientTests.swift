@@ -13,13 +13,17 @@ import XCTest
 
 @testable import RevenueCat
 
-class BaseHTTPClientTests: TestCase {
+/// Generic `ETagManager` type allows subclasses to use either `MockETagManager`
+/// or the real `ETagManager`.
+class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
 
-    typealias EmptyResponse = HTTPResponse<HTTPEmptyResponseBody>.Result
+    typealias EmptyResponse = VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result
+    typealias DataResponse = VerifiedHTTPResponse<Data>.Result
+    typealias BodyWithDateResponse = VerifiedHTTPResponse<BodyWithDate>.Result
 
     var systemInfo: MockSystemInfo!
     var client: HTTPClient!
-    var eTagManager: MockETagManager!
+    var eTagManager: ETag!
     var operationDispatcher: OperationDispatcher!
 
     fileprivate let apiKey = "MockAPIKey"
@@ -33,11 +37,11 @@ class BaseHTTPClientTests: TestCase {
         #endif
 
         self.systemInfo = MockSystemInfo(finishTransactions: true)
-        self.eTagManager = MockETagManager()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
         MockSigning.resetData()
 
+        // Subclasses must initialize `self.eTagManager` before this
         self.client = self.createClient()
     }
 
@@ -58,7 +62,13 @@ class BaseHTTPClientTests: TestCase {
 
 }
 
-final class HTTPClientTests: BaseHTTPClientTests {
+final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
+
+    override func setUpWithError() throws {
+        self.eTagManager = MockETagManager()
+
+        try super.setUpWithError()
+    }
 
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
@@ -329,7 +339,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -365,7 +375,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -401,7 +411,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -438,7 +448,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -466,7 +476,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<CustomResponse>.Result) in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<CustomResponse>.Result) in
                 completion(response)
             }
         }
@@ -496,7 +506,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -515,8 +525,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubResponseEtag(eTag, validationTime: eTagValidationTime)
 
         stub(condition: isPath(request.path)) { request in
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeaderName])
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
+            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,
@@ -525,7 +535,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<Data>.Result) in
+            self.client.perform(request) { (response: DataResponse) in
                 completion(response)
             }
         }
@@ -555,7 +565,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let result = waitUntilValue { completion in
-            self.client.perform(request) { (response: HTTPResponse<CustomResponse>.Result) in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<CustomResponse>.Result) in
                 completion(response)
             }
         }
@@ -575,12 +585,12 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.stubResponseEtag(eTag)
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName] == eTag
+            headerPresent.value = request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue] == eTag
             return .emptySuccessResponse()
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -592,12 +602,14 @@ final class HTTPClientTests: BaseHTTPClientTests {
         let headerPresent: Atomic<Bool?> = nil
 
         stub(condition: isPath(request.path)) { request in
-            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(ETagManager.eTagRequestHeaderName) == true
+            headerPresent.value = request.allHTTPHeaderFields?.keys.contains(
+                ETagManager.eTagRequestHeader.rawValue
+            ) == true
             return .emptySuccessResponse()
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == false
@@ -617,7 +629,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -636,7 +648,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -655,7 +667,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -675,7 +687,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -696,7 +708,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -723,7 +735,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -741,7 +753,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -763,7 +775,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -784,7 +796,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -803,7 +815,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -825,7 +837,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent) == true
@@ -846,7 +858,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent) == false
@@ -865,7 +877,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
 
         waitUntil { completion in
-            self.client.perform(request) { (_: HTTPResponse<Data>.Result) in completion() }
+            self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
         expect(headerPresent.value) == true
@@ -891,7 +903,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         for requestNumber in 0..<serialRequests {
             let expectation = self.expectation(description: "Request \(requestNumber)")
 
-            client.perform(.init(method: .requestNumber(requestNumber), path: path)) { (_: HTTPResponse<Data>.Result) in
+            client.perform(.init(method: .requestNumber(requestNumber), path: path)) { (_: DataResponse) in
                 completionCallCount.value += 1
                 expectation.fulfill()
             }
@@ -926,12 +938,12 @@ final class HTTPClientTests: BaseHTTPClientTests {
             self.expectation(description: "Request 2")
         ]
 
-        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: DataResponse) in
             firstRequestFinished.value = true
             expectations[0].fulfill()
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: DataResponse) in
             secondRequestFinished.value = true
             expectations[1].fulfill()
         }
@@ -978,17 +990,17 @@ final class HTTPClientTests: BaseHTTPClientTests {
             self.expectation(description: "Request 3")
         ]
 
-        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(1), path: path)) { (_: DataResponse) in
             firstRequestFinished.value = true
             expectations[0].fulfill()
         }
 
-        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(2), path: path)) { (_: DataResponse) in
             secondRequestFinished.value = true
             expectations[1].fulfill()
         }
 
-        self.client.perform(.init(method: .requestNumber(3), path: path)) { (_: HTTPResponse<Data>.Result) in
+        self.client.perform(.init(method: .requestNumber(3), path: path)) { (_: DataResponse) in
             thirdRequestFinished.value = true
             expectations[2].fulfill()
         }
@@ -1002,7 +1014,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
     func testPerformRequestExitsWithErrorIfBodyCouldntBeParsedIntoJSON() throws {
         let response = waitUntilValue { completion in
-            self.client.perform(.init(method: .invalidBody(), path: .mockPath)) { (result: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .invalidBody(), path: .mockPath)) { (result: DataResponse) in
                 completion(result)
             }
         }
@@ -1022,7 +1034,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .invalidBody(), path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .invalidBody(), path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1048,7 +1060,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
 
-        let result: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+        let result: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path)) {
                 completion($0)
             }
@@ -1069,7 +1081,8 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         let headers: [String: String] = [
             HTTPClient.ResponseHeader.contentType.rawValue: "application/json",
-            HTTPClient.ResponseHeader.signature.rawValue: UUID().uuidString
+            HTTPClient.ResponseHeader.signature.rawValue: UUID().uuidString,
+            HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate.millisecondsSince1970)
         ]
 
         self.eTagManager.stubResponseEtag(eTag)
@@ -1078,20 +1091,19 @@ final class HTTPClientTests: BaseHTTPClientTests {
             statusCode: .success,
             responseHeaders: headers,
             body: mockedCachedResponse,
-            requestDate: requestDate,
-            verificationResult: .notRequested
+            verificationResult: .verified
         )
 
         stub(condition: isPath(path)) { response in
-            expect(response.allHTTPHeaderFields?[ETagManager.eTagRequestHeaderName]) == eTag
+            expect(response.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
 
             return .init(data: Data(),
                          statusCode: .notModified,
                          headers: headers)
         }
 
-        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
-            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path)) { (result: DataResponse) in
                 completion(result)
             }
         }
@@ -1099,12 +1111,11 @@ final class HTTPClientTests: BaseHTTPClientTests {
         expect(response).toNot(beNil())
         expect(response?.value?.statusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
-        expect(response?.value?.requestDate) == requestDate
+        expect(response?.value?.requestDate).to(beCloseToDate(requestDate))
         expect(response?.value?.verificationResult) == .notRequested
-        expect(response?.value?.responseHeaders).to(haveCount(headers.count))
+        expect(response?.value?.responseHeaders.keys).to(contain(Array(headers.keys.map(AnyHashable.init))))
 
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
-        expect(self.eTagManager.invokedETagHeaderParameters?.withSignatureVerification) == false
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
@@ -1120,7 +1131,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .get, path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1142,7 +1153,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .post([:]), path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1168,7 +1179,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .post([:]), path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .post([:]), path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1193,7 +1204,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             return response
         }
         waitUntil { completion in
-            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .get, path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1214,7 +1225,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let obtainedError: NetworkError? = waitUntilValue { completion in
-            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .get, path: path)) { (result: DataResponse) in
                 completion(result.error)
             }
         }
@@ -1244,7 +1255,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         let obtainedError: NetworkError? = waitUntilValue { completion in
-            self.client.perform(.init(method: .get, path: path)) { (result: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .get, path: path)) { (result: DataResponse) in
                 completion(result.error)
             }
         }
@@ -1275,7 +1286,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .get, path: path)) { (_: HTTPResponse<Data>.Result) in
+            self.client.perform(.init(method: .get, path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1302,7 +1313,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             )
         }
 
-        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+        let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
 
@@ -1337,7 +1348,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
             )
         }
 
-        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+        let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
 
@@ -1366,7 +1377,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
         )
         self.client = self.createClient()
 
-        let response: HTTPResponse<BodyWithDate>.Result? = waitUntilValue { completion in
+        let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
 
@@ -1406,7 +1417,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         let logger = TestLogHandler()
 
-        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+        let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: pathA), completionHandler: completion)
         }
 
@@ -1432,7 +1443,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         let logger = TestLogHandler()
 
-        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+        let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
         expect(response).to(beSuccess())
@@ -1455,7 +1466,7 @@ final class HTTPClientTests: BaseHTTPClientTests {
 
         let logger = TestLogHandler()
 
-        let response: HTTPResponse<Data>.Result? = waitUntilValue { completion in
+        let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
         expect(response).to(beSuccess())
@@ -1504,7 +1515,7 @@ private extension BaseHTTPClientTests {
         }
     }
 
-    static let requestNumberKeyName = "request_number"
+    static var requestNumberKeyName: String { "request_number" }
 
 }
 
@@ -1514,7 +1525,7 @@ extension BaseHTTPClientTests {
         var data: String
         var requestDate: Date
 
-        func copy(with newRequestDate: Date) -> HTTPClientTests.BodyWithDate {
+        func copy(with newRequestDate: Date) -> Self {
             var copy = self
             copy.requestDate = newRequestDate
             return copy

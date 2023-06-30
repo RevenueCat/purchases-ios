@@ -88,12 +88,12 @@ private final class HealthOperation: CacheableNetworkOperation {
         self.httpClient.perform(
             request,
             with: self.verificationMode
-        ) { (response: HTTPResponse<HTTPEmptyResponseBody>.Result) in
+        ) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             self.finish(with: response, completion: completion)
         }
     }
 
-    private func finish(with response: HTTPResponse<HTTPEmptyResponseBody>.Result,
+    private func finish(with response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result,
                         completion: () -> Void) {
         self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
             callback.completion(

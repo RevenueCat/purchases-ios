@@ -33,8 +33,8 @@ enum SigningStrings {
                              parameters: Signing.SignatureParameters,
                              salt: Data,
                              payload: Data,
-                             message: Data)
-    case invalid_signature_data(HTTPRequest, Data, HTTPClient.ResponseHeaders, HTTPStatusCode)
+                             message: Data?)
+    case invalid_signature_data(HTTPRequest, Data?, HTTPClient.ResponseHeaders, HTTPStatusCode)
     #endif
 
 }
@@ -70,9 +70,8 @@ extension SigningStrings: LogMessage {
             INVALID SIGNATURE DETECTED:
             Request: \(request.method.httpMethod) \(request.path)
             Response: \(statusCode.rawValue)
-            \(responseHeaders.stringRepresentation)
             Headers: \(responseHeaders.map { "\($0.key.base): \($0.value)" })
-            Body (length: \(data.count)): \(data.hashString)
+            Body (length: \(data?.count ?? 0)): \(data?.hashString ?? "<>")
             """
 
         case let .verifying_signature(
@@ -87,7 +86,7 @@ extension SigningStrings: LogMessage {
             Parameters: \(parameters),
             Salt: \(salt.base64EncodedString()),
             Payload: \(payload.base64EncodedString()),
-            Message: \(message.base64EncodedString())
+            Message: \(message?.base64EncodedString() ?? "")
             """
 
         #endif

@@ -15,10 +15,10 @@ class MockHTTPClient: HTTPClient {
 
     struct Response {
 
-        let response: HTTPResponse<Data>.Result
+        let response: VerifiedHTTPResponse<Data>.Result
         let delay: DispatchTimeInterval
 
-        private init(response: HTTPResponse<Data>.Result, delay: DispatchTimeInterval) {
+        private init(response: VerifiedHTTPResponse<Data>.Result, delay: DispatchTimeInterval) {
             self.response = response
             self.delay = delay
         }
@@ -33,10 +33,12 @@ class MockHTTPClient: HTTPClient {
             // swiftlint:disable:next force_try
             let data = try! JSONSerialization.data(withJSONObject: response)
 
-            let response = HTTPResponse(
-                statusCode: statusCode,
-                responseHeaders: responseHeaders,
-                body: data,
+            let response = VerifiedHTTPResponse(
+                response: .init(
+                    statusCode: statusCode,
+                    responseHeaders: responseHeaders,
+                    body: data
+                ),
                 verificationResult: verificationResult
             )
 
@@ -92,7 +94,7 @@ class MockHTTPClient: HTTPClient {
             let mock = self.mocks[request.path] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
-                let response: HTTPResponse<Value>.Result = mock.response.parseResponse()
+                let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
 
                 if mock.delay != .never {
                     DispatchQueue.main.asyncAfter(deadline: .now() + mock.delay) {
