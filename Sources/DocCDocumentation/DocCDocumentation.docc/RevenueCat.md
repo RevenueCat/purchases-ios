@@ -63,6 +63,7 @@ Or browse our iOS sample apps:
 - ``Offering``
 - ``Package``
 - ``StoreProduct``
+- ``TestStoreProduct``
 - ``SubscriptionPeriod``
 
 - ``Purchases/offerings()``
