@@ -18,8 +18,8 @@
       "observer_mode" : true,
       "price" : "15.99",
       "product_id" : "product_id",
-      "receipt_id" : "12345678-1234-1234-1234-C2C35AE34D09",
-      "store_country" : "ESP"
+      "store_country" : "ESP",
+      "test_receipt_identifier" : "12345678-1234-1234-1234-C2C35AE34D09"
     },
     "method" : "POST",
     "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
