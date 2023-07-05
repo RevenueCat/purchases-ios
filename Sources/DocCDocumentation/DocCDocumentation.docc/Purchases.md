@@ -27,6 +27,13 @@ Most features require configuring the SDK before using it.
 - ``PurchasesDiagnostics``
 
 ### Displaying Products
+- ``Offerings``
+- ``Offering``
+- ``Package``
+- ``StoreProduct``
+- ``TestStoreProduct``
+- ``SubscriptionPeriod``
+
 - ``Purchases/offerings()``
 - ``Purchases/getOfferings(completion:)``
 - ``Purchases/products(_:)``
