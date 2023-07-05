@@ -263,7 +263,7 @@ extension BaseStoreKitIntegrationTests {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     @discardableResult
     func verifySubscriptionExpired() async throws -> CustomerInfo {
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await Purchases.shared.syncPurchases()
         self.assertNoActiveSubscription(info)
 
         return info
