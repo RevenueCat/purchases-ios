@@ -224,6 +224,8 @@ internal extension Configuration {
 
     /// Defines how strict ``EntitlementInfo`` verification ought to be.
     ///
+    /// Verification failures will be forwarded to ``Purchases/errorHandler``.
+    ///
     /// ### Related Symbols
     /// - ``VerificationResult``
     /// - ``Configuration/Builder/with(entitlementVerificationMode:)``

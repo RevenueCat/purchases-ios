@@ -36,10 +36,13 @@ import Foundation
 /// }
 /// ```
 ///
+/// Verification failures will also be forwarded to ``Purchases/errorHandler``.
+///
 /// ### Related Symbols
 /// - ``Configuration/EntitlementVerificationMode``
 /// - ``Configuration/Builder/with(entitlementVerificationMode:)``
 /// - ``EntitlementInfos/verification``
+/// - ``Purchases/errorHandler``
 // Trusted Entitlements: internal until ready to be made public.
 @objc(RCVerificationResult)
 internal enum VerificationResult: Int {
