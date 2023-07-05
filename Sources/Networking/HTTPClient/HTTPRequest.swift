@@ -148,8 +148,27 @@ extension HTTPRequest.Path {
         }
     }
 
-    // Whether the endpoint will perform signature validation.
-    var supportsSignatureValidation: Bool {
+    /// Whether the endpoint will perform signature verification.
+    var supportsSignatureVerification: Bool {
+        switch self {
+        case .getCustomerInfo,
+                .logIn,
+                .postReceiptData,
+                .health,
+                .getOfferings,
+                .getProductEntitlementMapping:
+            return true
+        case .getIntroEligibility,
+                .postSubscriberAttributes,
+                .postAttributionData,
+                .postAdServicesToken,
+                .postOfferForSigning:
+            return false
+        }
+    }
+
+    /// Whether endpoint requires a nonce for signature verification.
+    var needsNonceForSigning: Bool {
         switch self {
         case .getCustomerInfo,
                 .logIn,

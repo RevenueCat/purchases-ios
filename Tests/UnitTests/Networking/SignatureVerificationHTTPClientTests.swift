@@ -116,6 +116,36 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         )
     }
 
+    func testFailedVerificationIfResponseContainsNoSignatureForEndpointWithStaticSignature() throws {
+        // This test relies on a path with static signatures
+        let path: HTTPRequest.Path = .getProductEntitlementMapping
+        expect(path.supportsSignatureVerification) == true
+        expect(path.needsNonceForSigning) == false
+
+        let logger = TestLogHandler()
+
+        try self.changeClient(.informational)
+        self.mockResponse(path: path,
+                          signature: nil,
+                          requestDate: nil)
+
+        self.signing.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .init(method: .get, path: path)
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed
+        expect(self.signing.requests).to(beEmpty())
+
+        logger.verifyMessageWasLogged(
+            Strings.signing.signature_was_requested_but_not_provided(request),
+            level: .warn
+        )
+    }
+
     func testHeadersAreCaseInsensitive() throws {
         try self.changeClient(.informational)
 

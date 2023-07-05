@@ -23,6 +23,7 @@ enum SigningStrings {
     case signature_invalid_size(Data)
 
     case signature_failed_verification
+    case signature_passed_verification
 
     case intermediate_key_failed_verification(signature: Data)
     case intermediate_key_failed_creation(Error)
@@ -62,6 +63,9 @@ extension SigningStrings: LogMessage {
 
         case .signature_failed_verification:
             return "Signature failed verification"
+
+        case .signature_passed_verification:
+            return "Signature passed verification"
 
         case let .intermediate_key_failed_verification(signature):
             return "Intermediate key failed verification: \(signature.asString)"

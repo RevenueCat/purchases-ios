@@ -42,7 +42,15 @@ class HTTPRequestTests: TestCase {
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health
     ]
-    private static let pathsWithSignatureValidation: Set<HTTPRequest.Path> = [
+    private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
+        .getCustomerInfo(appUserID: userID),
+        .logIn,
+        .postReceiptData,
+        .health,
+        .getOfferings(appUserID: userID),
+        .getProductEntitlementMapping
+    ]
+    private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
@@ -104,20 +112,47 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    func testPathsSupportingSignatureSignatureValidation() {
-        for path in Self.pathsWithSignatureValidation {
-            expect(path.supportsSignatureValidation).to(
+    func testPathsSupportingSignatureSignatureVerification() {
+        for path in Self.pathsWithSignatureVerification {
+            expect(path.supportsSignatureVerification).to(
                 beTrue(),
-                description: "Path '\(path)' should have signature validation"
+                description: "Path '\(path)' should have signature verification"
             )
         }
     }
 
-    func testPathsNotSupportingSignatureValidation() {
-        for path in Self.paths where !Self.pathsWithSignatureValidation.contains(path) {
-            expect(path.supportsSignatureValidation).to(
+    func testPathsNotSupportingSignatureVerification() {
+        for path in Self.paths where !Self.pathsWithSignatureVerification.contains(path) {
+            expect(path.supportsSignatureVerification).to(
                 beFalse(),
-                description: "Path '\(path)' should not have signature validation"
+                description: "Path '\(path)' should not have signature verification"
+            )
+        }
+    }
+
+    func testPathsRequiringNonceForSignature() {
+        for path in Self.pathsThatRequireNonce {
+            expect(path.needsNonceForSigning).to(
+                beTrue(),
+                description: "Path '\(path)' requires nonce for signing"
+            )
+        }
+    }
+
+    func testPathsNotRequiringNonceForSignature() {
+        for path in Self.paths where !Self.pathsThatRequireNonce.contains(path) {
+            expect(path.needsNonceForSigning).to(
+                beFalse(),
+                description: "Path '\(path)' does not require nonce for signing"
+            )
+        }
+    }
+
+    func testPathsThatRequireANonceSupportSignatureVerification() {
+        for path in Self.paths where path.needsNonceForSigning {
+            expect(path.supportsSignatureVerification).to(
+                beTrue(),
+                description: "Path '\(path)' should support signature verification"
             )
         }
     }
@@ -160,7 +195,7 @@ class HTTPRequestTests: TestCase {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testAddNonceIfRequiredWithPathWithNoSignatureValidation() throws {
+    func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
@@ -170,7 +205,17 @@ class HTTPRequestTests: TestCase {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testAddNonceIfRequiredForPathWithSignatureValidationWhenEnforced() throws {
+    func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
+        let mode = Signing.enforcedVerificationMode()
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
@@ -180,7 +225,7 @@ class HTTPRequestTests: TestCase {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    func testAddNonceIfRequiredForPathWithSignatureValidationWhenModeInformational() throws {
+    func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
