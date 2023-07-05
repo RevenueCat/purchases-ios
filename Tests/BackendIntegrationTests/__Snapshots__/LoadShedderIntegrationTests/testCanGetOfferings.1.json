@@ -14,6 +14,19 @@
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
         }
       ]
+    },
+    {
+      "description" : "an alternative offering",
+      "identifier" : "alternative offering",
+      "metadata" : {
+
+      },
+      "packages" : [
+        {
+          "identifier" : "$rc_monthly",
+          "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
+        }
+      ]
     }
   ]
 }
