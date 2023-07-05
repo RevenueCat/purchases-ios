@@ -93,7 +93,7 @@ extension SigningStrings: LogMessage {
         case let .invalid_signature_data(request, data, responseHeaders, statusCode):
             return """
             INVALID SIGNATURE DETECTED:
-            Request: \(request.method.httpMethod) \(request.path)
+            Request: \(request.method.httpMethod) \(request.path.relativePath)
             Response: \(statusCode.rawValue)
             Headers: \(responseHeaders.map { "\($0.key.base): \($0.value)" })
             Body (length: \(data?.count ?? 0)): \(data?.hashString ?? "<>")
@@ -111,6 +111,7 @@ extension SigningStrings: LogMessage {
             Verifying signature '\(signature.base64EncodedString())'
             Public key: '\(publicKey.asString)'
             Parameters: \(parameters),
+            Path: \(parameters.path.relativePath)
             Salt: \(salt.base64EncodedString()),
             Payload: \(payload.base64EncodedString()),
             Message: \(message?.base64EncodedString() ?? "")

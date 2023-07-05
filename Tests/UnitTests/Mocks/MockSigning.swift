@@ -21,26 +21,21 @@ final class MockSigning: SigningType {
         let publicKey: Signing.PublicKey
     }
 
-    static var requests: [VerificationRequest] = []
-    static var stubbedVerificationResult: Bool?
+    var requests: [VerificationRequest] = []
+    var stubbedVerificationResult: Bool?
 
-    static func verify(
+    func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
     ) -> Bool {
-        Self.requests.append(.init(
+        self.requests.append(.init(
             signature: signature,
             parameters: parameters,
             publicKey: publicKey
         ))
 
-        return Self.stubbedVerificationResult!
-    }
-
-    static func resetData() {
-        self.requests.removeAll()
-        self.stubbedVerificationResult = nil
+        return self.stubbedVerificationResult!
     }
 
 }

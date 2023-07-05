@@ -22,6 +22,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     typealias BodyWithDateResponse = VerifiedHTTPResponse<BodyWithDate>.Result
 
     var systemInfo: MockSystemInfo!
+    var signing: MockSigning!
     var client: HTTPClient!
     var eTagManager: ETag!
     var operationDispatcher: OperationDispatcher!
@@ -37,9 +38,9 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
         #endif
 
         self.systemInfo = MockSystemInfo(finishTransactions: true)
+        self.signing = MockSigning()
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
-        MockSigning.resetData()
 
         // Subclasses must initialize `self.eTagManager` before this
         self.client = self.createClient()
@@ -52,11 +53,15 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     }
 
     final func createClient() -> HTTPClient {
+        return self.createClient(self.systemInfo)
+    }
+
+    fileprivate final func createClient(_ systemInfo: SystemInfo) -> HTTPClient {
         return HTTPClient(apiKey: self.apiKey,
-                          systemInfo: self.systemInfo,
+                          systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
+                          signing: self.signing,
                           dnsChecker: MockDNSChecker.self,
-                          signing: MockSigning.self,
                           requestTimeout: 3)
     }
 
@@ -356,7 +361,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )
         expect(error.isServerDown) == false
 
-        expect(MockSigning.requests).to(beEmpty())
+        expect(self.signing.requests).to(beEmpty())
     }
 
     func testServerSide500sWithErrorResponse() throws {
@@ -392,7 +397,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )
         expect(error.isServerDown) == true
 
-        expect(MockSigning.requests).to(beEmpty())
+        expect(self.signing.requests).to(beEmpty())
     }
 
     func testServerSide500sWithUnknownBody() throws {
@@ -428,7 +433,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )
         expect(error.isServerDown) == true
 
-        expect(MockSigning.requests).to(beEmpty())
+        expect(self.signing.requests).to(beEmpty())
 
         logger.verifyMessageWasNotLogged("Couldn't decode data from json")
     }
@@ -772,7 +777,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
 
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -793,7 +798,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
         let systemInfo = try SystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true)
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -811,8 +816,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: true)
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(try SystemInfo(platformInfo: nil, finishTransactions: true))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -822,8 +826,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testRequestsWithCustomEntitlementsSendHeader() {
-        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true))
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
@@ -844,8 +847,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testRequestsWithoutCustomEntitlementsDoNotSendHeader() {
-        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false)
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false))
 
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
@@ -873,8 +875,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        let systemInfo = try SystemInfo(platformInfo: nil, finishTransactions: false)
-        self.client = HTTPClient(apiKey: self.apiKey, systemInfo: systemInfo, eTagManager: self.eTagManager)
+        self.client = self.createClient(try SystemInfo(platformInfo: nil, finishTransactions: false))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1367,15 +1368,16 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        self.systemInfo = try .init(
-            platformInfo: nil,
-            finishTransactions: false,
-            dangerousSettings: .init(
-                autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(forceServerErrors: true)
+        self.client = self.createClient(
+            try .init(
+                platformInfo: nil,
+                finishTransactions: false,
+                dangerousSettings: .init(
+                    autoSyncPurchases: true,
+                    internalSettings: DangerousSettings.Internal(forceServerErrors: true)
+                )
             )
         )
-        self.client = self.createClient()
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)

@@ -19,6 +19,8 @@ import XCTest
 
 class HTTPResponseTests: TestCase {
 
+    private static let signing: Signing = .init(apiKey: "api_key")
+
     func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
         let response = HTTPResponse<Data?>(
@@ -26,7 +28,7 @@ class HTTPResponseTests: TestCase {
             responseHeaders: [:],
             body: Data()
         )
-        let verifiedResponse = response.verify(request: request, publicKey: nil)
+        let verifiedResponse = response.verify(signing: Self.signing, request: request, publicKey: nil)
 
         expect(verifiedResponse.verificationResult) == .notRequested
     }
@@ -43,7 +45,7 @@ class HTTPResponseTests: TestCase {
             responseHeaders: [:],
             body: Data()
         )
-        let verifiedResponse = response.verify(request: request, publicKey: key)
+        let verifiedResponse = response.verify(signing: Self.signing, request: request, publicKey: key)
 
         expect(verifiedResponse.verificationResult) == .notRequested
     }

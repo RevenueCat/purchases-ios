@@ -17,7 +17,7 @@ import Foundation
 /// A type that can verify signatures.
 protocol SigningType {
 
-    static func verify(
+    func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
@@ -26,7 +26,7 @@ protocol SigningType {
 }
 
 /// Utilities for handling signature verification.
-enum Signing: SigningType {
+final class Signing: SigningType {
 
     /// An object that represents a cryptographic key.
     typealias PublicKey = SigningPublicKey
@@ -34,11 +34,18 @@ enum Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
+        let path: HTTPRequest.Path
         let message: Data?
         let nonce: Data?
         let etag: String?
         let requestDate: UInt64
 
+    }
+
+    private let apiKey: String
+
+    init(apiKey: String) {
+        self.apiKey = apiKey
     }
 
     /// Parses the binary `key` and returns a `PublicKey`
@@ -61,7 +68,7 @@ enum Signing: SigningType {
         }
     }
 
-    static func verify(
+    func verify(
         signature: String,
         with parameters: SignatureParameters,
         publicKey: Signing.PublicKey
@@ -85,7 +92,7 @@ enum Signing: SigningType {
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
-        let messageToVerify = salt + parameters.asData
+        let messageToVerify = salt + self.apiKey.asData + parameters.asData
 
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
@@ -230,10 +237,20 @@ extension Signing.SignatureParameters {
     var asData: Data {
         return (
             (self.nonce ?? .init()) +
+            self.path.unescapedPath.asData +
             String(self.requestDate).asData +
             (self.etag ?? "").asData +
             (self.message ?? .init())
         )
+    }
+
+}
+
+private extension HTTPRequest.Path {
+
+    // Signatures remove percent encoding from the paths.
+    var unescapedPath: String {
+        return self.relativePath.removingPercentEncoding ?? ""
     }
 
 }
