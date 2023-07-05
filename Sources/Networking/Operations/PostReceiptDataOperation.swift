@@ -194,7 +194,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
-        case testReceiptIdentifier = "receipt_id"
+        case testReceiptIdentifier = "test_receipt_identifier"
 
     }
 
