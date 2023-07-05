@@ -39,7 +39,7 @@ class PostAttributionDataOperation: NetworkOperation {
     private func post(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
 
-        guard !appUserID.trimmedAndEscaped.isEmpty else {
+        guard appUserID.isNotEmpty else {
             self.responseHandler?(.missingAppUserID())
             completion()
 

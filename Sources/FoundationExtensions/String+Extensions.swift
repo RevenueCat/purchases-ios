@@ -22,8 +22,8 @@ extension String {
 
     var trimmedAndEscaped: String {
         return self
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            .trimmingWhitespacesAndNewLines
+            .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
     }
 
     /// Returns `nil` if `self` is an empty string.
@@ -38,6 +38,11 @@ extension String {
         return self.trimmingWhitespacesAndNewLines.isEmpty
         ? nil
         : self
+    }
+
+    /// Returns `true` if it contains anything other than whitespaces.
+    var isNotEmpty: Bool {
+        return self.notEmptyOrWhitespaces != nil
     }
 
     var trimmingWhitespacesAndNewLines: String {

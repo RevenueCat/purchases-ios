@@ -43,6 +43,13 @@ class StringExtensionsTests: TestCase {
         expect("1".notEmpty) == "1"
     }
 
+    func testIsNotEmpty() {
+        expect("".isNotEmpty) == false
+        expect(" ".isNotEmpty) == false
+        expect("1".isNotEmpty) == true
+        expect(" 1 ".isNotEmpty) == true
+    }
+
     func testTrimmedAndEscaped() {
         expect("".trimmedAndEscaped) == ""
         expect(" ".trimmedAndEscaped) == ""

@@ -72,7 +72,7 @@ private extension GetCustomerInfoOperation {
     func getCustomerInfo(completion: @escaping () -> Void) {
         let appUserID = self.configuration.appUserID
 
-        guard !appUserID.trimmedAndEscaped.isEmpty else {
+        guard appUserID.isNotEmpty else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }

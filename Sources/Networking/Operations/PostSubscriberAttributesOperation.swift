@@ -43,7 +43,7 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
         let appUserID = self.configuration.appUserID
 
-        guard !appUserID.trimmedAndEscaped.isEmpty else {
+        guard appUserID.isNotEmpty else {
             self.responseHandler?(.missingAppUserID())
             completion()
 
