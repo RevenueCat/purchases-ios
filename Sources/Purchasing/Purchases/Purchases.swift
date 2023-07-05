@@ -161,6 +161,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * - Note:``verboseLogHandler`` provides additional information.
      *
      * #### Related Symbols
+     * - ``errorHandler``
      * - ``verboseLogHandler``
      * - ``logLevel``
      */
@@ -188,6 +189,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      *
      * #### Related Symbols
      * - ``logHandler``
+     * - ``errorHandler``
      * - ``logLevel``
      */
     @objc public static var verboseLogHandler: VerboseLogHandler {
@@ -204,9 +206,26 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
     }
 
+    /**
+     * Set a custom handler for redirecting errors to your own logging system.
+     * This does nothing by default, but it can be overriden to detect and handle
+     * any error occuring in the SDK.
+     *
+     * #### Related Symbols
+     * - ``logHandler``
+     * - ``verboseLogHandler``
+     * - ``logLevel``
+     */
+    @objc public static var errorHandler: ErrorHandler {
+        get { return Logger.errorHandler }
+
+        set { Logger.errorHandler = newValue }
+    }
+
     /// Useful for tests that override the log handler.
     internal static func restoreLogHandler() {
         Logger.internalLogHandler = Logger.defaultLogHandler
+        Logger.errorHandler = Logger.defaultErrorHandler
     }
 
     /**

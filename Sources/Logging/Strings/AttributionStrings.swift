@@ -18,7 +18,7 @@ import Foundation
 enum AttributionStrings {
 
     case appsflyer_id_deprecated
-    case attributes_sync_error(error: NSError?)
+    case attributes_sync_error(error: NSError)
     case attributes_sync_success(appUserID: String)
     case empty_subscriber_attributes
     case marking_attributes_synced(appUserID: String, attributes: SubscriberAttribute.Dictionary)
@@ -58,9 +58,9 @@ extension AttributionStrings: LogMessage {
             return "The parameter key rc_appsflyer_id is deprecated." +
             " Pass networkUserId to addAttribution instead."
 
-        case .attributes_sync_error(let error):
-            return "Error when syncing subscriber attributes. Details: \(error?.localizedDescription ?? "")" +
-            " \nUserInfo: \(error?.userInfo ?? [:])"
+        case let .attributes_sync_error(error):
+            return "Error when syncing subscriber attributes. Details: \(error.localizedDescription)" +
+            " \nUserInfo: \(error.userInfo)"
 
         case .attributes_sync_success(let appUserID):
             return "Subscriber attributes synced successfully for App User ID: \(appUserID)"

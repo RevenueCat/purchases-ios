@@ -74,7 +74,8 @@ class IntroEligibilityCalculator {
                 completion(result, nil)
             }
         } catch {
-            Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error))
+            Logger.error(Strings.customerInfo.checking_intro_eligibility_locally_error(error: error),
+                         error: error as NSError)
             completion([:], error)
             return
         }

@@ -56,8 +56,11 @@ class CustomerInfoResponseHandler {
         _ = Task<Void, Never> {
             do {
                 completion(.success(try await offlineCreator.create(for: self.userID)))
-            } catch {
-                Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
+            } catch let error as NSError {
+                Logger.error(
+                    Strings.offlineEntitlements.computing_offline_customer_info_failed(error),
+                    error: error
+                )
                 completion(result)
             }
         }

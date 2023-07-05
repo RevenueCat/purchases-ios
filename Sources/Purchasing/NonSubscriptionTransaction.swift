@@ -30,7 +30,8 @@ public final class NonSubscriptionTransaction: NSObject {
         guard let transactionIdentifier = transaction.transactionIdentifier,
               let purchaseDate = transaction.purchaseDate else {
             Logger.error("Couldn't initialize NonSubscriptionTransaction. " +
-                         "Reason: missing data: \(transaction).")
+                         "Reason: missing data: \(transaction).",
+                         error: nil)
             return nil
         }
 

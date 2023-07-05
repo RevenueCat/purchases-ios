@@ -66,7 +66,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
                 } catch {
-                    Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
+                    Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error),
+                                      error: error as NSError)
 
                     return productIdentifiers.reduce(into: [:]) { resultDict, productId in
                         resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
@@ -151,7 +152,8 @@ private extension TrialOrIntroPriceEligibilityChecker {
             .checkEligibility(with: receiptData,
                               productIdentifiers: Set(productIdentifiers)) { receivedEligibility, error in
                 if let error = error {
-                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error),
+                                 error: error as NSError)
                     self.getIntroEligibility(with: receiptData,
                                              productIdentifiers: productIdentifiers,
                                              completion: completion)
@@ -222,7 +224,8 @@ extension TrialOrIntroPriceEligibilityChecker {
                                                    productIdentifiers: productIdentifiers) { backendResult, error in
             let result: [String: IntroEligibility] = {
                 if let error = error {
-                    Logger.error(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
+                    Logger.error(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error),
+                                 error: error as NSError)
                     return Set(productIdentifiers)
                         .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
                 } else {

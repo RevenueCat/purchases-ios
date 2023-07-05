@@ -281,7 +281,7 @@ extension Configuration {
         switch self.validate(apiKey: apiKey) {
         case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
-        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
+        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey, error: nil)
         }
     }
 

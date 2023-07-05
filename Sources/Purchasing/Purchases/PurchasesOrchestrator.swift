@@ -381,10 +381,13 @@ final class PurchasesOrchestrator {
             completion: { transaction, customerInfo, error, cancelled in
                 if !cancelled {
                     if let error = error {
-                        Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
-                            productIdentifier: productIdentifier,
+                        Logger.rcPurchaseError(
+                            Strings.purchase.product_purchase_failed(
+                                productIdentifier: productIdentifier,
+                                error: error
+                            ),
                             error: error
-                        ))
+                        )
                     } else {
                         Logger.rcPurchaseSuccess(Strings.purchase.purchased_product(
                             productIdentifier: productIdentifier
@@ -426,15 +429,18 @@ final class PurchasesOrchestrator {
                                result.userCancelled)
                 }
             } catch let error {
-                Logger.rcPurchaseError(Strings.purchase.product_purchase_failed(
-                    productIdentifier: product.id,
-                    error: error
-                ))
                 let publicError = ErrorUtils.purchasesError(withUntypedError: error).asPublicError
-                let userCancelled = publicError.isCancelledError
+
+                Logger.rcPurchaseError(
+                    Strings.purchase.product_purchase_failed(
+                        productIdentifier: product.id,
+                        error: error
+                    ),
+                    error: publicError
+                )
 
                 DispatchQueue.main.async {
-                    completion(nil, nil, publicError, userCancelled)
+                    completion(nil, nil, publicError, publicError.isCancelledError)
                 }
             }
         }
@@ -954,10 +960,15 @@ private extension PurchasesOrchestrator {
         if let error = error {
             guard error.successfullySynced else { return }
 
-            if let attributeErrors = (error as NSError).subscriberAttributesErrors, !attributeErrors.isEmpty {
-                Logger.error(Strings.attribution.subscriber_attributes_error(
-                    errors: attributeErrors
-                ))
+            let nsError = error as NSError
+
+            if let attributeErrors = nsError.subscriberAttributesErrors, !attributeErrors.isEmpty {
+                Logger.error(
+                    Strings.attribution.subscriber_attributes_error(
+                        errors: attributeErrors
+                    ),
+                    error: nsError
+                )
             }
         }
 

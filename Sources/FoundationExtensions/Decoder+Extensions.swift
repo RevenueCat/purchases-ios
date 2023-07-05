@@ -124,37 +124,43 @@ extension JSONEncoder {
 extension ErrorUtils {
 
     static func logDecodingError(_ error: Error, type: Any.Type) {
+        let nsError = error as NSError
+
         guard let decodingError = error as? DecodingError else {
-            Logger.error(Strings.codable.decoding_error(error))
+            Logger.error(Strings.codable.decoding_error(error), error: nsError)
             return
         }
 
         switch decodingError {
         case let .dataCorrupted(context):
-            Logger.error(Strings.codable.corrupted_data_error(context: context))
+            Logger.error(Strings.codable.corrupted_data_error(context: context), error: nsError)
         case let .keyNotFound(key, context):
             // This is expected to happen occasionally, the backend doesn't always populate all key/values.
             Logger.debug(Strings.codable.keyNotFoundError(type: type, key: key, context: context))
         case let .valueNotFound(value, context):
             Logger.debug(Strings.codable.valueNotFoundError(value: value, context: context))
         case let .typeMismatch(type, context):
-            Logger.error(Strings.codable.typeMismatch(type: type, context: context))
+            Logger.error(Strings.codable.typeMismatch(type: type, context: context), error: nsError)
         @unknown default:
-            Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
+            Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))",
+                         error: nsError)
         }
     }
 
     static func logEncodingError(_ error: Error, type: Any.Type) {
+        let nsError = error as NSError
+
         guard let encodingError = error as? EncodingError else {
-            Logger.error(Strings.codable.encoding_error(error))
+            Logger.error(Strings.codable.encoding_error(error), error: nsError)
             return
         }
 
         switch encodingError {
         case .invalidValue:
-            Logger.error(Strings.codable.encoding_error(encodingError))
+            Logger.error(Strings.codable.encoding_error(encodingError), error: nsError)
         @unknown default:
-            Logger.error("Unhandled EncodingError: \(encodingError)\n\(Strings.codable.encoding_error(encodingError))")
+            Logger.error("Unhandled EncodingError: \(encodingError)\n\(Strings.codable.encoding_error(encodingError))",
+                         error: nsError)
         }
     }
 

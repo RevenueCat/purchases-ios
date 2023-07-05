@@ -141,7 +141,7 @@ private extension ManageSubscriptionsHelper {
                 Logger.info(Strings.susbscription_management_sheet_dismissed)
             } catch {
                 let message = Strings.error_from_appstore_show_manage_subscription(error: error)
-                Logger.appleError(message)
+                Logger.appleError(message, error: error as NSError)
             }
         }
 

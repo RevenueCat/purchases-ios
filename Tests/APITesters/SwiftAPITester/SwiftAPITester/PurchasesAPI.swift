@@ -78,7 +78,16 @@ func checkPurchasesEnums() {
 
 private func checkStaticMethods() {
     let logHandler: (LogLevel, String) -> Void = { _, _ in }
+    let verboseLogHandler: (_ level: LogLevel,
+                            _ message: String,
+                            _ file: String?,
+                            _ function: String?,
+                            _ line: UInt) -> Void = { _, _, _, _, _ in }
+    let errorHandler: (_ error: NSError) -> Void = { _ in }
+
     Purchases.logHandler = logHandler
+    Purchases.verboseLogHandler = verboseLogHandler
+    Purchases.errorHandler = errorHandler
 
     let canI: Bool = Purchases.canMakePayments()
     let version = Purchases.frameworkVersion

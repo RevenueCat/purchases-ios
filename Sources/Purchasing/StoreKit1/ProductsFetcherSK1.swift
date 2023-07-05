@@ -127,11 +127,11 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         self.queue.async { [self] in
             Logger.rcSuccess(Strings.storeKit.store_product_request_received_response)
             guard let productRequest = self.productsByRequests[request] else {
-                Logger.error("requested products not found for request: \(request)")
+                Logger.error("Requested products not found for request: \(request)", error: nil)
                 return
             }
             guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-                Logger.error("callback not found for failing request: \(request)")
+                Logger.error("Callback not found for failing request: \(request)", error: nil)
                 self.productsByRequests.removeValue(forKey: request)
                 return
             }
@@ -157,16 +157,19 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         }
 
         self.queue.async { [self] in
-            Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError))
+            Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError),
+                              error: error as NSError)
 
             guard let productRequest = self.productsByRequests[request] else {
-                Logger.error(Strings.purchase.requested_products_not_found(request: request))
+                Logger.error(Strings.purchase.requested_products_not_found(request: request),
+                             error: nil)
                 return
             }
 
             if productRequest.retriesLeft <= 0 {
                 guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-                    Logger.error(Strings.purchase.callback_not_found_for_request(request: request))
+                    Logger.error(Strings.purchase.callback_not_found_for_request(request: request),
+                                 error: nil)
                     self.productsByRequests.removeValue(forKey: request)
                     return
                 }
@@ -239,11 +242,14 @@ private extension ProductsFetcherSK1 {
 
             request.cancel()
 
-            Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(
-                after: Int(self.requestTimeout.rounded())
-            ))
+            Logger.appleError(
+                Strings.storeKit.skproductsrequest_timed_out(
+                    after: Int(self.requestTimeout.rounded())
+                ),
+                error: nil
+            )
             guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-                Logger.error("callback not found for failing request: \(request)")
+                Logger.error("callback not found for failing request: \(request)", error: nil)
                 return
             }
 

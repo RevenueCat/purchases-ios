@@ -268,7 +268,8 @@ class DeviceCache {
                             Logger.error(
                                 Strings.attribution.latest_attribution_sent_user_defaults_invalid(
                                     networkKey: networkKey
-                                )
+                                ),
+                                error: nil
                             )
                              return nil
                         }

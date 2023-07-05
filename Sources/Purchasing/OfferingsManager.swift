@@ -243,8 +243,11 @@ private extension OfferingsManager {
         _ error: Error,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        Logger.appleError(Strings.offering.fetching_offerings_error(error: error,
-                                                                    underlyingError: error.underlyingError))
+        Logger.appleError(
+            Strings.offering.fetching_offerings_error(error: error,
+                                                      underlyingError: error.underlyingError),
+            error: error as NSError
+        )
         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .failure(error))
     }
 

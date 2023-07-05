@@ -33,7 +33,8 @@ extension PurchaseOwnershipType: Decodable {
             self = type
         } else {
             Logger.error(Strings.codable.unexpectedValueError(type: PurchaseOwnershipType.self,
-                                                              value: purchaseOwnershipTypeString))
+                                                              value: purchaseOwnershipTypeString),
+                         error: nil)
             self = .unknown
         }
     }

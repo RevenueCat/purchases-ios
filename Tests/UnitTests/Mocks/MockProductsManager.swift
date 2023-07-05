@@ -31,7 +31,8 @@ class MockProductsManager: ProductsManager {
                 completion(result)
             }
         } else {
-            Logger.error("\(type(of: self)): no stubbed products, returning fake products for \(identifiers)")
+            Logger.error("\(type(of: self)): no stubbed products, returning fake products for \(identifiers)",
+                         error: nil)
 
             let products: [StoreProduct] = identifiers
                 .map { (identifier) -> MockSK1Product in

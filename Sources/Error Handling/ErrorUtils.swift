@@ -644,6 +644,10 @@ private extension ErrorUtils {
         ])
     }
 
+    // Used for logging errors when they're _created_.
+    // Note that these are only sent to the console through `Logger.internalLogHandler`
+    // and not to `Logger.errorHandler`, since we don't want to forward those
+    // until they're specifically logged.
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
                                          localizedDescription: String,
@@ -678,6 +682,7 @@ private extension ErrorUtils {
                 .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
+                    error: nil,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -697,6 +702,7 @@ private extension ErrorUtils {
                 .productRequestTimedOut:
                 Logger.appleError(
                     localizedDescription,
+                    error: nil,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -705,6 +711,7 @@ private extension ErrorUtils {
         @unknown default:
             Logger.error(
                 localizedDescription,
+                error: nil,
                 fileName: fileName,
                 functionName: functionName,
                 line: line

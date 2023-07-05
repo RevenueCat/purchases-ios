@@ -163,7 +163,8 @@ extension Purchases {
                             Strings.eligibility.check_eligibility_failed(
                                 productIdentifier: product.productIdentifier,
                                 error: error
-                            )
+                            ),
+                            error: error as NSError
                         )
                         return nil
                     }

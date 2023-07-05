@@ -82,6 +82,32 @@ class LoggerTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Message.test1)
     }
 
+    func testLoggerLogsErrors() {
+        let error = Error.error1 as NSError
+        Logger.error("Error", error: error)
+        self.logger.verifyErrorWasLogged(error)
+    }
+
+    func testLoggerLogsErrorsWithDebugLevel() {
+        Logger.logLevel = .debug
+
+        let error = Error.error1 as NSError
+        Logger.error("Error", error: error)
+        self.logger.verifyErrorWasLogged(error)
+    }
+
+    func testCreatingErrorsLogsThem() {
+        let error = ErrorUtils.customerInfoError()
+
+        self.logger.verifyMessageWasLogged(error.localizedDescription, level: .error, expectedCount: 1)
+    }
+
+    func testCreatingErrorsDoesNotForwardError() {
+        _ = ErrorUtils.customerInfoError()
+
+        expect(self.logger.errors).to(beEmpty())
+    }
+
     func testPurchasesLogHandler() {
         defer {
             Purchases.restoreLogHandler()
@@ -98,6 +124,25 @@ class LoggerTests: TestCase {
         expect(messages) == [
             .init(.info, "\(LogIntent.info.prefix) \(Message.test1.description)"),
             .init(.warn, "\(LogIntent.warning.prefix) \(Message.test2.description)")
+        ]
+    }
+
+    func testPurchasesErrorHandler() {
+        defer {
+            Purchases.restoreLogHandler()
+            TestLogHandler.restore()
+        }
+
+        var errors: [PublicError] = []
+
+        Purchases.errorHandler = { errors.append($0) }
+
+        Logger.error("Error 1", error: Error.error1 as NSError)
+        Logger.error("Error 2", error: Error.error2 as NSError)
+
+        expect(errors) == [
+            Error.error1 as NSError,
+            Error.error2 as NSError
         ]
     }
 
@@ -131,6 +176,11 @@ private extension LoggerTests {
             self.message = message
         }
 
+    }
+
+    enum Error: Swift.Error {
+        case error1
+        case error2
     }
 
 }

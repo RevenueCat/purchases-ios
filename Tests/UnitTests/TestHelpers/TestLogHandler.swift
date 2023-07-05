@@ -61,6 +61,7 @@ final class TestLogHandler {
     typealias MessageData = (level: LogLevel, message: String)
 
     var messages: [MessageData] { return self.loggedMessages.value }
+    var errors: [PublicError] { return self.loggedErrors.value }
     private let capacity: Int
 
     init(
@@ -82,6 +83,8 @@ final class TestLogHandler {
     }
 
     private let loggedMessages: Atomic<[MessageData]> = .init([])
+    private let loggedErrors: Atomic<[PublicError]> = .init([])
+
     private let creationContext: Context
 
     private static let sharedHandler: SharedTestLogHandler = {
@@ -184,6 +187,22 @@ extension TestLogHandler {
         )
     }
 
+    func verifyErrorWasLogged(
+        _ error: PublicError,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        expect(
+            file: file,
+            line: line,
+            self.errors
+        )
+        .to(
+            contain(error),
+            description: "Error '\(error)' not found. Logged errors: \(self.errors)"
+        )
+    }
+
     private static func entryCondition(
         message: CustomStringConvertible, level: LogLevel?
     ) -> @Sendable (MessageData) -> Bool {
@@ -213,21 +232,31 @@ private extension TestLogHandler {
 
 }
 
-extension TestLogHandler: LogMessageObserver {
+extension TestLogHandler: LogObserver {
 
     func didReceive(message: String, with level: LogLevel) {
         self.loggedMessages.modify {
             $0.append((level, message))
 
-            let count = $0.count
-
-            expect(count).to(
-                beLessThan(self.capacity),
-                description: "\(count) messages have been stored. " +
-                "This is likely a programming error and \(self) " +
-                "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
-            )
+            self.checkCapacity($0.count)
         }
+    }
+
+    func didReceive(error: PublicError) {
+        self.loggedErrors.modify {
+            $0.append(error)
+
+            self.checkCapacity($0.count)
+        }
+    }
+
+    private func checkCapacity(_ count: Int) {
+        expect(count).to(
+            beLessThan(self.capacity),
+            description: "\(count) messages have been stored. " +
+            "This is likely a programming error and \(self) " +
+            "(created in \(self.creationContext.file):\(self.creationContext.line) has leaked."
+        )
     }
 
     private static let defaultMessageLimit = 200
@@ -236,8 +265,9 @@ extension TestLogHandler: LogMessageObserver {
 
 private final class SharedTestLogHandler {
 
-    private let observers: Atomic<[WeakBox<LogMessageObserver>]>
+    private let observers: Atomic<[WeakBox<LogObserver>]>
     private let logHandler: InternalLogHandler
+    private let errorHandler: ErrorHandler
 
     init() {
         self.observers = .init([])
@@ -246,30 +276,44 @@ private final class SharedTestLogHandler {
 
             Self.notify(observers: observers.value, message: message, level: level)
         }
+
+        self.errorHandler = { [observers] error in
+            Logger.defaultErrorHandler(error)
+
+            Self.notify(observers: observers.value, error: error)
+        }
     }
 
     func install() {
         Logger.internalLogHandler = self.logHandler
+        Logger.errorHandler = self.errorHandler
     }
 
-    func add(observer: LogMessageObserver) {
+    func add(observer: LogObserver) {
         self.observers.modify { $0.append(.init(observer)) }
     }
 
-    func remove(observer: LogMessageObserver) {
+    func remove(observer: LogObserver) {
         self.observers.modify { $0.removeAll { $0.value === observer } }
     }
 
-    private static func notify(observers: [WeakBox<LogMessageObserver>], message: String, level: LogLevel) {
+    private static func notify(observers: [WeakBox<LogObserver>], message: String, level: LogLevel) {
         for observer in observers {
             observer.value?.didReceive(message: message, with: level)
         }
     }
 
+    private static func notify(observers: [WeakBox<LogObserver>], error: PublicError) {
+        for observer in observers {
+            observer.value?.didReceive(error: error)
+        }
+    }
+
 }
 
-@objc protocol LogMessageObserver: AnyObject {
+@objc protocol LogObserver: AnyObject {
 
     func didReceive(message: String, with level: LogLevel)
+    func didReceive(error: PublicError)
 
 }

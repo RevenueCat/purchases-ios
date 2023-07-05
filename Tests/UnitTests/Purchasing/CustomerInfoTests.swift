@@ -965,7 +965,8 @@ extension CustomerInfo {
             try self.init(data: testData)
         } catch {
             let errorDescription = (error as? DescribableError)?.description ?? error.localizedDescription
-            Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).")
+            Logger.error("Caught error creating testData, this is probably expected, right? \(errorDescription).",
+                         error: error as NSError)
 
             return nil
         }
