@@ -198,7 +198,9 @@ extension TestLogHandler {
             self.errors
         )
         .to(
-            contain(error),
+            containElementSatisfying {
+                error.domain == $0.domain && error.code == $0.code
+            },
             description: "Error '\(error)' not found. Logged errors: \(self.errors)"
         )
     }

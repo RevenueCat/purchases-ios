@@ -102,10 +102,10 @@ class LoggerTests: TestCase {
         self.logger.verifyMessageWasLogged(error.localizedDescription, level: .error, expectedCount: 1)
     }
 
-    func testCreatingErrorsDoesNotForwardError() {
-        _ = ErrorUtils.customerInfoError()
+    func testCreatingErrorsForwardsThem() {
+        let error = ErrorUtils.customerInfoError()
 
-        expect(self.logger.errors).to(beEmpty())
+        self.logger.verifyErrorWasLogged(error.asPublicError)
     }
 
     func testPurchasesLogHandler() {
