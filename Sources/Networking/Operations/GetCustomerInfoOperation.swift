@@ -70,7 +70,9 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
 private extension GetCustomerInfoOperation {
 
     func getCustomerInfo(completion: @escaping () -> Void) {
-        guard let appUserID = try? configuration.appUserID.escapedOrError() else {
+        let appUserID = self.configuration.appUserID
+
+        guard appUserID.isNotEmpty else {
             self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }

@@ -37,4 +37,26 @@ class StringExtensionsTests: TestCase {
         expect("123\n123\n".countOccurences(of: "\n")) == 2
     }
 
+    func testNotEmpty() {
+        expect("".notEmpty).to(beNil())
+        expect(" ".notEmpty) == " "
+        expect("1".notEmpty) == "1"
+    }
+
+    func testIsNotEmpty() {
+        expect("".isNotEmpty) == false
+        expect(" ".isNotEmpty) == false
+        expect("1".isNotEmpty) == true
+        expect(" 1 ".isNotEmpty) == true
+    }
+
+    func testTrimmedAndEscaped() {
+        expect("".trimmedAndEscaped) == ""
+        expect(" ".trimmedAndEscaped) == ""
+        expect("test".trimmedAndEscaped) == "test"
+        expect(" test ".trimmedAndEscaped) == "test"
+        expect(" $RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1 ".trimmedAndEscaped)
+        == "$RCAnonymousID%3A8252eb283bbc4453a3f81c978f1a6ee1"
+    }
+
 }

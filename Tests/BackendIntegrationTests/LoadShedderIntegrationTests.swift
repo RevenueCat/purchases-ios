@@ -65,7 +65,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testOfferingsComeFromLoadShedder() async throws {
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
-                .getOfferings(appUserID: try Purchases.shared.appUserID.escapedOrError())
+                .getOfferings(appUserID: Purchases.shared.appUserID)
             ),
             level: .debug
         )

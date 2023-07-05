@@ -22,6 +22,7 @@ class HTTPRequestTests: TestCase {
     // MARK: - Paths
 
     private static let userID = "the_user"
+    private static let anonymousUser = "$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1"
 
     private static let paths: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: userID),
@@ -46,6 +47,13 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .postReceiptData,
         .health
+    ]
+    private static let pathsWithUserID: [HTTPRequest.Path] = [
+        .getCustomerInfo(appUserID: anonymousUser),
+        .getOfferings(appUserID: anonymousUser),
+        .getIntroEligibility(appUserID: anonymousUser),
+        .postAttributionData(appUserID: anonymousUser),
+        .postSubscriberAttributes(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -112,6 +120,27 @@ class HTTPRequestTests: TestCase {
                 description: "Path '\(path)' should not have signature validation"
             )
         }
+    }
+
+    func testPathsEscapeUserID() {
+        for path in Self.pathsWithUserID {
+            expect(path.description).toNot(
+                contain(Self.anonymousUser),
+                description: "Path '\(path)' should escape user ID"
+            )
+            expect(path.description).to(
+                contain(Self.anonymousUser.trimmedAndEscaped),
+                description: "Path '\(path)' should escape user ID"
+            )
+        }
+    }
+
+    func testUserIDEscaping() {
+        let encodeableUserID = "userid with spaces"
+        let encodedUserID = "userid%20with%20spaces"
+        let expectedPath = "subscribers/\(encodedUserID)"
+
+        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).description) == expectedPath
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

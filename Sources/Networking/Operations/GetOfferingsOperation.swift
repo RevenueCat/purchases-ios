@@ -50,7 +50,9 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
 private extension GetOfferingsOperation {
 
     func getOfferings(completion: @escaping () -> Void) {
-        guard let appUserID = try? configuration.appUserID.escapedOrError() else {
+        let appUserID = self.configuration.appUserID
+
+        guard appUserID.isNotEmpty else {
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }

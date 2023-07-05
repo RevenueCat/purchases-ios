@@ -56,9 +56,7 @@ final class LogInOperation: CacheableNetworkOperation {
 private extension LogInOperation {
 
     func logIn(completion: @escaping () -> Void) {
-        guard let newAppUserID = self.newAppUserID
-            .trimmingWhitespacesAndNewLines
-            .notEmpty else {
+        guard self.newAppUserID.isNotEmpty else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))
             }
@@ -68,7 +66,7 @@ private extension LogInOperation {
         }
 
         let request = HTTPRequest(method: .post(Body(appUserID: self.configuration.appUserID,
-                                                     newAppUserID: newAppUserID)),
+                                                     newAppUserID: self.newAppUserID)),
                                   path: .logIn)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<CustomerInfo>.Result) in

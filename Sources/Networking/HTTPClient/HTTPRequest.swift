@@ -176,22 +176,22 @@ extension HTTPRequest.Path: CustomStringConvertible {
     var description: String {
         switch self {
         case let .getCustomerInfo(appUserID):
-            return "subscribers/\(appUserID)"
+            return "subscribers/\(Self.escape(appUserID))"
 
         case let .getOfferings(appUserID):
-            return "subscribers/\(appUserID)/offerings"
+            return "subscribers/\(Self.escape(appUserID))/offerings"
 
         case let .getIntroEligibility(appUserID):
-            return "subscribers/\(appUserID)/intro_eligibility"
+            return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
 
         case .logIn:
             return "subscribers/identify"
 
         case let .postAttributionData(appUserID):
-            return "subscribers/\(appUserID)/attribution"
+            return "subscribers/\(Self.escape(appUserID))/attribution"
 
         case let .postAdServicesToken(appUserID):
-            return "subscribers/\(appUserID)/adservices_attribution"
+            return "subscribers/\(Self.escape(appUserID))/adservices_attribution"
 
         case .postOfferForSigning:
             return "offers"
@@ -200,7 +200,7 @@ extension HTTPRequest.Path: CustomStringConvertible {
             return "receipts"
 
         case let .postSubscriberAttributes(appUserID):
-            return "subscribers/\(appUserID)/attributes"
+            return "subscribers/\(Self.escape(appUserID))/attributes"
 
         case .health:
             return "health"
@@ -208,6 +208,10 @@ extension HTTPRequest.Path: CustomStringConvertible {
         case .getProductEntitlementMapping:
             return "product_entitlement_mapping"
         }
+    }
+
+    private static func escape(_ appUserID: String) -> String {
+        return appUserID.trimmedAndEscaped
     }
 
 }

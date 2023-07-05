@@ -74,22 +74,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
     }
 
-    func testEncodesCustomerUserID() {
-        let encodeableUserID = "userid with spaces"
-        let encodedUserID = "userid%20with%20spaces"
-        let response = MockHTTPClient.Response(statusCode: .success, response: Self.validCustomerResponse)
-
-        httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodedUserID), response: response)
-        httpClient.mock(requestPath: .getCustomerInfo(appUserID: encodeableUserID),
-                        response: .init(error: .unexpectedResponse(nil)))
-
-        let customerInfo = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: encodeableUserID, withRandomDelay: false, completion: completed)
-        }
-
-        expect(customerInfo).to(beSuccess())
-    }
-
     func testHandlesGetCustomerInfoErrors() throws {
         let mockedError = NetworkError.unexpectedResponse(nil)
 

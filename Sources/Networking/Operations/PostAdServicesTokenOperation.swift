@@ -34,7 +34,9 @@ class PostAdServicesTokenOperation: NetworkOperation {
     }
 
     private func post(completion: @escaping () -> Void) {
-        guard let appUserID = try? self.configuration.appUserID.escapedOrError() else {
+        let appUserID = self.configuration.appUserID
+
+        guard appUserID.isNotEmpty else {
             self.responseHandler?(.missingAppUserID())
             completion()
             return
