@@ -20,6 +20,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/delegate``
 - ``Purchases/logLevel``
 - ``Purchases/logHandler``
+- ``Purchases/errorHandler``
 
 ### Configuring the SDK
 - ``Purchases/configure(withAPIKey:)``
