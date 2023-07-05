@@ -26,6 +26,8 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
         let aadAttributionToken: String?
+        /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
+        let testReceiptIdentifier: String?
 
     }
 
@@ -135,7 +137,8 @@ extension PostReceiptDataOperation.PostData {
         transactionData data: PurchasedTransactionData,
         productData: ProductRequestData?,
         receiptData: Data,
-        observerMode: Bool
+        observerMode: Bool,
+        testReceiptIdentifier: String?
     ) {
         self.init(
             appUserID: data.appUserID,
@@ -146,7 +149,8 @@ extension PostReceiptDataOperation.PostData {
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
-            aadAttributionToken: data.aadAttributionToken
+            aadAttributionToken: data.aadAttributionToken,
+            testReceiptIdentifier: testReceiptIdentifier
         )
     }
 
@@ -190,6 +194,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
+        case testReceiptIdentifier = "test_receipt_identifier"
 
     }
 
@@ -217,6 +222,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         )
 
         try container.encodeIfPresent(self.aadAttributionToken, forKey: .aadAttributionToken)
+        try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
     }
 
 }
