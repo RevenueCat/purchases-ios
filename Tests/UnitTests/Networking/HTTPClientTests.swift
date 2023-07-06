@@ -964,18 +964,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         stub(condition: isPath(path)) { request in
             let requestNumber = Self.extractRequestNumber(from: request)
-            var responseTime = 0.5
+            var responseTime = 0.05
             if requestNumber == 1 {
                 expect(secondRequestFinished.value) == false
                 expect(thirdRequestFinished.value) == false
             } else if requestNumber == 2 {
                 expect(firstRequestFinished.value) == true
                 expect(thirdRequestFinished.value) == false
-                responseTime = 0.3
+                responseTime = 0.03
             } else if requestNumber == 3 {
                 expect(firstRequestFinished.value) == true
                 expect(secondRequestFinished.value) == true
-                responseTime = 0.1
+                responseTime = 0.01
             }
 
             let json = "{\"message\": \"something is great up in the cloud\"}"

@@ -466,21 +466,6 @@ extension BasePurchasesTests {
     }
 }
 
-extension OfferingsResponse {
-
-    static let mockResponse: Self = .init(
-        currentOfferingId: "base",
-        offerings: [
-            .init(identifier: "base",
-                  description: "This is the base offering",
-                  packages: [
-                    .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                  ])
-        ]
-    )
-
-}
-
 private extension BasePurchasesTests {
 
     func clearReferences() {

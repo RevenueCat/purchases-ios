@@ -162,9 +162,8 @@ class FileHandlerTests: BaseFileHandlerTests {
         let lines = (0..<10000).map { "Line-\($0 + 1)" }
         let linesToRemove = lines.count / 3
 
-        for line in lines {
-            await self.handler.append(line: line)
-        }
+        // This is faster than calling `append(line:)` 10,000 times
+        await self.handler.append(line: lines.joined(separator: "\n"))
 
         try await self.handler.removeFirstLines(linesToRemove)
 
