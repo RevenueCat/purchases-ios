@@ -8,8 +8,9 @@
 import RevenueCat
 import SwiftUI
 
-#warning("This needs to be set")
+#warning("This needs to be configured.")
 private let apiKey = ""
+// Note: you can leave this empty to use the production server, or point to your own instance.
 private let proxyURL = ""
 
 @main
