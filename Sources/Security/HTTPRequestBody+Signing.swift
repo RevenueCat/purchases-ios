@@ -44,7 +44,7 @@ extension HTTPRequestBody {
 
         for (index, value) in values.enumerated() {
             if index > 0 {
-                sha256.update(data: Self.separator)
+                sha256.update(data: fieldSeparator)
             }
 
             sha256.update(data: value.asData)
@@ -62,8 +62,7 @@ private extension HTTPRequestBody {
         return self.contentForSignature.map(\.key)
     }
 
-    private static var separator: Data { .init(bytes: [0x00], count: 2) }
-
 }
 
 private let postParameterHashingAlgorithmName = "sha256"
+private let fieldSeparator = Data(bytes: [0x00], count: 1)

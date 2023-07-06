@@ -1,6 +1,8 @@
 {
   "headers" : {
-    "Authorization" : "Bearer asharedsecret"
+    "Authorization" : "Bearer asharedsecret",
+    "X-Nonce" : "MTIzNDU2Nzg5MGFi",
+    "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:bbe03fe8adb95ede9f2a2a9911c25d1df008e4aa567cf76090632120e3fec863"
   },
   "request" : {
     "body" : {
