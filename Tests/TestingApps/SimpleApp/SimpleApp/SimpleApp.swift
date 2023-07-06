@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 5/30/23.
 //
 
+import Paywalls
 import RevenueCat
 import SwiftUI
 
@@ -28,7 +29,12 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            PaywallView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background {
+                    DebugView()
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                }
         }
     }
 }
