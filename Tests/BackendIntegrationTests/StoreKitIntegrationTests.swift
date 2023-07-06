@@ -375,9 +375,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         try await self.expireSubscription(entitlement)
-
-        let info = try await Purchases.shared.syncPurchases()
-        self.assertNoActiveSubscription(info)
+        try await self.verifySubscriptionExpired()
 
         let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
         expect(eligibility) == .eligible
@@ -389,13 +387,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
         expect(created) == true
 
-        var customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
-
-        customerInfo = try await Purchases.shared.syncPurchases()
-        self.assertNoActiveSubscription(customerInfo)
+        try await self.verifySubscriptionExpired()
     }
 
     func testResubscribeAfterExpiration() async throws {
@@ -494,9 +490,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 2. Expire subscription
 
         try await self.expireSubscription(entitlement)
-
-        let info = try await Purchases.shared.syncPurchases()
-        self.assertNoActiveSubscription(info)
+        try await self.verifySubscriptionExpired()
 
         // 3. Get eligible offer
 

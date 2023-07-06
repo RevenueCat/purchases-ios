@@ -260,6 +260,16 @@ extension BaseStoreKitIntegrationTests {
         try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
     }
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    @discardableResult
+    func verifySubscriptionExpired() async throws -> CustomerInfo {
+        let info = try await Purchases.shared.syncPurchases()
+        self.assertNoActiveSubscription(info)
+
+        return info
+    }
+    #endif
+
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     static func findTransaction(for productIdentifier: String) async throws -> Transaction {
         let transactions: [Transaction] = await Transaction
