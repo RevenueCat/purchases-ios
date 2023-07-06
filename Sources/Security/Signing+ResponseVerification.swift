@@ -82,6 +82,7 @@ extension HTTPResponse where Body == Data? {
                           with: .init(
                             path: request.path,
                             message: body,
+                            requestBody: request.requestBody,
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),
                             requestDate: requestDate.millisecondsSince1970

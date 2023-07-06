@@ -104,7 +104,7 @@ private extension GetIntroEligibilityOperation {
 
 private extension GetIntroEligibilityOperation {
 
-    struct Body: Encodable {
+    struct Body: HTTPRequestBody {
 
         let productIdentifiers: [String]
         let fetchToken: String

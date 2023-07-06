@@ -46,7 +46,7 @@ extension Data {
         return self.base64EncodedString()
     }
 
-    /// - Returns: a hash representation of the underlying bytes.
+    /// - Returns: a hash representation of the underlying bytes, using SHA256.
     var hashString: String {
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
             var sha256 = SHA256()
@@ -66,7 +66,7 @@ extension Data {
         }
     }
 
-    private static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
+    fileprivate static func hexString(_ iterator: Array<UInt8>.Iterator) -> String {
         return iterator
             .lazy
             .map { String(format: "%02x", $0) }
@@ -88,6 +88,15 @@ extension Data {
 
 // MARK: - Hashing
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension HashFunction {
+
+    func toString() -> String {
+        return Data.hexString(self.finalize().makeIterator())
+    }
+
+}
+
 private extension Data {
 
     typealias HashingFunction = (
@@ -99,8 +108,7 @@ private extension Data {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func hashString<T: HashFunction>(with digest: inout T) -> String {
         digest.update(data: self)
-
-        return Self.hexString(digest.finalize().makeIterator())
+        return digest.toString()
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

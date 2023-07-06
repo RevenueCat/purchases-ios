@@ -98,9 +98,27 @@ private extension LogInOperation {
 
     struct Body: Encodable {
 
+        // These need to be explicit for `contentForSignature`
+        fileprivate enum CodingKeys: String, CodingKey {
+            case appUserID = "app_user_id"
+            case newAppUserID = "new_app_user_id"
+        }
+
         let appUserID: String
         let newAppUserID: String
 
+    }
+
+}
+
+extension LogInOperation.Body: HTTPRequestBody {
+
+    // TODO: verify these in snapshot tests
+    var contentForSignature: [(key: String, value: String)] {
+        return [
+            (Self.CodingKeys.appUserID.stringValue, self.appUserID),
+            (Self.CodingKeys.newAppUserID.stringValue, self.newAppUserID)
+        ]
     }
 
 }

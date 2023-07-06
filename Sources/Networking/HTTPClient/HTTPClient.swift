@@ -97,12 +97,21 @@ extension HTTPClient {
         return [RequestHeader.nonce.rawValue: data.base64EncodedString()]
     }
 
+    static func postParametersHeader(for body: HTTPRequestBody) -> RequestHeaders {
+        if let header = body.postParameterHeader {
+            return [RequestHeader.postParameters.rawValue: header]
+        } else {
+            return [:]
+        }
+    }
+
     enum RequestHeader: String {
 
         case authorization = "Authorization"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case postParameters = "X-Post-Params-Hash"
 
     }
 
@@ -147,7 +156,8 @@ private extension HTTPClient {
                                       verificationMode: Signing.ResponseVerificationMode,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
-            self.headers = self.httpRequest.headers(with: authHeaders)
+            self.headers = self.httpRequest.headers(with: authHeaders,
+                                                    verificationMode: verificationMode)
             self.verificationMode = verificationMode
 
             if let completionHandler = completionHandler {
@@ -467,7 +477,10 @@ extension HTTPRequest {
         return result
     }
 
-    func headers(with authHeaders: HTTPClient.RequestHeaders) -> HTTPClient.RequestHeaders {
+    func headers(
+        with authHeaders: HTTPClient.RequestHeaders,
+        verificationMode: Signing.ResponseVerificationMode
+    ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = [:]
 
         if self.path.authenticated {
@@ -476,6 +489,13 @@ extension HTTPRequest {
 
         if let nonce = self.nonce {
             result += HTTPClient.nonceHeader(with: nonce)
+        }
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
+           verificationMode.isEnabled,
+           self.path.supportsSignatureVerification,
+           let body = self.requestBody {
+            result += HTTPClient.postParametersHeader(for: body)
         }
 
         return result

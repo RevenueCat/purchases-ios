@@ -126,6 +126,40 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.nonce.rawValue))
     }
 
+    func testGetRequestDoesNotContainPostParametersHeader() {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.postParameters.rawValue))
+    }
+
+    func testPostRequestWithDisabledSignatureVerificationDoesNotContainPostParametersHeader() {
+        let body = BodyWithSignature(key1: "a", key2: "b")
+
+        let request = HTTPRequest(method: .post(body), path: .postReceiptData)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(headers).toNot(beEmpty())
+        expect(headers?.keys).toNot(contain(HTTPClient.RequestHeader.postParameters.rawValue))
+    }
+
     func testRequestIncludesNonceInBase64() {
         let request = HTTPRequest(method: .get, path: .mockPath, nonce: "1234567890ab".asData)
 
@@ -1534,6 +1568,18 @@ extension BaseHTTPClientTests {
         }
     }
 
+    struct BodyWithSignature: HTTPRequestBody {
+        var key1: String
+        var key2: String
+
+        var contentForSignature: [(key: String, value: String)] {
+            return [
+                ("key1", self.key1),
+                ("key2", self.key2)
+            ]
+        }
+    }
+
 }
 
 extension HTTPRequest.Path {
@@ -1560,7 +1606,19 @@ extension HTTPRequest.Method {
     /// Creates a `HTTPRequest.Method.post` request with `[String: Any]`.
     /// - Note: this is for testing only, real requests must use `Encodable`.
     internal static func post(_ body: [String: Any]) -> Self {
-        return .post(AnyEncodable(body))
+        return .post(AnyEncodableRequestBody(body))
     }
+
+}
+
+private struct AnyEncodableRequestBody: HTTPRequestBody {
+
+    var body: AnyEncodable
+
+    init(_ body: [String: Any]) {
+        self.body = .init(body)
+    }
+
+    var contentForSignature: [(key: String, value: String)] { [] }
 
 }
