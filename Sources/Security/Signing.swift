@@ -107,7 +107,9 @@ final class Signing: SigningType {
 
         let isValid = intermediatePublicKey.isValidSignature(payload, for: messageToVerify)
 
-        if !isValid {
+        if isValid {
+            Logger.verbose(Strings.signing.signature_passed_verification)
+        } else {
             Logger.warn(Strings.signing.signature_failed_verification)
         }
 

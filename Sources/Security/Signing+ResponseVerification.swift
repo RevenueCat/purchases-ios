@@ -64,8 +64,7 @@ extension HTTPResponse where Body == Data? {
             forCaseInsensitiveHeaderField: .signature,
             in: headers
         ) else {
-            let signatureRequested = request.nonce != nil
-            if signatureRequested {
+            if request.path.supportsSignatureVerification {
                 Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
                 return .failed
             } else {
