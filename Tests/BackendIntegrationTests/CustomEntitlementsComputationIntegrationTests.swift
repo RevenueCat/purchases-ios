@@ -49,7 +49,7 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     // MARK: - Tests
 
     func testPurchasesDiagnostics() async throws {
-        XCTExpectFailure("Signature Verification disabled until backend is updated")
+        try XCTSkipIf(true, "Signature Verification disabled until backend is updated")
 
         let diagnostics = PurchasesDiagnostics(purchases: Purchases.shared)
 
