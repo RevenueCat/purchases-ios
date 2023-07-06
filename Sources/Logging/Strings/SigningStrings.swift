@@ -114,8 +114,7 @@ extension SigningStrings: LogMessage {
             return """
             Verifying signature '\(signature.base64EncodedString())'
             Public key: '\(publicKey.asString)'
-            Parameters: \(parameters),
-            Path: \(parameters.path.relativePath)
+            Parameters: \(parameters)
             Salt: \(salt.base64EncodedString()),
             Payload: \(payload.base64EncodedString()),
             Message: \(message?.base64EncodedString() ?? "")
