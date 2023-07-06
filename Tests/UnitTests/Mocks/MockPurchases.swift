@@ -45,6 +45,8 @@ final class MockPurchases {
         ErrorUtils.unknownError().asPublicError
     )
 
+    var mockedResponseVerificationMode: Signing.ResponseVerificationMode = .disabled
+
 }
 
 extension MockPurchases: InternalPurchasesType {
@@ -61,6 +63,10 @@ extension MockPurchases: InternalPurchasesType {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func productEntitlementMapping() async throws -> ProductEntitlementMapping {
         return try self.mockedProductEntitlementMapping.get()
+    }
+
+    var responseVerificationMode: Signing.ResponseVerificationMode {
+        return self.mockedResponseVerificationMode
     }
 
 }
