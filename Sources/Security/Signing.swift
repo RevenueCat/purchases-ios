@@ -17,6 +17,7 @@ import Foundation
 /// A type that can verify signatures.
 protocol SigningType {
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
@@ -34,11 +35,12 @@ final class Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        let path: HTTPRequest.Path
-        let message: Data?
-        let nonce: Data?
-        let etag: String?
-        let requestDate: UInt64
+        var path: HTTPRequest.Path
+        var message: Data?
+        var requestBody: HTTPRequestBody?
+        var nonce: Data?
+        var etag: String?
+        var requestDate: UInt64
 
     }
 
@@ -70,6 +72,7 @@ final class Signing: SigningType {
         }
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func verify(
         signature: String,
         with parameters: SignatureParameters,
@@ -237,6 +240,7 @@ extension Signing {
 
 }
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Signing.SignatureParameters {
 
     func signature(salt: Data, apiKey: String) -> Data {
@@ -245,12 +249,20 @@ extension Signing.SignatureParameters {
     }
 
     var asData: Data {
+        let nonce: Data = self.nonce ?? .init()
+        let path: Data = self.path.relativePath.asData
+        let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
+        let requestDate: Data = String(self.requestDate).asData
+        let etag: Data = (self.etag ?? "").asData
+        let message: Data = self.message ?? .init()
+
         return (
-            (self.nonce ?? .init()) +
-            self.path.relativePath.asData +
-            String(self.requestDate).asData +
-            (self.etag ?? "").asData +
-            (self.message ?? .init())
+            nonce +
+            path +
+            postParameterHash +
+            requestDate +
+            etag +
+            message
         )
     }
 
@@ -259,15 +271,20 @@ extension Signing.SignatureParameters {
 extension Signing.SignatureParameters: CustomDebugStringConvertible {
 
     var debugDescription: String {
-        let message = self.message.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        return """
+        SignatureParameters(" +
+            path: '\(self.path.relativePath)'
+            message: '\(self.messageString.trimmingWhitespacesAndNewLines)'
+            postParameterHeader: '\(self.requestBody?.postParameterHeader ?? "")'
+            nonce: '\(self.nonce?.base64EncodedString() ?? "")'
+            etag: '\(self.etag ?? "")'
+            requestDate: \(self.requestDate)
+        )
+        """
+    }
 
-        return "SignatureParameters(" +
-            "path: '\(self.path.relativePath)', " +
-            "message: '\(message.trimmingWhitespacesAndNewLines)', " +
-            "nonce: '\(self.nonce?.base64EncodedString() ?? "")', " +
-            "etag: '\(self.etag ?? "")', " +
-            "requestDate: \(self.requestDate)" +
-        ")"
+    private var messageString: String {
+        return self.message.flatMap { String(data: $0, encoding: .utf8) } ?? ""
     }
 
 }

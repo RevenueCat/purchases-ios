@@ -90,6 +90,18 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         expect(info.entitlements.verification) == .failed
     }
 
+    func testLogInWithValidSignature() async throws {
+        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        expect(info.entitlements.verification) == .verified
+    }
+
+    func testLogInWithInvalidSignature() async throws {
+        self.invalidSignature = true
+
+        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        expect(info.entitlements.verification) == .failed
+    }
+
     func testNotModifiedCustomerInfoWithInvalidSignature() async throws {
         // 1. Log-in to force a new user
         _ = try await Purchases.shared.logIn(UUID().uuidString)
@@ -153,6 +165,19 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
 
         try await Self.verifyThrowsSignatureVerificationFailed {
             _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        }
+    }
+
+    func testLogInWithValidSignature() async throws {
+        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        expect(info.entitlements.verification) == .verified
+    }
+
+    func testLogInWithInvalidSignature() async throws {
+        self.invalidSignature = true
+
+        try await Self.verifyThrowsSignatureVerificationFailed {
+            _ = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
         }
     }
 

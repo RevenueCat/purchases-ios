@@ -461,6 +461,44 @@ class SigningTests: TestCase {
         ) == true
     }
 
+    func testVerifyKnownSignatureForPostRequest() throws {
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/identify' \
+        -X POST \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
+        -H 'X-Post-Params-Hash: current_user_id,new_user_id:sha256:633e3581dc391a2ef66e4b2b39c9d63e4ab82e801d8f17436774e65ae2a513e9' \
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
+        -H 'Content-Type: application/json' \
+         --data-raw '{"new_app_user_id":"F72BF276-CD70-4C27-BCD2-FC1EFD988FA3","app_user_id":"$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"}'
+         */
+
+        // swiftlint:disable line_length
+        let response = """
+        {"request_date":"2023-07-06T19:25:15Z","request_date_ms":1688671515638,"subscriber":{"entitlements":{},"first_seen":"2023-06-30T23:06:23Z","last_seen":"2023-06-30T23:06:23Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        """
+        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBSrxh7Tsw8z/B0jfCUIVOlzAJqMSoDWL3zy1etinl/pU/xzwZ9HdZWwyAgn38I9rv/JM0FSCcYMC2C8KE06wFyQTz+7c9btj/v2ueXRgAJYB"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1688671515638
+        let etag = "a896a69e4b31304d"
+
+        expect(
+            self.signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+                    message: response.asData,
+                    nonce: nonce,
+                    etag: etag,
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())

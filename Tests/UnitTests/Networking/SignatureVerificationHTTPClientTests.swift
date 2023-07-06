@@ -210,6 +210,26 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(response?.value?.verificationResult) == .notRequested
     }
 
+    func testPostRequestWithPostParametersHeader() throws {
+        try self.changeClient(.informational)
+
+        let body = BodyWithSignature(key1: "a", key2: "b")
+
+        let request = HTTPRequest(method: .post(body), path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        let header = try XCTUnwrap(headers?[HTTPClient.RequestHeader.postParameters.rawValue] as? String)
+        expect(header) == "key1,key2:sha256:0ffc67878b872d1e948951a21bda17237afa6f72d28665534c37e4c7f5191b4f"
+    }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

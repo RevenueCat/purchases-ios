@@ -64,9 +64,9 @@ class PostSubscriberAttributesOperation: NetworkOperation {
 
 }
 
-extension PostSubscriberAttributesOperation {
+private extension PostSubscriberAttributesOperation {
 
-    private struct Body: Encodable {
+    struct Body: HTTPRequestBody {
 
         let attributes: AnyEncodable
 

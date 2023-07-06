@@ -62,7 +62,7 @@ class PostAttributionDataOperation: NetworkOperation {
 
 private extension PostAttributionDataOperation {
 
-    struct Body: Encodable {
+    struct Body: HTTPRequestBody {
 
         let network: AttributionNetwork
         let data: AnyEncodable
