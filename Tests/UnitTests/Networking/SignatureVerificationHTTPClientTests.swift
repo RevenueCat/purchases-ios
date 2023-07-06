@@ -483,7 +483,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testNoCachedResponseAndNotVerifiedResponse() throws {
-        let path: HTTPRequest.Path = .getOfferings(appUserID: "user")
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
 
         self.mockPath(path, statusCode: .success, requestDate: Self.date2, signature: nil)
 
@@ -495,7 +495,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(beEmpty())
         expect(response).to(beSuccess())
         expect(response?.value?.requestDate).to(beCloseToDate(Self.date2))
-        expect(response?.value?.verificationResult) == .notRequested
+        expect(response?.value?.verificationResult) == .failed
     }
 
     func testNoCachedResponseAndVerifiedResponse() throws {

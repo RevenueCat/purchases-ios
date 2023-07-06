@@ -157,6 +157,17 @@ class HTTPRequestTests: TestCase {
         }
     }
 
+    func testStaticEndpoints() {
+        let staticEndpoints = Self.paths
+            .filter { $0.supportsSignatureVerification }
+            .filter { !$0.needsNonceForSigning }
+
+        expect(staticEndpoints) == [
+            .getOfferings(appUserID: Self.userID),
+            .getProductEntitlementMapping
+        ]
+    }
+
     func testPathsEscapeUserID() {
         for path in Self.pathsWithUserID {
             expect(path.description).toNot(
