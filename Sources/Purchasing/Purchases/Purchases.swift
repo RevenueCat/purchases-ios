@@ -1373,8 +1373,9 @@ extension Purchases: InternalPurchasesType {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func productEntitlementMapping() async throws -> ProductEntitlementMapping {
         let response = try await Async.call { completion in
-            self.backend.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: false,
-                                                                          completion: completion)
+            self.backend.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: false) { result in
+                completion(result.mapError(\.asPublicError))
+            }
         }
 
         return response.toMapping()
@@ -1470,6 +1471,10 @@ internal extension Purchases {
 
     var receiptURL: URL? {
         return self.receiptFetcher.receiptURL
+    }
+
+    func invalidateOfferingsCache() {
+        self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
     }
 
 }
