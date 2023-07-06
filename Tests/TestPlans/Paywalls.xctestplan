@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "21E23DC2-066B-4FB7-BEDB-E6DB11A331CF",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "defaultTestExecutionTimeAllowance" : 60,
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "PaywallsTests",
+        "name" : "PaywallsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

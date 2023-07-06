@@ -1,0 +1,1 @@
+../../UnitTests/TestHelpers/ImageSnapshot.swift
