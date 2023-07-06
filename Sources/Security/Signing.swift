@@ -239,7 +239,7 @@ extension Signing.SignatureParameters {
     var asData: Data {
         return (
             (self.nonce ?? .init()) +
-            self.path.unescapedPath.asData +
+            self.path.relativePath.asData +
             String(self.requestDate).asData +
             (self.etag ?? "").asData +
             (self.message ?? .init())
@@ -248,11 +248,18 @@ extension Signing.SignatureParameters {
 
 }
 
-private extension HTTPRequest.Path {
+extension Signing.SignatureParameters: CustomDebugStringConvertible {
 
-    // Signatures remove percent encoding from the paths.
-    var unescapedPath: String {
-        return self.relativePath.removingPercentEncoding ?? ""
+    var debugDescription: String {
+        let message = self.message.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+
+        return "SignatureParameters(" +
+            "path: '\(self.path.relativePath)', " +
+            "message: '\(message.trimmingWhitespacesAndNewLines)', " +
+            "nonce: '\(self.nonce?.base64EncodedString() ?? "")', " +
+            "etag: '\(self.etag ?? "")', " +
+            "requestDate: \(self.requestDate)" +
+        ")"
     }
 
 }

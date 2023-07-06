@@ -310,7 +310,7 @@ class SigningTests: TestCase {
         curl -v 'https://api.revenuecat.com/v1/subscribers/login' \
         -X GET \
         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-        -H 'Authorization: Bearer {api_key}'
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz'
          */
 
         // swiftlint:disable line_length
@@ -344,7 +344,7 @@ class SigningTests: TestCase {
          Signature retrieved with:
         curl -v 'https://api.revenuecat.com/v1/subscribers/test/offerings' \
         -X GET \
-        -H 'Authorization: Bearer {api_key}' \
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
         -H 'X-Platform: iOS'
          */
 
@@ -410,7 +410,7 @@ class SigningTests: TestCase {
         curl -v 'https://api.revenuecat.com/v1/subscribers/login' \
         -X GET \
         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-        -H 'Authorization: Bearer {api_key}' \
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
         -H 'X-RevenueCat-ETag: 97d4f0d2353d784a' \
          */
 
@@ -440,21 +440,21 @@ class SigningTests: TestCase {
     func testVerifyKnownSignatureWithAnonymousUser() throws {
         /*
          Signature retrieved with:
-        curl -v 'https://api.revenuecat.com/v1/subscribers/$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b ' \
+        curl -v 'https://api.revenuecat.com/v1/subscribers/$RCAnonymousID%3A1af512a3b9c848899fe427f39dd69f2b' \
         -X GET \
         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-        -H 'Authorization: Bearer {api_key}'
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz'
          */
 
         // swiftlint:disable line_length
         let response = """
-        {"request_date":"2023-06-30T23:37:00Z","request_date_ms":1688168220782,"subscriber":{"entitlements":{},"first_seen":"2023-06-30T23:06:23Z","last_seen":"2023-06-30T23:06:23Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        {"request_date":"2023-07-06T19:25:15Z","request_date_ms":1688671515638,"subscriber":{"entitlements":{},"first_seen":"2023-06-30T23:06:23Z","last_seen":"2023-06-30T23:06:23Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
         """
-        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBd7KiUCEJTjINdtwp/JQnyicaDVRm1+NoytWsv40T8I19xx1tnfhL4msRwK5R1YTNxcjBp1r3GRTjRS2agP29hBfdEF+Bi5hL/YoXrYJ52MA"
+        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBSrxh7Tsw8z/B0jfCUIVOlzAJqMSoDWL3zy1etinl/pU/xzwZ9HdZWwyAgn38I9rv/JM0FSCcYMC2C8KE06wFyQTz+7c9btj/v2ueXRgAJYB"
         // swiftlint:enable line_length
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate: UInt64 = 1688168220782
+        let requestDate: UInt64 = 1688671515638
         let etag = "a896a69e4b31304d"
 
         expect(
