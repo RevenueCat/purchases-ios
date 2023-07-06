@@ -80,8 +80,8 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Monthly Subscription",
+              "displayName" : "Monthly Subscription",
               "locale" : "en_US"
             }
           ],
@@ -105,8 +105,8 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "",
-              "displayName" : "",
+              "description" : "Annual Subscription",
+              "displayName" : "Annual Subscription",
               "locale" : "en_US"
             }
           ],
