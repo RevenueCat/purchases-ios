@@ -1381,6 +1381,10 @@ extension Purchases: InternalPurchasesType {
         return response.toMapping()
     }
 
+    var responseVerificationMode: Signing.ResponseVerificationMode {
+        return self.systemInfo.responseVerificationMode
+    }
+
 }
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
@@ -1459,10 +1463,6 @@ internal extension Purchases {
 
     var storeKit2Setting: StoreKit2Setting {
         return self.systemInfo.storeKit2Setting
-    }
-
-    var responseVerificationMode: Signing.ResponseVerificationMode {
-        return self.systemInfo.responseVerificationMode
     }
 
     var publicKey: Signing.PublicKey? {

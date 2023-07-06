@@ -129,6 +129,8 @@ private extension PurchasesDiagnostics {
     }
 
     func signatureVerification() async throws {
+        guard self.purchases.responseVerificationMode.isEnabled else { return }
+
         do {
             try await self.purchases.healthRequest(signatureVerification: true)
         } catch {
