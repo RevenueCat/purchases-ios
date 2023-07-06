@@ -612,7 +612,7 @@ class SigningTests: TestCase {
 
         let logger = TestLogHandler()
 
-        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        let request = HTTPRequest(method: .get, path: .postOfferForSigning, nonce: nil)
         let response = HTTPResponse<Data?>(
             statusCode: .success,
             responseHeaders: [
