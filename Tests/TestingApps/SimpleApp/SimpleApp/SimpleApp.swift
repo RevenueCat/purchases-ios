@@ -27,14 +27,24 @@ struct SimpleApp: App {
         )
     }
 
+    @State
+    private var offering: Offering?
+
     var body: some Scene {
         WindowGroup {
-            PaywallView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background {
-                    DebugView()
-                        .frame(maxHeight: .infinity, alignment: .bottom)
+            Group {
+                if let offering = self.offering {
+                    PaywallView(offering: offering)
                 }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                DebugView()
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+            .task {
+                self.offering = try? await Purchases.shared.offerings().current
+            }
         }
     }
 }

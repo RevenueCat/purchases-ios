@@ -1,5 +1,5 @@
 import Nimble
-import Paywalls
+@testable import Paywalls
 import SnapshotTesting
 import XCTest
 
@@ -7,7 +7,7 @@ import XCTest
 class PaywallsTests: TestCase {
 
     func testOne() {
-        let view = PaywallView()
+        let view = PaywallView(offering: TestData.offering)
             .frame(width: 300, height: 400)
 
         expect(view).to(haveValidSnapshot(as: .image))
