@@ -68,8 +68,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testHealthRequestWithVerification() async throws {
-        XCTExpectFailure("Signature Verification disabled until backend is updated")
-
         try await Purchases.shared.healthRequest(signatureVerification: true)
     }
 
