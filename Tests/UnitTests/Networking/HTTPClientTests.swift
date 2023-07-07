@@ -303,10 +303,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testSendsBodyData() throws {
-        let body = ["arg": "value"]
+        let body = AnyEncodableRequestBody(["arg": "value"])
         let pathHit: Atomic<Bool> = false
 
-        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        let bodyData = try JSONEncoder.default.encode(body)
 
         stub(condition: hasBody(bodyData)) { _ in
             pathHit.value = true
@@ -1529,10 +1529,16 @@ private extension BaseHTTPClientTests {
 
     static func extractRequestNumber(from urlRequest: URLRequest) -> Int? {
         do {
-            let requestData = urlRequest.ohhttpStubs_httpBody!
-            let requestBodyDict = try XCTUnwrap(try JSONSerialization.jsonObject(with: requestData,
-                                                                                 options: []) as? [String: Any])
-            return try XCTUnwrap(requestBodyDict[Self.requestNumberKeyName] as? Int)
+            let requestData = try XCTUnwrap(urlRequest.ohhttpStubs_httpBody)
+            let body = try JSONDecoder.default.decode(
+                AnyEncodableRequestBody.self,
+                from: requestData
+            ).body
+
+            let dictionary = try XCTUnwrap(body.value as? [String: Any])
+            let number = dictionary[Self.requestNumberKeyName]
+
+            return try XCTUnwrap(number as? Int)
         } catch {
             XCTFail("Couldn't extract the request number from the URLRequest")
             return nil
@@ -1599,7 +1605,7 @@ extension HTTPRequest.Method {
 
 }
 
-private struct AnyEncodableRequestBody: HTTPRequestBody {
+private struct AnyEncodableRequestBody: HTTPRequestBody, Decodable {
 
     var body: AnyEncodable
 
