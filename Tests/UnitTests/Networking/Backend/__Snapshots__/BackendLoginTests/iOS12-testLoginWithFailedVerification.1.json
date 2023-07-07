@@ -1,0 +1,13 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
+      "new_app_user_id" : "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
+    },
+    "method" : "POST",
+    "url" : "https:\/\/api.revenuecat.com\/v1\/subscribers\/identify"
+  }
+}

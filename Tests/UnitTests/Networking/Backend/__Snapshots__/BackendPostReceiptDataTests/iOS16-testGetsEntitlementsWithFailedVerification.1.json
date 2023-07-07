@@ -2,7 +2,7 @@
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
     "X-Nonce" : "MTIzNDU2Nzg5MGFi",
-    "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:a11ca6539990f076ad393859a4a940cd759de0db732b9c63bfbad52ca1cb3f9f"
+    "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:be95d3a1d4c00357de2696c1a4546be1d0312dbee67feee8a971f01f8ac4b729"
   },
   "request" : {
     "body" : {

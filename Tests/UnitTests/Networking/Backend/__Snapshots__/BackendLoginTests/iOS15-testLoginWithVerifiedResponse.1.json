@@ -1,0 +1,15 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "X-Nonce" : "MTIzNDU2Nzg5MGFi",
+    "X-Post-Params-Hash" : "app_user_id,new_app_user_id:sha256:ce001f7b6730af645a00622c062081d2105742d40101bb415176b88a18cfee97"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "old id",
+      "new_app_user_id" : "new id"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/subscribers/identify"
+  }
+}

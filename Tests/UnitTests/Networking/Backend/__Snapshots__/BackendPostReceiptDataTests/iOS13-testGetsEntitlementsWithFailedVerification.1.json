@@ -1,6 +1,8 @@
 {
   "headers" : {
-    "Authorization" : "Bearer asharedsecret"
+    "Authorization" : "Bearer asharedsecret",
+    "X-Nonce" : "MTIzNDU2Nzg5MGFi",
+    "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:be95d3a1d4c00357de2696c1a4546be1d0312dbee67feee8a971f01f8ac4b729"
   },
   "request" : {
     "body" : {
@@ -11,7 +13,7 @@
           "value" : "notDetermined"
         }
       },
-      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : false
