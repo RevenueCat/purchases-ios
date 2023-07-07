@@ -25,6 +25,8 @@ enum SigningStrings {
     case signature_failed_verification
     case signature_passed_verification
 
+    case request_failed_verification(HTTPRequest)
+
     case intermediate_key_failed_verification(signature: Data)
     case intermediate_key_failed_creation(Error)
     case intermediate_key_expired(Date, Data)
@@ -66,6 +68,10 @@ extension SigningStrings: LogMessage {
 
         case .signature_passed_verification:
             return "Signature passed verification"
+
+        case let .request_failed_verification(request):
+            return "Request to \(request.path) failed verification. This is likely due to " +
+            "a malicious user intercepting and modifying requests."
 
         case let .intermediate_key_failed_verification(signature):
             return "Intermediate key failed verification: \(signature.asString)"
