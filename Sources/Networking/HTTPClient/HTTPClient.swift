@@ -97,7 +97,7 @@ extension HTTPClient {
         return [RequestHeader.nonce.rawValue: data.base64EncodedString()]
     }
 
-    static func postParametersHeader(for body: HTTPRequestBody) -> RequestHeaders {
+    static func postParametersHeaderForSigning(with body: HTTPRequestBody) -> RequestHeaders {
         if let header = body.postParameterHeader {
             return [RequestHeader.postParameters.rawValue: header]
         } else {
@@ -499,7 +499,7 @@ extension HTTPRequest {
            verificationMode.isEnabled,
            self.path.supportsSignatureVerification,
            let body = self.requestBody {
-            result += HTTPClient.postParametersHeader(for: body)
+            result += HTTPClient.postParametersHeaderForSigning(with: body)
         }
 
         return result
