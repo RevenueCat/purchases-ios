@@ -2385,7 +2385,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 
 
 
-
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
@@ -2425,6 +2424,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 
