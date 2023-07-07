@@ -116,7 +116,7 @@ class TransactionPosterTests: TestCase {
             }
         }
 
-        logger.verifyMessageWasNotLogged("Finished transaction")
+        logger.verifyMessageWasNotLogged("Finished transaction", allowNoMessages: true)
     }
 
 }

@@ -608,12 +608,6 @@ private extension ErrorUtils {
         userInfo[.file] = "\(fileName):\(line)"
         userInfo[.function] = functionName
 
-        Self.logErrorIfNeeded(
-            code,
-            localizedDescription: localizedDescription,
-            fileName: fileName, functionName: functionName, line: line
-        )
-
         return .init(error: code, userInfo: userInfo)
     }
 
@@ -642,74 +636,6 @@ private extension ErrorUtils {
             NSLocalizedDescriptionKey as NSError.UserInfoKey: backendMessage ?? "",
             .backendErrorCode: originalBackendErrorCode
         ])
-    }
-
-    // swiftlint:disable:next function_body_length
-    private static func logErrorIfNeeded(_ code: ErrorCode,
-                                         localizedDescription: String,
-                                         fileName: String = #fileID,
-                                         functionName: String = #function,
-                                         line: UInt = #line) {
-        switch code {
-        case .networkError,
-                .unknownError,
-                .receiptAlreadyInUseError,
-                .unexpectedBackendResponseError,
-                .invalidReceiptError,
-                .invalidAppUserIdError,
-                .invalidCredentialsError,
-                .operationAlreadyInProgressForProductError,
-                .unknownBackendError,
-                .invalidSubscriberAttributesError,
-                .logOutAnonymousUserError,
-                .receiptInUseByOtherSubscriberError,
-                .configurationError,
-                .unsupportedError,
-                .emptySubscriberAttributes,
-                .productDiscountMissingIdentifierError,
-                .productDiscountMissingSubscriptionGroupIdentifierError,
-                .customerInfoError,
-                .systemInfoError,
-                .beginRefundRequestError,
-                .apiEndpointBlockedError,
-                .invalidPromotionalOfferError,
-                .offlineConnectionError,
-                .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed:
-                Logger.error(
-                    localizedDescription,
-                    fileName: fileName,
-                    functionName: functionName,
-                    line: line
-                )
-
-        case .purchaseCancelledError,
-                .storeProblemError,
-                .purchaseNotAllowedError,
-                .purchaseInvalidError,
-                .productNotAvailableForPurchaseError,
-                .productAlreadyPurchasedError,
-                .missingReceiptFileError,
-                .invalidAppleSubscriptionKeyError,
-                .ineligibleError,
-                .insufficientPermissionsError,
-                .paymentPendingError,
-                .productRequestTimedOut:
-                Logger.appleError(
-                    localizedDescription,
-                    fileName: fileName,
-                    functionName: functionName,
-                    line: line
-                )
-
-        @unknown default:
-            Logger.error(
-                localizedDescription,
-                fileName: fileName,
-                functionName: functionName,
-                line: line
-            )
-        }
     }
 }
 

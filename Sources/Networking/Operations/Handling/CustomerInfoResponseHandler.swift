@@ -31,8 +31,11 @@ class CustomerInfoResponseHandler {
                 // If the response was successful we always want to return the `CustomerInfo`.
                 if !response.body.errorResponse.attributeErrors.isEmpty {
                     // If there are any, log attribute errors.
-                    // Creating the error implicitly logs it.
-                    _ = response.body.errorResponse.asBackendError(with: response.statusCode)
+                    Logger.error(
+                        response.body.errorResponse
+                            .asBackendError(with: response.statusCode)
+                            .localizedDescription
+                    )
                 }
 
                 return response.body.customerInfo.copy(with: response.verificationResult)
