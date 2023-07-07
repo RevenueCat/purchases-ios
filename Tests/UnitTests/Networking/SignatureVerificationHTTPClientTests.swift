@@ -318,6 +318,24 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
     }
 
+    func testIncorrectSignatureLogsError() throws {
+        let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
+        self.mockPath(request.path, statusCode: .success, requestDate: Self.date1)
+        self.signing.stubbedVerificationResult = false
+
+        let logger = TestLogHandler()
+
+        let _: DataResponse? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        logger.verifyMessageWasLogged(
+            Strings.signing.request_failed_verification(request),
+            level: .error,
+            expectedCount: 1
+        )
+    }
+
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
         self.signing.stubbedVerificationResult = true
 

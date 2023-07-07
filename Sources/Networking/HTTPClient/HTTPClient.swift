@@ -303,11 +303,15 @@ private extension HTTPClient {
             }
             // Upgrade to error in enforced mode
             .flatMap { response -> Result<VerifiedHTTPResponse<Data>?, NetworkError> in
-                if let response = response,
-                    response.verificationResult == .failed,
-                    case .enforced = request.verificationMode {
-                    return .failure(.signatureVerificationFailed(path: request.httpRequest.path,
-                                                                 code: response.statusCode))
+                if let response = response, response.verificationResult == .failed {
+                    if case .enforced = request.verificationMode {
+                        return .failure(.signatureVerificationFailed(path: request.httpRequest.path,
+                                                                     code: response.statusCode))
+                    } else {
+                        // Any other mode gets forwarded as a success, but we log the error
+                        Logger.error(Strings.signing.request_failed_verification(request.httpRequest))
+                        return .success(response)
+                    }
                 } else {
                     return .success(response)
                 }
