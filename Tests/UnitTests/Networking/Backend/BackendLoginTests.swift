@@ -17,11 +17,15 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendLoginTests: BaseBackendTests {
+class BaseBackendLoginTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
     }
+
+}
+
+class BackendLoginTests: BaseBackendLoginTests {
 
     func testLoginMakesRightCalls() {
         let newAppUserID = "new id"
@@ -170,13 +174,69 @@ class BackendLoginTests: BaseBackendTests {
 
 }
 
-private extension BackendLoginTests {
+// swiftlint:disable:next type_name
+class BackendLoginWithSignatureVerificationTests: BaseBackendLoginTests {
 
-    func mockLoginRequest(appUserID: String,
-                          statusCode: HTTPStatusCode = .success,
-                          response: [String: Any] = [:]) -> HTTPRequest.Path {
+    override var verificationMode: Configuration.EntitlementVerificationMode { .informational }
+
+    func testLoginWithVerifiedResponse() {
+        let newAppUserID = "new id"
+        let currentAppUserID = "old id"
+
+        _ = self.mockLoginRequest(appUserID: currentAppUserID,
+                                  statusCode: .createdSuccess,
+                                  response: Self.mockCustomerInfoData,
+                                  verificationResult: .verified)
+
+        let result = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID,
+                                newAppUserID: newAppUserID,
+                                completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            expect(result?.value?.info.entitlements.verification) == .verified
+        }
+    }
+
+    func testLoginWithFailedVerification() {
+        let newAppUserID = "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
+        let currentAppUserID = "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"
+
+        _ = self.mockLoginRequest(appUserID: currentAppUserID,
+                                  statusCode: .createdSuccess,
+                                  response: Self.mockCustomerInfoData,
+                                  verificationResult: .failed)
+
+        let result = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: currentAppUserID,
+                                newAppUserID: newAppUserID,
+                                completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            expect(result?.value?.info.entitlements.verification) == .failed
+        }
+    }
+
+}
+
+private extension BaseBackendLoginTests {
+
+    func mockLoginRequest(
+        appUserID: String,
+        statusCode: HTTPStatusCode = .success,
+        response: [String: Any] = [:],
+        verificationResult: VerificationResult = .notRequested
+    ) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
-        let response = MockHTTPClient.Response(statusCode: statusCode, response: response)
+        let response = MockHTTPClient.Response(statusCode: statusCode,
+                                               response: response,
+                                               verificationResult: verificationResult)
 
         self.httpClient.mock(requestPath: path, response: response)
 
