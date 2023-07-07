@@ -372,22 +372,21 @@ class SigningTests: TestCase {
         ) == true
     }
 
-    func testVerifyKnownSignatureOfEmptyResponseWithNonceAndNoEtag() throws {
+    func testVerifyKnownSignatureOfEmptyResponseWithNonceAndNoEtagAndNoAPIKey() throws {
         /*
          Signature retrieved with:
         curl -v 'https://api.revenuecat.com/v1/health' \
         -X GET \
-        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz'
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi'
          */
 
         // swiftlint:disable line_length
         let response = "\"\"\n"
-        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBfwqq2zwcwl4sR4A+QeqyqH7kfS95aH84r25cplyx7Kp/BWRqIxusPNFqvsGEUoq8neKKp6zBQb5nJGtUr2ot4i8LsEHPWf85LcPo6ODl+YB"
+        let expectedSignature = "XX8Mh8DTcqPC5A48nncRU3hDkL/v3baxxqLIWnWJzg1tTAAA7ok0iXupT2bjju/BSHVmgxc0XiwTZXBmsGuWEXa9lsyoFi9HMF4aAIOs4Y+lYE2i4USJCP7ev07QZk7D2b6ZBWLvZSDGa3uPdgoLSNasWaBgg8uJkzajyVv3psjMJqSQZ753hXgTvALa18ugG2LULJmYWc+FWHn4y93OrHjzSHB2jXGCF+EKvxGcUYPXM8gM"
         // swiftlint:enable line_length
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
-        let requestDate: UInt64 = 1688165654691
+        let requestDate: UInt64 = 1688701887822
 
         expect(
             self.signing.verify(
@@ -644,7 +643,7 @@ private extension SigningTests {
     }
 
     func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
-        return try key.signature(for: salt + Self.apiKey.asData + parameters.asData)
+        return try key.signature(for: parameters.signature(salt: salt, apiKey: Self.apiKey))
     }
 
     static func fullSignature(intermediateKey: Data, salt: String, signature: Data) -> Data {

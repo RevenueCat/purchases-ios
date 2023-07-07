@@ -92,7 +92,7 @@ final class Signing: SigningType {
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
-        let messageToVerify = salt + self.apiKey.asData + parameters.asData
+        let messageToVerify = parameters.signature(salt: salt, apiKey: self.apiKey)
 
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
@@ -235,6 +235,11 @@ extension Signing {
 }
 
 extension Signing.SignatureParameters {
+
+    func signature(salt: Data, apiKey: String) -> Data {
+        let apiKey = self.path.authenticated ? apiKey : ""
+        return salt + apiKey.asData + self.asData
+    }
 
     var asData: Data {
         return (
