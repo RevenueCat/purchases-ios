@@ -38,7 +38,7 @@ struct SimpleApp: App {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background {
+            .overlay {
                 DebugView()
                     .frame(maxHeight: .infinity, alignment: .bottom)
             }
