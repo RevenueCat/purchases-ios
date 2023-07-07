@@ -468,7 +468,7 @@ class SigningTests: TestCase {
         curl -v 'https://api.revenuecat.com/v1/subscribers/identify' \
         -X POST \
         -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
-         -H 'X-Post-Params-Hash: app_user_id,new_app_user_id:sha256:6fa58b9e3bdb1ca187ac082d128c19f04da8711fe6b17873a48bc7ca37bbf95a' \
+        -H 'X-Post-Params-Hash: app_user_id,new_app_user_id:sha256:6fa58b9e3bdb1ca187ac082d128c19f04da8711fe6b17873a48bc7ca37bbf95a' \
         -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
         -H 'Content-Type: application/json' \
          --data-raw '{"new_app_user_id":"F72BF276-CD70-4C27-BCD2-FC1EFD988FA3","app_user_id":"$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"}'

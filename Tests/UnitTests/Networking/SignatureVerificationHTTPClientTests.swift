@@ -227,7 +227,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         }
 
         let header = try XCTUnwrap(headers?[HTTPClient.RequestHeader.postParameters.rawValue] as? String)
-        expect(header) == "key1,key2:sha256:0ffc67878b872d1e948951a21bda17237afa6f72d28665534c37e4c7f5191b4f"
+        expect(header) == "key1,key2:sha256:59b271ae1bbcb1d31d41929817f4b16fb439eb4f31520b5ad1d5ce98920a7138"
     }
 
 }
