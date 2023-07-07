@@ -33,7 +33,7 @@ class SigningTests: TestCase {
 
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        self.signing = .init(apiKey: Self.apiKey)
+        self.signing = .init(apiKey: Self.apiKey, clock: TestClock(now: Self.mockDate))
     }
 
     func testLoadDefaultPublicKey() throws {
@@ -667,8 +667,8 @@ private extension SigningTests {
         return intermediateKey + expiration + signature
     }
 
-    static let intermediateKeyFutureExpiration = Date().addingTimeInterval(DispatchTimeInterval.days(5).seconds)
-    static let intermediateKeyPastExpiration = Date().addingTimeInterval(DispatchTimeInterval.days(5).seconds * -1)
+    static let intermediateKeyFutureExpiration = mockDate.addingTimeInterval(DispatchTimeInterval.days(5).seconds)
+    static let intermediateKeyPastExpiration = mockDate.addingTimeInterval(DispatchTimeInterval.days(5).seconds * -1)
     static let invalidIntermediateKeyExpiration = Data(
         repeating: 0,
         count: Signing.SignatureComponent.intermediateKeyExpiration.size
@@ -676,6 +676,10 @@ private extension SigningTests {
 
     static let apiKey = "appl_fFVBVAoYujMZJnepIziGKVjnZBz"
     static let mockPath: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
+
+    // 2023-07-07: The hardcoded signatures have an intermediate signature that expires
+    // 2 weeks after that date.
+    static let mockDate: Date = Date(timeIntervalSince1970: 1688769125)
 
 }
 

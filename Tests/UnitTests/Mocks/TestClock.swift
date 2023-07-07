@@ -21,7 +21,7 @@ final class TestClock: ClockType {
 
     var now: Date
 
-    init() { self.now = Date() }
+    init(now: Date = .init()) { self.now = now }
 
 }
 
