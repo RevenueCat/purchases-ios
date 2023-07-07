@@ -23,9 +23,10 @@ struct AnyEncodable {
 
 }
 
+// swiftlint:disable cyclomatic_complexity
+
 extension AnyEncodable: Encodable {
 
-    // swiftlint:disable:next cyclomatic_complexity
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
 
@@ -69,3 +70,43 @@ extension AnyEncodable: Encodable {
     }
 
 }
+
+/// `AnyEncodable` can also be decoded
+extension AnyEncodable: Decodable {
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if container.decodeNil() {
+            self.value = ()
+        } else if let bool = try? container.decode(Bool.self) {
+            self.value = bool
+        } else if let int = try? container.decode(Int.self) {
+            self.value = int
+        } else if let uint = try? container.decode(UInt.self) {
+            self.value = uint
+        } else if let float = try? container.decode(Float.self) {
+            self.value = float
+        } else if let double = try? container.decode(Double.self) {
+            self.value = double
+        } else if let string = try? container.decode(String.self) {
+            self.value = string
+        } else if let date = try? container.decode(Date.self) {
+            self.value = date
+        } else if let url = try? container.decode(URL.self) {
+            self.value = url
+        } else if let array = try? container.decode([AnyEncodable].self) {
+            self.value = array.map { $0.value }
+        } else if let dictionary = try? container.decode([String: AnyEncodable].self) {
+            self.value = dictionary.mapValues { $0.value }
+        } else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "AnyEncodable value cannot be decoded"
+            )
+        }
+    }
+
+}
+
+// swiftlint:enable cyclomatic_complexity
