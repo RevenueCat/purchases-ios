@@ -27,6 +27,8 @@ public struct PaywallView: View {
 
 }
 
+#if DEBUG
+
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct PaywallView_Previews: PreviewProvider {
 
@@ -35,3 +37,5 @@ struct PaywallView_Previews: PreviewProvider {
     }
 
 }
+
+#endif

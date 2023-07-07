@@ -1,1 +1,1 @@
-../../UnitTests/TestHelpers/ImageSnapshot.swift
+../../StoreKitUnitTests/TestHelpers/ImageSnapshot.swift
