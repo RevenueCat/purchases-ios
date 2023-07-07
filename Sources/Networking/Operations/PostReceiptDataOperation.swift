@@ -217,7 +217,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
                 .map(SubscriberAttribute.map)
-                .map(AnyEncodable.init),
+                .map(AnyCodable.init),
             forKey: .attributes
         )
 

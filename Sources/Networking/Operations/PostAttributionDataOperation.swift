@@ -65,11 +65,11 @@ private extension PostAttributionDataOperation {
     struct Body: Encodable {
 
         let network: AttributionNetwork
-        let data: AnyEncodable
+        let data: AnyCodable
 
         init(network: AttributionNetwork, attributionData: [String: Any]) {
             self.network = network
-            self.data = AnyEncodable(attributionData)
+            self.data = AnyCodable(attributionData)
         }
 
     }

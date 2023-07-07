@@ -68,10 +68,10 @@ extension PostSubscriberAttributesOperation {
 
     private struct Body: Encodable {
 
-        let attributes: AnyEncodable
+        let attributes: AnyCodable
 
         init(_ attributes: SubscriberAttribute.Dictionary) {
-            self.attributes = AnyEncodable(
+            self.attributes = AnyCodable(
                 SubscriberAttribute.map(subscriberAttributes: attributes)
             )
         }

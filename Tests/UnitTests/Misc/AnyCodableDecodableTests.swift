@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AnyDecodableTests.swift
+//  AnyCodableDecodableTests.swift
 //
 //  Created by Nacho Soto on 5/11/22.
 
@@ -17,14 +17,15 @@ import XCTest
 
 @testable import RevenueCat
 
-class AnyDecodableTests: TestCase {
+class AnyCodableDecodableTests: TestCase {
 
     func testNull() throws {
-        expect(try AnyDecodable.decode("{\"key\": null}")) == ["key": .null]
+        let value = try XCTUnwrap(AnyCodable.decode("{\"key\": null}").value as? [String: Any])
+        expect(value["key"] as? Void) == ()
     }
 
     func testEmptyDictionary() throws {
-        expect(try AnyDecodable.decode("{}")) == [:]
+        expect(try AnyCodable.decode("{}").value as? [String: String]) == [:]
     }
 
     func testDictionary() throws {
@@ -39,7 +40,7 @@ class AnyDecodableTests: TestCase {
             "7": null
         }
         """
-        let expected: AnyDecodable = [
+        let expected: AnyCodable = [
             "1": "string",
             "2": 1,
             "3": 4.815162342,
@@ -49,7 +50,7 @@ class AnyDecodableTests: TestCase {
             "7": nil
         ]
 
-        expect(try AnyDecodable.decode(json)) == expected
+        expect(try AnyCodable.decode(json)) == expected
     }
 
     func testNestedDictionary() throws {
@@ -69,7 +70,7 @@ class AnyDecodableTests: TestCase {
             }
         }
         """
-        let expected: AnyDecodable = [
+        let expected: AnyCodable = [
             "1": [
                 "a": "string",
                 "b": 2,
@@ -82,11 +83,11 @@ class AnyDecodableTests: TestCase {
             ]
         ]
 
-        expect(try AnyDecodable.decode(json)) == expected
+        expect(try AnyCodable.decode(json)) == expected
     }
 
     func testEmptyArray() throws {
-        expect(try AnyDecodable.decode("[]")) == []
+        expect(try AnyCodable.decode("[]")) == []
     }
 
     func testArray() throws {
@@ -101,54 +102,54 @@ class AnyDecodableTests: TestCase {
             null
         ]
         """
-        let expected: AnyDecodable = [
+        let expected: AnyCodable = [
             "string",
             2,
             3.6,
             false,
             [:],
             [],
-            .null
+            nil
         ]
 
-        expect(try AnyDecodable.decode(json)) == expected
+        expect(try AnyCodable.decode(json)) == expected
     }
 
-    func testStringAsAny() {
-        expect(AnyDecodable.string("test").asAny as? String) == "test"
+    func testStringValue() {
+        expect(AnyCodable("test").value as? String) == "test"
     }
 
-    func testIntAsAny() {
-        expect(AnyDecodable.int(5).asAny as? Int) == 5
+    func testIntValue() {
+        expect(AnyCodable(5).value as? Int) == 5
     }
 
-    func testDoubleAsAny() {
-        expect(AnyDecodable.double(3.14).asAny as? Double) == 3.14
+    func testDoubleValue() {
+        expect(AnyCodable(3.14).value as? Double) == 3.14
     }
 
-    func testBoolAsAny() {
-        expect(AnyDecodable.bool(true).asAny as? Bool) == true
+    func testBoolValue() {
+        expect(AnyCodable(true).value as? Bool) == true
     }
 
-    func testNilAsAny() {
-        expect(AnyDecodable.null.asAny as? NSNull) == NSNull()
+    func testNilValue() {
+        expect(AnyCodable(nil).value as? Void) == ()
     }
 
-    func testObjectAsAny() {
+    func testObjectValue() {
         let object: [String: String] = [
             "key_1": "1",
             "key_2": "2"
         ]
-        let decodable: AnyDecodable = .object(object.mapValues(AnyDecodable.string))
+        let decodable: AnyCodable = .init(object)
 
-        expect(decodable.asAny as? [String: String]) == object
+        expect(decodable.value as? [String: String]) == object
     }
 
-    func testArrayAsAny() {
+    func testArrayValue() {
         let array: [String] = ["1", "2", "3"]
-        let decodable: AnyDecodable = .array(array.map(AnyDecodable.string))
+        let decodable: AnyCodable = .init(array)
 
-        expect(decodable.asAny as? [String]) == array
+        expect(decodable.value as? [String]) == array
     }
 
 }

@@ -154,7 +154,7 @@ class OfferingsTests: TestCase {
     }
 
     func testOfferingsWithMetadataIsCreated() throws {
-        let metadata: [String: AnyDecodable] = [
+        let metadata: [String: AnyCodable] = [
             "int": 5,
             "double": 5.5,
             "boolean": true,

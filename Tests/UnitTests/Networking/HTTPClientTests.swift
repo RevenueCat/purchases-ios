@@ -1560,7 +1560,7 @@ extension HTTPRequest.Method {
     /// Creates a `HTTPRequest.Method.post` request with `[String: Any]`.
     /// - Note: this is for testing only, real requests must use `Encodable`.
     internal static func post(_ body: [String: Any]) -> Self {
-        return .post(AnyEncodable(body))
+        return .post(AnyCodable(body))
     }
 
 }

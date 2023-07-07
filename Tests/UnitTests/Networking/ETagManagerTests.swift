@@ -323,7 +323,7 @@ class ETagManagerTests: TestCase {
 
             let eTag: String
             let statusCode: Int
-            let responseObject: [String: AnyEncodable]
+            let responseObject: [String: AnyCodable]
 
             var asData: Data? {
                 return try? JSONSerialization.data(withJSONObject: self.asDictionary(),
@@ -339,7 +339,7 @@ class ETagManagerTests: TestCase {
         let wrapper = OldWrapper(eTag: Self.testETag,
                                  statusCode: HTTPStatusCode.success.rawValue,
                                  responseObject: [
-                                    "response": AnyEncodable("cached")
+                                    "response": AnyCodable("cached")
                                  ])
         self.mockUserDefaults.mockValues[try request.cacheKey] = wrapper.asData
 

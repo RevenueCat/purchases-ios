@@ -30,8 +30,8 @@ extension Decoder {
     func decodeRawData() -> [String: Any] {
         do {
             let value = try self.singleValueContainer()
-                .decode(AnyDecodable.self)
-                .asAny
+                .decode(AnyCodable.self)
+                .value
 
             guard let dictionary = value as? [String: Any] else {
                 Logger.warn(Strings.codable.unexpectedValueError(type: type(of: value), value: value))

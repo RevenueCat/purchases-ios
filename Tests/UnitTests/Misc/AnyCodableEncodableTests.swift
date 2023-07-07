@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  AnyEncodableTests.swift
+//  AnyCodableEncodableTests.swift
 //
 //  Created by Nacho Soto on 3/2/22.
 
@@ -17,12 +17,12 @@ import XCTest
 
 @testable import RevenueCat
 
-class AnyEncodableTests: TestCase {
+class AnyCodableEncodableTests: TestCase {
 
     func testEmptyDictionary() {
         let empty: [String: Any] = [:]
 
-        assertSnapshot(matching: AnyEncodable(empty), as: .json)
+        assertSnapshot(matching: AnyCodable(empty), as: .json)
     }
 
     func testHomogenousDictionary() {
@@ -32,7 +32,7 @@ class AnyEncodableTests: TestCase {
             "c": "3"
         ]
 
-        assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
+        assertSnapshot(matching: AnyCodable(dictionary), as: .json)
     }
 
     func testDictionaryWithDifferentValues() {
@@ -43,7 +43,7 @@ class AnyEncodableTests: TestCase {
             "d": nil
         ]
 
-        assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
+        assertSnapshot(matching: AnyCodable(dictionary), as: .json)
     }
 
     func testNestedDictionary() {
@@ -63,7 +63,7 @@ class AnyEncodableTests: TestCase {
         ]
 
         assertSnapshot(
-            matching: AnyEncodable(dictionary),
+            matching: AnyCodable(dictionary),
             as: .json,
             // Formatting `Double`s changed in iOS 17
             testName: CurrentTestCaseTracker.osVersionAndTestName
@@ -75,7 +75,7 @@ class AnyEncodableTests: TestCase {
             "a": Double.infinity
         ]
 
-        expect(try JSONEncoder().encode(AnyEncodable(dictionary)))
+        expect(try JSONEncoder().encode(AnyCodable(dictionary)))
             .to(throwError())
     }
 
@@ -86,7 +86,7 @@ class AnyEncodableTests: TestCase {
             "c": "3"
         ]
 
-        let encoded = AnyEncodable(dictionary as [String: Any])
+        let encoded = AnyCodable(dictionary as [String: Any])
         let decoded = try encoded.encodeAndDecode()
         let decodedValue = try XCTUnwrap(decoded.value as? [String: String])
 
