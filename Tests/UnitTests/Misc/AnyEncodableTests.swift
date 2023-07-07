@@ -79,4 +79,18 @@ class AnyEncodableTests: TestCase {
             .to(throwError())
     }
 
+    func testDecodingEncodable() throws {
+        let dictionary: [String: String] = [
+            "a": "1",
+            "b": "2",
+            "c": "3"
+        ]
+
+        let encoded = AnyEncodable(dictionary as [String: Any])
+        let decoded = try encoded.encodeAndDecode()
+        let decodedValue = try XCTUnwrap(decoded.value as? [String: String])
+
+        expect(decodedValue) == dictionary
+    }
+
 }
