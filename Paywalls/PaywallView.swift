@@ -15,13 +15,36 @@ public struct PaywallView: View {
     public var body: some View {
         VStack {
             Text(verbatim: "Offering: \(self.offering.identifier)")
+                .font(.title)
 
             List {
                 ForEach(self.offering.availablePackages, id: \.identifier) { package in
-                    Text(package.packageType.debugDescription)
+                    self.label(for: package)
+                        .listRowBackground(
+                            Rectangle()
+                                .foregroundStyle(.thinMaterial)
+                        )
                 }
             }
             .scrollContentBackground(.hidden)
+        }
+        .background(.blue.gradient)
+    }
+
+    private func label(for package: Package) -> some View {
+        HStack {
+            Button {
+
+            } label: {
+                Text(package.storeProduct.localizedTitle)
+                    .padding(.vertical)
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.body)
         }
     }
 

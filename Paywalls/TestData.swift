@@ -18,7 +18,7 @@ internal enum TestData {
         localizedPriceString: "$3.99",
         productIdentifier: "com.revenuecat.product",
         productType: .autoRenewableSubscription,
-        localizedDescription: "Description",
+        localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .month),
         introductoryDiscount: .init(
@@ -38,7 +38,7 @@ internal enum TestData {
         localizedPriceString: "$34.99",
         productIdentifier: "com.revenuecat.product",
         productType: .autoRenewableSubscription,
-        localizedDescription: "Description",
+        localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
         introductoryDiscount: nil,
