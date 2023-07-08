@@ -1,3 +1,29 @@
+## 4.24.1
+### Bugfixes
+* `PurchasesDiagnostics`: don't test signature verification if it's disabled (#2757) via NachoSoto (@NachoSoto)
+### Other Changes
+* `AnyEncodable`: also implement `Decodable` (#2769) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: log signature errors on requests with `.informational` mode (#2751) via NachoSoto (@NachoSoto)
+* `Tests`: optimized several tests (#2754) via NachoSoto (@NachoSoto)
+* `SimpleApp`: allow HTTP traffic (#2763) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: added support for unauthenticated endpoints (#2761) via NachoSoto (@NachoSoto)
+* `Integration Tests`: `TestLogHandler` no longer crashes tests (#2760) via NachoSoto (@NachoSoto)
+* `SimpleApp`: changed bundle identifier (#2759) via NachoSoto (@NachoSoto)
+* `Testing`: add new `SimpleApp` (#2756) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: update handling of escaped URLs (#2758) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: produce verification failures for static endpoints with no signature (#2752) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: added tests to verify offerings and product entitlement mapping (#2667) via NachoSoto (@NachoSoto)
+* `Integration Tests`: refactored expiration detection (#2700) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: add API key and `HTTPRequest.Path` to signature (#2746) via NachoSoto (@NachoSoto)
+* `HTTPRequest.Path`: escape `appUserID` (#2747) via NachoSoto (@NachoSoto)
+* `Documentation`: add reference to `TestStoreProduct` (#2743) via NachoSoto (@NachoSoto)
+* `PostReceiptDataOperation`: add new `testReceiptIdentifier` parameter (#2749) via NachoSoto (@NachoSoto)
+* `Integration Tests`: updated load-shedder offerings snapshot (#2748) via NachoSoto (@NachoSoto)
+* `Signing`: extract and verify intermediate key (#2715) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: update handling of 304 responses (#2698) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: new Signature format (#2679) via NachoSoto (@NachoSoto)
+* `Integration Tests`: avoid crashes when stopping tests early (#2741) via NachoSoto (@NachoSoto)
+
 ## 4.24.0
 ### New Features
 * New `TestStoreProduct` for creating mock `StoreProduct`s and `Offering`s (#2711) via NachoSoto (@NachoSoto)
