@@ -77,6 +77,7 @@ final class ReceiptParserLogger: LoggerType {
 
     func error(
         _ message: @autoclosure () -> LogMessage,
+        error: NSError?,
         fileName: String,
         functionName: String,
         line: UInt

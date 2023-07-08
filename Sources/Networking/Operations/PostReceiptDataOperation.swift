@@ -166,15 +166,21 @@ private extension PostReceiptDataOperation {
             self.log(Strings.receipt.posting_receipt(receipt))
 
             for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
-                Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(
-                    productIdentifier: purchase.productId,
-                    purchase: purchase.purchaseDate,
-                    expiration: purchase.expiresDate
-                ))
+                Logger.appleError(
+                    Strings.receipt.receipt_subscription_purchase_equals_expiration(
+                        productIdentifier: purchase.productId,
+                        purchase: purchase.purchaseDate,
+                        expiration: purchase.expiresDate
+                    ),
+                    error: nil
+                )
             }
 
         } catch {
-            Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+            Logger.appleError(
+                Strings.receipt.parse_receipt_locally_error(error: error),
+                error: nil
+            )
         }
     }
 

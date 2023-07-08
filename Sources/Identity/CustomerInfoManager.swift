@@ -191,7 +191,8 @@ class CustomerInfoManager {
                 return nil
             }
         } catch {
-            Logger.error("Error loading customer info from cache:\n \(error.localizedDescription)")
+            Logger.error("Error loading customer info from cache:\n \(error.localizedDescription)",
+                         error: error as NSError)
             return nil
         }
     }
@@ -202,7 +203,8 @@ class CustomerInfoManager {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.withData { $0.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID) }
             } catch {
-                Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
+                Logger.error(Strings.customerInfo.error_encoding_customerinfo(error),
+                             error: error as NSError)
             }
         } else {
             Logger.debug(Strings.customerInfo.not_caching_offline_customer_info)

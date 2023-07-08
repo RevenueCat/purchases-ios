@@ -51,8 +51,8 @@ class StoreKit2TransactionListener {
 
                 do {
                     _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
-                } catch {
-                    Logger.error(error.localizedDescription)
+                } catch let error as NSError {
+                    Logger.error(error.localizedDescription, error: error)
                 }
             }
         }

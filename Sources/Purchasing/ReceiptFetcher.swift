@@ -203,7 +203,8 @@ private extension ReceiptFetcher {
                         ))
                     }
                 } catch {
-                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+                    Logger.error(Strings.receipt.parse_receipt_locally_error(error: error),
+                                 error: error as NSError)
                 }
             }
 

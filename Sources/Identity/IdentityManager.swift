@@ -118,7 +118,7 @@ private extension IdentityManager {
         let oldAppUserID = self.currentAppUserID
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
-            Logger.error(Strings.identity.logging_in_with_empty_appuserid)
+            Logger.error(Strings.identity.logging_in_with_empty_appuserid, error: nil)
             completion(.failure(.missingAppUserID()))
             return
         }

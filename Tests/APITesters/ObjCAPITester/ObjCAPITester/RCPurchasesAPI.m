@@ -67,6 +67,9 @@ BOOL isAnonymous;
                                                                 customEntitlementComputation:NO]];
 
     [RCPurchases setLogHandler:^(RCLogLevel l, NSString *i) {}];
+    [RCPurchases setVerboseLogHandler:^(RCLogLevel l, NSString * _Nonnull m, NSString * _Nullable f1, NSString * _Nullable f2, NSUInteger li) {}];
+    [RCPurchases setErrorHandler:^(NSError * _Nonnull e) {}];
+
     canI = [RCPurchases canMakePayments];
     version = [RCPurchases frameworkVersion];
 

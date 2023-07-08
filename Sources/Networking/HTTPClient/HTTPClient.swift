@@ -390,7 +390,7 @@ private extension HTTPClient {
         guard let urlRequest = urlRequest else {
             let error: NetworkError = .unableToCreateRequest(request.httpRequest.path)
 
-            Logger.error(error.description)
+            Logger.error(error.description, error: error as NSError)
             request.completionHandler?(.failure(error))
             return
         }
@@ -418,8 +418,9 @@ private extension HTTPClient {
 
         do {
             urlRequest.httpBody = try request.httpRequest.requestBody?.jsonEncodedData
-        } catch {
-            Logger.error(Strings.network.creating_json_error(error: error.localizedDescription))
+        } catch let error as NSError {
+            Logger.error(Strings.network.creating_json_error(error: error.localizedDescription),
+                         error: error)
             return nil
         }
 
@@ -506,7 +507,7 @@ private extension NetworkError {
     /// Creates a `NetworkError` from any request `Error`.
     init(_ error: Error, dnsChecker: DNSCheckerType.Type) {
         if let blockedError = dnsChecker.errorWithBlockedHostFromError(error) {
-            Logger.error(blockedError.description)
+            Logger.error(blockedError.description, error: blockedError as NSError)
             self = blockedError
         } else {
             let nsError = error as NSError

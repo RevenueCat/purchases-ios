@@ -37,10 +37,10 @@ extension NetworkError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         // Explicitly logging errors since it might help debugging issues.
-        Logger.error(Strings.network.parsing_json_error(error: error))
+        Logger.error(Strings.network.parsing_json_error(error: error), error: error as NSError)
         Logger.error(Strings.network.json_data_received(
             dataString: String(data: data, encoding: .utf8) ?? ""
-        ))
+        ), error: nil)
 
         return .decoding(error as NSError, .init(file: file, function: function, line: line))
     }

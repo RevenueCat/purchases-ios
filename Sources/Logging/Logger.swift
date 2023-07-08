@@ -25,6 +25,9 @@ public typealias VerboseLogHandler = (_ level: LogLevel,
 public typealias LogHandler = (_ level: LogLevel,
                                _ message: String) -> Void
 
+/// A function that can handle a `RevenueCat` error.
+public typealias ErrorHandler = (_ error: PublicError) -> Void
+
 internal typealias InternalLogHandler = (_ level: LogLevel,
                                          _ message: String,
                                          _ category: String,
@@ -41,6 +44,7 @@ struct Logger {
 
     static var logLevel: LogLevel = Self.defaultLogLevel
     static var internalLogHandler: InternalLogHandler = Self.defaultLogHandler
+    static var errorHandler: ErrorHandler = Self.defaultErrorHandler
 
     static let defaultLogHandler: InternalLogHandler = { level, message, category, file, functionName, line in
         RCDefaultLogHandler(
@@ -54,6 +58,7 @@ struct Logger {
             line
         )
     }
+    static let defaultErrorHandler: ErrorHandler = { _ in }
 
     static var verbose: Bool = false
 
@@ -108,10 +113,11 @@ extension Logger: LoggerType {
     }
 
     func error(_ message: @autoclosure () -> LogMessage,
+               error: PublicError?,
                fileName: String = #fileID,
                functionName: String = #function,
                line: UInt = #line) {
-        Self.error(message(), fileName: fileName, functionName: functionName, line: line)
+        Self.error(message(), error: error, fileName: fileName, functionName: functionName, line: line)
     }
 
 }
@@ -153,11 +159,13 @@ extension Logger {
     }
 
     static func error(_ message: @autoclosure () -> String,
+                      error: PublicError?,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
         Self.error(
             ErrorMessage(description: message()),
+            error: error,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -165,10 +173,11 @@ extension Logger {
     }
 
     static func error(_ message: @autoclosure () -> LogMessage,
+                      error: PublicError?,
                       fileName: String = #fileID,
                       functionName: String = #function,
                       line: UInt = #line) {
-        Self.log(level: .error, intent: .rcError, message: message(),
+        Self.log(level: .error, intent: .rcError, message: message(), error: error,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -177,11 +186,13 @@ extension Logger {
 extension Logger {
 
     static func appleError(_ message: @autoclosure () -> String,
+                           error: PublicError?,
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
         Self.appleError(
             ErrorMessage(description: message()),
+            error: error,
             fileName: fileName,
             functionName: functionName,
             line: line
@@ -189,10 +200,11 @@ extension Logger {
     }
 
     static func appleError(_ message: @autoclosure () -> LogMessage,
+                           error: PublicError?,
                            fileName: String = #fileID,
                            functionName: String = #function,
                            line: UInt = #line) {
-        Self.log(level: .error, intent: .appleError, message: message(),
+        Self.log(level: .error, intent: .appleError, message: message(), error: error,
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -221,10 +233,11 @@ extension Logger {
     }
 
     static func rcPurchaseError(_ message: @autoclosure () -> LogMessage,
+                                error: @autoclosure () -> PublicError,
                                 fileName: String = #fileID,
                                 functionName: String = #function,
                                 line: UInt = #line) {
-        Self.log(level: .error, intent: .purchase, message: message(),
+        Self.log(level: .error, intent: .purchase, message: message(), error: error(),
                  fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -247,6 +260,7 @@ extension Logger {
     static func log(level: LogLevel,
                     intent: LogIntent,
                     message: @autoclosure () -> LogMessage,
+                    error: PublicError? = nil,
                     fileName: String? = #fileID,
                     functionName: String? = #function,
                     line: UInt = #line) {
@@ -265,6 +279,10 @@ extension Logger {
             functionName,
             line
         )
+
+        if let error = error {
+            Self.errorHandler(error)
+        }
     }
 
 }

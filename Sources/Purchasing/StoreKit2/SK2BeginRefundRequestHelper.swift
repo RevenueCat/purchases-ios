@@ -36,8 +36,9 @@ class SK2BeginRefundRequestHelper {
         let result = await StoreKit.Transaction.latest(for: productID)
         guard let nonNilResult = result else {
             let errorMessage = Strings.purchase.product_unpurchased_or_missing.description
-            Logger.error(errorMessage)
-            throw ErrorUtils.beginRefundRequestError(withMessage: errorMessage)
+            let error = ErrorUtils.beginRefundRequestError(withMessage: errorMessage)
+            Logger.error(errorMessage, error: error.asPublicError)
+            throw error
         }
 
         switch nonNilResult {
@@ -45,7 +46,7 @@ class SK2BeginRefundRequestHelper {
             let message = Strings.purchase.transaction_unverified(
                 productID: productID,
                 errorMessage: verificationError.localizedDescription).description
-            Logger.error(message)
+            Logger.error(message, error: verificationError as NSError)
             throw ErrorUtils.beginRefundRequestError(withMessage: message)
         case .verified(let transaction): return transaction.id
         }
@@ -66,7 +67,7 @@ class SK2BeginRefundRequestHelper {
             return .success(sk2Status)
         } catch {
             let message = getErrorMessage(from: error)
-            Logger.error(message)
+            Logger.error(message, error: error as NSError)
             return .failure(ErrorUtils.beginRefundRequestError(withMessage: message, error: error))
         }
     }
@@ -105,13 +106,12 @@ private extension SK2BeginRefundRequestHelper {
         case .success(let sk2Status):
             guard let rcStatus = RefundRequestStatus.from(sk2RefundRequestStatus: sk2Status) else {
                 let message = Strings.purchase.unknown_refund_request_status.description
-                Logger.error(message)
-                throw ErrorUtils.beginRefundRequestError(
-                    withMessage: message)
+                Logger.error(message, error: nil)
+                throw ErrorUtils.beginRefundRequestError(withMessage: message)
             }
             return rcStatus
         case .failure(let error):
-            Logger.error(error.localizedDescription)
+            Logger.error(error.localizedDescription, error: error as NSError)
             throw error
         }
     }

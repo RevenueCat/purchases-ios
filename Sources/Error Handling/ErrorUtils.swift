@@ -608,13 +608,16 @@ private extension ErrorUtils {
         userInfo[.file] = "\(fileName):\(line)"
         userInfo[.function] = functionName
 
+        let purchasesError = PurchasesError(error: code, userInfo: userInfo)
+
         Self.logErrorIfNeeded(
             code,
+            purchasesError.asPublicError,
             localizedDescription: localizedDescription,
             fileName: fileName, functionName: functionName, line: line
         )
 
-        return .init(error: code, userInfo: userInfo)
+        return purchasesError
     }
 
     static func backendResponseError(
@@ -644,8 +647,12 @@ private extension ErrorUtils {
         ])
     }
 
+    // Used for logging errors when they're _created_.
+    // These are sent to the console through `Logger.internalLogHandler`
+    // and to `Logger.errorHandler`.
     // swiftlint:disable:next function_body_length
     private static func logErrorIfNeeded(_ code: ErrorCode,
+                                         _ error: NSError,
                                          localizedDescription: String,
                                          fileName: String = #fileID,
                                          functionName: String = #function,
@@ -678,6 +685,7 @@ private extension ErrorUtils {
                 .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
+                    error: error,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -697,6 +705,7 @@ private extension ErrorUtils {
                 .productRequestTimedOut:
                 Logger.appleError(
                     localizedDescription,
+                    error: error,
                     fileName: fileName,
                     functionName: functionName,
                     line: line
@@ -705,6 +714,7 @@ private extension ErrorUtils {
         @unknown default:
             Logger.error(
                 localizedDescription,
+                error: error,
                 fileName: fileName,
                 functionName: functionName,
                 line: line

@@ -296,7 +296,7 @@ extension BaseStoreKitIntegrationTests {
     @MainActor
     func printReceiptContent() async {
         guard Purchases.isConfigured else {
-            Logger.error(TestMessage.unable_parse_receipt_without_sdk)
+            Logger.error(TestMessage.unable_parse_receipt_without_sdk, error: nil)
             return
         }
 
@@ -313,8 +313,8 @@ extension BaseStoreKitIntegrationTests {
 
                 self.add(attachment)
             }
-        } catch {
-            Logger.error(TestMessage.error_parsing_receipt(error))
+        } catch let error as NSError {
+            Logger.error(TestMessage.error_parsing_receipt(error), error: error)
         }
     }
 

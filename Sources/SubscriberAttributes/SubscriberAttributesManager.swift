@@ -177,14 +177,14 @@ class SubscriberAttributesManager {
     }
 
     func handleAttributesSynced(syncingAppUserId: String, currentAppUserId: String, error: BackendError?) {
-        if error == nil {
+        if let error = error as NSError? {
+            Logger.error(Strings.attribution.attributes_sync_error(error: error),
+                         error: error)
+        } else {
             Logger.rcSuccess(Strings.attribution.attributes_sync_success(appUserID: syncingAppUserId))
             if syncingAppUserId != currentAppUserId {
                 deviceCache.deleteAttributesIfSynced(appUserID: syncingAppUserId)
             }
-        } else {
-            let receivedNSError = error as NSError?
-            Logger.error(Strings.attribution.attributes_sync_error(error: receivedNSError))
         }
     }
 

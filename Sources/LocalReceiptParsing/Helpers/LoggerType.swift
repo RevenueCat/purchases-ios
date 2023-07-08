@@ -34,6 +34,7 @@ protocol LoggerType {
               functionName: String?,
               line: UInt)
     func error(_ message: @autoclosure () -> LogMessage,
+               error: NSError?,
                fileName: String,
                functionName: String,
                line: UInt)
@@ -165,10 +166,11 @@ extension LoggerType {
     }
 
     func error(_ message: @autoclosure () -> LogMessage,
+               error: NSError?,
                _ fileName: String = #fileID,
                _ functionName: String = #function,
                _ line: UInt = #line) {
-        self.error(message(), fileName: fileName, functionName: functionName, line: line)
+        self.error(message(), error: error, fileName: fileName, functionName: functionName, line: line)
     }
 
 }

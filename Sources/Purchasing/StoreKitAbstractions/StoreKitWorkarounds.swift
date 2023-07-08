@@ -136,7 +136,7 @@ extension SKPaymentQueue {
             Logger.debug(Strings.purchase.presenting_code_redemption_sheet)
             self.presentCodeRedemptionSheet()
         } else {
-            Logger.appleError(Strings.purchase.unable_to_present_redemption_sheet)
+            Logger.appleError(Strings.purchase.unable_to_present_redemption_sheet, error: nil)
         }
     }
 

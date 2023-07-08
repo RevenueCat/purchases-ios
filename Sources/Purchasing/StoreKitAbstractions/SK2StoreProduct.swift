@@ -53,7 +53,8 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var priceFormatter: NumberFormatter? {
         guard let currencyCode = self.currencyCode else {
-            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
+            Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code",
+                              error: nil)
             return nil
         }
 

@@ -306,7 +306,8 @@ private extension Signing {
         do {
             return try Self.createPublicKey(with: intermediatePublicKey)
         } catch {
-            Logger.error(Strings.signing.intermediate_key_failed_creation(error))
+            Logger.error(Strings.signing.intermediate_key_failed_creation(error),
+                         error: error as NSError)
             return nil
         }
     }

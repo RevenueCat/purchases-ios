@@ -224,6 +224,8 @@ internal extension Configuration {
 
     /// Defines how strict ``EntitlementInfo`` verification ought to be.
     ///
+    /// Verification failures will be forwarded to ``Purchases/errorHandler``.
+    ///
     /// ### Related Symbols
     /// - ``VerificationResult``
     /// - ``Configuration/Builder/with(entitlementVerificationMode:)``
@@ -281,7 +283,7 @@ extension Configuration {
         switch self.validate(apiKey: apiKey) {
         case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
-        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
+        case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey, error: nil)
         }
     }
 

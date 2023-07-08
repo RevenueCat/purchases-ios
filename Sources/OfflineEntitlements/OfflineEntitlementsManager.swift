@@ -96,7 +96,8 @@ private extension OfflineEntitlementsManager {
     }
 
     func handleProductsEntitlementsUpdateError(_ error: BackendError) {
-        Logger.error(Strings.offlineEntitlements.product_entitlement_mapping_fetching_error(error))
+        Logger.error(Strings.offlineEntitlements.product_entitlement_mapping_fetching_error(error),
+                     error: error as NSError)
     }
 
 }
