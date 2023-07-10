@@ -27,7 +27,6 @@ func checkConfigurationAPI() {
     if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
         let _: Configuration = builder
             .with(entitlementVerificationMode: .informational)
-            .with(entitlementVerificationMode: .enforced)
             .build()
     }
 }

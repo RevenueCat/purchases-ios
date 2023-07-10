@@ -244,6 +244,7 @@ extension Configuration {
         ///
         /// If verification fails when fetching ``CustomerInfo`` and/or ``EntitlementInfos``
         /// ``ErrorCode/signatureVerificationFailed`` will be thrown.
+        @available(*, unavailable, message: "This will be supported in a future release")
         case enforced = 2
 
     }

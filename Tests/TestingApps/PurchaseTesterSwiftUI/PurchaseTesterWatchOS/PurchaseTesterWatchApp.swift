@@ -18,7 +18,7 @@ struct PurchaseTesterWatchApp: App {
                                      proxyURL: nil,
                                      useStoreKit2: true,
                                      observerMode: false,
-                                     entitlementVerificationMode: .enforced)
+                                     entitlementVerificationMode: .informational)
             )
         }
     }
