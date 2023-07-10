@@ -57,6 +57,24 @@ class ArrayExtensionsTests: TestCase {
         expect([1].onlyElement) == 1
     }
 
+    // MARK: - safeIndex
+
+    func testSafeIndexWithEmptyArray() {
+        expect([Any]()[safe: 0]).to(beNil())
+        expect([Any]()[safe: 1]).to(beNil())
+    }
+
+    func testSafeIndexWithMultipleElements() {
+        expect([1, 2][safe: 0]) == 1
+        expect([1, 2][safe: 1]) == 2
+        expect([1, 2][safe: 3]).to(beNil())
+    }
+
+    func testSafeIndexWithSingleElement() {
+        expect([1][safe: 0]) == 1
+        expect([1][safe: 0]).to(beNil())
+    }
+
     // MARK: - sum
 
     func testSumEmptyArray() {
