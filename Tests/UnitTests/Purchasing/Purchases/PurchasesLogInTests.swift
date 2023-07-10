@@ -65,7 +65,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         self.identityManager.mockLogOutError = nil
         self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
 
-        expect(self.backend.getSubscriberCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
 
         let result = waitUntilValue { completed in
             self.purchases.logOut { customerInfo, error in
@@ -76,7 +76,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(result).to(beSuccess())
         expect(result?.value) == Self.mockLoggedOutInfo
 
-        expect(self.backend.getSubscriberCallCount) == 2
+        expect(self.backend.getCustomerInfoCallCount) == 2
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 
@@ -94,7 +94,7 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(result).to(beFailure())
         expect(result?.error).to(matchError(error))
 
-        expect(self.backend.getSubscriberCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount) == 1
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 

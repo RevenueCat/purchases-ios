@@ -1032,7 +1032,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(underlyingError.domain) == SKErrorDomain
         expect(underlyingError.code) == SKError.Code.paymentCancelled.rawValue
 
-        expect(self.backend.getSubscriberCallCount) == 0
+        expect(self.backend.getCustomerInfoCallCount) == 0
     }
 
     @MainActor
@@ -1066,7 +1066,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(receivedError).to(matchError(ErrorCode.purchaseCancelledError))
         expect(result).to(beNil())
 
-        expect(self.backend.getSubscriberCallCount) == 0
+        expect(self.backend.getCustomerInfoCallCount) == 0
     }
 
     // MARK: -
