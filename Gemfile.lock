@@ -234,16 +234,6 @@ GEM
     httpclient (2.8.3)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
-    jazzy (0.14.3)
-      cocoapods (~> 1.5)
-      mustache (~> 1.1)
-      open4 (~> 1.3)
-      redcarpet (~> 3.4)
-      rexml (~> 3.2)
-      rouge (>= 2.0.6, < 4.0)
-      sassc (~> 2.1)
-      sqlite3 (~> 1.3)
-      xcinvoke (~> 0.3.0)
     jmespath (1.6.2)
     json (2.6.3)
     jwt (2.7.0)
@@ -356,7 +346,6 @@ DEPENDENCIES
   fastlane
   fastlane-plugin-create_xcframework
   fastlane-plugin-revenuecat_internal!
-  jazzy
   rest-client
 
 BUNDLED WITH

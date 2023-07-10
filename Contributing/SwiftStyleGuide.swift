@@ -37,7 +37,7 @@ extension ValuePrintable where Self: NSNumber {
 // More info here: https://developer.apple.com/documentation/swift/choosing_between_structures_and_classes
 
 // documentation is required for each public entity.
-// Use jazzy-compatible syntax for documentation: https://github.com/realm/jazzy#supported-documentation-keywords
+// Use DocC syntax for documentation: https://www.swift.org/documentation/docc/
 /// The MyStruct struct is responsible for ...
 struct MyStruct {
 
