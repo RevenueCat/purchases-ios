@@ -21,7 +21,7 @@ class AnyCodableDecodableTests: TestCase {
 
     func testNull() throws {
         let value = try XCTUnwrap(AnyCodable.decode("{\"key\": null}").value as? [String: Any])
-        expect(value["key"] as? Void) == ()
+        expect(value["key"] as? NSNull) === NSNull()
     }
 
     func testEmptyDictionary() throws {
@@ -86,6 +86,30 @@ class AnyCodableDecodableTests: TestCase {
         expect(try AnyCodable.decode(json)) == expected
     }
 
+    func testIsValidDictionary() throws {
+        let dictionary = [
+            "request_date": "2018-10-19T02:40:36Z",
+            "request_date_ms": Int64(1563379533946),
+            "another_key": [
+                "original_app_user_id": "app_user_id",
+                "entitlement": [
+                    "expires_date": nil,
+                    "product_identifier": "onetime_purchase",
+                    "purchase_date": "1990-08-30T02:40:36Z"
+                ]
+            ] as [String: Any]
+        ] as [String: Any]
+
+        let codable: AnyCodable = try JSONDecoder.default.decode(dictionary: dictionary)
+        let decoded = try XCTUnwrap(codable.value as? [String: Any])
+
+        expect(JSONSerialization.isValidJSONObject(decoded))
+            .to(
+                beTrue(),
+                description: "Not valid JSON: \(decoded)"
+            )
+    }
+
     func testEmptyArray() throws {
         expect(try AnyCodable.decode("[]")) == []
     }
@@ -132,7 +156,7 @@ class AnyCodableDecodableTests: TestCase {
     }
 
     func testNilValue() {
-        expect(AnyCodable(nil).value as? Void) == ()
+        expect(AnyCodable(nil).value as? NSNull) === NSNull()
     }
 
     func testObjectValue() {

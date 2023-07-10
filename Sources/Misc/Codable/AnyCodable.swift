@@ -24,7 +24,11 @@ struct AnyCodable {
         if let codable = value as? AnyCodable {
             self.value = codable.value
         } else {
-            self.value = value ?? NSNull()
+            if let value = value, !(value is Void) {
+                self.value = value
+            } else {
+                self.value = NSNull()
+            }
         }
     }
 
@@ -40,9 +44,7 @@ extension AnyCodable: Encodable {
         var container = encoder.singleValueContainer()
 
         switch self.value {
-        case is NSNull:
-            try container.encodeNil()
-        case is Void:
+        case is NSNull, is Void:
             try container.encodeNil()
         case let bool as Bool:
             try container.encode(bool)
@@ -88,7 +90,7 @@ extension AnyCodable: Decodable {
         let container = try decoder.singleValueContainer()
 
         if container.decodeNil() {
-            self.value = ()
+            self.value = NSNull()
         } else if let bool = try? container.decode(Bool.self) {
             self.value = bool
         } else if let int = try? container.decode(Int.self) {
@@ -128,7 +130,7 @@ extension AnyCodable: Equatable {
     // swiftlint:disable:next cyclomatic_complexity
     static func == (lhs: AnyCodable, rhs: AnyCodable) -> Bool {
         switch (lhs.value as Any?, rhs.value as Any?) {
-        case is (Void, Void), is (NSNull, NSNull):
+        case is (Void, Void), is (NSNull, NSNull), is (Void, NSNull), is (NSNull, Void):
             return true
         case let (lhs as Bool, rhs as Bool):
             return lhs == rhs
@@ -155,8 +157,6 @@ extension AnyCodable: Equatable {
         case let (lhs as [Any], rhs as [AnyCodable]):
             return lhs.map(AnyCodable.init) == rhs
         default:
-            print(lhs.value)
-            print(rhs.value)
             return false
         }
     }
@@ -167,7 +167,7 @@ extension AnyCodable: Equatable {
 extension AnyCodable: ExpressibleByNilLiteral {
 
     init(nilLiteral: ()) {
-        self.init(nil as Any?)
+        self.init(nilLiteral)
     }
 
 }
