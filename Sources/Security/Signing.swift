@@ -43,9 +43,11 @@ final class Signing: SigningType {
     }
 
     private let apiKey: String
+    private let clock: ClockType
 
-    init(apiKey: String) {
+    init(apiKey: String, clock: ClockType = Clock.default) {
         self.apiKey = apiKey
+        self.clock = clock
     }
 
     /// Parses the binary `key` and returns a `PublicKey`
@@ -85,7 +87,8 @@ final class Signing: SigningType {
 
         guard let intermediatePublicKey = Self.extractAndVerifyIntermediateKey(
             from: signature,
-            publicKey: publicKey
+            publicKey: publicKey,
+            clock: self.clock
         ) else {
             return false
         }
@@ -282,7 +285,8 @@ private extension Signing {
 
     static func extractAndVerifyIntermediateKey(
         from signature: Data,
-        publicKey: Signing.PublicKey
+        publicKey: Signing.PublicKey,
+        clock: ClockType
     ) -> Signing.PublicKey? {
         guard #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) else { return nil }
 
@@ -296,7 +300,8 @@ private extension Signing {
             return nil
         }
 
-        guard let expirationDate = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration) else {
+        guard let expirationDate = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration,
+                                                                                  clock) else {
             return nil
         }
 
@@ -312,7 +317,10 @@ private extension Signing {
     }
 
     /// - Returns: `nil` if the key is expired or has an invalid expiration date.
-    private static func extractAndVerifyIntermediateKeyExpiration(_ expirationData: Data) -> Date? {
+    private static func extractAndVerifyIntermediateKeyExpiration(
+        _ expirationData: Data,
+        _ clock: ClockType
+    ) -> Date? {
         let daysSince1970 = UInt32(littleEndian32Bits: expirationData)
 
         guard daysSince1970 > 0 else {
@@ -321,7 +329,7 @@ private extension Signing {
         }
 
         let expirationDate = Date(daysSince1970: daysSince1970)
-        guard expirationDate.timeIntervalSince(Date()) >= 0 else {
+        guard expirationDate.timeIntervalSince(clock.now) >= 0 else {
             Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, expirationData))
             return nil
         }
