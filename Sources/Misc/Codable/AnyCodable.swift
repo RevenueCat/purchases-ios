@@ -121,13 +121,10 @@ extension AnyCodable: Decodable {
 
 }
 
-// swiftlint:enable cyclomatic_complexity
-
-// MARK: -
+// MARK: - Equatable
 
 extension AnyCodable: Equatable {
 
-    // swiftlint:disable:next cyclomatic_complexity
     static func == (lhs: AnyCodable, rhs: AnyCodable) -> Bool {
         switch (lhs.value as Any?, rhs.value as Any?) {
         case is (Void, Void), is (NSNull, NSNull), is (Void, NSNull), is (NSNull, Void):
@@ -165,6 +162,8 @@ extension AnyCodable: Equatable {
         }
     }
 }
+
+// swiftlint:enable cyclomatic_complexity
 
 // MARK: - Expressible by Literal
 
