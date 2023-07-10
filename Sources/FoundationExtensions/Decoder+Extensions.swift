@@ -125,7 +125,7 @@ extension ErrorUtils {
 
     static func logDecodingError(_ error: Error, type: Any.Type) {
         guard let decodingError = error as? DecodingError else {
-            Logger.error(Strings.codable.decoding_error(error))
+            Logger.error(Strings.codable.decoding_error(error, type))
             return
         }
 
@@ -140,7 +140,10 @@ extension ErrorUtils {
         case let .typeMismatch(type, context):
             Logger.error(Strings.codable.typeMismatch(type: type, context: context))
         @unknown default:
-            Logger.error("Unhandled DecodingError: \(decodingError)\n\(Strings.codable.decoding_error(decodingError))")
+            Logger.error(
+                "Unhandled DecodingError: \(decodingError)\n" +
+                "\(Strings.codable.decoding_error(decodingError, type))"
+            )
         }
     }
 

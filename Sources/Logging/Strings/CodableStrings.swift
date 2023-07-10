@@ -21,7 +21,7 @@ enum CodableStrings {
     case keyNotFoundError(type: Any.Type, key: CodingKey, context: DecodingError.Context)
     case invalid_json_error(jsonData: [String: Any])
     case encoding_error(_ error: Error)
-    case decoding_error(_ error: Error)
+    case decoding_error(_ error: Error, _ type: Any.Type)
     case corrupted_data_error(context: DecodingError.Context)
     case typeMismatch(type: Any, context: DecodingError.Context)
 
@@ -44,7 +44,7 @@ extension CodableStrings: LogMessage {
             return "The given json data was not valid: \n\(jsonData)"
         case let .encoding_error(error):
             return "Couldn't encode data into json. Error:\n\(error.localizedDescription)"
-        case let .decoding_error(error):
+        case let .decoding_error(error, type):
             let underlyingErrorMessage: String
             if let underlyingError = (error as NSError).userInfo[NSUnderlyingErrorKey] as? NSError {
                 underlyingErrorMessage = "\nUnderlying error: \(underlyingError.debugDescription)"
@@ -52,7 +52,8 @@ extension CodableStrings: LogMessage {
                 underlyingErrorMessage = ""
             }
 
-            return "Couldn't decode data from json.\nError: \(error.localizedDescription)." + underlyingErrorMessage
+            return "Couldn't decode '\(type)' from json.\nError: \((error as NSError).description)"
+            + underlyingErrorMessage
         case let .corrupted_data_error(context):
             return "Couldn't decode data from json, it was corrupted: \(context)"
         case let .typeMismatch(type, context):

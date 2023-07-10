@@ -160,6 +160,7 @@ extension KeyedDecodingContainer {
         do {
             return try self.decodeIfPresent(type, forKey: key) ?? .init()
         } catch {
+            Logger.debug(Strings.codable.decoding_error(error, T.self))
             return .init()
         }
     }
