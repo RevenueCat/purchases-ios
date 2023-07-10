@@ -329,7 +329,7 @@ private extension Signing {
         }
 
         let expirationDate = Date(daysSince1970: daysSince1970)
-        guard expirationDate.timeIntervalSince(Date()) >= 0 else {
+        guard expirationDate.timeIntervalSince(clock.now) >= 0 else {
             Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, expirationData))
             return nil
         }
