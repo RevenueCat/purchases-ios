@@ -93,4 +93,24 @@ class AnyCodableEncodableTests: TestCase {
         expect(decodedValue) == dictionary
     }
 
+    func testDecodingNestedDictionary() throws {
+        let dictionary = """
+        {
+            "a": "1",
+            "b": "2",
+            "c": {
+                "a1": null,
+                "b2": "test",
+                "c3": {
+                    "d": false
+                },
+                "d3": [1, 2, 3]
+            }
+        }
+        """
+
+        let value = try JSONDecoder.default.decode(AnyCodable.self, from: dictionary.asData)
+        expect(try value.encodeAndDecode()) == value
+    }
+
 }

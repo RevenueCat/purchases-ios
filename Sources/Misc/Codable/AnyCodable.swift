@@ -144,12 +144,16 @@ extension AnyCodable: Equatable {
             return lhs == rhs
         case let (lhs as String, rhs as String):
             return lhs == rhs
+        case let (lhs as [String: Any], rhs as [String: Any]):
+            return lhs.mapValues(AnyCodable.init) == rhs.mapValues(AnyCodable.init)
         case let (lhs as [String: AnyCodable], rhs as [String: AnyCodable]):
             return lhs == rhs
         case let (lhs as [String: AnyCodable], rhs as [String: Any]):
             return lhs == rhs.mapValues(AnyCodable.init)
         case let (lhs as [String: Any], rhs as [String: AnyCodable]):
             return lhs.mapValues(AnyCodable.init) == rhs
+        case let (lhs as [Any], rhs as [Any]):
+            return lhs.map(AnyCodable.init) == rhs.map(AnyCodable.init)
         case let (lhs as [AnyCodable], rhs as [AnyCodable]):
             return lhs == rhs
         case let (lhs as [AnyCodable], rhs as [Any]):
