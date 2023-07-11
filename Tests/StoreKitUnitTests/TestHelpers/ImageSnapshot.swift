@@ -22,7 +22,7 @@ import SwiftUI
 func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
-    separateOSVersions: Bool = false,
+    separateOSVersions: Bool = true,
     record recording: Bool = false,
     timeout: TimeInterval = 5,
     file: StaticString = #file,
