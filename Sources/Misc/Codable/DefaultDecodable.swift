@@ -47,6 +47,7 @@ struct DefaultValue<Source: DefaultValueProvider> {
 
 extension DefaultValue: Equatable where Value: Equatable {}
 extension DefaultValue: Hashable where Value: Hashable {}
+extension DefaultValue: Sendable where Value: Sendable {}
 
 extension DefaultValue: Decodable where Value: Decodable {
 

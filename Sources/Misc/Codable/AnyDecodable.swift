@@ -58,6 +58,8 @@ extension AnyDecodable: Decodable {
 
 }
 
+extension AnyDecodable: Sendable {}
+
 extension AnyDecodable {
 
     var asAny: Any {

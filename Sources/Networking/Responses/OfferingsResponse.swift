@@ -29,6 +29,8 @@ struct OfferingsResponse {
         let identifier: String
         let description: String
         let packages: [Package]
+        @IgnoreDecodeErrors<PaywallData?>
+        var paywall: PaywallData?
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
 
@@ -52,8 +54,8 @@ extension OfferingsResponse {
 
 }
 
-extension OfferingsResponse.Offering.Package: Codable, Equatable {}
-extension OfferingsResponse.Offering: Codable, Equatable {}
-extension OfferingsResponse: Codable, Equatable {}
+extension OfferingsResponse.Offering.Package: Codable, Equatable, Sendable {}
+extension OfferingsResponse.Offering: Codable, Equatable, Sendable {}
+extension OfferingsResponse: Codable, Equatable, Sendable {}
 
 extension OfferingsResponse: HTTPResponseBody {}
