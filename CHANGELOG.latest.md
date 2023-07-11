@@ -1,24 +1,30 @@
-### Bugfixes
-* `PurchasesDiagnostics`: don't test signature verification if it's disabled (#2757) via NachoSoto (@NachoSoto)
+### New Features
+* `Trusted Entitlements`: (#2621) via NachoSoto (@NachoSoto)
+
+This new feature prevents MitM attacks between the SDK and the RevenueCat server.
+With verification enabled, the SDK ensures that the response created by the server was not modified by a third-party, and the entitlements received are exactly what was sent.
+This is 100% opt-in. `EntitlementInfos` have a new `VerificationResult` property, which will indicate the validity of the responses when this feature is enabled.
+
+```swift
+let purchases = Purchases.configure(
+  with: Configuration
+    .builder(withAPIKey: "")
+    .with(entitlementVerificationMode: .informational)
+)
+let customerInfo = try await purchases.customerInfo()
+if !customerInfo.entitlements.verification.isVerified {
+  print("Entitlements could not be verified")
+}
+```
+
+You can learn more from [the documentation](https://www.revenuecat.com/docs/trusted-entitlements).
+
 ### Other Changes
-* `AnyEncodable`: also implement `Decodable` (#2769) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: log signature errors on requests with `.informational` mode (#2751) via NachoSoto (@NachoSoto)
-* `Tests`: optimized several tests (#2754) via NachoSoto (@NachoSoto)
-* `SimpleApp`: allow HTTP traffic (#2763) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: added support for unauthenticated endpoints (#2761) via NachoSoto (@NachoSoto)
-* `Integration Tests`: `TestLogHandler` no longer crashes tests (#2760) via NachoSoto (@NachoSoto)
-* `SimpleApp`: changed bundle identifier (#2759) via NachoSoto (@NachoSoto)
-* `Testing`: add new `SimpleApp` (#2756) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: update handling of escaped URLs (#2758) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: produce verification failures for static endpoints with no signature (#2752) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: added tests to verify offerings and product entitlement mapping (#2667) via NachoSoto (@NachoSoto)
-* `Integration Tests`: refactored expiration detection (#2700) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: add API key and `HTTPRequest.Path` to signature (#2746) via NachoSoto (@NachoSoto)
-* `HTTPRequest.Path`: escape `appUserID` (#2747) via NachoSoto (@NachoSoto)
-* `Documentation`: add reference to `TestStoreProduct` (#2743) via NachoSoto (@NachoSoto)
-* `PostReceiptDataOperation`: add new `testReceiptIdentifier` parameter (#2749) via NachoSoto (@NachoSoto)
-* `Integration Tests`: updated load-shedder offerings snapshot (#2748) via NachoSoto (@NachoSoto)
-* `Signing`: extract and verify intermediate key (#2715) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: update handling of 304 responses (#2698) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: new Signature format (#2679) via NachoSoto (@NachoSoto)
-* `Integration Tests`: avoid crashes when stopping tests early (#2741) via NachoSoto (@NachoSoto)
+* `TrustedEntitlements`: new `VerificationResult.isVerified` (#2788) via NachoSoto (@NachoSoto)
+* `Refactor`: extracted `Collection.subscript(safe:)` (#2779) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: added link to docs in `ErrorCode.signatureVerificationFailed` (#2783) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: improved documentation (#2782) via NachoSoto (@NachoSoto)
+* `Tests`: fixed flaky failure with asynchronous check (#2777) via NachoSoto (@NachoSoto)
+* `Integration Tests`: re-enable signature verification tests (#2744) via NachoSoto (@NachoSoto)
+* `CI`: remove `Jazzy` (#2775) via NachoSoto (@NachoSoto)
+* `Signing`: inject `ClockType` to ensure hardcoded signatures don't fail when intermediate key expires (#2771) via NachoSoto (@NachoSoto)
