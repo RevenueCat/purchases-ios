@@ -377,7 +377,7 @@ extension BasePurchasesTests {
         var userID: String?
         var originalApplicationVersion: String?
         var originalPurchaseDate: Date?
-        var getSubscriberCallCount = 0
+        var getCustomerInfoCallCount = 0
         var overrideCustomerInfoResult: Result<CustomerInfo, BackendError> = .success(
             // swiftlint:disable:next force_try
             try! CustomerInfo(data: BasePurchasesTests.emptyCustomerInfoData)
@@ -387,7 +387,7 @@ extension BasePurchasesTests {
                                       withRandomDelay randomDelay: Bool,
                                       allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-            self.getSubscriberCallCount += 1
+            self.getCustomerInfoCallCount += 1
             self.userID = appUserID
 
             let result = self.overrideCustomerInfoResult

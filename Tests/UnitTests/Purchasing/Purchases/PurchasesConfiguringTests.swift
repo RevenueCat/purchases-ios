@@ -287,13 +287,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testFirstInitializationFromBackgroundDoesntUpdateCustomerInfoCache() {
         self.systemInfo.stubbedIsApplicationBackgrounded = true
         self.setupPurchases()
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
     }
 
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfNotInUserDefaults() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
     func testFirstInitializationFromForegroundUpdatesCustomerInfoCacheIfUserDefaultsCacheStale() {
@@ -304,7 +304,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
     func testFirstInitializationFromForegroundUpdatesCustomerInfoEvenIfCacheValid() {
@@ -316,7 +316,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
     func testProxyURL() {
@@ -474,7 +474,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(0))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(0))
     }
 
     // MARK: - UserDefaults

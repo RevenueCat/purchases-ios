@@ -137,7 +137,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
     func testDoesntSendCacheIfNoCacheAndCallsBackendAgain() {
         self.setupPurchases()
 
-        expect(self.backend.getSubscriberCallCount).toEventually(equal(1))
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
 
         self.deviceCache.cachedCustomerInfo = [:]
 
@@ -145,7 +145,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
             self.purchases.getCustomerInfo { (_, _) in completion() }
         }
 
-        expect(self.backend.getSubscriberCallCount) == 2
+        expect(self.backend.getCustomerInfoCallCount) == 2
     }
 
     func testFetchCustomerInfoWhenCacheStale() {
@@ -157,7 +157,7 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
             self.purchases.getCustomerInfo { (_, _) in completed() }
         }
 
-        expect(self.backend.getSubscriberCallCount) == 2
+        expect(self.backend.getCustomerInfoCallCount) == 2
     }
 
     func testGetCustomerInfoAfterInvalidatingDoesntReturnCachedVersion() throws {
