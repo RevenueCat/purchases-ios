@@ -72,7 +72,7 @@ class ArrayExtensionsTests: TestCase {
 
     func testSafeIndexWithSingleElement() {
         expect([1][safe: 0]) == 1
-        expect([1][safe: 0]).to(beNil())
+        expect([1][safe: 1]).to(beNil())
     }
 
     // MARK: - sum
