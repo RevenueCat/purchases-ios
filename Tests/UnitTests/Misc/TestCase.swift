@@ -22,6 +22,14 @@ class TestCase: XCTestCase {
 
     private(set) var logger: TestLogHandler!
 
+    /// Called at the beginning of every test, but it can be manually used
+    /// before calling `super.setUp()` in case a test needs to verify logs generated early in the lifetime.
+    final func initializeLogger() {
+        guard self.logger == nil else { return }
+
+        self.logger = TestLogHandler()
+    }
+
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
@@ -38,7 +46,7 @@ class TestCase: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.logger = TestLogHandler()
+        self.initializeLogger()
     }
 
     @MainActor
