@@ -19,23 +19,27 @@ import XCTest
 
 class AnyCodableEncodableTests: TestCase {
 
-    func testEmptyDictionary() {
+    func testEmptyDictionary() throws {
         let empty: [String: Any] = [:]
 
-        assertSnapshot(matching: AnyCodable(empty), as: .json)
+        assertSnapshot(matching: try AnyCodable(empty), as: .json)
     }
 
-    func testHomogenousDictionary() {
+    func testOptional() throws {
+        expect(try AnyCodable((Int?).some(5))) == .int(5)
+    }
+
+    func testHomogenousDictionary() throws {
         let dictionary: [String: Any] = [
             "a": "1",
             "b": "2",
             "c": "3"
         ]
 
-        assertSnapshot(matching: AnyCodable(dictionary), as: .json)
+        assertSnapshot(matching: try AnyCodable(dictionary), as: .json)
     }
 
-    func testDictionaryWithDifferentValues() {
+    func testDictionaryWithDifferentValues() throws {
         let dictionary: [String: Any?] = [
             "a": 1,
             "b": true,
@@ -43,10 +47,10 @@ class AnyCodableEncodableTests: TestCase {
             "d": nil
         ]
 
-        assertSnapshot(matching: AnyCodable(dictionary), as: .json)
+        assertSnapshot(matching: try AnyCodable(dictionary), as: .json)
     }
 
-    func testNestedDictionary() {
+    func testNestedDictionary() throws {
         let dictionary: [String: Any?] = [
             "a": 1,
             "b": [
@@ -63,7 +67,7 @@ class AnyCodableEncodableTests: TestCase {
         ]
 
         assertSnapshot(
-            matching: AnyCodable(dictionary),
+            matching: try AnyCodable(dictionary),
             as: .json,
             // Formatting `Double`s changed in iOS 17
             testName: CurrentTestCaseTracker.osVersionAndTestName
@@ -86,9 +90,9 @@ class AnyCodableEncodableTests: TestCase {
             "c": "3"
         ]
 
-        let encoded = AnyCodable(dictionary as [String: Any])
+        let encoded = try AnyCodable(dictionary)
         let decoded = try encoded.encodeAndDecode()
-        let decodedValue = try XCTUnwrap(decoded.value as? [String: String])
+        let decodedValue = try XCTUnwrap(decoded.asAny as? [String: String])
 
         expect(decodedValue) == dictionary
     }

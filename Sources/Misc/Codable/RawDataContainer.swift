@@ -31,7 +31,7 @@ extension Decoder {
         do {
             let value = try self.singleValueContainer()
                 .decode(AnyCodable.self)
-                .value
+                .asAny
 
             guard let dictionary = value as? [String: Any] else {
                 Logger.warn(Strings.codable.unexpectedValueError(type: type(of: value), value: value))

@@ -20,12 +20,14 @@ import XCTest
 class AnyCodableDecodableTests: TestCase {
 
     func testNull() throws {
-        let value = try XCTUnwrap(AnyCodable.decode("{\"key\": null}").value as? [String: Any])
-        expect(value["key"] as? NSNull) === NSNull()
+        let value = try XCTUnwrap(AnyCodable.decode("{\"key\": null}"))
+        expect(value) == [
+            "key": .null
+        ]
     }
 
     func testEmptyDictionary() throws {
-        expect(try AnyCodable.decode("{}").value as? [String: String]) == [:]
+        expect(try AnyCodable.decode("{}").asAny as? [String: String]) == [:]
     }
 
     func testDictionary() throws {
@@ -101,7 +103,7 @@ class AnyCodableDecodableTests: TestCase {
         ] as [String: Any]
 
         let codable: AnyCodable = try JSONDecoder.default.decode(dictionary: dictionary)
-        let decoded = try XCTUnwrap(codable.value as? [String: Any])
+        let decoded = try XCTUnwrap(codable.asAny as? [String: Any])
 
         expect(JSONSerialization.isValidJSONObject(decoded))
             .to(
@@ -140,23 +142,23 @@ class AnyCodableDecodableTests: TestCase {
     }
 
     func testStringValue() {
-        expect(AnyCodable("test").value as? String) == "test"
+        expect(AnyCodable("test")) == .string("test")
     }
 
     func testIntValue() {
-        expect(AnyCodable(5).value as? Int) == 5
+        expect(AnyCodable(5)) == .int(5)
     }
 
     func testDoubleValue() {
-        expect(AnyCodable(3.14).value as? Double) == 3.14
+        expect(AnyCodable(3.14)) == .double(3.14)
     }
 
     func testBoolValue() {
-        expect(AnyCodable(true).value as? Bool) == true
+        expect(AnyCodable(true)) == .bool(true)
     }
 
     func testNilValue() {
-        expect(AnyCodable(nil).value as? NSNull) === NSNull()
+        expect(AnyCodable(nil)) == .null
     }
 
     func testObjectValue() {
@@ -164,16 +166,16 @@ class AnyCodableDecodableTests: TestCase {
             "key_1": "1",
             "key_2": "2"
         ]
-        let decodable: AnyCodable = .init(object)
+        let decodable: AnyCodable = .object(object.mapValues(AnyCodable.string))
 
-        expect(decodable.value as? [String: String]) == object
+        expect(decodable.asAny as? [String: String]) == object
     }
 
     func testArrayValue() {
         let array: [String] = ["1", "2", "3"]
-        let decodable: AnyCodable = .init(array)
+        let decodable: AnyCodable = .array(array.map(AnyCodable.string))
 
-        expect(decodable.value as? [String]) == array
+        expect(decodable.asAny as? [String]) == array
     }
 
 }

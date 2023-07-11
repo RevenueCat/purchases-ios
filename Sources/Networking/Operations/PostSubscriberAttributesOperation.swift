@@ -50,15 +50,23 @@ class PostSubscriberAttributesOperation: NetworkOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(self.subscriberAttributes)),
-                                  path: .postSubscriberAttributes(appUserID: appUserID))
+        do {
+            let request = HTTPRequest(method: .post(try Body(self.subscriberAttributes)),
+                                      path: .postSubscriberAttributes(appUserID: appUserID))
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
-            defer {
-                completion()
+            self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
+                defer {
+                    completion()
+                }
+
+                self.responseHandler?(response.error.map(BackendError.networkError))
             }
+        } catch {
+            // TODO: log error
 
-            self.responseHandler?(response.error.map(BackendError.networkError))
+            self.responseHandler?(.networkError(
+                .unableToCreateRequest(.postSubscriberAttributes(appUserID: appUserID))
+            ))
         }
     }
 
@@ -70,8 +78,8 @@ extension PostSubscriberAttributesOperation {
 
         let attributes: AnyCodable
 
-        init(_ attributes: SubscriberAttribute.Dictionary) {
-            self.attributes = AnyCodable(
+        init(_ attributes: SubscriberAttribute.Dictionary) throws {
+            self.attributes = try AnyCodable(
                 SubscriberAttribute.map(subscriberAttributes: attributes)
             )
         }

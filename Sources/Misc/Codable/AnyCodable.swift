@@ -15,20 +15,77 @@ import Foundation
 
 // Inspired by https://github.com/Flight-School/AnyCodable
 
-/// Type erased `Any` that conforms to `Encodable` and `Decodable`
-struct AnyCodable {
+/// Type-erased `Any` that conforms to `Encodable` and `Decodable`
+enum AnyCodable {
 
-    let value: Any
+    case string(String)
+    case int(Int)
+    case uint64(UInt64)
+    case double(Double)
+    case bool(Bool)
+    case date(Date)
+    case url(URL)
+    case object([String: AnyCodable])
+    case array([AnyCodable])
+    case null
 
-    init<T>(_ value: T?) {
-        if let codable = value as? AnyCodable {
-            self.value = codable.value
-        } else {
-            if let value = value, !(value is Void) {
-                self.value = value
-            } else {
-                self.value = NSNull()
-            }
+    // swiftlint:disable cyclomatic_complexity
+
+    /// Creates an `AnyCodable` from any value
+    /// - Throws: `EncodingError` if the type cannot be encoded.
+    init(_ value: Any?) throws {
+        switch value {
+        case is NSNull, is Void, nil:
+            self = .null
+        case let bool as Bool:
+            self = .bool(bool)
+        case let int as Int:
+            self = .int(int)
+        case let uint as UInt:
+            self = .uint64(UInt64(uint))
+        case let float as Float:
+            self = .double(Double(float))
+        case let double as Double:
+            self = .double(double)
+        case let string as String:
+            self = .string(string)
+        case let date as Date:
+            self = .date(date)
+        case let url as URL:
+            self = .url(url)
+        case let array as [Any]:
+            self = .array(try array.map(AnyCodable.init))
+        case let dictionary as [String: Any?]:
+            self = .object(try dictionary.mapValues(AnyCodable.init))
+        default:
+            throw EncodingError.invalidValue(
+                value as Any,
+                .init(
+                    codingPath: .init(),
+                    debugDescription: "Value cannot be encoded"
+                )
+            )
+        }
+    }
+
+    // swiftlint:enable cyclomatic_complexity
+
+}
+
+extension AnyCodable {
+
+    var asAny: Any {
+        switch self {
+        case let .string(value): return value
+        case let .int(value): return value
+        case let .uint64(value): return value
+        case let .double(value): return value
+        case let .bool(value): return value
+        case let .date(date): return date
+        case let .url(url): return url
+        case let .object(value): return value.mapValues { $0.asAny }
+        case let .array(value): return value.map { $0.asAny }
+        case .null: return NSNull()
         }
     }
 
@@ -43,40 +100,17 @@ extension AnyCodable: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
 
-        switch self.value {
-        case is NSNull, is Void:
-            try container.encodeNil()
-        case let bool as Bool:
-            try container.encode(bool)
-        case let int as Int:
-            try container.encode(int)
-        case let uint as UInt:
-            try container.encode(uint)
-        case let double as Double:
-            try container.encode(double)
-        case let float as Float:
-            try container.encode(float)
-        case let string as String:
-            try container.encode(string)
-        case let date as Date:
-            try container.encode(date)
-        case let url as URL:
-            try container.encode(url)
-        case let array as [Any?]:
-            try container.encode(array.map(AnyCodable.init))
-        case let dictionary as [String: Any?]:
-            try container.encode(dictionary.mapValues(AnyCodable.init))
-        case let encodable as Encodable:
-            try encodable.encode(to: encoder)
-
-        default:
-            throw EncodingError.invalidValue(
-                self.value,
-                .init(
-                    codingPath: container.codingPath,
-                    debugDescription: "AnyCodable value cannot be encoded"
-                )
-            )
+        switch self {
+        case let .string(string): try container.encode(string)
+        case let .int(int): try container.encode(int)
+        case let .uint64(int): try container.encode(int)
+        case let .double(double): try container.encode(double)
+        case let .bool(bool): try container.encode(bool)
+        case let .date(date): try container.encode(date)
+        case let .url(url): try container.encode(url)
+        case let .object(dictionary): try container.encode(dictionary)
+        case let .array(array): try container.encode(array)
+        case .null: try container.encodeNil()
         }
     }
 
@@ -90,27 +124,29 @@ extension AnyCodable: Decodable {
         let container = try decoder.singleValueContainer()
 
         if container.decodeNil() {
-            self.value = NSNull()
+            self = .null
         } else if let bool = try? container.decode(Bool.self) {
-            self.value = bool
+            self = .bool(bool)
         } else if let int = try? container.decode(Int.self) {
-            self.value = int
+            self = .int(int)
+        } else if let int = try? container.decode(UInt64.self) {
+            self = .uint64(int)
         } else if let uint = try? container.decode(UInt.self) {
-            self.value = uint
+            self = .int(Int(uint))
         } else if let double = try? container.decode(Double.self) {
-            self.value = double
+            self = .double(double)
         } else if let float = try? container.decode(Float.self) {
-            self.value = float
+            self = .double(Double(float))
         } else if let string = try? container.decode(String.self) {
-            self.value = string
+            self = .string(string)
         } else if let date = try? container.decode(Date.self) {
-            self.value = date
+            self = .date(date)
         } else if let url = try? container.decode(URL.self) {
-            self.value = url
+            self = .url(url)
         } else if let array = try? container.decode([AnyCodable].self) {
-            self.value = array.map { $0.value }
+            self = .array(array)
         } else if let dictionary = try? container.decode([String: AnyCodable].self) {
-            self.value = dictionary.mapValues { $0.value }
+            self = .object(dictionary)
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
@@ -123,45 +159,11 @@ extension AnyCodable: Decodable {
 
 // MARK: - Equatable
 
-extension AnyCodable: Equatable {
+extension AnyCodable: Equatable {}
 
-    static func == (lhs: AnyCodable, rhs: AnyCodable) -> Bool {
-        switch (lhs.value as Any?, rhs.value as Any?) {
-        case is (Void, Void), is (NSNull, NSNull), is (Void, NSNull), is (NSNull, Void):
-            return true
-        case let (lhs as Bool, rhs as Bool):
-            return lhs == rhs
-        case let (lhs as Int, rhs as Int):
-            return lhs == rhs
-        case let (lhs as UInt, rhs as UInt):
-            return lhs == rhs
-        case let (lhs as Double, rhs as Double):
-            return lhs == rhs
-        case let (lhs as Float, rhs as Float):
-            return lhs == rhs
-        case let (lhs as String, rhs as String):
-            return lhs == rhs
-        case let (lhs as [String: Any], rhs as [String: Any]):
-            return lhs.mapValues(AnyCodable.init) == rhs.mapValues(AnyCodable.init)
-        case let (lhs as [String: AnyCodable], rhs as [String: AnyCodable]):
-            return lhs == rhs
-        case let (lhs as [String: AnyCodable], rhs as [String: Any]):
-            return lhs == rhs.mapValues(AnyCodable.init)
-        case let (lhs as [String: Any], rhs as [String: AnyCodable]):
-            return lhs.mapValues(AnyCodable.init) == rhs
-        case let (lhs as [Any], rhs as [Any]):
-            return lhs.map(AnyCodable.init) == rhs.map(AnyCodable.init)
-        case let (lhs as [AnyCodable], rhs as [AnyCodable]):
-            return lhs == rhs
-        case let (lhs as [AnyCodable], rhs as [Any]):
-            return lhs == rhs.map(AnyCodable.init)
-        case let (lhs as [Any], rhs as [AnyCodable]):
-            return lhs.map(AnyCodable.init) == rhs
-        default:
-            return false
-        }
-    }
-}
+// MARK: - Sendable
+
+extension AnyCodable: Sendable {}
 
 // swiftlint:enable cyclomatic_complexity
 
@@ -170,7 +172,7 @@ extension AnyCodable: Equatable {
 extension AnyCodable: ExpressibleByNilLiteral {
 
     init(nilLiteral: ()) {
-        self.init(nilLiteral)
+        self = .null
     }
 
 }
@@ -178,7 +180,7 @@ extension AnyCodable: ExpressibleByNilLiteral {
 extension AnyCodable: ExpressibleByStringLiteral {
 
     init(stringLiteral value: StringLiteralType) {
-        self.init(value)
+        self = .string(value)
     }
 
 }
@@ -186,7 +188,7 @@ extension AnyCodable: ExpressibleByStringLiteral {
 extension AnyCodable: ExpressibleByIntegerLiteral {
 
     init(integerLiteral value: IntegerLiteralType) {
-        self.init(value)
+        self = .int(value)
     }
 
 }
@@ -194,7 +196,7 @@ extension AnyCodable: ExpressibleByIntegerLiteral {
 extension AnyCodable: ExpressibleByBooleanLiteral {
 
     init(booleanLiteral value: BooleanLiteralType) {
-        self.init(value)
+        self = .bool(value)
     }
 
 }
@@ -202,15 +204,15 @@ extension AnyCodable: ExpressibleByBooleanLiteral {
 extension AnyCodable: ExpressibleByFloatLiteral {
 
     init(floatLiteral value: FloatLiteralType) {
-        self.init(value)
+        self = .double(value)
     }
 
 }
 
 extension AnyCodable: ExpressibleByDictionaryLiteral {
 
-    init(dictionaryLiteral elements: (AnyHashable, AnyCodable)...) {
-        self.init(Dictionary(uniqueKeysWithValues: elements))
+    init(dictionaryLiteral elements: (String, AnyCodable)...) {
+        self = .object(Dictionary(uniqueKeysWithValues: elements))
     }
 
 }
@@ -218,7 +220,7 @@ extension AnyCodable: ExpressibleByDictionaryLiteral {
 extension AnyCodable: ExpressibleByArrayLiteral {
 
     init(arrayLiteral elements: AnyCodable...) {
-        self.init(elements)
+        self = .array(elements)
     }
 
 }

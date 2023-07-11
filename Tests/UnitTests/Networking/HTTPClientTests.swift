@@ -101,7 +101,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -151,7 +151,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -168,7 +168,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -185,7 +185,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -202,7 +202,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -222,7 +222,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -242,7 +242,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -252,7 +252,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testCallsTheGivenPath() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let pathHit: Atomic<Bool> = false
 
@@ -278,7 +278,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             pathHit.value = true
             return .emptySuccessResponse()
         }
-        let request = HTTPRequest(method: .post(body), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         waitUntil { completion in
             self.client.perform(request) { (_: EmptyResponse) in completion() }
@@ -582,7 +582,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testCachedRequestsIncludeETagHeader() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
         let eTag = "ETAG"
 
         let headerPresent: Atomic<Bool> = false
@@ -603,7 +603,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testNotCachedRequestsDontIncludeETagHeader() {
-        let request = HTTPRequest(method: .post([:]), path: .health)
+        let request = HTTPRequest(method: .postEmptyBody, path: .health)
         let headerPresent: Atomic<Bool?> = nil
 
         stub(condition: isPath(request.path)) { request in
@@ -622,7 +622,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testAlwaysPassesClientVersion() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -641,7 +641,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testAlwaysPassesClientBuildVersion() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -660,7 +660,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testAlwaysPassesClientBundleID() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -679,7 +679,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testPassesStoreKit2EnabledHeader() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -728,7 +728,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     #else
 
     func testAlwaysPassesAppleDeviceIdentifier() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: try .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -748,7 +748,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     #endif
 
     func testDefaultsPlatformFlavorToNative() {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -765,7 +765,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testPassesPlatformFlavorHeader() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -787,7 +787,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testPassesPlatformFlavorVersionHeader() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -808,7 +808,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -828,7 +828,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testRequestsWithCustomEntitlementsSendHeader() {
         self.client = self.createClient(MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true))
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         var headerPresent = false
 
@@ -849,7 +849,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testRequestsWithoutCustomEntitlementsDoNotSendHeader() {
         self.client = self.createClient(MockSystemInfo(finishTransactions: true, customEntitlementsComputation: false))
 
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         var headerPresent = false
 
@@ -867,7 +867,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
-        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+        let request = HTTPRequest(method: .postEmptyBody, path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
 
@@ -1154,7 +1154,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .post([:]), path: path)) { (_: DataResponse) in
+            self.client.perform(.init(method: .postEmptyBody, path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1180,7 +1180,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         waitUntil { completion in
-            self.client.perform(.init(method: .post([:]), path: path)) { (_: DataResponse) in
+            self.client.perform(.init(method: .postEmptyBody, path: path)) { (_: DataResponse) in
                 completion()
             }
         }
@@ -1559,8 +1559,11 @@ extension HTTPRequest.Method {
 
     /// Creates a `HTTPRequest.Method.post` request with `[String: Any]`.
     /// - Note: this is for testing only, real requests must use `Encodable`.
-    internal static func post(_ body: [String: Any]) -> Self {
-        return .post(AnyCodable(body))
+    internal static func post(_ body: [String: Any]) throws -> Self {
+        return .post(try AnyCodable(body))
     }
+
+    // swiftlint:disable:next force_try
+    internal static let postEmptyBody: Self = try! Self.post([:])
 
 }

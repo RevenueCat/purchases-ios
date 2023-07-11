@@ -46,15 +46,24 @@ class PostAttributionDataOperation: NetworkOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
-                                  path: .postAttributionData(appUserID: appUserID))
+        do {
+            let request = HTTPRequest(method: .post(try Body(network: self.network,
+                                                             attributionData: self.attributionData)),
+                                      path: .postAttributionData(appUserID: appUserID))
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
-            defer {
-                completion()
+            self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
+                defer {
+                    completion()
+                }
+
+                self.responseHandler?(response.error.map(BackendError.networkError))
             }
+        } catch {
+            // TODO: log error
 
-            self.responseHandler?(response.error.map(BackendError.networkError))
+            self.responseHandler?(.networkError(
+                .unableToCreateRequest(.postSubscriberAttributes(appUserID: appUserID))
+            ))
         }
     }
 
@@ -67,9 +76,9 @@ private extension PostAttributionDataOperation {
         let network: AttributionNetwork
         let data: AnyCodable
 
-        init(network: AttributionNetwork, attributionData: [String: Any]) {
+        init(network: AttributionNetwork, attributionData: [String: Any]) throws {
             self.network = network
-            self.data = AnyCodable(attributionData)
+            self.data = try AnyCodable(attributionData)
         }
 
     }
