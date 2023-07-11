@@ -31,8 +31,10 @@ func checkEntitlementInfoAPI() {
     let uda: Date? = entitlementInfo.unsubscribeDetectedAt
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
     let oType: PurchaseOwnershipType = entitlementInfo.ownershipType
-    // Trusted Entitlements: internal until ready to be made public.
-    // let _: VerificationResult = entitlementInfo.verification
+
+    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+        let _: VerificationResult = entitlementInfo.verification
+    }
 
     let rawData: [String: Any] = entitlementInfo.rawData
 

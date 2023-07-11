@@ -40,9 +40,8 @@ private extension CustomerInfoView {
             ("Original Application Version", self.customerInfo.originalApplicationVersion ?? "-"),
             ("Original Purchase Date", self.date(customerInfo.originalPurchaseDate) ?? "-"),
             ("Latest Expiration Date", self.date(customerInfo.latestExpirationDate) ?? "-"),
-            ("Request Date", self.date(customerInfo.requestDate) ?? "-")
-            // Trusted Entitlements is internal until ready to be made public.
-            // ("Entitlement Verification", self.customerInfo.entitlements.verification.description),
+            ("Request Date", self.date(customerInfo.requestDate) ?? "-"),
+            ("Entitlement Verification", self.customerInfo.entitlements.verification.description),
         ]
     }
 

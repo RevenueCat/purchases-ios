@@ -170,9 +170,8 @@ extension PeriodType: DefaultValueProvider {
     ///
     /// ### Related Symbols
     /// - ``VerificationResult``
-    // Trusted Entitlements: internal until ready to be made public.
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    @objc internal var verification: VerificationResult { self.contents.verification }
+    @objc public var verification: VerificationResult { self.contents.verification }
 
     // Docs inherited from protocol
     // swiftlint:disable:next missing_docs
