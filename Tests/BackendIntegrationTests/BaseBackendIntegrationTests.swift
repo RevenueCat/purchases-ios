@@ -51,9 +51,7 @@ class BaseBackendIntegrationTests: XCTestCase {
     class var storeKit2Setting: StoreKit2Setting { return .default }
     class var observerMode: Bool { return false }
     class var responseVerificationMode: Signing.ResponseVerificationMode {
-        // Disabled until the backend deploys the new signature format
-        // return .enforced(Signing.loadPublicKey())
-        return .disabled
+        return .enforced(Signing.loadPublicKey())
     }
 
     var apiKey: String { return Constants.apiKey }
