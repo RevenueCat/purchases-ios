@@ -61,6 +61,8 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
     func testReceiptParserParsesReceiptWithSingleIAP() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let product = try await fetchSk2Product()
+        let purchaseTime = Date()
+
         _ = try await product.purchase()
 
         let receiptData = await self.receiptFetcher.receiptData(refreshPolicy: .always)
@@ -76,7 +78,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         expect(firstPurchase.originalTransactionId).to(beNil())
         expect(firstPurchase.productType) == .unknown
 
-        expect(firstPurchase.purchaseDate).to(beCloseTo(Date(), within: 5))
+        expect(firstPurchase.purchaseDate).to(beCloseTo(purchaseTime, within: 5))
         expect(firstPurchase.originalPurchaseDate).to(beNil())
 
         expect(firstPurchase.expiresDate).toNot(beNil())
