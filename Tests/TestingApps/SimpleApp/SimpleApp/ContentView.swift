@@ -8,30 +8,18 @@
 import SwiftUI
 import RevenueCat
 
-struct ContentView: View {
+struct DebugView: View {
 
-    #if os(macOS) || os(xrOS)
     @State
     private var debug = false
-    #endif
 
     var body: some View {
-        ZStack {
-            Content()
-
-            #if os(macOS) || os(xrOS)
-            Button {
-                self.debug = true
-            } label: {
-                Text("Debug")
-            }
-            #endif
+        Button {
+            self.debug = true
+        } label: {
+            Text("Debug")
         }
-        #if os(macOS) || os(xrOS)
         .debugRevenueCatOverlay(isPresented: self.$debug)
-        #else
-        .debugRevenueCatOverlay()
-        #endif
     }
 
 }
