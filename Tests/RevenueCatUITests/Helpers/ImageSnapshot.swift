@@ -1,0 +1,1 @@
+../../StoreKitUnitTests/TestHelpers/ImageSnapshot.swift
