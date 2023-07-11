@@ -36,6 +36,9 @@ import Foundation
 /// }
 /// ```
 ///
+/// ### Related Articles
+/// - [Documentation](https://rev.cat/trusted-entitlements)
+///
 /// ### Related Symbols
 /// - ``Configuration/EntitlementVerificationMode``
 /// - ``Configuration/Builder/with(entitlementVerificationMode:)``

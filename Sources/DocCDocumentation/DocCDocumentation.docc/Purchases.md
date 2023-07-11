@@ -122,6 +122,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/verboseLogs``
 - ``Purchases/verboseLogHandler``
 - ``Purchases/allowSharingAppStoreAccount``
+- ``Configuration/Builder/with(entitlementVerificationMode:)``
 
 ### Configuring the SDK with parameters (deprecated)
 - ``Purchases/configure(withAPIKey:appUserID:)``
