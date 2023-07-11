@@ -194,8 +194,6 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        let logHandler = TestLogHandler()
-
         let receivedCustomerInfo: Atomic<CustomerInfo?> = nil
         backend.post(receiptData: self.receiptData,
                      productData: nil,
@@ -212,7 +210,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
 
-        let loggedMessages = logHandler.messages.map(\.message)
+        let loggedMessages = self.logger.messages.map(\.message)
 
         expect(receivedCustomerInfo.value) == CustomerInfo(testData: self.validSubscriberResponse)
         expect(loggedMessages).to(

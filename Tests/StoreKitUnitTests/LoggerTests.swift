@@ -20,19 +20,16 @@ import XCTest
 // which means it would interfere with other tests if ran concurrently.
 class LoggerTests: TestCase {
 
-    private var logger: TestLogHandler!
     private var previousLogLevel: LogLevel!
 
     override func setUp() {
         super.setUp()
 
-        self.logger = .init()
         self.previousLogLevel = Logger.logLevel
     }
 
     override func tearDown() {
         Logger.logLevel = self.previousLogLevel
-        self.logger = nil
 
         super.tearDown()
     }

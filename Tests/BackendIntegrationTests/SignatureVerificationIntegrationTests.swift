@@ -194,15 +194,13 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     }
 
     func testTransactionIsNotFinishedAfterSignatureFailure() async throws {
-        let logger = TestLogHandler()
-
         self.invalidSignature = true
 
         try await Self.verifyThrowsSignatureVerificationFailed {
             try await self.purchaseMonthlyProduct()
         }
 
-        logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.logger.verifyMessageWasNotLogged("Finishing transaction")
     }
 
     func testTransactionIsFinishedAfterSuccessfulyPostingPurchase() async throws {
@@ -216,14 +214,13 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         // 2. Get customer info again, which should post the pending transaction
         self.invalidSignature = false
 
-        let logger = TestLogHandler()
         let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Verify entitlement is active
         try await self.verifyEntitlementWentThrough(info)
 
         // 4. Verify transaction was finished
-        logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info)
     }
 
 }

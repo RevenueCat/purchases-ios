@@ -205,8 +205,6 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func testNotifiesDelegateForRenewals() async throws {
-        let logger = TestLogHandler()
-
         try await self.simulateAnyPurchase(finishTransaction: true)
 
         self.listener.listenForTransactions()
@@ -220,7 +218,7 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
                 transaction.productIdentifier == Self.productID
             })
 
-        logger.verifyMessageWasLogged(Strings.purchase.sk2_transactions_update_received_transaction(
+        self.logger.verifyMessageWasLogged(Strings.purchase.sk2_transactions_update_received_transaction(
             productID: Self.productID
         ))
     }

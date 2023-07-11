@@ -433,8 +433,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         // Entitlement verification not available prior
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        let logger = TestLogHandler()
-
         let appUserID = "myUser"
         let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
 
@@ -444,7 +442,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
         expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
 
-        logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
+        self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }
 
     func testCacheCustomerInfoSendsToDelegateIfChanged() {

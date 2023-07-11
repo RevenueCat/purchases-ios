@@ -28,8 +28,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 1. Fetch user once
         _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
 
-        let logger = TestLogHandler()
-
         // 2. Re-fetch user
         _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
 
@@ -37,7 +35,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                                           path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
 
         // 3. Verify response was 304
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
         )
     }
@@ -49,8 +47,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 2. Fetch user once
         _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
 
-        let logger = TestLogHandler()
-
         // 3. Re-fetch user
         _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
 
@@ -58,7 +54,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
                                           path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
 
         // 4. Verify response was 304
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
         )
     }
@@ -72,11 +68,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testHandledByProductionServer() async throws {
-        let logger = TestLogHandler()
-
         try await Purchases.shared.healthRequest(signatureVerification: false)
 
-        logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
+        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -91,11 +85,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testEnableAdServicesAttributionTokenCollection() async throws {
-        let logger = TestLogHandler()
-
         Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
 
-        try await logger.verifyMessageIsEventuallyLogged(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
             level: .debug,
             timeout: .seconds(3),

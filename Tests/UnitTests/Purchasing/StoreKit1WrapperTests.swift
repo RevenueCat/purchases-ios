@@ -300,16 +300,12 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testUpdatedTransactionsDoesNotLogWarningForLowNumberOfTransactions() {
-        let logger = TestLogHandler()
-
         self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: [Self.randomTransaction()])
 
-        logger.verifyMessageWasNotLogged("This high number is unexpected")
+        self.logger.verifyMessageWasNotLogged("This high number is unexpected")
     }
 
     func testUpdatedTransactionsLogsWarningWhenSendingTooManyTransactions() {
-        let logger = TestLogHandler()
-
         let payment = SKPayment(product: .init())
         let transactions = (0..<110).map { _ in
             Self.transaction(with: payment)
@@ -317,7 +313,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
         self.wrapper.paymentQueue(self.paymentQueue, updatedTransactions: transactions)
 
-        logger.verifyMessageWasLogged(Strings.storeKit.sk1_payment_queue_too_many_transactions(
+        self.logger.verifyMessageWasLogged(Strings.storeKit.sk1_payment_queue_too_many_transactions(
             count: transactions.count,
             isSandbox: self.sandboxEnvironmentDetector.isSandbox
         ),

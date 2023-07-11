@@ -20,20 +20,6 @@ import StoreKit
 
 class ErrorUtilsTests: TestCase {
 
-    private var testLogHandler: TestLogHandler!
-
-    override func setUp() {
-        super.setUp()
-
-        self.testLogHandler = TestLogHandler()
-    }
-
-    override func tearDown() {
-        self.testLogHandler = nil
-
-        super.tearDown()
-    }
-
     func testReceiptErrorWithNoURL() {
         let error = ErrorUtils.missingReceiptFileError(nil)
         expect(error).to(matchError(ErrorCode.missingReceiptFileError))
@@ -278,7 +264,7 @@ class ErrorUtilsTests: TestCase {
     // MARK: -
 
     private var loggedMessages: [TestLogHandler.MessageData] {
-        return self.testLogHandler.messages
+        return self.logger.messages
     }
 
     private func expectLoggedError(

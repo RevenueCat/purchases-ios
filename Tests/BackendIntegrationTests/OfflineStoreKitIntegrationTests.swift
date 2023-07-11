@@ -87,13 +87,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testReturnsCachedCustomerInfo() async throws {
-        let logger = TestLogHandler()
-
         self.serverDown()
 
        _ = try await Purchases.shared.customerInfo()
 
-        logger.verifyMessageWasNotLogged(Strings.customerInfo.customerinfo_updated_offline)
+        self.logger.verifyMessageWasNotLogged(Strings.customerInfo.customerinfo_updated_offline)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -110,24 +108,20 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownSucceedsButDoesNotFinishTransaction() async throws {
-        let logger = TestLogHandler()
-
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
-        logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
-        logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
+        self.logger.verifyMessageWasNotLogged("Finishing transaction")
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownPostsReceiptAfterServerComesBack() async throws {
-        let logger = TestLogHandler()
-
         // 1. Purchase while server is down
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
-        logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.logger.verifyMessageWasNotLogged("Finishing transaction")
 
         // 2. "Re-open" the app after the server is back
         self.serverUp()
@@ -145,7 +139,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         )
 
         // 4. Ensure transaction is eventually finished
-        try await logger.verifyMessageIsEventuallyLogged(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             "Finishing transaction",
             level: .info,
             timeout: .seconds(5),
@@ -237,8 +231,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverUp()
 
-        let logger = TestLogHandler()
-
         let task1 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
         let task2 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
 
@@ -247,7 +239,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
         try await self.verifyEntitlementWentThrough(info2)
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             "API request completed: POST /v1/receipts",
             level: .debug,
             expectedCount: 1
@@ -258,15 +250,13 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 
-        let logger = TestLogHandler()
-
         do {
             _ = try await self.purchaseConsumablePackage()
             fail("Expected error")
         } catch let error as ErrorCode {
             expect(error).to(matchError(ErrorCode.unknownBackendError))
 
-            logger.verifyMessageWasLogged(
+            self.logger.verifyMessageWasLogged(
                 Strings.offlineEntitlements.computing_offline_customer_info_failed(
                     PurchasedProductsFetcher.Error.foundConsumablePurchase
                 ),
@@ -279,13 +269,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownPostsReceiptWhenForegroundingApp() async throws {
-        let logger = TestLogHandler()
-
         // 1. Purchase while server is down
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
-        logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.logger.verifyMessageWasNotLogged("Finishing transaction")
 
         // 2. Server is back
         self.serverUp()
@@ -295,7 +283,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
-        logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info)
 
         // 5. Restart app
         Purchases.shared.invalidateCustomerInfoCache()
@@ -308,8 +296,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
-        let logger = TestLogHandler()
-
         // 1. Purchase while server is down
         self.serverDown()
 
@@ -319,7 +305,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             fail("Consumable purchases should fail while offline")
         } catch {}
 
-        logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.logger.verifyMessageWasNotLogged("Finishing transaction")
 
         // 2. Server is back
         self.serverUp()
@@ -335,7 +321,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
+        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
     }
 
 }
@@ -346,8 +332,6 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
-        let logger = TestLogHandler()
-
         Purchases.shared.invalidateCustomerInfoCache()
 
         do {
@@ -359,7 +343,7 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
             fail("Unexpected error: \(error)")
         }
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping
         )
     }

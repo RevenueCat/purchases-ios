@@ -401,8 +401,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testServerSide500sWithUnknownBody() throws {
-        let logger = TestLogHandler()
-
         let request = HTTPRequest(method: .get, path: .mockPath)
         let errorCode = 500 + Int.random(in: 0..<50)
 
@@ -435,7 +433,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(self.signing.requests).to(beEmpty())
 
-        logger.verifyMessageWasNotLogged("Couldn't decode data from json")
+        self.logger.verifyMessageWasNotLogged("Couldn't decode data from json")
     }
 
     func testInvalidJSONAsDataDoesNotFail() {
@@ -1247,8 +1245,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         MockDNSChecker.stubbedErrorWithBlockedHostFromErrorResult.value = expectedDNSError
         let expectedMessage = "\(LogIntent.rcError.prefix) \(expectedDNSError.description)"
 
-        let logHandler = TestLogHandler()
-
         stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse.emptySuccessResponse()
             response.error = error
@@ -1264,7 +1260,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
         expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
         expect(obtainedError) == expectedDNSError
-        expect(logHandler.messages.map(\.message))
+        expect(self.logger.messages.map(\.message))
             .to(contain(expectedMessage))
     }
 
@@ -1277,8 +1273,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             resolvedHost: "0.0.0.0"
         )
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
-
-        let logHandler = TestLogHandler()
 
         stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse.emptySuccessResponse()
@@ -1294,7 +1288,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         expect(MockDNSChecker.invokedErrorWithBlockedHostFromError.value) == true
         expect(MockDNSChecker.invokedIsBlockedAPIError.value) == false
-        expect(logHandler.messages.map(\.message))
+        expect(self.logger.messages.map(\.message))
             .toNot(contain(unexpectedDNSError.description))
     }
 
@@ -1417,8 +1411,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             )
         }
 
-        let logger = TestLogHandler()
-
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: pathA), completionHandler: completion)
         }
@@ -1426,7 +1418,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(response).to(beSuccess())
         expect(response?.value?.body) == responseData
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             "Performing redirect from '\(pathA.url!.absoluteString)' to '\(pathB.url!.absoluteString)'",
             level: .debug
         )
@@ -1443,14 +1435,12 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             )
         }
 
-        let logger = TestLogHandler()
-
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
         expect(response).to(beSuccess())
 
-        logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(path))
+        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(path))
     }
 
     func testLoadShedderResponsesAreLogged() throws {
@@ -1466,14 +1456,12 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             )
         }
 
-        let logger = TestLogHandler()
-
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
         }
         expect(response).to(beSuccess())
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(path),
             level: .debug
         )

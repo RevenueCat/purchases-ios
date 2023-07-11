@@ -21,23 +21,13 @@ import XCTest
 
 final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrationTests {
 
-    private var logger: TestLogHandler!
-
     override func setUp() async throws {
-        self.logger = .init()
+        try await super.setUp()
 
         self.addTeardownBlock { [logger = self.logger!] in
             // No `GetCustomerInfoOperation` requests should be made
             logger.verifyMessageWasNotLogged("GetCustomerInfoOperation")
         }
-
-        try await super.setUp()
-    }
-
-    override func tearDown() {
-        self.logger = nil
-
-        super.tearDown()
     }
 
     override func configurePurchases() {
@@ -76,11 +66,9 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     func testPurchasingPostsAdAttributionToken() async throws {
         Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
 
-        let logger = TestLogHandler()
-
         let info = try await self.purchaseMonthlyOffering().customerInfo
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.attribution.adservices_marking_as_synced(appUserID: info.originalAppUserId),
             level: .info
         )

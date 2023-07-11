@@ -96,8 +96,6 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
             ]
         )
 
-        let logger = TestLogHandler()
-
         let result = await self.handle(
             .success(
                 .init(statusCode: .success,
@@ -112,7 +110,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
         expect(result.value) == Self.sampleCustomerInfo.copy(with: .notRequested)
         expect(self.factory.createRequested) == false
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             "\(ErrorCode.invalidSubscriberAttributesError.description) \(errorResponse.attributeErrors)",
             level: .error
         )
@@ -155,7 +153,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
         let error: NetworkError = .serverDown()
-        let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
         expect(result).to(beFailure())
@@ -163,7 +160,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
         expect(self.factory.createRequested) == false
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
             level: .warn
         )
@@ -174,7 +171,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
         let error: NetworkError = .serverDown()
-        let logger = TestLogHandler()
 
         let result = await self.handle(.failure(error), nil)
         expect(result).to(beFailure())
@@ -182,7 +178,7 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
         expect(self.factory.createRequested) == false
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
             level: .warn
         )
@@ -194,7 +190,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         ])
         self.factory.stubbedResult = Self.offlineCustomerInfo
 
-        let logger = TestLogHandler()
         let error: NetworkError = .serverDown()
 
         let result = await self.handle(.failure(error), Self.mapping)
@@ -207,8 +202,8 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         expect(self.factory.createRequestParameters?.mapping) == Self.mapping
         expect(self.factory.createRequestParameters?.userID) == self.userID
 
-        logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
+        self.logger.verifyMessageWasLogged(
             Strings.offlineEntitlements.computed_offline_customer_info(Self.offlineCustomerInfo.entitlements),
             level: .info
         )
@@ -228,8 +223,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
     }
 
     func testServerErrorWithFailingPurchasedProductsFetcher() async {
-        let logger = TestLogHandler()
-
         let fetcherError = StoreKitError.systemError(StoreKitError.unknown)
         let error: NetworkError = .serverDown()
 
@@ -241,8 +234,10 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
         expect(self.factory.createRequested) == false
 
-        logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info_failed(fetcherError),
-                                      level: .error)
+        self.logger.verifyMessageWasLogged(
+            Strings.offlineEntitlements.computing_offline_customer_info_failed(fetcherError),
+            level: .error
+        )
     }
 
 }

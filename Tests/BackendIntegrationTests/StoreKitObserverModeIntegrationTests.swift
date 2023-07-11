@@ -67,11 +67,9 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
 
-        let logger = TestLogHandler()
-
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
-        try await logger.verifyMessageIsEventuallyLogged(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
             timeout: .seconds(3),
             pollInterval: .milliseconds(100)
@@ -120,11 +118,9 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
 
-        let logger = TestLogHandler()
-
         try? self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
-        try await logger.verifyMessageIsEventuallyLogged(
+        try await self.logger.verifyMessageIsEventuallyLogged(
             "Network operation 'PostReceiptDataOperation' found with the same cache key",
             timeout: .seconds(4),
             pollInterval: .milliseconds(100)

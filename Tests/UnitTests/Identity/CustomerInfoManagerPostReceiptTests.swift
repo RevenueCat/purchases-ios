@@ -83,8 +83,6 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
     }
 
     func testPostsAllTransactions() async throws {
-        let logger = TestLogHandler()
-
         let transactions = [
             Self.createTransaction(),
             Self.createTransaction(),
@@ -106,7 +104,7 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         )
             == transactions
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
             level: .debug
         )
@@ -123,8 +121,6 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
                 "original_application_version": NSNull()
             ]  as [String: Any]
         ])
-
-        let logger = TestLogHandler()
 
         let transactions = [
             Self.createTransaction(),
@@ -151,7 +147,7 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         )
             == transactions
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
             level: .debug
         )

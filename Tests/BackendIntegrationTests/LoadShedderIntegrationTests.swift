@@ -39,20 +39,6 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     // MARK: -
 
-    private var logger: TestLogHandler!
-
-    override func setUp() async throws {
-        self.logger = TestLogHandler(capacity: 500)
-
-        try await super.setUp()
-    }
-
-    override func tearDown() async throws {
-        self.logger = nil
-
-        try await super.tearDown()
-    }
-
     func testCanGetOfferings() async throws {
         let receivedOfferings = try await Purchases.shared.offerings()
 

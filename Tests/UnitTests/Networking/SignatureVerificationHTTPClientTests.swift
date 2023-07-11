@@ -94,8 +94,6 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     }
 
     func testFailedVerificationIfResponseContainsNoSignature() throws {
-        let logger = TestLogHandler()
-
         try self.changeClient(.informational)
         self.mockResponse()
 
@@ -110,7 +108,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(response?.value?.verificationResult) == .failed
         expect(self.signing.requests).to(beEmpty())
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.signing.signature_was_requested_but_not_provided(request),
             level: .warn
         )
@@ -121,8 +119,6 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         let path: HTTPRequest.Path = .getProductEntitlementMapping
         expect(path.supportsSignatureVerification) == true
         expect(path.needsNonceForSigning) == false
-
-        let logger = TestLogHandler()
 
         try self.changeClient(.informational)
         self.mockResponse(path: path,
@@ -140,7 +136,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(response?.value?.verificationResult) == .failed
         expect(self.signing.requests).to(beEmpty())
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.signing.signature_was_requested_but_not_provided(request),
             level: .warn
         )
@@ -323,13 +319,11 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         self.mockPath(request.path, statusCode: .success, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = false
 
-        let logger = TestLogHandler()
-
         let _: DataResponse? = waitUntilValue { completion in
             self.client.perform(request, completionHandler: completion)
         }
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.signing.request_failed_verification(request),
             level: .error,
             expectedCount: 1
