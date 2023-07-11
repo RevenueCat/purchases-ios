@@ -180,7 +180,7 @@ extension ErrorCode: DescribableError {
         case .featureNotAvailableInCustomEntitlementsComputationMode:
             return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
         case .signatureVerificationFailed:
-            return "Request failed signature verification."
+            return "Request failed signature verification. See https://rev.cat/trusted-entitlements for more info."
 
         @unknown default:
             return "Something went wrong."
