@@ -150,22 +150,11 @@ class ErrorUtilsTests: TestCase {
             .to(matchError(error))
     }
 
-    func testPurchaseErrorsAreLoggedAsApppleErrors() {
-        let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
-        let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)
-
-        self.expectLoggedError(error, .appleError)
-    }
-
-    func testNetworkErrorsAreLogged() {
-        let error = ErrorUtils.networkError(message: Strings.network.json_data_received(dataString: "test").description)
-
-        self.expectLoggedError(error, .rcError)
-    }
-
     func testNetworkErrorsLogUnderlyingError() throws {
         let underlyingError = NSError(domain: NSURLErrorDomain, code: NSURLErrorDNSLookupFailed)
         let networkError = ErrorUtils.networkError(withUnderlyingError: underlyingError)
+
+        Logger.error(networkError.localizedDescription)
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
@@ -180,6 +169,7 @@ class ErrorUtilsTests: TestCase {
 
     func testLoggedErrorsWithNoMessage() throws {
         let error = ErrorUtils.customerInfoError()
+        Logger.error(error.localizedDescription)
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
@@ -196,6 +186,8 @@ class ErrorUtilsTests: TestCase {
                                      attributeErrors: [:])
         let purchasesError = response.asBackendError(with: .notFoundError)
 
+        Logger.error(purchasesError.localizedDescription)
+
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
         expect(loggedMessage.level) == .error
@@ -209,7 +201,7 @@ class ErrorUtilsTests: TestCase {
 
     func testLoggedErrorsWithMessageIncludeErrorDescriptionAndMessage() throws {
         let message = Strings.customerInfo.no_cached_customerinfo.description
-        _ = ErrorUtils.customerInfoError(withMessage: message)
+        Logger.error(ErrorUtils.customerInfoError(withMessage: message).localizedDescription)
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
@@ -222,7 +214,9 @@ class ErrorUtilsTests: TestCase {
     }
 
     func testLoggedErrorsDontDuplicateMessageIfEqualToErrorDescription() throws {
-        _ = ErrorUtils.customerInfoError(withMessage: ErrorCode.customerInfoError.description)
+        Logger.error(
+            ErrorUtils.customerInfoError(withMessage: ErrorCode.customerInfoError.description).localizedDescription
+        )
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
@@ -242,7 +236,7 @@ class ErrorUtilsTests: TestCase {
                                           ])
 
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
-        _ = error.asPurchasesError
+        Logger.error(error.asPurchasesError.localizedDescription)
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 
@@ -262,7 +256,7 @@ class ErrorUtilsTests: TestCase {
                                           attributeErrors: [:])
 
         let error: NetworkError = .errorResponse(errorResponse, .invalidRequest)
-        _ = error.asPurchasesError
+        Logger.error(error.asPurchasesError.localizedDescription)
 
         let loggedMessage = try XCTUnwrap(self.loggedMessages.onlyElement)
 

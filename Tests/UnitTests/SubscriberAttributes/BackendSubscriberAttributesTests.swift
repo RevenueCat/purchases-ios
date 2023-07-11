@@ -211,10 +211,9 @@ class BackendSubscriberAttributesTests: TestCase {
         }
 
         expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
+        expect(receivedCustomerInfo.value) == CustomerInfo(testData: self.validSubscriberResponse)
 
         let loggedMessages = logHandler.messages.map(\.message)
-
-        expect(receivedCustomerInfo.value) == CustomerInfo(testData: self.validSubscriberResponse)
         expect(loggedMessages).to(
             containElementSatisfying {
                 $0.localizedCaseInsensitiveContains(ErrorCode.invalidSubscriberAttributesError.description)
