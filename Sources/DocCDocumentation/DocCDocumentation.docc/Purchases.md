@@ -115,7 +115,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setOnesignalID(_:)``
 
 ### Advanced Configuration
-- ``Configuration/Builder/with(observerMode:)``
+- ``Purchases/finishTransactions``
 - ``Purchases/invalidateCustomerInfoCache()``
 - ``Purchases/forceUniversalAppStore``
 - ``Purchases/proxyURL``
