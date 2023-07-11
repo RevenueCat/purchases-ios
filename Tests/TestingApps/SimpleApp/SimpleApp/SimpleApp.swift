@@ -5,8 +5,8 @@
 //  Created by Nacho Soto on 5/30/23.
 //
 
-import Paywalls
 import RevenueCat
+import RevenueCatUI
 import SwiftUI
 
 #warning("This needs to be configured.")

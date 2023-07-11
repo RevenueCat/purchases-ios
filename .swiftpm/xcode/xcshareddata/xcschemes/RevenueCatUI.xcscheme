@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Paywalls"
-               BuildableName = "Paywalls"
-               BlueprintName = "Paywalls"
+               BlueprintIdentifier = "RevenueCatUI"
+               BuildableName = "RevenueCatUI"
+               BlueprintName = "RevenueCatUI"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -26,13 +26,20 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
-      <TestPlans>
-         <TestPlanReference
-            reference = "container:Tests/TestPlans/Paywalls.xctestplan"
-            default = "YES">
-         </TestPlanReference>
-      </TestPlans>
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "RevenueCatUITests"
+               BuildableName = "RevenueCatUITests"
+               BlueprintName = "RevenueCatUITests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -54,9 +61,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "Paywalls"
-            BuildableName = "Paywalls"
-            BlueprintName = "Paywalls"
+            BlueprintIdentifier = "RevenueCatUI"
+            BuildableName = "RevenueCatUI"
+            BlueprintName = "RevenueCatUI"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

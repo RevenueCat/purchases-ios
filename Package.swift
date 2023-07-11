@@ -32,8 +32,8 @@ let package = Package(
                  targets: ["RevenueCat_CustomEntitlementComputation"]),
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
-        .library(name: "Paywalls",
-                 targets: ["Paywalls"])
+        .library(name: "RevenueCatUI",
+                 targets: ["RevenueCatUI"])
     ],
     dependencies: dependencies,
     targets: [
@@ -56,13 +56,13 @@ let package = Package(
         .testTarget(name: "ReceiptParserTests",
                     dependencies: ["ReceiptParser", "Nimble"],
                     exclude: ["ReceiptParserTests-Info.plist"]),
-        // Paywalls
-        .target(name: "Paywalls",
+        // RevenueCatUI
+        .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
-                path: "Paywalls"),
-        .testTarget(name: "PaywallsTests",
+                path: "RevenueCatUI"),
+        .testTarget(name: "RevenueCatUITests",
                     dependencies: [
-                        "Paywalls",
+                        "RevenueCatUI",
                         "Nimble",
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ])

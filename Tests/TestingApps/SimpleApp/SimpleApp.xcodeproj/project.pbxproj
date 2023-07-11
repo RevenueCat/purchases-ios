@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4F0A43222A576E9F009A4CF9 /* Paywalls in Frameworks */ = {isa = PBXBuildFile; productRef = 4F0A43212A576E9F009A4CF9 /* Paywalls */; };
 		4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046BC2A572E3700A28BCF /* SimpleApp.swift */; };
 		4F4EE7CF2A572F5D00D7EAE1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046C32A572E3700A28BCF /* ContentView.swift */; };
 		4F4EE7D22A5731E800D7EAE1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4F4EE7D12A5731E800D7EAE1 /* RevenueCat */; };
+		4FC80B202A5DE8E300E95DB0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */; };
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -45,9 +45,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4F4EE7D22A5731E800D7EAE1 /* RevenueCat in Frameworks */,
 				4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */,
-				4F0A43222A576E9F009A4CF9 /* Paywalls in Frameworks */,
+				4F4EE7D22A5731E800D7EAE1 /* RevenueCat in Frameworks */,
+				4FC80B202A5DE8E300E95DB0 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,7 +129,7 @@
 			name = SimpleApp;
 			packageProductDependencies = (
 				4F4EE7D12A5731E800D7EAE1 /* RevenueCat */,
-				4F0A43212A576E9F009A4CF9 /* Paywalls */,
+				4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */,
 			);
 			productName = SimpleApp;
 			productReference = 4F6BED9A2A26A64200CD9322 /* SimpleApp.app */;
@@ -408,13 +408,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4F0A43212A576E9F009A4CF9 /* Paywalls */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Paywalls;
-		};
 		4F4EE7D12A5731E800D7EAE1 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat;
+		};
+		4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
