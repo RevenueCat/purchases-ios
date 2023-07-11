@@ -15,7 +15,6 @@ default_platform(:ios)
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
-  './.jazzy.yaml' => ['module_version: {x}'],
   './.version' => ['{x}'],
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']

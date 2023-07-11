@@ -113,7 +113,7 @@ Update swift package commit
 ```
 fastlane ios generate_docs
 ```
-Generate Jazzy Docs
+Generate docs
 
 ----
 
