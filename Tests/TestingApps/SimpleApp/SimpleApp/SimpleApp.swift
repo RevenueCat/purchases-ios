@@ -6,6 +6,7 @@
 //
 
 import RevenueCat
+import RevenueCatUI
 import SwiftUI
 
 #warning("This needs to be configured.")
@@ -26,9 +27,24 @@ struct SimpleApp: App {
         )
     }
 
+    @State
+    private var offering: Offering?
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if let offering = self.offering {
+                    PaywallView(offering: offering)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay {
+                DebugView()
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+            .task {
+                self.offering = try? await Purchases.shared.offerings().current
+            }
         }
     }
 }
