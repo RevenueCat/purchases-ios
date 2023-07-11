@@ -35,6 +35,11 @@ extension Collection {
         return first
     }
 
+    /// Returns the element at the specified index if it exists, otherwise nil.
+    subscript(safe index: Index) -> Element? {
+        return self.indices.contains(index) ? self[index] : nil
+    }
+
 }
 
 extension Sequence where Element: AdditiveArithmetic {
