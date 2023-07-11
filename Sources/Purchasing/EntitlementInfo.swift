@@ -167,6 +167,9 @@ extension PeriodType: DefaultValueProvider {
     @objc public var ownershipType: PurchaseOwnershipType { self.contents.ownershipType }
 
     /// Whether this entitlement was verified.
+    /// 
+    /// ### Related Articles
+    /// - [Documentation](https://rev.cat/trusted-entitlements)
     ///
     /// ### Related Symbols
     /// - ``VerificationResult``

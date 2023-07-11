@@ -115,13 +115,14 @@ Most features require configuring the SDK before using it.
 - ``Purchases/setOnesignalID(_:)``
 
 ### Advanced Configuration
-- ``Purchases/finishTransactions``
+- ``Configuration/Builder/with(observerMode:)``
 - ``Purchases/invalidateCustomerInfoCache()``
 - ``Purchases/forceUniversalAppStore``
 - ``Purchases/proxyURL``
 - ``Purchases/verboseLogs``
 - ``Purchases/verboseLogHandler``
 - ``Purchases/allowSharingAppStoreAccount``
+- ``Configuration/Builder/with(entitlementVerificationMode:)``
 
 ### Configuring the SDK with parameters (deprecated)
 - ``Purchases/configure(withAPIKey:appUserID:)``
