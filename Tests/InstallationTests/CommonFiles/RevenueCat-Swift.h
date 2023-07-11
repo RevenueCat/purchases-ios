@@ -606,6 +606,32 @@ SWIFT_CLASS_NAMED("Builder")
 - (RCConfigurationBuilder * _Nonnull)withStoreKit1Timeout:(NSTimeInterval)storeKit1Timeout SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>platformInfo</code>.
 - (RCConfigurationBuilder * _Nonnull)withPlatformInfo:(RCPlatformInfo * _Nonnull)platformInfo SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>Configuration/EntitlementVerificationMode</code>.
+/// Defaults to <code>Configuration/EntitlementVerificationMode/disabled</code>.
+/// The result of the verification can be obtained from <code>EntitlementInfos/verification</code> or
+/// <code>EntitlementInfo/verification</code>.
+/// note:
+/// This feature requires iOS 13+.
+/// warning:
+/// When changing from <code>Configuration/EntitlementVerificationMode/disabled</code>
+/// to <code>Configuration/EntitlementVerificationMode/informational</code>
+/// the SDK will clear the <code>CustomerInfo</code> cache.
+/// This means that users will need to connect to the internet to get back their entitlements.
+/// <h3>Related Articles</h3>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/trusted-entitlements">Documentation</a>
+///   </li>
+/// </ul>
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>Configuration/EntitlementVerificationMode</code>
+///   </li>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
 - (RCConfigurationBuilder * _Nonnull)withEntitlementVerificationMode:(enum RCEntitlementVerificationMode)mode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
@@ -702,6 +728,12 @@ SWIFT_CLASS_NAMED("Configuration")
 @end
 
 /// Defines how strict <code>EntitlementInfo</code> verification ought to be.
+/// <h3>Related Articles</h3>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/trusted-entitlements">Documentation</a>
+///   </li>
+/// </ul>
 /// <h3>Related Symbols</h3>
 /// <ul>
 ///   <li>
@@ -714,7 +746,7 @@ SWIFT_CLASS_NAMED("Configuration")
 ///     <code>EntitlementInfos/verification</code>
 ///   </li>
 /// </ul>
-typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementVerificationMode", closed) {
+typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementVerificationMode", open) {
 /// The SDK will not perform any entitlement verification.
   RCEntitlementVerificationModeDisabled = 0,
 /// Enable entitlement verification.
@@ -948,6 +980,19 @@ SWIFT_CLASS_NAMED("EntitlementInfo")
 /// or shared to them by a family member. This can be useful for onboarding users who have had
 /// an entitlement shared with them, but might not be entirely aware of the benefits they now have.
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;
+/// Whether this entitlement was verified.
+/// <h3>Related Articles</h3>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/trusted-entitlements">Documentation</a>
+///   </li>
+/// </ul>
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly) enum RCVerificationResult verification SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
@@ -994,6 +1039,19 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 /// <code>entitlementInfos["pro_entitlement_id"]</code>.
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull all;
 - (RCEntitlementInfo * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
+/// Whether these entitlements were verified.
+/// <h3>Related Articles</h3>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/trusted-entitlements">Documentation</a>
+///   </li>
+/// </ul>
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>VerificationResult</code>
+///   </li>
+/// </ul>
 @property (nonatomic, readonly) enum RCVerificationResult verification SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
@@ -3322,7 +3380,45 @@ SWIFT_CLASS_NAMED("Transaction") SWIFT_AVAILABILITY(macos,obsoleted=1,message="'
 
 
 
-typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", closed) {
+/// The result of data verification process.
+/// This is accomplished by preventing MiTM attacks between the SDK and the RevenueCat server.
+/// With verification enabled, the SDK ensures that the response created by the server was not
+/// modified by a third-party, and the entitlements received are exactly what was sent.
+/// note:
+/// Entitlements are only verified if enabled using
+/// <code>Configuration/Builder/with(entitlementVerificationMode:)</code>, which is disabled by default.
+/// <h3>Example:</h3>
+/// \code
+/// let purchases = Purchases.configure(
+///   with: Configuration
+///     .builder(withAPIKey: "")
+///     .with(entitlementVerificationMode: .informational)
+/// )
+///
+/// let customerInfo = try await purchases.customerInfo()
+/// if customerInfo.entitlements.verification != .verified {
+///   print("Entitlements could not be verified")
+/// }
+///
+/// \endcode<h3>Related Articles</h3>
+/// <ul>
+///   <li>
+///     <a href="https://rev.cat/trusted-entitlements">Documentation</a>
+///   </li>
+/// </ul>
+/// <h3>Related Symbols</h3>
+/// <ul>
+///   <li>
+///     <code>Configuration/EntitlementVerificationMode</code>
+///   </li>
+///   <li>
+///     <code>Configuration/Builder/with(entitlementVerificationMode:)</code>
+///   </li>
+///   <li>
+///     <code>EntitlementInfos/verification</code>
+///   </li>
+/// </ul>
+typedef SWIFT_ENUM_NAMED(NSInteger, RCVerificationResult, "VerificationResult", open) {
 /// No verification was done.
 /// This can happen for multiple reasons:
 /// <ol>
