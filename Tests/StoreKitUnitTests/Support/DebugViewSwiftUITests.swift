@@ -32,7 +32,7 @@ class DebugViewSwiftUITests: TestCase {
 
     func testLoadingState() {
         expect(self.view(with: .init(), width: 300, height: 400))
-            .to(haveValidSnapshot(as: .image, separateOSVersions: true))
+            .to(haveValidSnapshot(as: .image))
     }
 
     func testDebugView() throws {
@@ -56,7 +56,7 @@ class DebugViewSwiftUITests: TestCase {
         ))
 
         expect(self.view(with: model, width: 450, height: 900))
-            .to(haveValidSnapshot(as: .image, separateOSVersions: true))
+            .to(haveValidSnapshot(as: .image))
     }
 
 }
