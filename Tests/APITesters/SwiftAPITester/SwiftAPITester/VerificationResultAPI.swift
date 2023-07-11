@@ -10,6 +10,8 @@ import RevenueCat
 
 func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
                                 _ result: VerificationResult = .notRequested) {
+    let _: Bool = result.isVerified
+
     switch mode {
     case .disabled,
             .informational,

@@ -31,7 +31,7 @@ import Foundation
 /// )
 ///
 /// let customerInfo = try await purchases.customerInfo()
-/// if customerInfo.entitlements.verification != .verified {
+/// if !customerInfo.entitlements.verification.isVerified {
 ///   print("Entitlements could not be verified")
 /// }
 /// ```
@@ -67,6 +67,20 @@ public enum VerificationResult: Int {
 }
 
 extension VerificationResult: Sendable, Codable {}
+
+extension VerificationResult {
+
+    /// Whether the result is ``VerificationResult/verified`` or ``VerificationResult/verifiedOnDevice``.
+    public var isVerified: Bool {
+        switch self {
+        case .verified, .verifiedOnDevice:
+            return true
+        case .notRequested, .failed:
+            return false
+        }
+    }
+
+}
 
 extension VerificationResult: DefaultValueProvider {
 
