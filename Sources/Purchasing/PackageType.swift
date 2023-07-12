@@ -61,6 +61,31 @@ extension PackageType: CustomDebugStringConvertible {
 
 }
 
+extension PackageType: Codable {
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        if let description = self.description {
+            try container.encode(description)
+        } else {
+            try container.encodeNil()
+        }
+    }
+
+    // swiftlint:disable:next missing_docs
+    public init(from decoder: Decoder) throws {
+        do {
+            self = Package.packageType(from: try decoder.singleValueContainer().decode(String.self))
+        } catch {
+            ErrorUtils.logDecodingError(error, type: Self.self)
+            self = .unknown
+        }
+    }
+
+}
+
 extension PackageType {
 
     var description: String? {
