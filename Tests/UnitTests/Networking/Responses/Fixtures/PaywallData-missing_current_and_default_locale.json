@@ -5,7 +5,7 @@
             "title": "Paywall",
             "subtitle": "Description",
             "cta": "Purchase now",
-            "offer_details": "{{price_per_month}} per month"
+            "offer_details": "{{ price_per_month }} per month"
         }
     },
     "default_locale": "es_ES",

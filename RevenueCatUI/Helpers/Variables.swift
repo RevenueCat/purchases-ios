@@ -49,11 +49,11 @@ enum VariableHandler {
         return replacedString
     }
 
-    private static let pattern = "{{}}"
+    private static let pattern = "{{  }}"
     // Fix-me: this can be implemented using the new Regex from Swift.
     // This regex is known at compile time and tested:
     // swiftlint:disable:next force_try
-    private static let regex = try! NSRegularExpression(pattern: "\\{\\{(.+?)\\}\\}", options: [])
+    private static let regex = try! NSRegularExpression(pattern: "\\{\\{ (\\w+) \\}\\}", options: [])
 
 }
 

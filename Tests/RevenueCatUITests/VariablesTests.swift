@@ -22,32 +22,36 @@ class VariablesTests: TestCase {
         expect(self.process("Hello")) == "Hello"
     }
 
+    func testVariableWithNoSpaces() {
+        expect(self.process("{{price_per_month}}")) == "{{price_per_month}}"
+    }
+
     func testPricePerMonth() {
         self.provider.localizedPricePerMonth = "$3.99"
-        expect(self.process("{{price_per_month}} per month")) == "$3.99 per month"
+        expect(self.process("{{ price_per_month }} per month")) == "$3.99 per month"
     }
 
     func testProductName() {
         self.provider.productName = "MindSnacks"
-        expect(self.process("Purchase {{product_name}}")) == "Purchase MindSnacks"
+        expect(self.process("Purchase {{ product_name }}")) == "Purchase MindSnacks"
     }
 
     func testMultipleVariables() {
         self.provider.productName = "Pro"
         self.provider.localizedPricePerMonth = "$1.99"
-        expect(self.process("Unlock {{product_name}} for {{price_per_month}}")) == "Unlock Pro for $1.99"
+        expect(self.process("Unlock {{ product_name }} for {{ price_per_month }}")) == "Unlock Pro for $1.99"
     }
 
     func testHandlesUnknownVariablesGracefully() {
-        expect(self.process("Purchase {{unknown}}")) == "Purchase "
+        expect(self.process("Purchase {{ unknown }}")) == "Purchase "
     }
 
     func testProcessesLocalizedConfiguration() {
         let configuration = PaywallData.LocalizedConfiguration(
-            title: "Title {{product_name}}",
-            subtitle: "Price: {{price_per_month}}",
-            callToAction: "Unlock {{product_name}} for {{price_per_month}}",
-            offerDetails: "Purchase for {{price_per_month}}"
+            title: "Title {{ product_name }}",
+            subtitle: "Price: {{ price_per_month }}",
+            callToAction: "Unlock {{ product_name }} for {{ price_per_month }}",
+            offerDetails: "Purchase for {{ price_per_month }}"
         )
         let processed = configuration.processVariables(with: TestData.testPackage)
 
