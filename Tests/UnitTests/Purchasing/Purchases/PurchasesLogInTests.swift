@@ -82,8 +82,12 @@ class PurchasesLogInTests: BasePurchasesTests {
 
     func testLogOutWithFailure() {
         let error = BackendError.networkError(.offlineConnection()).asPurchasesError
-
         self.identityManager.mockLogOutError = error
+
+        expect(self.backend.getCustomerInfoCallCount).toEventually(
+            equal(1),
+            description: "Initial cache update should take place"
+        )
 
         let result = waitUntilValue { completed in
             self.purchases.logOut { customerInfo, error in
@@ -94,7 +98,10 @@ class PurchasesLogInTests: BasePurchasesTests {
         expect(result).to(beFailure())
         expect(result?.error).to(matchError(error))
 
-        expect(self.backend.getCustomerInfoCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount).to(
+            equal(1),
+            description: "Customer info should not have been updated"
+        )
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 
