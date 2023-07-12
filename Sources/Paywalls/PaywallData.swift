@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// The data necessary to display a paywall using the `Paywalls` library.
+/// The data necessary to display a paywall using the `RevenueCatUI` library.
 /// They can be created and configured in the dashboard, then access from ``Offering/paywall``.
 public struct PaywallData {
 
