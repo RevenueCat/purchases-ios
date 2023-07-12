@@ -84,6 +84,19 @@
                     "platform_product_identifier": "com.revenuecat.other_product"
                 }
             ]
+        },
+        {
+            "description": "offering with invalid paywall",
+            "identifier": "invalid_paywall",
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ],
+            "paywall": {
+                "Missing": "data"
+            }
         }
     ]
 }

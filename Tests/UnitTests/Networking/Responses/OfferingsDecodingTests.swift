@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(5))
+        expect(self.response.offerings).to(haveCount(6))
     }
 
     func testDecodesFirstOffering() throws {
@@ -124,6 +124,14 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
+    }
+
+    func testIgnoresInvalidPaywallData() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 5])
+
+        expect(offering.identifier) == "invalid_paywall"
+        expect(offering.packages).to(haveCount(1))
+        expect(offering.paywall).to(beNil())
     }
 
     func testEncoding() throws {
