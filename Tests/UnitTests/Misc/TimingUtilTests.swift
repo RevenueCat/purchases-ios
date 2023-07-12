@@ -212,7 +212,7 @@ class TimingUtilCompletionBlockTests: TestCase {
         TimingUtil.measure(self.clock) { [clock = self.clock!] completion in
             clock.advance(by: sleepDuration)
             Self.asynchronousWork(expectedResult, completion)
-        } result: { value, time in
+        } result: { (value: Int, time: TimingUtil.Duration) in
             result = value
             duration = time
         }
