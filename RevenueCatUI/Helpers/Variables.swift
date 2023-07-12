@@ -4,14 +4,8 @@ import RevenueCat
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PaywallData.LocalizedConfiguration {
 
-    func processVariables(with package: Package) -> Self {
-        var copy = self
-        copy.title.process(with: package)
-        copy.subtitle.process(with: package)
-        copy.callToAction.process(with: package)
-        copy.offerDetails.process(with: package)
-
-        return copy
+    func processVariables(with package: Package) -> ProcessedLocalizedConfiguration {
+        return .init(self, package)
     }
 
 }
@@ -63,10 +57,10 @@ enum VariableHandler {
 
 }
 
-private extension String {
+extension String {
 
-    mutating func process(with provider: VariableDataProvider) {
-        self = VariableHandler.processVariables(in: self, with: provider)
+    func processed(with provider: VariableDataProvider) -> Self {
+        return VariableHandler.processVariables(in: self, with: provider)
     }
 
 }

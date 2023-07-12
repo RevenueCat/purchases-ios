@@ -5,7 +5,7 @@ import SwiftUI
 struct Example1Template: TemplateViewType {
 
     private let package: Package
-    private let localization: PaywallData.LocalizedConfiguration
+    private let localization: ProcessedLocalizedConfiguration
     private let configuration: PaywallData.Configuration
 
     init(

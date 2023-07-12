@@ -28,19 +28,34 @@ public struct PaywallData {
 
 }
 
+/// Defines the necessary localized information for a paywall.
+public protocol PaywallLocalizedConfiguration {
+
+    /// The title of the paywall screen.
+    var title: String { get }
+    /// The subtitle of the paywall screen.
+    var subtitle: String { get }
+    /// The content of the main action button for purchasing a subscription.
+    var callToAction: String { get }
+    /// Description for the offer to be purchased.
+    var offerDetails: String { get }
+
+}
+
 extension PaywallData {
 
-    /// Configuration containing values for the necessary `Locale`s.
-    public struct LocalizedConfiguration {
+    /// Defines the necessary localized information for a paywall.
+    public struct LocalizedConfiguration: PaywallLocalizedConfiguration {
 
-        /// The title of the paywall screen.
+        // Docs inherited from the protocol
+        // swiftlint:disable missing_docs
+
         public var title: String
-        /// The subtitle of the paywall screen.
         public var subtitle: String
-        /// The content of the main action button for purchasing a subscription.
         public var callToAction: String
-        /// Description for the offer to be purchased.
         public var offerDetails: String
+
+        // swiftlint:enable missing_docs
 
         /// swiftlint:disable:next missing_docs
         public init(
