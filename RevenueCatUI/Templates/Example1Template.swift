@@ -41,6 +41,11 @@ struct Example1Template: TemplateViewType {
                 .aspectRatio(1, contentMode: .fill)
                 .edgesIgnoringSafeArea(.top)
                 .padding(.bottom)
+                .mask(alignment: .top) {
+                    Circle()
+                        .offset(y: -160)
+                        .scale(2.5)
+                }
 
             Spacer()
 
