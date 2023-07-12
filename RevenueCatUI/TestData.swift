@@ -44,11 +44,20 @@ internal enum TestData {
         introductoryDiscount: nil,
         discounts: []
     )
+    static let testPackage = Package(
+        identifier: "monthly",
+        packageType: .monthly,
+        storeProduct: product1.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
 
     static let paywall = PaywallData(
         template: .example1,
         config: .init(),
-        localization: .init(callToAction: "Purchase Now", title: "Example paywall")
+        localization: .init(title: "Ignite your child's curiosity",
+                            subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                            callToAction: "Continue",
+                            offerDetails: "Start your trial, then {{price_per_month}} per month")
     )
 
     static let offering = Offering(
@@ -57,12 +66,7 @@ internal enum TestData {
         metadata: [:],
         paywall: Self.paywall,
         availablePackages: [
-            .init(
-                identifier: "monthly",
-                packageType: .monthly,
-                storeProduct: product1.toStoreProduct(),
-                offeringIdentifier: Self.offeringIdentifier
-            ),
+            testPackage,
             .init(
                 identifier: "annual",
                 packageType: .annual,

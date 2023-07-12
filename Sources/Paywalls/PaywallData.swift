@@ -33,15 +33,26 @@ extension PaywallData {
     /// Configuration containing values for the necessary `Locale`s.
     public struct LocalizedConfiguration {
 
-        /// The content of the main action button for purchasing a subscription.
-        public let callToAction: String
         /// The title of the paywall screen.
-        public let title: String
+        public var title: String
+        /// The subtitle of the paywall screen.
+        public var subtitle: String
+        /// The content of the main action button for purchasing a subscription.
+        public var callToAction: String
+        /// Description for the offer to be purchased.
+        public var offerDetails: String
 
         /// swiftlint:disable:next missing_docs
-        public init(callToAction: String, title: String) {
-            self.callToAction = callToAction
+        public init(
+            title: String,
+            subtitle: String,
+            callToAction: String,
+            offerDetails: String
+        ) {
             self.title = title
+            self.subtitle = subtitle
+            self.callToAction = callToAction
+            self.offerDetails = offerDetails
         }
 
     }
@@ -128,8 +139,10 @@ extension PaywallData {
 extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
-        case callToAction = "cta"
         case title
+        case subtitle
+        case callToAction = "cta"
+        case offerDetails
     }
 
 }
