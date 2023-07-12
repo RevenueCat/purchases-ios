@@ -253,7 +253,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        expect(self.httpClient.calls).toEventually(haveCount(2), timeout: defaultTimeout)
         expect(completionCalled.value).toEventually(equal(2))
     }
 
@@ -623,7 +623,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        expect(self.httpClient.calls).toEventually(haveCount(2), timeout: defaultTimeout)
         expect(completionCalled.value).toEventually(equal(2))
     }
 

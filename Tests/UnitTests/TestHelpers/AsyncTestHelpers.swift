@@ -17,6 +17,16 @@ import Nimble
 
 @testable import RevenueCat
 
+/// Overload for `Nimble.waitUntil` with our default timeout
+func waitUntil(
+    timeout: DispatchTimeInterval = defaultTimeout,
+    file: FileString = #file,
+    line: UInt = #line,
+    action: @escaping (@escaping () -> Void) -> Void
+) {
+    Nimble.waitUntil(timeout: timeout, file: file, line: line, action: action)
+}
+
 /// Waits for `action` to be invoked, and returns the provided value, or `nil` on timeout.
 /// Usage:
 /// ```swift
@@ -27,7 +37,7 @@ import Nimble
 /// }
 /// ```
 func waitUntilValue<Value>(
-    timeout: DispatchTimeInterval = AsyncDefaults.timeout,
+    timeout: DispatchTimeInterval = defaultTimeout,
     file: FileString = #file,
     line: UInt = #line,
     action: @escaping (@escaping @Sendable (Value?) -> Void) -> Void
@@ -53,8 +63,8 @@ func waitUntilValue<Value>(
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait(
     until condition: @Sendable () async -> Bool,
-    timeout: DispatchTimeInterval = AsyncDefaults.timeout,
-    pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
+    timeout: DispatchTimeInterval = defaultTimeout,
+    pollInterval: DispatchTimeInterval = defaultPollInterval,
     description: String? = nil,
     file: FileString = #fileID,
     line: UInt = #line
@@ -88,3 +98,7 @@ func asyncWait(
         throw ConditionFailedError()
     }
 }
+
+// Higher value required to avoid slow CI failing tests.
+let defaultTimeout: DispatchTimeInterval = .seconds(2)
+let defaultPollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval
