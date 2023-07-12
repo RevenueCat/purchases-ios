@@ -57,41 +57,49 @@ internal enum TestData {
         offeringIdentifier: Self.offeringIdentifier
     )
 
-    static let paywall = PaywallData(
+    static let packages = [
+        Self.packageWithIntroOffer,
+        Self.packageWithNoIntroOffer
+    ]
+
+    static let paywallWithIntroOffer = PaywallData(
         template: .example1,
-        config: .init(),
-        localization: .init(
-            title: "Ignite your child's curiosity",
-            subtitle: "Get access to all our educational content trusted by thousands of parents.",
-            callToAction: "Continue",
-            callToActionWithIntroOffer: "Continue",
-            offerDetails: "{{ price_per_month }} per month",
-            offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
-        )
+        config: .init(
+            packages: [.monthly]
+        ),
+        localization: Self.localization
     )
-
-    // Fix-me: remove this when we can filter by package type
-
-    static let offering = Offering(
-        identifier: Self.offeringIdentifier,
-        serverDescription: "Main offering",
-        metadata: [:],
-        paywall: Self.paywall,
-        availablePackages: [
-            packageWithNoIntroOffer,
-            packageWithIntroOffer
-        ]
+    static let paywallWithNoIntroOffer = PaywallData(
+        template: .example1,
+        config: .init(
+            packages: [.annual]
+        ),
+        localization: Self.localization
     )
 
     static let offeringWithIntroOffer = Offering(
         identifier: Self.offeringIdentifier,
         serverDescription: "Main offering",
         metadata: [:],
-        paywall: Self.paywall,
-        availablePackages: [
-            packageWithIntroOffer,
-            packageWithNoIntroOffer
-        ]
+        paywall: Self.paywallWithIntroOffer,
+        availablePackages: Self.packages
+    )
+
+    static let offeringWithNoIntroOffer = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Main offering",
+        metadata: [:],
+        paywall: Self.paywallWithNoIntroOffer,
+        availablePackages: Self.packages
+    )
+
+    private static let localization: PaywallData.LocalizedConfiguration = .init(
+        title: "Ignite your child's curiosity",
+        subtitle: "Get access to all our educational content trusted by thousands of parents.",
+        callToAction: "Continue",
+        callToActionWithIntroOffer: "Continue",
+        offerDetails: "{{ price_per_month }} per month",
+        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
     )
 
     private static let offeringIdentifier = "offering"
