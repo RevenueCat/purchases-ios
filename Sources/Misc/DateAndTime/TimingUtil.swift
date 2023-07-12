@@ -32,14 +32,15 @@ extension TimingUtil {
     /// }
     /// ```
     static func measure<Value>(
+        _ clock: ClockType = Clock.default,
         _ work: @Sendable () async throws -> Value
     ) async rethrows -> (result: Value, duration: Duration) {
-        let start: DispatchTime = .now()
+        let start = clock.currentTime
         let result = try await work()
 
         return (
             result: result,
-            duration: start.durationUntilNow
+            duration: clock.durationSince(start)
         )
     }
 
@@ -61,11 +62,12 @@ extension TimingUtil {
         message: CustomStringConvertible,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         work: @Sendable () async throws -> Value
     ) async rethrows -> Value {
         precondition(threshold > 0, "Invalid threshold: \(threshold)")
 
-        let (result, duration) = try await self.measure(work)
+        let (result, duration) = try await self.measure(clock, work)
 
         Self.logIfRequired(duration: duration,
                            threshold: threshold,
@@ -94,6 +96,7 @@ extension TimingUtil {
         message: Message,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         _ work: @Sendable () async throws -> Value
     ) async rethrows -> Value {
         return try await self.measureAndLogIfTooSlow(
@@ -119,14 +122,15 @@ extension TimingUtil {
     /// }
     /// ```
     static func measureSync<Value>(
+        _ clock: ClockType = Clock.default,
         _ work: () throws -> Value
     ) rethrows -> (result: Value, duration: Duration) {
-        let start: DispatchTime = .now()
+        let start = clock.currentTime
         let result = try work()
 
         return (
             result: result,
-            duration: start.durationUntilNow
+            duration: clock.durationSince(start)
         )
     }
 
@@ -148,6 +152,7 @@ extension TimingUtil {
         message: Message,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         _ work: () throws -> Value
     ) rethrows -> Value {
         return try self.measureSyncAndLogIfTooSlow(
@@ -176,9 +181,10 @@ extension TimingUtil {
         message: Message,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         _ work: () throws -> Value
     ) rethrows -> Value {
-        let (result, duration) = try self.measureSync(work)
+        let (result, duration) = try self.measureSync(clock, work)
 
         Self.logIfRequired(duration: duration,
                            threshold: threshold,
@@ -205,13 +211,14 @@ extension TimingUtil {
     /// }
     /// ```
     static func measure<Value>(
+        _ clock: ClockType = Clock.default,
         _ work: (@escaping @Sendable (Value) -> Void) -> Void,
         result: @escaping (Value, Duration) -> Void
     ) {
-        let start: DispatchTime = .now()
+        let start = clock.currentTime
 
         work { value in
-            result(value, start.durationUntilNow)
+            result(value, clock.durationSince(start))
         }
     }
 
@@ -235,10 +242,11 @@ extension TimingUtil {
         message: CustomStringConvertible,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         work: (@escaping @Sendable (Value) -> Void) -> Void,
         result: @escaping (Value) -> Void
     ) {
-        Self.measure(work) { value, duration in
+        Self.measure(clock, work) { value, duration in
             Self.logIfRequired(duration: duration,
                                threshold: threshold,
                                message: message,
@@ -269,6 +277,7 @@ extension TimingUtil {
         message: CustomStringConvertible,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
+        clock: ClockType = Clock.default,
         work: (@escaping @Sendable (Value) -> Void) -> Void,
         result: @escaping (Value) -> Void
     ) {
@@ -276,6 +285,7 @@ extension TimingUtil {
                                     message: message,
                                     level: level,
                                     intent: intent,
+                                    clock: clock,
                                     work: work,
                                     result: result)
     }
@@ -305,13 +315,13 @@ private extension TimingUtil {
 
 }
 
-private extension DispatchTime {
+private extension ClockType {
 
-    var durationUntilNow: TimingUtil.Duration {
+    func durationSince(_ startTime: DispatchTime) -> TimingUtil.Duration {
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return self.distance(to: .now()).seconds
+            return startTime.distance(to: self.currentTime).seconds
         } else {
-            return TimingUtil.Duration(DispatchTime.now().uptimeNanoseconds - self.uptimeNanoseconds) / 1_000_000_000
+            return TimingUtil.Duration(self.currentTime.uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000_000
         }
     }
 

@@ -19,18 +19,23 @@ import XCTest
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class TimingUtilAsyncTests: TestCase {
 
+    private var clock: TestClock!
+
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.clock = TestClock()
     }
 
     func testMeasureNonThrowingBlockReturnsValueAndDuration() async {
         let expectedResult = Int.random(in: 0..<1000)
-        let sleepDuration: DispatchTimeInterval = .milliseconds(10)
+        let sleepDuration: DispatchTimeInterval = .seconds(10)
 
-        let (result, time) = await TimingUtil.measure { () -> Int in
-            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
+        let (result, time) = await TimingUtil.measure(self.clock) { [clock = self.clock!] () -> Int in
+            clock.advance(by: sleepDuration)
+            await Self.asyncMethod()
 
             return expectedResult
         }
@@ -56,12 +61,14 @@ class TimingUtilAsyncTests: TestCase {
 
     func testMeasureAndLogWithResultDoesNotLogIfLowerThanThreshold() async {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(-5)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(-5)
 
-        let result = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
-                                                             message: "Too slow") { () -> Int in
-            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
+        let result: Int = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
+                                                                  message: "Too slow",
+                                                                  clock: self.clock) { [clock = self.clock!] in
+            clock.advance(by: sleepDuration)
+            await Self.asyncMethod()
 
             return expectedResult
         }
@@ -72,16 +79,18 @@ class TimingUtilAsyncTests: TestCase {
 
     func testMeasureAndLogWithResult() async {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(10)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(10)
 
         let message = "Computation took too long"
         let level: LogLevel = .info
 
-        let result = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
-                                                             message: message,
-                                                             level: level) { () -> Int in
-            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
+        let result: Int = await TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
+                                                                  message: message,
+                                                                  level: level,
+                                                                  clock: self.clock) { [clock = self.clock!] in
+            clock.advance(by: sleepDuration)
+            await Self.asyncMethod()
 
             return expectedResult
         }
@@ -117,13 +126,13 @@ class TimingUtilAsyncTests: TestCase {
 
     func testMeasureSyncAndLogDoesNotLogIfLowerThanThreshold() {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(-5)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(-5)
 
         let result: Int = TimingUtil.measureSyncAndLogIfTooSlow(threshold: threshold.seconds,
-                                                                message: "Too slow") {
-            Thread.sleep(forTimeInterval: sleepDuration.seconds)
-
+                                                                message: "Too slow",
+                                                                clock: self.clock) { [clock = self.clock!] in
+            clock.advance(by: sleepDuration)
             return expectedResult
         }
 
@@ -150,16 +159,19 @@ class TimingUtilAsyncTests: TestCase {
 
     func testMeasureSyncAndLogWithResult() {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(10)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(10)
 
         let message = "Computation took too long"
         let level: LogLevel = .info
 
-        let result = TimingUtil.measureSyncAndLogIfTooSlow(threshold: threshold.seconds,
-                                                           message: message,
-                                                           level: level) { () -> Int in
-            Thread.sleep(forTimeInterval: sleepDuration.seconds)
+        let result: Int = TimingUtil.measureSyncAndLogIfTooSlow(
+            threshold: threshold.seconds,
+            message: message,
+            level: level,
+            clock: self.clock
+        ) { [clock = self.clock!] in
+            clock.advance(by: sleepDuration)
 
             return expectedResult
         }
@@ -175,21 +187,31 @@ class TimingUtilAsyncTests: TestCase {
             level: level
         )
     }
+
+    private static func asyncMethod() async {}
+
 }
 
 class TimingUtilCompletionBlockTests: TestCase {
 
+    private var clock: TestClock!
+
+    override func setUp() {
+        super.setUp()
+
+        self.clock = TestClock()
+    }
+
     func testMeasureWithCompletionBlock() {
         let expectedResult: Int = .random(in: 0..<1000)
-        let sleepDuration: DispatchTimeInterval = .milliseconds(10)
+        let sleepDuration: DispatchTimeInterval = .seconds(10)
 
         var result: Int?
         var duration: TimingUtil.Duration?
 
-        TimingUtil.measure { completion in
-            DispatchQueue.main.asyncAfter(deadline: .now() + sleepDuration) {
-                Self.asynchronousWork(expectedResult, completion)
-            }
+        TimingUtil.measure(self.clock) { [clock = self.clock!] completion in
+            clock.advance(by: sleepDuration)
+            Self.asynchronousWork(expectedResult, completion)
         } result: { value, time in
             result = value
             duration = time
@@ -203,16 +225,16 @@ class TimingUtilCompletionBlockTests: TestCase {
 
     func testMeasureAndLogDoesNotLogIfLowerThanThreshold() {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(-5)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(-5)
 
         var result: Int?
 
         TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
-                                          message: "Too slow") { completion in
-            DispatchQueue.main.asyncAfter(deadline: .now() + sleepDuration) {
-                Self.asynchronousWork(expectedResult, completion)
-            }
+                                          message: "Too slow",
+                                          clock: self.clock) { [clock = self.clock!] completion in
+            clock.advance(by: sleepDuration)
+            Self.asynchronousWork(expectedResult, completion)
         } result: { value in
             result = value
         }
@@ -224,8 +246,8 @@ class TimingUtilCompletionBlockTests: TestCase {
 
     func testMeasureAndLogWithResult() {
         let expectedResult = Int.random(in: 0..<1000)
-        let threshold: DispatchTimeInterval = .milliseconds(10)
-        let sleepDuration = threshold + .milliseconds(10)
+        let threshold: DispatchTimeInterval = .seconds(10)
+        let sleepDuration = threshold + .seconds(10)
 
         let message = "Computation took too long"
         let level: LogLevel = .info
@@ -234,10 +256,10 @@ class TimingUtilCompletionBlockTests: TestCase {
 
         TimingUtil.measureAndLogIfTooSlow(threshold: threshold.seconds,
                                           message: message,
-                                          level: level) { completion in
-            DispatchQueue.main.asyncAfter(deadline: .now() + sleepDuration) {
-                Self.asynchronousWork(expectedResult, completion)
-            }
+                                          level: level,
+                                          clock: self.clock) { [clock = self.clock!] completion in
+            clock.advance(by: sleepDuration)
+            Self.asynchronousWork(expectedResult, completion)
         } result: { value in
             result = value
         }
