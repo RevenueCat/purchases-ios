@@ -185,32 +185,28 @@ class PurchasesLogInTests: BasePurchasesTests {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let appUserID = "user ID"
-        let logger = TestLogHandler()
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         _ = try await self.purchases.logIn(appUserID)
 
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string,
-                                         allowNoMessages: true)
+        self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string,
+                                              allowNoMessages: true)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testLogInWithStaticStringLogsMessage() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        let logger = TestLogHandler()
-
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         _ = try await self.purchases.logIn("Static string")
 
-        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
     func testCompletionBlockLogInWithStringDoesNotLogMessage() {
         let appUserID = "user ID"
-        let logger = TestLogHandler()
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
@@ -220,12 +216,10 @@ class PurchasesLogInTests: BasePurchasesTests {
             }
         }
 
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+        self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
     func testCompletionBlockLogInWithStaticStringLogsMessage() {
-        let logger = TestLogHandler()
-
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         waitUntil { completed in
@@ -234,7 +228,7 @@ class PurchasesLogInTests: BasePurchasesTests {
             }
         }
 
-        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
     func testLogInClearsTrialEligibilityCache() {

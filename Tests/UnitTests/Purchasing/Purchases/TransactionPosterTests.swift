@@ -95,19 +95,16 @@ class TransactionPosterTests: TestCase {
     }
 
     func testFinishTransactionInObserverMode() throws {
-        let logger = TestLogHandler()
-
         waitUntil { completed in
             self.poster.finishTransactionIfNeeded(self.mockTransaction) {
                 completed()
             }
         }
 
-        logger.verifyMessageWasLogged(Strings.purchase.finishing_transaction(self.mockTransaction))
+        self.logger.verifyMessageWasLogged(Strings.purchase.finishing_transaction(self.mockTransaction))
     }
 
     func testFinishTransactionDoesNotFinishInObserverMode() throws {
-        let logger = TestLogHandler()
         self.setUp(observerMode: true)
 
         waitUntil { completed in
@@ -116,7 +113,7 @@ class TransactionPosterTests: TestCase {
             }
         }
 
-        logger.verifyMessageWasNotLogged("Finished transaction")
+        self.logger.verifyMessageWasNotLogged("Finished transaction")
     }
 
 }

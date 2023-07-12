@@ -1175,15 +1175,13 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     #endif
 
     func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsNotDefined() async throws {
-        let logger = TestLogHandler()
-
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         _ = try? await self.orchestrator.syncPurchases(receiptRefreshPolicy: .never,
                                                        isRestore: false,
                                                        initiationSource: .restore)
 
-        logger.verifyMessageWasNotLogged(
+        self.logger.verifyMessageWasNotLogged(
             Strings
                 .purchase
                 .restorepurchases_called_with_allow_sharing_appstore_account_false
@@ -1191,8 +1189,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsTrue() async throws {
-        let logger = TestLogHandler()
-
         self.orchestrator.allowSharingAppStoreAccount = true
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1201,7 +1197,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                        isRestore: false,
                                                        initiationSource: .restore)
 
-        logger.verifyMessageWasNotLogged(
+        self.logger.verifyMessageWasNotLogged(
             Strings
                 .purchase
                 .restorepurchases_called_with_allow_sharing_appstore_account_false
@@ -1209,8 +1205,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testRestorePurchasesLogsWarningIfAllowSharingAppStoreAccountIsFalse() async throws {
-        let logger = TestLogHandler()
-
         self.orchestrator.allowSharingAppStoreAccount = false
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
@@ -1219,7 +1213,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                        isRestore: false,
                                                        initiationSource: .restore)
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings
                 .purchase
                 .restorepurchases_called_with_allow_sharing_appstore_account_false,

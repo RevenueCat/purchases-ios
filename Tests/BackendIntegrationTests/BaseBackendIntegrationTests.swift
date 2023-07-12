@@ -36,7 +36,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 }
 
 @MainActor
-class BaseBackendIntegrationTests: XCTestCase {
+class BaseBackendIntegrationTests: TestCase {
 
     private var userDefaults: UserDefaults!
     private var testUUID: UUID!

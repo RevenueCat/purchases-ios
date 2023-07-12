@@ -46,12 +46,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchasePackage() async throws {
-        let logger = TestLogHandler()
-
         let package = try await self.monthlyPackage
         try await self.purchaseMonthlyOffering()
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
                 productID: package.storeProduct.productIdentifier,
                 offeringID: package.offeringIdentifier
@@ -66,8 +64,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
         let package = try await self.monthlyPackage
 
-        let logger = TestLogHandler()
-
         Purchases.shared.cachePresentedOfferingIdentifier(
             package.offeringIdentifier,
             productIdentifier: package.storeProduct.productIdentifier
@@ -75,7 +71,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.purchaseMonthlyProduct()
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
                 productID: package.storeProduct.productIdentifier,
                 offeringID: package.offeringIdentifier

@@ -85,8 +85,6 @@ extension OfferingsManagerTests {
     }
 
     func testOfferingsIgnoresProductsNotFoundAndLogsWarning() throws {
-        let logger = TestLogHandler()
-
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             MockData.backendOfferingsResponseWithUnknownProducts
@@ -109,7 +107,7 @@ extension OfferingsManagerTests {
         expect(offerings["base"]!.monthly).toNot(beNil())
         expect(offerings["base"]!.monthly?.storeProduct).toNot(beNil())
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.offering.cannot_find_product_configuration_error(identifiers: ["yearly_freetrial"]),
             level: .warn
         )
@@ -211,8 +209,6 @@ extension OfferingsManagerTests {
     }
 
     func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
-        let logger = TestLogHandler()
-
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             .init(currentOfferingId: "", offerings: [])

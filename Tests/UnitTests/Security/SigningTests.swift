@@ -43,8 +43,6 @@ class SigningTests: TestCase {
     }
 
     func testVerifySignatureWithInvalidSignatureReturnsFalseAndLogsError() throws {
-        let logger = TestLogHandler()
-
         let message = "Hello World"
         let nonce = "nonce"
         let requestDate: UInt64 = 1677005916012
@@ -62,7 +60,7 @@ class SigningTests: TestCase {
             publicKey: Signing.loadPublicKey()
         )) == false
 
-        logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
+        self.logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
     }
 
     func testVerifySignatureWithExpiredIntermediateSignatureReturnsFalseAndLogsError() throws {
@@ -87,15 +85,13 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        let logger = TestLogHandler()
-
         expect(self.signing.verify(
             signature: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
         )) == false
 
-        logger.verifyMessageWasLogged("Intermediate key expired", level: .warn)
+        self.logger.verifyMessageWasLogged("Intermediate key expired", level: .warn)
     }
 
     func testVerifySignatureWithInvalidIntermediateSignatureExpirationReturnsFalseAndLogsError() throws {
@@ -120,16 +116,16 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        let logger = TestLogHandler()
-
         expect(self.signing.verify(
             signature: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
         )) == false
 
-        logger.verifyMessageWasLogged(Strings.signing.intermediate_key_invalid(Self.invalidIntermediateKeyExpiration),
-                                      level: .warn)
+        self.logger.verifyMessageWasLogged(
+            Strings.signing.intermediate_key_invalid(Self.invalidIntermediateKeyExpiration),
+            level: .warn
+        )
     }
 
     func testVerifySignatureWithInvalidSignature() throws {
@@ -147,8 +143,6 @@ class SigningTests: TestCase {
     }
 
     func testVerifySignatureLogsWarningWhenIntermediateSignatureIsInvalid() throws {
-        let logger = TestLogHandler()
-
         let signature = String(repeating: "x", count: Signing.SignatureComponent.totalSize)
             .asData
 
@@ -164,13 +158,11 @@ class SigningTests: TestCase {
             publicKey: Signing.loadPublicKey()
         )
 
-        logger.verifyMessageWasLogged("Intermediate key failed verification",
-                                      level: .warn)
+        self.logger.verifyMessageWasLogged("Intermediate key failed verification",
+                                           level: .warn)
     }
 
     func testVerifySignatureLogsWarningWhenFail() throws {
-        let logger = TestLogHandler()
-
         let message = "Hello World"
         let nonce = "nonce"
         let requestDate: UInt64 = 1677005916012
@@ -197,13 +189,11 @@ class SigningTests: TestCase {
             )
         ) == false
 
-        logger.verifyMessageWasLogged(Strings.signing.signature_failed_verification,
-                                      level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.signing.signature_failed_verification,
+                                           level: .warn)
     }
 
     func testVerifySignatureLogsWarningWhenSizeIsIncorrect() throws {
-        let logger = TestLogHandler()
-
         let signature = "invalid signature".asData
 
         _ = self.signing.verify(
@@ -218,8 +208,8 @@ class SigningTests: TestCase {
             publicKey: Signing.loadPublicKey()
         )
 
-        logger.verifyMessageWasLogged(Strings.signing.signature_invalid_size(signature),
-                                      level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.signing.signature_invalid_size(signature),
+                                           level: .warn)
     }
 
     func testVerifySignatureWithValidSignature() throws {
@@ -481,15 +471,14 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let logger = TestLogHandler()
 
         let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
         let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
 
         expect(verifiedResponse.verificationResult) == .failed
 
-        logger.verifyMessageWasLogged(Strings.signing.signature_was_requested_but_not_provided(request),
-                                      level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.signing.signature_was_requested_but_not_provided(request),
+                                           level: .warn)
     }
 
     func testResponseVerificationWithInvalidSignature() throws {
@@ -609,8 +598,6 @@ class SigningTests: TestCase {
         let message = "Hello World"
         let requestDate = Date().millisecondsSince1970
 
-        let logger = TestLogHandler()
-
         let request = HTTPRequest(method: .get, path: .postOfferForSigning, nonce: nil)
         let response = HTTPResponse<Data?>(
             statusCode: .success,
@@ -623,8 +610,8 @@ class SigningTests: TestCase {
 
         expect(verifiedResponse.verificationResult) == .notRequested
 
-        logger.verifyMessageWasNotLogged(Strings.signing.signature_was_requested_but_not_provided(request),
-                                         allowNoMessages: true)
+        self.logger.verifyMessageWasNotLogged(Strings.signing.signature_was_requested_but_not_provided(request),
+                                              allowNoMessages: true)
     }
 
 }

@@ -29,6 +29,10 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
     private(set) var testSession: SKTestSession!
 
     override func setUp() async throws {
+        // `super.setUp()` isn't called until the end of this method,
+        // but some tests might need to introspect logs during initialization.
+        super.initializeLogger()
+
         if self.testSession == nil {
             try self.configureTestSession()
         }

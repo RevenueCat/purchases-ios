@@ -159,26 +159,23 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testStaticUserIdSringLogsMessage() {
-        let logger = TestLogHandler()
-
         _ = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(appUserID: "Static string")
         )
 
-        logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string)
+        self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string)
     }
 
     func testUserIdSringDoesNotLogMessage() {
         let appUserID = "user ID"
-        let logger = TestLogHandler()
 
         _ = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(appUserID: appUserID)
         )
 
-        logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
+        self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -431,19 +428,15 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     func testConfigureWithCustomEntitlementComputationLogsInformationMessage() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
-        let logger = TestLogHandler()
-
         self.setupPurchases()
 
-        logger.verifyMessageWasLogged(Strings.configure.custom_entitlements_computation_enabled, level: .info)
+        self.logger.verifyMessageWasLogged(Strings.configure.custom_entitlements_computation_enabled, level: .info)
     }
 
     func testConfigureWithoutCustomEntitlementComputationDoesntLogInformationMessage() throws {
-        let logger = TestLogHandler()
-
         self.setupPurchases()
 
-        logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
+        self.logger.verifyMessageWasNotLogged(Strings.configure.custom_entitlements_computation_enabled)
     }
 
     func testConfigureWithCustomEntitlementComputationDisablesLogOut() throws {

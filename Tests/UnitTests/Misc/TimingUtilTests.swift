@@ -55,8 +55,6 @@ class TimingUtilAsyncTests: TestCase {
     }
 
     func testMeasureAndLogWithResultDoesNotLogIfLowerThanThreshold() async {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(-5)
@@ -69,12 +67,10 @@ class TimingUtilAsyncTests: TestCase {
         }
 
         expect(result) == expectedResult
-        expect(logger.messages).to(beEmpty())
+        expect(self.logger.messages).to(beEmpty())
     }
 
     func testMeasureAndLogWithResult() async {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(10)
@@ -93,7 +89,7 @@ class TimingUtilAsyncTests: TestCase {
         expect(result) == expectedResult
 
         // Expected: 🍎⚠️ Computation took too long (0.02 seconds)
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             String(format: "%@ %@ (%.2f seconds)",
                    LogIntent.appleWarning.prefix,
                    message,
@@ -103,8 +99,6 @@ class TimingUtilAsyncTests: TestCase {
     }
 
     func testMeasureAndLogThrowsError() async {
-        let logger = TestLogHandler()
-
         let expectedError: ErrorCode = .storeProblemError
 
         do {
@@ -118,12 +112,10 @@ class TimingUtilAsyncTests: TestCase {
             expect(error).to(matchError(expectedError))
         }
 
-        expect(logger.messages).to(beEmpty())
+        expect(self.logger.messages).to(beEmpty())
     }
 
     func testMeasureSyncAndLogDoesNotLogIfLowerThanThreshold() {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(-5)
@@ -136,12 +128,10 @@ class TimingUtilAsyncTests: TestCase {
         }
 
         expect(result) == expectedResult
-        expect(logger.messages).to(beEmpty())
+        expect(self.logger.messages).to(beEmpty())
     }
 
     func testMeasureSyncAndLogThrowsError() {
-        let logger = TestLogHandler()
-
         let expectedError: ErrorCode = .storeProblemError
 
         do {
@@ -155,12 +145,10 @@ class TimingUtilAsyncTests: TestCase {
             expect(error).to(matchError(expectedError))
         }
 
-        expect(logger.messages).to(beEmpty())
+        expect(self.logger.messages).to(beEmpty())
     }
 
     func testMeasureSyncAndLogWithResult() {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(10)
@@ -179,7 +167,7 @@ class TimingUtilAsyncTests: TestCase {
         expect(result) == expectedResult
 
         // Expected: 🍎⚠️ Computation took too long (0.02 seconds)
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             String(format: "%@ %@ (%.2f seconds)",
                    LogIntent.appleWarning.prefix,
                    message,
@@ -214,8 +202,6 @@ class TimingUtilCompletionBlockTests: TestCase {
     }
 
     func testMeasureAndLogDoesNotLogIfLowerThanThreshold() {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(-5)
@@ -233,12 +219,10 @@ class TimingUtilCompletionBlockTests: TestCase {
 
         expect(result).toEventuallyNot(beNil())
         expect(result) == expectedResult
-        expect(logger.messages).to(beEmpty())
+        expect(self.logger.messages).to(beEmpty())
     }
 
     func testMeasureAndLogWithResult() {
-        let logger = TestLogHandler()
-
         let expectedResult = Int.random(in: 0..<1000)
         let threshold: DispatchTimeInterval = .milliseconds(10)
         let sleepDuration = threshold + .milliseconds(10)
@@ -261,7 +245,7 @@ class TimingUtilCompletionBlockTests: TestCase {
         expect(result).toEventuallyNot(beNil())
         expect(result) == expectedResult
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             String(format: "%@ %@ (%.2f seconds)",
                    LogIntent.appleWarning.prefix,
                    message,

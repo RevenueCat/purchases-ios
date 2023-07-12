@@ -30,7 +30,8 @@ import Nimble
 ///
 /// ### Examples:
 /// - Initialize `TestLogHandler` for every test. This ensures that the lifetime
-/// matches that of the test, and the observed logged messages are those that happen during the test:
+/// matches that of the test, and the observed logged messages are those that happen during the test.
+/// This is already defined in every subclass of `TestCase`.
 ///
 /// ```swift
 /// private var testLogHandler: TestLogHandler!
@@ -42,18 +43,6 @@ import Nimble
 /// override func tearDown() {
 ///     self.testLogHandler = nil
 ///     super.tearDown()
-/// }
-/// ```
-///
-/// - Alternatively, `TestLogHandler` can be used locally within a single test:
-///
-/// ```swift
-/// func testExample() {
-///     let logHandler = TestLogHandler()
-///
-///     // Run some code
-///
-///     expect(logHandler.loggedMessages.onlyElement?.message) == "Expected log"
 /// }
 /// ```
 final class TestLogHandler {

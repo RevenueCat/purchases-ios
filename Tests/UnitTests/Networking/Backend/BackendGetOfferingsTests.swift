@@ -67,8 +67,6 @@ class BackendGetOfferingsTests: BaseBackendTests {
     }
 
     func testRepeatedRequestsLogDebugMessage() {
-        let logger = TestLogHandler()
-
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success,
@@ -80,7 +78,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             "Network operation '\(GetOfferingsOperation.self)' found with the same cache key",
             level: .debug
         )

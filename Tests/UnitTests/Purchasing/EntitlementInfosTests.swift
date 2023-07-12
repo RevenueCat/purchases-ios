@@ -149,8 +149,6 @@ class EntitlementInfosTests: TestCase {
     }
 
     func testSubscriptionActiveIfExpiresDateEqualsRequestDate() throws {
-        let logger = TestLogHandler()
-
         let expirationAndRequestDate = Self.formatter.string(
             from: Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds / -2)
         )
@@ -179,7 +177,7 @@ class EntitlementInfosTests: TestCase {
         )
 
         try self.verifyEntitlementActive()
-        expect(logger.messages).toNot(containElementSatisfying { $0.level == .warn })
+        expect(self.logger.messages).toNot(containElementSatisfying { $0.level == .warn })
     }
 
     func testRequestDateGracePeriodIsLongerThanOneDay() {
@@ -187,8 +185,6 @@ class EntitlementInfosTests: TestCase {
     }
 
     func testSubscriptionActiveIfExpiresDateAfterRequestDateAndRequestDateWithinGracePeriod() throws {
-        let logger = TestLogHandler()
-
         let requestDate = Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds / -2)
         let expirationDate = requestDate.addingTimeInterval(100)
 
@@ -217,12 +213,10 @@ class EntitlementInfosTests: TestCase {
         )
 
         try self.verifyEntitlementActive()
-        expect(logger.messages).toNot(containElementSatisfying { $0.level == .warn })
+        expect(self.logger.messages).toNot(containElementSatisfying { $0.level == .warn })
     }
 
     func testSubscriptionNotActiveIfExpiresDateAfterRequestDateButRequestDateIsOlderThanGracePeriod() throws {
-        let logger = TestLogHandler()
-
         let requestDate = Date().addingTimeInterval(CustomerInfo.requestDateGracePeriod.seconds * -1)
         let expirationDate = requestDate.addingTimeInterval(100)
 
@@ -251,7 +245,7 @@ class EntitlementInfosTests: TestCase {
         )
 
         try self.verifyEntitlementActive(false)
-        logger.verifyMessageWasLogged(
+        self.logger.verifyMessageWasLogged(
             Strings.purchase.entitlement_expired_outside_grace_period(expiration: expirationDate,
                                                                       reference: requestDate),
             level: .warn
