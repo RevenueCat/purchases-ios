@@ -54,8 +54,8 @@ extension OfferingsResponse {
 
 }
 
-extension OfferingsResponse.Offering.Package: Codable, Equatable, Sendable {}
-extension OfferingsResponse.Offering: Codable, Equatable, Sendable {}
-extension OfferingsResponse: Codable, Equatable, Sendable {}
+extension OfferingsResponse.Offering.Package: Codable, Equatable {}
+extension OfferingsResponse.Offering: Codable, Equatable {}
+extension OfferingsResponse: Codable, Equatable {}
 
 extension OfferingsResponse: HTTPResponseBody {}
