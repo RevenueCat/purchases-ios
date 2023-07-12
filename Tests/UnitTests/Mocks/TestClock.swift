@@ -19,9 +19,22 @@ import Foundation
 /// By default, it's initialized with the current time, and that becomes frozen until modified.
 final class TestClock: ClockType {
 
-    var now: Date
+    var now: Date {
+        get { self._now.value }
+        set { self._now.value = newValue }
+    }
+    var currentTime: DispatchTime {
+        get { self._currentTime.value }
+        set { self._currentTime.value = newValue }
+    }
 
-    init(now: Date = .init()) { self.now = now }
+    private let _now: Atomic<Date>
+    private let _currentTime: Atomic<DispatchTime>
+
+    init(now: Date = .init(), currentTime: DispatchTime = .now()) {
+        self._now = .init(now)
+        self._currentTime = .init(currentTime)
+    }
 
 }
 
@@ -30,6 +43,12 @@ extension TestClock {
     /// Changes the internal clock by advancing it by `interval`.
     func advance(by interval: DispatchTimeInterval) {
         self.now = self.now.addingTimeInterval(interval.seconds)
+
+        if #available(iOS 13.0, tvOS 13.0, watchOS 6.2, *) {
+            self.currentTime = self.currentTime.advanced(by: interval)
+        } else {
+            self.currentTime = .init(uptimeNanoseconds: self.currentTime.uptimeNanoseconds + interval.nanoseconds)
+        }
     }
 
 }

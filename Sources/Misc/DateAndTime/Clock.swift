@@ -14,9 +14,10 @@
 import Foundation
 
 /// A type that can provide the current `Date`
-protocol ClockType {
+protocol ClockType: Sendable {
 
     var now: Date { get }
+    var currentTime: DispatchTime { get }
 
 }
 
@@ -24,6 +25,7 @@ protocol ClockType {
 final class Clock: ClockType {
 
     var now: Date { return Date() }
+    var currentTime: DispatchTime { return .now() }
 
     static let `default`: Clock = .init()
 
