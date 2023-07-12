@@ -109,7 +109,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         let paywall = try XCTUnwrap(offering.paywall)
         expect(paywall.template) == .example1
-        expect(paywall.defaultLocale) == Locale(identifier: "en_us")
+        expect(paywall.defaultLocale) == Locale(identifier: "en_US")
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.callToAction) == "Purchase now"
