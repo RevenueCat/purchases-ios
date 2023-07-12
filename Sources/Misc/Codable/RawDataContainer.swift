@@ -40,7 +40,7 @@ extension Decoder {
 
             return dictionary
         } catch {
-            Logger.warn(Strings.codable.decoding_error(error))
+            Logger.warn(Strings.codable.decoding_error(error, AnyDecodable.self))
             return [:]
         }
     }

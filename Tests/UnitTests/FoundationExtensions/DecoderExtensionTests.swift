@@ -86,6 +86,8 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
         let decodedData = try data.encodeAndDecode()
 
         expect(decodedData) == data
+
+        self.logger.verifyMessageWasNotLogged("Couldn't decode", allowNoMessages: true)
     }
 
     func testIgnoresErrors() throws {
@@ -93,6 +95,18 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
         let data = try Data.decode(json)
 
         expect(data.url).to(beNil())
+
+        self.logger.verifyMessageWasLogged("Couldn't decode 'Optional<URL>' from json.",
+                                           level: .debug,
+                                           expectedCount: 1)
+    }
+
+    func testIgnoresMissingValue() throws {
+        let data = try Data.decode("{}")
+
+        expect(data.url).to(beNil())
+
+        self.logger.verifyMessageWasNotLogged("Couldn't decode", allowNoMessages: true)
     }
 
     func testDecodesDefaultValueForInvalidValue() throws {
@@ -111,6 +125,10 @@ class DecoderExtensionsIgnoreErrorsTests: TestCase {
 
         let data = try Data.decode(json)
         expect(data.e) == .e2
+
+        self.logger.verifyMessageWasLogged("Couldn't decode 'E' from json.",
+                                           level: .debug,
+                                           expectedCount: 1)
     }
 
 }
