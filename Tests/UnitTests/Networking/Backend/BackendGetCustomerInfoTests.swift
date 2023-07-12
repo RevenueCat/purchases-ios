@@ -101,7 +101,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         guard case .failure(.networkError(.decoding)) = result else {
-            fail("Unexpected result: \(result!)")
+            fail("Unexpected result: \(String(describing: result))")
             return
         }
     }
