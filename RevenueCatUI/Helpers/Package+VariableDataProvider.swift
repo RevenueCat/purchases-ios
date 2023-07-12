@@ -12,6 +12,10 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedTitle
     }
 
+    var introductoryOfferDuration: String? {
+        return self.introDuration
+    }
+
 }
 
 // MARK: - Private
@@ -31,6 +35,10 @@ private extension Package {
         // `priceFormatter` can only be `nil` for SK2 products
         // with an unknown code, which should be rare.
         return self.storeProduct.priceFormatter ?? .init()
+    }
+
+    var introDuration: String? {
+        return self.storeProduct.introductoryDiscount?.localizedDuration
     }
 
 }

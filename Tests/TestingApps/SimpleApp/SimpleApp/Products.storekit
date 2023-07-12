@@ -77,7 +77,11 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "5BAE0332",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "internalID" : "F823513B",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
           "localizations" : [
             {
               "description" : "Monthly Subscription",
