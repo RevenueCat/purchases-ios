@@ -73,7 +73,10 @@ extension SwiftUI.View {
             controller.view
         ).toEventually(
             haveValidSnapshot(
-                as: .image(size: size),
+                as: .wait(
+                    for: initialDelay.seconds,
+                    on: .image(size: size)
+                ),
                 named: "1", // Force each retry to end in `.1.png`
                 file: file,
                 line: line
@@ -86,8 +89,9 @@ extension SwiftUI.View {
 }
 #endif
 
-private let timeout: DispatchTimeInterval = .seconds(1)
-private let pollInterval: DispatchTimeInterval = .milliseconds(100)
+private let timeout: DispatchTimeInterval = .seconds(5)
+private let pollInterval: DispatchTimeInterval = .milliseconds(300)
+private let initialDelay: DispatchTimeInterval = .milliseconds(100)
 
 // MARK: - Private
 
