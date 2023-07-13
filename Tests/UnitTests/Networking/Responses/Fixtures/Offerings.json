@@ -60,8 +60,10 @@
                 },
                 "default_locale": "en_US",
                 "config": {
-                    "packages": ["$rc_monthly", "$rc_annual"]
-                }
+                    "packages": ["$rc_monthly", "$rc_annual"],
+                    "header_image": "asset_name"
+                },
+                "asset_base_url": "https://rc-paywalls.s3.amazonaws.com"
             }
         },
         {
