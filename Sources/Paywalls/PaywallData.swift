@@ -37,8 +37,12 @@ public protocol PaywallLocalizedConfiguration {
     var subtitle: String { get }
     /// The content of the main action button for purchasing a subscription.
     var callToAction: String { get }
+    /// The content of the main action button for purchasing a subscription when an intro offer is available.
+    var callToActionWithIntroOffer: String { get }
     /// Description for the offer to be purchased.
     var offerDetails: String { get }
+    /// Description for the offer to be purchased when an intro offer is available.
+    var offerDetailsWithIntroOffer: String { get }
 
 }
 
@@ -53,7 +57,9 @@ extension PaywallData {
         public var title: String
         public var subtitle: String
         public var callToAction: String
+        public var callToActionWithIntroOffer: String
         public var offerDetails: String
+        public var offerDetailsWithIntroOffer: String
 
         // swiftlint:enable missing_docs
 
@@ -62,12 +68,16 @@ extension PaywallData {
             title: String,
             subtitle: String,
             callToAction: String,
-            offerDetails: String
+            callToActionWithIntroOffer: String,
+            offerDetails: String,
+            offerDetailsWithIntroOffer: String
         ) {
             self.title = title
             self.subtitle = subtitle
             self.callToAction = callToAction
+            self.callToActionWithIntroOffer = callToActionWithIntroOffer
             self.offerDetails = offerDetails
+            self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
         }
 
     }
@@ -157,7 +167,9 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case title
         case subtitle
         case callToAction = "cta"
+        case callToActionWithIntroOffer = "ctaWithIntroOffer"
         case offerDetails
+        case offerDetailsWithIntroOffer
     }
 
 }
