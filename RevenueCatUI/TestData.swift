@@ -12,7 +12,7 @@ import RevenueCat
 
 internal enum TestData {
 
-    static let product1 = TestStoreProduct(
+    static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
         localizedPriceString: "$3.99",
@@ -32,7 +32,7 @@ internal enum TestData {
         ),
         discounts: []
     )
-    static let product2 = TestStoreProduct(
+    static let productWithNoIntroOffer = TestStoreProduct(
         localizedTitle: "PRO annual",
         price: 34.99,
         localizedPriceString: "$34.99",
@@ -44,21 +44,33 @@ internal enum TestData {
         introductoryDiscount: nil,
         discounts: []
     )
-    static let testPackage = Package(
+    static let packageWithIntroOffer = Package(
         identifier: "monthly",
         packageType: .monthly,
-        storeProduct: product1.toStoreProduct(),
+        storeProduct: productWithIntroOffer.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let packageWithNoIntroOffer = Package(
+        identifier: "annual",
+        packageType: .annual,
+        storeProduct: productWithNoIntroOffer.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
 
     static let paywall = PaywallData(
         template: .example1,
         config: .init(),
-        localization: .init(title: "Ignite your child's curiosity",
-                            subtitle: "Get access to all our educational content trusted by thousands of parents.",
-                            callToAction: "Continue",
-                            offerDetails: "Start your trial, then {{price_per_month}} per month")
+        localization: .init(
+            title: "Ignite your child's curiosity",
+            subtitle: "Get access to all our educational content trusted by thousands of parents.",
+            callToAction: "Continue",
+            callToActionWithIntroOffer: "Continue",
+            offerDetails: "{{ price_per_month }} per month",
+            offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+        )
     )
+
+    // Fix-me: remove this when we can filter by package type
 
     static let offering = Offering(
         identifier: Self.offeringIdentifier,
@@ -66,13 +78,19 @@ internal enum TestData {
         metadata: [:],
         paywall: Self.paywall,
         availablePackages: [
-            testPackage,
-            .init(
-                identifier: "annual",
-                packageType: .annual,
-                storeProduct: product2.toStoreProduct(),
-                offeringIdentifier: Self.offeringIdentifier
-            )
+            packageWithNoIntroOffer,
+            packageWithIntroOffer
+        ]
+    )
+
+    static let offeringWithIntroOffer = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Main offering",
+        metadata: [:],
+        paywall: Self.paywall,
+        availablePackages: [
+            packageWithIntroOffer,
+            packageWithNoIntroOffer
         ]
     )
 
