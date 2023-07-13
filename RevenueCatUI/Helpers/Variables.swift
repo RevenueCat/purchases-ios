@@ -75,7 +75,7 @@ private extension VariableDataProvider {
         default:
             // Note: this isn't ideal.
             // Once we can use the `package` keyword it can use the internal `Logger`.
-            Purchases.logHandler(.warn, "Couldn't find content for variable \(variableName)")
+            Purchases.logHandler(.warn, "Couldn't find content for variable '\(variableName)'")
             return ""
         }
     }
