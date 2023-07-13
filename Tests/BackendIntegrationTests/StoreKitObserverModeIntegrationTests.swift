@@ -147,6 +147,8 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     private static var transactionsObservation: Task<Void, Never>?
 
     override class func setUp() {
+        super.setUp()
+
         Self.transactionsObservation?.cancel()
         Self.transactionsObservation = Task {
             // Silence warning in tests:
@@ -158,6 +160,8 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     override class func tearDown() {
         Self.transactionsObservation?.cancel()
         Self.transactionsObservation = nil
+
+        super.tearDown()
     }
 
     override func setUp() async throws {

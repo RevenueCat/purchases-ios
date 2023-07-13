@@ -79,6 +79,8 @@ class StoreKitConfigTestCase: TestCase {
     private static var transactionsObservation: Task<Void, Never>?
 
     override class func setUp() {
+        super.setUp()
+
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             Self.transactionsObservation?.cancel()
             Self.transactionsObservation = Task {
@@ -92,6 +94,8 @@ class StoreKitConfigTestCase: TestCase {
     override class func tearDown() {
         Self.transactionsObservation?.cancel()
         Self.transactionsObservation = nil
+
+        super.tearDown()
     }
 
 }
