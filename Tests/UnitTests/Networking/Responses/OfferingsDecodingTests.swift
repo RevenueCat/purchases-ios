@@ -119,9 +119,9 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
         expect(esConfig.title) == "Tienda"
-        expect(enConfig.subtitle) == "Descripción"
+        expect(esConfig.subtitle) == "Descripción"
         expect(esConfig.callToAction) == "Comprar"
-        expect(enConfig.offerDetails) == "{{ price_per_month }} cada mes"
+        expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
 
         // This test relies on this
         expect(Locale.current.identifier) == "en_US"
