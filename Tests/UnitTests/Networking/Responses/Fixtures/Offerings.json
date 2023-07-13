@@ -26,6 +26,35 @@
             ]
         },
         {
+            "description": "Offering with paywall",
+            "identifier": "paywall",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                },
+                {
+                    "identifier": "$rc_annual",
+                    "platform_product_identifier": "com.revenuecat.yearly_10.99.2_week_intro"
+                }
+            ],
+            "paywall": {
+                "template_name": "sample_1",
+                "localized_strings": {
+                    "en_US": {
+                        "cta": "Purchase now",
+                        "title": "Paywall"
+                    },
+                    "es_ES": {
+                        "cta": "Comprar",
+                        "title": "Tienda"
+                    }
+                },
+                "default_locale": "en_US",
+                "config": {}
+            }
+        },
+        {
             "description": "offering with metadata",
             "identifier": "metadata",
             "metadata": {
@@ -55,6 +84,19 @@
                     "platform_product_identifier": "com.revenuecat.other_product"
                 }
             ]
+        },
+        {
+            "description": "offering with invalid paywall",
+            "identifier": "invalid_paywall",
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ],
+            "paywall": {
+                "Missing": "data"
+            }
         }
     ]
 }
