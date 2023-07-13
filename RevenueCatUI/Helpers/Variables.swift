@@ -33,12 +33,12 @@ enum VariableHandler {
 
     private static func extractVariables(from expression: String) -> [VariableMatch] {
         let variablePattern = Regex {
-            Capture {
-                OneOrMore {
-                    "{{ "
+            OneOrMore {
+                "{{ "
+                Capture {
                     OneOrMore(.word)
-                    " }}"
                 }
+                " }}"
             }
         }
 
@@ -57,25 +57,12 @@ enum VariableHandler {
 
         for variableMatch in matches {
             let replacementValue = provider.value(for: variableMatch.variable)
-
-            let adjustedRange = NSRange(
-                location: variableMatch.range.lowerBound.utf16Offset(in: string) - Self.startPattern.count,
-                length: string.distance(from: variableMatch.range.lowerBound,
-                                        to: variableMatch.range.upperBound)
-                + Self.startPattern.count
-                + Self.endPattern.count
-            )
-            let replacementRange = Range(adjustedRange, in: replacedString)!
-
-            replacedString = replacedString.replacingCharacters(in: replacementRange, with: replacementValue)
+            replacedString = string.replacingCharacters(in: variableMatch.range, with: replacementValue)
         }
 
         return replacedString
     }
-
-    private static let startPattern = "{{ "
-    private static let endPattern = " }}"
-
+    
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
