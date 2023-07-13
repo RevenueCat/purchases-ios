@@ -14,15 +14,18 @@ func checkPaywallData(_ data: PaywallData) {
     let locale: Locale = data.defaultLocale
     let _: PaywallData.LocalizedConfiguration? = data.config(for: locale)
     let localization: PaywallData.LocalizedConfiguration = data.localizedConfiguration
+    let assetBaseURL: URL = data.assetBaseURL
 
     let _: PaywallData = .init(template: template,
                                config: config,
-                               localization: localization)
+                               localization: localization,
+                               assetBaseURL: assetBaseURL)
 }
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration) {
-    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual])
+    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual], headerImageName: "")
     let _: [PackageType] = config.packages
+    let _: String = config.headerImageName
 }
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
