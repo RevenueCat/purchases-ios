@@ -364,6 +364,13 @@ private extension IntroEligibilityCalculatorTests {
         expect(file: file, line: line, result) == expectedResult
     }
 
+    func testEligibilityStatusIsEligible() {
+        expect(IntroEligibilityStatus.unknown.isEligible) == false
+        expect(IntroEligibilityStatus.ineligible.isEligible) == false
+        expect(IntroEligibilityStatus.noIntroOfferExists.isEligible) == false
+        expect(IntroEligibilityStatus.eligible.isEligible) == true
+    }
+
     func mockReceipt() -> AppleReceipt {
         return AppleReceipt(bundleId: "com.revenuecat.test",
                             applicationVersion: "3.4.5",
