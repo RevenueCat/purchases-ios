@@ -53,11 +53,13 @@ class ResultExtensionsTests: TestCase {
         expect(errorCreated) == false
     }
 
+    #if !os(watchOS)
     func testInitWithNoValueOrError() {
-        expectFatalError(expectedMessage: "Unexpected nil value and nil error") {
+        expect {
             _ = Data(nil, nil)
-        }
+        }.to(throwAssertion())
     }
+    #endif
 
     func testVoidValueInitWithNoError() {
         expect(Result<Void, Error>(nil)).to(beSuccess())

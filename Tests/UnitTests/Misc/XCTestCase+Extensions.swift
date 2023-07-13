@@ -12,6 +12,7 @@
 //  Created by Andrés Boedo on 9/16/21.
 
 import Foundation
+import Nimble
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -19,70 +20,6 @@ import XCTest
 #else
 @testable import RevenueCat
 #endif
-
-extension XCTestCase {
-
-    func expectFatalError(
-        expectedMessage: String,
-        testcase: @escaping () -> Void,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let expectation = self.expectation(description: "expectingFatalError")
-        var fatalErrorReceived = false
-        var assertionMessage: String?
-
-        FatalErrorUtil.replaceFatalError { message, _, _ in
-            fatalErrorReceived = true
-            assertionMessage = message
-            expectation.fulfill()
-            self.unreachable()
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async(execute: testcase)
-
-        waitForExpectations(timeout: 2) { _ in
-            XCTAssert(fatalErrorReceived, "fatalError wasn't received", file: file, line: line)
-            XCTAssertEqual(assertionMessage, expectedMessage, file: file, line: line)
-
-            FatalErrorUtil.restoreFatalError()
-        }
-    }
-
-    func expectNoFatalError(
-        testcase: @escaping () -> Void,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let expectation = self.expectation(description: "expectingNoFatalError")
-        var fatalErrorReceived = false
-
-        FatalErrorUtil.replaceFatalError { _, _, _ in
-            fatalErrorReceived = true
-            self.unreachable()
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            testcase()
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 2) { _ in
-            XCTAssert(!fatalErrorReceived, "fatalError was received", file: file, line: line)
-            FatalErrorUtil.restoreFatalError()
-        }
-    }
-
-    func ignoreFatalErrors(_ closure: () -> Void) {
-        FatalErrorUtil.replaceFatalError { _, _, _ in
-            self.unreachable()
-        }
-
-        closure()
-        FatalErrorUtil.restoreFatalError()
-    }
-
-}
 
 /// Similar to `XCTUnrap` but it allows an `async` closure.
 @MainActor
@@ -103,12 +40,9 @@ func XCTAsyncUnwrap<T>(
     )
 }
 
-private extension XCTestCase {
-
-    func unreachable() -> Never {
-        repeat {
-            RunLoop.current.run()
-        } while (true)
-    }
-
+// `Nimble.throwAssertion` crashes when called from watchOS
+// This avoids that by failing to compile instead.
+@available(watchOS, unavailable)
+func throwAssertion<Out>() -> Predicate<Out> {
+    return Nimble.throwAssertion()
 }

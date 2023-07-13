@@ -23,15 +23,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
+    #if !os(watchOS)
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
-        let expectedMessage = "Purchases has not been configured. Please call Purchases.configure()"
-        expectFatalError(expectedMessage: expectedMessage) { _ = Purchases.shared }
+        expect {
+            _ = Purchases.shared
+        }.to(throwAssertion())
     }
 
     func testUsingSharedInstanceAfterInitializingDoesntThrowAssertion() {
         self.setupPurchases()
-        expectNoFatalError { _ = Purchases.shared }
+        expect {
+            _ = Purchases.shared
+        }.toNot(throwAssertion())
     }
+    #endif
 
     func testIsConfiguredReturnsCorrectValue() {
         expect(Purchases.isConfigured) == false
@@ -404,26 +409,26 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
+    #if !os(watchOS)
     func testConfigureWithCustomEntitlementComputationFatalErrorIfNoAppUserID() throws {
-        let expectedMessage = Strings.configure.custom_entitlements_computation_enabled_but_no_app_user_id.description
-
-        expectFatalError(expectedMessage: expectedMessage) {
+        expect {
             _ = Purchases(apiKey: "",
                           appUserID: nil,
                           userDefaults: .emptyNewUserDefaults(),
                           observerMode: false,
                           responseVerificationMode: .default,
                           dangerousSettings: .init(customEntitlementComputation: true))
-        }
+        }.to(throwAssertion())
     }
 
     func testConfigureWithCustomEntitlementComputationNoFatalErrorIfAppUserIDPassedIn() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          customEntitlementsComputation: true)
-        expectNoFatalError {
+        expect {
             self.setupPurchases()
-        }
+        }.toNot(throwAssertion())
     }
+    #endif
 
     func testConfigureWithCustomEntitlementComputationLogsInformationMessage() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
