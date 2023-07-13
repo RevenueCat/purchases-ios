@@ -9,22 +9,24 @@ struct Example1Template: TemplateViewType {
     init(
         packages: [Package],
         localization: PaywallData.LocalizedConfiguration,
-        configuration: PaywallData.Configuration
+        paywall: PaywallData
     ) {
         // Fix-me: move this logic out to be used by all templates
         if packages.isEmpty {
             self.data = .failure(.noPackages)
         } else {
-            let packages = Self.filter(packages: packages, with: configuration.packages)
+            let allPackages = paywall.config.packages
+            let packages = Self.filter(packages: packages, with: allPackages)
 
             if let package = packages.first {
                 self.data = .success(.init(
                     package: package,
                     localization: localization.processVariables(with: package),
-                    configuration: configuration
+                    configuration: paywall.config,
+                    headerImageURL: paywall.headerImageURL
                 ))
             } else {
-                self.data = .failure(.couldNotFindAnyPackages(expectedTypes: configuration.packages))
+                self.data = .failure(.couldNotFindAnyPackages(expectedTypes: allPackages))
             }
         }
     }
@@ -35,19 +37,7 @@ struct Example1Template: TemplateViewType {
         case let .success(data):
             Example1TemplateContent(data: data)
         case let .failure(error):
-            #if DEBUG
-            // Fix-me: implement a proper production error screen
-            EmptyView()
-                .onAppear {
-                    Logger.warning("Couldn't load paywall: \(error.description)")
-                }
-            #else
-            Text(error.description)
-                .background(
-                    Color.red
-                        .edgesIgnoringSafeArea(.all)
-                )
-            #endif
+            DebugErrorView(error)
         }
     }
 
@@ -71,17 +61,25 @@ private struct Example1TemplateContent: View {
     @ViewBuilder
     private var content: some View {
         VStack {
-            Image("image", bundle: .module)
-                .resizable()
-                .frame(maxWidth: .infinity)
-                .aspectRatio(1, contentMode: .fill)
-                .edgesIgnoringSafeArea(.top)
-                .padding(.bottom)
-                .mask(alignment: .top) {
-                    Circle()
-                        .offset(y: -160)
-                        .scale(2.5)
+            AsyncImage(url: self.data.headerImageURL) { phase in
+                if let image = phase.image {
+                    image
+                        .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
+                        .edgesIgnoringSafeArea(.top)
+                } else if let error = phase.error {
+                    DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)")
+                } else {
+                    Rectangle()
+                        .hidden()
                 }
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
+            .clipShape(
+                Circle()
+                    .offset(y: -100)
+                    .scale(3.0)
+            )
 
             Spacer()
 
@@ -133,6 +131,8 @@ private struct Example1TemplateContent: View {
         .controlSize(.large)
     }
 
+    private static let imageAspectRatio = 0.7
+
 }
 
 // MARK: -
@@ -144,6 +144,7 @@ private extension Example1TemplateContent {
         let package: Package
         let localization: ProcessedLocalizedConfiguration
         let configuration: PaywallData.Configuration
+        let headerImageURL: URL
     }
 
     enum Error: Swift.Error {
@@ -173,9 +174,15 @@ private extension Example1TemplateContent {
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-extension Example1TemplateContent.Error {
+extension Example1TemplateContent.Error: CustomNSError {
 
-    var description: String {
+    var errorUserInfo: [String: Any] {
+        return [
+            NSLocalizedDescriptionKey: self.description
+        ]
+    }
+
+    private var description: String {
         switch self {
         case .noPackages:
             return "Attempted to display paywall with no packages."

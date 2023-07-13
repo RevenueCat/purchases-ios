@@ -1,4 +1,5 @@
 import Nimble
+import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
 import XCTest
@@ -15,21 +16,29 @@ class PaywallViewTests: TestCase {
     func testSamplePaywall() {
         let offering = TestData.offeringWithNoIntroOffer
 
-        let view = PaywallView(offering: offering, paywall: offering.paywall!)
-            .frame(width: Self.size.width, height: Self.size.height)
-
-        expect(view).to(haveValidSnapshot(as: .image))
+        let view = PaywallView(offering: offering, paywall: offering.paywall!.withLocalImage)
+        view.snapshot(size: Self.size)
     }
 
     func testSamplePaywallWithIntroOffer() {
         let offering = TestData.offeringWithIntroOffer
 
-        let view = PaywallView(offering: offering, paywall: offering.paywall!)
-            .frame(width: Self.size.width, height: Self.size.height)
-
-        expect(view).to(haveValidSnapshot(as: .image))
+        let view = PaywallView(offering: offering, paywall: offering.paywall!.withLocalImage)
+        view.snapshot(size: Self.size)
     }
 
     private static let size: CGSize = .init(width: 460, height: 950)
+
+}
+
+private extension PaywallData {
+
+    var withLocalImage: Self {
+        var copy = self
+        copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
+        copy.config.headerImageName = "image.png"
+
+        return copy
+    }
 
 }

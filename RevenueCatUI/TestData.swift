@@ -65,16 +65,20 @@ internal enum TestData {
     static let paywallWithIntroOffer = PaywallData(
         template: .example1,
         config: .init(
-            packages: [.monthly]
+            packages: [.monthly],
+            headerImageName: Self.paywallHeaderImageName
         ),
-        localization: Self.localization
+        localization: Self.localization,
+        assetBaseURL: Self.paywallAssetBaseURL
     )
     static let paywallWithNoIntroOffer = PaywallData(
         template: .example1,
         config: .init(
-            packages: [.annual]
+            packages: [.annual],
+            headerImageName: Self.paywallHeaderImageName
         ),
-        localization: Self.localization
+        localization: Self.localization,
+        assetBaseURL: Self.paywallAssetBaseURL
     )
 
     static let offeringWithIntroOffer = Offering(
@@ -103,6 +107,8 @@ internal enum TestData {
     )
 
     private static let offeringIdentifier = "offering"
+    private static let paywallHeaderImageName = "cd84ac55_paywl0884b9ceb4_header_1689214657.jpg"
+    private static let paywallAssetBaseURL = URL(string: "https://d2ban7feka8lu3.cloudfront.net")!
 
 }
 

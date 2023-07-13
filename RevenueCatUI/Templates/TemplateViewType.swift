@@ -7,7 +7,7 @@ protocol TemplateViewType: SwiftUI.View {
     init(
         packages: [Package],
         localization: PaywallData.LocalizedConfiguration,
-        configuration: PaywallData.Configuration
+        paywall: PaywallData
     )
 
 }
@@ -22,7 +22,7 @@ extension PaywallData {
             Example1Template(
                 packages: offering.availablePackages,
                 localization: self.localizedConfiguration,
-                configuration: self.config
+                paywall: self
             )
         }
     }
