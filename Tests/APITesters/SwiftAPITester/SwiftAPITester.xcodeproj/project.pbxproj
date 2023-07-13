@@ -22,6 +22,7 @@
 		4F1428A22A4A11D7006CD196 /* TestStoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */; };
 		4F1428A72A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */; };
 		4F6BEE752A27C77C00CD9322 /* OtherAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */; };
+		4FF58AD22A5DDA5B00451B28 /* PaywallAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF58AD12A5DDA5B00451B28 /* PaywallAPI.swift */; };
 		570FAF562864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 570FAF552864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift */; };
 		5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
@@ -60,6 +61,7 @@
 		4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductAPI.swift; sourceTree = "<group>"; };
 		4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherAPI.swift; sourceTree = "<group>"; };
+		4FF58AD12A5DDA5B00451B28 /* PaywallAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAPI.swift; sourceTree = "<group>"; };
 		570FAF552864EE1D00D3C769 /* NonSubscriptionTransactionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonSubscriptionTransactionAPI.swift; sourceTree = "<group>"; };
 		5738F40B27866DD00096D623 /* StoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		5738F429278673A80096D623 /* SubscriptionPeriodAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodAPI.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 				A5D614C326EBE7EA007DDB75 /* OfferingsAPI.swift */,
 				4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
+				4FF58AD12A5DDA5B00451B28 /* PaywallAPI.swift */,
 				B3A4C833280DE72600D4AE17 /* PromotionalOfferAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
@@ -249,6 +252,7 @@
 				2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */,
 				2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */,
 				4F1428A72A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift in Sources */,
+				4FF58AD22A5DDA5B00451B28 /* PaywallAPI.swift in Sources */,
 				2DD778E9270E23460079CBD4 /* CustomerInfoAPI.swift in Sources */,
 				5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */,
 				5753ED9D294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift in Sources */,
