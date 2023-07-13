@@ -5,13 +5,17 @@
             "title": "Paywall",
             "subtitle": "Description",
             "cta": "Purchase now",
-            "offer_details": "{{ price_per_month }} per month"
+            "cta_with_intro_offer": "Purchase now",
+            "offer_details": "{{ price_per_month }} per month",
+            "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
         },
         "es_ES": {
             "title": "Tienda",
             "subtitle": "Descripción",
             "cta": "Comprar",
-            "offer_details": "{{ price_per_month }} cada mes"
+            "cta_with_intro_offer": "Comprar",
+            "offer_details": "{{ price_per_month }} cada mes",
+            "offer_details_with_intro_offer": "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
         }
     },
     "default_locale": "en_US",

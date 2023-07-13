@@ -36,6 +36,11 @@ class VariablesTests: TestCase {
         expect(self.process("Purchase {{ product_name }}")) == "Purchase MindSnacks"
     }
 
+    func testIntroDurationName() {
+        self.provider.introductoryOfferDuration = "1 week"
+        expect(self.process("Start {{ intro_duration }} trial")) == "Start 1 week trial"
+    }
+
     func testMultipleVariables() {
         self.provider.productName = "Pro"
         self.provider.localizedPricePerMonth = "$1.99"
@@ -51,14 +56,20 @@ class VariablesTests: TestCase {
             title: "Title {{ product_name }}",
             subtitle: "Price: {{ price_per_month }}",
             callToAction: "Unlock {{ product_name }} for {{ price_per_month }}",
-            offerDetails: "Purchase for {{ price_per_month }}"
+            callToActionWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
+            "Then {{ price_per_month }} every month",
+            offerDetails: "Purchase for {{ price_per_month }}",
+            offerDetailsWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
+            "Then {{ price_per_month }} every month"
         )
-        let processed = configuration.processVariables(with: TestData.testPackage)
+        let processed = configuration.processVariables(with: TestData.packageWithIntroOffer)
 
         expect(processed.title) == "Title PRO monthly"
         expect(processed.subtitle) == "Price: $3.99"
         expect(processed.callToAction) == "Unlock PRO monthly for $3.99"
+        expect(processed.callToActionWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
         expect(processed.offerDetails) == "Purchase for $3.99"
+        expect(processed.offerDetailsWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
     }
 
 }
@@ -78,5 +89,6 @@ private struct MockVariableProvider: VariableDataProvider {
 
     var localizedPricePerMonth: String = ""
     var productName: String = ""
+    var introductoryOfferDuration: String?
 
 }
