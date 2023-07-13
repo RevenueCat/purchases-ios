@@ -55,15 +55,17 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(localization.title) == "Paywall"
     }
 
+    #if !os(watchOS)
     func testMissingCurrentAndDefaultFails() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_and_default_locale")
 
         expect(paywall.defaultLocale.identifier) == "es_ES"
 
-        expectFatalError(expectedMessage: nil) {
+        expect {
             let _: PaywallData.LocalizedConfiguration = paywall.localizedConfiguration
-        }
+        }.to(throwAssertion())
     }
+    #endif
 
 }
 
