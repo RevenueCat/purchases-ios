@@ -36,13 +36,19 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(enConfig.title) == "Paywall"
         expect(enConfig.subtitle) == "Description"
         expect(enConfig.callToAction) == "Purchase now"
+        expect(enConfig.callToActionWithIntroOffer) == "Purchase now"
         expect(enConfig.offerDetails) == "{{ price_per_month }} per month"
+        expect(enConfig.offerDetailsWithIntroOffer)
+        == "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
 
         let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
         expect(esConfig.title) == "Tienda"
         expect(esConfig.subtitle) == "Descripción"
         expect(esConfig.callToAction) == "Comprar"
+        expect(esConfig.callToActionWithIntroOffer) == "Comprar"
         expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
+        expect(esConfig.offerDetailsWithIntroOffer)
+        == "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
 
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
@@ -55,8 +61,8 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.defaultLocale.identifier) == "es_ES"
 
         let localization = paywall.localizedConfiguration
-        expect(localization.callToAction) == "Purchase now"
-        expect(localization.title) == "Paywall"
+        expect(localization.callToAction) == "Comprar"
+        expect(localization.title) == "Tienda"
     }
 
     #if !os(watchOS)
