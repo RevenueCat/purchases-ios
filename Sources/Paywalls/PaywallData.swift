@@ -28,20 +28,46 @@ public struct PaywallData {
 
 }
 
+/// Defines the necessary localized information for a paywall.
+public protocol PaywallLocalizedConfiguration {
+
+    /// The title of the paywall screen.
+    var title: String { get }
+    /// The subtitle of the paywall screen.
+    var subtitle: String { get }
+    /// The content of the main action button for purchasing a subscription.
+    var callToAction: String { get }
+    /// Description for the offer to be purchased.
+    var offerDetails: String { get }
+
+}
+
 extension PaywallData {
 
-    /// Configuration containing values for the necessary `Locale`s.
-    public struct LocalizedConfiguration {
+    /// Defines the necessary localized information for a paywall.
+    public struct LocalizedConfiguration: PaywallLocalizedConfiguration {
 
-        /// The content of the main action button for purchasing a subscription.
-        public let callToAction: String
-        /// The title of the paywall screen.
-        public let title: String
+        // Docs inherited from the protocol
+        // swiftlint:disable missing_docs
+
+        public var title: String
+        public var subtitle: String
+        public var callToAction: String
+        public var offerDetails: String
+
+        // swiftlint:enable missing_docs
 
         /// swiftlint:disable:next missing_docs
-        public init(callToAction: String, title: String) {
-            self.callToAction = callToAction
+        public init(
+            title: String,
+            subtitle: String,
+            callToAction: String,
+            offerDetails: String
+        ) {
             self.title = title
+            self.subtitle = subtitle
+            self.callToAction = callToAction
+            self.offerDetails = offerDetails
         }
 
     }
@@ -128,8 +154,10 @@ extension PaywallData {
 extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
-        case callToAction = "cta"
         case title
+        case subtitle
+        case callToAction = "cta"
+        case offerDetails
     }
 
 }
