@@ -908,7 +908,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             }
         }
 
-        self.waitForExpectations(timeout: defaultTimeout.seconds * TimeInterval(serialRequests))
+        self.waitForExpectations(timeout: defaultTimeout.seconds)
         expect(completionCallCount.value) == serialRequests
     }
 
