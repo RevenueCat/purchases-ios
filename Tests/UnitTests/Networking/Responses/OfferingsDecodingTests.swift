@@ -27,7 +27,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
     func testDecodesAllOfferings() throws {
         expect(self.response.currentOfferingId) == "default"
-        expect(self.response.offerings).to(haveCount(4))
+        expect(self.response.offerings).to(haveCount(6))
     }
 
     func testDecodesFirstOffering() throws {
@@ -63,7 +63,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testDecodesMetadataOffering() throws {
-        let offering = try XCTUnwrap(self.response.offerings[safe: 2])
+        let offering = try XCTUnwrap(self.response.offerings[safe: 3])
 
         expect(offering.identifier) == "metadata"
         expect(offering.description) == "offering with metadata"
@@ -86,7 +86,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testDecodesNullMetadataOffering() throws {
-        let offering = try XCTUnwrap(self.response.offerings[safe: 3])
+        let offering = try XCTUnwrap(self.response.offerings[safe: 4])
 
         expect(offering.identifier) == "nullmetadata"
         expect(offering.description) == "offering with null metadata"
@@ -97,6 +97,41 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(package.identifier) == PackageType.lifetime.description
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+    }
+
+    func testDecodesPaywallData() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 2])
+
+        expect(offering.identifier) == "paywall"
+        expect(offering.description) == "Offering with paywall"
+        expect(offering.metadata) == [:]
+        expect(offering.packages).to(haveCount(2))
+
+        let paywall = try XCTUnwrap(offering.paywall)
+        expect(paywall.template) == .example1
+        expect(paywall.defaultLocale) == Locale(identifier: "en_US")
+
+        let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
+        expect(enConfig.callToAction) == "Purchase now"
+        expect(enConfig.title) == "Paywall"
+
+        let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
+        expect(esConfig.callToAction) == "Comprar"
+        expect(esConfig.title) == "Tienda"
+
+        // This test relies on this
+        expect(Locale.current.identifier) == "en_US"
+        expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
+
+        expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
+    }
+
+    func testIgnoresInvalidPaywallData() throws {
+        let offering = try XCTUnwrap(self.response.offerings[safe: 5])
+
+        expect(offering.identifier) == "invalid_paywall"
+        expect(offering.packages).to(haveCount(1))
+        expect(offering.paywall).to(beNil())
     }
 
     func testEncoding() throws {
