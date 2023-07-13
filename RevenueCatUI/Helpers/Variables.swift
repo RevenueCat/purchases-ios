@@ -55,9 +55,9 @@ enum VariableHandler {
         let matches = extractVariables(from: string)
         var replacedString = string
 
-        for variableMatch in matches {
+        for variableMatch in matches.reversed() {
             let replacementValue = provider.value(for: variableMatch.variable)
-            replacedString = string.replacingCharacters(in: variableMatch.range, with: replacementValue)
+            replacedString = replacedString.replacingCharacters(in: variableMatch.range, with: replacementValue)
         }
 
         return replacedString
