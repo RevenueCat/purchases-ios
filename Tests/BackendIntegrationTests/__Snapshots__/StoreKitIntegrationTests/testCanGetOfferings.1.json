@@ -20,7 +20,8 @@
           "identifier" : "$rc_weekly",
           "platform_product_identifier" : "com.revenuecat.weekly_1.99.3_day_intro"
         }
-      ]
+      ],
+      "paywall" : null
     },
     {
       "description" : "Coins",
@@ -33,7 +34,8 @@
           "identifier" : "10.coins",
           "platform_product_identifier" : "consumable.10_coins"
         }
-      ]
+      ],
+      "paywall" : null
     }
   ]
 }
