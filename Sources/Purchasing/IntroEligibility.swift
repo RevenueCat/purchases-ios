@@ -64,6 +64,20 @@ extension IntroEligibilityStatus: CustomStringConvertible {
 
 }
 
+extension IntroEligibilityStatus {
+
+    /// - Returns: `true` if this eligibility is ``IntroEligibilityStatus/isEligible``.
+    public var isEligible: Bool {
+        switch self {
+        case .unknown, .ineligible, .noIntroOfferExists:
+            return false
+        case .eligible:
+            return true
+        }
+    }
+
+}
+
 private extension IntroEligibilityStatus {
 
     enum IntroEligibilityStatusError: LocalizedError {
