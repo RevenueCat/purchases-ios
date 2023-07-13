@@ -235,8 +235,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
         self.changeClient(.informational)
     }
@@ -581,8 +581,8 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
         self.changeClientToEnforced()
     }
