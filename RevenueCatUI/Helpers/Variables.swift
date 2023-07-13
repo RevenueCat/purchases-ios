@@ -31,6 +31,21 @@ struct VariableMatch {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 enum VariableHandler {
 
+    static func processVariables(
+        in string: String,
+        with provider: VariableDataProvider
+    ) -> String {
+        let matches = extractVariables(from: string)
+        var replacedString = string
+
+        for variableMatch in matches.reversed() {
+            let replacementValue = provider.value(for: variableMatch.variable)
+            replacedString = replacedString.replacingCharacters(in: variableMatch.range, with: replacementValue)
+        }
+
+        return replacedString
+    }
+
     private static func extractVariables(from expression: String) -> [VariableMatch] {
         let variablePattern = Regex {
             OneOrMore {
@@ -48,21 +63,6 @@ enum VariableHandler {
         }
     }
 
-    static func processVariables(
-        in string: String,
-        with provider: VariableDataProvider
-    ) -> String {
-        let matches = extractVariables(from: string)
-        var replacedString = string
-
-        for variableMatch in matches.reversed() {
-            let replacementValue = provider.value(for: variableMatch.variable)
-            replacedString = replacedString.replacingCharacters(in: variableMatch.range, with: replacementValue)
-        }
-
-        return replacedString
-    }
-    
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
