@@ -13,17 +13,23 @@ class PaywallViewTests: TestCase {
     }
 
     func testSamplePaywall() {
-        let view = PaywallView(offering: TestData.offering, paywall: TestData.paywall)
-            .frame(width: 460, height: 950)
+        let offering = TestData.offeringWithNoIntroOffer
+
+        let view = PaywallView(offering: offering, paywall: offering.paywall!)
+            .frame(width: Self.size.width, height: Self.size.height)
 
         expect(view).to(haveValidSnapshot(as: .image))
     }
 
     func testSamplePaywallWithIntroOffer() {
-        let view = PaywallView(offering: TestData.offeringWithIntroOffer, paywall: TestData.paywall)
-            .frame(width: 460, height: 950)
+        let offering = TestData.offeringWithIntroOffer
+
+        let view = PaywallView(offering: offering, paywall: offering.paywall!)
+            .frame(width: Self.size.width, height: Self.size.height)
 
         expect(view).to(haveValidSnapshot(as: .image))
     }
+
+    private static let size: CGSize = .init(width: 460, height: 950)
 
 }
