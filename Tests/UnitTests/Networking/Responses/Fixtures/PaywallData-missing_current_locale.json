@@ -11,5 +11,7 @@
         }
     },
     "default_locale": "es_ES",
-    "config": {}
+    "config": {
+        "packages": ["$rc_monthly", "$rc_annual"]
+    }
 }
