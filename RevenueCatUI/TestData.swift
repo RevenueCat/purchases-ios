@@ -100,7 +100,7 @@ internal enum TestData {
     private static let localization: PaywallData.LocalizedConfiguration = .init(
         title: "Ignite your child's curiosity",
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
-        callToAction: "Continue",
+        callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: nil,
         offerDetails: "{{ price_per_month }} per month",
         offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
