@@ -6,9 +6,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var title: String
     var subtitle: String
     var callToAction: String
-    var callToActionWithIntroOffer: String
+    var callToActionWithIntroOffer: String?
     var offerDetails: String
-    var offerDetailsWithIntroOffer: String
+    var offerDetailsWithIntroOffer: String?
 
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
@@ -18,9 +18,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
             title: configuration.title.processed(with: dataProvider),
             subtitle: configuration.subtitle.processed(with: dataProvider),
             callToAction: configuration.callToAction.processed(with: dataProvider),
-            callToActionWithIntroOffer: configuration.callToActionWithIntroOffer.processed(with: dataProvider),
+            callToActionWithIntroOffer: configuration.callToActionWithIntroOffer?.processed(with: dataProvider),
             offerDetails: configuration.offerDetails.processed(with: dataProvider),
-            offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer.processed(with: dataProvider)
+            offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer?.processed(with: dataProvider)
         )
     }
 
@@ -28,9 +28,9 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         title: String,
         subtitle: String,
         callToAction: String,
-        callToActionWithIntroOffer: String,
+        callToActionWithIntroOffer: String?,
         offerDetails: String,
-        offerDetailsWithIntroOffer: String
+        offerDetailsWithIntroOffer: String?
     ) {
         self.title = title
         self.subtitle = subtitle

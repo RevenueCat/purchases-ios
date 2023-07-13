@@ -50,10 +50,9 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(esConfig.title) == "Tienda"
         expect(esConfig.subtitle) == "Descripción"
         expect(esConfig.callToAction) == "Comprar"
-        expect(esConfig.callToActionWithIntroOffer) == "Comprar"
+        expect(esConfig.callToActionWithIntroOffer).to(beNil())
         expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
-        expect(esConfig.offerDetailsWithIntroOffer)
-        == "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
+        expect(esConfig.offerDetailsWithIntroOffer).to(beNil())
 
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
