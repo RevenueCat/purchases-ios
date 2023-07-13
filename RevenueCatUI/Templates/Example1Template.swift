@@ -6,6 +6,12 @@ struct Example1Template: TemplateViewType {
 
     private var data: Result<Example1TemplateContent.Data, Example1TemplateContent.Error>
 
+    @EnvironmentObject
+    private var introEligibilityChecker: TrialOrIntroEligibilityChecker
+
+    @State
+    private var introEligibility: IntroEligibilityStatus?
+
     init(
         packages: [Package],
         localization: PaywallData.LocalizedConfiguration,
@@ -35,10 +41,24 @@ struct Example1Template: TemplateViewType {
     var body: some View {
         switch self.data {
         case let .success(data):
-            Example1TemplateContent(data: data)
+            Example1TemplateContent(data: data, introEligibility: self.introEligibility)
+                .task(id: self.package) {
+                    if let package = self.package {
+                        self.introEligibility = await self.introEligibilityChecker.eligibility(
+                            for: package.storeProduct
+                        )
+                    }
+                }
+
         case let .failure(error):
-            DebugErrorView(error)
+            // Fix-me: consider changing this behavior once we understand
+            // how unlikely we can make this to happen thanks to server-side validations.
+            DebugErrorView(error, releaseBehavior: .emptyView)
         }
+    }
+
+    private var package: Package? {
+        return (try? self.data.get())?.package
     }
 
 }
@@ -47,9 +67,11 @@ struct Example1Template: TemplateViewType {
 private struct Example1TemplateContent: View {
 
     private var data: Data
+    private var introEligibility: IntroEligibilityStatus?
 
-    init(data: Data) {
+    init(data: Data, introEligibility: IntroEligibilityStatus?) {
         self.data = data
+        self.introEligibility = introEligibility
     }
 
     var body: some View {
@@ -61,13 +83,17 @@ private struct Example1TemplateContent: View {
     @ViewBuilder
     private var content: some View {
         VStack {
-            AsyncImage(url: self.data.headerImageURL) { phase in
+            AsyncImage(
+                url: self.data.headerImageURL,
+                transaction: .init(animation: Constants.defaultAnimation)
+            ) { phase in
                 if let image = phase.image {
                     image
                         .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
                         .edgesIgnoringSafeArea(.top)
                 } else if let error = phase.error {
-                    DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)")
+                    DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)",
+                                   releaseBehavior: .emptyView)
                 } else {
                     Rectangle()
                         .hidden()
@@ -104,15 +130,47 @@ private struct Example1TemplateContent: View {
         }
     }
 
-    @ViewBuilder
     private var offerDetails: some View {
-        // Fix-me: this needs to handle other types of intro discounts
-        let text = self.data.package.storeProduct.introductoryDiscount == nil
-            ? self.data.localization.offerDetails
-            : self.data.localization.offerDetailsWithIntroOffer
+        let detailsWithIntroOffer = self.data.localization.offerDetailsWithIntroOffer
 
-        Text(verbatim: text)
+        func text() -> String {
+            if let detailsWithIntroOffer = detailsWithIntroOffer, self.isEligibleForIntro {
+                return detailsWithIntroOffer
+            } else {
+                return self.data.localization.offerDetails
+            }
+        }
+
+        return Text(verbatim: text())
+            // Hide until we've determined intro eligibility
+            // only if there is a custom intro offer string.
+            .withPendingData(self.needsToWaitForIntroEligibility(detailsWithIntroOffer != nil))
             .font(.callout)
+    }
+
+    private var ctaText: some View {
+        let ctaWithIntroOffer = self.data.localization.callToActionWithIntroOffer
+
+        func text() -> String {
+            if let ctaWithIntroOffer = ctaWithIntroOffer, self.isEligibleForIntro {
+                return ctaWithIntroOffer
+            } else {
+                return self.data.localization.callToAction
+            }
+        }
+
+        return Text(verbatim: text())
+            // Hide until we've determined intro eligibility
+            // only if there is a custom intro offer string.
+            .withPendingData(self.needsToWaitForIntroEligibility(ctaWithIntroOffer != nil))
+    }
+
+    private var isEligibleForIntro: Bool {
+        return self.introEligibility?.isEligible != false
+    }
+
+    private func needsToWaitForIntroEligibility(_ hasCustomString: Bool) -> Bool {
+        return self.introEligibility == nil && hasCustomString && self.isEligibleForIntro
     }
 
     @ViewBuilder
@@ -120,7 +178,7 @@ private struct Example1TemplateContent: View {
         Button {
 
         } label: {
-            Text(self.data.localization.callToAction)
+            self.ctaText
                 .frame(maxWidth: .infinity)
         }
         .font(.title2)
@@ -154,23 +212,6 @@ private extension Example1TemplateContent {
 
     }
 
-    private func label(for package: Package) -> some View {
-        HStack {
-            Button {
-
-            } label: {
-                Text(package.storeProduct.localizedTitle)
-                    .padding(.vertical)
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.body)
-        }
-    }
-
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
@@ -189,6 +230,22 @@ extension Example1TemplateContent.Error: CustomNSError {
         case let .couldNotFindAnyPackages(expectedTypes):
             return "Couldn't find any requested packages: \(expectedTypes)"
         }
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension View {
+
+    func withPendingData(_ pending: Bool) -> some View {
+        self
+            .hidden(if: pending)
+            .overlay {
+                if pending {
+                    ProgressView()
+                }
+            }
+            .transition(.opacity.animation(Constants.defaultAnimation))
     }
 
 }
