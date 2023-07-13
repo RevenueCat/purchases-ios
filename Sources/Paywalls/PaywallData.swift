@@ -23,6 +23,9 @@ public struct PaywallData {
     /// Generic configuration for any paywall.
     public var config: Configuration
 
+    /// The base remote URL where assets for this paywall are stored.
+    public var assetBaseURL: URL
+
     fileprivate var defaultLocaleIdentifier: String
     fileprivate var localization: [String: LocalizedConfiguration]
 
@@ -121,11 +124,26 @@ extension PaywallData {
         /// The list of package types this paywall will display
         public var packages: [PackageType]
 
+        /// The name for the header image asset.
+        public var headerImageName: String
+
         // swiftlint:disable:next missing_docs
-        public init(packages: [PackageType]) {
+        public init(packages: [PackageType], headerImageName: String) {
             self.packages = packages
+            self.headerImageName = headerImageName
         }
 
+    }
+
+}
+
+// MARK: - Extensions
+
+public extension PaywallData {
+
+    /// The remote URL to load the header image asset.
+    var headerImageURL: URL {
+        return self.assetBaseURL.appendingPathComponent(self.config.headerImageName)
     }
 
 }
@@ -138,19 +156,22 @@ extension PaywallData {
         template: PaywallTemplate,
         config: Configuration,
         defaultLocale: String,
-        localization: [String: LocalizedConfiguration]
+        localization: [String: LocalizedConfiguration],
+        assetBaseURL: URL
     ) {
         self.template = template
         self.config = config
         self.defaultLocaleIdentifier = defaultLocale
         self.localization = localization
+        self.assetBaseURL = assetBaseURL
     }
 
     /// Creates a test ``PaywallData`` with one localization
     public init(
         template: PaywallTemplate,
         config: Configuration,
-        localization: LocalizedConfiguration
+        localization: LocalizedConfiguration,
+        assetBaseURL: URL
     ) {
         let locale = Locale.current.identifier
 
@@ -158,7 +179,8 @@ extension PaywallData {
             template: template,
             config: config,
             defaultLocale: locale,
-            localization: [locale: localization]
+            localization: [locale: localization],
+            assetBaseURL: assetBaseURL
         )
     }
 
@@ -178,7 +200,16 @@ extension PaywallData.LocalizedConfiguration: Codable {
     }
 
 }
-extension PaywallData.Configuration: Codable {}
+
+extension PaywallData.Configuration: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case packages
+        case headerImageName = "headerImage"
+    }
+
+}
+
 extension PaywallData: Codable {
 
     // Note: these are camel case but converted by the decoder
@@ -187,6 +218,7 @@ extension PaywallData: Codable {
         case defaultLocaleIdentifier = "defaultLocale"
         case config
         case localization = "localizedStrings"
+        case assetBaseURL = "assetBaseUrl"
     }
 
 }
@@ -201,4 +233,11 @@ extension PaywallData: Equatable {}
 
 extension PaywallData.LocalizedConfiguration: Sendable {}
 extension PaywallData.Configuration: Sendable {}
+
+#if swift(>=5.7)
 extension PaywallData: Sendable {}
+#else
+// `@unchecked` because:
+// - `URL` is not `Sendable` until Swift 5.7
+extension PaywallData: @unchecked Sendable {}
+#endif
