@@ -1,6 +1,6 @@
 import Foundation
-import RevenueCat
 import RegexBuilder
+import RevenueCat
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PaywallData.LocalizedConfiguration {
@@ -25,7 +25,6 @@ struct VariableMatch {
     let variable: String
     let range: Range<String.Index>
 }
-
 
 /// Processes strings, replacing `{{variable}}` with their associated content.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
