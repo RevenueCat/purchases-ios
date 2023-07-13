@@ -7,7 +7,7 @@ import XCTest
 class PaywallViewTests: TestCase {
 
     func testOne() {
-        let view = PaywallView(offering: TestData.offering)
+        let view = PaywallView(offering: TestData.offering, paywall: TestData.paywall)
             .frame(width: 300, height: 400)
 
         expect(view).to(haveValidSnapshot(as: .image))
