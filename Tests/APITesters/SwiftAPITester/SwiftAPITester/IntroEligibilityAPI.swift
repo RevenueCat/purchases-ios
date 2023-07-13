@@ -31,4 +31,6 @@ func checkIntroEligibilityEnums() {
         print(status!)
     @unknown default: fatalError()
     }
+
+    let _: Bool = status.isEligible
 }
