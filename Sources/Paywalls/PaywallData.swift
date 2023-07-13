@@ -118,8 +118,13 @@ extension PaywallData {
     /// Generic configuration for any paywall.
     public struct Configuration {
 
+        /// The list of package types this paywall will display
+        public var packages: [PackageType]
+
         // swiftlint:disable:next missing_docs
-        public init() {}
+        public init(packages: [PackageType]) {
+            self.packages = packages
+        }
 
     }
 
