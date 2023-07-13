@@ -204,6 +204,8 @@
 		4F0BBAAC2A1D253D000E75AB /* OfflineCustomerInfoCreatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0BBAAB2A1D253D000E75AB /* OfflineCustomerInfoCreatorTests.swift */; };
 		4F0CE2BD2A215CE600561895 /* TransactionPosterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0CE2BC2A215CE600561895 /* TransactionPosterTests.swift */; };
 		4F1428A42A4A132C006CD196 /* TestStoreProductDiscount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A32A4A132C006CD196 /* TestStoreProductDiscount.swift */; };
+		4F1E84012A6062C1000AF177 /* ImageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */; };
+		4F1E84022A6062C9000AF177 /* ImageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */; };
 		4F2017D52A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2017D42A15587F0061F6EF /* OfflineStoreKitIntegrationTests.swift */; };
 		4F2018732A15797D0061F6EF /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		4F2F2EFF2A3CDAA800652B24 /* FileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F2F2EFE2A3CDAA800652B24 /* FileHandler.swift */; };
@@ -3634,6 +3636,7 @@
 				5733B1A427FF9F8300EC2045 /* NetworkErrorTests.swift in Sources */,
 				351B517026D44E8D00BD2BD7 /* MockDateProvider.swift in Sources */,
 				4F2F2F142A3CEAB500652B24 /* FileHandlerTests.swift in Sources */,
+				4F1E84012A6062C1000AF177 /* ImageSnapshot.swift in Sources */,
 				57FDAAC028493C13009A48F1 /* MockSandboxEnvironmentDetector.swift in Sources */,
 				5766AAD1283E981700FA6091 /* PurchasesPurchasingTests.swift in Sources */,
 				351B515E26D44B9900BD2BD7 /* MockPurchasesDelegate.swift in Sources */,
@@ -3676,6 +3679,7 @@
 				57488AFF29CA58050000EE7E /* LoadShedderIntegrationTests.swift in Sources */,
 				575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
+				4F1E84022A6062C9000AF177 /* ImageSnapshot.swift in Sources */,
 				2D3BFAD326DEA47100370B11 /* MockSKProductDiscount.swift in Sources */,
 				4F83F6B72A5DB782003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */,
