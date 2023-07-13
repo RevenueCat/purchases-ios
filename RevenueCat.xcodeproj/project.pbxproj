@@ -20,7 +20,6 @@
 		2D1015E2275A67E40086173F /* SubscriptionPeriodTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1015E0275A676F0086173F /* SubscriptionPeriodTests.swift */; };
 		2D11F5E1250FF886005A70E8 /* AttributionStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */; };
 		2D222BAB27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */; };
-		2D22BF6526F3CB31001AE2F9 /* FatalErrorUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */; };
 		2D22BF6826F3CC6D001AE2F9 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		2D294E5C26DECFD500B8FE4F /* StoreKit2TransactionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */; };
 		2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */; };
@@ -774,7 +773,6 @@
 		2D1015E0275A676F0086173F /* SubscriptionPeriodTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodTests.swift; sourceTree = "<group>"; };
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
 		2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptParserStoreKitTests.swift; sourceTree = "<group>"; };
-		2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorUtil.swift; sourceTree = "<group>"; };
 		2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+Extensions.swift"; sourceTree = "<group>"; };
 		2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListener.swift; sourceTree = "<group>"; };
 		2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerSK2Tests.swift; sourceTree = "<group>"; };
@@ -1667,7 +1665,6 @@
 				57CCC6EB2984496D001CE9B6 /* Box.swift */,
 				5796A3A827D7C43500653165 /* Deprecations.swift */,
 				57ABA76C28F08DDA003D9181 /* Either.swift */,
-				2D22BF6426F3CB31001AE2F9 /* FatalErrorUtil.swift */,
 				F530E4FE275646EF001AF6BD /* MacDevice.swift */,
 				57EAE52A274332830060EB74 /* Obsoletions.swift */,
 				2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */,
@@ -3279,7 +3276,6 @@
 				B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */,
 				57EAE52D274468900060EB74 /* RawDataContainer.swift in Sources */,
 				B35042C426CDB79A00905B95 /* Purchases.swift in Sources */,
-				2D22BF6526F3CB31001AE2F9 /* FatalErrorUtil.swift in Sources */,
 				2D1015DE275A57FC0086173F /* SubscriptionPeriod.swift in Sources */,
 				57C0BB6929F840BD00827807 /* FrameworkDisambiguation.swift in Sources */,
 				B3B5FBBF269E081E00104A0C /* InMemoryCachedObject.swift in Sources */,
