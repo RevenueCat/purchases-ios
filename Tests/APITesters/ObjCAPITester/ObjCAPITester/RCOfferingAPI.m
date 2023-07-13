@@ -18,7 +18,7 @@
 @implementation RCOfferingAPI
 
 + (void)checkAPI {
-    RCOffering *o = nil; // No public initializer.
+    RCOffering *o = nil;
     NSString *i = o.identifier;
     NSString *sd = o.serverDescription;
     NSArray<RCPackage *> *a = o.availablePackages;
@@ -34,6 +34,11 @@
     RCPackage *ok = [o objectForKeyedSubscript:@""];
     NSDictionary<NSString *, id> *md = o.metadata;
 
+    o = [[RCOffering alloc] initWithIdentifier:@""
+                             serverDescription:@""
+                                      metadata:@{}
+                             availablePackages:a];
+    
     NSLog(o, i, sd, a, l, an, s, t, tm, m, w, p, ok, md);
 }
 
