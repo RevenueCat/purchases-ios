@@ -58,7 +58,7 @@ class PostAdServicesTokenOperation: NetworkOperation {
 
 private extension PostAdServicesTokenOperation {
 
-    struct Body: Encodable {
+    struct Body: HTTPRequestBody {
 
         let aadAttributionToken: String
 

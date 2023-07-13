@@ -186,8 +186,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
-        case fetchToken
-        case appUserID
+        case fetchToken = "fetch_token"
+        case appUserID = "app_user_id"
         case isRestore
         case observerMode
         case initiationSource
@@ -201,7 +201,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encode(self.receiptData.asFetchToken, forKey: .fetchToken)
+        try container.encode(self.fetchToken, forKey: .fetchToken)
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.isRestore, forKey: .isRestore)
         try container.encode(self.observerMode, forKey: .observerMode)
@@ -223,6 +223,19 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.aadAttributionToken, forKey: .aadAttributionToken)
         try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
+    }
+
+    var fetchToken: String { return self.receiptData.asFetchToken }
+
+}
+
+extension PostReceiptDataOperation.PostData: HTTPRequestBody {
+
+    var contentForSignature: [(key: String, value: String)] {
+        return [
+            (Self.CodingKeys.appUserID.stringValue, self.appUserID),
+            (Self.CodingKeys.fetchToken.stringValue, self.fetchToken)
+        ]
     }
 
 }

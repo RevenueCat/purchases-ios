@@ -11,7 +11,7 @@
           "value" : "notDetermined"
         }
       },
-      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
       "initiation_source" : "purchase",
       "is_restore" : false,
       "observer_mode" : false

@@ -57,7 +57,7 @@ extension HTTPRequest {
     enum Method {
 
         case get
-        case post(Encodable)
+        case post(HTTPRequestBody)
 
     }
 
@@ -65,7 +65,7 @@ extension HTTPRequest {
 
 extension HTTPRequest {
 
-    var requestBody: Encodable? {
+    var requestBody: HTTPRequestBody? {
         switch self.method {
         case let .post(body): return body
         case .get: return nil

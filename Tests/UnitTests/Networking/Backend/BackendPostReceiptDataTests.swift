@@ -715,68 +715,6 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(completionCalled.value).toEventually(equal(2))
     }
 
-    func testGetsEntitlementsWithVerifiedResponse() {
-        self.httpClient.mock(
-            requestPath: .postReceiptData,
-            response: .init(statusCode: .success,
-                            response: Self.validCustomerResponse,
-                            verificationResult: .verified)
-        )
-
-        let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
-                              productData: nil,
-                              transactionData: .init(
-                                 appUserID: Self.userID,
-                                 presentedOfferingID: nil,
-                                 unsyncedAttributes: nil,
-                                 storefront: nil,
-                                 source: .init(isRestore: false, initiationSource: .purchase)
-                              ),
-                              observerMode: false,
-                              completion: { result in
-                completed(result)
-            })
-        }
-
-        expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .verified
-        }
-    }
-
-    func testGetsEntitlementsWithFailedVerification() {
-        self.httpClient.mock(
-            requestPath: .postReceiptData,
-            response: .init(statusCode: .success,
-                            response: Self.validCustomerResponse,
-                            verificationResult: .failed)
-        )
-
-        let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
-                              productData: nil,
-                              transactionData: .init(
-                                 appUserID: Self.userID,
-                                 presentedOfferingID: nil,
-                                 unsyncedAttributes: nil,
-                                 storefront: nil,
-                                 source: .init(isRestore: false, initiationSource: .purchase)
-                              ),
-                              observerMode: false,
-                              completion: { result in
-                completed(result)
-            })
-        }
-
-        expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .failed
-        }
-    }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPostingReceiptWithNoProductDataAndServerErrorComputesOfflineUser() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -845,6 +783,75 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         expect(self.mockOfflineCustomerInfoCreator.createRequested) == true
         expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 1
+    }
+
+}
+
+// swiftlint:disable:next type_name
+class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDataTests {
+
+    override var verificationMode: Configuration.EntitlementVerificationMode { .informational }
+
+    func testGetsEntitlementsWithVerifiedResponse() {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            verificationResult: .verified)
+        )
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              productData: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
+                              observerMode: false,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beSuccess())
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            expect(result?.value?.entitlements.verification) == .verified
+        }
+    }
+
+    func testGetsEntitlementsWithFailedVerification() {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            verificationResult: .failed)
+        )
+
+        let result = waitUntilValue { completed in
+            self.backend.post(receiptData: Self.receiptData2,
+                              productData: nil,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
+                              observerMode: false,
+                              completion: { result in
+                completed(result)
+            })
+        }
+
+        expect(result).to(beSuccess())
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            expect(result?.value?.entitlements.verification) == .failed
+        }
     }
 
 }

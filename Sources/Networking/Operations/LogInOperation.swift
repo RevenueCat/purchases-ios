@@ -82,7 +82,10 @@ private extension LogInOperation {
                      completion: IdentityAPI.LogInResponseHandler) {
         let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
             .map { response in
-                (response.body, created: response.statusCode == .createdSuccess)
+                (
+                    response.body.copy(with: response.verificationResult),
+                    created: response.statusCode == .createdSuccess
+                )
             }
             .mapError(BackendError.networkError)
 
@@ -94,13 +97,31 @@ private extension LogInOperation {
     }
 }
 
-private extension LogInOperation {
+extension LogInOperation {
 
     struct Body: Encodable {
+
+        // These need to be explicit for `contentForSignature`
+        // swiftlint:disable:next nesting
+        fileprivate enum CodingKeys: String, CodingKey {
+            case appUserID = "app_user_id"
+            case newAppUserID = "new_app_user_id"
+        }
 
         let appUserID: String
         let newAppUserID: String
 
+    }
+
+}
+
+extension LogInOperation.Body: HTTPRequestBody {
+
+    var contentForSignature: [(key: String, value: String)] {
+        return [
+            (Self.CodingKeys.appUserID.stringValue, self.appUserID),
+            (Self.CodingKeys.newAppUserID.stringValue, self.newAppUserID)
+        ]
     }
 
 }

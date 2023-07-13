@@ -110,7 +110,7 @@ private extension PostOfferResponse.Offer {
 
 private extension PostOfferForSigningOperation {
 
-    struct Body: Encodable {
+    struct Body: HTTPRequestBody {
 
         // swiftlint:disable:next nesting
         struct Offer: Encodable {

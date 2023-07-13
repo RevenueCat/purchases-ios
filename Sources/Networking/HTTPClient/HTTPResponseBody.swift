@@ -14,7 +14,6 @@
 import Foundation
 
 /// The content of an `HTTPResponse`
-/// - Note: this can be removed in favor of `Decodable` when all responses implement `Decodable`.
 protocol HTTPResponseBody {
 
     static func create(with data: Data) throws -> Self

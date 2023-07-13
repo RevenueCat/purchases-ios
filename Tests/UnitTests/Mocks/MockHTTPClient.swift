@@ -77,12 +77,15 @@ class MockHTTPClient: HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        let verificationMode = verificationMode ?? self.systemInfo.responseVerificationMode
+
         let request = request
-            .requestAddingNonceIfRequired(with: verificationMode ?? self.systemInfo.responseVerificationMode)
+            .requestAddingNonceIfRequired(with: verificationMode)
             .withHardcodedNonce
 
         let call = Call(request: request,
-                        headers: request.headers(with: self.authHeaders))
+                        headers: request.headers(with: self.authHeaders,
+                                                 verificationMode: verificationMode))
 
         DispatchQueue.main.async {
             self.calls.append(call)
