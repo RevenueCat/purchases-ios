@@ -13,9 +13,7 @@
             "title": "Tienda",
             "subtitle": "Descripción",
             "cta": "Comprar",
-            "cta_with_intro_offer": "Comprar",
-            "offer_details": "{{ price_per_month }} cada mes",
-            "offer_details_with_intro_offer": "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
+            "offer_details": "{{ price_per_month }} cada mes"
         }
     },
     "default_locale": "en_US",
