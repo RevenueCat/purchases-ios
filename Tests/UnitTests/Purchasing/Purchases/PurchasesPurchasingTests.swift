@@ -544,25 +544,28 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
         )
 
-        var package: Package!
+        let result: Package? = waitUntilValue { completion in
+            self.purchases.getOfferings { (newOfferings, _) in
+                let package = newOfferings!["base"]!.monthly!
 
-        self.purchases.getOfferings { (newOfferings, _) in
-            package = newOfferings!["base"]!.monthly!
-            self.purchases.purchase(package: package) { (_, _, _, _) in }
+                self.purchases.purchase(package: package) { (_, _, _, _) in }
 
-            let transaction = MockTransaction()
-            transaction.mockPayment = self.storeKit1Wrapper.payment!
+                let transaction = MockTransaction()
+                transaction.mockPayment = self.storeKit1Wrapper.payment!
 
-            transaction.mockState = SKPaymentTransactionState.purchasing
-            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+                transaction.mockState = SKPaymentTransactionState.purchasing
+                self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-            self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
+                self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
 
-            transaction.mockState = SKPaymentTransactionState.purchased
-            self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+                transaction.mockState = SKPaymentTransactionState.purchased
+                self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+                completion(package)
+            }
         }
 
-        expect(package).toEventuallyNot(beNil())
+        let package = try XCTUnwrap(result)
 
         expect(self.backend.postReceiptDataCalled).to(beTrue())
         expect(self.backend.postedReceiptData).toNot(beNil())

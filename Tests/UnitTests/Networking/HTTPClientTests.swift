@@ -62,7 +62,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           eTagManager: self.eTagManager,
                           signing: self.signing,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: 3)
+                          requestTimeout: defaultTimeout.seconds)
     }
 
 }
@@ -908,7 +908,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             }
         }
 
-        self.waitForExpectations(timeout: 1)
+        self.waitForExpectations(timeout: defaultTimeout.seconds)
         expect(completionCallCount.value) == serialRequests
     }
 
@@ -947,7 +947,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             expectations[1].fulfill()
         }
 
-        self.waitForExpectations(timeout: 1)
+        self.waitForExpectations(timeout: defaultTimeout.seconds)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
@@ -1004,7 +1004,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             expectations[2].fulfill()
         }
 
-        self.waitForExpectations(timeout: 3)
+        self.waitForExpectations(timeout: defaultTimeout.seconds)
 
         expect(firstRequestFinished.value) == true
         expect(secondRequestFinished.value) == true
