@@ -41,11 +41,13 @@ public protocol PaywallLocalizedConfiguration {
     /// The content of the main action button for purchasing a subscription.
     var callToAction: String { get }
     /// The content of the main action button for purchasing a subscription when an intro offer is available.
-    var callToActionWithIntroOffer: String { get }
+    /// If `nil`, no information regarding trial eligibility will be displayed.
+    var callToActionWithIntroOffer: String? { get }
     /// Description for the offer to be purchased.
     var offerDetails: String { get }
     /// Description for the offer to be purchased when an intro offer is available.
-    var offerDetailsWithIntroOffer: String { get }
+    /// If `nil`, no information regarding trial eligibility will be displayed.
+    var offerDetailsWithIntroOffer: String? { get }
 
 }
 
@@ -60,9 +62,9 @@ extension PaywallData {
         public var title: String
         public var subtitle: String
         public var callToAction: String
-        public var callToActionWithIntroOffer: String
+        public var callToActionWithIntroOffer: String?
         public var offerDetails: String
-        public var offerDetailsWithIntroOffer: String
+        public var offerDetailsWithIntroOffer: String?
 
         // swiftlint:enable missing_docs
 
@@ -71,9 +73,9 @@ extension PaywallData {
             title: String,
             subtitle: String,
             callToAction: String,
-            callToActionWithIntroOffer: String,
+            callToActionWithIntroOffer: String? = nil,
             offerDetails: String,
-            offerDetailsWithIntroOffer: String
+            offerDetailsWithIntroOffer: String? = nil
         ) {
             self.title = title
             self.subtitle = subtitle
