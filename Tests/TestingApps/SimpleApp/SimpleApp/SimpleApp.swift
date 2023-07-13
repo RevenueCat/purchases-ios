@@ -24,6 +24,7 @@ struct SimpleApp: App {
 
         Purchases.configure(
             with: .init(withAPIKey: apiKey)
+                .with(usesStoreKit2IfAvailable: true)
         )
     }
 
@@ -39,7 +40,9 @@ struct SimpleApp: App {
                         if let paywall = offering.paywall {
                             PaywallView(offering: offering, paywall: paywall)
                         } else {
-                            Text("Didn't find a paywall associated to the current offering")
+                            Text(
+                                "Didn't find a paywall associated to the current offering.\n" +
+                                "Check the logs for any potential errors.")
                         }
 
                     case let .failure(error):
