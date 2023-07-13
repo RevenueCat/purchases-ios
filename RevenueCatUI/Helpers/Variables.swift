@@ -1,5 +1,6 @@
 import Foundation
 import RevenueCat
+import RegexBuilder
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PaywallData.LocalizedConfiguration {
@@ -20,45 +21,64 @@ protocol VariableDataProvider {
 
 }
 
+struct VariableMatch {
+    let variable: String
+    let range: Range<String.Index>
+}
+
+
 /// Processes strings, replacing `{{variable}}` with their associated content.
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 enum VariableHandler {
+
+    private static func extractVariables(from expression: String) -> [VariableMatch] {
+        let variablePattern = Regex {
+            Capture {
+                OneOrMore {
+                    "{{ "
+                    OneOrMore(.word)
+                    " }}"
+                }
+            }
+        }
+
+        return expression.matches(of: variablePattern).map { match in
+            let (_, variable) = match.output
+            return VariableMatch(variable: String(variable), range: match.range)
+        }
+    }
 
     static func processVariables(
         in string: String,
         with provider: VariableDataProvider
     ) -> String {
+        let matches = extractVariables(from: string)
         var replacedString = string
-        let range = NSRange(string.startIndex..., in: string)
-        let matches = Self.regex.matches(in: string, options: [], range: range)
 
-        for match in matches.reversed() {
-            let variableNameRange = match.range(at: 1)
-            if let variableNameRange = Range(variableNameRange, in: string) {
-                let variableName = String(string[variableNameRange])
-                let replacementValue = provider.value(for: variableName)
+        for variableMatch in matches {
+            let replacementValue = provider.value(for: variableMatch.variable)
 
-                let adjustedRange = NSRange(
-                    location: variableNameRange.lowerBound.utf16Offset(in: string) - Self.pattern.count / 2,
-                    length: string.distance(from: variableNameRange.lowerBound,
-                                            to: variableNameRange.upperBound) + Self.pattern.count
-                )
-                let replacementRange = Range(adjustedRange, in: replacedString)!
+            let adjustedRange = NSRange(
+                location: variableMatch.range.lowerBound.utf16Offset(in: string) - Self.startPattern.count,
+                length: string.distance(from: variableMatch.range.lowerBound,
+                                        to: variableMatch.range.upperBound)
+                + Self.startPattern.count
+                + Self.endPattern.count
+            )
+            let replacementRange = Range(adjustedRange, in: replacedString)!
 
-                replacedString = replacedString.replacingCharacters(in: replacementRange, with: replacementValue)
-            }
+            replacedString = replacedString.replacingCharacters(in: replacementRange, with: replacementValue)
         }
 
         return replacedString
     }
 
-    private static let pattern = "{{  }}"
-    // Fix-me: this can be implemented using the new Regex from Swift.
-    // This regex is known at compile time and tested:
-    // swiftlint:disable:next force_try
-    private static let regex = try! NSRegularExpression(pattern: "\\{\\{ (\\w+) \\}\\}", options: [])
+    private static let startPattern = "{{ "
+    private static let endPattern = " }}"
 
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension String {
 
     func processed(with provider: VariableDataProvider) -> Self {
@@ -67,6 +87,7 @@ extension String {
 
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension VariableDataProvider {
 
     func value(for variableName: String) -> String {
