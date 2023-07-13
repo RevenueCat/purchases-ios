@@ -33,12 +33,16 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
-        expect(enConfig.callToAction) == "Purchase now"
         expect(enConfig.title) == "Paywall"
+        expect(enConfig.subtitle) == "Description"
+        expect(enConfig.callToAction) == "Purchase now"
+        expect(enConfig.offerDetails) == "{{ price_per_month }} per month"
 
         let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
-        expect(esConfig.callToAction) == "Comprar"
         expect(esConfig.title) == "Tienda"
+        expect(esConfig.subtitle) == "Descripción"
+        expect(esConfig.callToAction) == "Comprar"
+        expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
 
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
