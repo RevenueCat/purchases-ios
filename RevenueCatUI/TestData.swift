@@ -45,10 +45,17 @@ internal enum TestData {
         discounts: []
     )
 
+    static let paywall = PaywallData(
+        template: .example1,
+        config: .init(),
+        localization: .init(callToAction: "Purchase Now", title: "Example paywall")
+    )
+
     static let offering = Offering(
         identifier: Self.offeringIdentifier,
         serverDescription: "Main offering",
         metadata: [:],
+        paywall: Self.paywall,
         availablePackages: [
             .init(
                 identifier: "monthly",
