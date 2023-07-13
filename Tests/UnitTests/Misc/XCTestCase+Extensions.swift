@@ -23,7 +23,7 @@ import XCTest
 extension XCTestCase {
 
     func expectFatalError(
-        expectedMessage: String,
+        expectedMessage: String?,
         testcase: @escaping () -> Void,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -43,7 +43,9 @@ extension XCTestCase {
 
         waitForExpectations(timeout: 2) { _ in
             XCTAssert(fatalErrorReceived, "fatalError wasn't received", file: file, line: line)
-            XCTAssertEqual(assertionMessage, expectedMessage, file: file, line: line)
+            if let expectedMessage = expectedMessage {
+                XCTAssertEqual(assertionMessage, expectedMessage, file: file, line: line)
+            }
 
             FatalErrorUtil.restoreFatalError()
         }

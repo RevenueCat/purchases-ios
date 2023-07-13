@@ -21,16 +21,31 @@ class BaseHTTPResponseTest: TestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) throws -> T {
+        return try T.create(with: self.data(for: name, file: file, line: line))
+    }
+
+    @_disfavoredOverload
+    func decodeFixture<T: Decodable>(
+        _ name: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws -> T {
+        return try T.create(with: self.data(for: name, file: file, line: line))
+    }
+
+    private func data(
+        for fileName: String,
+        file: StaticString,
+        line: UInt
+    ) throws -> Data {
         let url = try XCTUnwrap(
-            Bundle(for: BundleToken.self).url(forResource: name,
+            Bundle(for: BundleToken.self).url(forResource: fileName,
                                               withExtension: "json",
                                               subdirectory: "Fixtures"),
             "Could not find file with name: '\(name).json'",
             file: file, line: line
         )
-        let data = try XCTUnwrap(Data(contentsOf: url), file: file, line: line)
-
-        return try T.create(with: data)
+        return try XCTUnwrap(Data(contentsOf: url), file: file, line: line)
     }
 
 }
