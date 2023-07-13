@@ -32,9 +32,9 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
     let title: String = config.title
     let subtitle: String = config.subtitle
     let callToAction: String = config.callToAction
-    let callToActionWithIntroOffer: String = config.callToActionWithIntroOffer
+    let callToActionWithIntroOffer: String? = config.callToActionWithIntroOffer
     let offerDetails: String = config.offerDetails
-    let offerDetailsWithIntroOffer: String = config.offerDetailsWithIntroOffer
+    let offerDetailsWithIntroOffer: String? = config.offerDetailsWithIntroOffer
 
     let _: PaywallData.LocalizedConfiguration = .init(
         title: title,
