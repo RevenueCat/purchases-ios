@@ -25,8 +25,17 @@ func checkPaywallConfiguration(_ config: PaywallData.Configuration) {
 }
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
-    let _: String = config.callToAction
-    let _: String = config.title
+    let title: String = config.title
+    let subtitle: String = config.subtitle
+    let callToAction: String = config.callToAction
+    let offerDetails: String = config.offerDetails
+
+    let _: PaywallData.LocalizedConfiguration = .init(
+        title: title,
+        subtitle: subtitle,
+        callToAction: callToAction,
+        offerDetails: offerDetails
+    )
 }
 
 func checkPaywallTemplate(_ template: PaywallTemplate) {
