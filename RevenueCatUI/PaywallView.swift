@@ -6,46 +6,16 @@ import SwiftUI
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 public struct PaywallView: View {
 
-    public let offering: Offering
+    private let offering: Offering
+    private let paywall: PaywallData
 
-    public init(offering: Offering) {
+    public init(offering: Offering, paywall: PaywallData) {
         self.offering = offering
+        self.paywall = paywall
     }
 
     public var body: some View {
-        VStack {
-            Text(verbatim: "Offering: \(self.offering.identifier)")
-                .font(.title)
-
-            List {
-                ForEach(self.offering.availablePackages, id: \.identifier) { package in
-                    self.label(for: package)
-                        .listRowBackground(
-                            Rectangle()
-                                .foregroundStyle(.thinMaterial)
-                        )
-                }
-            }
-            .scrollContentBackground(.hidden)
-        }
-        .background(.blue.gradient)
-    }
-
-    private func label(for package: Package) -> some View {
-        HStack {
-            Button {
-
-            } label: {
-                Text(package.storeProduct.localizedTitle)
-                    .padding(.vertical)
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.body)
-        }
+        self.paywall.createView(for: self.offering)
     }
 
 }
@@ -56,7 +26,7 @@ public struct PaywallView: View {
 struct PaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallView(offering: TestData.offering)
+        PaywallView(offering: TestData.offering, paywall: TestData.paywall)
     }
 
 }
