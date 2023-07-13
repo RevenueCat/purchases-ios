@@ -13,13 +13,25 @@ import SwiftUI
 struct DebugErrorView: View {
 
     private let description: String
+    private let releaseBehavior: ReleaseBehavior
 
-    init(_ error: Error) {
-        self.init((error as NSError).localizedDescription)
+    enum ReleaseBehavior {
+
+        case emptyView
+        case fatalError
+
     }
 
-    init(_ description: String) {
+    init(_ error: Error, releaseBehavior: ReleaseBehavior) {
+        self.init(
+            (error as NSError).localizedDescription,
+            releaseBehavior: releaseBehavior
+        )
+    }
+
+    init(_ description: String, releaseBehavior: ReleaseBehavior) {
         self.description = description
+        self.releaseBehavior = releaseBehavior
     }
 
     var body: some View {
@@ -30,12 +42,16 @@ struct DebugErrorView: View {
                     .edgesIgnoringSafeArea(.all)
             )
         #else
-        // Fix-me: implement a proper production error screen
-        // appropriate for each case
-        EmptyView()
-            .onAppear {
-                Logger.warning("Couldn't load paywall: \(self.description)")
-            }
+        switch self.releaseBehavior {
+        case .emptyView:
+            EmptyView()
+                .onAppear {
+                    Logger.warning("Couldn't load paywall: \(self.description)")
+                }
+
+        case let .fatalError:
+            fatalError(self.description)
+        }
         #endif
     }
 
