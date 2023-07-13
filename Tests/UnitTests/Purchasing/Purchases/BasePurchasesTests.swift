@@ -103,12 +103,25 @@ class BasePurchasesTests: TestCase {
         // Because unit tests can run in parallel, if a test needs to modify
         // this level it should be moved to `StoreKitUnitTests`, which runs serially.
         Purchases.logLevel = .verbose
+
+        self.addTeardownBlock {
+            weak var purchases = self.purchases
+            weak var orchestrator = self.purchasesOrchestrator
+            weak var deviceCache = self.deviceCache
+
+            Purchases.clearSingleton()
+            self.clearReferences()
+
+            expect(purchases)
+                .toEventually(beNil(), description: "Purchases has leaked")
+            expect(orchestrator)
+                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
+            expect(deviceCache)
+                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
+        }
     }
 
     override func tearDown() {
-        Purchases.clearSingleton()
-        self.clearReferences()
-
         self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
 
         super.tearDown()
