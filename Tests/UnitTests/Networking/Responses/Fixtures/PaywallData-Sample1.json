@@ -1,0 +1,15 @@
+{
+    "template_name": "sample_1",
+    "localized_strings": {
+        "en_US": {
+            "cta": "Purchase now",
+            "title": "Paywall"
+        },
+        "es_ES": {
+            "cta": "Comprar",
+            "title": "Tienda"
+        }
+    },
+    "default_locale": "en_US",
+    "config": {}
+}
