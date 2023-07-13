@@ -2,12 +2,16 @@
     "template_name": "sample_1",
     "localized_strings": {
         "en_US": {
+            "title": "Paywall",
+            "subtitle": "Description",
             "cta": "Purchase now",
-            "title": "Paywall"
+            "offer_details": "{{ price_per_month }} per month"
         },
         "es_ES": {
+            "title": "Tienda",
+            "subtitle": "Descripción",
             "cta": "Comprar",
-            "title": "Tienda"
+            "offer_details": "{{ price_per_month }} cada mes"
         }
     },
     "default_locale": "en_US",
