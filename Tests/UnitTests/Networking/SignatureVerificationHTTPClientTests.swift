@@ -211,7 +211,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     }
 
     func testPostRequestWithPostParametersHeader() throws {
-        try self.changeClient(.informational)
+        self.changeClient(.informational)
 
         let body = BodyWithSignature(key1: "a", key2: "b")
 
