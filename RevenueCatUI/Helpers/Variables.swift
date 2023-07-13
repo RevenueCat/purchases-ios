@@ -15,6 +15,7 @@ protocol VariableDataProvider {
 
     var localizedPricePerMonth: String { get }
     var productName: String { get }
+    var introductoryOfferDuration: String? { get }
 
 }
 
@@ -71,13 +72,26 @@ private extension VariableDataProvider {
         switch variableName {
         case "price_per_month": return self.localizedPricePerMonth
         case "product_name": return self.productName
+        case "intro_duration":
+            guard let introDuration = self.introductoryOfferDuration else {
+                Self.logWarning(
+                    "Unexpectedly tried to look for intro duration when there is none, this is a logic error."
+                )
+                return ""
+            }
+
+            return introDuration
 
         default:
-            // Note: this isn't ideal.
-            // Once we can use the `package` keyword it can use the internal `Logger`.
-            Purchases.logHandler(.warn, "Couldn't find content for variable '\(variableName)'")
+            Self.logWarning("Couldn't find content for variable '\(variableName)'")
             return ""
         }
+    }
+
+    private static func logWarning(_ text: String) {
+        // Note: this isn't ideal.
+        // Once we can use the `package` keyword it can use the internal `Logger`.
+        Purchases.logHandler(.warn, text)
     }
 
 }
