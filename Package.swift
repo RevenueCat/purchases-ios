@@ -74,6 +74,7 @@ let package = Package(
                         "RevenueCatUI",
                         "Nimble",
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-                    ])
+                    ],
+                    resources: [.copy("Resources/image.png")])
     ]
 )
