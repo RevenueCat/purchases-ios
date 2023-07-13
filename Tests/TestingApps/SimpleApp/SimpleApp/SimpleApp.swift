@@ -28,13 +28,23 @@ struct SimpleApp: App {
     }
 
     @State
-    private var offering: Offering?
+    private var offering: Result<Offering, Error>?
 
     var body: some Scene {
         WindowGroup {
             Group {
                 if let offering = self.offering {
-                    PaywallView(offering: offering)
+                    switch offering {
+                    case let .success(offering):
+                        if let paywall = offering.paywall {
+                            PaywallView(offering: offering, paywall: paywall)
+                        } else {
+                            Text("Didn't find a paywall associated to the current offering")
+                        }
+
+                    case let .failure(error):
+                        Text("Error loading offerings: \(error.localizedDescription)")
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -43,7 +53,11 @@ struct SimpleApp: App {
                     .frame(maxHeight: .infinity, alignment: .bottom)
             }
             .task {
-                self.offering = try? await Purchases.shared.offerings().current
+                do {
+                    self.offering = .success(try await Purchases.shared.offerings().current!)
+                } catch {
+                    self.offering = .failure(error)
+                }
             }
         }
     }
