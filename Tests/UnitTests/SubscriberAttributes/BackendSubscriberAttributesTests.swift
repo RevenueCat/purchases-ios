@@ -46,8 +46,7 @@ class BackendSubscriberAttributesTests: TestCase {
         ] as [String: Any]
     ]
 
-    // swiftlint:disable:next force_try
-    let systemInfo = try! SystemInfo(platformInfo: .init(flavor: "Unity", version: "2.3.3"), finishTransactions: true)
+    let systemInfo = SystemInfo(platformInfo: .init(flavor: "Unity", version: "2.3.3"), finishTransactions: true)
 
     override func setUpWithError() throws {
         mockHTTPClient = self.createClient()

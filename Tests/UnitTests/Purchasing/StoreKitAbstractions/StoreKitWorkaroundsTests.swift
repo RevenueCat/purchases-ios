@@ -81,9 +81,9 @@ class StoreKitWorkaroundsReceiptURLTests: TestCase {
 
         self.mockBundle = MockBundle()
         self.mockRequestFetcher = MockRequestFetcher()
-        self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
-                                                 finishTransactions: false,
-                                                 bundle: self.mockBundle)
+        self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
+                                             finishTransactions: false,
+                                             bundle: self.mockBundle)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher, systemInfo: self.mockSystemInfo)
     }
 

@@ -30,8 +30,7 @@ class SubscriberAttributesManagerTests: TestCase {
         try super.setUpWithError()
 
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
-        let systemInfo = try MockSystemInfo(platformInfo: platformInfo,
-                                            finishTransactions: true)
+        let systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
 
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: systemInfo)
         self.mockBackend = MockBackend()

@@ -796,7 +796,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
-    func testPassesPlatformFlavorHeader() throws {
+    func testPassesPlatformFlavorHeader() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
@@ -806,8 +806,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "3.2.1")
-        let systemInfo = try SystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: true)
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: true)
 
         self.client = self.createClient(systemInfo)
 
@@ -818,7 +818,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
-    func testPassesPlatformFlavorVersionHeader() throws {
+    func testPassesPlatformFlavorVersionHeader() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
@@ -828,8 +828,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             return .emptySuccessResponse()
         }
         let platformInfo = Purchases.PlatformInfo(flavor: "react-native", version: "1.2.3")
-        let systemInfo = try SystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: true)
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: true)
         self.client = self.createClient(systemInfo)
 
         waitUntil { completion in
@@ -839,7 +838,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
-    func testPassesObserverModeHeaderCorrectlyWhenEnabled() throws {
+    func testPassesObserverModeHeaderCorrectlyWhenEnabled() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
@@ -848,7 +847,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(try SystemInfo(platformInfo: nil, finishTransactions: true))
+        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: true))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -898,7 +897,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent) == false
     }
 
-    func testPassesObserverModeHeaderCorrectlyWhenDisabled() throws {
+    func testPassesObserverModeHeaderCorrectlyWhenDisabled() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
         let headerPresent: Atomic<Bool> = false
@@ -907,7 +906,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             headerPresent.value = true
             return .emptySuccessResponse()
         }
-        self.client = self.createClient(try SystemInfo(platformInfo: nil, finishTransactions: false))
+        self.client = self.createClient(SystemInfo(platformInfo: nil, finishTransactions: false))
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
@@ -1388,7 +1387,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.eTagManager.invokedETagHeaderParametersList).to(haveCount(1))
     }
 
-    func testFakeServerErrors() throws {
+    func testFakeServerErrors() {
         let path: HTTPRequest.Path = .mockPath
 
         stub(condition: isPath(path)) { _ in
@@ -1397,7 +1396,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         self.client = self.createClient(
-            try .init(
+            .init(
                 platformInfo: nil,
                 finishTransactions: false,
                 dangerousSettings: .init(

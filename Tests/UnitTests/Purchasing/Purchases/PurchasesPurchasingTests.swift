@@ -901,10 +901,10 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil,
-                                             finishTransactions: false,
-                                             storeKit2Setting: .enabledOnlyForOptimizations,
-                                             dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        self.systemInfo = MockSystemInfo(platformInfo: nil,
+                                         finishTransactions: false,
+                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
@@ -926,10 +926,10 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil,
-                                             finishTransactions: true,
-                                             storeKit2Setting: .enabledOnlyForOptimizations,
-                                             dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+        self.systemInfo = MockSystemInfo(platformInfo: nil,
+                                         finishTransactions: true,
+                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
@@ -951,7 +951,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     func testDoesntFinishTransactionsIfObserverModeIsSet() throws {
-        try self.setupPurchasesObserverModeOn()
+        self.setUpPurchasesObserverModeOn()
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
@@ -971,7 +971,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     func testReceiptsSendsObserverModeWhenObserverMode() throws {
-        try self.setupPurchasesObserverModeOn()
+        self.setUpPurchasesObserverModeOn()
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 
@@ -989,7 +989,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     func testRestoredPurchasesArePosted() throws {
-        try self.setupPurchasesObserverModeOn()
+        self.setUpPurchasesObserverModeOn()
 
         self.purchases.purchase(product: Self.mockProduct) { (_, _, _, _) in }
 

@@ -47,7 +47,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try self.setUpSystemInfo()
+        self.setUpSystemInfo()
 
         self.productsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                    requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -111,12 +111,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     fileprivate func setUpSystemInfo(
         finishTransactions: Bool = true,
         storeKit2Setting: StoreKit2Setting = .default
-    ) throws {
+    ) {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
 
-        self.systemInfo = try MockSystemInfo(platformInfo: platformInfo,
-                                             finishTransactions: finishTransactions,
-                                             storeKit2Setting: storeKit2Setting)
+        self.systemInfo = MockSystemInfo(platformInfo: platformInfo,
+                                         finishTransactions: finishTransactions,
+                                         storeKit2Setting: storeKit2Setting)
         self.systemInfo.stubbedIsSandbox = true
     }
 
@@ -742,7 +742,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testPurchaseSK2PackageRetriesReceiptFetchIfEnabled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        self.systemInfo = try .init(
+        self.systemInfo = .init(
             platformInfo: nil,
             finishTransactions: false,
             storeKit2Setting: .enabledForCompatibleDevices,
@@ -959,7 +959,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testStoreKit2TransactionListenerDelegateWithObserverMode() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        try self.setUpSystemInfo(finishTransactions: false, storeKit2Setting: .enabledForCompatibleDevices)
+        self.setUpSystemInfo(finishTransactions: false, storeKit2Setting: .enabledForCompatibleDevices)
 
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -1030,7 +1030,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let transactionListener = MockStoreKit2TransactionListener()
 
-        try self.setUpSystemInfo(storeKit2Setting: .disabled)
+        self.setUpSystemInfo(storeKit2Setting: .disabled)
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
@@ -1044,7 +1044,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let transactionListener = MockStoreKit2TransactionListener()
 
-        try self.setUpSystemInfo(storeKit2Setting: .enabledOnlyForOptimizations)
+        self.setUpSystemInfo(storeKit2Setting: .enabledOnlyForOptimizations)
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
@@ -1058,7 +1058,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let transactionListener = MockStoreKit2TransactionListener()
 
-        try self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices)
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))

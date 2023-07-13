@@ -30,49 +30,45 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.systemVersion) == ProcessInfo().operatingSystemVersionString
     }
 
-    func testPlatformFlavor() throws {
+    func testPlatformFlavor() {
         let flavor = "flavor"
         let platformInfo = Purchases.PlatformInfo(flavor: flavor, version: "foo")
-        let systemInfo = try SystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
         expect(systemInfo.platformFlavor) == flavor
     }
 
-    func testPlatformFlavorVersion() throws {
+    func testPlatformFlavorVersion() {
         let flavorVersion = "flavorVersion"
         let platformInfo = Purchases.PlatformInfo(flavor: "foo", version: flavorVersion)
-        let systemInfo = try SystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: false)
+        let systemInfo = SystemInfo(platformInfo: platformInfo, finishTransactions: false)
         expect(systemInfo.platformFlavorVersion) == flavorVersion
     }
 
-    func testFinishTransactions() throws {
+    func testFinishTransactions() {
         var finishTransactions = false
-        var systemInfo = try SystemInfo(platformInfo: nil,
-                                        finishTransactions: finishTransactions)
+        var systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
 
         finishTransactions = true
 
-        systemInfo = try SystemInfo(platformInfo: nil,
-                                    finishTransactions: finishTransactions)
+        systemInfo = SystemInfo(platformInfo: nil, finishTransactions: finishTransactions)
         expect(systemInfo.finishTransactions) == finishTransactions
         expect(systemInfo.observerMode) == !finishTransactions
     }
 
-    func testIsSandbox() throws {
+    func testIsSandbox() {
         let sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: true)
 
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == true
-        expect(try SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == true
+        expect(SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == true
+        expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == true
     }
 
-    func testIsNotSandbox() throws {
+    func testIsNotSandbox() {
         let sandboxDetector = MockSandboxEnvironmentDetector(isSandbox: false)
 
-        expect(try SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == false
-        expect(try SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
+        expect(SystemInfo.withReceiptResult(.sandboxReceipt, sandboxDetector).isSandbox) == false
+        expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
     func testIsAppleSubscriptionURLWithAnotherURL() {
@@ -144,21 +140,20 @@ private extension SystemInfo {
     static func withReceiptResult(
         _ result: MockBundle.ReceiptURLResult,
         _ sandboxEnvironmentDetector: SandboxEnvironmentDetector? = nil
-    ) throws -> SystemInfo {
+    ) -> SystemInfo {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
         let sandboxDetector = sandboxEnvironmentDetector ?? BundleSandboxEnvironmentDetector(bundle: bundle)
 
-        return try SystemInfo(platformInfo: nil,
-                              finishTransactions: false,
-                              bundle: bundle,
-                              sandboxEnvironmentDetector: sandboxDetector)
+        return SystemInfo(platformInfo: nil,
+                          finishTransactions: false,
+                          bundle: bundle,
+                          sandboxEnvironmentDetector: sandboxDetector)
     }
 
     static var `default`: SystemInfo {
-        // swiftlint:disable:next force_try
-        return try! .init(platformInfo: nil, finishTransactions: true)
+        return .init(platformInfo: nil, finishTransactions: true)
     }
 
 }

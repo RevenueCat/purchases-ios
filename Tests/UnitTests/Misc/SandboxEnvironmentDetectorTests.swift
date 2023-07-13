@@ -18,30 +18,30 @@ import XCTest
 
 class SandboxEnvironmentDetectorTests: TestCase {
 
-    func testIsSandbox() throws {
-        expect(try SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: false).isSandbox) == true
+    func testIsSandbox() {
+        expect(SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
-    func testIsNotSandbox() throws {
-        expect(try SystemInfo.with(receiptResult: .receiptWithData, inSimulator: false).isSandbox) == false
+    func testIsNotSandbox() {
+        expect(SystemInfo.with(receiptResult: .receiptWithData, inSimulator: false).isSandbox) == false
     }
 
-    func testIsNotSandboxIfNoReceiptURL() throws {
-        expect(try SystemInfo.with(receiptResult: .nilURL, inSimulator: false).isSandbox) == false
+    func testIsNotSandboxIfNoReceiptURL() {
+        expect(SystemInfo.with(receiptResult: .nilURL, inSimulator: false).isSandbox) == false
     }
 
-    func testMacSandboxReceiptIsSandbox() throws {
-        expect(try SystemInfo.with(receiptResult: .macOSSandboxReceipt, inSimulator: false).isSandbox) == true
+    func testMacSandboxReceiptIsSandbox() {
+        expect(SystemInfo.with(receiptResult: .macOSSandboxReceipt, inSimulator: false).isSandbox) == true
     }
 
-    func testMacAppStoreReceiptIsNotSandbox() throws {
-        expect(try SystemInfo.with(receiptResult: .macOSAppStoreReceipt, inSimulator: false).isSandbox) == false
+    func testMacAppStoreReceiptIsNotSandbox() {
+        expect(SystemInfo.with(receiptResult: .macOSAppStoreReceipt, inSimulator: false).isSandbox) == false
     }
 
     func testIsAlwaysSandboxIfRunningInSimulator() {
-        expect(try SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
-        expect(try SystemInfo.with(receiptResult: .receiptWithData, inSimulator: true).isSandbox) == true
-        expect(try SystemInfo.with(receiptResult: .nilURL, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptResult: .receiptWithData, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptResult: .nilURL, inSimulator: true).isSandbox) == true
     }
 
 }
@@ -51,7 +51,7 @@ private extension SandboxEnvironmentDetector {
     static func with(
         receiptResult result: MockBundle.ReceiptURLResult,
         inSimulator: Bool
-    ) throws -> SandboxEnvironmentDetector {
+    ) -> SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 

@@ -21,10 +21,9 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
 
     var mockDeviceCache: MockDeviceCache!
     let mockOperationDispatcher = MockOperationDispatcher()
-    // swiftlint:disable:next force_try
-    let mockSystemInfo = try! MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
-                                             finishTransactions: true,
-                                             storeKit2Setting: .enabledForCompatibleDevices)
+    let mockSystemInfo = MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
+                                        finishTransactions: true,
+                                        storeKit2Setting: .enabledForCompatibleDevices)
     let mockBackend = MockBackend()
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = OfferingsFactory()

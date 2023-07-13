@@ -44,8 +44,7 @@ class BasePurchasesTests: TestCase {
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: self.mockProductsManager,
                                                                              receiptParser: self.mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "4.4.0")
-        let systemInfoAttribution = try MockSystemInfo(platformInfo: platformInfo,
-                                                       finishTransactions: true)
+        let systemInfoAttribution = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfoAttribution)
         self.attributionFetcher = MockAttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                          systemInfo: systemInfoAttribution)
@@ -186,10 +185,10 @@ class BasePurchasesTests: TestCase {
         self.initializePurchasesInstance(appUserId: nil)
     }
 
-    func setupPurchasesObserverModeOn() throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil,
-                                             finishTransactions: false,
-                                             storeKit2Setting: self.storeKit2Setting)
+    func setUpPurchasesObserverModeOn() {
+        self.systemInfo = MockSystemInfo(platformInfo: nil,
+                                         finishTransactions: false,
+                                         storeKit2Setting: self.storeKit2Setting)
         self.initializePurchasesInstance(appUserId: nil)
     }
 

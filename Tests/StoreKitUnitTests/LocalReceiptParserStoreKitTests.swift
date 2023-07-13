@@ -32,10 +32,10 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         self.requestFetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                                      operationDispatcher: operationDispatcher)
 
-        self.systemInfo = try SystemInfo(platformInfo: Purchases.platformInfo,
-                                         finishTransactions: true,
-                                         operationDispatcher: operationDispatcher,
-                                         storeKit2Setting: .disabled)
+        self.systemInfo = SystemInfo(platformInfo: Purchases.platformInfo,
+                                     finishTransactions: true,
+                                     operationDispatcher: operationDispatcher,
+                                     storeKit2Setting: .disabled)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
         self.parser = .default
     }

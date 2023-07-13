@@ -32,9 +32,9 @@ class BaseReceiptFetcherTests: TestCase {
         self.mockBundle = MockBundle()
         self.mockRequestFetcher = MockRequestFetcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.mockSystemInfo = try MockSystemInfo(platformInfo: nil,
-                                                 finishTransactions: false,
-                                                 bundle: self.mockBundle)
+        self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
+                                             finishTransactions: false,
+                                             bundle: self.mockBundle)
         self.clock = TestClock()
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,

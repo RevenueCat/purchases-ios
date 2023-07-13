@@ -15,7 +15,7 @@ class IntroEligibilityCalculatorTests: TestCase {
         try super.setUpWithError()
 
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "3.2.1")
-        self.systemInfo = try MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
+        self.systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
         self.mockProductsManager = MockProductsManager(systemInfo: systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.calculator = IntroEligibilityCalculator(productsManager: mockProductsManager,
