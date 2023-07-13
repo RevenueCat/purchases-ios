@@ -164,7 +164,9 @@ private extension BaseBackendIntegrationTests {
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
         self.addTeardownBlock { [weak purchases = Purchases.shared] in
-            expect(purchases).toEventually(beNil(), description: "Purchases has leaked")
+            // Note: this captures the boolean to avoid race conditions when Nimble tries
+            // to print `purchases` while it's being deallocated.
+            expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
         }
 
         self.addTeardownBlock {

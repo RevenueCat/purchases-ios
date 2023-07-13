@@ -112,12 +112,14 @@ class BasePurchasesTests: TestCase {
             Purchases.clearSingleton()
             self.clearReferences()
 
-            expect(purchases)
-                .toEventually(beNil(), description: "Purchases has leaked")
-            expect(orchestrator)
-                .toEventually(beNil(), description: "PurchasesOrchestrator has leaked")
-            expect(deviceCache)
-                .toEventually(beNil(), description: "DeviceCache has leaked: \(self)")
+            // Note: this captures the boolean to avoid race conditions when Nimble tries
+            // to print the instances while they're being deallocated.
+            expect { purchases == nil }
+                .toEventually(beTrue(), description: "Purchases has leaked")
+            expect { orchestrator == nil }
+                .toEventually(beTrue(), description: "PurchasesOrchestrator has leaked")
+            expect { deviceCache == nil }
+                .toEventually(beTrue(), description: "DeviceCache has leaked")
         }
     }
 
