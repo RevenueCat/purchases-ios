@@ -31,6 +31,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
 
         expect(paywall.template) == .example1
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
+        expect(paywall.config.packages) == [.monthly, .annual]
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.title) == "Paywall"

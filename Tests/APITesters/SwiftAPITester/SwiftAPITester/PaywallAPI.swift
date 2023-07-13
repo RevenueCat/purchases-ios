@@ -21,7 +21,8 @@ func checkPaywallData(_ data: PaywallData) {
 }
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration) {
-    let _: PaywallData.Configuration = .init()
+    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual])
+    let _: [PackageType] = config.packages
 }
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {

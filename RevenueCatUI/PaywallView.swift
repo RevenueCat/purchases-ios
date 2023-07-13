@@ -26,7 +26,8 @@ public struct PaywallView: View {
 struct PaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
-        PaywallView(offering: TestData.offering, paywall: TestData.paywall)
+        let offering = TestData.offeringWithIntroOffer
+        PaywallView(offering: offering, paywall: offering.paywall!)
     }
 
 }
