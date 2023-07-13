@@ -23,9 +23,9 @@ class PackageTypeTests: TestCase {
     func testCodable() throws {
         for type in PackageType.allCases where type != .custom {
             do {
-                let encoded = try type.encodeAndDecode()
+                let encoded = try Data(type: type).encodeAndDecode()
 
-                expect(encoded).to(
+                expect(encoded.type).to(
                     equal(type),
                     description: "Failed encoding '\(type.debugDescription)'"
                 )
@@ -37,7 +37,16 @@ class PackageTypeTests: TestCase {
 
     func testEncodingCustom() throws {
         // We don't have a way to tell this appart from `.unknown`
-        expect(try PackageType.custom.encodeAndDecode()) == .unknown
+        expect(try Data(type: .custom).encodeAndDecode().type) == .unknown
+    }
+
+}
+
+private extension PackageTypeTests {
+
+    /// iOS 12 does not allow literalls as root types, so we test encoding it inside of a dictionary
+    struct Data: Codable {
+        var type: PackageType
     }
 
 }
