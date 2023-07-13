@@ -138,10 +138,10 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         expect(receivedError).to(matchError(error.asPurchasesError))
     }
 
-    func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() throws {
-        self.systemInfo = try MockSystemInfo(platformInfo: nil,
-                                             finishTransactions: false,
-                                             dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+    func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() {
+        self.systemInfo = MockSystemInfo(platformInfo: nil,
+                                         finishTransactions: false,
+                                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 

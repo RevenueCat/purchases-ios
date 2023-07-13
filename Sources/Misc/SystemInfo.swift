@@ -117,7 +117,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storeKit2Setting: StoreKit2Setting = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
-         dangerousSettings: DangerousSettings? = nil) throws {
+         dangerousSettings: DangerousSettings? = nil) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)

@@ -30,9 +30,9 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
-        mockSystemInfo = try MockSystemInfo(platformInfo: platformInfo,
-                                            finishTransactions: true,
-                                            storeKit2Setting: .enabledForCompatibleDevices)
+        mockSystemInfo = MockSystemInfo(platformInfo: platformInfo,
+                                        finishTransactions: true,
+                                        storeKit2Setting: .enabledForCompatibleDevices)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(

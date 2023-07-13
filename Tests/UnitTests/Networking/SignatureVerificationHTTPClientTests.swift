@@ -57,8 +57,8 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager>
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
-    func testAutomaticallyAddsNonceIfRequired() throws {
-        try self.changeClient(.informational)
+    func testAutomaticallyAddsNonceIfRequired() {
+        self.changeClient(.informational)
 
         let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"))
 
@@ -93,8 +93,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]) == request.nonce?.base64EncodedString()
     }
 
-    func testFailedVerificationIfResponseContainsNoSignature() throws {
-        try self.changeClient(.informational)
+    func testFailedVerificationIfResponseContainsNoSignature() {
+        self.changeClient(.informational)
         self.mockResponse()
 
         self.signing.stubbedVerificationResult = true
@@ -114,13 +114,13 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         )
     }
 
-    func testFailedVerificationIfResponseContainsNoSignatureForEndpointWithStaticSignature() throws {
+    func testFailedVerificationIfResponseContainsNoSignatureForEndpointWithStaticSignature() {
         // This test relies on a path with static signatures
         let path: HTTPRequest.Path = .getProductEntitlementMapping
         expect(path.supportsSignatureVerification) == true
         expect(path.needsNonceForSigning) == false
 
-        try self.changeClient(.informational)
+        self.changeClient(.informational)
         self.mockResponse(path: path,
                           signature: nil,
                           requestDate: nil)
@@ -142,8 +142,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         )
     }
 
-    func testHeadersAreCaseInsensitive() throws {
-        try self.changeClient(.informational)
+    func testHeadersAreCaseInsensitive() {
+        self.changeClient(.informational)
 
         stub(condition: isPath(Self.path)) { _ in
             return .init(data: Data(),
@@ -166,8 +166,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(response?.value?.verificationResult) == .verified
     }
 
-    func testSignatureNotRequested() throws {
-        try self.changeClient(.disabled)
+    func testSignatureNotRequested() {
+        self.changeClient(.disabled)
         self.mockResponse()
 
         let response: DataResponse? = waitUntilValue { completion in
@@ -181,7 +181,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     }
 
     func testVerifiedCachedResponseWithNotRequestedVerificationResponse() throws {
-        try self.changeClient(.disabled)
+        self.changeClient(.disabled)
 
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
@@ -211,7 +211,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     }
 
     func testPostRequestWithPostParametersHeader() throws {
-        try self.changeClient(.informational)
+        self.changeClient(.informational)
 
         let body = BodyWithSignature(key1: "a", key2: "b")
 
@@ -238,7 +238,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try self.changeClient(.informational)
+        self.changeClient(.informational)
     }
 
     func testValidSignature() throws {
@@ -584,10 +584,10 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try self.changeClientToEnforced()
+        self.changeClientToEnforced()
     }
 
-    func testValidSignature() throws {
+    func testValidSignature() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
         self.signing.stubbedVerificationResult = true
@@ -602,7 +602,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(self.signing.requests).to(haveCount(1))
     }
 
-    func testIncorrectSignatureReturnsError() throws {
+    func testIncorrectSignatureReturnsError() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
         self.signing.stubbedVerificationResult = false
@@ -617,7 +617,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
-    func testPerformRequestOverridesIt() throws {
+    func testPerformRequestOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
         self.signing.stubbedVerificationResult = false
@@ -633,7 +633,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
-    func testPerformRequestWithDisabledModeOverridesIt() throws {
+    func testPerformRequestWithDisabledModeOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
         self.signing.stubbedVerificationResult = false
@@ -647,11 +647,11 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response).to(beSuccess())
     }
 
-    func testFakeSignatureFailuresInEnforcedMode() throws {
+    func testFakeSignatureFailuresInEnforcedMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
 
-        try self.changeClientToEnforced(forceSignatureFailures: true)
+        self.changeClientToEnforced(forceSignatureFailures: true)
 
         let response: EmptyResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
@@ -661,11 +661,11 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response?.error) == NetworkError.signatureVerificationFailed(path: Self.path, code: .success)
     }
 
-    func testFakeSignatureFailuresInInformationalMode() throws {
+    func testFakeSignatureFailuresInInformationalMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
 
-        try self.changeClient(.informational, forceSignatureFailures: true)
+        self.changeClient(.informational, forceSignatureFailures: true)
 
         let response: EmptyResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
@@ -675,11 +675,11 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response?.value?.verificationResult) == .failed
     }
 
-    func testFakeSignatureFailuresWithDisabledVerification() throws {
+    func testFakeSignatureFailuresWithDisabledVerification() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
 
-        try self.changeClient(.disabled, forceSignatureFailures: true)
+        self.changeClient(.disabled, forceSignatureFailures: true)
 
         let response: EmptyResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
@@ -699,21 +699,21 @@ private extension BaseSignatureVerificationHTTPClientTests {
     final func changeClient(
         _ verificationMode: Configuration.EntitlementVerificationMode,
         forceSignatureFailures: Bool = false
-    ) throws {
-        try self.createClient(Signing.verificationMode(with: verificationMode),
-                              forceSignatureFailures: forceSignatureFailures)
+    ) {
+        self.createClient(Signing.verificationMode(with: verificationMode),
+                          forceSignatureFailures: forceSignatureFailures)
     }
 
-    final func changeClientToEnforced(forceSignatureFailures: Bool = false) throws {
-        try self.createClient(Signing.enforcedVerificationMode(),
-                              forceSignatureFailures: forceSignatureFailures)
+    final func changeClientToEnforced(forceSignatureFailures: Bool = false) {
+        self.createClient(Signing.enforcedVerificationMode(),
+                          forceSignatureFailures: forceSignatureFailures)
     }
 
     private final func createClient(
         _ mode: Signing.ResponseVerificationMode,
         forceSignatureFailures: Bool = false
-    ) throws {
-        self.systemInfo = try MockSystemInfo(
+    ) {
+        self.systemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
             responseVerificationMode: mode,

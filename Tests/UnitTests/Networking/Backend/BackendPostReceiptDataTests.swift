@@ -92,7 +92,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
         self.createDependencies(
-            try SystemInfo(
+            SystemInfo(
                 platformInfo: nil,
                 finishTransactions: false,
                 dangerousSettings: .init(

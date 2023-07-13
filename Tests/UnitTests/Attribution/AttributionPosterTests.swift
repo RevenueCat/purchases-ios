@@ -26,10 +26,10 @@ class BaseAttributionPosterTests: TestCase {
     var backend: MockBackend!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attributionFactory: AttributionTypeFactory! = MockAttributionTypeFactory()
-    // swiftlint:disable:next force_try
-    var systemInfo: MockSystemInfo! = try! MockSystemInfo(
+    var systemInfo: MockSystemInfo! =  MockSystemInfo(
         platformInfo: .init(flavor: "iOS", version: "3.2.1"),
-        finishTransactions: true)
+        finishTransactions: true
+    )
 
     let userDefaultsSuiteName = "testUserDefaults"
 

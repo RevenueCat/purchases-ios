@@ -5,7 +5,7 @@
 
 @testable import RevenueCat
 
-// swiftlint:disable large_tuple force_try line_length
+// swiftlint:disable large_tuple line_length
 class MockBackend: Backend {
 
     typealias PostReceiptParameters = (data: Data?,
@@ -22,7 +22,7 @@ class MockBackend: Backend {
     var onPostReceipt: (() -> Void)?
 
     public convenience init() {
-        let systemInfo = try! MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
+        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: false, dangerousSettings: nil)
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
 

@@ -20,11 +20,10 @@ class MockSystemInfo: SystemInfo {
                      storeKit2Setting: StoreKit2Setting = .default,
                      customEntitlementsComputation: Bool = false) {
         let dangerousSettings = DangerousSettings(customEntitlementComputation: customEntitlementsComputation)
-        // swiftlint:disable:next force_try
-        try! self.init(platformInfo: nil,
-                       finishTransactions: finishTransactions,
-                       storeKit2Setting: storeKit2Setting,
-                       dangerousSettings: dangerousSettings)
+        self.init(platformInfo: nil,
+                  finishTransactions: finishTransactions,
+                  storeKit2Setting: storeKit2Setting,
+                  dangerousSettings: dangerousSettings)
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

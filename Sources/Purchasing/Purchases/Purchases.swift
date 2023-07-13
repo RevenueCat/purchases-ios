@@ -273,17 +273,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let receiptRefreshRequestFactory = ReceiptRefreshRequestFactory()
         let fetcher = StoreKitRequestFetcher(requestFactory: receiptRefreshRequestFactory,
                                              operationDispatcher: operationDispatcher)
-        let systemInfo: SystemInfo
-        do {
-            systemInfo = try SystemInfo(platformInfo: platformInfo,
-                                        finishTransactions: !observerMode,
-                                        operationDispatcher: operationDispatcher,
-                                        storeKit2Setting: storeKit2Setting,
-                                        responseVerificationMode: responseVerificationMode,
-                                        dangerousSettings: dangerousSettings)
-        } catch {
-            fatalError(error.localizedDescription)
-        }
+        let systemInfo = SystemInfo(platformInfo: platformInfo,
+                                    finishTransactions: !observerMode,
+                                    operationDispatcher: operationDispatcher,
+                                    storeKit2Setting: storeKit2Setting,
+                                    responseVerificationMode: responseVerificationMode,
+                                    dangerousSettings: dangerousSettings)
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()

@@ -39,7 +39,7 @@ class BaseBackendTests: TestCase {
         try super.setUpWithError()
 
         self.createDependencies(
-            try SystemInfo(
+            SystemInfo(
                 platformInfo: nil,
                 finishTransactions: true,
                 responseVerificationMode: self.responseVerificationMode,
