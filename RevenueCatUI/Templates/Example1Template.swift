@@ -44,9 +44,7 @@ struct Example1Template: TemplateViewType {
             Example1TemplateContent(data: data, introEligibility: self.introEligibility)
                 .task(id: self.package) {
                     if let package = self.package {
-                        self.introEligibility = await self.introEligibilityChecker.eligibility(
-                            for: package.storeProduct
-                        )
+                        self.introEligibility = await self.introEligibilityChecker.eligibility(for: package)
                     }
                 }
 

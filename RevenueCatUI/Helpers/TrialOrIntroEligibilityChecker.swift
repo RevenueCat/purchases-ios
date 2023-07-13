@@ -39,6 +39,10 @@ extension TrialOrIntroEligibilityChecker {
         return await self.checker(product)
     }
 
+    func eligibility(for package: Package) async -> IntroEligibilityStatus {
+        return await self.eligibility(for: package.storeProduct)
+    }
+
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
