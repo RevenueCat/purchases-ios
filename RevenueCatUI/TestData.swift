@@ -101,7 +101,7 @@ internal enum TestData {
         title: "Ignite your child's curiosity",
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
         callToAction: "Continue",
-        callToActionWithIntroOffer: "Continue",
+        callToActionWithIntroOffer: nil,
         offerDetails: "{{ price_per_month }} per month",
         offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
     )
@@ -109,6 +109,29 @@ internal enum TestData {
     private static let offeringIdentifier = "offering"
     private static let paywallHeaderImageName = "cd84ac55_paywl0884b9ceb4_header_1689214657.jpg"
     private static let paywallAssetBaseURL = URL(string: "https://d2ban7feka8lu3.cloudfront.net")!
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+extension TrialOrIntroEligibilityChecker {
+
+    /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
+    static func producing(eligibility: IntroEligibilityStatus) -> Self {
+        return .init { product in
+            return product.hasIntroDiscount
+                ? eligibility
+                : .noIntroOfferExists
+        }
+    }
+
+    /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
+    func with(delay: Duration) -> Self {
+        return .init { [checker = self.checker] in
+            try? await Task.sleep(for: delay)
+
+            return await checker($0)
+        }
+    }
 
 }
 
