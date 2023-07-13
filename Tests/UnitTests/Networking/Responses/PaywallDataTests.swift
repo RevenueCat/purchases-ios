@@ -31,7 +31,11 @@ class PaywallDataTests: BaseHTTPResponseTest {
 
         expect(paywall.template) == .example1
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
+        expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == [.monthly, .annual]
+        expect(paywall.config.headerImageName) == "asset_name.png"
+
+        expect(paywall.headerImageURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com/asset_name.png")!
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.title) == "Paywall"
