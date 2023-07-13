@@ -28,7 +28,8 @@
           "identifier" : "non_renewing",
           "platform_product_identifier" : "non_renewing_subscription"
         }
-      ]
+      ],
+      "paywall" : null
     },
     {
       "description" : "Coins",
@@ -41,7 +42,8 @@
           "identifier" : "10.coins",
           "platform_product_identifier" : "consumable.10_coins"
         }
-      ]
+      ],
+      "paywall" : null
     }
   ]
 }
