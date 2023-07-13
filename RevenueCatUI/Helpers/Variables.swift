@@ -74,7 +74,7 @@ private extension VariableDataProvider {
         case "product_name": return self.productName
         case "intro_duration":
             guard let introDuration = self.introductoryOfferDuration else {
-                Self.logWarning(
+                Logger.warning(
                     "Unexpectedly tried to look for intro duration when there is none, this is a logic error."
                 )
                 return ""
@@ -83,15 +83,9 @@ private extension VariableDataProvider {
             return introDuration
 
         default:
-            Self.logWarning("Couldn't find content for variable '\(variableName)'")
+            Logger.warning("Couldn't find content for variable '\(variableName)'")
             return ""
         }
-    }
-
-    private static func logWarning(_ text: String) {
-        // Note: this isn't ideal.
-        // Once we can use the `package` keyword it can use the internal `Logger`.
-        Purchases.logHandler(.warn, text)
     }
 
 }
