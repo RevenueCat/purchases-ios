@@ -61,14 +61,24 @@ struct Example1Template: TemplateViewType {
 
                 Spacer()
 
-                Text(verbatim: self.localization.offerDetails)
-                    .font(.callout)
+                self.offerDetails
 
                 self.button
             }
             .multilineTextAlignment(.center)
             .padding(.horizontal)
         }
+    }
+
+    @ViewBuilder
+    private var offerDetails: some View {
+        // Fix-me: this needs to handle other types of intro discounts
+        let text = self.package.storeProduct.introductoryDiscount == nil
+            ? self.localization.offerDetails
+            : self.localization.offerDetailsWithIntroOffer
+
+        Text(verbatim: text)
+            .font(.callout)
     }
 
     @ViewBuilder
