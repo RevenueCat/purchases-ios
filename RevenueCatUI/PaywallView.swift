@@ -3,6 +3,8 @@ import SwiftUI
 
 /// A full-screen SwiftUI view for displaying a `PaywallData` for an `Offering`.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
+@available(macCatalyst, unavailable, message: "RevenueCatUI does not support Catalyst yet")
 public struct PaywallView: View {
 
     private let offering: Offering
@@ -51,6 +53,8 @@ public struct PaywallView: View {
 #if DEBUG
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(macOS, unavailable)
+@available(macCatalyst, unavailable)
 struct PaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
