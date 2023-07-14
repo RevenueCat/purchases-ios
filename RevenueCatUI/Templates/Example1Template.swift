@@ -67,6 +67,11 @@ private struct Example1TemplateContent: View {
     private var data: Data
     private var introEligibility: IntroEligibilityStatus?
 
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
+    @Environment(\.dismiss)
+    private var dismiss
+
     init(data: Data, introEligibility: IntroEligibilityStatus?) {
         self.data = data
         self.introEligibility = introEligibility
@@ -173,8 +178,12 @@ private struct Example1TemplateContent: View {
 
     @ViewBuilder
     private var button: some View {
-        Button {
+        AsyncButton {
+            let cancelled = try await self.purchaseHandler.purchase(package: self.data.package).userCancelled
 
+            if !cancelled {
+                await self.dismiss()
+            }
         } label: {
             self.ctaText
                 .frame(maxWidth: .infinity)
