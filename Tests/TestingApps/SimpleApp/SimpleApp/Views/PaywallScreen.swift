@@ -22,9 +22,19 @@ struct PaywallScreen: View {
             .hidden()
             .sheet(isPresented: self.$isDisplayed) {
                 PaywallView(offering: self.offering, paywall: self.paywall)
+                #if os(macOS)
+                    .frame(width: 460, height: 750)
+                #endif
             }
             .onAppear {
+                #if os(macOS)
+                // macOS won't display this if called right away.
+                DispatchQueue.main.async {
+                    self.isDisplayed = true
+                }
+                #else
                 self.isDisplayed = true
+                #endif
             }
     }
 
