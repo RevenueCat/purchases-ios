@@ -43,6 +43,6 @@ func XCTAsyncUnwrap<T>(
 // `Nimble.throwAssertion` crashes when called from watchOS
 // This avoids that by failing to compile instead.
 @available(watchOS, unavailable)
-func throwAssertion<Out>() -> Predicate<Out> {
+func throwAssertion<Out>() -> Nimble.Predicate<Out> {
     return Nimble.throwAssertion()
 }
