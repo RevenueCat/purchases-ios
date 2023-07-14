@@ -33,11 +33,31 @@ class PackageFilteringTests: TestCase {
         expect(PaywallData.filter(packages: [Self.monthly, Self.annual], with: [.monthly])) == [Self.monthly]
     }
 
+    func testFilterWithDuplicatedPackageTypes() {
+        expect(PaywallData.filter(packages: [Self.monthly, Self.annual], with: [.monthly, .monthly])) == [
+            Self.monthly,
+            Self.monthly
+        ]
+    }
+
+    func testFilterReturningMultiplePackages() {
+        expect(PaywallData.filter(packages: [Self.weekly, Self.monthly, Self.annual], with: [.weekly, .monthly])) == [
+            Self.weekly,
+            Self.monthly
+        ]
+    }
+
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension PackageFilteringTests {
 
+    static let weekly = Package(
+        identifier: "weekly",
+        packageType: .weekly,
+        storeProduct: TestData.productWithIntroOffer.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
     static let monthly = Package(
         identifier: "monthly",
         packageType: .monthly,
