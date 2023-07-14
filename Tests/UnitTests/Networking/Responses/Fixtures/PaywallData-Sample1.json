@@ -4,15 +4,15 @@
         "en_US": {
             "title": "Paywall",
             "subtitle": "Description",
-            "cta": "Purchase now",
-            "cta_with_intro_offer": "Purchase now",
+            "call_to_action": "Purchase now",
+            "call_to_action_with_intro_offer": "Purchase now",
             "offer_details": "{{ price_per_month }} per month",
             "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
         },
         "es_ES": {
             "title": "Tienda",
             "subtitle": "Descripción",
-            "cta": "Comprar",
+            "call_to_action": "Comprar",
             "offer_details": "{{ price_per_month }} cada mes"
         }
     },
