@@ -9,7 +9,7 @@ class MockDeviceCache: DeviceCache {
 
     convenience init(sandboxEnvironmentDetector: SandboxEnvironmentDetector = MockSandboxEnvironmentDetector()) {
         self.init(sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-                  userDefaults: .computeDefault())
+                  userDefaults: MockUserDefaults())
     }
 
     // MARK: appUserID
