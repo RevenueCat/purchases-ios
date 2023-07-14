@@ -8,6 +8,7 @@ public struct PaywallView: View {
     private let offering: Offering
     private let paywall: PaywallData
     private let introEligibility: TrialOrIntroEligibilityChecker?
+    private let purchaseHandler: PurchaseHandler?
 
     /// Create a view for the given offering and paywal.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
@@ -15,22 +16,30 @@ public struct PaywallView: View {
         self.init(
             offering: offering,
             paywall: paywall,
-            introEligibility: Purchases.isConfigured ? .init() : nil
+            introEligibility: Purchases.isConfigured ? .init() : nil,
+            purchaseHandler: Purchases.isConfigured ? .init() : nil
         )
     }
 
-    init(offering: Offering, paywall: PaywallData, introEligibility: TrialOrIntroEligibilityChecker?) {
+    init(
+        offering: Offering,
+        paywall: PaywallData,
+        introEligibility: TrialOrIntroEligibilityChecker?,
+        purchaseHandler: PurchaseHandler?
+    ) {
         self.offering = offering
         self.paywall = paywall
         self.introEligibility = introEligibility
+        self.purchaseHandler = purchaseHandler
     }
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
-        if let checker = self.introEligibility {
+        if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
             self.paywall
                 .createView(for: self.offering)
                 .environmentObject(checker)
+                .environmentObject(purchaseHandler)
         } else {
             DebugErrorView("Purchases has not been configured.",
                            releaseBehavior: .fatalError)
@@ -53,6 +62,8 @@ struct PaywallView_Previews: PreviewProvider {
                 paywall: paywall,
                 introEligibility: TrialOrIntroEligibilityChecker
                     .producing(eligibility: .eligible)
+                    .with(delay: .seconds(1)),
+                purchaseHandler: .mock()
                     .with(delay: .seconds(1))
             )
         } else {
