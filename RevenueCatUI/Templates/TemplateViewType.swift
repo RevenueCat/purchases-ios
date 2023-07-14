@@ -26,10 +26,6 @@ extension PaywallData {
             )
         }
     }
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-extension TemplateViewType {
 
     static func filter(packages: [Package], with list: [PackageType]) -> [Package] {
         // Only subscriptions are supported at the moment
