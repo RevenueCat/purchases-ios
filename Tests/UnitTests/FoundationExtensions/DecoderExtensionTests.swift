@@ -258,6 +258,40 @@ class IgnoreEncodableTests: TestCase {
 
 }
 
+class DecoderExtensionsNonEmptyStringTests: TestCase {
+
+    private struct Data: Codable, Equatable {
+        @NonEmptyStringDecodable var value: String?
+
+        init(value: String) {
+            self.value = value
+        }
+    }
+
+    func testDecodesActualValue() throws {
+        let data = Data(value: "string")
+        expect(try data.encodeAndDecode()) == data
+    }
+
+    func testDecodesNil() throws {
+        let data = try Data.decode("{\"value\": null}")
+        expect(data.value).to(beNil())
+    }
+
+    func testConvertsEmptyStringToNil() throws {
+        let data = try Data.decode("{\"value\": \"\"}")
+        expect(data.value).to(beNil())
+    }
+
+    func testConvertsSpacesToNil() throws {
+        let data = try Data.decode("{\"value\": \"  \"}")
+        expect(data.value).to(beNil())
+    }
+
+}
+
+// MARK: - Extensions
+
 extension Decodable where Self: Encodable {
 
     func encodeAndDecode() throws -> Self {
