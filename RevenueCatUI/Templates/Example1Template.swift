@@ -22,7 +22,7 @@ struct Example1Template: TemplateViewType {
             self.data = .failure(.noPackages)
         } else {
             let allPackages = paywall.config.packages
-            let packages = Self.filter(packages: packages, with: allPackages)
+            let packages = PaywallData.filter(packages: packages, with: allPackages)
 
             if let package = packages.first {
                 self.data = .success(.init(
