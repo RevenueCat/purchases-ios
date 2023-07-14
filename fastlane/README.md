@@ -154,6 +154,14 @@ build Swift API tester
 
 build ObjC API tester
 
+### ios build_custom_entitlement_computation_api_tester
+
+```sh
+[bundle exec] fastlane ios build_custom_entitlement_computation_api_tester
+```
+
+build CustomEntitlementComputation API tester
+
 ### ios replace_api_key_integration_tests
 
 ```sh

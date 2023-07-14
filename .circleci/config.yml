@@ -303,8 +303,7 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Custom Entitlement Computation API Tests
-          working_directory: Tests/APITesters/CustomEntitlementComputationSwiftAPITester
-          command: bundle exec fastlane build_ios_app --skip_archive --destination "generic/platform=ios" --skip_codesigning
+          command: bundle exec fastlane build_custom_entitlement_computation_api_tester
 
   spm-receipt-parser:
     <<: *base-job
