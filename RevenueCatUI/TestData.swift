@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  TestData.swift
 //  
 //
 //  Created by Nacho Soto on 7/6/23.
@@ -97,6 +97,39 @@ internal enum TestData {
         availablePackages: Self.packages
     )
 
+    static let customerInfo: CustomerInfo = {
+        let json = """
+        {
+            "schema_version": "4",
+            "request_date": "2022-03-08T17:42:58Z",
+            "request_date_ms": 1646761378845,
+            "subscriber": {
+                "first_seen": "2022-03-08T17:42:58Z",
+                "last_seen": "2022-03-08T17:42:58Z",
+                "management_url": "https://apps.apple.com/account/subscriptions",
+                "non_subscriptions": {
+                },
+                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+                "original_application_version": "1.0",
+                "original_purchase_date": "2022-04-12T00:03:24Z",
+                "other_purchases": {
+                },
+                "subscriptions": {
+                },
+                "entitlements": {
+                }
+            }
+        }
+        """
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
+
+        // swiftlint:disable:next force_try
+        return try! decoder.decode(CustomerInfo.self, from: Data(json.utf8))
+    }()
+
     private static let localization: PaywallData.LocalizedConfiguration = .init(
         title: "Ignite your child's curiosity",
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
@@ -133,6 +166,29 @@ extension TrialOrIntroEligibilityChecker {
         }
     }
 
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+extension PurchaseHandler {
+
+    static func mock() -> Self {
+        return self.init { _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        }
+    }
+
+    /// Creates a copy of this `PurchaseHandler` with a delay.
+    func with(delay: Duration) -> Self {
+        return .init { [purchaseBlock = self.purchaseBlock] in
+            try? await Task.sleep(for: delay)
+
+            return try await purchaseBlock($0)
+        }
+    }
 }
 
 #endif
