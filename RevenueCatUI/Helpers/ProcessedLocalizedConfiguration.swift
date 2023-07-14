@@ -1,6 +1,7 @@
 import RevenueCat
 
 /// A `PaywallData.LocalizedConfiguration` with processed variables
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
 
     var title: String
