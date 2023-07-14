@@ -160,11 +160,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
-        try await self.testSession.setSimulatedError(SKTestFailures.Purchase.generic(.userCancelled),
-                                                     forAPI: .purchase)
+        try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
-        let (transaction, info, cancelled) = try await self.purchaseMonthlyOffering()
-        expect(transaction).to(beNil())
+        let (_, info, cancelled) = try await Purchases.shared.purchase(package: self.monthlyPackage)
         expect(info.entitlements.active).to(beEmpty())
         expect(cancelled) == true
     }

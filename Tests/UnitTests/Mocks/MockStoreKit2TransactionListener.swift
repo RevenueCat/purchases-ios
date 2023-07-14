@@ -30,6 +30,7 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     var invokedDelegateGetterCount = 0
     weak var stubbedDelegate: StoreKit2TransactionListenerDelegate!
 
+    var mockCancelled = false
     // `StoreKit.Transaction` can't be stored directly as a property.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
     var mockTransaction: Box<StoreKit.Transaction?> = .init(nil)
@@ -66,11 +67,11 @@ class MockStoreKit2TransactionListener: StoreKit2TransactionListener {
     override func handle(
         purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> ResultData {
-        invokedHandle = true
-        invokedHandleCount += 1
-        invokedHandleParameters = (.init(purchaseResult), ())
-        invokedHandleParametersList.append((.init(purchaseResult), ()))
+        self.invokedHandle = true
+        self.invokedHandleCount += 1
+        self.invokedHandleParameters = (.init(purchaseResult), ())
+        self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        return (false, mockTransaction.value)
+        return (self.mockCancelled, self.mockTransaction.value)
     }
 }
