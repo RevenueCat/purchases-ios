@@ -240,6 +240,16 @@ platform :ios do
     )
   end
 
+  desc "build CustomEntitlementComputation API tester"
+  lane :build_custom_entitlement_computation_api_tester do
+    xcodebuild(
+      project: 'Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj',
+      scheme: 'SwiftAPITester',
+      destination: 'generic/platform=iOS',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    )
+  end
+
   desc "replace API KEY for installation and integration tests"
   lane :replace_api_key_integration_tests do
     replace_text_in_files(
