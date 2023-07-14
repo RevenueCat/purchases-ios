@@ -195,8 +195,8 @@ extension PaywallData.LocalizedConfiguration: Codable {
     private enum CodingKeys: String, CodingKey {
         case title
         case subtitle
-        case callToAction = "cta"
-        case callToActionWithIntroOffer = "ctaWithIntroOffer"
+        case callToAction
+        case callToActionWithIntroOffer
         case offerDetails
         case offerDetailsWithIntroOffer
     }
