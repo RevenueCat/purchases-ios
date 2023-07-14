@@ -18,7 +18,8 @@ class PaywallViewTests: TestCase {
 
         let view = PaywallView(offering: offering,
                                paywall: offering.paywallWithLocalImage,
-                               introEligibility: Self.eligibleChecker)
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
 
         view.snapshot(size: Self.size)
     }
@@ -28,7 +29,8 @@ class PaywallViewTests: TestCase {
 
         let view = PaywallView(offering: offering,
                                paywall: offering.paywallWithLocalImage,
-                               introEligibility: Self.eligibleChecker)
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
 
         view.snapshot(size: Self.size)
     }
@@ -38,7 +40,8 @@ class PaywallViewTests: TestCase {
 
         let view = PaywallView(offering: offering,
                                paywall: offering.paywallWithLocalImage,
-                               introEligibility: Self.ineligibleChecker)
+                               introEligibility: Self.ineligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
 
         view.snapshot(size: Self.size)
     }
@@ -50,7 +53,8 @@ class PaywallViewTests: TestCase {
             offering: offering,
             paywall: offering.paywallWithLocalImage,
             introEligibility: Self.ineligibleChecker
-                .with(delay: .seconds(30))
+                .with(delay: .seconds(30)),
+            purchaseHandler: Self.purchaseHandler
         )
 
         view.snapshot(size: Self.size)
@@ -58,10 +62,13 @@ class PaywallViewTests: TestCase {
 
     private static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     private static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
+    private static let purchaseHandler: PurchaseHandler = .mock()
 
     private static let size: CGSize = .init(width: 460, height: 950)
 
 }
+
+// MARK: - Extensions
 
 private extension Offering {
 
