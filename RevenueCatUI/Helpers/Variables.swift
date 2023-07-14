@@ -21,11 +21,6 @@ protocol VariableDataProvider {
 
 }
 
-struct VariableMatch {
-    let variable: String
-    let range: Range<String.Index>
-}
-
 /// Processes strings, replacing `{{variable}}` with their associated content.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 enum VariableHandler {
@@ -34,7 +29,7 @@ enum VariableHandler {
         in string: String,
         with provider: VariableDataProvider
     ) -> String {
-        let matches = extractVariables(from: string)
+        let matches = Self.extractVariables(from: string)
         var replacedString = string
 
         for variableMatch in matches.reversed() {
@@ -60,6 +55,13 @@ enum VariableHandler {
             let (_, variable) = match.output
             return VariableMatch(variable: String(variable), range: match.range)
         }
+    }
+
+    private struct VariableMatch {
+
+        let variable: String
+        let range: Range<String.Index>
+
     }
 
 }
