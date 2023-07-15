@@ -37,11 +37,11 @@ final class MainThreadMonitor {
         self.queue.async { [weak self] in
             while self != nil {
                 let semaphore = DispatchSemaphore(value: 0)
-                DispatchQueue.main.async {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.checkInterval) {
                     semaphore.signal()
                 }
 
-                let deadline = DispatchTime.now() + Self.threshold
+                let deadline = DispatchTime.now() + Self.threshold + Self.checkInterval
                 let result = semaphore.wait(timeout: deadline)
 
                 precondition(
@@ -52,7 +52,10 @@ final class MainThreadMonitor {
         }
     }
 
+    /// Elapsed time before the thread is considered deadlocked.
     private static let threshold: DispatchTimeInterval = .seconds(30)
+    /// How often a check is performed
+    private static let checkInterval: DispatchTimeInterval = .seconds(3)
 
 }
 
