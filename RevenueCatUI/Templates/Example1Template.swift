@@ -15,7 +15,8 @@ struct Example1Template: TemplateViewType {
     init(
         packages: [Package],
         localization: PaywallData.LocalizedConfiguration,
-        paywall: PaywallData
+        paywall: PaywallData,
+        colors: PaywallData.Configuration.Colors
     ) {
         // Fix-me: move this logic out to be used by all templates
         if packages.isEmpty {
@@ -29,7 +30,8 @@ struct Example1Template: TemplateViewType {
                     package: package,
                     localization: localization.processVariables(with: package),
                     configuration: paywall.config,
-                    headerImageURL: paywall.headerImageURL
+                    headerImageURL: paywall.headerImageURL,
+                    colors: colors
                 ))
             } else {
                 self.data = .failure(.couldNotFindAnyPackages(expectedTypes: allPackages))
@@ -128,9 +130,11 @@ private struct Example1TemplateContent: View {
 
                 self.button
             }
+            .foregroundColor(self.data.colors.foregroundColor)
             .multilineTextAlignment(.center)
             .padding(.horizontal)
         }
+        .background(self.data.colors.backgroundColor)
     }
 
     private var offerDetails: some View {
@@ -186,11 +190,12 @@ private struct Example1TemplateContent: View {
             }
         } label: {
             self.ctaText
+                .foregroundColor(self.data.colors.callToActionForegroundColor)
                 .frame(maxWidth: .infinity)
         }
         .font(.title2)
         .fontWeight(.semibold)
-        .tint(Color.green.gradient.opacity(0.8))
+        .tint(self.data.colors.callToActionBackgroundColor.gradient)
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
         .controlSize(.large)
@@ -210,6 +215,7 @@ private extension Example1TemplateContent {
         let localization: ProcessedLocalizedConfiguration
         let configuration: PaywallData.Configuration
         let headerImageURL: URL
+        let colors: PaywallData.Configuration.Colors
     }
 
     enum Error: Swift.Error {
