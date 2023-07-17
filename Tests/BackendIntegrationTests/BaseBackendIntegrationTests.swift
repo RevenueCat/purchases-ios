@@ -160,18 +160,18 @@ private extension BaseBackendIntegrationTests {
     }
 
     func verifyPurchasesDoesNotLeak() {
+        weak var purchases = Purchases.shared
+
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
-        self.addTeardownBlock { [weak purchases = Purchases.shared] in
-            // Note: this captures the boolean to avoid race conditions when Nimble tries
-            // to print `purchases` while it's being deallocated.
-            expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
-        }
-
         self.addTeardownBlock {
             Purchases.shared.delegate = nil
             Purchases.clearSingleton()
+
+            // Note: this captures the boolean to avoid race conditions when Nimble tries
+            // to print `purchases` while it's being deallocated.
+            expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
         }
     }
 
