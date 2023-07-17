@@ -256,6 +256,7 @@
 		4F8452682A5756CC00084550 /* HTTPRequestBody+Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */; };
 		4F87610F2A5C9E490006FA14 /* PaywallData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F87610E2A5C9E490006FA14 /* PaywallData.swift */; };
 		4F87612C2A5CAB980006FA14 /* PaywallTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F87612B2A5CAB980006FA14 /* PaywallTemplate.swift */; };
+		4F8929192A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F8A58182A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
@@ -974,6 +975,7 @@
 		4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPRequestBody+Signing.swift"; sourceTree = "<group>"; };
 		4F87610E2A5C9E490006FA14 /* PaywallData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallData.swift; sourceTree = "<group>"; };
 		4F87612B2A5CAB980006FA14 /* PaywallTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTemplate.swift; sourceTree = "<group>"; };
+		4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnsureNonEmptyArrayDecodable.swift; sourceTree = "<group>"; };
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4F90AFCA2A3915340047E63F /* TestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestMessage.swift; sourceTree = "<group>"; };
 		4F98E9D22A465A4400DB6EAB /* TestStoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProduct.swift; sourceTree = "<group>"; };
@@ -2470,6 +2472,7 @@
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				4F0BBA802A1D0524000E75AB /* DefaultDecodable.swift */,
 				4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */,
+				4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */,
 			);
 			path = Codable;
 			sourceTree = "<group>";
@@ -3366,6 +3369,7 @@
 				2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */,
 				F56E2E7727622B5E009FED5B /* TransactionsManager.swift in Sources */,
 				B34605CC279A6E380031CA74 /* LogInOperation.swift in Sources */,
+				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				A55D08302722368600D919E0 /* SK2BeginRefundRequestHelper.swift in Sources */,
 				35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */,
