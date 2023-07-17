@@ -13,7 +13,16 @@
     "default_locale": "es_ES",
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
-        "header_image": "asset_name"
+        "header_image": "asset_name",
+        "colors": {
+            "light": {
+                "background": "#FFFFFF",
+                "foreground": "#FFFFFF",
+                "call_to_action_background": "#FFFFFF",
+                "call_to_action_foreground": "#FFFFFF"
+            },
+            "dark": null
+        }
     },
     "asset_base_url": "https://rc-paywalls.s3.amazonaws.com"
 }

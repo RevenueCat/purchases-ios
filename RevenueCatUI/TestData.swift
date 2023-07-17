@@ -66,7 +66,8 @@ internal enum TestData {
         template: .example1,
         config: .init(
             packages: [.monthly],
-            headerImageName: Self.paywallHeaderImageName
+            headerImageName: Self.paywallHeaderImageName,
+            colors: .init(light: Self.lightColors)
         ),
         localization: Self.localization,
         assetBaseURL: Self.paywallAssetBaseURL
@@ -75,7 +76,8 @@ internal enum TestData {
         template: .example1,
         config: .init(
             packages: [.annual],
-            headerImageName: Self.paywallHeaderImageName
+            headerImageName: Self.paywallHeaderImageName,
+            colors: .init(light: Self.lightColors)
         ),
         localization: Self.localization,
         assetBaseURL: Self.paywallAssetBaseURL
@@ -95,6 +97,13 @@ internal enum TestData {
         metadata: [:],
         paywall: Self.paywallWithNoIntroOffer,
         availablePackages: Self.packages
+    )
+
+    static let lightColors: PaywallData.Configuration.Colors = .init(
+        background: "#000000",
+        foreground: "#FF0000",
+        callToActionBackground: "#FF0AB1",
+        callToActionForeground: "#FF0000"
     )
 
     static let customerInfo: CustomerInfo = {
@@ -189,6 +198,17 @@ extension PurchaseHandler {
             return try await purchaseBlock($0)
         }
     }
+}
+
+extension PaywallColor: ExpressibleByStringLiteral {
+
+    /// Creates a `PaywallColor` with a string literal
+    /// - Warning: This will crash at runtime if the string is invalid. Only for debugging purposes.
+    public init(stringLiteral value: StringLiteralType) {
+        // swiftlint:disable:next force_try
+        try! self.init(stringRepresentation: value)
+    }
+
 }
 
 #endif
