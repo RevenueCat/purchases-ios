@@ -290,6 +290,38 @@ class DecoderExtensionsNonEmptyStringTests: TestCase {
 
 }
 
+class DecoderExtensionsNonEmptyArrayTests: TestCase {
+
+    private struct Data: Codable, Equatable {
+        @EnsureNonEmptyArrayDecodable var value: [String]
+
+        init(value: [String]) {
+            self.value = value
+        }
+    }
+
+    func testDecodesOneValues() throws {
+        let data = Data(value: ["1"])
+        expect(try data.encodeAndDecode()) == data
+    }
+
+    func testDecodesMultipleValues() throws {
+        let data = Data(value: ["1", "2"])
+        expect(try data.encodeAndDecode()) == data
+    }
+
+    func testEncodesEmptyValues() throws {
+        expect(try Data(value: []).encodedJSON) == "{\"value\":[]}"
+    }
+
+    func testThrowsWhenDecodingEmptyArray() throws {
+        expect {
+            try Data.decode("{\"value\": []}")
+        }.to(throwError(EnsureNonEmptyArrayDecodable<String>.Error()))
+    }
+
+}
+
 // MARK: - Extensions
 
 extension Decodable where Self: Encodable {
