@@ -1,6 +1,17 @@
 codecov:
   require_ci_to_pass: yes
 
+ignore:
+# Not built / tested by main `RevenueCat` target
+  - RevenueCatUI
+  - Tests/RevenueCatUITests
+# Other tests
+  - Tests/InstallationTests
+  - Tests/BackendIntegrationTests
+  - Tests/BackendIntegrationTestApp
+  - Tests/TestingApps
+  - Tests/v3LoadShedderIntegration
+
 coverage:
   status:
     project:
