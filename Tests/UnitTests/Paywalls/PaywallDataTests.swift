@@ -35,6 +35,16 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.packages) == [.monthly, .annual]
         expect(paywall.config.headerImageName) == "asset_name.png"
 
+        expect(paywall.config.colors.light.background.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.foreground.stringRepresentation) == "#FF00AA22"
+        expect(paywall.config.colors.light.callToActionBackground.stringRepresentation) == "#FF00AACC"
+        expect(paywall.config.colors.light.callToActionForeground.stringRepresentation) == "#FF00AA"
+
+        expect(paywall.config.colors.dark?.background.stringRepresentation) == "#FF0000"
+        expect(paywall.config.colors.dark?.foreground.stringRepresentation) == "#1100FFAA"
+        expect(paywall.config.colors.dark?.callToActionBackground.stringRepresentation) == "#112233AA"
+        expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
+
         expect(paywall.headerImageURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com/asset_name.png")!
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
