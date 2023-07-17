@@ -140,12 +140,65 @@ extension PaywallData {
         /// The name for the header image asset.
         public var headerImageName: String
 
+        /// The set of colors used
+        public var colors: ColorInformation
+
         // swiftlint:disable:next missing_docs
-        public init(packages: [PackageType], headerImageName: String) {
+        public init(packages: [PackageType], headerImageName: String, colors: ColorInformation) {
             self.packages = packages
             self.headerImageName = headerImageName
+            self.colors = colors
         }
 
+    }
+
+}
+
+extension PaywallData.Configuration {
+
+    /// The set of colors for all ``PaywallColor/ColorScheme``s.
+    public struct ColorInformation {
+
+        /// Set of colors for ``PaywallColor/ColorScheme/light``.
+        public var light: Colors
+        /// Set of colors for ``PaywallColor/ColorScheme/dark``.
+        public var dark: Colors?
+
+        // swiftlint:disable:next missing_docs
+        public init(
+            light: PaywallData.Configuration.Colors,
+            dark: PaywallData.Configuration.Colors? = nil
+        ) {
+            self.light = light
+            self.dark = dark
+        }
+
+    }
+
+    /// The list of colors for a given appearance (light / dark).
+    public struct Colors {
+
+        /// Color for the background of the paywall.
+        public var background: PaywallColor
+        /// Color for foreground elements.
+        public var foreground: PaywallColor
+        /// Background color of the main call to action button.
+        public var callToActionBackground: PaywallColor
+        /// Foreground color of the main call to action button.
+        public var callToActionForeground: PaywallColor
+
+        // swiftlint:disable:next missing_docs
+        public init(
+            background: PaywallColor,
+            foreground: PaywallColor,
+            callToActionBackground: PaywallColor,
+            callToActionForeground: PaywallColor
+        ) {
+            self.background = background
+            self.foreground = foreground
+            self.callToActionBackground = callToActionBackground
+            self.callToActionForeground = callToActionForeground
+        }
     }
 
 }
@@ -214,11 +267,15 @@ extension PaywallData.LocalizedConfiguration: Codable {
 
 }
 
+extension PaywallData.Configuration.ColorInformation: Codable {}
+extension PaywallData.Configuration.Colors: Codable {}
+
 extension PaywallData.Configuration: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case packages
         case headerImageName = "headerImage"
+        case colors
     }
 
 }
@@ -239,12 +296,16 @@ extension PaywallData: Codable {
 // MARK: - Equatable
 
 extension PaywallData.LocalizedConfiguration: Equatable {}
+extension PaywallData.Configuration.ColorInformation: Equatable {}
+extension PaywallData.Configuration.Colors: Equatable {}
 extension PaywallData.Configuration: Equatable {}
 extension PaywallData: Equatable {}
 
 // MARK: - Sendable
 
 extension PaywallData.LocalizedConfiguration: Sendable {}
+extension PaywallData.Configuration.ColorInformation: Sendable {}
+extension PaywallData.Configuration.Colors: Sendable {}
 extension PaywallData.Configuration: Sendable {}
 
 #if swift(>=5.7)
