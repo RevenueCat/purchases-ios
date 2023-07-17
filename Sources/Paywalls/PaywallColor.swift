@@ -34,12 +34,15 @@ public struct PaywallColor {
     /// The original Hex representation for this color.
     public var stringRepresentation: String
 
+    // `Color` is not `Sendable` in Xcode 13.
+    #if canImport(SwiftUI) && swift(>=5.7)
     /// The underlying SwiftUI `Color`.
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     public var underlyingColor: Color {
         // swiftlint:disable:next force_cast
         return self._underlyingColor as! Color
     }
+    #endif
 
     // Only available from iOS 13
     fileprivate var _underlyingColor: (any Sendable)?
@@ -49,6 +52,8 @@ public struct PaywallColor {
 // MARK: - Public constructors
 
 extension PaywallColor {
+
+    #if canImport(SwiftUI) && swift(>=5.7)
 
     /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
     public init(stringRepresentation: String) throws {
@@ -61,13 +66,22 @@ extension PaywallColor {
         }
     }
 
-    #if canImport(UIKit)
+        #if canImport(UIKit)
 
-    /// Creates a dynamic color for 2 ``ColorScheme``s.
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-    public init(light: PaywallColor, dark: PaywallColor) {
-        self.init(stringRepresentation: light.stringRepresentation,
-                  color: .init(light: light.underlyingColor, dark: dark.underlyingColor))
+        /// Creates a dynamic color for 2 ``ColorScheme``s.
+        @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+        public init(light: PaywallColor, dark: PaywallColor) {
+            self.init(stringRepresentation: light.stringRepresentation,
+                      color: .init(light: light.underlyingColor, dark: dark.underlyingColor))
+        }
+
+        #endif
+
+    #else
+
+    /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
+    public init(stringRepresentation: String) throws {
+        self.init(stringRepresentation: stringRepresentation, underlyingColor: nil)
     }
 
     #endif
@@ -78,10 +92,14 @@ extension PaywallColor {
 
 private extension PaywallColor {
 
+    #if canImport(SwiftUI) && swift(>=5.7)
+
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     init(stringRepresentation: String, color: Color) {
         self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
     }
+
+    #endif
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     static func parseColor(_ input: String) throws -> Color {
