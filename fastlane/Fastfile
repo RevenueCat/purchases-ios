@@ -513,7 +513,6 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
-      # Fixme: this project is currently pointing to `paywalls` branch, it needs to be changed to `main` once that's merged.
       './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
       './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
