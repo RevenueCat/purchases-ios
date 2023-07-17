@@ -4,7 +4,7 @@ import SwiftUI
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct Example1Template: TemplateViewType {
 
-    private var data: Result<Example1TemplateContent.Data, Example1TemplateContent.Error>
+    private let configuration: TemplateViewConfiguration
 
     @EnvironmentObject
     private var introEligibilityChecker: TrialOrIntroEligibilityChecker
@@ -12,53 +12,20 @@ struct Example1Template: TemplateViewType {
     @State
     private var introEligibility: IntroEligibilityStatus?
 
-    init(
-        packages: [Package],
-        localization: PaywallData.LocalizedConfiguration,
-        paywall: PaywallData,
-        colors: PaywallData.Configuration.Colors
-    ) {
-        // Fix-me: move this logic out to be used by all templates
-        if packages.isEmpty {
-            self.data = .failure(.noPackages)
-        } else {
-            let allPackages = paywall.config.packages
-            let packages = PaywallData.filter(packages: packages, with: allPackages)
-
-            if let package = packages.first {
-                self.data = .success(.init(
-                    package: package,
-                    localization: localization.processVariables(with: package),
-                    configuration: paywall.config,
-                    headerImageURL: paywall.headerImageURL,
-                    colors: colors
-                ))
-            } else {
-                self.data = .failure(.couldNotFindAnyPackages(expectedTypes: allPackages))
-            }
-        }
+    init(_ configuration: TemplateViewConfiguration) {
+        self.configuration = configuration
     }
 
-    // Fix-me: this can be extracted to be used by all templates
     var body: some View {
-        switch self.data {
-        case let .success(data):
-            Example1TemplateContent(data: data, introEligibility: self.introEligibility)
-                .task(id: self.package) {
-                    if let package = self.package {
-                        self.introEligibility = await self.introEligibilityChecker.eligibility(for: package)
-                    }
-                }
-
-        case let .failure(error):
-            // Fix-me: consider changing this behavior once we understand
-            // how unlikely we can make this to happen thanks to server-side validations.
-            DebugErrorView(error, releaseBehavior: .emptyView)
+        Example1TemplateContent(configuration: self.configuration,
+                                introEligibility: self.introEligibility)
+        .task(id: self.package) {
+            self.introEligibility = await self.introEligibilityChecker.eligibility(for: self.package)
         }
     }
 
-    private var package: Package? {
-        return (try? self.data.get())?.package
+    private var package: Package {
+        return self.configuration.packages.single.content
     }
 
 }
@@ -66,39 +33,34 @@ struct Example1Template: TemplateViewType {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private struct Example1TemplateContent: View {
 
-    private var data: Data
+    private var configuration: TemplateViewConfiguration
     private var introEligibility: IntroEligibilityStatus?
+    private var localization: ProcessedLocalizedConfiguration
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
     @Environment(\.dismiss)
     private var dismiss
 
-    init(data: Data, introEligibility: IntroEligibilityStatus?) {
-        self.data = data
+    init(configuration: TemplateViewConfiguration, introEligibility: IntroEligibilityStatus?) {
+        self.configuration = configuration
         self.introEligibility = introEligibility
+        self.localization = configuration.packages.single.localization
     }
 
     var body: some View {
-        ZStack {
-            self.content
-        }
-    }
-
-    @ViewBuilder
-    private var content: some View {
         VStack {
             ScrollView(.vertical) {
                 VStack {
                     AsyncImage(
-                        url: self.data.headerImageURL,
+                        url: self.configuration.headerImageURL,
                         transaction: .init(animation: Constants.defaultAnimation)
                     ) { phase in
                         if let image = phase.image {
                             image
                                 .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
                         } else if let error = phase.error {
-                            DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)",
+                            DebugErrorView("Error loading image from '\(self.configuration.headerImageURL)': \(error)",
                                            releaseBehavior: .emptyView)
                         } else {
                             Rectangle()
@@ -117,17 +79,17 @@ private struct Example1TemplateContent: View {
                     Spacer()
 
                     Group {
-                        Text(verbatim: self.data.localization.title)
+                        Text(verbatim: self.localization.title)
                             .font(.largeTitle)
                             .fontWeight(.heavy)
                             .padding(.bottom)
 
-                        Text(verbatim: self.data.localization.subtitle)
+                        Text(verbatim: self.localization.subtitle)
                             .font(.subheadline)
                     }
                     .padding(.horizontal)
                 }
-                .foregroundColor(self.data.colors.foregroundColor)
+                .foregroundColor(self.configuration.colors.foregroundColor)
                 .multilineTextAlignment(.center)
             }
             .scrollContentBackground(.hidden)
@@ -141,17 +103,17 @@ private struct Example1TemplateContent: View {
             self.button
                 .padding(.horizontal)
         }
-        .background(self.data.colors.backgroundColor)
+        .background(self.configuration.colors.backgroundColor)
     }
 
     private var offerDetails: some View {
-        let detailsWithIntroOffer = self.data.localization.offerDetailsWithIntroOffer
+        let detailsWithIntroOffer = self.localization.offerDetailsWithIntroOffer
 
         func text() -> String {
             if let detailsWithIntroOffer = detailsWithIntroOffer, self.isEligibleForIntro {
                 return detailsWithIntroOffer
             } else {
-                return self.data.localization.offerDetails
+                return self.localization.offerDetails
             }
         }
 
@@ -163,13 +125,13 @@ private struct Example1TemplateContent: View {
     }
 
     private var ctaText: some View {
-        let ctaWithIntroOffer = self.data.localization.callToActionWithIntroOffer
+        let ctaWithIntroOffer = self.localization.callToActionWithIntroOffer
 
         func text() -> String {
             if let ctaWithIntroOffer = ctaWithIntroOffer, self.isEligibleForIntro {
                 return ctaWithIntroOffer
             } else {
-                return self.data.localization.callToAction
+                return self.localization.callToAction
             }
         }
 
@@ -189,20 +151,22 @@ private struct Example1TemplateContent: View {
 
     @ViewBuilder
     private var button: some View {
+        let package = self.configuration.packages.single.content
+
         AsyncButton {
-            let cancelled = try await self.purchaseHandler.purchase(package: self.data.package).userCancelled
+            let cancelled = try await self.purchaseHandler.purchase(package: package).userCancelled
 
             if !cancelled {
                 await self.dismiss()
             }
         } label: {
             self.ctaText
-                .foregroundColor(self.data.colors.callToActionForegroundColor)
+                .foregroundColor(self.configuration.colors.callToActionForegroundColor)
                 .frame(maxWidth: .infinity)
         }
         .font(.title2)
         .fontWeight(.semibold)
-        .tint(self.data.colors.callToActionBackgroundColor.gradient)
+        .tint(self.configuration.colors.callToActionBackgroundColor.gradient)
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
         .controlSize(.large)
@@ -213,46 +177,6 @@ private struct Example1TemplateContent: View {
 }
 
 // MARK: -
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private extension Example1TemplateContent {
-
-    struct Data {
-        let package: Package
-        let localization: ProcessedLocalizedConfiguration
-        let configuration: PaywallData.Configuration
-        let headerImageURL: URL
-        let colors: PaywallData.Configuration.Colors
-    }
-
-    enum Error: Swift.Error {
-
-        case noPackages
-        case couldNotFindAnyPackages(expectedTypes: [PackageType])
-
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-extension Example1TemplateContent.Error: CustomNSError {
-
-    var errorUserInfo: [String: Any] {
-        return [
-            NSLocalizedDescriptionKey: self.description
-        ]
-    }
-
-    private var description: String {
-        switch self {
-        case .noPackages:
-            return "Attempted to display paywall with no packages."
-        case let .couldNotFindAnyPackages(expectedTypes):
-            return "Couldn't find any requested packages: \(expectedTypes)"
-        }
-    }
-
-}
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension View {

@@ -5,6 +5,7 @@ import SwiftUI
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 public struct PaywallView: View {
 
+    private let mode: PaywallViewMode
     private let offering: Offering
     private let paywall: PaywallData
     private let introEligibility: TrialOrIntroEligibilityChecker?
@@ -12,8 +13,9 @@ public struct PaywallView: View {
 
     /// Create a view for the given offering and paywal.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    public init(offering: Offering, paywall: PaywallData) {
+    public init(mode: PaywallViewMode, offering: Offering, paywall: PaywallData) {
         self.init(
+            mode: mode,
             offering: offering,
             paywall: paywall,
             introEligibility: Purchases.isConfigured ? .init() : nil,
@@ -22,11 +24,13 @@ public struct PaywallView: View {
     }
 
     init(
+        mode: PaywallViewMode = .fullScreen,
         offering: Offering,
         paywall: PaywallData,
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
+        self.mode = mode
         self.offering = offering
         self.paywall = paywall
         self.introEligibility = introEligibility
@@ -37,7 +41,7 @@ public struct PaywallView: View {
     public var body: some View {
         if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
             self.paywall
-                .createView(for: self.offering)
+                .createView(for: self.offering, mode: self.mode)
                 .environmentObject(checker)
                 .environmentObject(purchaseHandler)
         } else {
@@ -58,6 +62,7 @@ struct PaywallView_Previews: PreviewProvider {
 
         if let paywall = offering.paywall {
             PaywallView(
+                mode: .fullScreen,
                 offering: offering,
                 paywall: paywall,
                 introEligibility: TrialOrIntroEligibilityChecker
