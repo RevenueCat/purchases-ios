@@ -88,51 +88,58 @@ private struct Example1TemplateContent: View {
     @ViewBuilder
     private var content: some View {
         VStack {
-            AsyncImage(
-                url: self.data.headerImageURL,
-                transaction: .init(animation: Constants.defaultAnimation)
-            ) { phase in
-                if let image = phase.image {
-                    image
-                        .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
-                        .edgesIgnoringSafeArea(.top)
-                } else if let error = phase.error {
-                    DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)",
-                                   releaseBehavior: .emptyView)
-                } else {
-                    Rectangle()
-                        .hidden()
+            ScrollView(.vertical) {
+                VStack {
+                    AsyncImage(
+                        url: self.data.headerImageURL,
+                        transaction: .init(animation: Constants.defaultAnimation)
+                    ) { phase in
+                        if let image = phase.image {
+                            image
+                                .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
+                        } else if let error = phase.error {
+                            DebugErrorView("Error loading image from '\(self.data.headerImageURL)': \(error)",
+                                           releaseBehavior: .emptyView)
+                        } else {
+                            Rectangle()
+                                .hidden()
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
+                    .clipShape(
+                        Circle()
+                            .offset(y: -140)
+                            .scale(3.0)
+                    )
+                    .padding(.bottom)
+
+                    Spacer()
+
+                    Group {
+                        Text(verbatim: self.data.localization.title)
+                            .font(.largeTitle)
+                            .fontWeight(.heavy)
+                            .padding(.bottom)
+
+                        Text(verbatim: self.data.localization.subtitle)
+                            .font(.subheadline)
+                    }
+                    .padding(.horizontal)
                 }
+                .foregroundColor(self.data.colors.foregroundColor)
+                .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity)
-            .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
-            .clipShape(
-                Circle()
-                    .offset(y: -100)
-                    .scale(3.0)
-            )
+            .scrollContentBackground(.hidden)
+            .scrollBounceBehaviorBasedOnSize()
+            .scrollIndicators(.automatic)
+            .edgesIgnoringSafeArea(.top)
 
             Spacer()
 
-            VStack {
-                Text(verbatim: self.data.localization.title)
-                    .font(.largeTitle)
-                    .fontWeight(.heavy)
-                    .padding(.bottom)
-
-                Text(verbatim: self.data.localization.subtitle)
-                    .font(.subheadline)
-                    .padding(.horizontal)
-
-                Spacer()
-
-                self.offerDetails
-
-                self.button
-            }
-            .foregroundColor(self.data.colors.foregroundColor)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
+            self.offerDetails
+            self.button
+                .padding(.horizontal)
         }
         .background(self.data.colors.backgroundColor)
     }
@@ -201,7 +208,7 @@ private struct Example1TemplateContent: View {
         .controlSize(.large)
     }
 
-    private static let imageAspectRatio = 0.7
+    private static let imageAspectRatio = 1.1
 
 }
 
