@@ -7,3 +7,7 @@ coverage:
       default:
         target: auto
         informational: true
+    patch:
+      default:
+        informational: true
+
