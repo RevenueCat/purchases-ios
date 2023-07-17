@@ -193,25 +193,28 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        let receivedCustomerInfo: Atomic<CustomerInfo?> = nil
-        backend.post(receiptData: self.receiptData,
-                     productData: nil,
-                     transactionData: .init(
-                        appUserID: self.appUserID,
-                        presentedOfferingID: nil,
-                        unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
-                        source: .init(isRestore: false, initiationSource: .queue)
-                     ),
-                     observerMode: false) { result in
-            receivedCustomerInfo.value = result.value
+        let receivedCustomerInfo: CustomerInfo? = waitUntilValue { completion in
+            self.backend.post(
+                receiptData: self.receiptData,
+                productData: nil,
+                transactionData: .init(
+                    appUserID: self.appUserID,
+                    presentedOfferingID: nil,
+                    unsyncedAttributes: subscriberAttributesByKey,
+                    storefront: nil,
+                    source: .init(isRestore: false, initiationSource: .queue)
+                ),
+                observerMode: false
+            ) { result in
+                completion(result.value)
+            }
         }
 
-        expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
 
         let loggedMessages = self.logger.messages.map(\.message)
 
-        expect(receivedCustomerInfo.value) == CustomerInfo(testData: self.validSubscriberResponse)
+        expect(receivedCustomerInfo) == CustomerInfo(testData: self.validSubscriberResponse)
         expect(loggedMessages).to(
             containElementSatisfying {
                 $0.localizedCaseInsensitiveContains(ErrorCode.invalidSubscriberAttributesError.description)
@@ -244,23 +247,26 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        let receivedError: Atomic<BackendError?> = nil
-        backend.post(receiptData: self.receiptData,
-                     productData: nil,
-                     transactionData: .init(
-                        appUserID: self.appUserID,
-                        presentedOfferingID: nil,
-                        unsyncedAttributes: subscriberAttributesByKey,
-                        storefront: nil,
-                        source: .init(isRestore: false, initiationSource: .restore)
-                     ),
-                     observerMode: false) { result in
-            receivedError.value = result.error
+        let receivedError: BackendError? = waitUntilValue { completion in
+            self.backend.post(
+                receiptData: self.receiptData,
+                productData: nil,
+                transactionData: .init(
+                    appUserID: self.appUserID,
+                    presentedOfferingID: nil,
+                    unsyncedAttributes: subscriberAttributesByKey,
+                    storefront: nil,
+                    source: .init(isRestore: false, initiationSource: .restore)
+                ),
+                observerMode: false
+            ) { result in
+                completion(result.error)
+            }
         }
 
-        expect(self.mockHTTPClient.calls).toEventually(haveCount(1))
+        expect(self.mockHTTPClient.calls).to(haveCount(1))
 
-        expect(receivedError.value) == .networkError(networkError)
+        expect(receivedError) == .networkError(networkError)
     }
 
     // MARK: PostSubscriberAttributes
