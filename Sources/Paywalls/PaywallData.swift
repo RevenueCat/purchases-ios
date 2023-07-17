@@ -51,6 +51,8 @@ public protocol PaywallLocalizedConfiguration {
 
 }
 
+// swiftlint:disable identifier_name
+
 extension PaywallData {
 
     /// Defines the necessary localized information for a paywall.
@@ -62,13 +64,21 @@ extension PaywallData {
         public var title: String
         public var subtitle: String
         public var callToAction: String
-        public var callToActionWithIntroOffer: String?
         public var offerDetails: String
-        public var offerDetailsWithIntroOffer: String?
+        @NonEmptyStringDecodable
+        var _callToActionWithIntroOffer: String?
+        @NonEmptyStringDecodable
+        var _offerDetailsWithIntroOffer: String?
 
-        // swiftlint:enable missing_docs
+        public var callToActionWithIntroOffer: String? {
+            get { return self._callToActionWithIntroOffer }
+            set { self._callToActionWithIntroOffer = newValue }
+        }
+        public var offerDetailsWithIntroOffer: String? {
+            get { return self._offerDetailsWithIntroOffer }
+            set { self._offerDetailsWithIntroOffer = newValue }
+        }
 
-        /// swiftlint:disable:next missing_docs
         public init(
             title: String,
             subtitle: String,
@@ -80,11 +90,12 @@ extension PaywallData {
             self.title = title
             self.subtitle = subtitle
             self.callToAction = callToAction
-            self.callToActionWithIntroOffer = callToActionWithIntroOffer
+            self._callToActionWithIntroOffer = callToActionWithIntroOffer
             self.offerDetails = offerDetails
-            self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
+            self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
         }
 
+        // swiftlint:enable missing_docs
     }
 
     /// - Returns: ``PaywallData/LocalizedConfiguration-swift.struct`` for the given `Locale`, if found.
@@ -196,9 +207,9 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case title
         case subtitle
         case callToAction
-        case callToActionWithIntroOffer
+        case _callToActionWithIntroOffer = "callToActionWithIntroOffer"
         case offerDetails
-        case offerDetailsWithIntroOffer
+        case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
     }
 
 }
