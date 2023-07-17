@@ -52,31 +52,8 @@ private struct Example1TemplateContent: View {
         VStack {
             ScrollView(.vertical) {
                 VStack {
-                    AsyncImage(
-                        url: self.configuration.headerImageURL,
-                        transaction: .init(animation: Constants.defaultAnimation)
-                    ) { phase in
-                        if let image = phase.image {
-                            image
-                                .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
-                        } else if let error = phase.error {
-                            DebugErrorView("Error loading image from '\(self.configuration.headerImageURL)': \(error)",
-                                           releaseBehavior: .emptyView)
-                        } else {
-                            Rectangle()
-                                .hidden()
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
-                    .clipShape(
-                        Circle()
-                            .offset(y: -140)
-                            .scale(3.0)
-                    )
-                    .padding(.bottom)
-
-                    Spacer()
+                    self.headerImage
+                        .padding(.bottom)
 
                     Group {
                         Text(verbatim: self.localization.title)
@@ -104,6 +81,36 @@ private struct Example1TemplateContent: View {
                 .padding(.horizontal)
         }
         .background(self.configuration.colors.backgroundColor)
+    }
+
+    @ViewBuilder
+    private var headerImage: some View {
+        if let headerImage = self.configuration.imageURLs.first {
+            AsyncImage(
+                url: headerImage,
+                transaction: .init(animation: Constants.defaultAnimation)
+            ) { phase in
+                if let image = phase.image {
+                    image
+                        .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
+                } else if let error = phase.error {
+                    DebugErrorView("Error loading image from '\(headerImage)': \(error)",
+                                   releaseBehavior: .emptyView)
+                } else {
+                    Rectangle()
+                        .hidden()
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
+            .clipShape(
+                Circle()
+                    .offset(y: -140)
+                    .scale(3.0)
+            )
+
+            Spacer()
+        }
     }
 
     private var offerDetails: some View {
