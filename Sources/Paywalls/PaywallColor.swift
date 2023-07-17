@@ -66,7 +66,7 @@ extension PaywallColor {
         }
     }
 
-        #if canImport(UIKit)
+        #if canImport(UIKit) && !os(watchOS)
 
         /// Creates a dynamic color for 2 ``ColorScheme``s.
         @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -160,7 +160,7 @@ private extension PaywallColor {
 
 // MARK: - Extensions
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 private extension UIColor {
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
@@ -180,7 +180,7 @@ private extension UIColor {
 }
 #endif
 
-#if canImport(SwiftUI) && canImport(UIKit)
+#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension Color {
 

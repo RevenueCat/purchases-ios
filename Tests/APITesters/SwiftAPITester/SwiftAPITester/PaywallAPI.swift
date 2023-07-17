@@ -78,7 +78,7 @@ func checkPaywallColorInformation(_ config: PaywallData.Configuration.ColorInfor
 func checkPaywallColor(_ color: PaywallColor) throws {
     _ = try PaywallColor(stringRepresentation: "")
 
-    #if canImport(SwiftUI) && swift(>=5.7)
+    #if canImport(UIKit) && !os(watchOS) && swift(>=5.7)
     if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         _ = PaywallColor(light: color, dark: color)
     }
