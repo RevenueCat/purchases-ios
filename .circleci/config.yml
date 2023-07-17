@@ -864,9 +864,8 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      # Disabled until we drop support for iOS 11
-      # - run-test-ios-17:
-      #     xcode_version: '15.0.0'
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -896,9 +895,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
           xcode_version: '14.3.0'
-      # Disabled until we drop support for iOS 11
-      # - run-test-ios-17:
-      #     xcode_version: '15.0.0'
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
