@@ -15,8 +15,29 @@ class PaywallViewTests: BaseSnapshotTest {
                                paywall: offering.paywallWithLocalImage,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
-
         view.snapshot(size: Self.fullScreenSize)
+    }
+
+    func testCardPaywall() {
+        let offering = TestData.offeringWithNoIntroOffer
+
+        let view = PaywallView(offering: offering,
+                               paywall: offering.paywallWithLocalImage,
+                               mode: .card,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+        view.snapshot(size: Self.cardSize)
+    }
+
+    func testBannerPaywall() {
+        let offering = TestData.offeringWithNoIntroOffer
+
+        let view = PaywallView(offering: offering,
+                               paywall: offering.paywallWithLocalImage,
+                               mode: .banner,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+        view.snapshot(size: Self.bannerSize)
     }
 
     func testSamplePaywallWithIntroOffer() {
