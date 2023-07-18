@@ -36,7 +36,7 @@ extension TemplateError: CustomNSError {
             return "Attempted to display paywall with no packages."
 
         case .emptyPackageList:
-            return "Paywall configuration container no packages."
+            return "Paywall configuration contains no packages."
 
         case let .couldNotFindAnyPackages(expectedTypes):
             return "Couldn't find any requested packages: \(expectedTypes)"
