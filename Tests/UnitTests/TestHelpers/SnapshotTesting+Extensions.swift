@@ -45,7 +45,7 @@ extension Snapshotting where Value == Encodable, Format == String {
 
 // MARK: - Image Snapshoting
 
-#if !os(watchOS) && swift(>=5.8)
+#if !os(watchOS) && !os(macOS) && swift(>=5.8)
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 extension SwiftUI.View {
 
@@ -133,7 +133,7 @@ private let outputFormatting: JSONEncoder.OutputFormatting = {
 
 // MARK: - SwiftUIContainerView
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 @available(watchOS, unavailable)
 private final class SwiftUIContainerView<V: SwiftUI.View>: UIView {
