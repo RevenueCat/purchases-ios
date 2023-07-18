@@ -225,7 +225,7 @@ platform :ios do
   desc "build Swift API tester"
   lane :build_swift_api_tester do
     xcodebuild(
-      workspace: 'Tests/APITesters/APITesters.xcworkspace',
+      workspace: 'RevenueCat.xcworkspace',
       scheme: 'SwiftAPITester',
       destination: 'generic/platform=iOS Simulator'
     )
@@ -234,7 +234,7 @@ platform :ios do
   desc "build ObjC API tester"
   lane :build_objc_api_tester do
     xcodebuild(
-      workspace: 'Tests/APITesters/APITesters.xcworkspace',
+      workspace: 'RevenueCat.xcworkspace',
       scheme: 'ObjCAPITester',
       destination: 'generic/platform=iOS Simulator'
     )
