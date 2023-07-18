@@ -181,7 +181,7 @@ platform :ios do
     xcodebuild(
       workspace: '.',
       scheme: 'RevenueCatUI',
-      destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14 (16.4)"),
+      destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"),
       sdk: 'iphonesimulator',
       test: true
     )

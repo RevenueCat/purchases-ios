@@ -329,7 +329,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+            SCAN_DEVICE: iPhone 14,OS=16.4
       - run:
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
