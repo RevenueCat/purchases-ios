@@ -12,7 +12,14 @@
 //  Created by Nacho Soto on 4/13/22.
 
 import Foundation
+
+#if canImport(UIKit)
 import UIKit
+#endif
+
+#if canImport(WatchKit)
+import WatchKit
+#endif
 
 /// The equivalent version for the current device running tests.
 /// Examples:
@@ -57,25 +64,24 @@ extension OSVersionEquivalent {
 
 }
 
-#if os(watchOS)
-import WatchKit
-#endif
-
 private extension OSVersionEquivalent {
 
     private enum Error: Swift.Error {
 
         case unknownOS(systemName: String, version: String)
+        case unknownPlatform
 
         static func unknownOS() -> Self {
             #if os(watchOS)
             let device = WKInterfaceDevice.current()
 
             return .unknownOS(systemName: device.systemName, version: device.systemVersion)
-            #else
+            #elseif os(iOS) || os(tvOS)
             let device = UIDevice.current
 
             return .unknownOS(systemName: device.systemName, version: device.systemVersion)
+            #else
+            return .unknownPlatform
             #endif
         }
 
