@@ -28,6 +28,10 @@ final class CurrentTestCaseTracker: NSObject, XCTestObservation {
         currentTestCase = nil
     }
 
+    var testInProgress: Bool {
+        return self.currentTestCase != nil
+    }
+
     /// Extracts the name of the current running test.
     ///
     /// Example: extracts `testLoginCachesForSameUserIDs`
