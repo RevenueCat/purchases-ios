@@ -47,7 +47,7 @@ extension PaywallData {
                                       setting: self.template.packageSetting),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
-                headerImageURL: self.headerImageURL
+                imageURLs: self.imageURLs
             )
         }
     }

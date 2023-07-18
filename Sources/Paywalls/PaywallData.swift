@@ -137,18 +137,26 @@ extension PaywallData {
         /// The list of package types this paywall will display
         public var packages: [PackageType]
 
-        /// The name for the header image asset.
-        public var headerImageName: String
+        /// The names for image assets.
+        public var imageNames: [String] {
+            get { self._imageNames }
+            set { self._imageNames = newValue }
+        }
 
         /// The set of colors used
         public var colors: ColorInformation
 
         // swiftlint:disable:next missing_docs
-        public init(packages: [PackageType], headerImageName: String, colors: ColorInformation) {
+        public init(packages: [PackageType], imageNames: [String], colors: ColorInformation) {
+            assert(!imageNames.isEmpty)
+
             self.packages = packages
-            self.headerImageName = headerImageName
+            self._imageNames = imageNames
             self.colors = colors
         }
+
+        @EnsureNonEmptyArrayDecodable
+        var _imageNames: [String]
 
     }
 
@@ -208,8 +216,8 @@ extension PaywallData.Configuration {
 public extension PaywallData {
 
     /// The remote URL to load the header image asset.
-    var headerImageURL: URL {
-        return self.assetBaseURL.appendingPathComponent(self.config.headerImageName)
+    var imageURLs: [URL] {
+        self.config.imageNames.map { self.assetBaseURL.appendingPathComponent($0) }
     }
 
 }
@@ -274,7 +282,7 @@ extension PaywallData.Configuration: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case packages
-        case headerImageName = "headerImage"
+        case _imageNames = "images"
         case colors
     }
 
