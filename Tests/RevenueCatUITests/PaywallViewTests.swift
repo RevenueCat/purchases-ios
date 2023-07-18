@@ -62,6 +62,19 @@ class PaywallViewTests: TestCase {
         view.snapshot(size: Self.size)
     }
 
+    func testDarkMode() {
+        let offering = TestData.offeringWithIntroOffer
+
+        let view = PaywallView(offering: offering,
+                               paywall: offering.paywallWithLocalImage,
+                               introEligibility: Self.ineligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+
+        view
+            .environment(\.colorScheme, .dark)
+            .snapshot(size: Self.size)
+    }
+
     private static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     private static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
     private static let purchaseHandler: PurchaseHandler = .mock()
