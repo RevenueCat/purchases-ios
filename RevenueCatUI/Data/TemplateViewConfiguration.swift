@@ -16,7 +16,7 @@ struct TemplateViewConfiguration {
     let packages: PackageConfiguration
     let configuration: PaywallData.Configuration
     let colors: PaywallData.Configuration.Colors
-    let headerImageURL: URL
+    let imageURLs: [URL]
 
 }
 
