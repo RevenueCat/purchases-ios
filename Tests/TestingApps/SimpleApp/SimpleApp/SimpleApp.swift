@@ -32,7 +32,9 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppContentView(customerInfo: self.customerInfo)
+            NavigationStack {
+                AppContentView(customerInfo: self.customerInfo)
+            }
                 .overlay {
                     if let info = self.customerInfo, !info.hasPro {
                         self.paywallView
@@ -62,7 +64,11 @@ struct SimpleApp: App {
                 } else {
                     Text(
                         "Didn't find a paywall associated to the current offering.\n" +
-                        "Check the logs for any potential errors.")
+                        "Check the logs for any potential errors."
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .edgesIgnoringSafeArea(.all)
+                    .background(Color.gray)
                 }
 
             case let .failure(error):
@@ -84,7 +90,7 @@ struct SimpleApp: App {
 
 }
 
-private extension CustomerInfo {
+extension CustomerInfo {
 
     var hasPro: Bool {
         return self.entitlements.active.contains { $1.identifier == Configuration.entitlement }
