@@ -73,7 +73,7 @@ private extension PaywallViewMode {
     var shouldDisplayBackground: Bool {
         switch self {
         case .fullScreen: return true
-        case .square, .banner: return false
+        case .card, .banner: return false
         }
     }
 

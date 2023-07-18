@@ -14,7 +14,7 @@ public enum PaywallViewMode {
     case fullScreen
 
     /// Paywall is displayed with a square aspect ratio. It can be embedded inside any other SwiftUI view.
-    case square
+    case card
 
     /// Paywall is displayed in a condensed format. It can be embedded inside any other SwiftUI view.
     case banner
@@ -31,7 +31,7 @@ extension PaywallViewMode {
     var isFullScreen: Bool {
         switch self {
         case .fullScreen: return true
-        case .square, .banner: return false
+        case .card, .banner: return false
         }
     }
 

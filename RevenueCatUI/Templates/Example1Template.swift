@@ -125,7 +125,7 @@ private struct Example1TemplateContent: View {
 
             Spacer()
 
-        case .square:
+        case .card:
             self.asyncImage
                 .clipShape(
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
@@ -220,7 +220,7 @@ private extension PaywallViewMode {
 
     var verticalSpacing: CGFloat? {
         switch self {
-        case .fullScreen, .square: return nil // Default value
+        case .fullScreen, .card: return nil // Default value
         case .banner: return 4
         }
     }
@@ -228,7 +228,7 @@ private extension PaywallViewMode {
     var titleFont: Font {
         switch self {
         case .fullScreen: return .largeTitle
-        case .square: return .title
+        case .card: return .title
         case .banner: return .headline
         }
     }
@@ -236,13 +236,13 @@ private extension PaywallViewMode {
     var subtitleFont: Font {
         switch self {
         case .fullScreen: return .subheadline
-        case .square, .banner: return .callout
+        case .card, .banner: return .callout
         }
     }
 
     var displaySubtitle: Bool {
         switch self {
-        case .fullScreen, .square: return true
+        case .fullScreen, .card: return true
         case .banner: return false
         }
     }
@@ -250,20 +250,20 @@ private extension PaywallViewMode {
     var offerDetailsFont: Font {
         switch self {
         case .fullScreen: return .callout
-        case .square, .banner: return .caption
+        case .card, .banner: return .caption
         }
     }
 
     var buttonFont: Font {
         switch self {
-        case .fullScreen, .square: return .title2
+        case .fullScreen, .card: return .title2
         case .banner: return .footnote
         }
     }
 
     var fullWidthButton: Bool {
         switch self {
-        case .fullScreen, .square: return true
+        case .fullScreen, .card: return true
         case .banner: return false
         }
     }
@@ -271,7 +271,7 @@ private extension PaywallViewMode {
     var buttonSize: ControlSize {
         switch self {
         case .fullScreen: return .large
-        case .square: return .regular
+        case .card: return .regular
         case .banner: return .small
         }
     }
@@ -284,7 +284,7 @@ private extension PaywallViewMode {
             #else
             return .capsule
             #endif
-        case .square, .banner: return .roundedRectangle
+        case .card, .banner: return .roundedRectangle
         }
     }
 

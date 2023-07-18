@@ -18,15 +18,15 @@ class PaywallViewTests: BaseSnapshotTest {
         view.snapshot(size: Self.fullScreenSize)
     }
 
-    func testSquarePaywall() {
+    func testCardPaywall() {
         let offering = TestData.offeringWithNoIntroOffer
 
         let view = PaywallView(offering: offering,
                                paywall: offering.paywallWithLocalImage,
-                               mode: .square,
+                               mode: .card,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
-        view.snapshot(size: Self.squareSize)
+        view.snapshot(size: Self.cardSize)
     }
 
     func testBannerPaywall() {

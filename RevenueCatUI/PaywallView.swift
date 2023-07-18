@@ -139,7 +139,7 @@ private extension PaywallViewMode {
     var aspectRatio: CGFloat? {
         switch self {
         case .fullScreen: return nil
-        case .square: return 1
+        case .card: return 1
         case .banner: return 8
         }
     }
@@ -188,7 +188,7 @@ private extension PaywallViewMode {
     var layout: PreviewLayout {
         switch self {
         case .fullScreen: return .device
-        case .square, .banner: return .sizeThatFits
+        case .card, .banner: return .sizeThatFits
         }
     }
 
