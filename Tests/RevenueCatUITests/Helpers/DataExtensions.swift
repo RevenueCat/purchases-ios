@@ -24,7 +24,7 @@ extension PaywallData {
     var withLocalImage: Self {
         var copy = self
         copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
-        copy.config.headerImageName = "image.png"
+        copy.config.imageNames = ["image.png"]
 
         return copy
     }

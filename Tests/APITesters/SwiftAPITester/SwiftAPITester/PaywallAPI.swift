@@ -28,9 +28,9 @@ func checkPaywallData(_ data: PaywallData) {
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                _ colors: PaywallData.Configuration.ColorInformation) {
-    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual], headerImageName: "", colors: colors)
+    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual], imageNames: [""], colors: colors)
     let _: [PackageType] = config.packages
-    let _: String = config.headerImageName
+    let _: [String] = config.imageNames
 }
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {

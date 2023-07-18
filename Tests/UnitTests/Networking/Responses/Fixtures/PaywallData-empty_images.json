@@ -1,7 +1,7 @@
 {
     "template_name": "sample_1",
     "localized_strings": {
-        "it_IT": {
+        "en_US": {
             "title": "Paywall",
             "subtitle": "Description",
             "call_to_action": "Purchase now",
@@ -10,16 +10,16 @@
             "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
         }
     },
-    "default_locale": "es_ES",
+    "default_locale": "en_US",
     "config": {
-        "packages": ["$rc_monthly", "$rc_annual"],
-        "images": ["asset_name"],
+        "packages": ["$rc_monthly"],
+        "images": [],
         "colors": {
             "light": {
-                "background": "#FFFFFF",
-                "foreground": "#FFFFFF",
-                "call_to_action_background": "#FFFFFF",
-                "call_to_action_foreground": "#FFFFFF"
+                "background": "#FF00AA",
+                "foreground": "#FF00AA22",
+                "call_to_action_background": "#FF00AACC",
+                "call_to_action_foreground": "#FF00AA"
             },
             "dark": null
         }
