@@ -90,6 +90,14 @@ Runs all the tvOS tests
 
 Runs all the watchOS tests
 
+### ios test_revenuecatui
+
+```sh
+[bundle exec] fastlane ios test_revenuecatui
+```
+
+Runs all RevenueCatUI tests
+
 ### ios release_checks
 
 ```sh
@@ -169,6 +177,14 @@ build ObjC API tester
 ```
 
 build CustomEntitlementComputation API tester
+
+### ios build_revenuecatui_api_tester
+
+```sh
+[bundle exec] fastlane ios build_revenuecatui_api_tester
+```
+
+build RevenueCatUI API tester
 
 ### ios replace_api_key_integration_tests
 
