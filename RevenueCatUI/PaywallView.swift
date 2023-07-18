@@ -9,51 +9,144 @@ import SwiftUI
 public struct PaywallView: View {
 
     private let mode: PaywallViewMode
-    private let offering: Offering
-    private let paywall: PaywallData
     private let introEligibility: TrialOrIntroEligibilityChecker?
     private let purchaseHandler: PurchaseHandler?
 
+    @State
+    private var offering: Offering?
+    @State
+    private var paywall: PaywallData?
+
+    /// Create a view that loads the `Offerings.current`.
+    /// - Warning: `Purchases` must have been configured prior to displaying it.
+    public init(mode: PaywallViewMode = .default) {
+        self.init(
+            offering: nil,
+            paywall: nil,
+            mode: mode,
+            introEligibility: Purchases.isConfigured ? .init() : nil,
+            purchaseHandler: Purchases.isConfigured ? .init() : nil
+        )
+    }
+
     /// Create a view for the given offering and paywal.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    public init(mode: PaywallViewMode, offering: Offering, paywall: PaywallData) {
+    public init(offering: Offering,
+                paywall: PaywallData,
+                mode: PaywallViewMode = .default) {
         self.init(
-            mode: mode,
             offering: offering,
             paywall: paywall,
+            mode: mode,
             introEligibility: Purchases.isConfigured ? .init() : nil,
             purchaseHandler: Purchases.isConfigured ? .init() : nil
         )
     }
 
     init(
-        mode: PaywallViewMode = .fullScreen,
-        offering: Offering,
-        paywall: PaywallData,
+        offering: Offering?,
+        paywall: PaywallData?,
+        mode: PaywallViewMode = .default,
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
-        self.mode = mode
-        self.offering = offering
-        self.paywall = paywall
+        self._offering = .init(initialValue: offering)
+        self._paywall = .init(initialValue: paywall)
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
+        self.mode = mode
     }
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
         if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
-            self.paywall
-                .createView(for: self.offering, mode: self.mode)
-                .environmentObject(checker)
-                .environmentObject(purchaseHandler)
+            if let offering = self.offering {
+                if let paywall = self.paywall {
+                    LoadedOfferingPaywallView(
+                        offering: offering,
+                        paywall: paywall,
+                        mode: mode,
+                        introEligibility: checker,
+                        purchaseHandler: purchaseHandler
+                    )
+                } else {
+                    DebugErrorView("Offering '\(offering.identifier)' has no configured paywall",
+                                   releaseBehavior: .emptyView)
+                }
+            } else {
+                self.loadingView
+                    .task {
+                        // TODO: error handling
+                        self.offering = try? await Purchases.shared.offerings().current
+                        self.paywall = self.offering?.paywall
+                    }
+            }
         } else {
-            DebugErrorView("Purchases has not been configured.",
-                           releaseBehavior: .fatalError)
+            DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
+        }
+    }
+
+    @ViewBuilder
+    private var loadingView: some View {
+        ProgressView()
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private struct LoadedOfferingPaywallView: View {
+
+    private let offering: Offering
+    private let paywall: PaywallData
+    private let mode: PaywallViewMode
+    private let introEligibility: TrialOrIntroEligibilityChecker
+    private let purchaseHandler: PurchaseHandler
+
+    init(
+        offering: Offering,
+        paywall: PaywallData,
+        mode: PaywallViewMode,
+        introEligibility: TrialOrIntroEligibilityChecker,
+        purchaseHandler: PurchaseHandler
+    ) {
+        self.offering = offering
+        self.paywall = paywall
+        self.mode = mode
+        self.introEligibility = introEligibility
+        self.purchaseHandler = purchaseHandler
+    }
+
+    var body: some View {
+        let view = self.paywall
+            .createView(for: self.offering, mode: self.mode)
+            .environmentObject(self.introEligibility)
+            .environmentObject(self.purchaseHandler)
+
+        if let aspectRatio = self.mode.aspectRatio {
+            view.aspectRatio(aspectRatio, contentMode: .fit)
+        } else {
+            view
         }
     }
 
 }
+
+// MARK: - Extensions
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension PaywallViewMode {
+
+    var aspectRatio: CGFloat? {
+        switch self {
+        case .fullScreen: return nil
+        case .square: return 1
+        case .banner: return 8
+        }
+    }
+
+}
+
+// MARK: -
 
 #if DEBUG
 
@@ -67,18 +160,35 @@ struct PaywallView_Previews: PreviewProvider {
         let offering = TestData.offeringWithNoIntroOffer
 
         if let paywall = offering.paywall {
-            PaywallView(
-                mode: .fullScreen,
-                offering: offering,
-                paywall: paywall,
-                introEligibility: TrialOrIntroEligibilityChecker
-                    .producing(eligibility: .eligible)
-                    .with(delay: .seconds(1)),
-                purchaseHandler: .mock()
-                    .with(delay: .seconds(1))
-            )
+            ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                PaywallView(
+                    offering: offering,
+                    paywall: paywall,
+                    mode: mode,
+                    introEligibility: Self.introEligibility,
+                    purchaseHandler: Self.purchaseHandler
+                )
+                .previewLayout(mode.layout)
+            }
         } else {
             Text("Preview not correctly setup, offering has no paywall!")
+        }
+    }
+
+    private static let introEligibility: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
+        .with(delay: .seconds(1))
+    private static let purchaseHandler: PurchaseHandler = .mock()
+        .with(delay: .seconds(1))
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension PaywallViewMode {
+
+    var layout: PreviewLayout {
+        switch self {
+        case .fullScreen: return .device
+        case .square, .banner: return .sizeThatFits
         }
     }
 

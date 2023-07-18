@@ -29,5 +29,7 @@ extension BaseSnapshotTest {
     static let purchaseHandler: PurchaseHandler = .mock()
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)
+    static let squareSize: CGSize = .init(width: 460, height: 460)
+    static let bannerSize: CGSize = .init(width: 380, height: 70)
 
 }

@@ -20,4 +20,18 @@ extension View {
         }
     }
 
+    @ViewBuilder
+    func scrollable(
+        _ axes: Axis.Set = .vertical,
+        if condition: Bool
+    ) -> some View {
+        if condition {
+            ScrollView(axes) {
+                self
+            }
+        } else {
+            self
+        }
+    }
+
 }
