@@ -66,7 +66,7 @@ internal enum TestData {
         template: .example1,
         config: .init(
             packages: [.monthly],
-            headerImageName: Self.paywallHeaderImageName,
+            imageNames: [Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization,
@@ -76,7 +76,7 @@ internal enum TestData {
         template: .example1,
         config: .init(
             packages: [.annual],
-            headerImageName: Self.paywallHeaderImageName,
+            imageNames: [Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization,
