@@ -14,6 +14,7 @@
 		4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046BC2A572E3700A28BCF /* SimpleApp.swift */; };
 		4F4EE7CF2A572F5D00D7EAE1 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046C32A572E3700A28BCF /* DebugView.swift */; };
 		4F4EE7D22A5731E800D7EAE1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4F4EE7D12A5731E800D7EAE1 /* RevenueCat */; };
+		4F6E5A502A660DD500C573C7 /* SampleChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6E5A4F2A660DD500C573C7 /* SampleChart.swift */; };
 		4FC80B202A5DE8E300E95DB0 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */; };
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
@@ -37,6 +38,7 @@
 		4F34FF662A60AE1500AADF11 /* PaywallScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallScreen.swift; sourceTree = "<group>"; };
 		4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ../../..; sourceTree = "<group>"; };
 		4F6BED9A2A26A64200CD9322 /* SimpleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6E5A4F2A660DD500C573C7 /* SampleChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleChart.swift; sourceTree = "<group>"; };
 		4FC046BC2A572E3700A28BCF /* SimpleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleApp.swift; sourceTree = "<group>"; };
 		4FC046BD2A572E3700A28BCF /* SimpleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimpleApp.entitlements; sourceTree = "<group>"; };
 		4FC046BE2A572E3700A28BCF /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				4F34FF662A60AE1500AADF11 /* PaywallScreen.swift */,
+				4F6E5A4F2A660DD500C573C7 /* SampleChart.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,6 +207,7 @@
 			files = (
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
 				4F4EE7CF2A572F5D00D7EAE1 /* DebugView.swift in Sources */,
+				4F6E5A502A660DD500C573C7 /* SampleChart.swift in Sources */,
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
 				4F34FF672A60AE1500AADF11 /* PaywallScreen.swift in Sources */,
