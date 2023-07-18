@@ -7,7 +7,8 @@ protocol TemplateViewType: SwiftUI.View {
     init(
         packages: [Package],
         localization: PaywallData.LocalizedConfiguration,
-        paywall: PaywallData
+        paywall: PaywallData,
+        colors: PaywallData.Configuration.Colors
     )
 
 }
@@ -17,12 +18,15 @@ extension PaywallData {
 
     @ViewBuilder
     func createView(for offering: Offering) -> some View {
+        let colors = self.config.colors.multiScheme
+
         switch self.template {
         case .example1:
             Example1Template(
                 packages: offering.availablePackages,
                 localization: self.localizedConfiguration,
-                paywall: self
+                paywall: self,
+                colors: colors
             )
         }
     }
