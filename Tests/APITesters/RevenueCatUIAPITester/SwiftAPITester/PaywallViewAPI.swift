@@ -16,7 +16,21 @@ struct App: View {
     private var paywall: PaywallData
 
     var body: some View {
+        PaywallView()
+        PaywallView(mode: .fullScreen)
         PaywallView(offering: self.offering, paywall: self.paywall)
+        PaywallView(mode: .card, offering: self.offering, paywall: self.paywall)
+    }
+
+    private func modes(_ mode: PaywallViewMode) {
+        switch mode {
+        case .fullScreen:
+            break
+        case .card:
+            break
+        case .banner:
+            break
+        }
     }
 
 }
