@@ -192,7 +192,9 @@ private struct Example1TemplateContent: View {
         .fontWeight(.semibold)
         .tint(Color.green.gradient.opacity(0.8))
         .buttonStyle(.borderedProminent)
+        #if !os(macOS)
         .buttonBorderShape(.capsule)
+        #endif
         .controlSize(.large)
     }
 
