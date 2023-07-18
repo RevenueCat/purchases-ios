@@ -2,18 +2,11 @@ import Nimble
 import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
-import XCTest
 
 #if !os(macOS)
 
-@available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
-class PaywallViewTests: TestCase {
-
-    override class func setUp() {
-        super.setUp()
-
-         // isRecording = true
-    }
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+class PaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
         let offering = TestData.offeringWithNoIntroOffer
@@ -23,7 +16,7 @@ class PaywallViewTests: TestCase {
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
-        view.snapshot(size: Self.size)
+        view.snapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithIntroOffer() {
@@ -34,7 +27,7 @@ class PaywallViewTests: TestCase {
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
-        view.snapshot(size: Self.size)
+        view.snapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithIneligibleIntroOffer() {
@@ -45,7 +38,7 @@ class PaywallViewTests: TestCase {
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
-        view.snapshot(size: Self.size)
+        view.snapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithLoadingEligibility() {
@@ -59,7 +52,7 @@ class PaywallViewTests: TestCase {
             purchaseHandler: Self.purchaseHandler
         )
 
-        view.snapshot(size: Self.size)
+        view.snapshot(size: Self.fullScreenSize)
     }
 
     func testDarkMode() {
@@ -72,35 +65,7 @@ class PaywallViewTests: TestCase {
 
         view
             .environment(\.colorScheme, .dark)
-            .snapshot(size: Self.size)
-    }
-
-    private static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
-    private static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
-    private static let purchaseHandler: PurchaseHandler = .mock()
-
-    private static let size: CGSize = .init(width: 460, height: 950)
-
-}
-
-// MARK: - Extensions
-
-private extension Offering {
-
-    var paywallWithLocalImage: PaywallData {
-        return self.paywall!.withLocalImage
-    }
-
-}
-
-private extension PaywallData {
-
-    var withLocalImage: Self {
-        var copy = self
-        copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
-        copy.config.headerImageName = "image.png"
-
-        return copy
+            .snapshot(size: Self.fullScreenSize)
     }
 
 }
