@@ -49,7 +49,7 @@ struct DebugErrorView: View {
                     Logger.warning("Couldn't load paywall: \(self.description)")
                 }
 
-        case let .fatalError:
+        case .fatalError:
             fatalError(self.description)
         }
         #endif
