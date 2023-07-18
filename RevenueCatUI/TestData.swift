@@ -67,7 +67,7 @@ internal enum TestData {
         config: .init(
             packages: [.monthly],
             headerImageName: Self.paywallHeaderImageName,
-            colors: .init(light: Self.lightColors)
+            colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization,
         assetBaseURL: Self.paywallAssetBaseURL
@@ -77,7 +77,7 @@ internal enum TestData {
         config: .init(
             packages: [.annual],
             headerImageName: Self.paywallHeaderImageName,
-            colors: .init(light: Self.lightColors)
+            colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization,
         assetBaseURL: Self.paywallAssetBaseURL
@@ -100,10 +100,16 @@ internal enum TestData {
     )
 
     static let lightColors: PaywallData.Configuration.Colors = .init(
+        background: "#FFFFFF",
+        foreground: "#000000",
+        callToActionBackground: "#5CD27A",
+        callToActionForeground: "#FFFFFF"
+    )
+    static let darkColors: PaywallData.Configuration.Colors = .init(
         background: "#000000",
-        foreground: "#FF0000",
-        callToActionBackground: "#FF0AB1",
-        callToActionForeground: "#FF0000"
+        foreground: "#FFFFFF",
+        callToActionBackground: "#ACD27A",
+        callToActionForeground: "#000000"
     )
 
     static let customerInfo: CustomerInfo = {
