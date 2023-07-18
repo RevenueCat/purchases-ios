@@ -76,7 +76,7 @@ public struct PaywallView: View {
             } else {
                 self.loadingView
                     .task {
-                        // TODO: error handling
+                        // Fix-me: better error handling
                         self.offering = try? await Purchases.shared.offerings().current
                         self.paywall = self.offering?.paywall
                     }
