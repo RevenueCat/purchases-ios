@@ -332,6 +332,25 @@ jobs:
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
 
+  spm-revenuecat-ui-ios-16:
+    <<: *base-job
+    steps:
+      - checkout
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 5m
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14,OS=16.4
+      - run:
+          name: RevenueCatUI API Tests
+          command: bundle exec fastlane build_revenuecatui_api_tester
+
   run-test-ios-17:
     <<: *base-job
     steps:
@@ -909,6 +928,8 @@ workflows:
       - spm-custom-entitlement-computation-build:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       # Disabled until we drop support for iOS 11
       # - run-test-ios-17:
