@@ -1,15 +1,22 @@
 import RevenueCat
 import SwiftUI
 
+/// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 protocol TemplateViewType: SwiftUI.View {
 
-    init(
-        packages: [Package],
-        localization: PaywallData.LocalizedConfiguration,
-        paywall: PaywallData,
-        colors: PaywallData.Configuration.Colors
-    )
+    init(_ configuration: TemplateViewConfiguration)
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension PaywallTemplate {
+
+    var packageSetting: TemplateViewConfiguration.PackageSetting {
+        switch self {
+        case .example1: return .single
+        }
+    }
 
 }
 
@@ -17,41 +24,40 @@ protocol TemplateViewType: SwiftUI.View {
 extension PaywallData {
 
     @ViewBuilder
-    func createView(for offering: Offering) -> some View {
-        let colors = self.config.colors.multiScheme
+    func createView(for offering: Offering, mode: PaywallViewMode) -> some View {
+        switch self.configuration(for: offering, mode: mode) {
+        case let .success(configuration):
+            Self.createView(template: self.template, configuration: configuration)
 
-        switch self.template {
-        case .example1:
-            Example1Template(
-                packages: offering.availablePackages,
-                localization: self.localizedConfiguration,
-                paywall: self,
-                colors: colors
+        case let .failure(error):
+            DebugErrorView(error, releaseBehavior: .emptyView)
+        }
+    }
+
+    private func configuration(
+        for offering: Offering,
+        mode: PaywallViewMode
+    ) -> Result<TemplateViewConfiguration, Error> {
+        return Result {
+            TemplateViewConfiguration(
+                mode: mode,
+                packages: try .create(with: offering.availablePackages,
+                                      filter: self.config.packages,
+                                      localization: self.localizedConfiguration,
+                                      setting: self.template.packageSetting),
+                configuration: self.config,
+                colors: self.config.colors.multiScheme,
+                headerImageURL: self.headerImageURL
             )
         }
     }
 
-    static func filter(packages: [Package], with list: [PackageType]) -> [Package] {
-        // Only subscriptions are supported at the moment
-        let subscriptions = packages.filter { $0.storeProduct.productCategory == .subscription }
-        let map = Dictionary(grouping: subscriptions) { $0.packageType }
-
-        return list.compactMap { type in
-            if let packages = map[type] {
-                switch packages.count {
-                case 0:
-                    // This isn't actually possible because of `Dictionary(grouping:by:)
-                    return nil
-                case 1:
-                    return packages.first
-                default:
-                    Logger.warning("Found multiple \(type) packages. Will use the first one.")
-                    return packages.first
-                }
-            } else {
-                Logger.warning("Couldn't find '\(type)'")
-                return nil
-            }
+    @ViewBuilder
+    private static func createView(template: PaywallTemplate,
+                                   configuration: TemplateViewConfiguration) -> some View {
+        switch template {
+        case .example1:
+            Example1Template(configuration)
         }
     }
 
