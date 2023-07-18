@@ -15,28 +15,37 @@ struct AppContentView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 20) {
-                Text(verbatim: "Welcome to the Simple App")
-                    .font(.largeTitle)
-                    .multilineTextAlignment(.center)
+            Rectangle()
+                .foregroundStyle(.orange.gradient)
+                .opacity(0.05)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .edgesIgnoringSafeArea(.all)
 
+            VStack(spacing: 20) {
                 if let info = self.customerInfo {
                     Text(verbatim: "You're signed in: \(info.originalAppUserId)")
                         .font(.callout)
 
-                    if let date = info.latestExpirationDate {
+                    if !info.hasPro {
+                        PaywallView(mode: .banner)
+                    }
+
+                    Spacer()
+
+                    BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
+                        .frame(maxWidth: .infinity)
+
+                    if !info.hasPro {
+                        PaywallView(mode: .medium)
+                    } else if let date = info.latestExpirationDate {
                         Text(verbatim: "Your subscription expires: \(date.formatted())")
                             .font(.caption)
                     }
+
+                    Spacer()
                 }
             }
-            .padding()
-
-            Rectangle()
-                .foregroundStyle(.orange.gradient)
-                .opacity(0.2)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .edgesIgnoringSafeArea(.all)
+            .navigationTitle("Simple App")
         }
     }
 

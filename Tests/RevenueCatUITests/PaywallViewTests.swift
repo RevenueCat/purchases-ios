@@ -13,8 +13,29 @@ class PaywallViewTests: BaseSnapshotTest {
                                paywall: offering.paywallWithLocalImage,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
-
         view.snapshot(size: Self.fullScreenSize)
+    }
+
+    func testSquarePaywall() {
+        let offering = TestData.offeringWithNoIntroOffer
+
+        let view = PaywallView(offering: offering,
+                               paywall: offering.paywallWithLocalImage,
+                               mode: .square,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+        view.snapshot(size: Self.squareSize)
+    }
+
+    func testBannerPaywall() {
+        let offering = TestData.offeringWithNoIntroOffer
+
+        let view = PaywallView(offering: offering,
+                               paywall: offering.paywallWithLocalImage,
+                               mode: .banner,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+        view.snapshot(size: Self.bannerSize)
     }
 
     func testSamplePaywallWithIntroOffer() {

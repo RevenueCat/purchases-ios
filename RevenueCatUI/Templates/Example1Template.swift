@@ -49,42 +49,47 @@ private struct Example1TemplateContent: View {
     }
 
     var body: some View {
-        VStack {
-            ScrollView(.vertical) {
-                VStack {
-                    self.headerImage
-                        .padding(.bottom)
+        VStack(spacing: self.configuration.mode.verticalSpacing) {
+            VStack(spacing: self.configuration.mode.verticalSpacing) {
+                self.headerImage
 
-                    Group {
-                        Text(verbatim: self.localization.title)
-                            .font(.largeTitle)
-                            .fontWeight(.heavy)
-                            .padding(.bottom)
+                Group {
+                    Text(verbatim: self.localization.title)
+                        .font(self.configuration.mode.titleFont)
+                        .fontWeight(.heavy)
+                        .padding(
+                            self.configuration.mode.displaySubtitle
+                                ? .bottom
+                                : []
+                        )
 
+                    if self.configuration.mode.displaySubtitle {
                         Text(verbatim: self.localization.subtitle)
-                            .font(.subheadline)
+                            .font(self.configuration.mode.subtitleFont)
                     }
-                    .padding(.horizontal)
                 }
-                .foregroundColor(self.configuration.colors.foregroundColor)
-                .multilineTextAlignment(.center)
+                .padding(.horizontal)
             }
+            .foregroundColor(self.configuration.colors.foregroundColor)
+            .multilineTextAlignment(.center)
+            .scrollable(if: self.configuration.mode.isFullScreen)
             .scrollContentBackground(.hidden)
             .scrollBounceBehaviorBasedOnSize()
             .scrollIndicators(.automatic)
-            .edgesIgnoringSafeArea(.top)
+            .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
 
-            Spacer()
+            if case .fullScreen = self.configuration.mode {
+                Spacer()
+            }
 
             self.offerDetails
             self.button
                 .padding(.horizontal)
         }
-        .background(self.configuration.colors.backgroundColor)
     }
 
     @ViewBuilder
-    private var headerImage: some View {
+    private var asyncImage: some View {
         if let headerImage = self.configuration.imageURLs.first {
             AsyncImage(
                 url: headerImage,
@@ -103,13 +108,33 @@ private struct Example1TemplateContent: View {
             }
             .frame(maxWidth: .infinity)
             .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
-            .clipShape(
-                Circle()
-                    .offset(y: -140)
-                    .scale(3.0)
-            )
+        }
+    }
+
+    @ViewBuilder
+    private var headerImage: some View {
+        switch self.configuration.mode {
+        case .fullScreen:
+            self.asyncImage
+                .clipShape(
+                    Circle()
+                        .offset(y: -140)
+                        .scale(3.0)
+                )
+                .padding(.bottom)
 
             Spacer()
+
+        case .square:
+            self.asyncImage
+                .clipShape(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                )
+
+            Spacer()
+
+        case .banner:
+            EmptyView()
         }
     }
 
@@ -128,7 +153,7 @@ private struct Example1TemplateContent: View {
             // Hide until we've determined intro eligibility
             // only if there is a custom intro offer string.
             .withPendingData(self.needsToWaitForIntroEligibility(detailsWithIntroOffer != nil))
-            .font(.callout)
+            .font(self.configuration.mode.offerDetailsFont)
     }
 
     private var ctaText: some View {
@@ -160,30 +185,105 @@ private struct Example1TemplateContent: View {
     private var button: some View {
         let package = self.configuration.packages.single.content
 
-        AsyncButton {
+        AsyncButton { @MainActor in
             let cancelled = try await self.purchaseHandler.purchase(package: package).userCancelled
 
             if !cancelled {
-                await self.dismiss()
+                self.dismiss()
             }
         } label: {
             self.ctaText
                 .foregroundColor(self.configuration.colors.callToActionForegroundColor)
-                .frame(maxWidth: .infinity)
+                .frame(
+                    maxWidth: self.configuration.mode.fullWidthButton
+                       ? .infinity
+                        : nil
+                )
         }
-        .font(.title2)
+        .font(self.configuration.mode.buttonFont)
         .fontWeight(.semibold)
         .tint(self.configuration.colors.callToActionBackgroundColor.gradient)
         .buttonStyle(.borderedProminent)
-        .buttonBorderShape(.capsule)
-        .controlSize(.large)
+        .buttonBorderShape(self.configuration.mode.buttonBorderShape)
+        .controlSize(self.configuration.mode.buttonSize)
+        .frame(maxWidth: .infinity)
     }
 
     private static let imageAspectRatio = 1.1
 
 }
 
-// MARK: -
+// MARK: - Extensions
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension PaywallViewMode {
+
+    var verticalSpacing: CGFloat? {
+        switch self {
+        case .fullScreen, .square: return nil // Default value
+        case .banner: return 4
+        }
+    }
+
+    var titleFont: Font {
+        switch self {
+        case .fullScreen: return .largeTitle
+        case .square: return .title
+        case .banner: return .headline
+        }
+    }
+
+    var subtitleFont: Font {
+        switch self {
+        case .fullScreen: return .subheadline
+        case .square, .banner: return .callout
+        }
+    }
+
+    var displaySubtitle: Bool {
+        switch self {
+        case .fullScreen, .square: return true
+        case .banner: return false
+        }
+    }
+
+    var offerDetailsFont: Font {
+        switch self {
+        case .fullScreen: return .callout
+        case .square, .banner: return .caption
+        }
+    }
+
+    var buttonFont: Font {
+        switch self {
+        case .fullScreen, .square: return .title2
+        case .banner: return .footnote
+        }
+    }
+
+    var fullWidthButton: Bool {
+        switch self {
+        case .fullScreen, .square: return true
+        case .banner: return false
+        }
+    }
+
+    var buttonSize: ControlSize {
+        switch self {
+        case .fullScreen: return .large
+        case .square: return .regular
+        case .banner: return .small
+        }
+    }
+
+    var buttonBorderShape: ButtonBorderShape {
+        switch self {
+        case .fullScreen: return .capsule
+        case .square, .banner: return .roundedRectangle
+        }
+    }
+
+}
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension View {
