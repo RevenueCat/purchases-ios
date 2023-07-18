@@ -155,6 +155,19 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         }
     }
 
+    #if swift(>=5.9)
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
+    func testPurchaseCancellationsAreReportedCorrectly() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
+
+        let (_, info, cancelled) = try await Purchases.shared.purchase(package: self.monthlyPackage)
+        expect(info.entitlements.active).to(beEmpty())
+        expect(cancelled) == true
+    }
+    #endif
+
     func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
         try await self.purchaseMonthlyOffering()
 
