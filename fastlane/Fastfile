@@ -175,6 +175,18 @@ platform :ios do
     )
   end
 
+  desc "Runs all RevenueCatUI tests"
+  lane :test_revenuecatui do |options|
+    # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCatUI',
+      destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14 (16.4)"),
+      sdk: 'iphonesimulator',
+      test: true
+    )
+  end
+
   desc "Release checks"
   lane :release_checks do |options|
     version_number = current_version_number
@@ -244,6 +256,16 @@ platform :ios do
   lane :build_custom_entitlement_computation_api_tester do
     xcodebuild(
       project: 'Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj',
+      scheme: 'SwiftAPITester',
+      destination: 'generic/platform=iOS',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    )
+  end
+
+  desc "build RevenueCatUI API tester"
+  lane :build_revenuecatui_api_tester do
+    xcodebuild(
+      project: 'Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj',
       scheme: 'SwiftAPITester',
       destination: 'generic/platform=iOS',
       xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
@@ -492,6 +514,7 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
+      './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
       './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
       './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
       './RevenueCat.xcodeproj/project.pbxproj'
