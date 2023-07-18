@@ -28,6 +28,11 @@ extension PaywallData {
         switch self.configuration(for: offering, mode: mode) {
         case let .success(configuration):
             Self.createView(template: self.template, configuration: configuration)
+                .background(
+                    mode.shouldDisplayBackground
+                    ? configuration.colors.backgroundColor
+                    : nil
+                )
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)
@@ -58,6 +63,17 @@ extension PaywallData {
         switch template {
         case .example1:
             Example1Template(configuration)
+        }
+    }
+
+}
+
+private extension PaywallViewMode {
+
+    var shouldDisplayBackground: Bool {
+        switch self {
+        case .fullScreen: return true
+        case .card, .banner: return false
         }
     }
 
