@@ -20,7 +20,7 @@
     "default_locale": "en_US",
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
-        "header_image": "asset_name.png",
+        "images": ["asset_name.png"],
         "colors": {
             "light": {
                 "background": "#FF00AA",
