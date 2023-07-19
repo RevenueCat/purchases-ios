@@ -432,6 +432,21 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.cacheOfferingsInMemoryCount) == 0
     }
 
+    func testNetworkErrorContainsUnderlyingError() {
+        let underlyingError = NSError(domain: NSURLErrorDomain,
+                                      code: NSURLErrorCancelledReasonInsufficientSystemResources)
+
+        let error: OfferingsManager.Error = .backendError(
+            .networkError(
+                .networkError(underlyingError)
+            )
+        )
+        _ = error.asPurchasesError
+
+        self.logger.verifyMessageWasLogged("NSURLErrorDomain error \(underlyingError.code)",
+                                           level: .error)
+    }
+
 }
 
 private extension OfferingsManagerTests {

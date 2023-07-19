@@ -30,7 +30,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
     }
 
     func testNetworkError() {
-        let underlyingError = NSError(domain: "domain", code: 20)
+        let underlyingError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotFindHost)
         let error: NetworkError = .networkError(underlyingError)
 
         verifyPurchasesError(error,
