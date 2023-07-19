@@ -1,3 +1,36 @@
+## 4.25.1
+### Dependency Updates
+* Bump fastlane from 2.213.0 to 2.214.0 (#2824) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `MainThreadMonitor`: don't crash if there is no test in progress (#2838) via NachoSoto (@NachoSoto)
+* `CI`: fixed Fastlane APITester lanes (#2836) via NachoSoto (@NachoSoto)
+* `Integration Tests`: workaround Swift runtime crash (#2826) via NachoSoto (@NachoSoto)
+* `@EnsureNonEmptyArrayDecodable` (#2831) via NachoSoto (@NachoSoto)
+* `iOS 17`: added tests for simulating cancellations (#2597) via NachoSoto (@NachoSoto)
+* `CI`: make all `Codecov` jobs `informational` (#2828) via NachoSoto (@NachoSoto)
+* `MainThreadMonitor`: check deadlocks only ever N seconds (#2820) via NachoSoto (@NachoSoto)
+* New `@NonEmptyStringDecodable` (#2819) via NachoSoto (@NachoSoto)
+* `MockDeviceCache`: avoid using real `UserDefaults` (#2814) via NachoSoto (@NachoSoto)
+* `throwAssertion`: fixed Xcode 15 compilation (#2813) via NachoSoto (@NachoSoto)
+* `CustomEntitlementsComputation`: fixed API testers (#2815) via NachoSoto (@NachoSoto)
+* `PackageTypeTests`: fixed iOS 12 (#2807) via NachoSoto (@NachoSoto)
+* `Tests`: avoid race-condition in leak detection (#2806) via NachoSoto (@NachoSoto)
+* Revert "`Unit Tests`: removed leak detection" (#2805) via NachoSoto (@NachoSoto)
+* `PackageType: Codable` implementation (#2797) via NachoSoto (@NachoSoto)
+* `SystemInfo.init` no longer `throws` (#2803) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: add support for signing `POST` body (#2753) via NachoSoto (@NachoSoto)
+* `Tests`: unified default timeouts (#2801) via NachoSoto (@NachoSoto)
+* `Tests`: removed forced-unwrap (#2799) via NachoSoto (@NachoSoto)
+* `Tests`: added missing `super.setUp()` (#2804) via NachoSoto (@NachoSoto)
+* Replaced `FatalErrorUtil` with `Nimble` (#2802) via NachoSoto (@NachoSoto)
+* `Tests`: fixed another flaky test (#2795) via NachoSoto (@NachoSoto)
+* `TimingUtil`: improved tests by using `Clock` (#2794) via NachoSoto (@NachoSoto)
+* `IgnoreDecodeErrors`: log decoding error (#2778) via NachoSoto (@NachoSoto)
+* `TestLogHandler`: changed all tests to explicitly deinitialize it (#2784) via NachoSoto (@NachoSoto)
+* `LocalReceiptParserStoreKitTests`: fixed flaky test failure (#2785) via NachoSoto (@NachoSoto)
+* `Unit Tests`: removed leak detection (#2792) via NachoSoto (@NachoSoto)
+* `Tests`: fixed another flaky failure with asynchronous check (#2786) via NachoSoto (@NachoSoto)
+
 ## 4.25.0
 ### New Features
 * `Trusted Entitlements`: (#2621) via NachoSoto (@NachoSoto)

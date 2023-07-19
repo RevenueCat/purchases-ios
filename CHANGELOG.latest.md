@@ -1,30 +1,31 @@
-### New Features
-* `Trusted Entitlements`: (#2621) via NachoSoto (@NachoSoto)
-
-This new feature prevents MitM attacks between the SDK and the RevenueCat server.
-With verification enabled, the SDK ensures that the response created by the server was not modified by a third-party, and the entitlements received are exactly what was sent.
-This is 100% opt-in. `EntitlementInfos` have a new `VerificationResult` property, which will indicate the validity of the responses when this feature is enabled.
-
-```swift
-let purchases = Purchases.configure(
-  with: Configuration
-    .builder(withAPIKey: "")
-    .with(entitlementVerificationMode: .informational)
-)
-let customerInfo = try await purchases.customerInfo()
-if !customerInfo.entitlements.verification.isVerified {
-  print("Entitlements could not be verified")
-}
-```
-
-You can learn more from [the documentation](https://www.revenuecat.com/docs/trusted-entitlements).
-
+### Dependency Updates
+* Bump fastlane from 2.213.0 to 2.214.0 (#2824) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* `TrustedEntitlements`: new `VerificationResult.isVerified` (#2788) via NachoSoto (@NachoSoto)
-* `Refactor`: extracted `Collection.subscript(safe:)` (#2779) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: added link to docs in `ErrorCode.signatureVerificationFailed` (#2783) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: improved documentation (#2782) via NachoSoto (@NachoSoto)
-* `Tests`: fixed flaky failure with asynchronous check (#2777) via NachoSoto (@NachoSoto)
-* `Integration Tests`: re-enable signature verification tests (#2744) via NachoSoto (@NachoSoto)
-* `CI`: remove `Jazzy` (#2775) via NachoSoto (@NachoSoto)
-* `Signing`: inject `ClockType` to ensure hardcoded signatures don't fail when intermediate key expires (#2771) via NachoSoto (@NachoSoto)
+* `MainThreadMonitor`: don't crash if there is no test in progress (#2838) via NachoSoto (@NachoSoto)
+* `CI`: fixed Fastlane APITester lanes (#2836) via NachoSoto (@NachoSoto)
+* `Integration Tests`: workaround Swift runtime crash (#2826) via NachoSoto (@NachoSoto)
+* `@EnsureNonEmptyArrayDecodable` (#2831) via NachoSoto (@NachoSoto)
+* `iOS 17`: added tests for simulating cancellations (#2597) via NachoSoto (@NachoSoto)
+* `CI`: make all `Codecov` jobs `informational` (#2828) via NachoSoto (@NachoSoto)
+* `MainThreadMonitor`: check deadlocks only ever N seconds (#2820) via NachoSoto (@NachoSoto)
+* New `@NonEmptyStringDecodable` (#2819) via NachoSoto (@NachoSoto)
+* `MockDeviceCache`: avoid using real `UserDefaults` (#2814) via NachoSoto (@NachoSoto)
+* `throwAssertion`: fixed Xcode 15 compilation (#2813) via NachoSoto (@NachoSoto)
+* `CustomEntitlementsComputation`: fixed API testers (#2815) via NachoSoto (@NachoSoto)
+* `PackageTypeTests`: fixed iOS 12 (#2807) via NachoSoto (@NachoSoto)
+* `Tests`: avoid race-condition in leak detection (#2806) via NachoSoto (@NachoSoto)
+* Revert "`Unit Tests`: removed leak detection" (#2805) via NachoSoto (@NachoSoto)
+* `PackageType: Codable` implementation (#2797) via NachoSoto (@NachoSoto)
+* `SystemInfo.init` no longer `throws` (#2803) via NachoSoto (@NachoSoto)
+* `Trusted Entitlements`: add support for signing `POST` body (#2753) via NachoSoto (@NachoSoto)
+* `Tests`: unified default timeouts (#2801) via NachoSoto (@NachoSoto)
+* `Tests`: removed forced-unwrap (#2799) via NachoSoto (@NachoSoto)
+* `Tests`: added missing `super.setUp()` (#2804) via NachoSoto (@NachoSoto)
+* Replaced `FatalErrorUtil` with `Nimble` (#2802) via NachoSoto (@NachoSoto)
+* `Tests`: fixed another flaky test (#2795) via NachoSoto (@NachoSoto)
+* `TimingUtil`: improved tests by using `Clock` (#2794) via NachoSoto (@NachoSoto)
+* `IgnoreDecodeErrors`: log decoding error (#2778) via NachoSoto (@NachoSoto)
+* `TestLogHandler`: changed all tests to explicitly deinitialize it (#2784) via NachoSoto (@NachoSoto)
+* `LocalReceiptParserStoreKitTests`: fixed flaky test failure (#2785) via NachoSoto (@NachoSoto)
+* `Unit Tests`: removed leak detection (#2792) via NachoSoto (@NachoSoto)
+* `Tests`: fixed another flaky failure with asynchronous check (#2786) via NachoSoto (@NachoSoto)
