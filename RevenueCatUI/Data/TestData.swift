@@ -10,6 +10,7 @@ import RevenueCat
 
 #if DEBUG
 
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 internal enum TestData {
 
     static let productWithIntroOffer = TestStoreProduct(
@@ -112,6 +113,10 @@ internal enum TestData {
         callToActionForeground: "#000000"
     )
 
+    #if canImport(SwiftUI) && canImport(UIKit)
+    static let colors: PaywallData.Configuration.Colors = .comine(light: Self.lightColors, dark: Self.darkColors)
+    #endif
+
     static let customerInfo: CustomerInfo = {
         let json = """
         {
@@ -145,11 +150,11 @@ internal enum TestData {
         return try! decoder.decode(CustomerInfo.self, from: Data(json.utf8))
     }()
 
-    private static let localization: PaywallData.LocalizedConfiguration = .init(
+    static let localization: PaywallData.LocalizedConfiguration = .init(
         title: "Ignite your child's curiosity",
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
         callToAction: "Purchase for {{ price }}",
-        callToActionWithIntroOffer: nil,
+        callToActionWithIntroOffer: "Purchase for {{ price_per_month }} per month",
         offerDetails: "{{ price_per_month }} per month",
         offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
     )
