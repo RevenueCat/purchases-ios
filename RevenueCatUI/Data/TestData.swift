@@ -13,11 +13,43 @@ import RevenueCat
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 internal enum TestData {
 
+    static let weeklyProduct = TestStoreProduct(
+        localizedTitle: "Weekly",
+        price: 1.99,
+        localizedPriceString: "$1.99",
+        productIdentifier: "com.revenuecat.product_1",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO weekly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .week)
+    )
+    static let monthlyProduct = TestStoreProduct(
+        localizedTitle: "Monthly",
+        price: 12.99,
+        localizedPriceString: "$12.99",
+        productIdentifier: "com.revenuecat.product_2",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        introductoryDiscount: Self.intro(7, .day)
+    )
+    static let annualProduct = TestStoreProduct(
+        localizedTitle: "Annual",
+        price: 69.49,
+        localizedPriceString: "$69.49",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: Self.intro(14, .day)
+    )
     static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
         localizedPriceString: "$3.99",
-        productIdentifier: "com.revenuecat.product",
+        productIdentifier: "com.revenuecat.product_4",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
@@ -37,7 +69,7 @@ internal enum TestData {
         localizedTitle: "PRO annual",
         price: 34.99,
         localizedPriceString: "$34.99",
-        productIdentifier: "com.revenuecat.product",
+        productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
@@ -45,6 +77,25 @@ internal enum TestData {
         introductoryDiscount: nil,
         discounts: []
     )
+    static let weeklyPackage = Package(
+        identifier: "weekly",
+        packageType: .weekly,
+        storeProduct: Self.weeklyProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let monthlyPackage = Package(
+        identifier: "monthly",
+        packageType: .monthly,
+        storeProduct: Self.monthlyProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let annualPackage = Package(
+        identifier: "annual",
+        packageType: .annual,
+        storeProduct: Self.annualProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+
     static let packageWithIntroOffer = Package(
         identifier: "monthly",
         packageType: .monthly,
@@ -64,23 +115,23 @@ internal enum TestData {
     ]
 
     static let paywallWithIntroOffer = PaywallData(
-        template: .example1,
+        template: .singlePackage,
         config: .init(
             packages: [.monthly],
             imageNames: [Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
-        localization: Self.localization,
+        localization: Self.localization1,
         assetBaseURL: Self.paywallAssetBaseURL
     )
     static let paywallWithNoIntroOffer = PaywallData(
-        template: .example1,
+        template: .singlePackage,
         config: .init(
             packages: [.annual],
             imageNames: [Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
-        localization: Self.localization,
+        localization: Self.localization1,
         assetBaseURL: Self.paywallAssetBaseURL
     )
 
@@ -98,6 +149,39 @@ internal enum TestData {
         metadata: [:],
         paywall: Self.paywallWithNoIntroOffer,
         availablePackages: Self.packages
+    )
+
+    static let offeringWithMultiPackagePaywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            template: .multiPackage,
+            config: .init(
+                packages: [.annual, .monthly],
+                imageNames: [Self.paywallHeaderImageName,
+                             Self.paywallBackgroundImageName],
+                colors: .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        foreground: "#000000",
+                        callToActionBackground: "#EC807C",
+                        callToActionForeground: "#FFFFFF"
+                    ),
+                    dark: .init(
+                        background: "#000000",
+                        foreground: "#FFFFFF",
+                        callToActionBackground: "#ACD27A",
+                        callToActionForeground: "#000000"
+                    )
+                )
+            ),
+            localization: Self.localization2,
+            assetBaseURL: Self.paywallAssetBaseURL
+        ),
+        availablePackages: [Self.weeklyPackage,
+                            Self.monthlyPackage,
+                            Self.annualPackage]
     )
 
     static let lightColors: PaywallData.Configuration.Colors = .init(
@@ -150,7 +234,7 @@ internal enum TestData {
         return try! decoder.decode(CustomerInfo.self, from: Data(json.utf8))
     }()
 
-    static let localization: PaywallData.LocalizedConfiguration = .init(
+    static let localization1: PaywallData.LocalizedConfiguration = .init(
         title: "Ignite your child's curiosity",
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
         callToAction: "Purchase for {{ price }}",
@@ -158,11 +242,30 @@ internal enum TestData {
         offerDetails: "{{ price_per_month }} per month",
         offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
     )
+    static let localization2: PaywallData.LocalizedConfiguration = .init(
+        title: "Call to action for better conversion.",
+        subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
+        callToAction: "Subscribe for {{ price_per_month }}/mo",
+        offerDetails: "{{ total_price_and_per_month }}",
+        offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial"
+    )
+    static let paywallHeaderImageName = "9a17e0a7_1689854430..jpeg"
+    static let paywallBackgroundImageName = "9a17e0a7_1689854342..jpg"
+    static let paywallAssetBaseURL = URL(string: "https://d35rwhxn1vk1te.cloudfront.net")!
 
     private static let offeringIdentifier = "offering"
-    private static let paywallHeaderImageName = "cd84ac55_paywl0884b9ceb4_header_1689214657.jpg"
-    private static let paywallAssetBaseURL = URL(string: "https://d2ban7feka8lu3.cloudfront.net")!
 
+    private static func intro(_ duration: Int, _ unit: SubscriptionPeriod.Unit) -> TestStoreProductDiscount {
+        return .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: duration, unit: .day),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    }
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)

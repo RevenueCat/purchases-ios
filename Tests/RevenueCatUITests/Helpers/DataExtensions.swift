@@ -13,18 +13,20 @@ import RevenueCatUI
 
 extension Offering {
 
-    var paywallWithLocalImage: PaywallData {
-        return self.paywall!.withLocalImage
+    var paywallWithLocalImages: PaywallData {
+        return self.paywall!.withLocalImages
     }
 
 }
 
 extension PaywallData {
 
-    var withLocalImage: Self {
+    var withLocalImages: Self {
         var copy = self
         copy.assetBaseURL = URL(fileURLWithPath: Bundle.module.bundlePath)
-        copy.config.imageNames = ["image.png"]
+        copy.config.imageNames = copy.config.imageNames
+            .enumerated()
+            .map { index, _ in "image_\(index + 1).jpg" }
 
         return copy
     }

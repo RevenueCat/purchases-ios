@@ -170,28 +170,41 @@ private extension PaywallViewMode {
 struct PaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let offering = TestData.offeringWithNoIntroOffer
-
-        if let paywall = offering.paywall {
-            ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        ForEach(Self.offerings, id: \.self) { offering in
+            ForEach(Self.modes, id: \.self) { mode in
                 PaywallView(
                     offering: offering,
-                    paywall: paywall,
+                    paywall: offering.paywall!,
                     mode: mode,
                     introEligibility: Self.introEligibility,
                     purchaseHandler: Self.purchaseHandler
                 )
                 .previewLayout(mode.layout)
+                .previewDisplayName("\(offering.identifier)-\(mode)")
             }
-        } else {
-            Text("Preview not correctly setup, offering has no paywall!")
         }
     }
 
-    private static let introEligibility: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
+    private static let introEligibility: TrialOrIntroEligibilityChecker =
+        .producing(eligibility: .eligible)
         .with(delay: .seconds(1))
-    private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let purchaseHandler: PurchaseHandler =
+        .mock()
         .with(delay: .seconds(1))
+
+    private static let offerings: [Offering] = [
+        TestData.offeringWithIntroOffer,
+        TestData.offeringWithMultiPackagePaywall
+    ]
+
+    private static let modes: [PaywallViewMode] = [
+        .fullScreen
+    ]
+
+    private static let colors: PaywallData.Configuration.ColorInformation = .init(
+        light: TestData.lightColors,
+        dark: TestData.darkColors
+    )
 
 }
 
