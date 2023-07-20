@@ -74,4 +74,22 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
         )
     }
 
+    #if swift(>=5.9)
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
+    func testPurchaseCancellationsAreReportedCorrectly() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
+
+        do {
+            _ = try await Purchases.shared.purchase(package: self.monthlyPackage)
+            fail("Expected error")
+        } catch ErrorCode.purchaseCancelledError {
+            // Expected error
+        } catch {
+            throw error
+        }
+    }
+    #endif
+
 }
