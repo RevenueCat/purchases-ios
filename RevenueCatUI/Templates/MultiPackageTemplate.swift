@@ -166,7 +166,7 @@ private struct MultiPackageTemplateContent: View {
 
     private var subscribeButton: some View {
         PurchaseButton(
-            package: self.configuration.packages.single.content,
+            package: self.selectedPackage,
             purchaseHandler: self.purchaseHandler,
             colors: self.configuration.colors,
             localization: self.selectedLocalization,
