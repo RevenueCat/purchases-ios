@@ -164,10 +164,10 @@ internal enum TestData {
 extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
-    static func producing(eligibility: IntroEligibilityStatus) -> Self {
+    static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
         return .init { product in
             return product.hasIntroDiscount
-                ? eligibility
+                ? eligibility()
                 : .noIntroOfferExists
         }
     }

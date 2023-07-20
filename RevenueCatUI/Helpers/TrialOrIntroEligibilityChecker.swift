@@ -43,6 +43,25 @@ extension TrialOrIntroEligibilityChecker {
         return await self.eligibility(for: package.storeProduct)
     }
 
+    /// Computes eligibility for a list of packages in parallel, returning them all in a dictionary.
+    func eligibility(for packages: [Package]) async -> [Package: IntroEligibilityStatus] {
+        return await withTaskGroup(of: (Package, IntroEligibilityStatus).self) { group in
+            for package in packages {
+                group.addTask {
+                    return (package, await self.eligibility(for: package))
+                }
+            }
+
+            var result: [Package: IntroEligibilityStatus] = [:]
+
+            for await (package, status) in group {
+                result[package] = status
+            }
+
+            return result
+        }
+    }
+
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
