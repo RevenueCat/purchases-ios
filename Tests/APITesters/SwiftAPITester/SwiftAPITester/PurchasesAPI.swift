@@ -125,6 +125,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.restorePurchases { (_: CustomerInfo?, _: Error?) in }
     purchases.syncPurchases { (_: CustomerInfo?, _: Error?) in }
 
     purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { (_: IntroEligibilityStatus) in }
