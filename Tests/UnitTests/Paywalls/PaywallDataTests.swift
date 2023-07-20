@@ -74,6 +74,22 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
     }
 
+    func testFindsLocaleWithOnlyLanguage() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en")))
+        expect(enConfig.title) == "Paywall"
+
+        let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es")))
+        expect(esConfig.title) == "Tienda"
+    }
+
+    func testDoesNotFindLocaleWithMissingLanguage() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        expect(paywall.config(for: Locale(identifier: "fr"))).to(beNil())
+    }
+
     func testMissingCurrentLocaleLoadsDefault() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
 
