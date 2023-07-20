@@ -203,10 +203,11 @@ extension PurchaseHandler {
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay: Duration) -> Self {
-        return .init { [purchaseBlock = self.purchaseBlock] in
-            try? await Task.sleep(for: delay)
+        return self.map { purchaseBlock in {
+                try? await Task.sleep(for: delay)
 
-            return try await purchaseBlock($0)
+                return try await purchaseBlock($0)
+            }
         }
     }
 }

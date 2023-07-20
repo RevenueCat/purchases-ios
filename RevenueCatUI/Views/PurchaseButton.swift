@@ -18,33 +18,19 @@ struct PurchaseButton: View {
     let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
 
-    @State
-    private var purchased = false
     @Environment(\.dismiss)
     private var dismiss
 
     var body: some View {
-        // Extra VStack to workaround SwiftUI bug: FB12674350
-        VStack {
-            if self.purchased {
-                // TODO: what to display?
-                Text("Thanks!")
-            } else {
-                self.button
-            }
-        }
+        self.button
     }
 
     private var button: some View {
         AsyncButton {
             let cancelled = try await self.purchaseHandler.purchase(package: self.package).userCancelled
 
-            if !cancelled {
-                if case .fullScreen = self.mode {
-                    self.dismiss()
-                } else {
-                    self.purchased = true
-                }
+            if !cancelled, case .fullScreen = self.mode {
+                self.dismiss()
             }
         } label: {
             IntroEligibilityStateView(
@@ -52,13 +38,13 @@ struct PurchaseButton: View {
                 textWithIntroOffer: self.localization.callToActionWithIntroOffer,
                 introEligibility: self.introEligibility
             )
-                .foregroundColor(self.colors.callToActionForegroundColor)
-                .tint(self.colors.callToActionForegroundColor)
-                .frame(
-                    maxWidth: self.mode.fullWidthButton
-                       ? .infinity
-                        : nil
-                )
+            .foregroundColor(self.colors.callToActionForegroundColor)
+            .tint(self.colors.callToActionForegroundColor)
+            .frame(
+                maxWidth: self.mode.fullWidthButton
+                ? .infinity
+                : nil
+            )
         }
         .font(self.mode.buttonFont.weight(.semibold))
         .tint(self.colors.callToActionBackgroundColor.gradient)
