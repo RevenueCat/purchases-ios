@@ -120,6 +120,9 @@
          <TestPlanReference
             reference = "container:Tests/TestPlans/CI-Snapshots.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:Tests/TestPlans/XC-AllTests.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

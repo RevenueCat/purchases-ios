@@ -12,7 +12,6 @@
 //  Created by Nacho Soto on 3/2/22.
 
 import Nimble
-import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
