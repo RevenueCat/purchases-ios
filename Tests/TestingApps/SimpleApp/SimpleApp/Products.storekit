@@ -8,8 +8,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
+    "_locale" : "es_ES",
+    "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -87,6 +87,11 @@
               "description" : "Monthly Subscription",
               "displayName" : "Monthly Subscription",
               "locale" : "en_US"
+            },
+            {
+              "description" : "",
+              "displayName" : "Subscripción Mensual",
+              "locale" : "es_ES"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.monthly",
@@ -112,6 +117,11 @@
               "description" : "Annual Subscription",
               "displayName" : "Annual Subscription",
               "locale" : "en_US"
+            },
+            {
+              "description" : "",
+              "displayName" : "Subscripción Anual",
+              "locale" : "es_ES"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.yearly",
@@ -124,7 +134,7 @@
     }
   ],
   "version" : {
-    "major" : 2,
+    "major" : 3,
     "minor" : 0
   }
 }

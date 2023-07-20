@@ -104,6 +104,9 @@ private struct LoadedOfferingPaywallView: View {
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.locale)
+    private var locale
+
     init(
         offering: Offering,
         paywall: PaywallData,
@@ -120,7 +123,7 @@ private struct LoadedOfferingPaywallView: View {
 
     var body: some View {
         let view = self.paywall
-            .createView(for: self.offering, mode: self.mode)
+            .createView(for: self.offering, mode: self.mode, locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .hidden(if: self.shouldHidePaywall)

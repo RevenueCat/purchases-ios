@@ -59,7 +59,8 @@ let package = Package(
         // RevenueCatUI
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
-                path: "RevenueCatUI"),
+                path: "RevenueCatUI",
+                resources: [.copy("Data/Localizable.xcstrings")]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
