@@ -165,10 +165,17 @@ extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
     static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
-        return .init { product in
-            return product.hasIntroDiscount
-                ? eligibility()
-                : .noIntroOfferExists
+        return .init { packages in
+            return Dictionary(
+                uniqueKeysWithValues: Set(packages)
+                    .map { package in
+                        let result = package.storeProduct.hasIntroDiscount
+                        ? eligibility()
+                        : .noIntroOfferExists
+
+                        return (package, result)
+                    }
+            )
         }
     }
 

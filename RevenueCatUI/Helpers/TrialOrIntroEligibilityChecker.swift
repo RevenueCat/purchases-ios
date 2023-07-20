@@ -11,17 +11,14 @@ import RevenueCat
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 final class TrialOrIntroEligibilityChecker: ObservableObject {
 
-    typealias Checker = @Sendable (StoreProduct) async -> IntroEligibilityStatus
+    typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
 
     let checker: Checker
 
     convenience init(purchases: Purchases = .shared) {
-        self.init { product in
-            guard product.hasIntroDiscount else {
-                return .noIntroOfferExists
-            }
-
-            return await purchases.checkTrialOrIntroDiscountEligibility(product: product)
+        self.init {
+            return await purchases.checkTrialOrIntroDiscountEligibility(packages: $0)
+                .mapValues(\.status)
         }
     }
 
@@ -35,31 +32,13 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension TrialOrIntroEligibilityChecker {
 
-    func eligibility(for product: StoreProduct) async -> IntroEligibilityStatus {
-        return await self.checker(product)
-    }
-
     func eligibility(for package: Package) async -> IntroEligibilityStatus {
-        return await self.eligibility(for: package.storeProduct)
+        return await self.eligibility(for: [package])[package] ?? .unknown
     }
 
     /// Computes eligibility for a list of packages in parallel, returning them all in a dictionary.
     func eligibility(for packages: [Package]) async -> [Package: IntroEligibilityStatus] {
-        return await withTaskGroup(of: (Package, IntroEligibilityStatus).self) { group in
-            for package in packages {
-                group.addTask {
-                    return (package, await self.eligibility(for: package))
-                }
-            }
-
-            var result: [Package: IntroEligibilityStatus] = [:]
-
-            for await (package, status) in group {
-                result[package] = status
-            }
-
-            return result
-        }
+        return await self.checker(packages)
     }
 
 }
