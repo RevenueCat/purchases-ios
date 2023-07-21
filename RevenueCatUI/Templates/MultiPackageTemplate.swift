@@ -60,6 +60,7 @@ private struct MultiPackageTemplateContent: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background {
                 self.backgroundImage
+                    .unredacted()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .edgesIgnoringSafeArea(.all)
             }
@@ -69,7 +70,6 @@ private struct MultiPackageTemplateContent: View {
     var content: some View {
         VStack(spacing: 10) {
             self.iconImage
-                .padding(.top)
 
             ViewThatFits(in: .vertical) {
                 self.scrollableContent
@@ -198,15 +198,20 @@ private struct MultiPackageTemplateContent: View {
 
     @ViewBuilder
     private var iconImage: some View {
-        if let url = self.configuration.iconURL {
-            RemoteImage(url: url, aspectRatio: 1)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .frame(maxWidth: 100)
-        } else {
-            DebugErrorView("Template configuration is missing icon URL",
-                           releaseBehavior: .emptyView)
+        Group {
+            if let url = self.configuration.iconURL {
+                RemoteImage(url: url, aspectRatio: 1, maxWidth: Self.iconSize)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                // Placeholder to be able to add a consistent padding
+                Text(verbatim: "")
+                    .hidden()
+            }
         }
+        .padding(.top)
     }
+
+    private static let iconSize: CGFloat = 100
 
 }
 

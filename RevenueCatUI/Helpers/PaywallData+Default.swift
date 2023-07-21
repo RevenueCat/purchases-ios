@@ -1,0 +1,60 @@
+//
+//  PaywallData+Default.swift
+//  
+//
+//  Created by Nacho Soto on 7/20/23.
+//
+
+import Foundation
+import RevenueCat
+
+extension PaywallData {
+
+    /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
+    /// that has no paywall configuration, or when that configuration is invalid.
+    public static let `default`: Self = .init(
+        template: .multiPackage,
+        config: .init(
+            packages: [.weekly, .monthly, .annual],
+            imageNames: [
+                Self.backgroundImage
+            ],
+            colors: Self.colors,
+            blurredBackgroundImage: true,
+            displayRestorePurchases: true
+        ),
+        localization: Self.localization,
+        assetBaseURL: Self.defaultTemplateBaseURL
+    )
+
+}
+
+private extension PaywallData {
+
+    static let colors: PaywallData.Configuration.ColorInformation = .init(
+        light: .init(
+            background: "#FFFFFF",
+            foreground: "#000000",
+            callToActionBackground: "#EC807C",
+            callToActionForeground: "#FFFFFF"
+        ),
+        dark: .init(
+            background: "#000000",
+            foreground: "#FFFFFF",
+            callToActionBackground: "#ACD27A",
+            callToActionForeground: "#000000"
+        )
+    )
+
+    static let localization: PaywallData.LocalizedConfiguration = .init(
+        title: "Subscription",
+        subtitle: "Unlock access",
+        callToAction: "Purchase",
+        offerDetails: "{{ price_per_month }} per month",
+        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+    )
+
+    static let backgroundImage = "background.jpg"
+    static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
+
+}

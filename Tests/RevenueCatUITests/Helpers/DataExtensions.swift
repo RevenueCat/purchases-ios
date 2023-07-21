@@ -13,8 +13,14 @@ import RevenueCatUI
 
 extension Offering {
 
-    var paywallWithLocalImages: PaywallData {
-        return self.paywall!.withLocalImages
+    var withLocalImages: Offering {
+        return .init(
+            identifier: self.identifier,
+            serverDescription: self.serverDescription,
+            metadata: self.metadata,
+            paywall: self.paywall?.withLocalImages,
+            availablePackages: self.availablePackages
+        )
     }
 
 }
