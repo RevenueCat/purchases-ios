@@ -11,7 +11,7 @@ import SwiftUI
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct AsyncButton<Label>: View where Label: View {
 
-    typealias Action = @Sendable () async throws -> Void
+    typealias Action = @Sendable @MainActor () async throws -> Void
 
     private let action: Action
     private let label: Label
