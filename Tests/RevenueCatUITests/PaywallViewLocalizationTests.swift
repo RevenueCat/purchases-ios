@@ -33,10 +33,17 @@ import SwiftUI
         return PaywallView(
             offering: Self.offering,
             paywall: Self.offering.paywallWithLocalImages,
-            introEligibility: .init(checker: { product in
-                return product.subscriptionPeriod?.unit == .month
-                    ? .eligible
-                    : .ineligible
+            introEligibility: .init(checker: { packages in
+                return Dictionary(
+                    uniqueKeysWithValues: Set(packages)
+                        .map { package in
+                            let result: IntroEligibilityStatus = package.storeProduct.subscriptionPeriod?.unit == .month
+                                ? .eligible
+                                : .ineligible
+
+                            return (package, result)
+                        }
+                )
             }),
             purchaseHandler: Self.purchaseHandler
         )
