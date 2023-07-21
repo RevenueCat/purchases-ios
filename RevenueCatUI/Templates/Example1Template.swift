@@ -82,7 +82,14 @@ private struct Example1TemplateContent: View {
                 Spacer()
             }
 
-            self.offerDetails
+            IntroEligibilityStateView(
+                textWithNoIntroOffer: self.localization.offerDetails,
+                textWithIntroOffer: self.localization.offerDetailsWithIntroOffer,
+                introEligibility: self.introEligibility
+            )
+            .font(self.configuration.mode.offerDetailsFont)
+            .foregroundColor(self.configuration.colors.text1Color)
+
             self.button
                 .padding(.horizontal)
         }
@@ -138,49 +145,6 @@ private struct Example1TemplateContent: View {
         }
     }
 
-    private var offerDetails: some View {
-        let detailsWithIntroOffer = self.localization.offerDetailsWithIntroOffer
-
-        func text() -> String {
-            if let detailsWithIntroOffer = detailsWithIntroOffer, self.isEligibleForIntro {
-                return detailsWithIntroOffer
-            } else {
-                return self.localization.offerDetails
-            }
-        }
-
-        return Text(verbatim: text())
-            // Hide until we've determined intro eligibility
-            // only if there is a custom intro offer string.
-            .withPendingData(self.needsToWaitForIntroEligibility(detailsWithIntroOffer != nil))
-            .font(self.configuration.mode.offerDetailsFont)
-    }
-
-    private var ctaText: some View {
-        let ctaWithIntroOffer = self.localization.callToActionWithIntroOffer
-
-        func text() -> String {
-            if let ctaWithIntroOffer = ctaWithIntroOffer, self.isEligibleForIntro {
-                return ctaWithIntroOffer
-            } else {
-                return self.localization.callToAction
-            }
-        }
-
-        return Text(verbatim: text())
-            // Hide until we've determined intro eligibility
-            // only if there is a custom intro offer string.
-            .withPendingData(self.needsToWaitForIntroEligibility(ctaWithIntroOffer != nil))
-    }
-
-    private var isEligibleForIntro: Bool {
-        return self.introEligibility?.isEligible != false
-    }
-
-    private func needsToWaitForIntroEligibility(_ hasCustomString: Bool) -> Bool {
-        return self.introEligibility == nil && hasCustomString && self.isEligibleForIntro
-    }
-
     @ViewBuilder
     private var button: some View {
         let package = self.configuration.packages.single.content
@@ -192,8 +156,13 @@ private struct Example1TemplateContent: View {
                 self.dismiss()
             }
         } label: {
-            self.ctaText
+            IntroEligibilityStateView(
+                textWithNoIntroOffer: self.localization.callToAction,
+                textWithIntroOffer: self.localization.callToActionWithIntroOffer,
+                introEligibility: self.introEligibility
+            )
                 .foregroundColor(self.configuration.colors.callToActionForegroundColor)
+                .tint(self.configuration.colors.callToActionForegroundColor)
                 .frame(
                     maxWidth: self.configuration.mode.fullWidthButton
                        ? .infinity
@@ -286,22 +255,6 @@ private extension PaywallViewMode {
             #endif
         case .card, .banner: return .roundedRectangle
         }
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private extension View {
-
-    func withPendingData(_ pending: Bool) -> some View {
-        self
-            .hidden(if: pending)
-            .overlay {
-                if pending {
-                    ProgressView()
-                }
-            }
-            .transition(.opacity.animation(Constants.defaultAnimation))
     }
 
 }
