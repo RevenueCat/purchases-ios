@@ -1,5 +1,5 @@
 //
-//  SubscriptionPeriodLocalizationTests.swift
+//  LocalizationTests.swift
 //  
 //
 //  Created by Nacho Soto on 7/12/23.
@@ -12,14 +12,56 @@ import XCTest
 
 // swiftlint:disable type_name
 
-class BaseSubscriptionPeriodLocalizationTests: TestCase {
+class BaseLocalizationTests: TestCase {
 
     fileprivate var locale: Locale { fatalError("Must be overriden") }
 
 }
 
+// MARK: - Abbreviated Unit
+
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-class SubscriptionPeriodEnglishLocalizationTests: BaseSubscriptionPeriodLocalizationTests {
+class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "en_US") }
+
+    func testDay() {
+        verify(.day, "day")
+    }
+
+    func testMonth() {
+        verify(.month, "mo")
+    }
+
+    func testYear() {
+        verify(.year, "y")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "es_ES") }
+
+    func testDay() {
+        verify(.day, "día")
+    }
+
+    func testMonth() {
+        verify(.month, "mes")
+    }
+
+    func testYear() {
+        verify(.year, "año")
+    }
+
+}
+
+// MARK: - SubscriptionPeriod
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class SubscriptionPeriodEnglishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "en_US") }
 
@@ -46,7 +88,7 @@ class SubscriptionPeriodEnglishLocalizationTests: BaseSubscriptionPeriodLocaliza
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-class SubscriptionPeriodSpanishLocalizationTests: BaseSubscriptionPeriodLocalizationTests {
+class SubscriptionPeriodSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
 
@@ -75,7 +117,7 @@ class SubscriptionPeriodSpanishLocalizationTests: BaseSubscriptionPeriodLocaliza
 // MARK: - Private
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private extension BaseSubscriptionPeriodLocalizationTests {
+private extension BaseLocalizationTests {
 
     func verify(
         _ value: Int,
@@ -84,8 +126,19 @@ private extension BaseSubscriptionPeriodLocalizationTests {
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        let result = SubscriptionPeriod(value: value, unit: unit)
-            .localizedDuration(for: self.locale)
+        let result = Localization.localizedDuration(for: SubscriptionPeriod(value: value, unit: unit),
+                                                    locale: self.locale)
+        expect(file: file, line: line, result) == expected
+    }
+
+    func verify(
+        _ unit: NSCalendar.Unit,
+        _ expected: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let result = Localization.abbreviatedUnitLocalizedString(for: unit,
+                                                                 locale: self.locale)
         expect(file: file, line: line, result) == expected
     }
 
