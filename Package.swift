@@ -19,6 +19,7 @@ if shouldIncludeDocCPlugin {
 
 let package = Package(
     name: "RevenueCat",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v10_13),
         .watchOS("6.2"),
@@ -60,7 +61,7 @@ let package = Package(
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
-                resources: [.copy("Data/Localizable.xcstrings")]),
+                resources: []),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
