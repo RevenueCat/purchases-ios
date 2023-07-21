@@ -895,6 +895,18 @@ public extension Purchases {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
 
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
+        let result = await self.checkTrialOrIntroDiscountEligibility(
+            productIdentifiers: packages.map(\.storeProduct.productIdentifier)
+        )
+
+        return Set(packages)
+            .dictionaryWithValues { (package: Package) in
+                result[package.storeProduct.productIdentifier] ?? .init(eligibilityStatus: .unknown)
+            }
+    }
+
     @objc(checkTrialOrIntroDiscountEligibilityForProduct:completion:)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct,
                                               completion: @escaping (IntroEligibilityStatus) -> Void) {
