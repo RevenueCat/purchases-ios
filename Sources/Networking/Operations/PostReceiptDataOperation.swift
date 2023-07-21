@@ -22,6 +22,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         let isRestore: Bool
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
+        let presentedPaywallMode: PaywallViewMode?
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
         let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
@@ -72,6 +73,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.hashString)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
+        -\(postData.presentedPaywallMode?.identifier ?? "")
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
         """
 
@@ -146,6 +148,7 @@ extension PostReceiptDataOperation.PostData {
             isRestore: data.source.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingID,
+            presentedPaywallMode: data.presentedPaywallMode,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
@@ -194,6 +197,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
+        case presentedPaywallMode
         case testReceiptIdentifier = "test_receipt_identifier"
 
     }
@@ -213,6 +217,9 @@ extension PostReceiptDataOperation.PostData: Encodable {
 
         try container.encodeIfPresent(self.presentedOfferingIdentifier,
                                       forKey: .presentedOfferingIdentifier)
+
+        try container.encodeIfPresent(self.presentedPaywallMode?.identifier,
+                                      forKey: .presentedPaywallMode)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
