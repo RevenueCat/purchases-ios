@@ -221,12 +221,12 @@ private extension MultiPackageTemplateContent {
 private extension TemplateViewConfiguration {
 
     var backgroundURL: URL? {
-        guard self.imageURLs.count >= 2 else { return nil }
-        return self.imageURLs[1]
+        return self.imageURLs.first
     }
 
     var iconURL: URL? {
-        return self.imageURLs.first
+        guard self.imageURLs.count >= 2 else { return nil }
+        return self.imageURLs[1]
     }
 
 }

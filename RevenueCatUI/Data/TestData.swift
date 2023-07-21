@@ -159,8 +159,8 @@ internal enum TestData {
             template: .multiPackage,
             config: .init(
                 packages: [.annual, .monthly],
-                imageNames: [Self.paywallHeaderImageName,
-                             Self.paywallBackgroundImageName],
+                imageNames: [Self.paywallBackgroundImageName,
+                             Self.paywallHeaderImageName],
                 colors: .init(
                     light: .init(
                         background: "#FFFFFF",
