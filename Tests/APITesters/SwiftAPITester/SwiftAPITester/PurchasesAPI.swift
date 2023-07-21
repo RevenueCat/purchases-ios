@@ -219,6 +219,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: [String]()
         )
+        let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
+            packages: [Package]()
+        )
         let _: PromotionalOffer = try await purchases.promotionalOffer(
             forProductDiscount: discount,
             product: stp
