@@ -263,6 +263,7 @@
 		4FA4C9752A16D49E007D2803 /* MockOfflineEntitlementsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */; };
 		4FA696BD2A0020A000D228B1 /* MainThreadMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA696BC2A0020A000D228B1 /* MainThreadMonitor.swift */; };
 		4FB3FE132A38CB1F004789C6 /* SignatureVerificationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FB3FE122A38CB1F004789C6 /* SignatureVerificationIntegrationTests.swift */; };
+		4FB9069F2A69550500BE2735 /* AvailabilityChecks.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3BE0263275942D500915B4C /* AvailabilityChecks.swift */; };
 		4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */; };
 		4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */; };
 		4FC0832B2A4A361700A97089 /* IntegerExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */; };
@@ -3708,6 +3709,7 @@
 				4F83F6B92A5DB805003F90A5 /* TestCase.swift in Sources */,
 				4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */,
 				4F90AFCC2A3915BC0047E63F /* TestMessage.swift in Sources */,
+				4FB9069F2A69550500BE2735 /* AvailabilityChecks.swift in Sources */,
 				4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */,
 				4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */,
 			);
