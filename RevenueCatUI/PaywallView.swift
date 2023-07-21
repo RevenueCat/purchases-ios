@@ -100,7 +100,9 @@ private struct LoadedOfferingPaywallView: View {
     private let paywall: PaywallData
     private let mode: PaywallViewMode
     private let introEligibility: TrialOrIntroEligibilityChecker
-    private let purchaseHandler: PurchaseHandler
+
+    @ObservedObject
+    private var purchaseHandler: PurchaseHandler
 
     init(
         offering: Offering,
@@ -121,11 +123,22 @@ private struct LoadedOfferingPaywallView: View {
             .createView(for: self.offering, mode: self.mode)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
+            .hidden(if: self.shouldHidePaywall)
 
         if let aspectRatio = self.mode.aspectRatio {
             view.aspectRatio(aspectRatio, contentMode: .fit)
         } else {
             view
+        }
+    }
+
+    private var shouldHidePaywall: Bool {
+        switch self.mode {
+        case .fullScreen:
+            return false
+
+        case .card, .banner:
+            return self.purchaseHandler.purchased
         }
     }
 
