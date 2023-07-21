@@ -21,7 +21,7 @@ extension PaywallData.Configuration.ColorInformation {
             return light
         }
 
-        return .comine(light: light, dark: dark)
+        return .combine(light: light, dark: dark)
     }
 
 }
@@ -29,7 +29,7 @@ extension PaywallData.Configuration.ColorInformation {
 extension PaywallData.Configuration.Colors {
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-    static func comine(light: Self, dark: Self) -> Self {
+    static func combine(light: Self, dark: Self) -> Self {
         return .init(
             background: .init(light: light.background, dark: dark.background),
             foreground: .init(light: light.foreground, dark: dark.foreground),

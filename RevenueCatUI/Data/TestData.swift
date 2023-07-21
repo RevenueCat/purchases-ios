@@ -114,7 +114,7 @@ internal enum TestData {
     )
 
     #if canImport(SwiftUI) && canImport(UIKit)
-    static let colors: PaywallData.Configuration.Colors = .comine(light: Self.lightColors, dark: Self.darkColors)
+    static let colors: PaywallData.Configuration.Colors = .combine(light: Self.lightColors, dark: Self.darkColors)
     #endif
 
     static let customerInfo: CustomerInfo = {
