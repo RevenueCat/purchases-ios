@@ -36,6 +36,32 @@ class VariablesTests: TestCase {
         expect(self.process("{{ price_per_month }} per month")) == "$3.99 per month"
     }
 
+    func testTotalPriceAndPerMonthWithDifferentPrices() {
+        self.provider.localizedPrice = "$49.99"
+        self.provider.localizedPricePerMonth = "$4.16"
+        expect(self.process("{{ total_price_and_per_month }}")) == "$49.99 ($4.16/mo)"
+    }
+
+    func testTotalPriceAndPerMonthWithDifferentPricesSpanish() {
+        self.provider.localizedPrice = "49,99€"
+        self.provider.localizedPricePerMonth = "4,16€"
+        expect(self.process("{{ total_price_and_per_month }}",
+                            locale: .init(identifier: "es_ES"))) == "49,99€ (4,16€/mes)"
+    }
+
+    func testTotalPriceAndPerMonthWithDifferentPricesFrench() {
+        self.provider.localizedPrice = "49,99€"
+        self.provider.localizedPricePerMonth = "4,16€"
+        expect(self.process("{{ total_price_and_per_month }}",
+                            locale: .init(identifier: "fr_FR"))) == "49,99€ (4,16€/m)"
+    }
+
+    func testTotalPriceAndPerMonthWithSamePrice() {
+        self.provider.localizedPrice = "$4.99"
+        self.provider.localizedPricePerMonth = "$4.99"
+        expect(self.process("{{ total_price_and_per_month }}")) == "$4.99"
+    }
+
     func testProductName() {
         self.provider.productName = "MindSnacks"
         expect(self.process("Purchase {{ product_name }}")) == "Purchase MindSnacks"
@@ -84,8 +110,8 @@ class VariablesTests: TestCase {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension VariablesTests {
 
-    func process(_ string: String) -> String {
-        return VariableHandler.processVariables(in: string, with: self.provider)
+    func process(_ string: String, locale: Locale = .current) -> String {
+        return VariableHandler.processVariables(in: string, with: self.provider, locale: locale)
     }
 
 }
@@ -96,5 +122,9 @@ private struct MockVariableProvider: VariableDataProvider {
     var localizedPricePerMonth: String = ""
     var productName: String = ""
     var introductoryOfferDuration: String?
+
+    func introductoryOfferDuration(_ locale: Locale) -> String? {
+        return self.introductoryOfferDuration
+    }
 
 }

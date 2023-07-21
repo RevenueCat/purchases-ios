@@ -5,8 +5,8 @@ import RevenueCat
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PaywallData.LocalizedConfiguration {
 
-    func processVariables(with package: Package) -> ProcessedLocalizedConfiguration {
-        return .init(self, package)
+    func processVariables(with package: Package, locale: Locale = .current) -> ProcessedLocalizedConfiguration {
+        return .init(self, package, locale)
     }
 
 }
@@ -17,7 +17,7 @@ protocol VariableDataProvider {
     var localizedPrice: String { get }
     var localizedPricePerMonth: String { get }
     var productName: String { get }
-    var introductoryOfferDuration: String? { get }
+    func introductoryOfferDuration(_ locale: Locale) -> String?
 
 }
 
@@ -27,13 +27,14 @@ enum VariableHandler {
 
     static func processVariables(
         in string: String,
-        with provider: VariableDataProvider
+        with provider: VariableDataProvider,
+        locale: Locale = .current
     ) -> String {
         let matches = Self.extractVariables(from: string)
         var replacedString = string
 
         for variableMatch in matches.reversed() {
-            let replacementValue = provider.value(for: variableMatch.variable)
+            let replacementValue = provider.value(for: variableMatch.variable, locale: locale)
             replacedString = replacedString.replacingCharacters(in: variableMatch.range, with: replacementValue)
         }
 
@@ -69,8 +70,8 @@ enum VariableHandler {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension String {
 
-    func processed(with provider: VariableDataProvider) -> Self {
-        return VariableHandler.processVariables(in: self, with: provider)
+    func processed(with provider: VariableDataProvider, locale: Locale) -> Self {
+        return VariableHandler.processVariables(in: self, with: provider, locale: locale)
     }
 
 }
@@ -78,20 +79,24 @@ extension String {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension VariableDataProvider {
 
-    func value(for variableName: String) -> String {
+    func value(for variableName: String, locale: Locale) -> String {
         switch variableName {
         case "price": return self.localizedPrice
         case "price_per_month": return self.localizedPricePerMonth
-        case "product_name": return self.productName
-        case "intro_duration":
-            guard let introDuration = self.introductoryOfferDuration else {
-                Logger.warning(
-                    "Unexpectedly tried to look for intro duration when there is none, this is a logic error."
-                )
-                return ""
+        case "total_price_and_per_month":
+            let price = self.localizedPrice
+            let perMonth = self.localizedPricePerMonth
+
+            if price == perMonth {
+                return price
+            } else {
+                let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
+                return "\(price) (\(perMonth)/\(unit))"
             }
 
-            return introDuration
+        case "product_name": return self.productName
+        case "intro_duration":
+            return self.introductoryOfferDuration(locale) ?? ""
 
         default:
             Logger.warning("Couldn't find content for variable '\(variableName)'")
