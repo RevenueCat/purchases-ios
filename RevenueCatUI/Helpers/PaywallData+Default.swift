@@ -8,6 +8,8 @@
 import Foundation
 import RevenueCat
 
+#if canImport(SwiftUI) && swift(>=5.7)
+
 extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
@@ -31,20 +33,22 @@ extension PaywallData {
 
 private extension PaywallData {
 
+    // swiftlint:disable force_try
     static let colors: PaywallData.Configuration.ColorInformation = .init(
         light: .init(
-            background: "#FFFFFF",
-            foreground: "#000000",
-            callToActionBackground: "#EC807C",
-            callToActionForeground: "#FFFFFF"
+            background: try! .init(stringRepresentation: "#FFFFFF"),
+            foreground: try! .init(stringRepresentation: "#000000"),
+            callToActionBackground: try! .init(stringRepresentation: "#EC807C"),
+            callToActionForeground: try! .init(stringRepresentation: "#FFFFFF")
         ),
         dark: .init(
-            background: "#000000",
-            foreground: "#FFFFFF",
-            callToActionBackground: "#ACD27A",
-            callToActionForeground: "#000000"
+            background: try! .init(stringRepresentation: "#000000"),
+            foreground: try! .init(stringRepresentation: "#FFFFFF"),
+            callToActionBackground: try! .init(stringRepresentation: "#ACD27A"),
+            callToActionForeground: try! .init(stringRepresentation: "#000000")
         )
     )
+    // swiftlint:enable force_try
 
     static let localization: PaywallData.LocalizedConfiguration = .init(
         title: "Subscription",
@@ -58,3 +62,5 @@ private extension PaywallData {
     static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
 
 }
+
+#endif
