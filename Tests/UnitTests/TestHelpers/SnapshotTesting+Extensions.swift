@@ -54,6 +54,8 @@ extension SwiftUI.View {
         file: StaticString = #file,
         line: UInt = #line
     ) {
+        UIView.setAnimationsEnabled(false)
+
         // Add test view to the hierarchy to make sure async rendering takes place.
         // The tested view is `controller.view` instead of `self` to keep it in memory
         // while rendering happens
