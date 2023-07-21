@@ -55,6 +55,51 @@ class PurchasesGetProductsTests: BasePurchasesTests {
         ) == true
     }
 
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    func testGetEligibilityForPackages() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        let packages: [Package] = [
+            .init(identifier: "package1",
+                  packageType: .weekly,
+                  storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
+                  offeringIdentifier: "offering"),
+            .init(identifier: "package2",
+                  packageType: .monthly,
+                  storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product2")),
+                  offeringIdentifier: "offering"),
+            .init(identifier: "package3",
+                  packageType: .annual,
+                  storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product3")),
+                  offeringIdentifier: "offering"),
+            .init(identifier: "package4",
+                  packageType: .annual,
+                  storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product4")),
+                  offeringIdentifier: "offering"),
+            .init(identifier: "package5",
+                  packageType: .annual,
+                  storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
+                  offeringIdentifier: "offering")
+        ]
+
+        self.trialOrIntroPriceEligibilityChecker
+            .stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = [
+            "product1": .init(eligibilityStatus: .eligible),
+            "product2": .init(eligibilityStatus: .noIntroOfferExists),
+            "product3": .init(eligibilityStatus: .ineligible)
+        ]
+
+        let result = await self.purchases.checkTrialOrIntroDiscountEligibility(packages: packages)
+
+        expect(result) == [
+            packages[0]: .init(eligibilityStatus: .eligible),
+            packages[1]: .init(eligibilityStatus: .noIntroOfferExists),
+            packages[2]: .init(eligibilityStatus: .ineligible),
+            packages[3]: .init(eligibilityStatus: .unknown),
+            packages[4]: .init(eligibilityStatus: .eligible)
+        ]
+    }
+
 }
 
 class PurchasesGetProductsBackgroundTests: BasePurchasesTests {
