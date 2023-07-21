@@ -13,13 +13,12 @@ import SwiftUI
 struct App: View {
 
     private var offering: Offering
-    private var paywall: PaywallData
 
     var body: some View {
         PaywallView()
         PaywallView(mode: .fullScreen)
-        PaywallView(offering: self.offering, paywall: self.paywall)
-        PaywallView(mode: .card, offering: self.offering, paywall: self.paywall)
+        PaywallView(offering: self.offering)
+        PaywallView(offering: self.offering, mode: .card)
     }
 
     private func modes(_ mode: PaywallViewMode) {
