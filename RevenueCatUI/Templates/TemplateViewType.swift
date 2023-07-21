@@ -30,9 +30,13 @@ extension PaywallData {
         case let .success(configuration):
             Self.createView(template: self.template, configuration: configuration)
                 .background(
-                    mode.shouldDisplayBackground
-                    ? configuration.colors.backgroundColor
-                    : nil
+                    Rectangle()
+                        .foregroundColor(
+                            mode.shouldDisplayBackground
+                            ? configuration.colors.backgroundColor
+                            : nil
+                        )
+                        .edgesIgnoringSafeArea(.all)
                 )
 
         case let .failure(error):
