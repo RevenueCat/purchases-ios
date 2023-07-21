@@ -16,8 +16,8 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedTitle
     }
 
-    var introductoryOfferDuration: String? {
-        return self.introDuration
+    func introductoryOfferDuration(_ locale: Locale) -> String? {
+        self.introDuration(locale)
     }
 
 }
@@ -41,8 +41,10 @@ private extension Package {
         return self.storeProduct.priceFormatter ?? .init()
     }
 
-    var introDuration: String? {
-        return self.storeProduct.introductoryDiscount?.localizedDuration
+    func introDuration(_ locale: Locale) -> String? {
+        guard let discount = self.storeProduct.introductoryDiscount else { return nil }
+
+        return Localization.localizedDuration(for: discount.subscriptionPeriod, locale: locale)
     }
 
 }
