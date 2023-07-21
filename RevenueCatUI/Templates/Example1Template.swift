@@ -146,35 +146,14 @@ private struct Example1TemplateContent: View {
 
     @ViewBuilder
     private var button: some View {
-        let package = self.configuration.packages.single.content
-
-        AsyncButton { @MainActor in
-            let cancelled = try await self.purchaseHandler.purchase(package: package).userCancelled
-
-            if !cancelled {
-                self.dismiss()
-            }
-        } label: {
-            IntroEligibilityStateView(
-                textWithNoIntroOffer: self.localization.callToAction,
-                textWithIntroOffer: self.localization.callToActionWithIntroOffer,
-                introEligibility: self.introEligibility
-            )
-                .foregroundColor(self.configuration.colors.callToActionForegroundColor)
-                .tint(self.configuration.colors.callToActionForegroundColor)
-                .frame(
-                    maxWidth: self.configuration.mode.fullWidthButton
-                       ? .infinity
-                        : nil
-                )
-        }
-        .font(self.configuration.mode.buttonFont)
-        .fontWeight(.semibold)
-        .tint(self.configuration.colors.callToActionBackgroundColor.gradient)
-        .buttonStyle(.borderedProminent)
-        .buttonBorderShape(self.configuration.mode.buttonBorderShape)
-        .controlSize(self.configuration.mode.buttonSize)
-        .frame(maxWidth: .infinity)
+        PurchaseButton(
+            package: self.configuration.packages.single.content,
+            purchaseHandler: self.purchaseHandler,
+            colors: self.configuration.colors,
+            localization: self.localization,
+            introEligibility: self.introEligibility,
+            mode: self.configuration.mode
+        )
     }
 
     private static let imageAspectRatio = 1.1
@@ -219,40 +198,6 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .callout
         case .card, .banner: return .caption
-        }
-    }
-
-    var buttonFont: Font {
-        switch self {
-        case .fullScreen, .card: return .title2
-        case .banner: return .footnote
-        }
-    }
-
-    var fullWidthButton: Bool {
-        switch self {
-        case .fullScreen, .card: return true
-        case .banner: return false
-        }
-    }
-
-    var buttonSize: ControlSize {
-        switch self {
-        case .fullScreen: return .large
-        case .card: return .regular
-        case .banner: return .small
-        }
-    }
-
-    var buttonBorderShape: ButtonBorderShape {
-        switch self {
-        case .fullScreen:
-            #if os(macOS)
-            return .roundedRectangle
-            #else
-            return .capsule
-            #endif
-        case .card, .banner: return .roundedRectangle
         }
     }
 
