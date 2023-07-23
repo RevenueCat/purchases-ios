@@ -37,7 +37,8 @@ Pods/
 IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
-**/Package.resolved
+Examples/**/Package.resolved
+Tests/**/Package.resolved
 
 # fastlane
 fastlane/.env
