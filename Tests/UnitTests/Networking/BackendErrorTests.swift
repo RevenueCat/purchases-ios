@@ -17,6 +17,18 @@ import XCTest
 
 class BackendErrorTests: BaseErrorTests {
 
+    func testNetworkError() {
+        let underlyingError = NSError(domain: NSURLErrorDomain, code: NSURLErrorDNSLookupFailed)
+
+        let error: BackendError = .networkError(
+            .networkError(underlyingError)
+        )
+
+        verifyPurchasesError(error,
+                             expectedCode: .networkError,
+                             underlyingError: underlyingError)
+    }
+
     func testMissingAppUserID() {
         let error: BackendError = .missingAppUserID()
 
