@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
 		4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046BC2A572E3700A28BCF /* SimpleApp.swift */; };
 		4F4EE7CE2A572F5A00D7EAE1 /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046C22A572E3700A28BCF /* Views.swift */; };
 		4F4EE7CF2A572F5D00D7EAE1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046C32A572E3700A28BCF /* ContentView.swift */; };
@@ -173,6 +174,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +316,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SimpleApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Paywalls;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -356,6 +360,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SimpleApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Paywalls;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
