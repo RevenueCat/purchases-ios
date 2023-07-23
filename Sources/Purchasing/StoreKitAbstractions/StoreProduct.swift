@@ -278,11 +278,7 @@ extension StoreProduct {
     }
 
     var isTestProduct: Bool {
-        #if DEBUG
         return self.product is TestStoreProduct
-        #else
-        return false
-        #endif
     }
 
 }

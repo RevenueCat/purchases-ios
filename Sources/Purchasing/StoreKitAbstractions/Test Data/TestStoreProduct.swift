@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if DEBUG
-
 /// A type that contains the necessary data to create a ``StoreProduct``.
 /// This can be used to create mock data for tests or SwiftUI previews.
 ///
@@ -120,29 +118,3 @@ extension TestStoreProduct {
     }
 
 }
-
-#else
-
-// swiftlint:disable missing_docs
-
-@available(
-    iOS,
-    obsoleted: 1,
-    message: "This API is only available for debug builds. Use #if DEBUG to conditionally compile it."
-)
-public struct TestStoreProduct {
-
-    public init(
-        localizedTitle: String,
-        price: Decimal,
-        localizedPriceString: String,
-        productIdentifier: String,
-        productType: StoreProduct.ProductType,
-        localizedDescription: String,
-        subscriptionGroupIdentifier: String? = nil,
-        subscriptionPeriod: SubscriptionPeriod? = nil
-    ) {}
-
-}
-
-#endif
