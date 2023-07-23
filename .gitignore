@@ -39,6 +39,7 @@ scan_derived_data/
 generated_docs/
 Examples/**/Package.resolved
 Tests/**/Package.resolved
+!Tests/TestingApps/SimpleApp/SimpleApp.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # fastlane
 fastlane/.env
