@@ -70,7 +70,7 @@ let package = Package(
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
-                resources: []),
+                resources: [.copy("Resources/background.jpg")]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
