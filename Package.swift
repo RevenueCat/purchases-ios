@@ -76,6 +76,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["__Snapshots__"],
-                    resources: [.copy("Resources/image.png")])
+                    resources: [.copy("Resources/image_1.jpg"), .copy("Resources/image_2.jpg")])
     ]
 )
