@@ -25,9 +25,6 @@ struct SimpleApp: App {
     }
 
     @State
-    private var offering: Result<Offering, NSError>?
-
-    @State
     private var customerInfo: CustomerInfo?
 
     var body: some Scene {
@@ -37,8 +34,7 @@ struct SimpleApp: App {
             }
                 .overlay {
                     if let info = self.customerInfo, !info.hasPro {
-                        self.paywallView
-                            .animation(.default, value: self.offering)
+                        PaywallScreen()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -49,40 +45,6 @@ struct SimpleApp: App {
                 .task {
                     for await info in Purchases.shared.customerInfoStream {
                         self.customerInfo = info
-                    }
-                }
-        }
-    }
-
-    @ViewBuilder
-    private var paywallView: some View {
-        if let offering = self.offering {
-            switch offering {
-            case let .success(offering):
-                if let paywall = offering.paywall {
-                    PaywallScreen(offering: offering, paywall: paywall)
-                } else {
-                    Text(
-                        "Didn't find a paywall associated to the current offering.\n" +
-                        "Check the logs for any potential errors."
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .edgesIgnoringSafeArea(.all)
-                    .background(Color.gray)
-                }
-
-            case let .failure(error):
-                Text("Error loading offerings: \(error.localizedDescription)")
-            }
-        } else {
-            ProgressView()
-                .progressViewStyle(.circular)
-                .controlSize(.large)
-                .task {
-                    do {
-                        self.offering = .success(try await Purchases.shared.offerings().current!)
-                    } catch {
-                        self.offering = .failure(error as NSError)
                     }
                 }
         }
