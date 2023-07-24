@@ -30,7 +30,9 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedOfferingsParametersList = [(appUserID: String,
                                            fetchPolicy: FetchPolicy,
                                            completion: OfferingsCompletion??)]()
-    var stubbedOfferingsCompletionResult: Result<Offerings, Error>?
+    var stubbedOfferingsCompletionResult: Result<Offerings, Error> = .failure(
+        .configurationError("Stub not setup", underlyingError: nil)
+    )
 
     override func offerings(appUserID: String,
                             fetchPolicy: FetchPolicy,
@@ -41,7 +43,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, completion))
 
         OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
-            completion?(result!)
+            completion?(result)
         }
     }
 
@@ -49,14 +51,15 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         let appUserID: String
         let isAppBackgrounded: Bool
         let fetchPolicy: OfferingsManager.FetchPolicy
-        let completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     }
 
     var invokedUpdateOfferingsCache = false
     var invokedUpdateOfferingsCacheCount = 0
     var invokedUpdateOfferingsCacheParameters: InvokedUpdateOfferingsCacheParameters?
     var invokedUpdateOfferingsCachesParametersList = [InvokedUpdateOfferingsCacheParameters]()
-    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error>?
+    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error> = .failure(
+        .configurationError("Stub not setup", underlyingError: nil)
+    )
 
     override func updateOfferingsCache(
         appUserID: String,
@@ -70,15 +73,14 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         let parameters = InvokedUpdateOfferingsCacheParameters(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded,
-            fetchPolicy: fetchPolicy,
-            completion: completion
+            fetchPolicy: fetchPolicy
         )
 
         self.invokedUpdateOfferingsCacheParameters = parameters
         self.invokedUpdateOfferingsCachesParametersList.append(parameters)
 
         OperationDispatcher.dispatchOnMainActor { [result = self.stubbedUpdateOfferingsCompletionResult] in
-            completion?(result!)
+            completion?(result)
         }
     }
 
