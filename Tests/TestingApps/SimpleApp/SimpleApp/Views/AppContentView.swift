@@ -68,7 +68,9 @@ struct AppContentView: View {
 struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {
-        AppContentView(customerInfo: TestData.customerInfo)
+        NavigationStack {
+            AppContentView(customerInfo: TestData.customerInfo)
+        }
     }
 
 }
