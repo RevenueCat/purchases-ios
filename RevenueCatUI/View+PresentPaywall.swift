@@ -38,12 +38,7 @@ extension View {
     /// ```swift
     /// var body: some View {
     ///    YourApp()
-    ///      .presentPaywallIfNecessary { customerInfo in
-    ///          !customerInfo.entitlements
-    ///          .active
-    ///          .keys
-    ///          .contains("entitlement_identifier")
-    ///      }
+    ///      .presentPaywallIfNecessary { !$0.entitlements.active.keys.contains("entitlement_identifier") }
     /// }
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
