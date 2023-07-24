@@ -85,6 +85,9 @@ private struct RestorePurchasesButton: View {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private struct LinkButton: View {
 
+    @Environment(\.locale)
+    private var locale
+
     let url: URL
     let titles: [String]
 
@@ -94,14 +97,18 @@ private struct LinkButton: View {
     }
 
     var body: some View {
+        let bundle = Localization.localizedBundle(self.locale)
+
         ViewThatFits {
             ForEach(self.titles, id: \.self) { title in
-                let text = Bundle.module.localizedString(
-                    forKey: title,
-                    value: nil,
-                    table: nil
+                Link(
+                    bundle.localizedString(
+                        forKey: title,
+                        value: nil,
+                        table: nil
+                    ),
+                    destination: self.url
                 )
-                Link(text, destination: self.url)
             }
         }
     }
