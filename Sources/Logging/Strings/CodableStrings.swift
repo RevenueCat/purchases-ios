@@ -16,6 +16,7 @@ import Foundation
 // swiftlint:disable identifier_name
 enum CodableStrings {
 
+    case invalid_data_when_decoding(Data)
     case unexpectedValueError(type: Any.Type, value: Any)
     case valueNotFoundError(value: Any.Type, context: DecodingError.Context)
     case keyNotFoundError(type: Any.Type, key: CodingKey, context: DecodingError.Context)
@@ -31,6 +32,9 @@ extension CodableStrings: LogMessage {
 
     var description: String {
         switch self {
+        case let .invalid_data_when_decoding(data):
+            let content = String(data: data, encoding: .utf8) ?? ""
+            return "Encountered error when decoding JSON: \(content)"
         case let .unexpectedValueError(type, value):
             return "Found unexpected value '\(value)' for type '\(type)'"
         case let .valueNotFoundError(value, context):
