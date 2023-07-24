@@ -6,13 +6,13 @@ import SnapshotTesting
 #if !os(macOS)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-class PaywallViewTests: BaseSnapshotTest {
+class SinglePackagePaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
         let offering = TestData.offeringWithNoIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
         view.snapshot(size: Self.fullScreenSize)
@@ -22,7 +22,7 @@ class PaywallViewTests: BaseSnapshotTest {
         let offering = TestData.offeringWithNoIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                mode: .card,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
@@ -33,7 +33,7 @@ class PaywallViewTests: BaseSnapshotTest {
         let offering = TestData.offeringWithNoIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                mode: .banner,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
@@ -44,7 +44,7 @@ class PaywallViewTests: BaseSnapshotTest {
         let offering = TestData.offeringWithIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -55,7 +55,7 @@ class PaywallViewTests: BaseSnapshotTest {
         let offering = TestData.offeringWithIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -67,7 +67,7 @@ class PaywallViewTests: BaseSnapshotTest {
 
         let view = PaywallView(
             offering: offering,
-            paywall: offering.paywallWithLocalImage,
+            paywall: offering.paywallWithLocalImages,
             introEligibility: Self.ineligibleChecker
                 .with(delay: .seconds(30)),
             purchaseHandler: Self.purchaseHandler
@@ -80,7 +80,7 @@ class PaywallViewTests: BaseSnapshotTest {
         let offering = TestData.offeringWithIntroOffer
 
         let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImage,
+                               paywall: offering.paywallWithLocalImages,
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
