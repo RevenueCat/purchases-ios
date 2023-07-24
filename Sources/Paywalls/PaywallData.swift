@@ -143,20 +143,57 @@ extension PaywallData {
             set { self._imageNames = newValue }
         }
 
+        /// Whether a restore purchases button should be displayed.
+        public var displayRestorePurchases: Bool {
+            get { self._displayRestorePurchases }
+            set { self._displayRestorePurchases = newValue }
+        }
+
+        /// If set, the paywall will display a terms of service link.
+        public var termsOfServiceURL: URL? {
+            get { self._termsOfServiceURL }
+            set { self._termsOfServiceURL = newValue }
+        }
+
+        /// If set, the paywall will display a privacy policy link.
+        public var privacyURL: URL? {
+            get { self._privacyURL }
+            set { self._privacyURL = newValue }
+        }
+
         /// The set of colors used
         public var colors: ColorInformation
 
         // swiftlint:disable:next missing_docs
-        public init(packages: [PackageType], imageNames: [String], colors: ColorInformation) {
+        public init(
+            packages: [PackageType],
+            imageNames: [String],
+            colors: ColorInformation,
+            displayRestorePurchases: Bool = true,
+            termsOfServiceURL: URL? = nil,
+            privacyURL: URL? = nil
+        ) {
             assert(!imageNames.isEmpty)
 
             self.packages = packages
             self._imageNames = imageNames
             self.colors = colors
+            self._displayRestorePurchases = displayRestorePurchases
+            self._termsOfServiceURL = termsOfServiceURL
+            self._privacyURL = privacyURL
         }
 
         @EnsureNonEmptyArrayDecodable
         var _imageNames: [String]
+
+        @DefaultDecodable.True
+        var _displayRestorePurchases: Bool
+
+        @IgnoreDecodeErrors<URL?>
+        var _termsOfServiceURL: URL?
+
+        @IgnoreDecodeErrors<URL?>
+        var _privacyURL: URL?
 
     }
 
@@ -283,6 +320,9 @@ extension PaywallData.Configuration: Codable {
     private enum CodingKeys: String, CodingKey {
         case packages
         case _imageNames = "images"
+        case _displayRestorePurchases = "displayRestorePurchases"
+        case _termsOfServiceURL = "tosUrl"
+        case _privacyURL = "privacyUrl"
         case colors
     }
 
