@@ -30,7 +30,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedOfferingsParametersList = [(appUserID: String,
                                            fetchPolicy: FetchPolicy,
                                            completion: OfferingsCompletion??)]()
-    var stubbedOfferingsCompletionResult: Result<Offerings, Error>? = .failure(
+    var stubbedOfferingsCompletionResult: Result<Offerings, Error> = .failure(
         .configurationError("Stub not setup", underlyingError: nil)
     )
 
@@ -42,7 +42,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         self.invokedOfferingsParameters = (appUserID, fetchPolicy, completion)
         self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, completion))
 
-        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult!] in
+        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
             completion?(result)
         }
     }
@@ -57,7 +57,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedUpdateOfferingsCacheCount = 0
     var invokedUpdateOfferingsCacheParameters: InvokedUpdateOfferingsCacheParameters?
     var invokedUpdateOfferingsCachesParametersList = [InvokedUpdateOfferingsCacheParameters]()
-    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error>? = .failure(
+    var stubbedUpdateOfferingsCompletionResult: Result<Offerings, Error> = .failure(
         .configurationError("Stub not setup", underlyingError: nil)
     )
 
@@ -79,7 +79,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         self.invokedUpdateOfferingsCacheParameters = parameters
         self.invokedUpdateOfferingsCachesParametersList.append(parameters)
 
-        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedUpdateOfferingsCompletionResult!] in
+        OperationDispatcher.dispatchOnMainActor { [result = self.stubbedUpdateOfferingsCompletionResult] in
             completion?(result)
         }
     }
