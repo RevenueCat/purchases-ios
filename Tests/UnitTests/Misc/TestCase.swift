@@ -27,7 +27,7 @@ class TestCase: XCTestCase {
     final func initializeLogger() {
         guard self.logger == nil else { return }
 
-        self.logger = TestLogHandler(capacity: 500)
+        self.logger = TestLogHandler(capacity: 1000)
     }
 
     @MainActor
