@@ -24,6 +24,7 @@ enum EligibilityStrings {
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
     case sk2_intro_eligibility_too_slow
+    case warming_up_eligibility_cache(PaywallData)
 }
 
 extension EligibilityStrings: LogMessage {
@@ -52,6 +53,9 @@ extension EligibilityStrings: LogMessage {
 
         case .sk2_intro_eligibility_too_slow:
             return "StoreKit 2 intro eligibility took longer than expected to determine"
+
+        case let .warming_up_eligibility_cache(paywall):
+            return "Warming up intro eligibility cache for packages in paywall: \(paywall.config.packages)"
         }
     }
 
