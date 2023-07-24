@@ -55,10 +55,8 @@ func main() -> Int {
     checkStoreProductAPI()
     checkStoreProductDiscountAPI()
 
-    #if DEBUG
     checkTestStoreProductAPI()
     checkTestStoreProductDiscountAPI()
-    #endif
 
     checkPaymentModeEnum()
 

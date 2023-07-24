@@ -13,8 +13,6 @@
 
 import Foundation
 
-#if DEBUG
-
 /// A type that contains the necessary data to create a ``StoreProduct``.
 public struct TestStoreProductDiscount {
 
@@ -70,29 +68,3 @@ extension TestStoreProductDiscount {
     }
 
 }
-
-#else
-
-@available(
-    iOS,
-    obsoleted: 1,
-    message: "This API is only available for debug builds. Use #if DEBUG to conditionally compile it."
-)
-// swiftlint:disable missing_docs
-public struct TestStoreProductDiscount {
-
-    public init(
-        identifier: String,
-        price: Decimal,
-        localizedPriceString: String,
-        paymentMode: StoreProductDiscount.PaymentMode,
-        subscriptionPeriod: SubscriptionPeriod,
-        numberOfPeriods: Int,
-        type: StoreProductDiscount.DiscountType
-    ) {}
-
-}
-
-// swiftlint:enable missing_docs
-
-#endif
