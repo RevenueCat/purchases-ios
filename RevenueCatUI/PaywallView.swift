@@ -15,28 +15,29 @@ public struct PaywallView: View {
     @State
     private var offering: Offering?
     @State
-    private var paywall: PaywallData?
+    private var error: NSError?
 
     /// Create a view that loads the `Offerings.current`.
+    /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
+    /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    /// If you want to handle that, you can use ``init(offering:mode:)`` instead.
     public init(mode: PaywallViewMode = .default) {
         self.init(
             offering: nil,
-            paywall: nil,
             mode: mode,
             introEligibility: Purchases.isConfigured ? .init() : nil,
             purchaseHandler: Purchases.isConfigured ? .init() : nil
         )
     }
 
-    /// Create a view for the given offering and paywal.
+    /// Create a view for the given `Offering`.
+    /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
+    /// a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    public init(offering: Offering,
-                paywall: PaywallData,
-                mode: PaywallViewMode = .default) {
+    public init(offering: Offering, mode: PaywallViewMode = .default) {
         self.init(
             offering: offering,
-            paywall: paywall,
             mode: mode,
             introEligibility: Purchases.isConfigured ? .init() : nil,
             purchaseHandler: Purchases.isConfigured ? .init() : nil
@@ -45,13 +46,11 @@ public struct PaywallView: View {
 
     init(
         offering: Offering?,
-        paywall: PaywallData?,
         mode: PaywallViewMode = .default,
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
         self._offering = .init(initialValue: offering)
-        self._paywall = .init(initialValue: paywall)
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.mode = mode
@@ -59,26 +58,31 @@ public struct PaywallView: View {
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
+        self.content
+            .displayError(self.$error, dismissOnClose: true)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
             if let offering = self.offering {
-                if let paywall = self.paywall {
-                    LoadedOfferingPaywallView(
-                        offering: offering,
-                        paywall: paywall,
-                        mode: mode,
-                        introEligibility: checker,
-                        purchaseHandler: purchaseHandler
-                    )
-                } else {
-                    DebugErrorView("Offering '\(offering.identifier)' has no configured paywall",
-                                   releaseBehavior: .emptyView)
-                }
+                self.paywallView(for: offering,
+                                 checker: checker,
+                                 purchaseHandler: purchaseHandler)
+                .transition(Self.transition)
             } else {
-                self.loadingView
+                LoadingPaywallView()
+                .transition(Self.transition)
                     .task {
-                        // Fix-me: better error handling
-                        self.offering = try? await Purchases.shared.offerings().current
-                        self.paywall = self.offering?.paywall
+                        do {
+                            guard let offering = try await Purchases.shared.offerings().current else {
+                                throw PaywallError.noCurrentOffering
+                            }
+
+                            self.offering = offering
+                        } catch let error as NSError {
+                            self.error = error
+                        }
                     }
             }
         } else {
@@ -87,14 +91,45 @@ public struct PaywallView: View {
     }
 
     @ViewBuilder
-    private var loadingView: some View {
-        ProgressView()
+    private func paywallView(
+        for offering: Offering,
+        checker: TrialOrIntroEligibilityChecker,
+        purchaseHandler: PurchaseHandler
+    ) -> some View {
+        if let paywall = offering.paywall {
+            LoadedOfferingPaywallView(
+                offering: offering,
+                paywall: paywall,
+                mode: mode,
+                introEligibility: checker,
+                purchaseHandler: purchaseHandler
+            )
+        } else {
+            DebugErrorView(
+                "Offering '\(offering.identifier)' has no configured paywall.\n" +
+                "The displayed paywall contains default configuration.\n" +
+                "This error will be hidden in production.",
+                releaseBehavior: .replacement(
+                    AnyView(
+                        LoadedOfferingPaywallView(
+                            offering: offering,
+                            paywall: .default,
+                            mode: mode,
+                            introEligibility: checker,
+                            purchaseHandler: purchaseHandler
+                        )
+                    )
+                )
+            )
+        }
     }
+
+    private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct LoadedOfferingPaywallView: View {
+struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
     private let paywall: PaywallData
@@ -177,7 +212,6 @@ struct PaywallView_Previews: PreviewProvider {
             ForEach(Self.modes, id: \.self) { mode in
                 PaywallView(
                     offering: offering,
-                    paywall: offering.paywall!,
                     mode: mode,
                     introEligibility: Self.introEligibility,
                     purchaseHandler: Self.purchaseHandler

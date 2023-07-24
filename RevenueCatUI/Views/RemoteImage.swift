@@ -12,10 +12,12 @@ struct RemoteImage: View {
 
     let url: URL
     let aspectRatio: Double?
+    let maxWidth: CGFloat?
 
-    init(url: URL, aspectRatio: Double? = nil) {
+    init(url: URL, aspectRatio: Double? = nil, maxWidth: CGFloat? = nil) {
         self.url = url
         self.aspectRatio = aspectRatio
+        self.maxWidth = maxWidth
     }
 
     var body: some View {
@@ -27,6 +29,7 @@ struct RemoteImage: View {
                 if let aspectRatio {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
+                        .frame(maxWidth: self.maxWidth)
                 } else {
                     image
                         .resizable()
@@ -37,10 +40,22 @@ struct RemoteImage: View {
                 .font(.footnote)
                 .textCase(.none)
             } else {
-                Rectangle()
-                    .hidden()
+                Group {
+                    if let aspectRatio {
+                        self.placeholderView
+                            .aspectRatio(aspectRatio, contentMode: .fit)
+                    } else {
+                        self.placeholderView
+                    }
+                }
+                .frame(maxWidth: self.maxWidth)
             }
         }
+    }
+
+    private var placeholderView: some View {
+        Rectangle()
+            .hidden()
     }
 
 }
