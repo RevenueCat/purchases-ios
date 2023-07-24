@@ -21,6 +21,7 @@
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
         "images": ["asset_name.png"],
+        "blurredBackgroundImage": true,
         "display_restore_purchases": false,
         "tos_url": "https://revenuecat.com/tos",
         "privacy_url": "https://revenuecat.com/privacy",
