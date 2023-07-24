@@ -85,7 +85,7 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
     func testPurchaseOutsideTheAppPostsReceipt() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
 
-        let info = try await Purchases.shared.restorePurchases()
+        let info = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(info)
     }
 
@@ -178,7 +178,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     func testDoesNotSyncExistingPurchase() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
     }
 

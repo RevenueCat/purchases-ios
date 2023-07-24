@@ -19,20 +19,20 @@ import XCTest
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testGetCustomerInfo() async throws {
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
         expect(info.isComputedOffline) == false
     }
 
     func testGetCustomerInfoReturnsNotModified() async throws {
         // 1. Fetch user once
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 2. Re-fetch user
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
-                                          path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
+                                          path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
 
         // 3. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -42,16 +42,16 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testGetCustomerInfoAfterLogInReturnsNotModified() async throws {
         // 1. Log-in to force a new user
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
+        _ = try await self.purchases.logIn(UUID().uuidString)
 
         // 2. Fetch user once
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Re-fetch user
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let expectedRequest = HTTPRequest(method: .get,
-                                          path: .getCustomerInfo(appUserID: Purchases.shared.appUserID))
+                                          path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
 
         // 4. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -60,15 +60,15 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testHealthRequest() async throws {
-        try await Purchases.shared.healthRequest(signatureVerification: false)
+        try await self.purchases.healthRequest(signatureVerification: false)
     }
 
     func testHealthRequestWithVerification() async throws {
-        try await Purchases.shared.healthRequest(signatureVerification: true)
+        try await self.purchases.healthRequest(signatureVerification: true)
     }
 
     func testHandledByProductionServer() async throws {
-        try await Purchases.shared.healthRequest(signatureVerification: false)
+        try await self.purchases.healthRequest(signatureVerification: false)
 
         self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
     }
@@ -77,7 +77,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let result = try await Purchases.shared.productEntitlementMapping()
+        let result = try await self.purchases.productEntitlementMapping()
         expect(result.entitlementsByProduct).to(haveCount(15))
         expect(result.entitlementsByProduct["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
         expect(result.entitlementsByProduct["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
@@ -85,7 +85,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testEnableAdServicesAttributionTokenCollection() async throws {
-        Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
+        try self.purchases.attribution.enableAdServicesAttributionTokenCollection()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,

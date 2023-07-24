@@ -51,23 +51,23 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     func testOfferingsAreCachedInMemory() async throws {
-        let onlineOfferings = try await Purchases.shared.offerings()
+        let onlineOfferings = try await self.purchases.offerings()
         expect(onlineOfferings.all).toNot(beEmpty())
 
         self.serverDown()
 
-        let offlineOfferings = try await Purchases.shared.offerings()
+        let offlineOfferings = try await self.purchases.offerings()
         expect(offlineOfferings) === onlineOfferings
     }
 
     func testOfferingsAreCachedOnDisk() async throws {
-        let onlineOfferings = try await Purchases.shared.offerings()
+        let onlineOfferings = try await self.purchases.offerings()
         expect(onlineOfferings.all).toNot(beEmpty())
 
         self.serverDown()
         await self.resetSingleton()
 
-        let offlineOfferings = try await Purchases.shared.offerings()
+        let offlineOfferings = try await self.purchases.offerings()
         expect(offlineOfferings.response) == onlineOfferings.response
 
         let offering = try XCTUnwrap(offlineOfferings.current)
@@ -77,11 +77,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithNoPurchases() async throws {
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
 
         self.serverDown()
 
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         expect(info.entitlements.all).to(beEmpty())
     }
 
@@ -89,7 +89,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testReturnsCachedCustomerInfo() async throws {
         self.serverDown()
 
-       _ = try await Purchases.shared.customerInfo()
+       _ = try await self.purchases.customerInfo()
 
         self.logger.verifyMessageWasNotLogged(Strings.customerInfo.customerinfo_updated_offline)
     }
@@ -98,10 +98,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testOfflineCustomerInfoWithOnePurchase() async throws {
         try await self.purchaseMonthlyOffering()
 
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
         self.serverDown()
 
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         expect(info.entitlements.all).toNot(beEmpty())
         try await self.verifyEntitlementWentThrough(info)
     }
@@ -125,7 +125,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 2. "Re-open" the app after the server is back
         self.serverUp()
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
         await self.resetSingleton()
 
         // 3. Ensure delegate is notified of subscription
@@ -147,11 +147,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         )
 
         // 5. Restart app again
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
         await self.resetSingleton()
 
         // 6. To ensure (with a clean cache) that the receipt was posted
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         try await self.verifyEntitlementWentThrough(info)
     }
 
@@ -165,7 +165,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         await self.resetSingleton()
 
         // 3. `CustomerInfo` should contain offline purchase
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         try await self.verifyEntitlementWentThrough(info)
     }
 
@@ -181,7 +181,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
 
         // 3. `CustomerInfo` should contain the purchase
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         try await self.verifyEntitlementWentThrough(info)
         expect(info.activeSubscriptions).to(haveCount(1))
     }
@@ -193,8 +193,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverDown()
 
-        _ = try await Purchases.shared.purchase(product: product1)
-        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+        _ = try await self.purchases.purchase(product: product1)
+        let info = try await self.purchases.purchase(product: product2).customerInfo
 
         try await self.verifyEntitlementWentThrough(info)
         expect(info.allPurchasedProductIdentifiers) == [
@@ -210,11 +210,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverDown()
 
-        _ = try await Purchases.shared.purchase(product: product1)
+        _ = try await self.purchases.purchase(product: product1)
 
         self.serverUp()
 
-        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+        let info = try await self.purchases.purchase(product: product2).customerInfo
 
         try await self.verifyEntitlementWentThrough(info)
         expect(info.allPurchasedProductIdentifiers) == [
@@ -231,8 +231,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverUp()
 
-        let task1 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
-        let task2 = Task { try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent) }
+        let task1 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
+        let task2 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
 
         let info1 = try await task1.value
         let info2 = try await task2.value
@@ -279,18 +279,18 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverUp()
 
         // 3. Request current CustomerInfo
-        let info1 = try await Purchases.shared.customerInfo()
+        let info1 = try await self.purchases.customerInfo()
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
         self.logger.verifyMessageWasLogged("Finishing transaction", level: .info)
 
         // 5. Restart app
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
         await self.resetSingleton()
 
         // 6. To ensure (with a clean cache) that the receipt was posted
-        let info2 = try await Purchases.shared.customerInfo()
+        let info2 = try await self.purchases.customerInfo()
         try await self.verifyEntitlementWentThrough(info2)
     }
 
@@ -311,7 +311,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverUp()
 
         // 3. Request current CustomerInfo
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
 
         // 4. Verify subscription is active
         try await self.verifyEntitlementWentThrough(info)
@@ -332,10 +332,10 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoFailsIfNoEntitlementMapping() async throws {
-        Purchases.shared.invalidateCustomerInfoCache()
+        try self.purchases.invalidateCustomerInfoCache()
 
         do {
-            _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+            _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
             fail("Fetch should have failed")
         } catch let error as ErrorCode {
             expect(error).to(matchError(ErrorCode.unknownBackendError))
@@ -358,12 +358,12 @@ private extension BaseOfflineStoreKitIntegrationTests {
     final func serverUp() { self.serverIsDown = false }
 
     func waitForPendingCustomerInfoRequests() async {
-        _ = try? await Purchases.shared.customerInfo()
+        _ = try? await self.purchases.customerInfo()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func ensureEntitlementMappingIsAvailable() async throws {
-        _ = try await Purchases.shared.productEntitlementMapping()
+        _ = try await self.purchases.productEntitlementMapping()
     }
 
 }

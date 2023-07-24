@@ -114,6 +114,22 @@ class BaseBackendIntegrationTests: TestCase {
         await self.createPurchases()
     }
 
+    /// - Returns: `Purchases.shared` if it's currently configured
+    /// - Throws: `ErrorCode` if it's not
+    /// - Note: This is the recomended way of accessing `Purchases.shared`, as it won't make the test crash.
+    /// If an expectation fails in an `async` fails, sometimes `XCTest` seems to continue execution of the test despite
+    /// having started tearing down the test (and therefore clearing `Purchases.shared`, which will lead to a crash
+    /// and will prevent the test from being retried.
+    final var purchases: Purchases {
+        get throws {
+            if Purchases.isConfigured {
+                return Purchases.shared
+            } else {
+                throw ErrorCode.configurationError
+            }
+        }
+    }
+
 }
 
 private extension BaseBackendIntegrationTests {

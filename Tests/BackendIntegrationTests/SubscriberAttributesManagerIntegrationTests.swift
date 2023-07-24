@@ -51,7 +51,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     func testSyncOneAttribute() async throws {
         self.attribution.setEmail(Self.testEmail)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
 
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
@@ -60,12 +60,12 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     func testSettingTheSameAttributeDoesNotNeedToChangeIt() async throws {
         self.attribution.setEmail(Self.testEmail)
 
-        var errors = await self.syncAttributes()
+        var errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
         self.attribution.setEmail(Self.testEmail)
-        errors = await self.syncAttributes()
+        errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 0)
         expect(self.syncedAttributes)
             .to(
@@ -77,14 +77,14 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     func testChangingEmailSyncsIt() async throws {
         self.attribution.setEmail(Self.testEmail)
 
-        var errors = await self.syncAttributes()
+        var errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
         let newEmail = "test2@revenuecat.com"
 
         self.attribution.setEmail(newEmail)
-        errors = await self.syncAttributes()
+        errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(self.userID, [reserved(.email): newEmail])
     }
@@ -94,7 +94,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
         self.attribution.setEmail(invalidEmail)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
         let error = try XCTUnwrap(errors.onlyElement ?? nil) as NSError
 
         self.verifySyncedAttribute(self.userID, [reserved(.email): invalidEmail])
@@ -109,17 +109,17 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
     func testLogInGetsNewAttributes() async throws {
         self.attribution.setEmail(Self.testEmail)
 
-        var errors = await self.syncAttributes()
+        var errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
 
         self.verifySyncedAttribute(self.userID, [reserved(.email): Self.testEmail])
 
         let newUserID = UUID().uuidString
-        _ = try await Purchases.shared.logIn(newUserID)
+        _ = try await self.purchases.logIn(newUserID)
 
         self.attribution.setEmail(Self.testEmail)
 
-        errors = await self.syncAttributes()
+        errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(newUserID, [reserved(.email): Self.testEmail])
     }
@@ -129,7 +129,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
         self.attribution.setPushToken(token)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(self.userID, [reserved(.pushToken): token.asString])
     }
@@ -142,7 +142,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
 
         self.attribution.setAttributes(attributes)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1) // 1 user with 2 attributes
         self.verifySyncedAttribute(self.userID, attributes)
     }
@@ -154,7 +154,7 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         self.attribution.setDisplayName(name)
         self.attribution.setPhoneNumber(phone)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
 
         // 1 user with 2 attributes:
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
@@ -172,16 +172,16 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         let user2 = UUID().uuidString
         let name2 = "User 2"
 
-        _ = try await Purchases.shared.logIn(user1)
+        _ = try await self.purchases.logIn(user1)
         self.attribution.setDisplayName(name1)
 
-        _ = try await Purchases.shared.logIn(user2)
+        _ = try await self.purchases.logIn(user2)
         // Log in forced previous unsynced attributes to be synced
         self.verifySyncedAttribute(user1, [reserved(.displayName): name1])
 
         self.attribution.setDisplayName(name2)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(user2, [reserved(.displayName): name2])
     }
@@ -190,25 +190,25 @@ class SubscriberAttributesManagerIntegrationTests: BaseBackendIntegrationTests {
         let user = UUID().uuidString
         let name = "User 1"
 
-        _ = try await Purchases.shared.logIn(user)
-        expect(Purchases.shared.isAnonymous) == false
+        _ = try await self.purchases.logIn(user)
+        expect(try self.purchases.isAnonymous) == false
 
         self.attribution.setDisplayName(name)
 
-        _ = try await Purchases.shared.logOut()
-        expect(Purchases.shared.isAnonymous) == true
+        _ = try await self.purchases.logOut()
+        expect(try self.purchases.isAnonymous) == true
 
         // Log out should post unsynced attributes
         self.verifySyncedAttribute(user, [reserved(.displayName): name])
 
-        let anonUser = Purchases.shared.appUserID
+        let anonUser = try self.purchases.appUserID
         let anonName = "User 2"
 
         expect(anonUser) != user
 
         self.attribution.setDisplayName(anonName)
 
-        let errors = await self.syncAttributes()
+        let errors = try await self.syncAttributes()
         self.verifyAttributesSyncedWithNoErrors(errors, 1)
         self.verifySyncedAttribute(anonUser, [reserved(.displayName): anonName])
     }
@@ -232,8 +232,8 @@ private extension SubscriberAttributesManagerIntegrationTests {
         return attribute.rawValue
     }
 
-    func syncAttributes() async -> [Error?] {
-        let purchases = Purchases.shared
+    func syncAttributes() async throws -> [Error?] {
+        let purchases = try self.purchases
 
         return await withCheckedContinuation { continuation in
             let errors: Atomic<[Error?]> = .init([])
