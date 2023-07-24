@@ -11,7 +11,24 @@ import SwiftUI
 
 struct AppContentView: View {
 
-    var customerInfo: CustomerInfo?
+    let customerInfoStream: AsyncStream<CustomerInfo>
+
+    init() {
+        self.init(Purchases.shared.customerInfoStream)
+    }
+
+    init(_ customerInfoStream: AsyncStream<CustomerInfo>) {
+        self.customerInfoStream = customerInfoStream
+    }
+
+    #if DEBUG
+    init(customerInfo: CustomerInfo) {
+        self.init(.init(unfolding: { customerInfo }))
+    }
+    #endif
+
+    @State
+    private var customerInfo: CustomerInfo?
 
     var body: some View {
         ZStack {
@@ -46,6 +63,11 @@ struct AppContentView: View {
                 }
             }
             .navigationTitle("Simple App")
+            .task {
+                for await info in self.customerInfoStream {
+                    self.customerInfo = info
+                }
+            }
         }
     }
 
