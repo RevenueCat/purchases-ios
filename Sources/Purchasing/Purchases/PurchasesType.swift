@@ -343,6 +343,19 @@ public protocol PurchasesType: AnyObject {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
     /**
+     * Invalidates the cache for customer information.
+     *
+     * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
+     * Refer to
+     * [Get User Information](https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information)
+     * for more information on using the cache properly.
+     *
+     * This is useful for cases where customer information might have been updated outside of the app, like if a
+     * promotional subscription is granted through the RevenueCat dashboard.
+     */
+    func invalidateCustomerInfoCache()
+
+    /**
      * This method will post all purchases associated with the current App Store account to RevenueCat and become
      * associated with the current ``appUserID``. If the receipt is being used by an existing user, the current
      * ``appUserID`` will be aliased together with the ``appUserID`` of the existing user.
@@ -663,19 +676,6 @@ public protocol PurchasesType: AnyObject {
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer]
 
     #endif
-
-    /**
-     * Invalidates the cache for customer information.
-     *
-     * Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
-     * Refer to
-     * [Get User Information](https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information)
-     * for more information on using the cache properly.
-     *
-     * This is useful for cases where customer information might have been updated outside of the app, like if a
-     * promotional subscription is granted through the RevenueCat dashboard.
-     */
-    func invalidateCustomerInfoCache()
 
     #if os(iOS)
 
