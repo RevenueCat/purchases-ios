@@ -27,7 +27,6 @@ struct FooterView: View {
             if let url = self.configuration.termsOfServiceURL {
                 LinkButton(
                     url: url,
-                    // Fix-me: localize
                     titles: "Terms and conditions", "Terms"
                 )
 
@@ -38,7 +37,6 @@ struct FooterView: View {
             if let url = self.configuration.privacyURL {
                 LinkButton(
                     url: url,
-                    // Fix-me: localize
                     titles: "Privacy policy", "Privacy"
                 )
             }
@@ -71,16 +69,14 @@ private struct RestorePurchasesButton: View {
             _ = try await self.purchaseHandler.restorePurchases()
             self.restored = true
         } label: {
-            // Fix-me: localize
             ViewThatFits {
-                Text("Restore purchases")
-                Text("Restore")
+                Text("Restore purchases", bundle: .module)
+                Text("Restore", bundle: .module)
             }
         }
         .buttonStyle(.plain)
         .alert(isPresented: self.$restored) {
-            // Fix-me: localize
-            Alert(title: Text("Purchases restored successfully!"))
+            Alert(title: Text("Purchases restored successfully!", bundle: .module))
         }
     }
 
@@ -88,6 +84,9 @@ private struct RestorePurchasesButton: View {
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private struct LinkButton: View {
+
+    @Environment(\.locale)
+    private var locale
 
     let url: URL
     let titles: [String]
@@ -98,9 +97,18 @@ private struct LinkButton: View {
     }
 
     var body: some View {
+        let bundle = Localization.localizedBundle(self.locale)
+
         ViewThatFits {
             ForEach(self.titles, id: \.self) { title in
-                Link(title, destination: self.url)
+                Link(
+                    bundle.localizedString(
+                        forKey: title,
+                        value: nil,
+                        table: nil
+                    ),
+                    destination: self.url
+                )
             }
         }
     }
