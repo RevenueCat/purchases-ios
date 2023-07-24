@@ -34,7 +34,7 @@ extension PaywallData {
                         .foregroundColor(
                             mode.shouldDisplayBackground
                             ? configuration.colors.backgroundColor
-                            : nil
+                            : .clear
                         )
                         .edgesIgnoringSafeArea(.all)
                 )

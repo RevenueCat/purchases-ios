@@ -29,7 +29,7 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     private static let offeringWithNoPaywall = Offering(
-        identifier: "offeirng",
+        identifier: "offering",
         serverDescription: "Main offering",
         metadata: [:],
         paywall: nil,
