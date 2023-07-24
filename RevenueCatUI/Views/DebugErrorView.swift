@@ -70,11 +70,16 @@ struct DebugErrorView: View {
     private var errorView: some View {
         Text(self.description)
             .unredacted()
+            .padding()
             .fixedSize(horizontal: false, vertical: false)
             .background(
                 Color.red
                     .edgesIgnoringSafeArea(.all)
             )
+            .foregroundColor(.white)
+            .bold()
+            .cornerRadius(8)
+            .shadow(radius: 8)
     }
 
 }
