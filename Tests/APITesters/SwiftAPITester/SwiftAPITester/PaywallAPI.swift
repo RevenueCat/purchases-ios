@@ -28,9 +28,21 @@ func checkPaywallData(_ data: PaywallData) {
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                _ colors: PaywallData.Configuration.ColorInformation) {
-    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual], imageNames: [""], colors: colors)
+    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
+                                             imageNames: [""],
+                                             colors: colors)
+    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
+                                             imageNames: [""],
+                                             colors: colors,
+                                             displayRestorePurchases: true,
+                                             termsOfServiceURL: URL(string: ""),
+                                             privacyURL: URL(string: ""))
     let _: [PackageType] = config.packages
     let _: [String] = config.imageNames
+    let _: PaywallData.Configuration.ColorInformation = config.colors
+    let _: Bool = config.displayRestorePurchases
+    let _: URL? = config.termsOfServiceURL
+    let _: URL? = config.privacyURL
 }
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
