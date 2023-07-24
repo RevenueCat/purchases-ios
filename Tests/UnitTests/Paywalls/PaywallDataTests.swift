@@ -34,6 +34,9 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == [.monthly, .annual]
         expect(paywall.config.imageNames) == ["asset_name.png"]
+        expect(paywall.config.displayRestorePurchases) == false
+        expect(paywall.config.termsOfServiceURL) == URL(string: "https://revenuecat.com/tos")!
+        expect(paywall.config.privacyURL) == URL(string: "https://revenuecat.com/privacy")!
 
         expect(paywall.config.colors.light.background.stringRepresentation) == "#FF00AA"
         expect(paywall.config.colors.light.foreground.stringRepresentation) == "#FF00AA22"
