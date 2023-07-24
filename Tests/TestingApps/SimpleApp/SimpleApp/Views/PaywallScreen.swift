@@ -11,9 +11,6 @@ import SwiftUI
 
 struct PaywallScreen: View {
 
-    var offering: Offering
-    var paywall: PaywallData
-
     @State
     private var isDisplayed = false
 
@@ -21,7 +18,7 @@ struct PaywallScreen: View {
         Rectangle()
             .hidden()
             .sheet(isPresented: self.$isDisplayed) {
-                PaywallView(offering: self.offering, paywall: self.paywall)
+                PaywallView()
                 #if os(macOS)
                     .frame(width: 460, height: 750)
                 #endif
