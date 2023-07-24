@@ -44,10 +44,6 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         self.cache.value.removeAll(keepingCapacity: false)
     }
 
-}
-
-extension CachingTrialOrIntroPriceEligibilityChecker {
-
     func checkEligibility(
         productIdentifiers: [String],
         completion: @escaping ReceiveIntroEligibilityBlock
