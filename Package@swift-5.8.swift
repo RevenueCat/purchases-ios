@@ -19,6 +19,7 @@ if shouldIncludeDocCPlugin {
 
 let package = Package(
     name: "RevenueCat",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v10_13),
         .watchOS("6.2"),
