@@ -2,7 +2,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-struct Example1Template: TemplateViewType {
+struct SinglePackageTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
 
@@ -17,8 +17,8 @@ struct Example1Template: TemplateViewType {
     }
 
     var body: some View {
-        Example1TemplateContent(configuration: self.configuration,
-                                introEligibility: self.introEligibility)
+        SinglePackageTemplateContent(configuration: self.configuration,
+                                     introEligibility: self.introEligibility)
         .task(id: self.package) {
             self.introEligibility = await self.introEligibilityChecker.eligibility(for: self.package)
         }
@@ -31,7 +31,7 @@ struct Example1Template: TemplateViewType {
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct Example1TemplateContent: View {
+private struct SinglePackageTemplateContent: View {
 
     private var configuration: TemplateViewConfiguration
     private var introEligibility: IntroEligibilityStatus?
@@ -98,21 +98,7 @@ private struct Example1TemplateContent: View {
     @ViewBuilder
     private var asyncImage: some View {
         if let headerImage = self.configuration.imageURLs.first {
-            AsyncImage(
-                url: headerImage,
-                transaction: .init(animation: Constants.defaultAnimation)
-            ) { phase in
-                if let image = phase.image {
-                    image
-                        .fitToAspect(Self.imageAspectRatio, contentMode: .fill)
-                } else if let error = phase.error {
-                    DebugErrorView("Error loading image from '\(headerImage)': \(error)",
-                                   releaseBehavior: .emptyView)
-                } else {
-                    Rectangle()
-                        .hidden()
-                }
-            }
+            RemoteImage(url: headerImage, aspectRatio: Self.imageAspectRatio)
             .frame(maxWidth: .infinity)
             .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
         }
