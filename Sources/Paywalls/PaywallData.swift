@@ -373,11 +373,15 @@ extension PaywallData: @unchecked Sendable {}
 private extension Locale {
 
     func sharesLanguageCode(with other: Locale) -> Bool {
+        #if swift(>=5.7)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return self.language.languageCode == other.language.languageCode
         } else {
             return false
         }
+        #else
+        return false
+        #endif
     }
 
 }
