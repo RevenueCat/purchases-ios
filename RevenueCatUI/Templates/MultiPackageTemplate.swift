@@ -183,9 +183,13 @@ private struct MultiPackageTemplateContent: View {
     @ViewBuilder
     private var backgroundImage: some View {
         if let url = self.configuration.backgroundURL {
-            RemoteImage(url: url)
-                .blur(radius: 40)
-                .opacity(0.7)
+            if self.configuration.configuration.blurredBackgroundImage {
+                RemoteImage(url: url)
+                    .blur(radius: 40)
+                    .opacity(0.7)
+            } else {
+                RemoteImage(url: url)
+            }
         } else {
             DebugErrorView("Template configuration is missing background URL",
                            releaseBehavior: .emptyView)
