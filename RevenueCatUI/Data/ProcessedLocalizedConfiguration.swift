@@ -46,3 +46,6 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     }
 
 }
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+extension ProcessedLocalizedConfiguration: Equatable {}
