@@ -138,6 +138,19 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
         ]
     }
 
+    func testFilterMaintainsOrder() {
+        expect(
+            TemplateViewConfiguration.filter(
+                packages: [TestData.weeklyPackage,
+                           TestData.monthlyPackage,
+                           TestData.annualPackage],
+                with: [.monthly, .weekly])
+        ) == [
+            TestData.monthlyPackage,
+            TestData.weeklyPackage
+        ]
+    }
+
 }
 
 // MARK: - Private
