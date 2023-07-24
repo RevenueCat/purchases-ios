@@ -21,6 +21,15 @@ struct App: View {
         PaywallView(offering: self.offering, mode: .card)
     }
 
+    @ViewBuilder
+    var extensions: some View {
+        Text("")
+            .presentPaywallIfNecessary(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNecessary(mode: .fullScreen, requiredEntitlementIdentifier: "")
+            .presentPaywallIfNecessary { (_: CustomerInfo) in false }
+            .presentPaywallIfNecessary(mode: .fullScreen) { (_: CustomerInfo) in false }
+    }
+
     private func modes(_ mode: PaywallViewMode) {
         switch mode {
         case .fullScreen:
