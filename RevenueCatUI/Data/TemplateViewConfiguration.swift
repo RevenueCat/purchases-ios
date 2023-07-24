@@ -26,7 +26,7 @@ struct TemplateViewConfiguration {
 extension TemplateViewConfiguration {
 
     /// A `Package` with its processed localized strings.
-    struct Package {
+    struct Package: Equatable {
 
         let content: RevenueCat.Package
         let localization: ProcessedLocalizedConfiguration
@@ -34,7 +34,7 @@ extension TemplateViewConfiguration {
     }
 
     /// Whether a template displays 1 or multiple packages.
-    enum PackageSetting {
+    enum PackageSetting: Equatable {
 
         case single
         case multiple
@@ -43,10 +43,10 @@ extension TemplateViewConfiguration {
 
     /// Describes the possible displayed packages in a paywall.
     /// See `create(with:filter:setting:)` for how to create these.
-    enum PackageConfiguration {
+    enum PackageConfiguration: Equatable {
 
         case single(Package)
-        case multiple([Package])
+        case multiple(first: Package, all: [Package])
 
     }
 
@@ -62,13 +62,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return package
-        case let .multiple(packages):
-            guard let package = packages.first else {
-                // `create()` makes this impossible.
-                fatalError("Unexpectedly found no packages in `PackageConfiguration.multiple`")
-            }
-
-            return package
+        case let .multiple(first, _):
+            return first
         }
     }
 
@@ -77,7 +72,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return [package]
-        case let .multiple(packages):
+        case let .multiple(_, packages):
             return packages
         }
     }
@@ -116,7 +111,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         case .single:
             return .single(firstPackage)
         case .multiple:
-            return .multiple(filtered)
+            return .multiple(first: firstPackage, all: filtered)
         }
     }
 
