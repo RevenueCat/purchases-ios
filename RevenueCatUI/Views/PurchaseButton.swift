@@ -36,15 +36,14 @@ struct PurchaseButton: View {
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.localization.callToAction,
                 textWithIntroOffer: self.localization.callToActionWithIntroOffer,
-                introEligibility: self.introEligibility
+                introEligibility: self.introEligibility,
+                foregroundColor: self.colors.callToActionForegroundColor
             )
-            .foregroundColor(self.colors.callToActionForegroundColor)
-            .tint(self.colors.callToActionForegroundColor)
-            .frame(
-                maxWidth: self.mode.fullWidthButton
-                ? .infinity
-                : nil
-            )
+                .frame(
+                    maxWidth: self.mode.fullWidthButton
+                       ? .infinity
+                        : nil
+                )
         }
         .font(self.mode.buttonFont.weight(.semibold))
         .tint(self.colors.callToActionBackgroundColor.gradient)
@@ -115,7 +114,7 @@ struct PurchaseButton_Previews: PreviewProvider {
                 package: Self.package,
                 purchaseHandler: Self.purchaseHandler,
                 colors: TestData.colors,
-                localization: TestData.localization.processVariables(with: Self.package),
+                localization: TestData.localization1.processVariables(with: Self.package),
                 introEligibility: self.eligibility,
                 mode: self.mode
             )
