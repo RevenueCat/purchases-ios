@@ -17,7 +17,7 @@ struct DebugView: View {
         Button {
             self.debug = true
         } label: {
-            Text("Debug")
+            Text(verbatim: "Debug")
         }
         .debugRevenueCatOverlay(isPresented: self.$debug)
     }
