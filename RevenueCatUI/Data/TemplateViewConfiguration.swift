@@ -90,7 +90,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         with packages: [RevenueCat.Package],
         filter: [PackageType],
         localization: PaywallData.LocalizedConfiguration,
-        setting: TemplateViewConfiguration.PackageSetting
+        setting: TemplateViewConfiguration.PackageSetting,
+        locale: Locale = .current
     ) throws -> Self {
         guard !packages.isEmpty else { throw TemplateError.noPackages }
         guard !filter.isEmpty else { throw TemplateError.emptyPackageList }
@@ -100,7 +101,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             .map { package in
                 TemplateViewConfiguration.Package(
                     content: package,
-                    localization: localization.processVariables(with: package))
+                    localization: localization.processVariables(with: package, locale: locale)
+                )
             }
 
         guard let firstPackage = filtered.first else {
