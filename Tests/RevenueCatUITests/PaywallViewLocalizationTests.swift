@@ -31,8 +31,7 @@ import SwiftUI
 
     private static func createView() -> some View {
         return PaywallView(
-            offering: Self.offering,
-            paywall: Self.offering.paywallWithLocalImages,
+            offering: Self.offering.withLocalImages,
             introEligibility: .init(checker: { packages in
                 return Dictionary(
                     uniqueKeysWithValues: Set(packages)
