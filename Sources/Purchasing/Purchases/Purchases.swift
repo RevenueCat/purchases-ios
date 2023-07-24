@@ -670,9 +670,7 @@ public extension Purchases {
             }
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                           isAppBackgrounded: isAppBackgrounded,
-                                                           completion: nil)
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             }
         }
     }
@@ -1611,8 +1609,19 @@ private extension Purchases {
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                   isAppBackgrounded: isAppBackgrounded,
-                                                   completion: nil)
+                                                   isAppBackgrounded: isAppBackgrounded) { offerings in
+            if let offering = offerings.value?.current, let paywall = offering.paywall {
+                let packageTypes = Set(paywall.config.packages)
+                let products: [String] = offering.availablePackages
+                    .lazy
+                    .filter { packageTypes.contains($0.packageType) }
+                    .map(\.storeProduct.productIdentifier)
+
+                Logger.debug(Strings.eligibility.warming_up_eligibility_cache(paywall))
+
+                self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { _ in }
+            }
+        }
     }
 
 }
