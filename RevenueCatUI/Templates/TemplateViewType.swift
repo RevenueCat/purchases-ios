@@ -25,8 +25,8 @@ private extension PaywallTemplate {
 extension PaywallData {
 
     @ViewBuilder
-    func createView(for offering: Offering, mode: PaywallViewMode) -> some View {
-        switch self.configuration(for: offering, mode: mode) {
+    func createView(for offering: Offering, mode: PaywallViewMode, locale: Locale) -> some View {
+        switch self.configuration(for: offering, mode: mode, locale: locale) {
         case let .success(configuration):
             Self.createView(template: self.template, configuration: configuration)
                 .background(
@@ -42,7 +42,8 @@ extension PaywallData {
 
     private func configuration(
         for offering: Offering,
-        mode: PaywallViewMode
+        mode: PaywallViewMode,
+        locale: Locale
     ) -> Result<TemplateViewConfiguration, Error> {
         return Result {
             TemplateViewConfiguration(
@@ -50,7 +51,8 @@ extension PaywallData {
                 packages: try .create(with: offering.availablePackages,
                                       filter: self.config.packages,
                                       localization: self.localizedConfiguration,
-                                      setting: self.template.packageSetting),
+                                      setting: self.template.packageSetting,
+                                      locale: locale),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
                 imageURLs: self.imageURLs
