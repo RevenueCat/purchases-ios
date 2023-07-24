@@ -37,8 +37,15 @@ Pods/
 IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
+
+# SPM
 Examples/**/Package.resolved
-Tests/**/Package.resolved
+
+Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+Tests/InstallationTests/SPMInstallation/SPMInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+Tests/InstallationTests/XcodeDirectInstallation/XcodeDirectInstallation.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
 # fastlane
 fastlane/.env
