@@ -16,8 +16,11 @@ import Foundation
 /// The type of template used to display a paywall.
 public enum PaywallTemplate: String {
 
-    /// swiftlint:disable:next missing_docs
-    case example1 = "sample_1"
+    // swiftlint:disable missing_docs
+    case singlePackage = "sample_1"
+    case multiPackage = "sample_2"
+
+    // swiftlint:enable missing_docs
 
 }
 
