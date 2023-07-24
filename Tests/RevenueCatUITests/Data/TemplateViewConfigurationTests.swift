@@ -32,7 +32,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateWithNoFilter() {
         expect {
             try Config.create(
-                with: [Self.monthly],
+                with: [TestData.monthlyPackage],
                 filter: [],
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
                 setting: .single
@@ -42,7 +42,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
     func testCreateSinglePackage() throws {
         let result = try Config.create(
-            with: [Self.monthly],
+            with: [TestData.monthlyPackage],
             filter: [.monthly],
             localization: Self.localization,
             setting: .single
@@ -50,8 +50,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
         switch result {
         case let .single(package):
-            expect(package.content) === Self.monthly
-            Self.verifyLocalizationWasProcessed(package.localization, for: Self.monthly)
+            expect(package.content) === TestData.monthlyPackage
+            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
         case .multiple:
             fail("Invalid result: \(result)")
         }
@@ -59,7 +59,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
     func testCreateMultiplePackage() throws {
         let result = try Config.create(
-            with: [Self.monthly, Self.annual, Self.weekly],
+            with: [TestData.monthlyPackage, TestData.annualPackage, TestData.weeklyPackage],
             filter: [.annual, .monthly],
             localization: Self.localization,
             setting: .multiple
@@ -68,16 +68,17 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case .single:
             fail("Invalid result: \(result)")
-        case let .multiple(packages):
+        case let .multiple(first, packages):
+            expect(first.content) === TestData.annualPackage
             expect(packages).to(haveCount(2))
 
             let annual = packages[0]
-            expect(annual.content) === Self.annual
-            Self.verifyLocalizationWasProcessed(annual.localization, for: Self.annual)
+            expect(annual.content) === TestData.annualPackage
+            Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
             let monthly = packages[1]
-            expect(monthly.content) === Self.monthly
-            Self.verifyLocalizationWasProcessed(monthly.localization, for: Self.monthly)
+            expect(monthly.content) === TestData.monthlyPackage
+            Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
         }
     }
 
@@ -101,11 +102,11 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
     }
 
     func testFilterPackagesWithEmptyList() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.monthly], with: [])) == []
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage], with: [])) == []
     }
 
     func testFilterOutSinglePackge() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.monthly], with: [.annual])) == []
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage], with: [.annual])) == []
     }
 
     func testFilterOutNonSubscriptions() {
@@ -113,23 +114,27 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
     }
 
     func testFilterByPackageType() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.monthly, Self.annual], with: [.monthly])) == [
-            Self.monthly
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage, TestData.annualPackage],
+                                                with: [.monthly])) == [
+            TestData.monthlyPackage
         ]
     }
 
     func testFilterWithDuplicatedPackageTypes() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.monthly, Self.annual], with: [.monthly, .monthly])) == [
-            Self.monthly,
-            Self.monthly
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage, TestData.annualPackage],
+                                                with: [.monthly, .monthly])) == [
+            TestData.monthlyPackage,
+            TestData.monthlyPackage
         ]
     }
 
     func testFilterReturningMultiplePackages() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.weekly, Self.monthly, Self.annual],
+        expect(TemplateViewConfiguration.filter(packages: [TestData.weeklyPackage,
+                                                           TestData.monthlyPackage,
+                                                           TestData.annualPackage],
                                                 with: [.weekly, .monthly])) == [
-            Self.weekly,
-            Self.monthly
+            TestData.weeklyPackage,
+            TestData.monthlyPackage
         ]
     }
 
@@ -139,25 +144,6 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension BaseTemplateViewConfigurationTests {
-
-    static let weekly = Package(
-        identifier: "weekly",
-        packageType: .weekly,
-        storeProduct: TestData.productWithIntroOffer.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let monthly = Package(
-        identifier: "monthly",
-        packageType: .monthly,
-        storeProduct: TestData.productWithIntroOffer.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
-    static let annual = Package(
-        identifier: "annual",
-        packageType: .annual,
-        storeProduct: TestData.productWithNoIntroOffer.toStoreProduct(),
-        offeringIdentifier: offeringIdentifier
-    )
 
     static let consumable = Package(
         identifier: "consumable",
