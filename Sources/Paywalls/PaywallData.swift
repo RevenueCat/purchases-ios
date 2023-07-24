@@ -147,6 +147,12 @@ extension PaywallData {
             set { self._imageNames = newValue }
         }
 
+        /// Whether the background image will be blurred (in templates with one).
+        public var blurredBackgroundImage: Bool {
+            get { self._blurredBackgroundImage }
+            set { self._blurredBackgroundImage = newValue }
+        }
+
         /// Whether a restore purchases button should be displayed.
         public var displayRestorePurchases: Bool {
             get { self._displayRestorePurchases }
@@ -173,6 +179,7 @@ extension PaywallData {
             packages: [PackageType],
             imageNames: [String],
             colors: ColorInformation,
+            blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
             termsOfServiceURL: URL? = nil,
             privacyURL: URL? = nil
@@ -182,6 +189,7 @@ extension PaywallData {
             self.packages = packages
             self._imageNames = imageNames
             self.colors = colors
+            self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
@@ -189,6 +197,9 @@ extension PaywallData {
 
         @EnsureNonEmptyArrayDecodable
         var _imageNames: [String]
+
+        @DefaultDecodable.False
+        var _blurredBackgroundImage: Bool
 
         @DefaultDecodable.True
         var _displayRestorePurchases: Bool
@@ -324,6 +335,7 @@ extension PaywallData.Configuration: Codable {
     private enum CodingKeys: String, CodingKey {
         case packages
         case _imageNames = "images"
+        case _blurredBackgroundImage = "blurredBackgroundImage"
         case _displayRestorePurchases = "displayRestorePurchases"
         case _termsOfServiceURL = "tosUrl"
         case _privacyURL = "privacyUrl"
