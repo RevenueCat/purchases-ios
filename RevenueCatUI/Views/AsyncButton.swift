@@ -47,7 +47,7 @@ struct AsyncButton<Label>: View where Label: View {
             Button {
                 self.error = nil
             } label: {
-                Text("OK")
+                Text("OK", bundle: .module)
             }
         } message: { error in
             Text(error.failureReason ?? "")

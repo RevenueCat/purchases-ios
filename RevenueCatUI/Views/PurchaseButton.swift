@@ -114,7 +114,7 @@ struct PurchaseButton_Previews: PreviewProvider {
                 package: Self.package,
                 purchaseHandler: Self.purchaseHandler,
                 colors: TestData.colors,
-                localization: TestData.localization1.processVariables(with: Self.package),
+                localization: TestData.localization1.processVariables(with: Self.package, locale: .current),
                 introEligibility: self.eligibility,
                 mode: self.mode
             )
