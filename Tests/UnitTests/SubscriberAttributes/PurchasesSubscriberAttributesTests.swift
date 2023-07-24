@@ -97,8 +97,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             attributionFetcher: self.mockAttributionFetcher,
             attributionDataMigrator: AttributionDataMigrator()
         )
-        self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user")
-        self.mockAttributionPoster = AttributionPoster(deviceCache: mockDeviceCache,
+        self.mockIdentityManager = MockIdentityManager(mockAppUserID: "app_user", mockDeviceCache: self.mockDeviceCache)
+        self.mockAttributionPoster = AttributionPoster(deviceCache: self.mockDeviceCache,
                                                        currentUserProvider: mockIdentityManager,
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
