@@ -24,29 +24,18 @@ struct SimpleApp: App {
         )
     }
 
-    @State
-    private var customerInfo: CustomerInfo?
-
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                AppContentView(customerInfo: self.customerInfo)
+                AppContentView()
             }
-                .overlay {
-                    if let info = self.customerInfo, !info.hasPro {
-                        PaywallScreen()
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay {
-                    DebugView()
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                }
-                .task {
-                    for await info in Purchases.shared.customerInfoStream {
-                        self.customerInfo = info
-                    }
-                }
+            .presentPaywallIfNecessary { !$0.hasPro }
+            #if DEBUG
+            .overlay {
+                DebugView()
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+            #endif
         }
     }
 
