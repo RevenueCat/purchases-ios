@@ -177,6 +177,7 @@ internal enum TestData {
                         callToActionForeground: "#000000"
                     )
                 ),
+                blurredBackgroundImage: true,
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
                 privacyURL: URL(string: "https://revenuecat.com/tos")!
             ),
