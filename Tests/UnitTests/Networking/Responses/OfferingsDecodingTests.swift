@@ -108,7 +108,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(offering.packages).to(haveCount(2))
 
         let paywall = try XCTUnwrap(offering.paywall)
-        expect(paywall.template) == .example1
+        expect(paywall.template) == .singlePackage
         expect(paywall.defaultLocale) == Locale(identifier: "en_US")
         try expect(paywall.assetBaseURL) == XCTUnwrap(URL(string: "https://rc-paywalls.s3.amazonaws.com"))
 
