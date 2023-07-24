@@ -26,7 +26,7 @@ struct AppContentView: View {
                     Text(verbatim: "You're signed in: \(info.originalAppUserId)")
                         .font(.callout)
 
-                    if !info.hasPro {
+                    if self.shouldDisplayPaywall {
                         PaywallView(mode: .banner)
                     }
 
@@ -35,7 +35,7 @@ struct AppContentView: View {
                     BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
                         .frame(maxWidth: .infinity)
 
-                    if !info.hasPro {
+                    if self.shouldDisplayPaywall {
                         PaywallView(mode: .card)
                     } else if let date = info.latestExpirationDate {
                         Text(verbatim: "Your subscription expires: \(date.formatted())")
@@ -49,6 +49,14 @@ struct AppContentView: View {
         }
     }
 
+    private var displayNonFullScreenPaywalls: Bool {
+        return false
+    }
+
+    private var shouldDisplayPaywall: Bool {
+        return self.displayNonFullScreenPaywalls && self.customerInfo?.hasPro == false
+    }
+
 }
 
 
@@ -60,7 +68,9 @@ struct AppContentView: View {
 struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {
-        AppContentView(customerInfo: TestData.customerInfo)
+        NavigationStack {
+            AppContentView(customerInfo: TestData.customerInfo)
+        }
     }
 
 }
