@@ -750,9 +750,7 @@ extension Purchases {
         self.identityManager.switchUser(to: newAppUserID)
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isBackgrounded,
-                                                       completion: nil)
+            self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
         }
     }
 
@@ -1553,9 +1551,7 @@ private extension Purchases {
         }
 
         if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
-            self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                       isAppBackgrounded: isAppBackgrounded,
-                                                       completion: nil)
+            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
     }
 
@@ -1572,27 +1568,24 @@ private extension Purchases {
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
 
-        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                   isAppBackgrounded: isAppBackgrounded,
-                                                   completion: nil)
-
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+        if self.systemInfo.dangerousSettings.customEntitlementComputation {
             if let completion = completion {
                 let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError()
                 completion(.failure(error.asPublicError))
             }
-            return
+        } else {
+            self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
+                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable in
+                completion?($0.mapError { $0.asPublicError })
+            }
+
+            self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
+                isAppBackgrounded: isAppBackgrounded,
+                completion: nil
+            )
         }
 
-        self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                           isAppBackgrounded: isAppBackgrounded) { @Sendable in
-            completion?($0.mapError { $0.asPublicError })
-        }
-
-        self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-            isAppBackgrounded: isAppBackgrounded,
-            completion: nil
-        )
+        self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
     }
 
     // Used when delegate is being set
@@ -1602,6 +1595,12 @@ private extension Purchases {
         }
 
         self.delegate?.purchases?(self, receivedUpdated: info)
+    }
+
+    private func updateOfferingsCache(isAppBackgrounded: Bool) {
+        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
+                                                   isAppBackgrounded: isAppBackgrounded,
+                                                   completion: nil)
     }
 
 }
