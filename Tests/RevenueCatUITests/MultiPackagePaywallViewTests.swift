@@ -9,16 +9,14 @@ import SnapshotTesting
 class MultiPackagePaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        let view = PaywallView(offering: Self.offering,
-                               paywall: Self.offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offering.withLocalImages,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
         view.snapshot(size: Self.fullScreenSize)
     }
 
     func testDarkMode() {
-        let view = PaywallView(offering: Self.offering,
-                               paywall: Self.offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offering.withLocalImages,
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 

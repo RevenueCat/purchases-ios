@@ -2,6 +2,7 @@ import Nimble
 import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
+import SwiftUI
 
 #if !os(macOS)
 
@@ -9,42 +10,34 @@ import SnapshotTesting
 class SinglePackagePaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        let offering = TestData.offeringWithNoIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
         view.snapshot(size: Self.fullScreenSize)
     }
 
     func testCardPaywall() {
-        let offering = TestData.offeringWithNoIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
                                mode: .card,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
+            .background(.white) // Non-fullscreen views have no background
+
         view.snapshot(size: Self.cardSize)
     }
 
     func testBannerPaywall() {
-        let offering = TestData.offeringWithNoIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
                                mode: .banner,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
+            .background(.white) // Non-fullscreen views have no background
+
         view.snapshot(size: Self.bannerSize)
     }
 
     func testSamplePaywallWithIntroOffer() {
-        let offering = TestData.offeringWithIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithIntroOffer,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -52,10 +45,7 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
     }
 
     func testSamplePaywallWithIneligibleIntroOffer() {
-        let offering = TestData.offeringWithIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithIntroOffer,
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -63,11 +53,8 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
     }
 
     func testSamplePaywallWithLoadingEligibility() {
-        let offering = TestData.offeringWithIntroOffer
-
         let view = PaywallView(
-            offering: offering,
-            paywall: offering.paywallWithLocalImages,
+            offering: Self.offeringWithIntroOffer,
             introEligibility: Self.ineligibleChecker
                 .with(delay: .seconds(30)),
             purchaseHandler: Self.purchaseHandler
@@ -77,10 +64,7 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
     }
 
     func testDarkMode() {
-        let offering = TestData.offeringWithIntroOffer
-
-        let view = PaywallView(offering: offering,
-                               paywall: offering.paywallWithLocalImages,
+        let view = PaywallView(offering: Self.offeringWithIntroOffer,
                                introEligibility: Self.ineligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -88,6 +72,9 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
             .environment(\.colorScheme, .dark)
             .snapshot(size: Self.fullScreenSize)
     }
+
+    private static let offeringWithIntroOffer = TestData.offeringWithIntroOffer.withLocalReversedImages
+    private static let offeringWithNoIntroOffer = TestData.offeringWithNoIntroOffer.withLocalReversedImages
 
 }
 

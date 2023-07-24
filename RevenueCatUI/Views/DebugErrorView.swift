@@ -19,6 +19,7 @@ struct DebugErrorView: View {
 
         case emptyView
         case fatalError
+        case replacement(AnyView)
 
     }
 
@@ -35,24 +36,45 @@ struct DebugErrorView: View {
     }
 
     var body: some View {
-        #if DEBUG
+        Group {
+            switch self.releaseBehavior {
+            case .emptyView:
+                #if DEBUG
+                self.errorView
+                #else
+                // Not using `EmptyView` so
+                // this view can be laid out consistently.
+                Rectangle()
+                    .hidden()
+                #endif
+
+            case let .replacement(view):
+                VStack {
+                    self.errorView
+                    view
+                }
+
+            case .fatalError:
+                #if DEBUG
+                self.errorView
+                #else
+                fatalError(self.description)
+                #endif
+            }
+        }
+        .onAppear {
+            Logger.warning("Error: \(self.description)")
+        }
+    }
+
+    private var errorView: some View {
         Text(self.description)
+            .unredacted()
+            .fixedSize(horizontal: false, vertical: false)
             .background(
                 Color.red
                     .edgesIgnoringSafeArea(.all)
             )
-        #else
-        switch self.releaseBehavior {
-        case .emptyView:
-            EmptyView()
-                .onAppear {
-                    Logger.warning("Couldn't load paywall: \(self.description)")
-                }
-
-        case .fatalError:
-            fatalError(self.description)
-        }
-        #endif
     }
 
 }
