@@ -75,6 +75,10 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testFindsLocaleWithOnlyLanguage() throws {
+        // `Locale.language.languageCode` is iOS 16 only
+        // and so is RevenueCatUI anyway.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en")))
