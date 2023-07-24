@@ -8,6 +8,8 @@
 import SwiftUI
 import RevenueCat
 
+#if DEBUG
+
 struct DebugView: View {
 
     @State
@@ -23,3 +25,5 @@ struct DebugView: View {
     }
 
 }
+
+#endif
