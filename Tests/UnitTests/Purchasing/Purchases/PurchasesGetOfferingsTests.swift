@@ -99,4 +99,78 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
+    func testOfferingsWithNoPaywallsDoesNotCheckEligibility() {
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
+        ) == false
+    }
+
+    func testOfferingsWithPaywallsWarmsUpEligibilityCache() throws {
+        let bundle = Bundle(for: Self.self)
+        let paywallURL = try XCTUnwrap(bundle.url(forResource: "PaywallData-Sample1",
+                                                  withExtension: "json",
+                                                  subdirectory: "Fixtures"))
+        let offeringsURL = try XCTUnwrap(bundle.url(forResource: "Offerings",
+                                                    withExtension: "json",
+                                                    subdirectory: "Fixtures"))
+
+        let paywall = try PaywallData.create(with: XCTUnwrap(Data(contentsOf: paywallURL)))
+        let offeringsResponse = try OfferingsResponse.create(with: XCTUnwrap(Data(contentsOf: offeringsURL)))
+
+        let offering = Offering(
+            identifier: "offering",
+            serverDescription: "",
+            paywall: paywall,
+            availablePackages: [
+                .init(
+                    identifier: "weekly",
+                    packageType: .weekly,
+                    storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "product_1")),
+                    offeringIdentifier: "offering"
+                ),
+                .init(
+                    identifier: "monthly",
+                    packageType: .monthly,
+                    storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "product_2")),
+                    offeringIdentifier: "offering"
+                )
+            ])
+
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(
+            .init(
+                offerings: [
+                    offering.identifier: offering
+                ],
+                currentOfferingID: offering.identifier,
+                response: offeringsResponse
+            )
+        )
+
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
+        ) == true
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount
+        ) == 1
+        // Paywall filters packages so only `monthly` should is used.
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters
+        ) == [
+            "product_2"
+        ]
+
+        self.logger.verifyMessageWasLogged(Strings.eligibility.warming_up_eligibility_cache(paywall),
+                                           level: .debug,
+                                           expectedCount: 1)
+    }
+
 }
