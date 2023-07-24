@@ -15,7 +15,11 @@ import Foundation
 
 import Nimble
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
 @testable import RevenueCat
+#endif
 
 /// Overload for `Nimble.waitUntil` with our default timeout
 func waitUntil(

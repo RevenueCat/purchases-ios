@@ -42,7 +42,7 @@ class DisabledSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     func testFetchingCustomerInfoWithFailedSignature() async throws {
         self.invalidSignature = true
 
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .notRequested
     }
 
@@ -55,29 +55,29 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
     }
 
     func testCustomerInfoWithValidSignature() async throws {
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .verified
     }
 
     func testCustomerInfo304ResponseWithValidSignature() async throws {
         // 1. Fetch user once
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 1. Re-fetch user
-        let user = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let user = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(user.entitlements.verification) == .verified
     }
 
     func testLoggedInCustomerInfo304ResponseWithValidSignature() async throws {
         // 1. Log-in to force a new user
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
+        _ = try await self.purchases.logIn(UUID().uuidString)
 
         // 2. Fetch user once
-        let user1 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let user1 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(user1.entitlements.verification) == .verified
 
         // 3. Re-fetch user
-        let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let user2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(user2.entitlements.verification) == .verified
 
         expect(user2.requestDate) != user1.requestDate
@@ -86,34 +86,34 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
     func testCustomerInfoWithInvalidSignature() async throws {
         self.invalidSignature = true
 
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .failed
     }
 
     func testLogInWithValidSignature() async throws {
-        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        let info = try await self.purchases.logIn(UUID().uuidString).customerInfo
         expect(info.entitlements.verification) == .verified
     }
 
     func testLogInWithInvalidSignature() async throws {
         self.invalidSignature = true
 
-        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        let info = try await self.purchases.logIn(UUID().uuidString).customerInfo
         expect(info.entitlements.verification) == .failed
     }
 
     func testNotModifiedCustomerInfoWithInvalidSignature() async throws {
         // 1. Log-in to force a new user
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
+        _ = try await self.purchases.logIn(UUID().uuidString)
 
         // 2. Fetch user once
-        let user1 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let user1 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(user1.entitlements.verification) == .verified
 
         // 3. Re-fetch user
         self.invalidSignature = true
 
-        let user2 = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let user2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 4. Verify failed verification returns original `requestDate`
         expect(user2.entitlements.verification) == .failed
@@ -132,11 +132,11 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
 
         self.invalidSignature = true
 
-        Purchases.shared.invalidateOfferingsCache()
+        try self.purchases.invalidateOfferingsCache()
 
         // Currently there's no API to detect signature failures
         // See also `EnforcedSignatureVerificationIntegrationTests.testOfferingsWithInvalidSignature`
-        _ = try await Purchases.shared.offerings()
+        _ = try await self.purchases.offerings()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -144,7 +144,7 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.invalidSignature = true
-        _ = try await Purchases.shared.productEntitlementMapping()
+        _ = try await self.purchases.productEntitlementMapping()
     }
 
 }
@@ -156,7 +156,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     }
 
     func testCustomerInfoWithValidSignature() async throws {
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.verification) == .verified
     }
 
@@ -164,12 +164,12 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         self.invalidSignature = true
 
         try await Self.verifyThrowsSignatureVerificationFailed {
-            _ = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+            _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         }
     }
 
     func testLogInWithValidSignature() async throws {
-        let info = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+        let info = try await self.purchases.logIn(UUID().uuidString).customerInfo
         expect(info.entitlements.verification) == .verified
     }
 
@@ -177,7 +177,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         self.invalidSignature = true
 
         try await Self.verifyThrowsSignatureVerificationFailed {
-            _ = try await Purchases.shared.logIn(UUID().uuidString).customerInfo
+            _ = try await self.purchases.logIn(UUID().uuidString).customerInfo
         }
     }
 
@@ -186,18 +186,18 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
 
         self.invalidSignature = true
 
-        Purchases.shared.invalidateOfferingsCache()
+        try self.purchases.invalidateOfferingsCache()
 
         try await Self.verifyThrowsSignatureVerificationFailed {
-            _ = try await Purchases.shared.offerings()
+            _ = try await self.purchases.offerings()
         }
     }
 
     func testOfferingsWithValidSignature() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        Purchases.shared.invalidateOfferingsCache()
-        _ = try await Purchases.shared.offerings()
+        try self.purchases.invalidateOfferingsCache()
+        _ = try await self.purchases.offerings()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -207,7 +207,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         self.invalidSignature = true
 
         try await Self.verifyThrowsSignatureVerificationFailed {
-            _ = try await Purchases.shared.productEntitlementMapping()
+            _ = try await self.purchases.productEntitlementMapping()
         }
     }
 
@@ -215,7 +215,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
     func testEntitlementMappingWithValidSignature() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        _ = try await Purchases.shared.productEntitlementMapping()
+        _ = try await self.purchases.productEntitlementMapping()
     }
 
     func testTransactionIsNotFinishedAfterSignatureFailure() async throws {
@@ -239,7 +239,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         // 2. Get customer info again, which should post the pending transaction
         self.invalidSignature = false
 
-        let info = try await Purchases.shared.customerInfo(fetchPolicy: .fetchCurrent)
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         // 3. Verify entitlement is active
         try await self.verifyEntitlementWentThrough(info)
@@ -269,18 +269,18 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
         await self.changeMode(to: Signing.enforcedVerificationMode())
 
         // 2. Fetch CustomerInfo
-        _ = try await Purchases.shared.customerInfo()
+        _ = try await self.purchases.customerInfo()
 
         // 3. Disable verification again
         await self.changeMode(to: .disabled)
 
         // 4. Verify CustomerInfo is still cached
-        _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fromCacheOnly)
     }
 
     func testChangingToInformationalModeResetsCustomerInfoCache() async throws {
         // 1. Fetch CustomerInfo
-        _ = try await Purchases.shared.customerInfo()
+        _ = try await self.purchases.customerInfo()
 
         // 2. Enable signature verification
         await self.changeMode(to: Signing.verificationMode(with: .informational))
@@ -291,7 +291,7 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
 
     func testChangingToEnforcedModeResetsCustomerInfoCache() async throws {
         // 1. Fetch CustomerInfo
-        _ = try await Purchases.shared.customerInfo()
+        _ = try await self.purchases.customerInfo()
 
         // 2. Enable signature verification
         await self.changeMode(to: Signing.enforcedVerificationMode())
@@ -307,7 +307,7 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
 
     private func verifyNoCachedCustomerInfo() async {
         do {
-            _ = try await Purchases.shared.customerInfo(fetchPolicy: .fromCacheOnly)
+            _ = try await self.purchases.customerInfo(fetchPolicy: .fromCacheOnly)
         } catch {
             expect(error).to(matchError(ErrorCode.customerInfoError))
             expect(error.localizedDescription)
@@ -336,7 +336,7 @@ private extension BaseSignatureVerificationIntegrationTests {
     }
 
     func waitForPendingCustomerInfoRequests() async {
-        _ = try? await Purchases.shared.customerInfo()
+        _ = try? await self.purchases.customerInfo()
     }
 
 }

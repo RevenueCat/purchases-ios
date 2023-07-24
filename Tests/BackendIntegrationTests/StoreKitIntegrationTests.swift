@@ -28,18 +28,18 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         return .disabled
     }
 
-    func testIsSandbox() {
-        expect(Purchases.shared.isSandbox) == true
+    func testIsSandbox() throws {
+        try expect(self.purchases.isSandbox) == true
     }
 
     func testPurchasesDiagnostics() async throws {
-        let diagnostics = PurchasesDiagnostics(purchases: Purchases.shared)
+        let diagnostics = PurchasesDiagnostics(purchases: try self.purchases)
 
         try await diagnostics.testSDKHealth()
     }
 
     func testCanGetOfferings() async throws {
-        let receivedOfferings = try await Purchases.shared.offerings()
+        let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
@@ -64,7 +64,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
         let package = try await self.monthlyPackage
 
-        Purchases.shared.cachePresentedOfferingIdentifier(
+        try self.purchases.cachePresentedOfferingIdentifier(
             package.offeringIdentifier,
             productIdentifier: package.storeProduct.productIdentifier
         )
@@ -92,7 +92,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             try await self.purchaseConsumablePackage()
         }
 
-        let info = try await Purchases.shared.customerInfo()
+        let info = try await self.purchases.customerInfo()
         expect(info.nonSubscriptions).to(haveCount(count))
         expect(info.nonSubscriptions.map(\.productIdentifier)) == Array(repeating: Self.consumable10Coins,
                                                                         count: count)
@@ -104,11 +104,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
         }
 
-        _ = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)")
+        _ = try await self.purchases.logIn("user_1.\(UUID().uuidString)")
         let info1 = try await self.purchaseConsumablePackage().customerInfo
         verifyPurchase(info1)
 
-        let user2 = try await Purchases.shared.logIn("user_1.\(UUID().uuidString)").customerInfo
+        let user2 = try await self.purchases.logIn("user_1.\(UUID().uuidString)").customerInfo
         expect(user2.nonSubscriptions).to(beEmpty())
 
         let info2 = try await self.purchaseConsumablePackage().customerInfo
@@ -119,8 +119,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let product1 = try await self.monthlyPackage.storeProduct
         let product2 = try await self.annualPackage.storeProduct
 
-        _ = try await Purchases.shared.purchase(product: product1)
-        let info = try await Purchases.shared.purchase(product: product2).customerInfo
+        _ = try await self.purchases.purchase(product: product1)
+        let info = try await self.purchases.purchase(product: product2).customerInfo
 
         expect(info.allPurchasedProductIdentifiers) == [
             product1.productIdentifier,
@@ -162,7 +162,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
-        let (_, info, cancelled) = try await Purchases.shared.purchase(package: self.monthlyPackage)
+        let (_, info, cancelled) = try await self.purchases.purchase(package: self.monthlyPackage)
         expect(info.entitlements.active).to(beEmpty())
         expect(cancelled) == true
     }
@@ -171,10 +171,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseMadeBeforeLogInIsRetainedAfter() async throws {
         try await self.purchaseMonthlyOffering()
 
-        let anonUserID = Purchases.shared.appUserID
+        let anonUserID = try self.purchases.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)_".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        let (identifiedCustomerInfo, created) = try await Purchases.shared.logIn(identifiedUserID)
+        let (identifiedCustomerInfo, created) = try await self.purchases.logIn(identifiedUserID)
         expect(created) == true
         try await self.verifyEntitlementWentThrough(identifiedCustomerInfo)
     }
@@ -183,34 +183,34 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let existingUserID = "\(UUID().uuidString)"
 
         // log in to create the user, then log out
-        let (originalCustomerInfo, createdInitialUser) = try await Purchases.shared.logIn(existingUserID)
+        let (originalCustomerInfo, createdInitialUser) = try await self.purchases.logIn(existingUserID)
         self.assertNoPurchases(originalCustomerInfo)
         expect(createdInitialUser) == true
 
-        let anonymousCustomerInfo = try await Purchases.shared.logOut()
+        let anonymousCustomerInfo = try await self.purchases.logOut()
         self.assertNoPurchases(anonymousCustomerInfo)
 
         // purchase as anonymous user, then log in
         try await self.purchaseMonthlyOffering()
 
-        let (customerInfo, created) = try await Purchases.shared.logIn(existingUserID)
+        let (customerInfo, created) = try await self.purchases.logIn(existingUserID)
         expect(created) == false
         self.assertNoPurchases(customerInfo)
 
-        let restoredCustomerInfo = try await Purchases.shared.restorePurchases()
+        let restoredCustomerInfo = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(restoredCustomerInfo)
     }
 
     func testPurchaseAsIdentifiedThenLogOutThenRestoreGrantsEntitlements() async throws {
         let existingUserID = UUID().uuidString
 
-        _ = try await Purchases.shared.logIn(existingUserID)
+        _ = try await self.purchases.logIn(existingUserID)
         try await self.purchaseMonthlyOffering()
 
-        var customerInfo = try await Purchases.shared.logOut()
+        var customerInfo = try await self.purchases.logOut()
         self.assertNoPurchases(customerInfo)
 
-        customerInfo = try await Purchases.shared.restorePurchases()
+        customerInfo = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
@@ -218,7 +218,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // `SKTestSession` ignores the override done by `Purchases.simulatesAskToBuyInSandbox = true`
         self.testSession.askToBuyEnabled = true
 
-        _ = try await Purchases.shared.logIn(UUID().uuidString)
+        _ = try await self.purchases.logIn(UUID().uuidString)
 
         do {
             try await self.purchaseMonthlyOffering()
@@ -231,20 +231,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try self.testSession.approveAskToBuyTransaction(identifier: transaction.identifier)
 
-        let customerInfo = try await Purchases.shared.restorePurchases()
+        let customerInfo = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     func testLogInReturnsCreatedTrueWhenNewAndFalseWhenExisting() async throws {
-        let anonUserID = Purchases.shared.appUserID
+        let anonUserID = try self.purchases.appUserID
         let identifiedUserID = "\(#function)_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        var (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        var (_, created) = try await self.purchases.logIn(identifiedUserID)
         expect(created) == true
 
-        _ = try await Purchases.shared.logOut()
+        _ = try await self.purchases.logOut()
 
-        (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        (_, created) = try await self.purchases.logIn(identifiedUserID)
         expect(created) == false
     }
 
@@ -252,12 +252,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let userID1 = UUID().uuidString
         let userID2 = UUID().uuidString
 
-        _ = try await Purchases.shared.logIn(userID1)
+        _ = try await self.purchases.logIn(userID1)
         try await self.purchaseMonthlyOffering()
 
         testSession.clearTransactions()
 
-        let (identifiedCustomerInfo, _) = try await Purchases.shared.logIn(userID2)
+        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
         self.assertNoPurchases(identifiedCustomerInfo)
 
         let currentCustomerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
@@ -267,15 +267,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testLogOutRemovesEntitlements() async throws {
-        let anonUserID = Purchases.shared.appUserID
+        let anonUserID = try self.purchases.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
 
-        let (_, created) = try await Purchases.shared.logIn(identifiedUserID)
+        let (_, created) = try await self.purchases.logIn(identifiedUserID)
         expect(created) == true
 
         try await self.purchaseMonthlyOffering()
 
-        let loggedOutCustomerInfo = try await Purchases.shared.logOut()
+        let loggedOutCustomerInfo = try await self.purchases.logOut()
         self.assertNoPurchases(loggedOutCustomerInfo)
     }
 
@@ -285,19 +285,19 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         if Self.storeKit2Setting == .disabled {
             // SK1 implementation relies on the receipt being loaded already.
             // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
-            _ = try await Purchases.shared.restorePurchases()
+            _ = try await self.purchases.restorePurchases()
         }
 
         let product = try await self.monthlyPackage.storeProduct
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .eligible
     }
 
     func testNoIntroOfferIfProductHasNoIntro() async throws {
         let product = try await XCTAsyncUnwrap(await self.monthlyNoIntroProduct)
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .noIntroOfferExists
     }
 
@@ -306,7 +306,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.purchaseMonthlyOffering()
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
     }
 
@@ -315,7 +315,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product2 = try await self.annualPackage.storeProduct
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product2)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product2)
 
         expect(eligibility) == .eligible
     }
@@ -328,9 +328,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
         let productWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
 
-        _ = try await Purchases.shared.purchase(product: productWithNoTrial)
+        _ = try await self.purchases.purchase(product: productWithNoTrial)
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
         expect(eligibility) == .ineligible
     }
 
@@ -338,12 +338,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
         let productWithTrial = try await self.annualPackage.storeProduct
 
-        let customerInfo = try await Purchases.shared.purchase(product: productWithNoTrial).customerInfo
+        let customerInfo = try await self.purchases.purchase(product: productWithNoTrial).customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
         expect(eligibility) == .eligible
     }
 
@@ -351,11 +351,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let monthlyWithTrial = try await self.product(Self.group3YearlyTrialProductID)
         let annualWithTrial = try await self.product(Self.group3MonthlyTrialProductID)
 
-        let customerInfo = try await Purchases.shared.purchase(product: monthlyWithTrial).customerInfo
+        let customerInfo = try await self.purchases.purchase(product: monthlyWithTrial).customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
         try await self.expireSubscription(entitlement)
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: annualWithTrial)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: annualWithTrial)
         expect(eligibility) == .ineligible
     }
 
@@ -370,7 +370,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.expireSubscription(entitlement)
 
         // 3. Check eligibility
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: product)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
     }
 
@@ -378,20 +378,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let productWithNoIntro = try await self.monthlyNoIntroProduct
         let productWithIntro = try await self.monthlyPackage.storeProduct
 
-        let customerInfo = try await Purchases.shared.purchase(product: productWithNoIntro).customerInfo
+        let customerInfo = try await self.purchases.purchase(product: productWithNoIntro).customerInfo
         let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         try await self.expireSubscription(entitlement)
         try await self.verifySubscriptionExpired()
 
-        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
         expect(eligibility) == .eligible
     }
 
     // MARK: -
 
     func testExpireSubscription() async throws {
-        let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
+        let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
 
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
@@ -407,7 +407,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             return try await self.purchaseMonthlyOffering().customerInfo
         }
 
-        let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
+        let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
 
         // 1. Subscribe
@@ -426,17 +426,17 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let discount = try XCTUnwrap(product.discounts.onlyElement)
 
         do {
-            _ = try await Purchases.shared.promotionalOffer(forProductDiscount: discount, product: product)
+            _ = try await self.purchases.promotionalOffer(forProductDiscount: discount, product: product)
         } catch {
             expect(error).to(matchError(ErrorCode.ineligibleError))
         }
     }
 
     func testUserHasNoEligibleOffersByDefault() async throws {
-        let (_, created) = try await Purchases.shared.logIn(UUID().uuidString)
+        let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
 
-        let offerings = try await Purchases.shared.offerings()
+        let offerings = try await self.purchases.offerings()
         let product = try XCTUnwrap(offerings.current?.monthly?.storeProduct)
         let discount = try XCTUnwrap(product.discounts.onlyElement)
 
@@ -452,14 +452,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let user = UUID().uuidString
 
-        let (_, created) = try await Purchases.shared.logIn(user)
+        let (_, created) = try await self.purchases.logIn(user)
         expect(created) == true
 
         let product = try await self.monthlyNoIntroProduct
 
         // 1. Purchase subscription
 
-        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
+        var customerInfo = try await self.purchases.purchase(product: product).customerInfo
 
         try await self.verifyEntitlementWentThrough(customerInfo)
 
@@ -471,7 +471,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Purchase offer
 
-        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
+        customerInfo = try await self.purchases.purchase(product: product, promotionalOffer: offer).customerInfo
 
         // 4. Verify purchase went through
 
@@ -484,14 +484,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let user = UUID().uuidString
 
-        let (_, created) = try await Purchases.shared.logIn(user)
+        let (_, created) = try await self.purchases.logIn(user)
         expect(created) == true
 
         let product = try await self.monthlyNoIntroProduct
 
         // 1. Purchase subscription
 
-        var customerInfo = try await Purchases.shared.purchase(product: product).customerInfo
+        var customerInfo = try await self.purchases.purchase(product: product).customerInfo
         var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
         // 2. Expire subscription
@@ -505,7 +505,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 4. Purchase with offer
 
-        customerInfo = try await Purchases.shared.purchase(product: product, promotionalOffer: offer).customerInfo
+        customerInfo = try await self.purchases.purchase(product: product, promotionalOffer: offer).customerInfo
 
         // 5. Verify offer was applied
 

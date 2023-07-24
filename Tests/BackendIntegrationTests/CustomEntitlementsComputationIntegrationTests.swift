@@ -39,20 +39,20 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     // MARK: - Tests
 
     func testPurchasesDiagnostics() async throws {
-        let diagnostics = PurchasesDiagnostics(purchases: Purchases.shared)
+        let diagnostics = PurchasesDiagnostics(purchases: try self.purchases)
 
         try await diagnostics.testSDKHealth()
     }
 
     func testCanGetOfferings() async throws {
-        let receivedOfferings = try await Purchases.shared.offerings()
+        let receivedOfferings = try await self.purchases.offerings()
         expect(receivedOfferings.all).toNot(beEmpty())
     }
 
     func testCanSwitchUser() async throws {
         let newUser = UUID().uuidString
 
-        Purchases.shared.switchUser(to: newUser)
+        try self.purchases.switchUser(to: newUser)
 
         let info = try await self.purchaseMonthlyOffering().customerInfo
         expect(info.originalAppUserId) == newUser
@@ -64,7 +64,7 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
 
     @available(iOS 14.3, *)
     func testPurchasingPostsAdAttributionToken() async throws {
-        Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()
+        try self.purchases.attribution.enableAdServicesAttributionTokenCollection()
 
         let info = try await self.purchaseMonthlyOffering().customerInfo
 
@@ -82,7 +82,7 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
         do {
-            _ = try await Purchases.shared.purchase(package: self.monthlyPackage)
+            _ = try await self.purchases.purchase(package: self.monthlyPackage)
             fail("Expected error")
         } catch ErrorCode.purchaseCancelledError {
             // Expected error

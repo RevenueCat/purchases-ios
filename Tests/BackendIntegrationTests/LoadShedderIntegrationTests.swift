@@ -40,7 +40,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: -
 
     func testCanGetOfferings() async throws {
-        let receivedOfferings = try await Purchases.shared.offerings()
+        let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
@@ -49,7 +49,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testOfferingsComeFromLoadShedder() async throws {
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
-                .getOfferings(appUserID: Purchases.shared.appUserID)
+                .getOfferings(appUserID: try self.purchases.appUserID)
             ),
             level: .debug
         )
@@ -68,7 +68,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let result = try await Purchases.shared.productEntitlementMapping()
+        let result = try await self.purchases.productEntitlementMapping()
         expect(result.entitlementsByProduct).to(haveCount(1))
         expect(result.entitlementsByProduct["com.revenuecat.loadShedder.monthly"]) == ["premium"]
     }

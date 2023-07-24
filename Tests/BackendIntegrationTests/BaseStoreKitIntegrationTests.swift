@@ -91,7 +91,7 @@ extension BaseStoreKitIntegrationTests {
 
     private var currentOffering: Offering {
         get async throws {
-            return try await XCTAsyncUnwrap(try await Purchases.shared.offerings().current)
+            return try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
         }
     }
 
@@ -114,7 +114,7 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func product(_ identifier: String) async throws -> StoreProduct {
-        let products = await Purchases.shared.products([identifier])
+        let products = try await self.purchases.products([identifier])
         return try XCTUnwrap(products.onlyElement)
     }
 
@@ -123,7 +123,7 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let data = try await Purchases.shared.purchase(package: self.monthlyPackage)
+        let data = try await self.purchases.purchase(package: self.monthlyPackage)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
@@ -137,7 +137,7 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let data = try await Purchases.shared.purchase(product: self.monthlyPackage.storeProduct)
+        let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
@@ -152,7 +152,7 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let offering = try await XCTAsyncUnwrap(
-            try await Purchases.shared.offerings().offering(identifier: "coins"),
+            try await self.purchases.offerings().offering(identifier: "coins"),
             file: file, line: line
         )
         let package = try XCTUnwrap(
@@ -160,7 +160,7 @@ extension BaseStoreKitIntegrationTests {
             file: file, line: line
         )
 
-        return try await Purchases.shared.purchase(package: package)
+        return try await self.purchases.purchase(package: package)
     }
 
     @discardableResult
@@ -267,7 +267,7 @@ extension BaseStoreKitIntegrationTests {
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     @discardableResult
     func verifySubscriptionExpired() async throws -> CustomerInfo {
-        let info = try await Purchases.shared.syncPurchases()
+        let info = try await self.purchases.syncPurchases()
         self.assertNoActiveSubscription(info)
 
         return info
@@ -305,7 +305,7 @@ extension BaseStoreKitIntegrationTests {
         }
 
         do {
-            let receipt = try await Purchases.shared.fetchReceipt(.always)
+            let receipt = try await self.purchases.fetchReceipt(.always)
             let description = receipt.map { $0.debugDescription } ?? "<null>"
 
             Logger.appleWarning(TestMessage.receipt_content(description))
