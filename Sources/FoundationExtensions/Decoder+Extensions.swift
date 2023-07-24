@@ -63,7 +63,7 @@ extension JSONDecoder {
             return try self.decode(type, from: jsonData)
         } catch {
             if logErrors {
-                ErrorUtils.logDecodingError(error, type: type)
+                ErrorUtils.logDecodingError(error, type: type, data: jsonData)
             }
             throw error
         }
@@ -123,7 +123,11 @@ extension JSONEncoder {
 
 extension ErrorUtils {
 
-    static func logDecodingError(_ error: Error, type: Any.Type) {
+    static func logDecodingError(_ error: Error, type: Any.Type, data: Data? = nil) {
+        if let data = data {
+            Logger.debug(Strings.codable.invalid_data_when_decoding(data))
+        }
+
         guard let decodingError = error as? DecodingError else {
             Logger.error(Strings.codable.decoding_error(error, type))
             return

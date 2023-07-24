@@ -142,7 +142,7 @@ extension ErrorResponse {
                 return try JSONDecoder.default.decode(jsonData: data)
             }
         } catch {
-            ErrorUtils.logDecodingError(error, type: Self.self)
+            ErrorUtils.logDecodingError(error, type: Self.self, data: data)
             return Self.defaultResponse
         }
     }
