@@ -15,22 +15,30 @@ struct IntroEligibilityStateView: View {
     var textWithNoIntroOffer: String
     var textWithIntroOffer: String?
     var introEligibility: IntroEligibilityStatus?
+    var foregroundColor: Color?
+    var alignment: Alignment
 
     init(
         textWithNoIntroOffer: String,
         textWithIntroOffer: String?,
-        introEligibility: IntroEligibilityStatus?
+        introEligibility: IntroEligibilityStatus?,
+        foregroundColor: Color? = nil,
+        alignment: Alignment = .center
     ) {
         self.textWithNoIntroOffer = textWithNoIntroOffer
         self.textWithIntroOffer = textWithIntroOffer
         self.introEligibility = introEligibility
+        self.foregroundColor = foregroundColor
+        self.alignment = alignment
     }
 
     var body: some View {
-        Text(self.text)
+        Text(.init(self.text), tableName: nil, bundle: .main, comment: nil)
             // Hide until we've determined intro eligibility
             // only if there is a custom intro text.
-            .withPendingData(self.needsToWaitForIntroEligibility)
+            .withPendingData(self.needsToWaitForIntroEligibility, alignment: self.alignment)
+            .foregroundColor(self.foregroundColor)
+            .tint(self.foregroundColor)
     }
 
     private var text: String {
@@ -61,13 +69,14 @@ private extension IntroEligibilityStateView {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 private extension View {
 
-    func withPendingData(_ pending: Bool) -> some View {
+    func withPendingData(_ pending: Bool, alignment: Alignment) -> some View {
         self
             .hidden(if: pending)
             .overlay {
                 if pending {
                     ProgressView()
                         .progressViewStyle(.circular)
+                        .frame(maxWidth: .infinity, alignment: alignment)
                 }
             }
             .transition(.opacity.animation(Constants.defaultAnimation))
