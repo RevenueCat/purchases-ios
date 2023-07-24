@@ -13,8 +13,10 @@ import SwiftUI
 final class PurchaseHandler: ObservableObject {
 
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
+    typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
 
     private let purchaseBlock: PurchaseBlock
+    private let restoreBlock: RestoreBlock
 
     @Published
     var purchased: Bool = false
@@ -22,11 +24,17 @@ final class PurchaseHandler: ObservableObject {
     convenience init(purchases: Purchases = .shared) {
         self.init { package in
             return try await purchases.purchase(package: package)
+        } restorePurchases: {
+            return try await purchases.restorePurchases()
         }
     }
 
-    init(purchase: @escaping PurchaseBlock) {
+    init(
+        purchase: @escaping PurchaseBlock,
+        restorePurchases: @escaping RestoreBlock
+    ) {
         self.purchaseBlock = purchase
+        self.restoreBlock = restorePurchases
     }
 
 }
@@ -46,9 +54,17 @@ extension PurchaseHandler {
         return result
     }
 
-    /// Creates a copy of this `PurchaseHandler` wrapping the purchase block
-    func map(_ block: @escaping (@escaping PurchaseBlock) -> PurchaseBlock) -> Self {
-        return .init(purchase: block(self.purchaseBlock))
+    func restorePurchases() async throws -> CustomerInfo {
+        return try await self.restoreBlock()
+    }
+
+    /// Creates a copy of this `PurchaseHandler` wrapping the purchase and restore blocks.
+    func map(
+        purchase: @escaping (@escaping PurchaseBlock) -> PurchaseBlock,
+        restore: @escaping (@escaping RestoreBlock) -> RestoreBlock
+    ) -> Self {
+        return .init(purchase: purchase(self.purchaseBlock),
+                     restorePurchases: restore(self.restoreBlock))
     }
 
 }

@@ -81,8 +81,13 @@ private struct MultiPackageTemplateContent: View {
             }
 
             self.subscribeButton
-                .padding(.bottom)
                 .padding(.horizontal)
+
+            if case .fullScreen = self.configuration.mode {
+                FooterView(configuration: self.configuration.configuration,
+                           colors: self.configuration.colors,
+                           purchaseHandler: self.purchaseHandler)
+            }
         }
         .animation(.easeInOut(duration: 0.1), value: self.selectedPackage)
         .frame(maxHeight: .infinity)
