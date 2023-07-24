@@ -118,7 +118,7 @@ internal enum TestData {
         template: .singlePackage,
         config: .init(
             packages: [.monthly],
-            imageNames: [Self.paywallHeaderImageName],
+            imageNames: [Self.paywallBackgroundImageName, Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors),
             termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
             privacyURL: URL(string: "https://revenuecat.com/privacy")!
@@ -130,7 +130,7 @@ internal enum TestData {
         template: .singlePackage,
         config: .init(
             packages: [.annual],
-            imageNames: [Self.paywallHeaderImageName],
+            imageNames: [Self.paywallBackgroundImageName, Self.paywallHeaderImageName],
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization1,
