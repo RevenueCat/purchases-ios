@@ -105,7 +105,9 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
 
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedCheckEligibility) == false
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
+        ) == false
     }
 
     func testOfferingsWithPaywallsWarmsUpEligibilityCache() throws {
@@ -153,10 +155,16 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedCheckEligibility) == true
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedCheckEligibilityCount) == 1
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore
+        ) == true
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount
+        ) == 1
         // Paywall filters packages so only `monthly` should is used.
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedCheckEligibilityProducts) == [
+        expect(
+            self.trialOrIntroPriceEligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters
+        ) == [
             "product_2"
         ]
 

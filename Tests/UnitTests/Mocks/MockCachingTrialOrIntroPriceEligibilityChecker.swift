@@ -35,20 +35,4 @@ class MockCachingTrialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEl
         super.clearCache()
     }
 
-    var stubbedEligibility: [String: IntroEligibility] = [:]
-    var invokedCheckEligibility: Bool = false
-    var invokedCheckEligibilityCount = 0
-    var invokedCheckEligibilityProducts: [String]?
-
-    override func checkEligibility(
-        productIdentifiers: [String],
-        completion: @escaping ReceiveIntroEligibilityBlock
-    ) {
-        self.invokedCheckEligibility = true
-        self.invokedCheckEligibilityCount += 1
-        self.invokedCheckEligibilityProducts = productIdentifiers
-
-        completion(self.stubbedEligibility)
-    }
-
 }
