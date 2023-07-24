@@ -827,6 +827,10 @@ public extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
+    @objc func invalidateCustomerInfoCache() {
+        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+    }
+
     @objc func syncPurchases(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.purchasesOrchestrator.syncPurchases { @Sendable in
             completion?($0.value, $0.error?.asPublicError)
@@ -910,10 +914,6 @@ public extension Purchases {
         self.paymentQueueWrapper.paymentQueueWrapperType.showPriceConsentIfNeeded()
     }
 #endif
-
-    @objc func invalidateCustomerInfoCache() {
-        self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-    }
 
 #if os(iOS)
 
