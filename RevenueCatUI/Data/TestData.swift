@@ -119,7 +119,9 @@ internal enum TestData {
         config: .init(
             packages: [.monthly],
             imageNames: [Self.paywallHeaderImageName],
-            colors: .init(light: Self.lightColors, dark: Self.darkColors)
+            colors: .init(light: Self.lightColors, dark: Self.darkColors),
+            termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+            privacyURL: URL(string: "https://revenuecat.com/privacy")!
         ),
         localization: Self.localization1,
         assetBaseURL: Self.paywallAssetBaseURL
@@ -174,7 +176,9 @@ internal enum TestData {
                         callToActionBackground: "#ACD27A",
                         callToActionForeground: "#000000"
                     )
-                )
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                privacyURL: URL(string: "https://revenuecat.com/tos")!
             ),
             localization: Self.localization2,
             assetBaseURL: Self.paywallAssetBaseURL
@@ -308,16 +312,23 @@ extension PurchaseHandler {
                 customerInfo: TestData.customerInfo,
                 userCancelled: false
             )
+        } restorePurchases: {
+            return TestData.customerInfo
         }
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay: Duration) -> Self {
         return self.map { purchaseBlock in {
-                try? await Task.sleep(for: delay)
+            try? await Task.sleep(for: delay)
 
-                return try await purchaseBlock($0)
-            }
+            return try await purchaseBlock($0)
+        }
+        } restore: { restoreBlock in {
+            try? await Task.sleep(for: delay)
+
+            return try await restoreBlock()
+        }
         }
     }
 }
