@@ -27,6 +27,7 @@ swiftSettings = []
 
 let package = Package(
     name: "RevenueCat",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v10_13),
         .watchOS("6.2"),
@@ -68,7 +69,8 @@ let package = Package(
         // RevenueCatUI
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
-                path: "RevenueCatUI"),
+                path: "RevenueCatUI",
+                resources: []),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
