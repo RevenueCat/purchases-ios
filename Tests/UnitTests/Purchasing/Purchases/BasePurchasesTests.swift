@@ -25,6 +25,11 @@ class BasePurchasesTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        // Some tests rely on the level being at least `.debug`
+        // Because unit tests can run in parallel, if a test needs to modify
+        // this level it should be moved to `StoreKitUnitTests`, which runs serially.
+        Purchases.logLevel = .verbose
+
         self.storeKit1Wrapper = MockStoreKit1Wrapper()
         self.notificationCenter = MockNotificationCenter()
         self.purchasesDelegate = MockPurchasesDelegate()
@@ -40,7 +45,7 @@ class BasePurchasesTests: TestCase {
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
-        self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID)
+        self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID, mockDeviceCache: self.deviceCache)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: self.mockProductsManager,
                                                                              receiptParser: self.mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "4.4.0")
@@ -98,11 +103,6 @@ class BasePurchasesTests: TestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
-
-        // Some tests rely on the level being at least `.debug`
-        // Because unit tests can run in parallel, if a test needs to modify
-        // this level it should be moved to `StoreKitUnitTests`, which runs serially.
-        Purchases.logLevel = .verbose
 
         self.addTeardownBlock {
             weak var purchases = self.purchases
@@ -487,6 +487,7 @@ private extension BasePurchasesTests {
         self.notificationCenter = nil
         self.subscriberAttributesManager = nil
         self.trialOrIntroPriceEligibilityChecker = nil
+        self.cachingTrialOrIntroPriceEligibilityChecker = nil
         self.attributionPoster = nil
         self.attribution = nil
         self.customerInfoManager = nil

@@ -15,11 +15,10 @@ class MockIdentityManager: IdentityManager {
 
     let mockAttributeSyncing = MockAttributeSyncing()
 
-    init(mockAppUserID: String) {
+    init(mockAppUserID: String, mockDeviceCache: MockDeviceCache) {
         let mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                             finishTransactions: false,
                                             dangerousSettings: nil)
-        let mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: mockSystemInfo)
         let mockBackend = MockBackend()
 
         self.mockAppUserID = mockAppUserID
