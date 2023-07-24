@@ -39,6 +39,34 @@ enum Localization {
         return formatter.string(from: subscriptionPeriod.components) ?? ""
     }
 
+    /// - Returns: the `Bundle` associated with the given locale if found
+    /// Defaults to `Bundle.module`.
+    ///
+    /// `SwiftUI.Text` uses `EnvironmentValues.locale` and therefore
+    /// can be mocked in tests.
+    /// However, for views that load strings, this allows specifying a custom `Locale`.
+    /// Example:
+    /// ```swift
+    /// let text = Localization
+    ///    .localizedBundle(locale)
+    ///    .localizedString(
+    ///        forKey: "string",
+    ///        value: nil,
+    ///        table: nil
+    ///    )
+    /// ```
+    static func localizedBundle(_ locale: Locale) -> Bundle {
+        let containerBundle: Bundle = .module
+
+        let preferredLocale = Bundle.preferredLocalizations(
+            from: containerBundle.localizations,
+            forPreferences: [locale.identifier]
+        ).first
+
+        let path = preferredLocale.flatMap { containerBundle.path(forResource: $0, ofType: "lproj") }
+        return path.flatMap(Bundle.init(path:)) ?? containerBundle
+    }
+
 }
 
 // MARK: - Private
