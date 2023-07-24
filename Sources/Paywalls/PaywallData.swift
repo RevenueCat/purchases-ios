@@ -99,8 +99,12 @@ extension PaywallData {
     }
 
     /// - Returns: ``PaywallData/LocalizedConfiguration-swift.struct`` for the given `Locale`, if found.
-    public func config(for locale: Locale) -> LocalizedConfiguration? {
-        return self.localization[locale.identifier]
+    /// - Note: this allows searching by `Locale` with only language code and missing region (like `en`, `es`, etc).
+    public func config(for requiredLocale: Locale) -> LocalizedConfiguration? {
+        self.localization[requiredLocale.identifier] ??
+        self.localization.first { locale, _ in
+            Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
+        }?.value
     }
 
     /// The default `Locale` used if `Locale.current` is not configured for this paywall.
@@ -363,3 +367,21 @@ extension PaywallData: Sendable {}
 // - `URL` is not `Sendable` until Swift 5.7
 extension PaywallData: @unchecked Sendable {}
 #endif
+
+// MARK: - Extensions
+
+private extension Locale {
+
+    func sharesLanguageCode(with other: Locale) -> Bool {
+        #if swift(>=5.7)
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.languageCode == other.language.languageCode
+        } else {
+            return false
+        }
+        #else
+        return false
+        #endif
+    }
+
+}
