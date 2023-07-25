@@ -102,7 +102,7 @@ private struct SinglePackageTemplateContent: View {
 
     @ViewBuilder
     private var asyncImage: some View {
-        if let headerImage = self.configuration.imageURLs.first {
+        if let headerImage = self.configuration.headerImageURL {
             RemoteImage(url: headerImage, aspectRatio: Self.imageAspectRatio)
             .frame(maxWidth: .infinity)
             .aspectRatio(Self.imageAspectRatio, contentMode: .fit)

@@ -182,7 +182,7 @@ private struct MultiPackageTemplateContent: View {
 
     @ViewBuilder
     private var backgroundImage: some View {
-        if let url = self.configuration.backgroundURL {
+        if let url = self.configuration.backgroundImageURL {
             if self.configuration.configuration.blurredBackgroundImage {
                 RemoteImage(url: url)
                     .blur(radius: 40)
@@ -199,7 +199,7 @@ private struct MultiPackageTemplateContent: View {
     @ViewBuilder
     private var iconImage: some View {
         Group {
-            if let url = self.configuration.iconURL {
+            if let url = self.configuration.iconImageURL {
                 RemoteImage(url: url, aspectRatio: 1, maxWidth: Self.iconSize)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else {
@@ -227,20 +227,6 @@ private extension MultiPackageTemplateContent {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.localization(for: self.selectedPackage)
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private extension TemplateViewConfiguration {
-
-    var backgroundURL: URL? {
-        return self.imageURLs.first
-    }
-
-    var iconURL: URL? {
-        guard self.imageURLs.count >= 2 else { return nil }
-        return self.imageURLs[1]
     }
 
 }

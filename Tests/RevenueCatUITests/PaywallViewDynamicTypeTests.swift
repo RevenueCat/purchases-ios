@@ -67,7 +67,7 @@ private extension PaywallViewDynamicTypeTests {
     private static func createView(_ type: DynamicTypeSize) -> some View {
         let offering = TestData.offeringWithIntroOffer
 
-        return PaywallView(offering: offering.withLocalReversedImages,
+        return PaywallView(offering: offering.withLocalImages,
                            introEligibility: Self.eligibleChecker,
                            purchaseHandler: Self.purchaseHandler)
             .dynamicTypeSize(type)
