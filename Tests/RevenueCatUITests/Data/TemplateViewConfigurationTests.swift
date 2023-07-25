@@ -23,6 +23,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             try Config.create(
                 with: [],
                 filter: [.monthly],
+                default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
                 setting: .single
             )
@@ -34,6 +35,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             try Config.create(
                 with: [TestData.monthlyPackage],
                 filter: [],
+                default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
                 setting: .single
             )
@@ -44,6 +46,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         let result = try Config.create(
             with: [TestData.monthlyPackage],
             filter: [.monthly],
+            default: nil,
             localization: Self.localization,
             setting: .single
         )
@@ -61,6 +64,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         let result = try Config.create(
             with: [TestData.monthlyPackage, TestData.annualPackage, TestData.weeklyPackage],
             filter: [.annual, .monthly],
+            default: .monthly,
             localization: Self.localization,
             setting: .multiple
         )
@@ -68,8 +72,10 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case .single:
             fail("Invalid result: \(result)")
-        case let .multiple(first, packages):
+        case let .multiple(first, defaultPackage, packages):
             expect(first.content) === TestData.annualPackage
+            expect(defaultPackage.content) === TestData.monthlyPackage
+
             expect(packages).to(haveCount(2))
 
             let annual = packages[0]
