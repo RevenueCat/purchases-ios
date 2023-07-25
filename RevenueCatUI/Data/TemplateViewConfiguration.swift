@@ -46,7 +46,7 @@ extension TemplateViewConfiguration {
     enum PackageConfiguration: Equatable {
 
         case single(Package)
-        case multiple(first: Package, all: [Package])
+        case multiple(first: Package, default: Package, all: [Package])
 
     }
 
@@ -62,18 +62,28 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return package
-        case let .multiple(first, _):
+        case let .multiple(first, _, _):
             return first
         }
     }
 
-    /// Returns all packages, useful for templates that expect multiple packages
+    /// Returns all packages, useful for templates that expect multiple packages.
     var all: [TemplateViewConfiguration.Package] {
         switch self {
         case let .single(package):
             return [package]
-        case let .multiple(_, packages):
+        case let .multiple(_, _, packages):
             return packages
+        }
+    }
+
+    /// Returns the package to be selected by default.
+    var `default`: TemplateViewConfiguration.Package {
+        switch self {
+        case let .single(package):
+            return package
+        case let .multiple(_, defaultPackage, _):
+            return defaultPackage
         }
     }
 
@@ -89,6 +99,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
     static func create(
         with packages: [RevenueCat.Package],
         filter: [PackageType],
+        default: PackageType?,
         localization: PaywallData.LocalizedConfiguration,
         setting: TemplateViewConfiguration.PackageSetting,
         locale: Locale = .current
@@ -113,7 +124,13 @@ extension TemplateViewConfiguration.PackageConfiguration {
         case .single:
             return .single(firstPackage)
         case .multiple:
-            return .multiple(first: firstPackage, all: filtered)
+            let defaultPackage = filtered
+                .first { $0.content.packageType == `default` }
+                ?? firstPackage
+
+            return .multiple(first: firstPackage,
+                             default: defaultPackage,
+                             all: filtered)
         }
     }
 
