@@ -54,6 +54,7 @@ extension PaywallData {
                 mode: mode,
                 packages: try .create(with: offering.availablePackages,
                                       filter: self.config.packages,
+                                      default: self.config.defaultPackage,
                                       localization: self.localizedConfiguration,
                                       setting: self.template.packageSetting,
                                       locale: locale),
