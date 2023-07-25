@@ -220,10 +220,15 @@ private struct MultiPackageTemplateContent: View {
     }
 
     private static let iconSize: CGFloat = 100
+
+    #if !os(macOS) && !os(watchOS)
     private static let selectedBackgroundColor: Color = .init(
         light: .init(white: 0.3),
         dark: .init(white: 0.6)
     )
+    #else
+    private static let selectedBackgroundColor: Color = .init(white: 0.3)
+    #endif
 
 }
 
