@@ -257,8 +257,7 @@ platform :ios do
       new_text: ENV["REVENUECAT_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m',
-        './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
+        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
     replace_text_in_files(
