@@ -136,15 +136,19 @@ private struct MultiPackageTemplateContent: View {
         VStack(alignment: alignment.horizontal, spacing: 5) {
             HStack {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(
-                        selected
-                        ? self.configuration.colors.callToActionBackgroundColor
-                        : .gray
-                    )
+                    .hidden(if: !selected)
+                    .overlay {
+                        if selected {
+                            EmptyView()
+                        } else {
+                            Circle()
+                                .foregroundColor(Self.selectedBackgroundColor.opacity(0.5))
+                        }
+                    }
 
                 Text(self.localization(for: package.content).offerName ?? package.content.productName)
             }
-            .foregroundColor(self.configuration.colors.callToActionBackgroundColor)
+            .foregroundColor(self.configuration.colors.accent1Color)
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: package.localization.offerDetails,
@@ -165,7 +169,11 @@ private struct MultiPackageTemplateContent: View {
         .foregroundColor(self.configuration.colors.foregroundColor)
         .background {
             RoundedRectangle(cornerRadius: 15, style: .continuous)
-                .foregroundColor(selected ? .black : .init(white: 0.8))
+                .foregroundColor(
+                    selected
+                    ? Self.selectedBackgroundColor
+                    : .clear
+                )
         }
     }
 
@@ -212,6 +220,10 @@ private struct MultiPackageTemplateContent: View {
     }
 
     private static let iconSize: CGFloat = 100
+    private static let selectedBackgroundColor: Color = .init(
+        light: .init(white: 0.3),
+        dark: .init(white: 0.6)
+    )
 
 }
 
