@@ -272,6 +272,7 @@ platform :ios do
       previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
       new_text: ENV["REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY"],
       paths_of_files_to_update: [
+        './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
       ]
     )
