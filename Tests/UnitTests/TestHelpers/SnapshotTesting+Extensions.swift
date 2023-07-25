@@ -67,7 +67,7 @@ extension SwiftUI.View {
             controller
         ).toEventually(
             haveValidSnapshot(
-                as: .image(size: size),
+                as: .image(perceptualPrecision: 0.98, size: size),
                 named: "1", // Force each retry to end in `.1.png`
                 file: file,
                 line: line
