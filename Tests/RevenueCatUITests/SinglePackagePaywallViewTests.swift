@@ -16,6 +16,8 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
         view.snapshot(size: Self.fullScreenSize)
     }
 
+    // Disabled until we bring modes back.
+    /*
     func testCardPaywall() {
         let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
                                mode: .card,
@@ -35,6 +37,7 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
 
         view.snapshot(size: Self.bannerSize)
     }
+    */
 
     func testSamplePaywallWithIntroOffer() {
         let view = PaywallView(offering: Self.offeringWithIntroOffer,
