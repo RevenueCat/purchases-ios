@@ -32,6 +32,7 @@ func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                              imageNames: [""],
                                              colors: colors)
     let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
+                                             defaultPackage: .monthly,
                                              imageNames: [""],
                                              colors: colors,
                                              blurredBackgroundImage: true,
@@ -39,6 +40,7 @@ func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                              termsOfServiceURL: URL(string: ""),
                                              privacyURL: URL(string: ""))
     let _: [PackageType] = config.packages
+    let _: PackageType? = config.defaultPackage
     let _: [String] = config.imageNames
     let _: PaywallData.Configuration.ColorInformation = config.colors
     let _: Bool = config.blurredBackgroundImage
