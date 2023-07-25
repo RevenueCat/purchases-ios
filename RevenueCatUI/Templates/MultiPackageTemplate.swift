@@ -44,7 +44,7 @@ private struct MultiPackageTemplateContent: View {
     private var dismiss
 
     init(configuration: TemplateViewConfiguration, introEligibility: [Package: IntroEligibilityStatus]) {
-        self._selectedPackage = .init(initialValue: configuration.packages.single.content)
+        self._selectedPackage = .init(initialValue: configuration.packages.default.content)
 
         self.configuration = configuration
         self.introEligibility = introEligibility

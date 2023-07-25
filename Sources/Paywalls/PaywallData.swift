@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 7/10/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /// The data necessary to display a paywall using the `RevenueCatUI` library.
@@ -141,6 +143,9 @@ extension PaywallData {
         /// The list of package types this paywall will display
         public var packages: [PackageType]
 
+        /// The package to be selected by default.
+        public var defaultPackage: PackageType?
+
         /// The names for image assets.
         public var imageNames: [String] {
             get { self._imageNames }
@@ -177,6 +182,7 @@ extension PaywallData {
         // swiftlint:disable:next missing_docs
         public init(
             packages: [PackageType],
+            defaultPackage: PackageType? = nil,
             imageNames: [String],
             colors: ColorInformation,
             blurredBackgroundImage: Bool = false,
@@ -187,6 +193,7 @@ extension PaywallData {
             assert(!imageNames.isEmpty)
 
             self.packages = packages
+            self.defaultPackage = defaultPackage
             self._imageNames = imageNames
             self.colors = colors
             self._blurredBackgroundImage = blurredBackgroundImage
@@ -334,6 +341,7 @@ extension PaywallData.Configuration: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case packages
+        case defaultPackage
         case _imageNames = "images"
         case _blurredBackgroundImage = "blurredBackgroundImage"
         case _displayRestorePurchases = "displayRestorePurchases"
