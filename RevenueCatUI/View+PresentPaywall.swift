@@ -9,6 +9,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
 
     /// Presents a ``PaywallView`` if the given entitlement identifier is not active
@@ -57,6 +58,7 @@ extension View {
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 private struct PresentingPaywallModifier: ViewModifier {
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
