@@ -183,6 +183,10 @@ platform :ios do
       scheme: 'RevenueCatUI',
       destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"),
       sdk: 'iphonesimulator',
+      output_style: :basic,
+      result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/revenuecatui/tests.xml',
       test: true
     )
   end
