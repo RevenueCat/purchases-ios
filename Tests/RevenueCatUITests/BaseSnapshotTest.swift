@@ -29,7 +29,11 @@ extension BaseSnapshotTest {
     static let purchaseHandler: PurchaseHandler = .mock()
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)
+
+    // Disabled until we bring modes back.
+    /*
     static let cardSize: CGSize = .init(width: 460, height: 460)
     static let bannerSize: CGSize = .init(width: 380, height: 70)
+    */
 
 }
