@@ -18,7 +18,7 @@ struct App: View {
         PaywallView()
         PaywallView(mode: .fullScreen)
         PaywallView(offering: self.offering)
-        PaywallView(offering: self.offering, mode: .card)
+        PaywallView(offering: self.offering, mode: .fullScreen)
     }
 
     @ViewBuilder
