@@ -14,17 +14,17 @@ public enum PaywallViewMode {
     case fullScreen
 
     /// Paywall is displayed with a square aspect ratio. It can be embedded inside any other SwiftUI view.
+    @available(*, unavailable, message: "Other modes coming soon.")
     case card
 
     /// Paywall is displayed in a condensed format. It can be embedded inside any other SwiftUI view.
+    @available(*, unavailable, message: "Other modes coming soon.")
     case banner
 
     /// The default ``PaywallViewMode``: ``PaywallViewMode/fullScreen``.
     public static let `default`: Self = .fullScreen
 
 }
-
-extension PaywallViewMode: CaseIterable {}
 
 extension PaywallViewMode {
 
