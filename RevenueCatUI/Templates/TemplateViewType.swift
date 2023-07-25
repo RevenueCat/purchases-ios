@@ -14,8 +14,8 @@ private extension PaywallTemplate {
 
     var packageSetting: TemplateViewConfiguration.PackageSetting {
         switch self {
-        case .singlePackage: return .single
-        case .multiPackage: return .multiple
+        case .onePackageStandard: return .single
+        case .multiPackageBold: return .multiple
         }
     }
 
@@ -69,10 +69,10 @@ extension PaywallData {
     private static func createView(template: PaywallTemplate,
                                    configuration: TemplateViewConfiguration) -> some View {
         switch template {
-        case .singlePackage:
-            SinglePackageTemplate(configuration)
-        case .multiPackage:
-            MultiPackageTemplate(configuration)
+        case .onePackageStandard:
+            SinglePackageStandardTemplate(configuration)
+        case .multiPackageBold:
+            MultiPackageBoldTemplate(configuration)
         }
     }
 
