@@ -33,6 +33,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == [.monthly, .annual]
+        expect(paywall.config.defaultPackage) == .annual
         expect(paywall.config.imageNames) == ["asset_name.png"]
         expect(paywall.config.blurredBackgroundImage) == true
         expect(paywall.config.displayRestorePurchases) == false
