@@ -132,11 +132,15 @@ struct PurchaseButton_Previews: PreviewProvider {
     }
 
     static var previews: some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        ForEach(Self.modes, id: \.self) { mode in
             Preview(mode: mode)
                 .previewLayout(.sizeThatFits)
         }
     }
+
+    private static let modes: [PaywallViewMode] = [
+        .fullScreen
+    ]
 
 }
 
