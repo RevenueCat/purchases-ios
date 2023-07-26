@@ -386,7 +386,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
-    func testSK1ProductCannotDetermineProductType() {
+    func testWarningLogWhenGettingSK1ProductType() {
         let product = StoreProduct(sk1Product: .init())
         self.logger.verifyMessageWasNotLogged(Strings.storeKit.sk1_no_known_product_type)
 
