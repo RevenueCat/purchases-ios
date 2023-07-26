@@ -162,7 +162,7 @@ struct Footer_Previews: PreviewProvider {
         FooterView(
             configuration: .init(
                 packages: [],
-                imageNames: ["image"],
+                images: .init(),
                 colors: .init(light: TestData.lightColors, dark: TestData.darkColors),
                 displayRestorePurchases: displayRestorePurchases,
                 termsOfServiceURL: termsOfServiceURL,
