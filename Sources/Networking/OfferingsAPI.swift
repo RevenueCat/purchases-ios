@@ -28,7 +28,7 @@ class OfferingsAPI {
     }
 
     func getOfferings(appUserID: String,
-                      withRandomDelay randomDelay: Bool,
+                      isAppBackgrounded: Bool,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -40,9 +40,15 @@ class OfferingsAPI {
         let offeringsCallback = OfferingsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)
 
+        if cacheStatus == .firstCallbackAddedToList {
+            Logger.debug(isAppBackgrounded
+                         ? Strings.offering.offerings_stale_updating_in_background
+                         : Strings.offering.offerings_stale_updating_in_foreground)
+        }
+
         self.backendConfig.addCacheableOperation(
             with: factory,
-            withRandomDelay: randomDelay,
+            withRandomDelay: isAppBackgrounded,
             cacheStatus: cacheStatus
         )
     }

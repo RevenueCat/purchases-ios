@@ -39,10 +39,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanGetOfferings() async throws {
+        self.logger.clearMessages()
+
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+
+        self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
+                                           level: .debug)
     }
 
     func testCanPurchasePackage() async throws {
