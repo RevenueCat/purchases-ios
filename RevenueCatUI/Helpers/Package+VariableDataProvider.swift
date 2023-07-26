@@ -16,6 +16,11 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedTitle
     }
 
+    func periodName(_ locale: Locale) -> String {
+        return Localization.localized(packageType: self.packageType,
+                                      locale: locale)
+    }
+
     func introductoryOfferDuration(_ locale: Locale) -> String? {
         self.introDuration(locale)
     }
