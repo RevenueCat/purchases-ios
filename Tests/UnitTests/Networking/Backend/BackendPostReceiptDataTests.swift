@@ -159,7 +159,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                         presentedOfferingID: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
-                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                        source: .init(isRestore: isRestore, initiationSource: .purchase)
                      ),
                      observerMode: observerMode,
                      completion: { _ in
