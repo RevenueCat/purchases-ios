@@ -6,3 +6,10 @@
 "Restore purchases" = "Restore purchases";
 "Terms" = "Terms";
 "Terms and conditions" = "Terms and conditions";
+
+"PackageType.annual" = "Annual";
+"PackageType.sixMonth" = "6 month";
+"PackageType.threeMonth" = "3 month";
+"PackageType.twoMonth" = "2 month";
+"PackageType.monthly" = "Monthly";
+"PackageType.weekly" = "Weekly";
