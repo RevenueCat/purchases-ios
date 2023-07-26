@@ -142,7 +142,7 @@ private struct MultiPackageTemplateContent: View {
                         : .gray
                     )
 
-                Text(package.content.productName)
+                Text(self.localization(for: package.content).offerName ?? package.content.productName)
             }
             .foregroundColor(self.configuration.colors.callToActionBackgroundColor)
 
