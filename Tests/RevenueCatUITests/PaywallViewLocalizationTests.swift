@@ -58,18 +58,8 @@ import SwiftUI
                 packages: [.weekly, .annual, .monthly],
                 images: TestData.images,
                 colors: .init(
-                    light: .init(
-                        background: "#FFFFFF",
-                        foreground: "#000000",
-                        callToActionBackground: "#EC807C",
-                        callToActionForeground: "#FFFFFF"
-                    ),
-                    dark: .init(
-                        background: "#000000",
-                        foreground: "#FFFFFF",
-                        callToActionBackground: "#ACD27A",
-                        callToActionForeground: "#000000"
-                    )
+                    light: TestData.lightColors,
+                    dark: TestData.lightColors
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
                 privacyURL: URL(string: "https://revenuecat.com/tos")!

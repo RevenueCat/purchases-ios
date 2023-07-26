@@ -88,12 +88,16 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
     let foreground: PaywallColor = config.foreground
     let callToActionBackground: PaywallColor = config.callToActionBackground
     let callToActionForeground: PaywallColor = config.callToActionForeground
+    let accent1: PaywallColor = config.accent1
+    let accent2: PaywallColor? = config.accent2
 
     _ = PaywallData.Configuration.Colors(
         background: background,
         foreground: foreground,
         callToActionBackground: callToActionBackground,
-        callToActionForeground: callToActionForeground
+        callToActionForeground: callToActionForeground,
+        accent1: accent1,
+        accent2: accent2
     )
 }
 

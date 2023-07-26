@@ -8,6 +8,8 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable type_body_length
+
 #if DEBUG
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -167,13 +169,15 @@ internal enum TestData {
                         background: "#FFFFFF",
                         foreground: "#000000",
                         callToActionBackground: "#EC807C",
-                        callToActionForeground: "#FFFFFF"
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#BC66FF"
                     ),
                     dark: .init(
                         background: "#000000",
                         foreground: "#FFFFFF",
                         callToActionBackground: "#ACD27A",
-                        callToActionForeground: "#000000"
+                        callToActionForeground: "#000000",
+                        accent1: "#B022BB"
                     )
                 ),
                 blurredBackgroundImage: true,
@@ -192,13 +196,17 @@ internal enum TestData {
         background: "#FFFFFF",
         foreground: "#000000",
         callToActionBackground: "#5CD27A",
-        callToActionForeground: "#FFFFFF"
+        callToActionForeground: "#FFFFFF",
+        accent1: "#BC66FF",
+        accent2: "#00FF00"
     )
     static let darkColors: PaywallData.Configuration.Colors = .init(
         background: "#000000",
         foreground: "#FFFFFF",
         callToActionBackground: "#ACD27A",
-        callToActionForeground: "#000000"
+        callToActionForeground: "#000000",
+        accent1: "#B022BB",
+        accent2: "#FF00FF"
     )
 
     #if canImport(SwiftUI) && canImport(UIKit)
