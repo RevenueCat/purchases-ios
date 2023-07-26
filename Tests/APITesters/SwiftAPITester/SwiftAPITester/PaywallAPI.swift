@@ -98,7 +98,8 @@ func checkPaywallImages(_ images: PaywallData.Configuration.Images) {
 
 func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
     let background: PaywallColor = config.background
-    let foreground: PaywallColor = config.foreground
+    let text1: PaywallColor = config.text1
+    let text2: PaywallColor? = config.text2
     let callToActionBackground: PaywallColor = config.callToActionBackground
     let callToActionForeground: PaywallColor = config.callToActionForeground
     let accent1: PaywallColor = config.accent1
@@ -106,7 +107,8 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
 
     _ = PaywallData.Configuration.Colors(
         background: background,
-        foreground: foreground,
+        text1: text1,
+        text2: text2,
         callToActionBackground: callToActionBackground,
         callToActionForeground: callToActionForeground,
         accent1: accent1,

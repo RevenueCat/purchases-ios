@@ -303,8 +303,10 @@ extension PaywallData.Configuration {
 
         /// Color for the background of the paywall.
         public var background: PaywallColor
-        /// Color for foreground elements.
-        public var foreground: PaywallColor
+        /// Color for primary text element.
+        public var text1: PaywallColor
+        /// Color for secondary text element.
+        public var text2: PaywallColor?
         /// Background color of the main call to action button.
         public var callToActionBackground: PaywallColor
         /// Foreground color of the main call to action button.
@@ -317,14 +319,16 @@ extension PaywallData.Configuration {
         // swiftlint:disable:next missing_docs
         public init(
             background: PaywallColor,
-            foreground: PaywallColor,
+            text1: PaywallColor,
+            text2: PaywallColor? = nil,
             callToActionBackground: PaywallColor,
             callToActionForeground: PaywallColor,
             accent1: PaywallColor,
             accent2: PaywallColor? = nil
         ) {
             self.background = background
-            self.foreground = foreground
+            self.text1 = text1
+            self.text2 = text2
             self.callToActionBackground = callToActionBackground
             self.callToActionForeground = callToActionForeground
             self.accent1 = accent1

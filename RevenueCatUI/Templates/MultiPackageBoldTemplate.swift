@@ -68,7 +68,7 @@ private struct MultiPackageTemplateContent: View {
 
             if case .fullScreen = self.configuration.mode {
                 FooterView(configuration: self.configuration.configuration,
-                           color: self.configuration.colors.foregroundColor,
+                           color: self.configuration.colors.text1Color,
                            purchaseHandler: self.purchaseHandler)
             }
         }
@@ -149,13 +149,13 @@ private struct MultiPackageTemplateContent: View {
         .padding()
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: alignment)
-        .foregroundColor(self.configuration.colors.foregroundColor)
+        .foregroundColor(self.configuration.colors.text1Color)
         .overlay {
             if selected {
                 EmptyView()
             } else {
                 RoundedRectangle(cornerRadius: Self.cornerRadius)
-                    .stroke(self.configuration.colors.foregroundColor, lineWidth: 2)
+                    .stroke(self.configuration.colors.text1Color, lineWidth: 2)
             }
         }
         .background {

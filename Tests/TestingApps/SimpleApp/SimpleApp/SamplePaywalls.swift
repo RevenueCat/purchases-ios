@@ -62,14 +62,14 @@ private extension SamplePaywallLoader {
                 colors:  .init(
                     light: .init(
                         background: "#FFFFFF",
-                        foreground: "#000000",
+                        text1: "#000000",
                         callToActionBackground: "#5CD27A",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#BC66FF"
                     ),
                     dark: .init(
                         background: "#000000",
-                        foreground: "#FFFFFF",
+                        text1: "#FFFFFF",
                         callToActionBackground: "#ACD27A",
                         callToActionForeground: "#000000",
                         accent1: "#B022BB"
@@ -98,14 +98,14 @@ private extension SamplePaywallLoader {
                 colors:  .init(
                     light: .init(
                         background: "#FFFFFF",
-                        foreground: "#000000",
+                        text1: "#000000",
                         callToActionBackground: "#EC807C",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#BC66FF"
                     ),
                     dark: .init(
                         background: "#000000",
-                        foreground: "#FFFFFF",
+                        text1: "#FFFFFF",
                         callToActionBackground: "#ACD27A",
                         callToActionForeground: "#000000",
                         accent1: "#B022BB"
@@ -135,7 +135,7 @@ private extension SamplePaywallLoader {
                 colors: .init(
                     light: .init(
                         background: "#272727",
-                        foreground: "#FFFFFF",
+                        text1: "#FFFFFF",
                         callToActionBackground: "#FFFFFF",
                         callToActionForeground: "#000000",
                         accent1: "#F4E971",
