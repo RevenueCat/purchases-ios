@@ -114,6 +114,72 @@ class SubscriptionPeriodSpanishLocalizationTests: BaseLocalizationTests {
 
 }
 
+// MARK: - PackageType
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "en_US") }
+
+    func testLocalization() {
+        verify(.annual, "Annual")
+        verify(.sixMonth, "6 month")
+        verify(.threeMonth, "3 month")
+        verify(.twoMonth, "2 month")
+        verify(.monthly, "Monthly")
+        verify(.weekly, "Weekly")
+    }
+
+    func testOtherValues() {
+        verify(.custom, "")
+        verify(.lifetime, "")
+        verify(.unknown, "")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "es_ES") }
+
+    func testLocalization() {
+        verify(.annual, "Anual")
+        verify(.sixMonth, "6 meses")
+        verify(.threeMonth, "3 meses")
+        verify(.twoMonth, "2 meses")
+        verify(.monthly, "Mensual")
+        verify(.weekly, "Semanal")
+    }
+
+    func testOtherValues() {
+        verify(.custom, "")
+        verify(.lifetime, "")
+        verify(.unknown, "")
+    }
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "fr") }
+
+    func testLocalizationDefaultsToEnglish() {
+        verify(.annual, "Annual")
+        verify(.sixMonth, "6 month")
+        verify(.threeMonth, "3 month")
+        verify(.twoMonth, "2 month")
+        verify(.monthly, "Monthly")
+        verify(.weekly, "Weekly")
+    }
+
+    func testOtherValues() {
+        verify(.custom, "")
+        verify(.lifetime, "")
+        verify(.unknown, "")
+    }
+}
+
 // MARK: - Private
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
@@ -139,6 +205,17 @@ private extension BaseLocalizationTests {
     ) {
         let result = Localization.abbreviatedUnitLocalizedString(for: unit,
                                                                  locale: self.locale)
+        expect(file: file, line: line, result) == expected
+    }
+
+    func verify(
+        _ packageType: PackageType,
+        _ expected: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let result = Localization.localized(packageType: packageType,
+                                            locale: self.locale)
         expect(file: file, line: line, result) == expected
     }
 
