@@ -151,11 +151,8 @@ extension PaywallData {
         /// The package to be selected by default.
         public var defaultPackage: PackageType?
 
-        /// The names for image assets.
-        public var imageNames: [String] {
-            get { self._imageNames }
-            set { self._imageNames = newValue }
-        }
+        /// The images for this template.
+        public var images: Images
 
         /// Whether the background image will be blurred (in templates with one).
         public var blurredBackgroundImage: Bool {
@@ -188,27 +185,22 @@ extension PaywallData {
         public init(
             packages: [PackageType],
             defaultPackage: PackageType? = nil,
-            imageNames: [String],
+            images: Images,
             colors: ColorInformation,
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
             termsOfServiceURL: URL? = nil,
             privacyURL: URL? = nil
         ) {
-            assert(!imageNames.isEmpty)
-
             self.packages = packages
             self.defaultPackage = defaultPackage
-            self._imageNames = imageNames
+            self.images = images
             self.colors = colors
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
         }
-
-        @EnsureNonEmptyArrayDecodable
-        var _imageNames: [String]
 
         @DefaultDecodable.False
         var _blurredBackgroundImage: Bool
@@ -221,6 +213,31 @@ extension PaywallData {
 
         @IgnoreDecodeErrors<URL?>
         var _privacyURL: URL?
+
+    }
+
+}
+
+extension PaywallData.Configuration {
+
+    /// Set of images that can be used by a template.
+    public struct Images {
+
+        /// Image displayed as a header in a template.
+        public var header: String?
+
+        /// Image displayed as a background in a template.
+        public var background: String?
+
+        /// Image displayed as an app icon in a template.
+        public var icon: String?
+
+        // swiftlint:disable:next missing_docs
+        public init(header: String? = nil, background: String? = nil, icon: String? = nil) {
+            self.header = header
+            self.background = background
+            self.icon = icon
+        }
 
     }
 
@@ -271,17 +288,6 @@ extension PaywallData.Configuration {
             self.callToActionBackground = callToActionBackground
             self.callToActionForeground = callToActionForeground
         }
-    }
-
-}
-
-// MARK: - Extensions
-
-public extension PaywallData {
-
-    /// The remote URL to load the header image asset.
-    var imageURLs: [URL] {
-        self.config.imageNames.map { self.assetBaseURL.appendingPathComponent($0) }
     }
 
 }
@@ -342,13 +348,14 @@ extension PaywallData.LocalizedConfiguration: Codable {
 
 extension PaywallData.Configuration.ColorInformation: Codable {}
 extension PaywallData.Configuration.Colors: Codable {}
+extension PaywallData.Configuration.Images: Codable {}
 
 extension PaywallData.Configuration: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case packages
         case defaultPackage
-        case _imageNames = "images"
+        case images
         case _blurredBackgroundImage = "blurredBackgroundImage"
         case _displayRestorePurchases = "displayRestorePurchases"
         case _termsOfServiceURL = "tosUrl"
@@ -376,6 +383,7 @@ extension PaywallData: Codable {
 extension PaywallData.LocalizedConfiguration: Equatable {}
 extension PaywallData.Configuration.ColorInformation: Equatable {}
 extension PaywallData.Configuration.Colors: Equatable {}
+extension PaywallData.Configuration.Images: Equatable {}
 extension PaywallData.Configuration: Equatable {}
 extension PaywallData: Equatable {}
 
@@ -384,6 +392,7 @@ extension PaywallData: Equatable {}
 extension PaywallData.LocalizedConfiguration: Sendable {}
 extension PaywallData.Configuration.ColorInformation: Sendable {}
 extension PaywallData.Configuration.Colors: Sendable {}
+extension PaywallData.Configuration.Images: Sendable {}
 extension PaywallData.Configuration: Sendable {}
 
 #if swift(>=5.7)
