@@ -34,7 +34,11 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == [.monthly, .annual]
         expect(paywall.config.defaultPackage) == .annual
-        expect(paywall.config.imageNames) == ["asset_name.png"]
+        expect(paywall.config.images) == .init(
+            header: "header.jpg",
+            background: "background.jpg",
+            icon: "icon.jpg"
+        )
         expect(paywall.config.blurredBackgroundImage) == true
         expect(paywall.config.displayRestorePurchases) == false
         expect(paywall.config.termsOfServiceURL) == URL(string: "https://revenuecat.com/tos")!
@@ -49,10 +53,6 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.dark?.foreground.stringRepresentation) == "#1100FFAA"
         expect(paywall.config.colors.dark?.callToActionBackground.stringRepresentation) == "#112233AA"
         expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
-
-        expect(paywall.imageURLs) == [
-            URL(string: "https://rc-paywalls.s3.amazonaws.com/asset_name.png")!
-        ]
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.title) == "Paywall"
@@ -106,12 +106,6 @@ class PaywallDataTests: BaseHTTPResponseTest {
         let localization = paywall.localizedConfiguration
         expect(localization.callToAction) == "Comprar"
         expect(localization.title) == "Tienda"
-    }
-
-    func testFailsToDecodeWithNoImages() throws {
-        expect {
-            let _: PaywallData = try self.decodeFixture("PaywallData-empty_images")
-        }.to(throwError(EnsureNonEmptyArrayDecodable<String>.Error()))
     }
 
     #if !os(watchOS)
