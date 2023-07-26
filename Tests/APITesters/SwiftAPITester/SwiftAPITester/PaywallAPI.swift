@@ -27,13 +27,14 @@ func checkPaywallData(_ data: PaywallData) {
 }
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration,
+                               _ images: PaywallData.Configuration.Images,
                                _ colors: PaywallData.Configuration.ColorInformation) {
     let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
-                                             imageNames: [""],
+                                             images: images,
                                              colors: colors)
     let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
                                              defaultPackage: .monthly,
-                                             imageNames: [""],
+                                             images: images,
                                              colors: colors,
                                              blurredBackgroundImage: true,
                                              displayRestorePurchases: true,
@@ -41,7 +42,7 @@ func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                              privacyURL: URL(string: ""))
     let _: [PackageType] = config.packages
     let _: PackageType? = config.defaultPackage
-    let _: [String] = config.imageNames
+    let _: PaywallData.Configuration.Images = config.images
     let _: PaywallData.Configuration.ColorInformation = config.colors
     let _: Bool = config.blurredBackgroundImage
     let _: Bool = config.displayRestorePurchases
@@ -66,6 +67,19 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
         offerDetails: offerDetails,
         offerDetailsWithIntroOffer: offerDetailsWithIntroOffer,
         offerName: offerName
+    )
+}
+func checkPaywallImages(_ images: PaywallData.Configuration.Images) {
+    let header: String? = images.header
+    let background: String? = images.background
+    let icon: String? = images.icon
+
+    _ = PaywallData.Configuration.Images()
+
+    _ = PaywallData.Configuration.Images(
+        header: header,
+        background: background,
+        icon: icon
     )
 }
 
