@@ -77,7 +77,7 @@ let package = Package(
                         "Nimble",
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
-                    exclude: ["__Snapshots__"],
+                    exclude: ["Templates/__Snapshots__"],
                     resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )
