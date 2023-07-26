@@ -62,6 +62,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(enConfig.offerDetails) == "{{ price_per_month }} per month"
         expect(enConfig.offerDetailsWithIntroOffer)
         == "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+        expect(enConfig.offerName) == "{{ period }}"
 
         let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
         expect(esConfig.title) == "Tienda"
@@ -70,6 +71,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(esConfig.callToActionWithIntroOffer).to(beNil())
         expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
         expect(esConfig.offerDetailsWithIntroOffer).to(beNil())
+        expect(enConfig.offerName) == "{{ period }}"
 
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
