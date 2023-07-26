@@ -252,7 +252,8 @@ internal enum TestData {
         callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: "Purchase for {{ price_per_month }} per month",
         offerDetails: "{{ price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+        features: []
     )
     static let localization2: PaywallData.LocalizedConfiguration = .init(
         title: "Call to action for better conversion.",
@@ -260,7 +261,8 @@ internal enum TestData {
         callToAction: "Subscribe for {{ price_per_month }}/mo",
         offerDetails: "{{ total_price_and_per_month }}",
         offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
-        offerName: "{{ period }}"
+        offerName: "{{ period }}",
+        features: []
     )
     static let paywallHeaderImageName = "9a17e0a7_1689854430..jpeg"
     static let paywallBackgroundImageName = "9a17e0a7_1689854342..jpg"
