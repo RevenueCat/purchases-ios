@@ -114,7 +114,9 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(paywall.config.packages) == [.monthly, .annual]
         expect(paywall.config.defaultPackage).to(beNil())
-        expect(paywall.config.imageNames) == ["asset_1", "asset_2"]
+        expect(paywall.config.images.header) == "header.jpg"
+        expect(paywall.config.images.background).to(beNil())
+        expect(paywall.config.images.icon).to(beNil())
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.title) == "Paywall"

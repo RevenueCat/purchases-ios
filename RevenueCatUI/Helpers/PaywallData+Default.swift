@@ -18,9 +18,7 @@ extension PaywallData {
         template: .multiPackage,
         config: .init(
             packages: [.weekly, .monthly, .annual],
-            imageNames: [
-                Self.backgroundImage
-            ],
+            images: .init(background: Self.backgroundImage),
             colors: Self.colors,
             blurredBackgroundImage: true,
             displayRestorePurchases: true
