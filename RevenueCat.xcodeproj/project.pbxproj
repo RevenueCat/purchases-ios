@@ -267,6 +267,7 @@
 		4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */; };
 		4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */; };
 		4FC0832B2A4A361700A97089 /* IntegerExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */; };
+		4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
 		4FCEEA5E2A379B80002C2112 /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */; };
@@ -978,6 +979,7 @@
 		4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonEmptyStringDecodable.swift; sourceTree = "<group>"; };
 		4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Integer+Extensions.swift"; sourceTree = "<group>"; };
 		4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerExtensionsTests.swift; sourceTree = "<group>"; };
+		4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
 		4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewSwiftUITests.swift; sourceTree = "<group>"; };
@@ -1576,6 +1578,7 @@
 				2D34D9D127481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift */,
 				35E1CE1F26E022C20008560A /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift */,
 				2D69384426DFF93300FCDBC0 /* StoreProductTests.swift */,
+				4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */,
 				2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */,
 				2D90F8CB26FD2BA1009B9142 /* StoreKitConfigTestCase.swift */,
 				F55FFA622763F60700995146 /* TransactionsManagerTests.swift */,
@@ -3157,6 +3160,7 @@
 				2D90F8B626FD2099009B9142 /* MockSubscriberAttributesManager.swift in Sources */,
 				2D90F8BF26FD20D6009B9142 /* MockAttributionFetcher.swift in Sources */,
 				4F5D52EC2A57152B00E1C758 /* ImageSnapshot.swift in Sources */,
+				4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */,
 				57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */,
 				2D90F8C526FD216A009B9142 /* MockSKProductDiscount.swift in Sources */,
 				4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */,

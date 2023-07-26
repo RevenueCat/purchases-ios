@@ -62,10 +62,6 @@ final class ProductsFetcherSK1: NSObject {
                 return
             }
 
-            Logger.debug(
-                Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: identifiers)
-            )
-
             self.completionHandlers[identifiers] = [completion]
 
             let request = self.startRequest(forIdentifiers: identifiers, retriesLeft: Self.numberOfRetries)
