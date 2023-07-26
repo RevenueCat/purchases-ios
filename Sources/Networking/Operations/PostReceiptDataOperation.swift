@@ -64,13 +64,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `isRestore`
         /// - Receipt (`hashString` instead of `fetchToken` to avoid big receipts leading to a huge cache key)
         /// - `ProductRequestData.cacheKey`
+        /// - `initiationSource`
         /// - `presentedOfferingIdentifier`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
         let cacheKey =
         """
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.hashString)
-        -\(postData.productData?.cacheKey ?? "")
+        -\(postData.productData?.cacheKey ?? "")-\(postData.initiationSource.rawValue)
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
         """

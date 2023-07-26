@@ -344,6 +344,51 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(completionCalled.value).toEventually(equal(2))
     }
 
+    func testDoesntCacheForDifferentInitiationSource() {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let completionCalled: Atomic<Int> = .init(0)
+
+        let isRestore = true
+        let observerMode = false
+
+        self.backend.post(
+            receiptData: Self.receiptData,
+            productData: nil,
+            transactionData: .init(
+                appUserID: Self.userID,
+                presentedOfferingID: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: isRestore, initiationSource: .queue)
+            ),
+            observerMode: observerMode
+        ) { _ in
+            completionCalled.value += 1
+        }
+
+        self.backend.post(
+            receiptData: Self.receiptData2,
+            productData: nil,
+            transactionData: .init(
+                appUserID: Self.userID,
+                presentedOfferingID: nil,
+                unsyncedAttributes: nil,
+                storefront: nil,
+                source: .init(isRestore: isRestore, initiationSource: .purchase)
+            ),
+            observerMode: observerMode
+        ) { _ in
+            completionCalled.value += 1
+        }
+
+        expect(self.httpClient.calls).toEventually(haveCount(2))
+        expect(completionCalled.value).toEventually(equal(2))
+    }
+
     func testPostsReceiptDataWithProductRequestDataCorrectly() throws {
         httpClient.mock(
             requestPath: .postReceiptData,
