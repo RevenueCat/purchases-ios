@@ -217,7 +217,7 @@ struct PaywallView_Previews: PreviewProvider {
                     purchaseHandler: Self.purchaseHandler
                 )
                 .previewLayout(mode.layout)
-                .previewDisplayName("\(offering.identifier)-\(mode)")
+                .previewDisplayName("\(offering.paywall?.template.name ?? "")-\(mode)")
             }
         }
     }
@@ -252,6 +252,18 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .device
         case .card, .banner: return .sizeThatFits
+        }
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private extension PaywallTemplate {
+
+    var name: String {
+        switch self {
+        case .singlePackage: return "single"
+        case .multiPackage: return "multi"
         }
     }
 
