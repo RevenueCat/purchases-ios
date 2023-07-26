@@ -5,12 +5,8 @@ import SwiftUI
 struct MultiPackageBoldTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
-
     @EnvironmentObject
-    private var introEligibilityChecker: TrialOrIntroEligibilityChecker
-
-    @State
-    private var introEligibility: [Package: IntroEligibilityStatus] = [:]
+    private var introEligibility: IntroEligibilityViewModel
 
     init(_ configuration: TemplateViewConfiguration) {
         self.configuration = configuration
@@ -18,12 +14,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     var body: some View {
         MultiPackageTemplateContent(configuration: self.configuration,
-                                    introEligibility: self.introEligibility)
-        .task(id: self.configuration.packages) {
-            self.introEligibility = await self.introEligibilityChecker.eligibility(
-                for: self.configuration.packages.all.map(\.content)
-            )
-        }
+                                    introEligibility: self.introEligibility.allEligibility)
     }
 
 }
