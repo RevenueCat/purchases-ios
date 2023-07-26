@@ -50,6 +50,7 @@ class VariablesTests: TestCase {
     }
 
     func testTotalPriceAndPerMonthWithDifferentPricesFrench() {
+        self.provider.isMonthly = false
         self.provider.localizedPrice = "49,99€"
         self.provider.localizedPricePerMonth = "4,16€"
         expect(self.process("{{ total_price_and_per_month }}",
@@ -57,8 +58,8 @@ class VariablesTests: TestCase {
     }
 
     func testTotalPriceAndPerMonthWithSamePrice() {
+        self.provider.isMonthly = true
         self.provider.localizedPrice = "$4.99"
-        self.provider.localizedPricePerMonth = "$4.99"
         expect(self.process("{{ total_price_and_per_month }}")) == "$4.99"
     }
 
@@ -125,6 +126,7 @@ private extension VariablesTests {
 
 private struct MockVariableProvider: VariableDataProvider {
 
+    var isMonthly: Bool = false
     var localizedPrice: String = ""
     var localizedPricePerMonth: String = ""
     var productName: String = ""
