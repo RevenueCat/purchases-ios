@@ -421,6 +421,39 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
+    func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+        // 1. Subscribe
+        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+
+        // 2. Simulate closing app
+        Purchases.clearSingleton()
+
+        // 3. Force several renewals while app is closed.
+        for _ in 0..<3 {
+            try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
+        }
+
+        // 4. Expire subscription
+        try await self.expireSubscription(entitlement)
+
+        // 5. Re-open app
+        await self.resetSingleton()
+        self.logger.clearMessages()
+
+        // 6. Purchase again
+        _ = try await self.purchases.purchase(package: self.monthlyPackage)
+
+        self.logger.clearMessages()
+
+        // 7. Verify previous transactions get posted
+        try await self.logger.verifyMessageIsEventuallyLogged("Posting receipt (source: 'queue')",
+                                                              timeout: .seconds(5))
+
+        // 8. Verify none of them were posted as a purchase.
+        self.logger.verifyMessageWasNotLogged("Posting receipt (source: 'purchase')")
+    }
+
     func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
         let product = try await self.monthlyPackage.storeProduct
         let discount = try XCTUnwrap(product.discounts.onlyElement)

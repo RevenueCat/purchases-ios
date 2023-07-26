@@ -86,6 +86,11 @@ extension TestLogHandler: Sendable {}
 
 extension TestLogHandler {
 
+    /// Useful if you want to ignore messages logged so far.
+    func clearMessages() {
+        self.loggedMessages.value.removeAll(keepingCapacity: false)
+    }
+
     func verifyMessageWasLogged(
         _ message: CustomStringConvertible,
         level: LogLevel? = nil,
