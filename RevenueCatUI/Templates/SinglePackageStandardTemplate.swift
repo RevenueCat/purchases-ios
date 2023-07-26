@@ -2,7 +2,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-struct SinglePackageTemplate: TemplateViewType {
+struct SinglePackageStandardTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
 
