@@ -1955,6 +1955,14 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// A tuple with <code>StoreTransaction</code> and a <code>CustomerInfo</code> if the purchase was successful.
 /// If the user cancelled the purchase, <code>userCancelled</code> will be <code>true</code>.
 - (void)purchaseWithPackage:(RCPackage * _Nonnull)package completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+/// Invalidates the cache for customer information.
+/// Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
+/// Refer to
+/// <a href="https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information">Get User Information</a>
+/// for more information on using the cache properly.
+/// This is useful for cases where customer information might have been updated outside of the app, like if a
+/// promotional subscription is granted through the RevenueCat dashboard.
+- (void)invalidateCustomerInfoCache;
 /// This method will post all purchases associated with the current App Store account to RevenueCat and become
 /// associated with the current <code>appUserID</code>. If the receipt is being used by an existing user, the current
 /// <code>appUserID</code> will be aliased together with the <code>appUserID</code> of the existing user.
@@ -2235,14 +2243,6 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// \param product the product to filter discounts from.
 ///
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-/// Invalidates the cache for customer information.
-/// Most apps will not need to use this method; invalidating the cache can leave your app in an invalid state.
-/// Refer to
-/// <a href="https://docs.revenuecat.com/docs/purchaserinfo#section-get-user-information">Get User Information</a>
-/// for more information on using the cache properly.
-/// This is useful for cases where customer information might have been updated outside of the app, like if a
-/// promotional subscription is granted through the RevenueCat dashboard.
-- (void)invalidateCustomerInfoCache;
 /// Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
 /// important:
 /// Even though the docs in <code>SKPaymentQueue.presentCodeRedemptionSheet</code>
@@ -2836,6 +2836,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)purchaseWithProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)purchasePackage:(RCPackage * _Nonnull)package withCompletion:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL))completion;
 - (void)purchaseWithPackage:(RCPackage * _Nonnull)package completionHandler:(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
+- (void)invalidateCustomerInfoCache;
 - (void)syncPurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 - (void)syncPurchasesWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)restorePurchasesWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
@@ -2848,7 +2849,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 - (void)checkTrialOrIntroDiscountEligibilityWithProductIdentifiers:(NSArray<NSString *> * _Nonnull)productIdentifiers completionHandler:(void (^ _Nonnull)(NSDictionary<NSString *, RCIntroEligibility *> * _Nonnull))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)checkTrialOrIntroDiscountEligibilityForProduct:(RCStoreProduct * _Nonnull)product completion:(void (^ _Nonnull)(enum RCIntroEligibilityStatus))completion;
 - (void)checkTrialOrIntroDiscountEligibilityWithProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(enum RCIntroEligibilityStatus))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=13.0);
-- (void)invalidateCustomerInfoCache;
 - (void)getPromotionalOfferForProductDiscount:(RCStoreProductDiscount * _Nonnull)discount withProduct:(RCStoreProduct * _Nonnull)product withCompletion:(void (^ _Nonnull)(RCPromotionalOffer * _Nullable, NSError * _Nullable))completion SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=12.2) SWIFT_AVAILABILITY(maccatalyst,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.14.4) SWIFT_AVAILABILITY(ios,introduced=12.2);
 - (void)promotionalOfferForProductDiscount:(RCStoreProductDiscount * _Nonnull)discount product:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(RCPromotionalOffer * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)eligiblePromotionalOffersForProduct:(RCStoreProduct * _Nonnull)product completionHandler:(void (^ _Nonnull)(NSArray<RCPromotionalOffer *> * _Nonnull))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
