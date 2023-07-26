@@ -87,7 +87,7 @@ extension SubscriptionStoreView {
 
 #if os(xrOS)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-extension SubscriptionStoreView where Content == DefaultSubscriptionStoreMarketingContent {
+extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarketingContent {
 
     /// Creates a ``SubscriptionStoreView`` from an ``Offering``
     /// that doesn't take a custom view to use for marketing content.
