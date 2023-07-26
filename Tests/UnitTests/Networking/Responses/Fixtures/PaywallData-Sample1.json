@@ -7,14 +7,16 @@
             "call_to_action": "Purchase now",
             "call_to_action_with_intro_offer": "Purchase now",
             "offer_details": "{{ price_per_month }} per month",
-            "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+            "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+            "offer_name": "{{ period }}"
         },
         "es_ES": {
             "title": "Tienda",
             "subtitle": "Descripción",
             "call_to_action": "Comprar",
             "offer_details": "{{ price_per_month }} cada mes",
-            "offer_details_with_intro_offer": " "
+            "offer_details_with_intro_offer": " ",
+            "offer_name": "{{ period }}"
         }
     },
     "default_locale": "en_US",

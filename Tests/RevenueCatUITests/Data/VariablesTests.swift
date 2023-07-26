@@ -96,7 +96,8 @@ class VariablesTests: TestCase {
             "Then {{ price_per_month }} every month",
             offerDetails: "Purchase for {{ price }}",
             offerDetailsWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
-            "Then {{ price_per_month }} every month"
+            "Then {{ price_per_month }} every month",
+            offerName: "{{ period }}"
         )
         let processed = configuration.processVariables(with: TestData.packageWithIntroOffer)
 
@@ -106,6 +107,7 @@ class VariablesTests: TestCase {
         expect(processed.callToActionWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
         expect(processed.offerDetails) == "Purchase for $3.99"
         expect(processed.offerDetailsWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
+        expect(processed.offerName) == "Monthly"
     }
 
 }
