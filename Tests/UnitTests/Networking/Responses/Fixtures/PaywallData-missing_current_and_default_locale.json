@@ -13,7 +13,7 @@
     "default_locale": "es_ES",
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
-        "images": ["asset_name"],
+        "images": {},
         "colors": {
             "light": {
                 "background": "#FFFFFF",
