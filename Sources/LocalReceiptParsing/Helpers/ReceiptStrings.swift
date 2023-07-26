@@ -28,7 +28,7 @@ enum ReceiptStrings {
     case parsing_receipt
     case refreshing_empty_receipt
     case unable_to_load_receipt(Error)
-    case posting_receipt(AppleReceipt)
+    case posting_receipt(AppleReceipt, initiationSource: String)
     case receipt_subscription_purchase_equals_expiration(
         productIdentifier: String,
         purchase: Date,
@@ -87,8 +87,8 @@ extension ReceiptStrings: LogMessage {
             return "Unable to load receipt, ensure you are logged in to a valid Apple account.\n" +
             "Error: \(error)"
 
-        case let .posting_receipt(receipt):
-            return "Posting receipt (note: the contents might not be up-to-date, " +
+        case let .posting_receipt(receipt, initiationSource):
+            return "Posting receipt (source: '\(initiationSource)') (note: the contents might not be up-to-date, " +
             "but it will be refreshed with Apple's servers):\n\(receipt.debugDescription)"
 
         case let .receipt_subscription_purchase_equals_expiration(
