@@ -14,6 +14,8 @@ extension PaywallData.LocalizedConfiguration {
 /// A type that can provide necessary information for `VariableHandler` to replace variable content in strings.
 protocol VariableDataProvider {
 
+    var isMonthly: Bool { get }
+
     var localizedPrice: String { get }
     var localizedPricePerMonth: String { get }
     var productName: String { get }
@@ -86,14 +88,11 @@ private extension VariableDataProvider {
         case "price": return self.localizedPrice
         case "price_per_month": return self.localizedPricePerMonth
         case "total_price_and_per_month":
-            let price = self.localizedPrice
-            let perMonth = self.localizedPricePerMonth
-
-            if price == perMonth {
-                return price
+            if self.isMonthly {
+                return self.localizedPrice
             } else {
                 let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
-                return "\(price) (\(perMonth)/\(unit))"
+                return "\(self.localizedPrice) (\(self.localizedPricePerMonth)/\(unit))"
             }
 
         case "product_name": return self.productName

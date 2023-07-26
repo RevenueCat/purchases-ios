@@ -4,6 +4,10 @@ import RevenueCat
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension Package: VariableDataProvider {
 
+    var isMonthly: Bool {
+        return self.packageType == .monthly
+    }
+
     var localizedPrice: String {
         return self.storeProduct.localizedPriceString
     }
