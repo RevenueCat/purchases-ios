@@ -18,6 +18,13 @@ import XCTest
 
 class OtherIntegrationTests: BaseBackendIntegrationTests {
 
+    override func setUp() async throws {
+        // Some tests need to introspect logs during initialization.
+        super.initializeLogger()
+
+        try await super.setUp()
+    }
+
     func testGetCustomerInfo() async throws {
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(info.entitlements.all).to(beEmpty())
@@ -57,6 +64,15 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
         )
+    }
+
+    func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {
+        self.logger.verifyMessageWasLogged(Strings.offering.offerings_stale_updating_in_foreground,
+                                           level: .debug,
+                                           expectedCount: 1)
+        self.logger.verifyMessageWasLogged("GetOfferingsOperation: Started",
+                                           level: .debug,
+                                           expectedCount: 1)
     }
 
     func testHealthRequest() async throws {

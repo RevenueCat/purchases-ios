@@ -333,7 +333,7 @@ extension BasePurchasesTests {
         var gotOfferings = 0
 
         override func getOfferings(appUserID: String,
-                                   withRandomDelay randomDelay: Bool,
+                                   isAppBackgrounded: Bool,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
