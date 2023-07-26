@@ -7,7 +7,7 @@ import SwiftUI
 #if !os(macOS)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-class SinglePackagePaywallViewTests: BaseSnapshotTest {
+class OnePackageStandardPaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
         let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
