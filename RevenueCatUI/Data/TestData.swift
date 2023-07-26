@@ -118,7 +118,7 @@ internal enum TestData {
         template: .singlePackage,
         config: .init(
             packages: [.monthly],
-            imageNames: [Self.paywallBackgroundImageName, Self.paywallHeaderImageName],
+            images: Self.images,
             colors: .init(light: Self.lightColors, dark: Self.darkColors),
             termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
             privacyURL: URL(string: "https://revenuecat.com/privacy")!
@@ -130,7 +130,7 @@ internal enum TestData {
         template: .singlePackage,
         config: .init(
             packages: [.annual],
-            imageNames: [Self.paywallBackgroundImageName, Self.paywallHeaderImageName],
+            images: Self.images,
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization1,
@@ -161,8 +161,7 @@ internal enum TestData {
             template: .multiPackage,
             config: .init(
                 packages: [.annual, .monthly],
-                imageNames: [Self.paywallBackgroundImageName,
-                             Self.paywallHeaderImageName],
+                images: Self.images,
                 colors: .init(
                     light: .init(
                         background: "#FFFFFF",
@@ -257,6 +256,11 @@ internal enum TestData {
     )
     static let paywallHeaderImageName = "9a17e0a7_1689854430..jpeg"
     static let paywallBackgroundImageName = "9a17e0a7_1689854342..jpg"
+    static let images: PaywallData.Configuration.Images = .init(
+        header: Self.paywallHeaderImageName,
+        background: Self.paywallBackgroundImageName,
+        icon: Self.paywallHeaderImageName
+    )
     static let paywallAssetBaseURL = URL(string: "https://d35rwhxn1vk1te.cloudfront.net")!
 
     private static let offeringIdentifier = "offering"
