@@ -39,6 +39,28 @@ enum Localization {
         return formatter.string(from: subscriptionPeriod.components) ?? ""
     }
 
+    static func localized(
+        packageType: PackageType,
+        locale: Locale = .current
+    ) -> String {
+        guard let key = packageType.localizationKey else { return "" }
+
+        func value(locale: Locale, default: String?) -> String {
+            Self
+                .localizedBundle(locale)
+                .localizedString(forKey: key,
+                                 value: `default`,
+                                 table: nil)
+        }
+
+        // Returns the localized string
+        return value(
+            locale: locale,
+            // Or defaults to english
+            default: value(locale: Self.defaultLocale, default: nil)
+        )
+    }
+
     /// - Returns: the `Bundle` associated with the given locale if found
     /// Defaults to `Bundle.module`.
     ///
@@ -107,6 +129,9 @@ private extension Localization {
 
     static let unitAbbreviationMaximumLength = 3
 
+    /// For falling back in case language isn't localized.
+    static let defaultLocale: Locale = .init(identifier: "en_US")
+
 }
 
 // MARK: - Extensions
@@ -163,6 +188,26 @@ private extension SubscriptionPeriod {
             return DateComponents(year: self.value)
         @unknown default:
             return .init()
+        }
+    }
+
+}
+
+private extension PackageType {
+
+    var localizationKey: String? {
+        let keyPrefix = "PackageType."
+
+        switch self {
+        case .annual: return "\(keyPrefix)annual"
+        case .sixMonth: return "\(keyPrefix)sixMonth"
+        case .threeMonth: return "\(keyPrefix)threeMonth"
+        case .twoMonth: return "\(keyPrefix)twoMonth"
+        case .monthly: return "\(keyPrefix)monthly"
+        case .weekly: return "\(keyPrefix)weekly"
+
+        case .unknown, .custom, .lifetime:
+            return nil
         }
     }
 
