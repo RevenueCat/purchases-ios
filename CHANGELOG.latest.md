@@ -1,3 +1,5 @@
+_This release is compatible with Xcode 15 beta 5 and visionOS beta 2_
+
 ### Bugfixes
 * `xrOS`: fixed `SubscriptionStoreView` for visionOS beta 2 (#2884) via Josh Holtz (@joshdholtz)
 ### Performance Improvements
