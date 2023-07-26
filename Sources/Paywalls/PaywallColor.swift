@@ -191,8 +191,9 @@ private extension Color {
 }
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-private extension Color {
+public extension Color {
 
+    /// Creates a `Color` given a light and a dark `Color`.
     init(light: Color, dark: Color) {
         self.init(light: UIColor(light), dark: UIColor(dark))
     }
