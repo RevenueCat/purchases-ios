@@ -115,7 +115,7 @@ private struct LinkButton: View {
 
 }
 
-#if DEBUG
+#if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable)
