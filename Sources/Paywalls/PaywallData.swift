@@ -50,6 +50,8 @@ public protocol PaywallLocalizedConfiguration {
     /// Description for the offer to be purchased when an intro offer is available.
     /// If `nil`, no information regarding trial eligibility will be displayed.
     var offerDetailsWithIntroOffer: String? { get }
+    /// The name representing each of the packages, most commonly a variable.
+    var offerName: String? { get }
 
 }
 
@@ -67,6 +69,7 @@ extension PaywallData {
         public var subtitle: String
         public var callToAction: String
         public var offerDetails: String
+        public var offerName: String?
         @NonEmptyStringDecodable
         var _callToActionWithIntroOffer: String?
         @NonEmptyStringDecodable
@@ -87,7 +90,8 @@ extension PaywallData {
             callToAction: String,
             callToActionWithIntroOffer: String? = nil,
             offerDetails: String,
-            offerDetailsWithIntroOffer: String? = nil
+            offerDetailsWithIntroOffer: String? = nil,
+            offerName: String? = nil
         ) {
             self.title = title
             self.subtitle = subtitle
@@ -95,6 +99,7 @@ extension PaywallData {
             self._callToActionWithIntroOffer = callToActionWithIntroOffer
             self.offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
+            self.offerName = offerName
         }
 
         // swiftlint:enable missing_docs
@@ -330,6 +335,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case _callToActionWithIntroOffer = "callToActionWithIntroOffer"
         case offerDetails
         case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
+        case offerName
     }
 
 }
