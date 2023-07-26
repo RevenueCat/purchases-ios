@@ -252,7 +252,8 @@ internal enum TestData {
         subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
         callToAction: "Subscribe for {{ price_per_month }}/mo",
         offerDetails: "{{ total_price_and_per_month }}",
-        offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial"
+        offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
+        offerName: "{{ period }}"
     )
     static let paywallHeaderImageName = "9a17e0a7_1689854430..jpeg"
     static let paywallBackgroundImageName = "9a17e0a7_1689854342..jpg"
