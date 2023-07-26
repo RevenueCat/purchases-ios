@@ -61,7 +61,9 @@
                 "default_locale": "en_US",
                 "config": {
                     "packages": ["$rc_monthly", "$rc_annual"],
-                    "images": ["asset_1", "asset_2"],
+                    "images": {
+                        "header": "header.jpg"
+                    },
                     "colors": {
                         "light": {
                             "background": "#FF00AA",

@@ -76,8 +76,8 @@ class SinglePackagePaywallViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
-    private static let offeringWithIntroOffer = TestData.offeringWithIntroOffer.withLocalReversedImages
-    private static let offeringWithNoIntroOffer = TestData.offeringWithNoIntroOffer.withLocalReversedImages
+    private static let offeringWithIntroOffer = TestData.offeringWithIntroOffer.withLocalImages
+    private static let offeringWithNoIntroOffer = TestData.offeringWithNoIntroOffer.withLocalImages
 
 }
 

@@ -23,7 +23,11 @@
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
         "default_package": "$rc_annual",
-        "images": ["asset_name.png"],
+        "images": {
+            "header": "header.jpg",
+            "background": "background.jpg",
+            "icon": "icon.jpg"
+        },
         "blurredBackgroundImage": true,
         "display_restore_purchases": false,
         "tos_url": "https://revenuecat.com/tos",
