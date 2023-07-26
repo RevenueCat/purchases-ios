@@ -117,7 +117,7 @@ internal enum TestData {
     ]
 
     static let paywallWithIntroOffer = PaywallData(
-        template: .singlePackage,
+        template: .onePackageStandard,
         config: .init(
             packages: [.monthly],
             images: Self.images,
@@ -129,7 +129,7 @@ internal enum TestData {
         assetBaseURL: Self.paywallAssetBaseURL
     )
     static let paywallWithNoIntroOffer = PaywallData(
-        template: .singlePackage,
+        template: .onePackageStandard,
         config: .init(
             packages: [.annual],
             images: Self.images,
@@ -160,7 +160,7 @@ internal enum TestData {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .multiPackage,
+            template: .multiPackageBold,
             config: .init(
                 packages: [.annual, .monthly],
                 images: Self.images,
