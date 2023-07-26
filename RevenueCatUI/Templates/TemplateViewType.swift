@@ -60,7 +60,7 @@ extension PaywallData {
                                       locale: locale),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
-                imageURLs: self.imageURLs
+                assetBaseURL: self.assetBaseURL
             )
         }
     }
