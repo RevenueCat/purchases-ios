@@ -15,7 +15,7 @@ extension PaywallData {
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
     /// that has no paywall configuration, or when that configuration is invalid.
     public static let `default`: Self = .init(
-        template: .multiPackage,
+        template: .multiPackageBold,
         config: .init(
             packages: [.weekly, .monthly, .annual],
             images: .init(background: Self.backgroundImage),

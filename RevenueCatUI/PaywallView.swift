@@ -262,8 +262,8 @@ private extension PaywallTemplate {
 
     var name: String {
         switch self {
-        case .singlePackage: return "single"
-        case .multiPackage: return "multi"
+        case .onePackageStandard: return "single"
+        case .multiPackageBold: return "multi"
         }
     }
 
