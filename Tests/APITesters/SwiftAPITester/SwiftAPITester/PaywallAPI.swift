@@ -56,6 +56,7 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
     let callToActionWithIntroOffer: String? = config.callToActionWithIntroOffer
     let offerDetails: String = config.offerDetails
     let offerDetailsWithIntroOffer: String? = config.offerDetailsWithIntroOffer
+    let offerName: String? = config.offerName
 
     let _: PaywallData.LocalizedConfiguration = .init(
         title: title,
@@ -63,7 +64,8 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
         callToAction: callToAction,
         callToActionWithIntroOffer: callToActionWithIntroOffer,
         offerDetails: offerDetails,
-        offerDetailsWithIntroOffer: offerDetailsWithIntroOffer
+        offerDetailsWithIntroOffer: offerDetailsWithIntroOffer,
+        offerName: offerName
     )
 }
 
