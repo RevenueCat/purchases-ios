@@ -17,6 +17,8 @@ protocol VariableDataProvider {
     var localizedPrice: String { get }
     var localizedPricePerMonth: String { get }
     var productName: String { get }
+
+    func periodName(_ locale: Locale) -> String
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
 }
@@ -95,6 +97,8 @@ private extension VariableDataProvider {
             }
 
         case "product_name": return self.productName
+        case "period":
+            return self.periodName(locale)
         case "intro_duration":
             return self.introductoryOfferDuration(locale) ?? ""
 
