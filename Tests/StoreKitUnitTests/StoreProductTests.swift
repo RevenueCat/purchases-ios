@@ -386,6 +386,15 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
     }
 
+    func testSK1ProductCannotDetermineProductType() {
+        let product = StoreProduct(sk1Product: .init())
+        self.logger.verifyMessageWasNotLogged(Strings.storeKit.sk1_no_known_product_type)
+
+        // Verify warning is only logged when calling method.
+        expect(product.productType) == .defaultType
+        self.logger.verifyMessageWasLogged(Strings.storeKit.sk1_no_known_product_type, level: .warn)
+    }
+
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
