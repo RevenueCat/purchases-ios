@@ -257,8 +257,7 @@ platform :ios do
       new_text: ENV["REVENUECAT_API_KEY"],
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
-        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m',
-        './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
+        './Tests/InstallationTests/CommonFiles/RCInstallationRunner.m'
       ]
     )
     replace_text_in_files(
@@ -267,6 +266,14 @@ platform :ios do
       paths_of_files_to_update: [
         './Tests/BackendIntegrationTests/Constants.swift',
         './Tests/v3LoadShedderIntegration/v3LoadShedderIntegrationTests/V3LoadShedderIntegrationTests.swift'
+      ]
+    )
+    replace_text_in_files(
+      previous_text: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
+      new_text: ENV["REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY"],
+      paths_of_files_to_update: [
+        './Tests/BackendIntegrationTests/Constants.swift',
+        './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/InstallationTests.swift'
       ]
     )
 

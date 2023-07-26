@@ -21,6 +21,8 @@ import XCTest
 
 final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrationTests {
 
+    override var apiKey: String { return Constants.customEntitlementComputationApiKey }
+
     override func setUp() async throws {
         try await super.setUp()
 

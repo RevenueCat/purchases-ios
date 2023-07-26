@@ -21,7 +21,7 @@ class InstallationTests: XCTestCase {
             Purchases.proxyURL = URL(string: proxyURL)!
         }
 
-        Purchases.configureInCustomEntitlementsComputationMode(apiKey: "REVENUECAT_API_KEY",
+        Purchases.configureInCustomEntitlementsComputationMode(apiKey: "REVENUECAT_CUSTOM_ENTITLEMENT_COMPUTATION_API_KEY",
                                                                appUserID: "Integration Tests")
     }
 
