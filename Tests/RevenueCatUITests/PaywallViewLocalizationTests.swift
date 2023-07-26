@@ -56,8 +56,7 @@ import SwiftUI
             template: .multiPackage,
             config: .init(
                 packages: [.weekly, .annual, .monthly],
-                imageNames: [TestData.paywallBackgroundImageName,
-                             TestData.paywallHeaderImageName],
+                images: TestData.images,
                 colors: .init(
                     light: .init(
                         background: "#FFFFFF",
