@@ -67,6 +67,11 @@ class VariablesTests: TestCase {
         expect(self.process("Purchase {{ product_name }}")) == "Purchase MindSnacks"
     }
 
+    func testPeriodName() {
+        self.provider.periodName = "Monthly"
+        expect(self.process("{{ period }}")) == "Monthly"
+    }
+
     func testIntroDurationName() {
         self.provider.introductoryOfferDuration = "1 week"
         expect(self.process("Start {{ intro_duration }} trial")) == "Start 1 week trial"
@@ -121,7 +126,12 @@ private struct MockVariableProvider: VariableDataProvider {
     var localizedPrice: String = ""
     var localizedPricePerMonth: String = ""
     var productName: String = ""
+    var periodName: String = ""
     var introductoryOfferDuration: String?
+
+    func periodName(_ locale: Locale) -> String {
+        return self.periodName
+    }
 
     func introductoryOfferDuration(_ locale: Locale) -> String? {
         return self.introductoryOfferDuration
