@@ -123,9 +123,9 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
 
     func testLocalization() {
         verify(.annual, "Annual")
-        verify(.sixMonth, "6-month")
-        verify(.threeMonth, "3-month")
-        verify(.twoMonth, "2-month")
+        verify(.sixMonth, "6 month")
+        verify(.threeMonth, "3 month")
+        verify(.twoMonth, "2 month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
     }
@@ -166,9 +166,9 @@ class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
 
     func testLocalizationDefaultsToEnglish() {
         verify(.annual, "Annual")
-        verify(.sixMonth, "6-month")
-        verify(.threeMonth, "3-month")
-        verify(.twoMonth, "2-month")
+        verify(.sixMonth, "6 month")
+        verify(.threeMonth, "3 month")
+        verify(.twoMonth, "2 month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
     }
