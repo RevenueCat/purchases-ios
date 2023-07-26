@@ -8,7 +8,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     typealias Feature = PaywallData.LocalizedConfiguration.Feature
 
     var title: String
-    var subtitle: String
+    var subtitle: String?
     var callToAction: String
     var callToActionWithIntroOffer: String?
     var offerDetails: String
@@ -23,7 +23,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     ) {
         self.init(
             title: configuration.title.processed(with: dataProvider, locale: locale),
-            subtitle: configuration.subtitle.processed(with: dataProvider, locale: locale),
+            subtitle: configuration.subtitle?.processed(with: dataProvider, locale: locale),
             callToAction: configuration.callToAction.processed(with: dataProvider, locale: locale),
             callToActionWithIntroOffer: configuration.callToActionWithIntroOffer?.processed(with: dataProvider,
                                                                                             locale: locale),
@@ -41,7 +41,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
 
     private init(
         title: String,
-        subtitle: String,
+        subtitle: String?,
         callToAction: String,
         callToActionWithIntroOffer: String?,
         offerDetails: String,
