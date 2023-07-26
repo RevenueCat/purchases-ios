@@ -34,8 +34,22 @@ extension PaywallData.Configuration.Colors {
             background: .init(light: light.background, dark: dark.background),
             foreground: .init(light: light.foreground, dark: dark.foreground),
             callToActionBackground: .init(light: light.callToActionBackground, dark: dark.callToActionBackground),
-            callToActionForeground: .init(light: light.callToActionForeground, dark: dark.callToActionForeground)
+            callToActionForeground: .init(light: light.callToActionForeground, dark: dark.callToActionForeground),
+            accent1: .init(light: light.accent1, dark: dark.accent1),
+            accent2: .init(light: light.accent2, dark: dark.accent2)
         )
+    }
+
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+private extension PaywallColor {
+
+    /// Creates a dynamic color for 2 ``ColorScheme``s from 2 optional colors.
+    init?(light: PaywallColor?, dark: PaywallColor?) {
+        guard let light, let dark else { return nil }
+
+        self.init(light: light, dark: dark)
     }
 
 }
@@ -66,6 +80,8 @@ extension PaywallData.Configuration.Colors {
     var foregroundColor: Color { self.foreground.underlyingColor }
     var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
     var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
+    var accent1Color: Color { self.accent1.underlyingColor }
+    var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
 
 }
 
