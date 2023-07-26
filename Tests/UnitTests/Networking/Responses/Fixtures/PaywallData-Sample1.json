@@ -37,13 +37,17 @@
                 "background": "#FF00AA",
                 "foreground": "#FF00AA22",
                 "call_to_action_background": "#FF00AACC",
-                "call_to_action_foreground": "#FF00AA"
+                "call_to_action_foreground": "#FF00AA",
+                "accent_1": "#FF0000",
+                "accent_2": "#00FF00"
             },
             "dark": {
                 "background": "#FF0000",
                 "foreground": "#1100FFAA",
                 "call_to_action_background": "#112233AA",
-                "call_to_action_foreground": "#AABBCC"
+                "call_to_action_foreground": "#AABBCC",
+                "accent_1": "#00FFFF",
+                "accent_2": "#FF00FF"
             }
         }
     },
