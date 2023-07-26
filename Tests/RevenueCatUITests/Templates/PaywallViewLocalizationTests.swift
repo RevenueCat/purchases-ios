@@ -53,7 +53,7 @@ import SwiftUI
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .multiPackage,
+            template: .multiPackageBold,
             config: .init(
                 packages: [.weekly, .annual, .monthly],
                 images: TestData.images,
