@@ -58,7 +58,7 @@ extension SKPaymentTransaction {
 
     fileprivate var purchaseDate: Date {
         guard let date = self.transactionDate else {
-            Logger.verbose(Strings.purchase.sktransaction_missing_transaction_date)
+            Logger.verbose(Strings.purchase.sktransaction_missing_transaction_date(self.transactionState))
 
             return Date(timeIntervalSince1970: 0)
         }
