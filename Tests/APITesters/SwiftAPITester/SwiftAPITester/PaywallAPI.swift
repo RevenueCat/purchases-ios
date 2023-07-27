@@ -148,6 +148,8 @@ func checkPaywallTemplate(_ template: PaywallTemplate) {
         break
     case .multiPackageBold:
         break
+    case .onePackageWithFeatures:
+        break
     @unknown default:
         break
     }
