@@ -17,7 +17,7 @@
         "colors": {
             "light": {
                 "background": "#FFFFFF",
-                "foreground": "#FFFFFF",
+                "text_1": "#FFFFFF",
                 "call_to_action_background": "#FFFFFF",
                 "call_to_action_foreground": "#FFFFFF",
                 "accent_1": "#FFFFFF"
