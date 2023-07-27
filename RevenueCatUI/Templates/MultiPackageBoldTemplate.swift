@@ -31,8 +31,6 @@ private struct MultiPackageTemplateContent: View {
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
-    @Environment(\.dismiss)
-    private var dismiss
 
     init(configuration: TemplateViewConfiguration, introEligibility: [Package: IntroEligibilityStatus]) {
         self._selectedPackage = .init(initialValue: configuration.packages.default.content)
@@ -62,21 +60,15 @@ private struct MultiPackageTemplateContent: View {
         VStack(spacing: 10) {
             self.iconImage
 
-            ViewThatFits(in: .vertical) {
-                self.scrollableContent
-
-                ScrollView {
-                    self.scrollableContent
-                }
-                    .scrollBounceBehaviorBasedOnSize()
-            }
+            self.scrollableContent
+                .scrollableIfNecessary()
 
             self.subscribeButton
                 .padding(.horizontal)
 
             if case .fullScreen = self.configuration.mode {
                 FooterView(configuration: self.configuration.configuration,
-                           colors: self.configuration.colors,
+                           color: self.configuration.colors.foregroundColor,
                            purchaseHandler: self.purchaseHandler)
             }
         }

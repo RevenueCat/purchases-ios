@@ -16,6 +16,7 @@ private extension PaywallTemplate {
         switch self {
         case .onePackageStandard: return .single
         case .multiPackageBold: return .multiple
+        case .onePackageWithFeatures: return .single
         }
     }
 
@@ -76,9 +77,11 @@ extension PaywallData {
                                    configuration: TemplateViewConfiguration) -> some View {
         switch template {
         case .onePackageStandard:
-            SinglePackageStandardTemplate(configuration)
+            OnePackageStandardTemplate(configuration)
         case .multiPackageBold:
             MultiPackageBoldTemplate(configuration)
+        case .onePackageWithFeatures:
+            OnePackageWithFeaturesTemplate(configuration)
         }
     }
 
