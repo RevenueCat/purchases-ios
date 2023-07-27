@@ -127,6 +127,9 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(enConfig.offerDetailsWithIntroOffer)
         == "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
         expect(enConfig.offerName).to(beNil())
+        expect(enConfig.features) == [
+            .init(title: "Feature 1", content: "Content", iconID: "lock")
+        ]
 
         let esConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "es_ES")))
         expect(esConfig.title) == "Tienda"
@@ -136,6 +139,8 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
         expect(esConfig.offerDetailsWithIntroOffer)
         == "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
+        expect(esConfig.offerName).to(beNil())
+        expect(esConfig.features).to(beEmpty())
 
         // This test relies on this
         expect(Locale.current.identifier) == "en_US"
