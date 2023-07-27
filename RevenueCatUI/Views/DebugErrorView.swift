@@ -78,6 +78,7 @@ struct DebugErrorView: View {
             )
             .foregroundColor(.white)
             .bold()
+            .minimumScaleFactor(0.5)
             .cornerRadius(8)
             .shadow(radius: 8)
     }
