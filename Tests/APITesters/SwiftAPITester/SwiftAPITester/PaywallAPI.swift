@@ -52,7 +52,7 @@ func checkPaywallConfiguration(_ config: PaywallData.Configuration,
 
 func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
     let title: String = config.title
-    let subtitle: String = config.subtitle
+    let subtitle: String? = config.subtitle
     let callToAction: String = config.callToAction
     let callToActionWithIntroOffer: String? = config.callToActionWithIntroOffer
     let offerDetails: String = config.offerDetails
