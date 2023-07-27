@@ -23,7 +23,7 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
     private let _updatedTransactions: Atomic<[StoreTransactionType]> = .init([])
 
     func storeKit2TransactionListener(
-        _ listener: StoreKit2TransactionListener,
+        _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
         self._invokedTransactionUpdated.value = true
@@ -31,6 +31,3 @@ final class MockStoreKit2TransactionListenerDelegate: StoreKit2TransactionListen
     }
 
 }
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension MockStoreKit2TransactionListenerDelegate: Sendable {}

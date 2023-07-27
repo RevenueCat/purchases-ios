@@ -74,9 +74,9 @@ final class PurchasesOrchestrator {
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var storeKit2TransactionListener: StoreKit2TransactionListener {
+    var storeKit2TransactionListener: StoreKit2TransactionListenerType {
         // swiftlint:disable:next force_cast
-        return self._storeKit2TransactionListener! as! StoreKit2TransactionListener
+        return self._storeKit2TransactionListener! as! StoreKit2TransactionListenerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -102,7 +102,7 @@ final class PurchasesOrchestrator {
                      offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
-                     storeKit2TransactionListener: StoreKit2TransactionListener,
+                     storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener
     ) {
         self.init(
@@ -127,13 +127,14 @@ final class PurchasesOrchestrator {
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
 
-        storeKit2TransactionListener.delegate = self
         storeKit2StorefrontListener.delegate = self
-
-        storeKit2TransactionListener.listenForTransactions()
-
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             storeKit2StorefrontListener.listenForStorefrontChanges()
+        }
+
+        Task {
+            await storeKit2TransactionListener.set(delegate: self)
+            await storeKit2TransactionListener.listenForTransactions()
         }
     }
 
@@ -849,7 +850,7 @@ private extension PurchasesOrchestrator {
 extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
 
     func storeKit2TransactionListener(
-        _ listener: StoreKit2TransactionListener,
+        _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
         let storefront = await self.storefront(from: transaction)

@@ -15,12 +15,27 @@ import Foundation
 import StoreKit
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-protocol StoreKit2TransactionListenerDelegate: AnyObject {
+protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {
 
     func storeKit2TransactionListener(
-        _ listener: StoreKit2TransactionListener,
+        _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+protocol StoreKit2TransactionListenerType: Sendable {
+
+    func listenForTransactions() async
+
+    func set(delegate: StoreKit2TransactionListenerDelegate) async
+
+    /// - Returns: `nil` `CustomerInfo` if purchases were not synced
+    /// - Throws: Error if purchase was not completed successfully
+    func handle(
+        purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreKit2TransactionListener.ResultData
 
 }
 
@@ -28,16 +43,20 @@ protocol StoreKit2TransactionListenerDelegate: AnyObject {
 /// - Updates from outside `Product.purchase()`, like renewals and purchases made on other devices
 /// - Purchases from SwiftUI's paywalls.
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoreKit2TransactionListener {
+actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
     /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
     typealias ResultData = (userCancelled: Bool, transaction: SK2Transaction?)
 
     private(set) var taskHandle: Task<Void, Never>?
 
-    weak var delegate: StoreKit2TransactionListenerDelegate?
+    private weak var delegate: StoreKit2TransactionListenerDelegate?
 
     init(delegate: StoreKit2TransactionListenerDelegate?) {
+        self.delegate = delegate
+    }
+
+    func set(delegate: StoreKit2TransactionListenerDelegate) {
         self.delegate = delegate
     }
 
