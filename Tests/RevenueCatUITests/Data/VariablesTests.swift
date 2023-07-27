@@ -98,7 +98,15 @@ class VariablesTests: TestCase {
             offerDetails: "Purchase for {{ price }}",
             offerDetailsWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
             "Then {{ price_per_month }} every month",
-            offerName: "{{ period }}"
+            offerName: "{{ period }}",
+            features: [
+                .init(title: "Purchase {{ product_name }}",
+                      content: "Trial lasts {{ intro_duration }}",
+                      iconID: nil),
+                .init(title: "Only {{ price }}",
+                      content: "{{ period }} subscription",
+                      iconID: nil)
+            ]
         )
         let processed = configuration.processVariables(with: TestData.packageWithIntroOffer)
 
@@ -109,6 +117,14 @@ class VariablesTests: TestCase {
         expect(processed.offerDetails) == "Purchase for $3.99"
         expect(processed.offerDetailsWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
         expect(processed.offerName) == "Monthly"
+        expect(processed.features) == [
+            .init(title: "Purchase PRO monthly",
+                  content: "Trial lasts 1 week",
+                  iconID: nil),
+            .init(title: "Only $3.99",
+                  content: "Monthly subscription",
+                  iconID: nil)
+        ]
     }
 
 }
