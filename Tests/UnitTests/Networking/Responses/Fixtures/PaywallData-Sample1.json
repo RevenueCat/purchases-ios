@@ -8,7 +8,19 @@
             "call_to_action_with_intro_offer": "Purchase now",
             "offer_details": "{{ price_per_month }} per month",
             "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
-            "offer_name": "{{ period }}"
+            "offer_name": "{{ period }}",
+            "features": [
+                {
+                    "title": "Feature 1",
+                    "content": "Content 1",
+                    "icon_id": "lock"
+                },
+                {
+                    "title": "Feature 2",
+                    "content": "Content 2",
+                    "icon_id": "bell"
+                }
+            ]
         },
         "es_ES": {
             "title": "Tienda",
@@ -16,7 +28,14 @@
             "call_to_action": "Comprar",
             "offer_details": "{{ price_per_month }} cada mes",
             "offer_details_with_intro_offer": " ",
-            "offer_name": "{{ period }}"
+            "offer_name": "{{ period }}",
+            "features": [
+                {
+                    "title": "Lista 1",
+                    "content": "Contenido",
+                    "icon_id": "lock"
+                }
+            ]
         }
     },
     "default_locale": "en_US",
