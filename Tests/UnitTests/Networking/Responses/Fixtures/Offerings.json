@@ -73,7 +73,7 @@
                     "colors": {
                         "light": {
                             "background": "#FF00AA",
-                            "foreground": "#FF00AA22",
+                            "text_1": "#FF00AA22",
                             "call_to_action_background": "#FF00AACC",
                             "call_to_action_foreground": "#FF00AA",
                             "accent_1": "#FF0000"
