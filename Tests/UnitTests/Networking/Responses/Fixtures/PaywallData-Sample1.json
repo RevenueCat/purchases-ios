@@ -53,7 +53,8 @@
         "colors": {
             "light": {
                 "background": "#FF00AA",
-                "foreground": "#FF00AA22",
+                "text_1": "#FF00AA22",
+                "text_2": "#FF00AA11",
                 "call_to_action_background": "#FF00AACC",
                 "call_to_action_foreground": "#FF00AA",
                 "accent_1": "#FF0000",
@@ -61,7 +62,7 @@
             },
             "dark": {
                 "background": "#FF0000",
-                "foreground": "#1100FFAA",
+                "text_1": "#FF0011",
                 "call_to_action_background": "#112233AA",
                 "call_to_action_foreground": "#AABBCC",
                 "accent_1": "#00FFFF",
