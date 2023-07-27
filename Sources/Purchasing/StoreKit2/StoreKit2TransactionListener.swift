@@ -82,6 +82,9 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
             for await result in updates {
                 guard let self = self else { break }
 
+                // Important that handling transactions doesn't block this
+                // to allow all potential `PostReceiptOperations` to begin
+                // and get de-duped if they share the same cache key.
                 Task.detached {
                     do {
                         _ = try await self.handle(transactionResult: result, fromTransactionUpdate: true)
