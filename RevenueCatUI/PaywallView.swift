@@ -134,8 +134,9 @@ struct LoadedOfferingPaywallView: View {
     private let offering: Offering
     private let paywall: PaywallData
     private let mode: PaywallViewMode
-    private let introEligibility: TrialOrIntroEligibilityChecker
 
+    @StateObject
+    private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
 
@@ -152,13 +153,18 @@ struct LoadedOfferingPaywallView: View {
         self.offering = offering
         self.paywall = paywall
         self.mode = mode
-        self.introEligibility = introEligibility
+        self._introEligibility = .init(
+            wrappedValue: .init(introEligibilityChecker: introEligibility)
+        )
         self.purchaseHandler = purchaseHandler
     }
 
     var body: some View {
         let view = self.paywall
-            .createView(for: self.offering, mode: self.mode, locale: self.locale)
+            .createView(for: self.offering,
+                        mode: self.mode,
+                        introEligibility: self.introEligibility,
+                        locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .hidden(if: self.shouldHidePaywall)
