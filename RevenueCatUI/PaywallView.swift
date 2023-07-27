@@ -230,14 +230,15 @@ struct PaywallView_Previews: PreviewProvider {
 
     private static let introEligibility: TrialOrIntroEligibilityChecker =
         .producing(eligibility: .eligible)
-        .with(delay: .seconds(1))
+        .with(delay: .seconds(0.5))
     private static let purchaseHandler: PurchaseHandler =
         .mock()
         .with(delay: .seconds(1))
 
     private static let offerings: [Offering] = [
         TestData.offeringWithIntroOffer,
-        TestData.offeringWithMultiPackagePaywall
+        TestData.offeringWithMultiPackagePaywall,
+        TestData.offeringWithSinglePackageFeaturesPaywall
     ]
 
     private static let modes: [PaywallViewMode] = [
@@ -270,6 +271,7 @@ private extension PaywallTemplate {
         switch self {
         case .onePackageStandard: return "single"
         case .multiPackageBold: return "multi"
+        case .onePackageWithFeatures: return "features"
         }
     }
 
