@@ -5,6 +5,8 @@ import RevenueCat
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
 
+    typealias Feature = PaywallData.LocalizedConfiguration.Feature
+
     var title: String
     var subtitle: String
     var callToAction: String
@@ -12,6 +14,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var offerDetails: String
     var offerDetailsWithIntroOffer: String?
     var offerName: String?
+    var features: [Feature]
 
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
@@ -27,7 +30,12 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
             offerDetails: configuration.offerDetails.processed(with: dataProvider, locale: locale),
             offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer?.processed(with: dataProvider,
                                                                                             locale: locale),
-            offerName: configuration.offerName?.processed(with: dataProvider, locale: locale)
+            offerName: configuration.offerName?.processed(with: dataProvider, locale: locale),
+            features: configuration.features.map {
+                .init(title: $0.title.processed(with: dataProvider, locale: locale),
+                      content: $0.content?.processed(with: dataProvider, locale: locale),
+                      iconID: $0.iconID)
+            }
         )
     }
 
@@ -38,7 +46,8 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         callToActionWithIntroOffer: String?,
         offerDetails: String,
         offerDetailsWithIntroOffer: String?,
-        offerName: String?
+        offerName: String?,
+        features: [Feature]
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -47,6 +56,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         self.offerDetails = offerDetails
         self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
         self.offerName = offerName
+        self.features = features
     }
 
 }
