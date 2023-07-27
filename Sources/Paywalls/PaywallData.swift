@@ -74,6 +74,8 @@ extension PaywallData {
         var _callToActionWithIntroOffer: String?
         @NonEmptyStringDecodable
         var _offerDetailsWithIntroOffer: String?
+        @DefaultDecodable.EmptyArray
+        var _features: [Feature]
 
         public var callToActionWithIntroOffer: String? {
             get { return self._callToActionWithIntroOffer }
@@ -83,6 +85,10 @@ extension PaywallData {
             get { return self._offerDetailsWithIntroOffer }
             set { self._offerDetailsWithIntroOffer = newValue }
         }
+        public var features: [Feature] {
+            get { return self._features }
+            set { self._features = newValue }
+        }
 
         public init(
             title: String,
@@ -91,7 +97,8 @@ extension PaywallData {
             callToActionWithIntroOffer: String? = nil,
             offerDetails: String,
             offerDetailsWithIntroOffer: String? = nil,
-            offerName: String? = nil
+            offerName: String? = nil,
+            features: [Feature] = []
         ) {
             self.title = title
             self.subtitle = subtitle
@@ -100,6 +107,7 @@ extension PaywallData {
             self.offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
             self.offerName = offerName
+            self.features = features
         }
 
         // swiftlint:enable missing_docs
@@ -139,6 +147,32 @@ extension PaywallData {
     }
 
 }
+
+extension PaywallData.LocalizedConfiguration {
+
+    /// An item to be showcased in a paywall.
+    public struct Feature {
+
+        /// The title of the feature.
+        public var title: String
+        /// An optional description of the feature.
+        public var content: String?
+        /// An optional icon for the feature.
+        /// This must be an icon identifier known by `RevenueCatUI`.
+        public var iconID: String?
+
+        // swiftlint:disable:next missing_docs
+        public init(title: String, content: String? = nil, iconID: String? = nil) {
+            self.title = title
+            self.content = content
+            self.iconID = iconID
+        }
+
+    }
+
+}
+
+// MARK: - Configuration
 
 extension PaywallData {
 
@@ -340,6 +374,16 @@ extension PaywallData {
 
 // MARK: - Codable
 
+extension PaywallData.LocalizedConfiguration.Feature: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case title
+        case content
+        case iconID = "iconId"
+    }
+
+}
+
 extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
@@ -350,6 +394,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case offerDetails
         case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
         case offerName
+        case _features = "features"
     }
 
 }
@@ -388,6 +433,7 @@ extension PaywallData: Codable {
 
 // MARK: - Equatable
 
+extension PaywallData.LocalizedConfiguration.Feature: Equatable {}
 extension PaywallData.LocalizedConfiguration: Equatable {}
 extension PaywallData.Configuration.ColorInformation: Equatable {}
 extension PaywallData.Configuration.Colors: Equatable {}
@@ -397,6 +443,7 @@ extension PaywallData: Equatable {}
 
 // MARK: - Sendable
 
+extension PaywallData.LocalizedConfiguration.Feature: Sendable {}
 extension PaywallData.LocalizedConfiguration: Sendable {}
 extension PaywallData.Configuration.ColorInformation: Sendable {}
 extension PaywallData.Configuration.Colors: Sendable {}

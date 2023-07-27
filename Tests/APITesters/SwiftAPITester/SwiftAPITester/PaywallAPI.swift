@@ -58,6 +58,7 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
     let offerDetails: String = config.offerDetails
     let offerDetailsWithIntroOffer: String? = config.offerDetailsWithIntroOffer
     let offerName: String? = config.offerName
+    let features: [PaywallData.LocalizedConfiguration.Feature] = config.features
 
     let _: PaywallData.LocalizedConfiguration = .init(
         title: title,
@@ -66,9 +67,21 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
         callToActionWithIntroOffer: callToActionWithIntroOffer,
         offerDetails: offerDetails,
         offerDetailsWithIntroOffer: offerDetailsWithIntroOffer,
-        offerName: offerName
+        offerName: offerName,
+        features: features
     )
 }
+
+func checkLocalizedConfigFeature(_ feature: PaywallData.LocalizedConfiguration.Feature) {
+    let title: String = feature.title
+    let content: String? = feature.content
+    let iconID: String? = feature.iconID
+
+    let _: PaywallData.LocalizedConfiguration.Feature = .init(title: title,
+                                                              content: content,
+                                                              iconID: iconID)
+}
+
 func checkPaywallImages(_ images: PaywallData.Configuration.Images) {
     let header: String? = images.header
     let background: String? = images.background
