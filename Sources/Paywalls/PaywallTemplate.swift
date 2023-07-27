@@ -19,6 +19,7 @@ public enum PaywallTemplate: String {
     // swiftlint:disable missing_docs
     case onePackageStandard = "one_package_standard"
     case multiPackageBold = "multi_package_bold"
+    case onePackageWithFeatures = "one_package_with_features"
 
     // swiftlint:enable missing_docs
 
