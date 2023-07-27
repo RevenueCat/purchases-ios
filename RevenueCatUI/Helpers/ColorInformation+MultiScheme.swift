@@ -32,7 +32,8 @@ extension PaywallData.Configuration.Colors {
     static func combine(light: Self, dark: Self) -> Self {
         return .init(
             background: .init(light: light.background, dark: dark.background),
-            foreground: .init(light: light.foreground, dark: dark.foreground),
+            text1: .init(light: light.text1, dark: dark.text1),
+            text2: .init(light: light.text2, dark: dark.text2),
             callToActionBackground: .init(light: light.callToActionBackground, dark: dark.callToActionBackground),
             callToActionForeground: .init(light: light.callToActionForeground, dark: dark.callToActionForeground),
             accent1: .init(light: light.accent1, dark: dark.accent1),
@@ -77,10 +78,11 @@ import SwiftUI
 extension PaywallData.Configuration.Colors {
 
     var backgroundColor: Color { self.background.underlyingColor }
-    var foregroundColor: Color { self.foreground.underlyingColor }
+    var text1Color: Color { self.text1.underlyingColor }
+    var text2Color: Color { self.text2?.underlyingColor ?? self.text1.underlyingColor }
     var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
     var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
-    var accent1Color: Color { self.accent1.underlyingColor }
+    var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
 
 }
