@@ -60,12 +60,18 @@ let package = Package(
         // RevenueCatUI
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
-                path: "RevenueCatUI"),
+                path: "RevenueCatUI",
+                resources: [
+                    .copy("Resources/background.jpg"),
+                    .process("Resources/icons.xcassets")
+                ]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
                         "Nimble",
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-                    ])
+                    ],
+                    exclude: ["Templates/__Snapshots__"],
+                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )
