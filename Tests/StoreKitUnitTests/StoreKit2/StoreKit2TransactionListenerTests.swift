@@ -23,8 +23,16 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 
+    typealias TransactionResult = StoreKit2TransactionListener.TransactionResult
+
     fileprivate var listener: StoreKit2TransactionListener! = nil
     fileprivate var delegate: MockStoreKit2TransactionListenerDelegate! = nil
+
+    var updates: AsyncStream<TransactionResult> {
+        get async throws {
+            return Transaction.updates.toAsyncStream()
+        }
+    }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -35,7 +43,7 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
         await self.verifyNoUnfinishedTransactions()
 
         self.delegate = .init()
-        self.listener = .init(delegate: self.delegate)
+        self.listener = .init(delegate: self.delegate, updates: try await self.updates)
     }
 
 }
@@ -226,6 +234,47 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
         self.logger.verifyMessageWasLogged(Strings.purchase.sk2_transactions_update_received_transaction(
             productID: Self.productID
         ))
+    }
+
+}
+
+// MARK: - Tests with custom stream
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListenerBaseTests {
+
+    override var updates: AsyncStream<TransactionResult> {
+        get async throws {
+            return MockAsyncSequence<TransactionResult>(with: [
+                .verified(try await self.createTransactionWithPurchase()),
+                .verified(try await self.createTransactionWithPurchase()),
+                .unverified(
+                    try await self.createTransactionWithPurchase(),
+                    .revokedCertificate
+                )
+            ])
+            .toAsyncStream()
+        }
+    }
+
+    func testHandlesAllVerifiedTransactions() async throws {
+        await self.listener.listenForTransactions()
+
+        try await asyncWait {
+            return await self.delegate.updatedTransactions.count == 2
+        }
+    }
+
+    func testHandlesTransactionsAsynchronously() async throws {
+        self.delegate.fakeHandlingDelay = .milliseconds(50)
+
+        await self.listener.listenForTransactions()
+
+        try await asyncWait {
+            return await self.delegate.updatedTransactions.count == 2
+        }
+
+        expect(self.delegate.receivedConcurrentRequest) == true
     }
 
 }
