@@ -35,14 +35,14 @@ private extension PaywallData {
     static let colors: PaywallData.Configuration.ColorInformation = .init(
         light: .init(
             background: try! .init(stringRepresentation: "#FFFFFF"),
-            foreground: try! .init(stringRepresentation: "#000000"),
+            text1: try! .init(stringRepresentation: "#000000"),
             callToActionBackground: try! .init(stringRepresentation: "#EC807C"),
             callToActionForeground: try! .init(stringRepresentation: "#FFFFFF"),
             accent1: try! .init(stringRepresentation: "#EC807C")
         ),
         dark: .init(
             background: try! .init(stringRepresentation: "#000000"),
-            foreground: try! .init(stringRepresentation: "#FFFFFF"),
+            text1: try! .init(stringRepresentation: "#FFFFFF"),
             callToActionBackground: try! .init(stringRepresentation: "#ACD27A"),
             callToActionForeground: try! .init(stringRepresentation: "#000000"),
             accent1: try! .init(stringRepresentation: "#ACD27A")
