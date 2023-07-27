@@ -167,8 +167,16 @@ private struct MultiPackageTemplateContent: View {
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: alignment)
         .foregroundColor(self.configuration.colors.foregroundColor)
+        .overlay {
+            if selected {
+                EmptyView()
+            } else {
+                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                    .stroke(self.configuration.colors.foregroundColor, lineWidth: 2)
+            }
+        }
         .background {
-            RoundedRectangle(cornerRadius: 15, style: .continuous)
+            RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
                 .foregroundColor(
                     selected
                     ? Self.selectedBackgroundColor
@@ -220,6 +228,7 @@ private struct MultiPackageTemplateContent: View {
     }
 
     private static let iconSize: CGFloat = 100
+    private static let cornerRadius: CGFloat = 15
 
     #if !os(macOS) && !os(watchOS)
     private static let selectedBackgroundColor: Color = .init(
