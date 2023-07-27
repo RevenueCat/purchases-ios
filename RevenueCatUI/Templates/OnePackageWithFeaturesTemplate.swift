@@ -62,7 +62,7 @@ private struct OnePackageWithFeaturesTemplateContent: View {
 
             Text(self.localization.title)
                 .font(.title)
-                .foregroundStyle(self.configuration.colors.foregroundColor)
+                .foregroundStyle(self.configuration.colors.text1Color)
                 .multilineTextAlignment(.center)
 
             Spacer()
@@ -161,7 +161,7 @@ private struct FeatureView: View {
                 }
 
                 Text(self.feature.title)
-                    .foregroundStyle(self.colors.foregroundColor)
+                    .foregroundStyle(self.colors.text1Color)
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
