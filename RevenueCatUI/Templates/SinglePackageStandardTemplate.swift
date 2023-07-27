@@ -63,8 +63,8 @@ private struct SinglePackageTemplateContent: View {
                                 : []
                         )
 
-                    if self.configuration.mode.displaySubtitle {
-                        Text(verbatim: self.localization.subtitle)
+                    if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
+                        Text(verbatim: subtitle)
                             .font(self.configuration.mode.subtitleFont)
                     }
                 }
