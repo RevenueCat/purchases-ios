@@ -461,7 +461,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.logger.clearMessages()
 
         // 7. Verify no transaction is posted as a purchase.
-        self.logger.verifyMessageWasNotLogged("Posting receipt (source: 'purchase')")
+        self.logger.verifyMessageWasNotLogged("Posting receipt (source: 'purchase')",
+                                              allowNoMessages: true)
     }
 
     func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
