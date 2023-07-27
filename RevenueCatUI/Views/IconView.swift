@@ -27,7 +27,52 @@ struct IconView<S: ShapeStyle>: View {
 /// An icon to be displayed by `IconView`.
 enum PaywallIcon: String {
 
+    case add
+    case android
+    case apple
+    case attachMoney = "attach_money"
+    case attachment
+    case barChart = "bar_chart"
+    case bookmark
+    case bookmarkNoFill = "bookmark_no_fill"
+    case calendarToday = "calendar_today"
+    case chatBubble = "chat_bubble"
+    case checkCircle = "check_circle"
+    case close
+    case collapse
+    case compare
+    case download
+    case edit
+    case email
+    case error
+    case experiments
+    case `extension`
+    case fileCopy = "file_copy"
+    case filterList = "filter_list"
+    case folder
+    case globe
+    case help
+    case insertDriveFile = "insert_drive_file"
+    case launch
+    case layers
+    case lineChart = "line_chart"
     case lock
+    case notifications
+    case person
+    case phone
+    case playCircle = "play_circle"
+    case removeRedEye = "remove_red_eye"
+    case search
+    case share
+    case smartphone
+    case stackedBar = "stacked_bar"
+    case stars
+    case subtract
+    case tick
+    case transfer
+    case twoWayArrows = "two_way_arrows"
+    case vpnKey = "vpn_key"
+    case warning
 
 }
 
