@@ -26,8 +26,8 @@ class BaseStoreKitObserverModeIntegrationTests: BaseStoreKitIntegrationTests {
 
     var manager: ObserverModeManager!
 
-    final override func configureTestSession() throws {
-        try super.configureTestSession()
+    final override func configureTestSession() async throws {
+        try await super.configureTestSession()
 
         self.manager = .init()
     }
@@ -179,7 +179,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
 
     func testDoesNotSyncExistingSK1Purchases() async throws {
         // 1. Create `SKTestSession`
-        try self.configureTestSession()
+        try await self.configureTestSession()
 
         // 2. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit1()
@@ -194,7 +194,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
 
     func testDoesNotSyncExistingSK2Purchases() async throws {
         // 1. Create `SKTestSession`
-        try self.configureTestSession()
+        try await self.configureTestSession()
 
         // 2. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit2()
