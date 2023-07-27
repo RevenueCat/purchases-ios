@@ -47,7 +47,14 @@
                         "call_to_action": "Purchase now",
                         "call_to_action_with_intro_offer": "Purchase now",
                         "offer_details": "{{ price_per_month }} per month",
-                        "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+                        "offer_details_with_intro_offer": "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+                        "features": [
+                            {
+                                "title": "Feature 1",
+                                "content": "Content",
+                                "icon_id": "lock"
+                            }
+                        ]
                     },
                     "es_ES": {
                         "title": "Tienda",
