@@ -177,7 +177,8 @@ private extension BaseTemplateViewConfigurationTests {
         callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: nil,
         offerDetails: "{{ price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+        features: []
     )
 
     private static let consumableProduct = TestStoreProduct(

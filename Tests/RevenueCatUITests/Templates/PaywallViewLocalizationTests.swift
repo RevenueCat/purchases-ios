@@ -77,7 +77,9 @@ import SwiftUI
         subtitle: "Accede a todo nuestro contenido educativo, confiado por miles de padres.",
         callToAction: "Comprar",
         offerDetails: "{{ total_price_and_per_month }}",
-        offerDetailsWithIntroOffer: "Comienza tu prueba de {{ intro_duration }}, después {{ price_per_month }} cada mes"
+        offerDetailsWithIntroOffer: "Comienza tu prueba de {{ intro_duration }}, " +
+        "después {{ price_per_month }} cada mes",
+        features: []
     )
 
 }
