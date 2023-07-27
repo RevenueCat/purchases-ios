@@ -168,7 +168,7 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
-            color: TestData.colors.foregroundColor,
+            color: TestData.colors.text1Color,
             purchaseHandler: Self.handler
         )
     }
