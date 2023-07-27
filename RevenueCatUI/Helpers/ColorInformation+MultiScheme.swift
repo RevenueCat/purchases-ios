@@ -82,7 +82,7 @@ extension PaywallData.Configuration.Colors {
     var text2Color: Color { self.text2?.underlyingColor ?? self.text1.underlyingColor }
     var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
     var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
-    var accent1Color: Color { self.accent1.underlyingColor }
+    var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
 
 }

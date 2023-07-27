@@ -312,7 +312,7 @@ extension PaywallData.Configuration {
         /// Foreground color of the main call to action button.
         public var callToActionForeground: PaywallColor
         /// Primary accent color.
-        public var accent1: PaywallColor
+        public var accent1: PaywallColor?
         /// Secondary accent color
         public var accent2: PaywallColor?
 
@@ -323,7 +323,7 @@ extension PaywallData.Configuration {
             text2: PaywallColor? = nil,
             callToActionBackground: PaywallColor,
             callToActionForeground: PaywallColor,
-            accent1: PaywallColor,
+            accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil
         ) {
             self.background = background
