@@ -25,10 +25,16 @@ private extension PaywallTemplate {
 extension PaywallData {
 
     @ViewBuilder
-    func createView(for offering: Offering, mode: PaywallViewMode, locale: Locale) -> some View {
+    func createView(for offering: Offering,
+                    mode: PaywallViewMode,
+                    introEligibility: IntroEligibilityViewModel,
+                    locale: Locale) -> some View {
         switch self.configuration(for: offering, mode: mode, locale: locale) {
         case let .success(configuration):
             Self.createView(template: self.template, configuration: configuration)
+                .task(id: offering) {
+                    await introEligibility.computeEligibility(for: configuration.packages)
+                }
                 .background(
                     Rectangle()
                         .foregroundColor(
