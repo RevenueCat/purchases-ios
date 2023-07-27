@@ -2,7 +2,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-struct SinglePackageStandardTemplate: TemplateViewType {
+struct OnePackageStandardTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
     @EnvironmentObject
@@ -13,14 +13,14 @@ struct SinglePackageStandardTemplate: TemplateViewType {
     }
 
     var body: some View {
-        SinglePackageTemplateContent(configuration: self.configuration,
-                                     introEligibility: self.introEligibility.singleEligibility)
+        OnePackageTemplateContent(configuration: self.configuration,
+                                  introEligibility: self.introEligibility.singleEligibility)
     }
 
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct SinglePackageTemplateContent: View {
+private struct OnePackageTemplateContent: View {
 
     private var configuration: TemplateViewConfiguration
     private var introEligibility: IntroEligibilityStatus?
@@ -28,8 +28,6 @@ private struct SinglePackageTemplateContent: View {
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
-    @Environment(\.dismiss)
-    private var dismiss
 
     init(configuration: TemplateViewConfiguration, introEligibility: IntroEligibilityStatus?) {
         self.configuration = configuration
@@ -84,7 +82,7 @@ private struct SinglePackageTemplateContent: View {
 
             if case .fullScreen = self.configuration.mode {
                 FooterView(configuration: self.configuration.configuration,
-                           colors: self.configuration.colors,
+                           color: self.configuration.colors.foregroundColor,
                            purchaseHandler: self.purchaseHandler)
             }
         }
