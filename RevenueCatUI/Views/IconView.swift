@@ -25,7 +25,7 @@ struct IconView<S: ShapeStyle>: View {
 }
 
 /// An icon to be displayed by `IconView`.
-enum PaywallIcon: String {
+enum PaywallIcon: String, CaseIterable {
 
     case add
     case android
@@ -82,15 +82,30 @@ enum PaywallIcon: String {
 struct IconView_Previews: PreviewProvider {
 
     static var previews: some View {
-        Self.icon(.lock, .green.gradient.shadow(.inner(color: .black, radius: 2)))
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))]) {
+            ForEach(PaywallIcon.allCases, id: \.rawValue) { icon in
+                Self.icon(icon, Self.colors.randomElement()!)
+            }
+        }
     }
 
     private static func icon<S: ShapeStyle>(_ icon: PaywallIcon, _ color: S) -> some View {
         IconView(icon: icon, tint: color)
-            .frame(width: 200, height: 200)
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName(icon.rawValue)
     }
+
+    private static let colors: [Color] = [
+        .red,
+        .green,
+        .blue,
+        .indigo,
+        .brown,
+        .cyan,
+        .orange,
+        .mint,
+        .pink,
+        .purple,
+        .teal
+    ]
 
 }
 
