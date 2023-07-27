@@ -102,7 +102,7 @@ private struct MultiPackageTemplateContent: View {
 
             Spacer()
 
-            Text(self.selectedLocalization.subtitle)
+            Text(self.selectedLocalization.subtitle ?? "")
                 .font(.title2)
 
             Spacer()
