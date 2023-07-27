@@ -62,7 +62,7 @@ extension NetworkStrings: LogMessage {
 
         case let .reusing_existing_request_for_operation(operationType, cacheKey):
             return "Network operation '\(operationType)' found with the same cache key " +
-            "'\(cacheKey.prefix(15))...'. Skipping request."
+            "'\(cacheKey)'. Skipping request."
 
         case let .creating_json_error(error):
             return "Error creating request with body: \(error)"

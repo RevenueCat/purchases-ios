@@ -23,7 +23,14 @@ extension OperationQueue {
         case .firstCallbackAddedToList:
             self.addOperation(factory.create())
         case .addedToExistingInFlightList:
-            Logger.debug(Strings.network.reusing_existing_request_for_operation(T.self, factory.cacheKey))
+            Logger.debug(
+                Strings.network.reusing_existing_request_for_operation(
+                    T.self,
+                    Logger.logLevel == .verbose
+                    ? factory.cacheKey
+                    : factory.cacheKey.prefix(15) + "…"
+                )
+            )
             return
         }
     }
