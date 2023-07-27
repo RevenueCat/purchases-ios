@@ -58,7 +58,6 @@
                     },
                     "es_ES": {
                         "title": "Tienda",
-                        "subtitle": "Descripción",
                         "call_to_action": "Comprar",
                         "call_to_action_with_intro_offer": "Comprar",
                         "offer_details": "{{ price_per_month }} cada mes",
