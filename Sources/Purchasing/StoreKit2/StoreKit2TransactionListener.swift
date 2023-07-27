@@ -54,11 +54,18 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     private weak var delegate: StoreKit2TransactionListenerDelegate?
     private let updates: AsyncStream<TransactionResult>
 
-    init(
-        delegate: StoreKit2TransactionListenerDelegate? = nil
-    ) {
+    #if swift(<5.7)
+    // Note that these 2 constructors are duplicated because
+    // not having convinience here is an error in Xcode 13
+    // But having it is an error in Xcode 14.
+    convenience init(delegate: StoreKit2TransactionListenerDelegate? = nil) {
         self.init(delegate: delegate, updates: StoreKit.Transaction.updates)
     }
+    #else
+    init(delegate: StoreKit2TransactionListenerDelegate? = nil) {
+        self.init(delegate: delegate, updates: StoreKit.Transaction.updates)
+    }
+    #endif
 
     /// Creates a listener with an `AsyncSequence` of `VerificationResult<Transaction>`s
     /// By default `StoreKit.Transaction.updates` is used, but a custom one can be passed for testing.
