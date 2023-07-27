@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable type_body_length
+// swiftlint:disable type_body_length file_length
 
 #if DEBUG
 
@@ -185,6 +185,52 @@ internal enum TestData {
                 privacyURL: URL(string: "https://revenuecat.com/tos")!
             ),
             localization: Self.localization2,
+            assetBaseURL: Self.paywallAssetBaseURL
+        ),
+        availablePackages: [Self.weeklyPackage,
+                            Self.monthlyPackage,
+                            Self.annualPackage]
+    )
+
+    static let offeringWithSinglePackageFeaturesPaywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            template: .onePackageWithFeatures,
+            config: .init(
+                packages: [.annual],
+                images: Self.images,
+                colors: .init(
+                    light: .init(
+                        background: "#272727",
+                        foreground: "#FFFFFF",
+                        callToActionBackground: "#FFFFFF",
+                        callToActionForeground: "#000000",
+                        accent1: "#F4E971",
+                        accent2: "#B7B7B7"
+                    )
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "How your free trial works",
+                callToAction: "Start",
+                callToActionWithIntroOffer: "Start your {{ intro_duration }} free",
+                offerDetails: "Only {{ price }} per {{ period }}",
+                offerDetailsWithIntroOffer: "First {{ intro_duration }} free,\nthen {{ total_price_and_per_month }}",
+                features: [
+                    .init(title: "Today",
+                          content: "Full access to 1000+ workouts plus free meal plan worth {{ price }}.",
+                          iconID: "tick"),
+                    .init(title: "Day 7",
+                          content: "Get a reminder about when your trial is about to end.",
+                          iconID: "notifications"),
+                    .init(title: "Day 14",
+                          content: "You'll automatically get subscribed. " +
+                          "Cancel anytime before if you didn't love our app.",
+                          iconID: "attachment")
+                ]),
             assetBaseURL: Self.paywallAssetBaseURL
         ),
         availablePackages: [Self.weeklyPackage,
