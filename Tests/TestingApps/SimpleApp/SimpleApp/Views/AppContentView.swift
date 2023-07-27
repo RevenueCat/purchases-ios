@@ -43,6 +43,14 @@ struct AppContentView: View {
                     Text(verbatim: "You're signed in: \(info.originalAppUserId)")
                         .font(.callout)
 
+                    NavigationLink {
+                        SamplePaywallsList()
+                    } label: {
+                        Text("Sample paywalls")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.mint)
+
                     Spacer()
 
                     BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
@@ -56,6 +64,7 @@ struct AppContentView: View {
                     Spacer()
                 }
             }
+            .padding(.horizontal)
             .navigationTitle("Simple App")
             .task {
                 for await info in self.customerInfoStream {
