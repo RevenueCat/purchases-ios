@@ -12,7 +12,7 @@ import SwiftUI
 struct FooterView: View {
 
     var configuration: PaywallData.Configuration
-    var colors: PaywallData.Configuration.Colors
+    var color: Color
     var purchaseHandler: PurchaseHandler
 
     var body: some View {
@@ -41,7 +41,7 @@ struct FooterView: View {
                 )
             }
         }
-        .foregroundColor(self.colors.foregroundColor)
+        .foregroundColor(self.color)
         .font(.caption.bold())
         .padding(.horizontal)
     }
@@ -168,7 +168,7 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
-            colors: TestData.colors,
+            color: TestData.colors.foregroundColor,
             purchaseHandler: Self.handler
         )
     }
