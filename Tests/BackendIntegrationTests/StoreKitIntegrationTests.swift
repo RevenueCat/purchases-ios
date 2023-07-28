@@ -61,6 +61,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testPurchasingSK1ProductDoesNotLeaveUnfinishedSK2Transaction() async throws {
+        try XCTSkipIf(Self.storeKit2Setting.usesStoreKit2IfAvailable, "Test only for SK1")
+
+        func verifyNoUnfinishedTransactions() async {
+            let unfinishedTransactions = await Transaction.unfinished.extractValues()
+            expect(unfinishedTransactions).to(beEmpty())
+        }
+
+        await verifyNoUnfinishedTransactions()
+        try await self.purchaseMonthlyProduct()
+        await verifyNoUnfinishedTransactions()
+    }
+
     func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
         let package = try await self.monthlyPackage
 
