@@ -56,7 +56,7 @@ class DeviceCache {
         self.userDefaults.write {
             var value: Value = $0.value(forKey: key) ?? defaultValue
             updater(&value)
-            $0.set(value, forKey: key)
+            $0.set(codable: value, forKey: key)
         }
     }
 
@@ -163,11 +163,8 @@ class DeviceCache {
 
     func cache(offerings: Offerings, appUserID: String) {
         self.cacheInMemory(offerings: offerings)
-
-        if let jsonData = try? JSONEncoder.default.encode(value: offerings.response, logErrors: true) {
-            self.userDefaults.write {
-                $0.set(jsonData, forKey: CacheKey.offerings(appUserID))
-            }
+        self.userDefaults.write {
+            $0.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
         }
     }
 
@@ -572,17 +569,26 @@ private extension DeviceCache {
         _ userDefaults: UserDefaults,
         productEntitlementMapping mapping: ProductEntitlementMapping
     ) {
-        guard let data = try? JSONEncoder.default.encode(value: mapping, logErrors: true) else {
-            return
+        if userDefaults.set(codable: mapping,
+                            forKey: CacheKeys.productEntitlementMapping) {
+            userDefaults.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
         }
-
-        userDefaults.set(data, forKey: CacheKeys.productEntitlementMapping)
-        userDefaults.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
     }
 
 }
 
 fileprivate extension UserDefaults {
+
+    /// - Returns: whether the value could be saved
+    @discardableResult
+    func set<T: Codable>(codable: T, forKey key: DeviceCacheKeyType) -> Bool {
+        guard let data = try? JSONEncoder.default.encode(value: codable, logErrors: true) else {
+            return false
+        }
+
+        self.set(data, forKey: key)
+        return true
+    }
 
     func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
         guard let data = self.data(forKey: key) else {

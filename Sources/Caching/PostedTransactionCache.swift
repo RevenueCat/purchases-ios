@@ -13,15 +13,13 @@
 
 import Foundation
 
-protocol PostedTransactionCacheType {
+/// A type that can keep track of which transactions have been posted to the backend.
+protocol PostedTransactionCacheType: Sendable {
 
     func savePostedTransaction(_ transaction: StoreTransactionType)
     func hasPostedTransaction(_ transaction: StoreTransactionType) -> Bool
 
 }
-
-// TODO: tests
-// TODO: integrate
 
 final class PostedTransactionCache: PostedTransactionCacheType {
 

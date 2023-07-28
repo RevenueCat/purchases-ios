@@ -12,6 +12,37 @@ class MockDeviceCache: DeviceCache {
                   userDefaults: MockUserDefaults())
     }
 
+    // MARK: - generic methods
+
+    var stubbedUpdateValues: [Any] = []
+    var invokedUpdateKey: Bool = false
+    var invokedUpdateKeyParameters: [(key: String, newValue: Any)] = []
+
+    override func update<Key: DeviceCacheKeyType, Value: Codable>(
+        key: Key,
+        default defaultValue: Value,
+        updater: @Sendable (inout Value) -> Void
+    ) {
+        // swiftlint:disable:next force_cast
+        var value = (self.stubbedUpdateValues.popFirst() as! Value?) ?? defaultValue
+        updater(&value)
+
+        self.invokedUpdateKey = true
+        self.invokedUpdateKeyParameters.append((key: key.rawValue, newValue: value))
+    }
+
+    var stubbedValueForKey: [Any] = []
+    var invokedValueForKey: Bool = false
+    var invokedValueForKeyParameters: [String] = []
+
+    override func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+        self.invokedValueForKey = true
+        self.invokedValueForKeyParameters.append(key.rawValue)
+
+        // swiftlint:disable:next force_cast
+        return self.stubbedValueForKey.popFirst() as! Value?
+    }
+
     // MARK: appUserID
 
     var stubbedAppUserID: String?

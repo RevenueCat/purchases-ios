@@ -268,6 +268,7 @@
 		4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */; };
 		4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */; };
 		4FC0832B2A4A361700A97089 /* IntegerExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */; };
+		4FC6F8892A73E445002139B2 /* PostedTransactionCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */; };
 		4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
@@ -981,6 +982,7 @@
 		4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonEmptyStringDecodable.swift; sourceTree = "<group>"; };
 		4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Integer+Extensions.swift"; sourceTree = "<group>"; };
 		4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerExtensionsTests.swift; sourceTree = "<group>"; };
+		4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostedTransactionCacheTests.swift; sourceTree = "<group>"; };
 		4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
@@ -2145,6 +2147,7 @@
 			children = (
 				37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */,
 				37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */,
+				4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -3454,6 +3457,7 @@
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
+				4FC6F8892A73E445002139B2 /* PostedTransactionCacheTests.swift in Sources */,
 				5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */,
 				5752E8482892DC500069281E /* ErrorUtilsTests.swift in Sources */,
 				57488BF229CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift in Sources */,
