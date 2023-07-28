@@ -80,13 +80,15 @@ private struct MultiPackageTemplateContent: View {
 
     private var scrollableContent: some View {
         VStack {
+            Spacer()
+
             Text(self.selectedLocalization.title)
                 .font(.largeTitle.bold())
 
             Spacer()
 
             Text(self.selectedLocalization.subtitle ?? "")
-                .font(.title2)
+                .font(.title3)
 
             Spacer()
 

@@ -130,7 +130,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .onePackageWithFeatures,
             config: .init(
-                packages: [.monthly],
+                packages: [.annual],
                 images: Self.images,
                 colors: .init(
                     light: .init(
@@ -149,7 +149,7 @@ private extension SamplePaywallLoader {
                 callToAction: "Start",
                 callToActionWithIntroOffer: "Start your {{ intro_duration }} free",
                 offerDetails: "Only {{ price }} per {{ period }}",
-                offerDetailsWithIntroOffer: "First {{ intro_duration }} free, then\n{{ price }} per {{ period }} ({{ price_per_month }} per month)",
+                offerDetailsWithIntroOffer: "First {{ intro_duration }} free, then\n{{ price }} per year ({{ price_per_month }} per month)",
                 features: [
                     .init(title: "Today",
                           content: "Full access to 1000+ workouts plus free meal plan worth $49.99.",
