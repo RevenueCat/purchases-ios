@@ -49,6 +49,7 @@ struct FooterView: View {
     private var separator: some View {
         Image(systemName: "circle.fill")
             .font(.system(size: 5))
+            .accessibilityHidden(true)
     }
 
     private var hasTOS: Bool { self.configuration.termsOfServiceURL != nil }
