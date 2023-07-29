@@ -11,5 +11,6 @@ import SwiftUI
 enum Constants {
 
     static let defaultAnimation: Animation = .easeIn(duration: 0.2)
+    static let fastAnimation: Animation = .easeIn(duration: 0.1)
 
 }

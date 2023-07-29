@@ -63,12 +63,12 @@ private struct RestorePurchasesButton: View {
     let purchaseHandler: PurchaseHandler
 
     @State
-    private var restored = false
+    private var displayRestoredAlert = false
 
     var body: some View {
         AsyncButton {
             _ = try await self.purchaseHandler.restorePurchases()
-            self.restored = true
+            self.displayRestoredAlert = true
         } label: {
             ViewThatFits {
                 Text("Restore purchases", bundle: .module)
@@ -76,7 +76,7 @@ private struct RestorePurchasesButton: View {
             }
         }
         .buttonStyle(.plain)
-        .alert(isPresented: self.$restored) {
+        .alert(isPresented: self.$displayRestoredAlert) {
             Alert(title: Text("Purchases restored successfully!", bundle: .module))
         }
     }

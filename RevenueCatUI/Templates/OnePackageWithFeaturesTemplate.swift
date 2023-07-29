@@ -12,35 +12,15 @@ import SwiftUI
 struct OnePackageWithFeaturesTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
+    private let localization: ProcessedLocalizedConfiguration
+
     @EnvironmentObject
-    private var introEligibility: IntroEligibilityViewModel
-
-    init(_ configuration: TemplateViewConfiguration) {
-        self.configuration = configuration
-    }
-
-    var body: some View {
-        OnePackageWithFeaturesTemplateContent(
-            configuration: self.configuration,
-            introEligibility: self.introEligibility.singleEligibility
-        )
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct OnePackageWithFeaturesTemplateContent: View {
-
-    private var configuration: TemplateViewConfiguration
-    private var introEligibility: IntroEligibilityStatus?
-    private var localization: ProcessedLocalizedConfiguration
-
+    private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
-    init(configuration: TemplateViewConfiguration, introEligibility: IntroEligibilityStatus?) {
+    init(_ configuration: TemplateViewConfiguration) {
         self.configuration = configuration
-        self.introEligibility = introEligibility
         self.localization = configuration.packages.single.localization
     }
 
@@ -84,11 +64,11 @@ private struct OnePackageWithFeaturesTemplateContent: View {
 
             PurchaseButton(
                 package: self.configuration.packages.single.content,
-                purchaseHandler: self.purchaseHandler,
                 colors: self.configuration.colors,
                 localization: self.localization,
                 introEligibility: self.introEligibility,
-                mode: self.configuration.mode
+                mode: self.configuration.mode,
+                purchaseHandler: self.purchaseHandler
             )
             .padding(.bottom)
 
@@ -114,6 +94,10 @@ private struct OnePackageWithFeaturesTemplateContent: View {
             .foregroundStyle(self.configuration.colors.backgroundColor)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .edgesIgnoringSafeArea(.all)
+    }
+
+    private var introEligibility: IntroEligibilityStatus? {
+        return self.introEligibilityViewModel.singleEligibility
     }
 
     @ScaledMetric(relativeTo: .title)
