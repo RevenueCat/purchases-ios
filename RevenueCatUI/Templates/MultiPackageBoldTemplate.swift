@@ -83,11 +83,13 @@ private struct MultiPackageTemplateContent: View {
             Spacer()
 
             Text(self.selectedLocalization.title)
+                .foregroundColor(self.configuration.colors.text1Color)
                 .font(.largeTitle.bold())
 
             Spacer()
 
             Text(self.selectedLocalization.subtitle ?? "")
+                .foregroundColor(self.configuration.colors.text1Color)
                 .font(.title3)
 
             Spacer()
@@ -128,7 +130,7 @@ private struct MultiPackageTemplateContent: View {
                             EmptyView()
                         } else {
                             Circle()
-                                .foregroundColor(Self.selectedBackgroundColor.opacity(0.5))
+                                .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
                         }
                     }
 
@@ -165,7 +167,7 @@ private struct MultiPackageTemplateContent: View {
             RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
                 .foregroundColor(
                     selected
-                    ? Self.selectedBackgroundColor
+                    ? self.selectedBackgroundColor
                     : .clear
                 )
         }
@@ -213,17 +215,10 @@ private struct MultiPackageTemplateContent: View {
         .padding(.top)
     }
 
+    private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
+
     private static let iconSize: CGFloat = 100
     private static let cornerRadius: CGFloat = 15
-
-    #if !os(macOS) && !os(watchOS)
-    private static let selectedBackgroundColor: Color = .init(
-        light: .init(white: 0.3),
-        dark: .init(white: 0.6)
-    )
-    #else
-    private static let selectedBackgroundColor: Color = .init(white: 0.3)
-    #endif
 
 }
 

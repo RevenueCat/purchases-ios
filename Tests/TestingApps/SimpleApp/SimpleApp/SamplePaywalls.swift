@@ -101,14 +101,16 @@ private extension SamplePaywallLoader {
                         text1: "#000000",
                         callToActionBackground: "#EC807C",
                         callToActionForeground: "#FFFFFF",
-                        accent1: "#BC66FF"
+                        accent1: "#BC66FF",
+                        accent2: "#222222"
                     ),
                     dark: .init(
                         background: "#000000",
                         text1: "#FFFFFF",
                         callToActionBackground: "#ACD27A",
                         callToActionForeground: "#000000",
-                        accent1: "#B022BB"
+                        accent1: "#B022BB",
+                        accent2: "#CCCCCC"
                     )
                 ),
                 blurredBackgroundImage: true,
