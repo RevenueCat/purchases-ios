@@ -15,10 +15,8 @@
 
 import Nimble
 @testable import RevenueCat
-import SnapshotTesting
-import XCTest
-
 import SwiftUI
+import XCTest
 
 @MainActor
 @available(iOS 16.0, *)
