@@ -7,6 +7,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 #if canImport(SwiftUI) && swift(>=5.7)
 
@@ -64,5 +65,33 @@ private extension PaywallData {
     static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
 
 }
+
+// MARK: -
+
+#if DEBUG
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(macCatalyst, unavailable)
+struct DefaultPaywall_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: Self.offering) {
+            MultiPackageBoldTemplate($0)
+        }
+    }
+
+    static let offering = Offering(
+        identifier: "offering",
+        serverDescription: "Main offering",
+        metadata: [:],
+        paywall: .default,
+        availablePackages: TestData.packages
+    )
+
+}
+
+#endif
 
 #endif
