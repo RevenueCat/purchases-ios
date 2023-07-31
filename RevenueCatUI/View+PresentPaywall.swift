@@ -12,6 +12,8 @@ import SwiftUI
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
 
+    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
+
     /// Presents a ``PaywallView`` if the given entitlement identifier is not active
     /// in the current environment for the current `CustomerInfo`.
     /// ```swift
@@ -24,14 +26,19 @@ extension View {
     /// the paywall won't be displayed.
     public func presentPaywallIfNecessary(
         mode: PaywallViewMode = .default,
-        requiredEntitlementIdentifier: String
+        requiredEntitlementIdentifier: String,
+        purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
-        return self.presentPaywallIfNecessary { info in
-            !info.entitlements
-                .activeInCurrentEnvironment
-                .keys
-                .contains(requiredEntitlementIdentifier)
-        }
+        return self.presentPaywallIfNecessary(
+            mode: mode,
+            shouldDisplay: { info in
+                !info.entitlements
+                    .activeInCurrentEnvironment
+                    .keys
+                    .contains(requiredEntitlementIdentifier)
+            },
+            purchaseCompleted: purchaseCompleted
+        )
     }
 
     /// Presents a ``PaywallView`` based a given condition.
@@ -39,19 +46,47 @@ extension View {
     /// ```swift
     /// var body: some View {
     ///    YourApp()
-    ///      .presentPaywallIfNecessary { !$0.entitlements.active.keys.contains("entitlement_identifier") }
+    ///      .presentPaywallIfNecessary {
+    ///         !$0.entitlements.active.keys.contains("entitlement_identifier")
+    ///     } purchaseCompleted: { customerInfo in
+    ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
+    ///     }
     /// }
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
     public func presentPaywallIfNecessary(
         mode: PaywallViewMode = .default,
-        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseCompleted: PurchaseCompletedHandler? = nil
+    ) -> some View {
+        return self.presentPaywallIfNecessary(
+            mode: mode,
+            shouldDisplay: shouldDisplay,
+            purchaseCompleted: purchaseCompleted,
+            customerInfoFetcher: {
+                guard Purchases.isConfigured else {
+                    throw PaywallError.purchasesNotConfigured
+                }
+
+                return try await Purchases.shared.customerInfo()
+            }
+        )
+    }
+
+    // Visible overload for tests
+    func presentPaywallIfNecessary(
+        mode: PaywallViewMode = .default,
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseCompleted: PurchaseCompletedHandler? = nil,
+        customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
-                mode: mode
+                purchaseCompleted: purchaseCompleted,
+                mode: mode,
+                customerInfoFetcher: customerInfoFetcher
             ))
     }
 
@@ -62,7 +97,10 @@ extension View {
 private struct PresentingPaywallModifier: ViewModifier {
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
+    var purchaseCompleted: PurchaseCompletedHandler?
     var mode: PaywallViewMode
+
+    var customerInfoFetcher: View.CustomerInfoFetcher
 
     @State
     private var isDisplayed = false
@@ -71,9 +109,12 @@ private struct PresentingPaywallModifier: ViewModifier {
         content
             .sheet(isPresented: self.$isDisplayed) {
                 PaywallView(mode: self.mode)
+                    .onPurchaseCompleted {
+                        self.purchaseCompleted?($0)
+                    }
             }
             .task {
-                guard let info = try? await Purchases.shared.customerInfo() else { return }
+                guard let info = try? await self.customerInfoFetcher() else { return }
 
                 Logger.debug(Strings.determining_whether_to_display_paywall)
 
