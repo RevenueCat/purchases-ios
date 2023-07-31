@@ -51,7 +51,7 @@ extension PaywallData {
         }
     }
 
-    private func configuration(
+    func configuration(
         for offering: Offering,
         mode: PaywallViewMode,
         locale: Locale
