@@ -10,6 +10,7 @@ import StoreKit
 import SwiftUI
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+@MainActor
 final class PurchaseHandler: ObservableObject {
 
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
@@ -18,8 +19,17 @@ final class PurchaseHandler: ObservableObject {
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
 
+    /// Whether a purchase or restore is currently in progress
     @Published
-    var purchased: Bool = false
+    fileprivate(set) var actionInProgress: Bool = false
+
+    /// Whether a purchase was successfully completed.
+    @Published
+    fileprivate(set) var purchased: Bool = false
+
+    /// Whether a restore was successfully completed.
+    @Published
+    fileprivate(set) var restored: Bool = false
 
     convenience init(purchases: Purchases = .shared) {
         self.init { package in
@@ -43,6 +53,11 @@ final class PurchaseHandler: ObservableObject {
 extension PurchaseHandler {
 
     func purchase(package: Package) async throws -> PurchaseResultData {
+        withAnimation(Constants.fastAnimation) {
+            self.actionInProgress = true
+        }
+        defer { self.actionInProgress = false }
+
         let result = try await self.purchaseBlock(package)
 
         if !result.userCancelled {
@@ -55,7 +70,14 @@ extension PurchaseHandler {
     }
 
     func restorePurchases() async throws -> CustomerInfo {
-        return try await self.restoreBlock()
+        self.actionInProgress = true
+        defer { self.actionInProgress = false }
+
+        let result = try await self.restoreBlock()
+
+        self.restored = true
+
+        return result
     }
 
     /// Creates a copy of this `PurchaseHandler` wrapping the purchase and restore blocks.
