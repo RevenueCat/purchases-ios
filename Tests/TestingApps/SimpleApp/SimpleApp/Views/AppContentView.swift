@@ -9,7 +9,6 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
-@MainActor
 struct AppContentView: View {
 
     let customerInfoStream: AsyncStream<CustomerInfo>

@@ -10,7 +10,6 @@ import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
-@MainActor
 extension View {
 
     typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo

@@ -10,7 +10,6 @@ import StoreKit
 import SwiftUI
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-@MainActor
 final class PurchaseHandler: ObservableObject {
 
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
@@ -56,6 +55,7 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PurchaseHandler {
 
+    @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
         withAnimation(Constants.fastAnimation) {
             self.actionInProgress = true
@@ -74,6 +74,7 @@ extension PurchaseHandler {
         return result
     }
 
+    @MainActor
     func restorePurchases() async throws -> CustomerInfo {
         self.actionInProgress = true
         defer { self.actionInProgress = false }
