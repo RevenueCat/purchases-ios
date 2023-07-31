@@ -36,27 +36,28 @@ private extension PaywallData {
         light: .init(
             background: try! .init(stringRepresentation: "#FFFFFF"),
             text1: try! .init(stringRepresentation: "#000000"),
-            callToActionBackground: try! .init(stringRepresentation: "#EC807C"),
+            callToActionBackground: try! .init(stringRepresentation: "#FF8181"),
             callToActionForeground: try! .init(stringRepresentation: "#FFFFFF"),
-            accent1: try! .init(stringRepresentation: "#EC807C")
+            accent1: try! .init(stringRepresentation: "#BC66FF"),
+            accent2: try! .init(stringRepresentation: "#111111")
         ),
         dark: .init(
             background: try! .init(stringRepresentation: "#000000"),
             text1: try! .init(stringRepresentation: "#FFFFFF"),
             callToActionBackground: try! .init(stringRepresentation: "#ACD27A"),
             callToActionForeground: try! .init(stringRepresentation: "#000000"),
-            accent1: try! .init(stringRepresentation: "#ACD27A")
+            accent1: try! .init(stringRepresentation: "#BC66FF"),
+            accent2: try! .init(stringRepresentation: "#EEEEEE")
         )
     )
     // swiftlint:enable force_try
 
     static let localization: PaywallData.LocalizedConfiguration = .init(
-        title: "Subscription",
-        subtitle: "Unlock access",
-        callToAction: "Purchase",
-        offerDetails: "{{ price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
-        features: []
+        title: "{{ app_name }}",
+        subtitle: "Unlock full access with these subscriptions:",
+        callToAction: "Continue",
+        offerDetails: "{{ total_price_and_per_month }}.",
+        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ total_price_and_per_month }}."
     )
 
     static let backgroundImage = "background.jpg"
