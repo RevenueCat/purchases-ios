@@ -50,6 +50,10 @@ final class PurchaseHandler: ObservableObject {
         self.restoreBlock = restorePurchases
     }
 
+    static func `default`() -> Self? {
+        return Purchases.isConfigured ? .init() : nil
+    }
+
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)

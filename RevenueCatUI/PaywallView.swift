@@ -26,8 +26,8 @@ public struct PaywallView: View {
         self.init(
             offering: nil,
             mode: mode,
-            introEligibility: Purchases.isConfigured ? .init() : nil,
-            purchaseHandler: Purchases.isConfigured ? .init() : nil
+            introEligibility: .default(),
+            purchaseHandler: .default()
         )
     }
 
@@ -39,8 +39,8 @@ public struct PaywallView: View {
         self.init(
             offering: offering,
             mode: mode,
-            introEligibility: Purchases.isConfigured ? .init() : nil,
-            purchaseHandler: Purchases.isConfigured ? .init() : nil
+            introEligibility: .default(),
+            purchaseHandler: .default()
         )
     }
 
@@ -77,6 +77,10 @@ public struct PaywallView: View {
                         .transition(Self.transition)
                         .task {
                             do {
+                                guard Purchases.isConfigured else {
+                                    throw PaywallError.purchasesNotConfigured
+                                }
+
                                 guard let offering = try await Purchases.shared.offerings().current else {
                                     throw PaywallError.noCurrentOffering
                                 }

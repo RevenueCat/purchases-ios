@@ -77,6 +77,9 @@ extension View {
     // Visible overload for tests
     func presentPaywallIfNecessary(
         mode: PaywallViewMode = .default,
+        offering: Offering? = nil,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseCompletedHandler? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
@@ -86,7 +89,10 @@ extension View {
                 shouldDisplay: shouldDisplay,
                 purchaseCompleted: purchaseCompleted,
                 mode: mode,
-                customerInfoFetcher: customerInfoFetcher
+                offering: offering,
+                customerInfoFetcher: customerInfoFetcher,
+                introEligibility: introEligibility,
+                purchaseHandler: purchaseHandler
             ))
     }
 
@@ -99,8 +105,11 @@ private struct PresentingPaywallModifier: ViewModifier {
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var purchaseCompleted: PurchaseCompletedHandler?
     var mode: PaywallViewMode
+    var offering: Offering?
 
     var customerInfoFetcher: View.CustomerInfoFetcher
+    var introEligibility: TrialOrIntroEligibilityChecker?
+    var purchaseHandler: PurchaseHandler?
 
     @State
     private var isDisplayed = false
@@ -108,7 +117,12 @@ private struct PresentingPaywallModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: self.$isDisplayed) {
-                PaywallView(mode: self.mode)
+                PaywallView(
+                    offering: self.offering,
+                    mode: self.mode,
+                    introEligibility: self.introEligibility ?? .default(),
+                    purchaseHandler: self.purchaseHandler ?? .default()
+                )
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)
                     }
