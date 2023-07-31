@@ -158,7 +158,6 @@ extension TemplateViewConfiguration {
                     return packages.first
                 }
             } else {
-                Logger.warning("Couldn't find '\(type)'")
                 return nil
             }
         }
