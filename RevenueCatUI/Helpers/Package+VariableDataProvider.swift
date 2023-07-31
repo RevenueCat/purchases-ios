@@ -4,6 +4,10 @@ import RevenueCat
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension Package: VariableDataProvider {
 
+    var applicationName: String {
+        return Bundle.main.applicationDisplayName
+    }
+
     var isMonthly: Bool {
         return self.packageType == .monthly
     }
@@ -54,6 +58,16 @@ private extension Package {
         guard let discount = self.storeProduct.introductoryDiscount else { return nil }
 
         return Localization.localizedDuration(for: discount.subscriptionPeriod, locale: locale)
+    }
+
+}
+
+private extension Bundle {
+
+    var applicationDisplayName: String {
+        return self.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+        ?? self.object(forInfoDictionaryKey: "CFBundleName") as? String
+        ?? ""
     }
 
 }
