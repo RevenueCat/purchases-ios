@@ -10,6 +10,7 @@ import SwiftUI
 
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@MainActor
 struct LoadingPaywallView: View {
 
     var body: some View {
