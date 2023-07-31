@@ -9,6 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
+@MainActor
 struct OfferingsList: View {
 
     @State
