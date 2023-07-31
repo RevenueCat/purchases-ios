@@ -143,8 +143,8 @@ private struct MultiPackageTemplateContent: View {
                 textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
                 introEligibility: self.introEligibility[package.content],
                 foregroundColor: selected
-                    ? .white
-                    : .black,
+                    ? self.configuration.colors.backgroundColor
+                    : self.configuration.colors.text1Color,
                 alignment: alignment
             )
             .fixedSize(horizontal: false, vertical: true)
@@ -154,7 +154,6 @@ private struct MultiPackageTemplateContent: View {
         .padding()
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: alignment)
-        .foregroundColor(self.configuration.colors.text1Color)
         .overlay {
             if selected {
                 EmptyView()
