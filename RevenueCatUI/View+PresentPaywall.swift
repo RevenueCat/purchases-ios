@@ -29,12 +29,16 @@ extension View {
         requiredEntitlementIdentifier: String,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
-        return self.presentPaywallIfNecessary { info in
-            !info.entitlements
-                .activeInCurrentEnvironment
-                .keys
-                .contains(requiredEntitlementIdentifier)
-        }
+        return self.presentPaywallIfNecessary(
+            mode: mode,
+            shouldDisplay: { info in
+                !info.entitlements
+                    .activeInCurrentEnvironment
+                    .keys
+                    .contains(requiredEntitlementIdentifier)
+            },
+            purchaseCompleted: purchaseCompleted
+        )
     }
 
     /// Presents a ``PaywallView`` based a given condition.
