@@ -16,15 +16,15 @@ struct PackageButtonStyle: ButtonStyle {
 
     var isSelected: Bool
 
-    @Environment(\.isEnabled)
-    private var isEnabled
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
 
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
         configuration
             .label
-            .hidden(if: !self.isEnabled)
+            .hidden(if: self.purchaseHandler.actionInProgress)
             .overlay {
-                if self.isSelected, !self.isEnabled {
+                if self.isSelected, self.purchaseHandler.actionInProgress {
                     ProgressView()
                 }
             }
