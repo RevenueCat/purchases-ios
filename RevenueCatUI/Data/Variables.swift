@@ -105,7 +105,7 @@ private extension VariableDataProvider {
             return self.introductoryOfferDuration(locale) ?? ""
 
         default:
-            Logger.warning("Couldn't find content for variable '\(variableName)'")
+            Logger.warning(Strings.could_not_find_content_for_variable(variableName: variableName))
             return ""
         }
     }
