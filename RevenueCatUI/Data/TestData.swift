@@ -321,7 +321,7 @@ internal enum TestData {
         background: Self.paywallBackgroundImageName,
         icon: Self.paywallHeaderImageName
     )
-    static let paywallAssetBaseURL = URL(string: "https://d35rwhxn1vk1te.cloudfront.net")!
+    static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
 
     private static let offeringIdentifier = "offering"
 
