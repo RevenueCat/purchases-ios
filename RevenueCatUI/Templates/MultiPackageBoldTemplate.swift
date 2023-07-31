@@ -104,28 +104,8 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     @ViewBuilder
     private func packageButton(_ package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
-        let alignment: Alignment = .leading
-
-        VStack(alignment: alignment.horizontal, spacing: 5) {
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .hidden(if: !selected)
-                    .overlay {
-                        if selected {
-                            EmptyView()
-                        } else {
-                            Circle()
-                                .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
-                        }
-                    }
-
-                Text(self.localization(for: package.content).offerName ?? package.content.productName)
-            }
-            .foregroundColor(
-                selected
-                ? self.configuration.colors.accent1Color
-                : self.configuration.colors.text1Color
-            )
+        VStack(alignment: Self.packageButtonAlignment.horizontal, spacing: 5) {
+            self.packageButtonTitle(package, selected: selected)
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: package.localization.offerDetails,
@@ -134,7 +114,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                 foregroundColor: selected
                     ? self.configuration.colors.backgroundColor
                     : self.configuration.colors.text1Color,
-                alignment: alignment
+                alignment: Self.packageButtonAlignment
             )
             .fixedSize(horizontal: false, vertical: true)
             .font(.body)
@@ -142,7 +122,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
         .font(.body.weight(.medium))
         .padding()
         .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, alignment: alignment)
+        .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
         .overlay {
             if selected {
                 EmptyView()
@@ -159,6 +139,31 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                     : .clear
                 )
         }
+    }
+
+    private func packageButtonTitle(
+        _ package: TemplateViewConfiguration.Package,
+        selected: Bool
+    ) -> some View {
+        HStack {
+            Image(systemName: "checkmark.circle.fill")
+                .hidden(if: !selected)
+                .overlay {
+                    if selected {
+                        EmptyView()
+                    } else {
+                        Circle()
+                            .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
+                    }
+                }
+
+            Text(self.localization(for: package.content).offerName ?? package.content.productName)
+        }
+        .foregroundColor(
+            selected
+            ? self.configuration.colors.accent1Color
+            : self.configuration.colors.text1Color
+        )
     }
 
     private var subscribeButton: some View {
@@ -211,6 +216,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
     @ScaledMetric(relativeTo: .largeTitle)
     private var iconSize: CGFloat = 140
     private static let cornerRadius: CGFloat = 15
+    private static let packageButtonAlignment: Alignment = .leading
 
 }
 
