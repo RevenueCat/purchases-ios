@@ -60,7 +60,7 @@ private extension PaywallViewMode {
 
     var buttonFont: Font {
         switch self {
-        case .fullScreen, .card: return .title2
+        case .fullScreen, .card: return .title3
         case .banner: return .footnote
         }
     }
