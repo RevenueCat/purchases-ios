@@ -19,7 +19,7 @@ struct SimpleApp: App {
             : URL(string: Configuration.proxyURL)!
 
         Purchases.configure(
-            with: .init(withAPIKey: Configuration.apiKey)
+            with: .init(withAPIKey: Configuration.effectiveApiKey)
                 .with(usesStoreKit2IfAvailable: true)
         )
     }
