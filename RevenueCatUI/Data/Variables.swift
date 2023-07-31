@@ -14,6 +14,8 @@ extension PaywallData.LocalizedConfiguration {
 /// A type that can provide necessary information for `VariableHandler` to replace variable content in strings.
 protocol VariableDataProvider {
 
+    var applicationName: String { get }
+
     var isMonthly: Bool { get }
 
     var localizedPrice: String { get }
@@ -85,6 +87,7 @@ private extension VariableDataProvider {
 
     func value(for variableName: String, locale: Locale) -> String {
         switch variableName {
+        case "app_name": return self.applicationName
         case "price": return self.localizedPrice
         case "price_per_month": return self.localizedPricePerMonth
         case "total_price_and_per_month":
