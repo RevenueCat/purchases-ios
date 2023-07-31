@@ -23,6 +23,7 @@
 
 typealias RCRefundRequestStatus = RefundRequestStatus
 typealias RCErrorCode = ErrorCode
+typealias RCOffering = Offering
 typealias RCStorefront = Storefront
 
 let RCDefaultLogHandler = defaultLogHandler
