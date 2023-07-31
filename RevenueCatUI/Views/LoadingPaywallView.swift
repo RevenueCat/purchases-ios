@@ -104,3 +104,21 @@ private extension LoadingPaywallView {
         subscriptionPeriod: .init(value: 1, unit: .year)
     )
 }
+
+// MARK: -
+
+#if DEBUG
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(macCatalyst, unavailable)
+struct LoadingPaywallView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        LoadingPaywallView()
+    }
+
+}
+
+#endif
