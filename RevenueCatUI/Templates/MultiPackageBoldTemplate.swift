@@ -105,6 +105,7 @@ private struct MultiPackageTemplateContent: View {
                     self.selectedPackage = package.content
                 } label: {
                     self.packageButton(package, selected: self.selectedPackage === package.content)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(PackageButtonStyle())
             }
