@@ -5,38 +5,20 @@ import SwiftUI
 struct MultiPackageBoldTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
-    @EnvironmentObject
-    private var introEligibility: IntroEligibilityViewModel
-
-    init(_ configuration: TemplateViewConfiguration) {
-        self.configuration = configuration
-    }
-
-    var body: some View {
-        MultiPackageTemplateContent(configuration: self.configuration,
-                                    introEligibility: self.introEligibility.allEligibility)
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct MultiPackageTemplateContent: View {
-
-    private var configuration: TemplateViewConfiguration
-    private var introEligibility: [Package: IntroEligibilityStatus]
     private var localization: [Package: ProcessedLocalizedConfiguration]
 
     @State
     private var selectedPackage: Package
 
     @EnvironmentObject
+    private var introEligibilityViewModel: IntroEligibilityViewModel
+    @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
-    init(configuration: TemplateViewConfiguration, introEligibility: [Package: IntroEligibilityStatus]) {
+    init(_ configuration: TemplateViewConfiguration) {
         self._selectedPackage = .init(initialValue: configuration.packages.default.content)
 
         self.configuration = configuration
-        self.introEligibility = introEligibility
         self.localization = Dictionary(
             uniqueKeysWithValues: configuration.packages.all
                 .lazy
@@ -72,7 +54,7 @@ private struct MultiPackageTemplateContent: View {
                            purchaseHandler: self.purchaseHandler)
             }
         }
-        .animation(.easeInOut(duration: 0.1), value: self.selectedPackage)
+        .animation(Constants.fastAnimation, value: self.selectedPackage)
         .frame(maxHeight: .infinity)
         .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
@@ -105,13 +87,15 @@ private struct MultiPackageTemplateContent: View {
     private var packages: some View {
         VStack(spacing: 8) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
+                let isSelected = self.selectedPackage === package.content
+
                 Button {
                     self.selectedPackage = package.content
                 } label: {
-                    self.packageButton(package, selected: self.selectedPackage === package.content)
+                    self.packageButton(package, selected: isSelected)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(PackageButtonStyle())
+                .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
         .padding(.bottom)
@@ -175,11 +159,11 @@ private struct MultiPackageTemplateContent: View {
     private var subscribeButton: some View {
         PurchaseButton(
             package: self.selectedPackage,
-            purchaseHandler: self.purchaseHandler,
             colors: self.configuration.colors,
             localization: self.selectedLocalization,
             introEligibility: self.introEligibility[self.selectedPackage],
-            mode: self.configuration.mode
+            mode: self.configuration.mode,
+            purchaseHandler: self.purchaseHandler
         )
     }
 
@@ -214,6 +198,12 @@ private struct MultiPackageTemplateContent: View {
         .padding(.top)
     }
 
+    // MARK: -
+
+    private var introEligibility: [Package: IntroEligibilityStatus] {
+        return self.introEligibilityViewModel.allEligibility
+    }
+
     private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
     private static let iconSize: CGFloat = 100
@@ -224,7 +214,7 @@ private struct MultiPackageTemplateContent: View {
 // MARK: - Extensions
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private extension MultiPackageTemplateContent {
+private extension MultiPackageBoldTemplate {
 
     func localization(for package: Package) -> ProcessedLocalizedConfiguration {
         // Because of how packages are constructed this is known to exist
@@ -233,15 +223,6 @@ private extension MultiPackageTemplateContent {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.localization(for: self.selectedPackage)
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct PackageButtonStyle: ButtonStyle {
-
-    func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-        configuration.label
     }
 
 }
