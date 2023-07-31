@@ -40,8 +40,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: 10) {
-            self.iconImage
-
             self.scrollableContent
                 .scrollableIfNecessary()
 
@@ -62,6 +60,10 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     private var scrollableContent: some View {
         VStack {
+            Spacer()
+
+            self.iconImage
+
             Spacer()
 
             Text(self.selectedLocalization.title)
@@ -98,7 +100,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding(.bottom)
     }
 
     @ViewBuilder
@@ -120,7 +121,11 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
                 Text(self.localization(for: package.content).offerName ?? package.content.productName)
             }
-            .foregroundColor(self.configuration.colors.accent1Color)
+            .foregroundColor(
+                selected
+                ? self.configuration.colors.accent1Color
+                : self.configuration.colors.text1Color
+            )
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: package.localization.offerDetails,
@@ -177,9 +182,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
             } else {
                 RemoteImage(url: url)
             }
-        } else {
-            DebugErrorView("Template configuration is missing background URL",
-                           releaseBehavior: .emptyView)
         }
     }
 
@@ -187,7 +189,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
     private var iconImage: some View {
         Group {
             if let url = self.configuration.iconImageURL {
-                RemoteImage(url: url, aspectRatio: 1, maxWidth: Self.iconSize)
+                RemoteImage(url: url, aspectRatio: 1, maxWidth: self.iconSize)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else {
                 // Placeholder to be able to add a consistent padding
@@ -206,7 +208,8 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
-    private static let iconSize: CGFloat = 100
+    @ScaledMetric(relativeTo: .largeTitle)
+    private var iconSize: CGFloat = 140
     private static let cornerRadius: CGFloat = 15
 
 }
