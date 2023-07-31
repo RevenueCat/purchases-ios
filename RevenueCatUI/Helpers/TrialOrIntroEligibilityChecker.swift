@@ -27,6 +27,10 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
         self.checker = checker
     }
 
+    static func `default`() -> Self? {
+        return Purchases.isConfigured ? .init() : nil
+    }
+
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
