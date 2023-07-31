@@ -16,7 +16,7 @@ struct SamplePaywallsList: View {
     private var loader: Result<SamplePaywallLoader, NSError>?
 
     @State
-    private var selectedTemplate: PaywallTemplate?
+    private var display: Display?
 
     var body: some View {
         self.content
@@ -35,8 +35,13 @@ struct SamplePaywallsList: View {
         switch self.loader {
         case let .success(loader):
             self.list(with: loader)
-                .sheet(item: self.$selectedTemplate) { template in
-                    PaywallView(offering: loader.offering(for: template))
+                .sheet(item: self.$display) { display in
+                    switch display {
+                    case let .template(template):
+                        PaywallView(offering: loader.offering(for: template))
+                    case .defaultTemplate:
+                        PaywallView(offering: loader.offeringWithDefaultPaywall())
+                    }
                 }
 
         case let .failure(error):
@@ -52,26 +57,61 @@ struct SamplePaywallsList: View {
             Section("Templates") {
                 ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                     Button {
-                        self.selectedTemplate = template
+                        self.display = .template(template)
                     } label: {
-                        Text(template.name)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        TemplateLabel(name: template.name)
                     }
-                    .buttonStyle(.plain)
+                }
+            }
+
+            Section("Other") {
+                Button {
+                    self.display = .defaultTemplate
+                } label: {
+                    TemplateLabel(name: "Default template")
                 }
             }
         }
+        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
+    }
+
+}
+
+private struct TemplateLabel: View {
+
+    var name: String
+
+    var body: some View {
+        Text(self.name)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
     }
 
 }
 
 // MARK: -
 
-extension PaywallTemplate: Identifiable {
+private extension SamplePaywallsList {
+
+    enum Display {
+
+        case template(PaywallTemplate)
+        case defaultTemplate
+
+    }
+
+}
+
+extension SamplePaywallsList.Display: Identifiable {
 
     public var id: String {
-        return self.rawValue
+        switch self {
+        case let .template(template):
+            return template.rawValue
+        case .defaultTemplate:
+            return "default"
+        }
     }
 
 }
