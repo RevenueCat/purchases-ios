@@ -26,6 +26,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{price_per_month}}")) == "{{price_per_month}}"
     }
 
+    func testApplicationName() {
+        self.provider.applicationName = "Paywalls"
+        expect(self.process("Welcome to {{ app_name }}")) == "Welcome to Paywalls"
+    }
+
     func testPrice() {
         self.provider.localizedPrice = "$10.99"
         expect(self.process("Purchase for {{ price }}")) == "Purchase for $10.99"
@@ -90,7 +95,7 @@ class VariablesTests: TestCase {
 
     func testProcessesLocalizedConfiguration() {
         let configuration = PaywallData.LocalizedConfiguration(
-            title: "Title {{ product_name }}",
+            title: "Buy {{ product_name }} for {{ app_name }}",
             subtitle: "Price: {{ price }}",
             callToAction: "Unlock {{ product_name }} for {{ price_per_month }}",
             callToActionWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
@@ -110,7 +115,7 @@ class VariablesTests: TestCase {
         )
         let processed = configuration.processVariables(with: TestData.packageWithIntroOffer)
 
-        expect(processed.title) == "Title PRO monthly"
+        expect(processed.title) == "Buy PRO monthly for xctest"
         expect(processed.subtitle) == "Price: $3.99"
         expect(processed.callToAction) == "Unlock PRO monthly for $3.99"
         expect(processed.callToActionWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
@@ -142,6 +147,7 @@ private extension VariablesTests {
 
 private struct MockVariableProvider: VariableDataProvider {
 
+    var applicationName: String = ""
     var isMonthly: Bool = false
     var localizedPrice: String = ""
     var localizedPricePerMonth: String = ""
