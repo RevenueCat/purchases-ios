@@ -154,7 +154,7 @@ extension TemplateViewConfiguration {
                 case 1:
                     return packages.first
                 default:
-                    Logger.warning("Found multiple \(type) packages. Will use the first one.")
+                    Logger.warning(Strings.found_multiple_packages_of_same_type(type))
                     return packages.first
                 }
             } else {
