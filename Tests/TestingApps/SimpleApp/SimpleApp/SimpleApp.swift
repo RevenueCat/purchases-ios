@@ -29,7 +29,6 @@ struct SimpleApp: App {
             NavigationStack {
                 AppContentView()
             }
-            .presentPaywallIfNecessary { !$0.hasPro }
             #if DEBUG
             .overlay {
                 DebugView()
@@ -37,14 +36,6 @@ struct SimpleApp: App {
             }
             #endif
         }
-    }
-
-}
-
-extension CustomerInfo {
-
-    var hasPro: Bool {
-        return self.entitlements.active.contains { $1.identifier == Configuration.entitlement }
     }
 
 }
