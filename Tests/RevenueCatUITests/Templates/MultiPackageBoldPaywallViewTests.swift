@@ -15,6 +15,19 @@ class MultiPackageBoldPaywallViewTests: BaseSnapshotTest {
         view.snapshot(size: Self.fullScreenSize)
     }
 
+    func testPurchasingState() {
+        let handler = Self.purchaseHandler.with(delay: .seconds(120))
+
+        let view = PaywallView(offering: Self.offering.withLocalImages,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: handler)
+            .task {
+                _ = try? await handler.purchase(package: TestData.annualPackage)
+            }
+
+        view.snapshot(size: Self.fullScreenSize)
+    }
+
     func testDarkMode() {
         let view = PaywallView(offering: Self.offering.withLocalImages,
                                introEligibility: Self.ineligibleChecker,
