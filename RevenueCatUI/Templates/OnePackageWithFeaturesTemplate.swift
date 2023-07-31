@@ -104,6 +104,7 @@ private struct OnePackageWithFeaturesTemplateContent: View {
         VStack(spacing: 40) {
             ForEach(self.localization.features, id: \.title) { feature in
                 FeatureView(feature: feature, colors: self.configuration.colors)
+                    .accessibilityElement(children: .combine)
             }
         }
         .padding(.horizontal)
