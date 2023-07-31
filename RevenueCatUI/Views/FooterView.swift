@@ -171,13 +171,9 @@ struct Footer_Previews: PreviewProvider {
                 privacyURL: privacyURL
             ),
             color: TestData.colors.text1Color,
-            purchaseHandler: Self.handler
+            purchaseHandler: PreviewHelpers.purchaseHandler
         )
     }
-
-    private static let handler: PurchaseHandler =
-        .mock()
-        .with(delay: .seconds(0.5))
 
 }
 
