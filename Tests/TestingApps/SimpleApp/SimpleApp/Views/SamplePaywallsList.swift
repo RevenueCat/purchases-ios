@@ -54,6 +54,8 @@ struct SamplePaywallsList: View {
                         self.selectedTemplate = template
                     } label: {
                         Text(template.name)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
