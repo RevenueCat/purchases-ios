@@ -29,7 +29,50 @@
           "platform_product_identifier" : "non_renewing_subscription"
         }
       ],
-      "paywall" : null
+      "paywall" : {
+        "asset_base_url" : "https://d35rwhxn1vk1te.cloudfront.net",
+        "config" : {
+          "blurred_background_image" : true,
+          "colors" : {
+            "light" : {
+              "accent1" : "#ec64e5",
+              "accent2" : "#d9d9d9",
+              "background" : "#ffffff",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#000000"
+            }
+          },
+          "default_package" : "$rc_monthly",
+          "display_restore_purchases" : true,
+          "images" : {
+            "background" : "300883_1690710097.jpg",
+            "icon" : "300883_1690710150.jpg"
+          },
+          "packages" : [
+            "$rc_monthly",
+            "$rc_annual"
+          ],
+          "privacy_url" : "https://revenuecat.com/privacy",
+          "tos_url" : "https://revenuecat.com/tos"
+        },
+        "default_locale" : "en_US",
+        "localized_strings" : {
+          "en_US" : {
+            "call_to_action" : "Purchase for {{ price_per_month }} per month",
+            "call_to_action_with_intro_offer" : "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+            "features" : [
+
+            ],
+            "offer_details" : "{{ total_price_and_per_month }}",
+            "offer_details_with_intro_offer" : "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
+            "offer_name" : "{{ period }}",
+            "subtitle" : "Gert access to all our educational content trusted by thousands of parents",
+            "title" : "Ignite your child's curiosity"
+          }
+        },
+        "template_name" : "multi_package_bold"
+      }
     },
     {
       "description" : "Coins",
