@@ -74,8 +74,15 @@ private struct PresentingPaywallModifier: ViewModifier {
             }
             .task {
                 guard let info = try? await Purchases.shared.customerInfo() else { return }
+
+                Logger.debug(Strings.determining_whether_to_display_paywall)
+
                 if self.shouldDisplay(info) {
+                    Logger.debug(Strings.displaying_paywall)
+
                     self.isDisplayed = true
+                } else {
+                    Logger.debug(Strings.not_displaying_paywall)
                 }
             }
     }
