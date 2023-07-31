@@ -19,33 +19,11 @@ struct OnePackageStandardTemplate: TemplateViewType {
 
     var body: some View {
         VStack(spacing: self.configuration.mode.verticalSpacing) {
-            VStack(spacing: self.configuration.mode.verticalSpacing) {
-                self.headerImage
-
-                Group {
-                    Text(verbatim: self.localization.title)
-                        .font(self.configuration.mode.titleFont)
-                        .fontWeight(.heavy)
-                        .padding(
-                            self.configuration.mode.displaySubtitle
-                                ? .bottom
-                                : []
-                        )
-
-                    if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
-                        Text(verbatim: subtitle)
-                            .font(self.configuration.mode.subtitleFont)
-                    }
-                }
-                .padding(.horizontal)
-            }
-            .foregroundColor(self.configuration.colors.text1Color)
-            .multilineTextAlignment(.center)
-            .scrollable(if: self.configuration.mode.isFullScreen)
-            .scrollContentBackground(.hidden)
-            .scrollBounceBehaviorBasedOnSize()
-            .scrollIndicators(.automatic)
-            .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
+            self.scrollableContent
+                .scrollableIfNecessary()
+                .scrollContentBackground(.hidden)
+                .scrollBounceBehaviorBasedOnSize()
+                .scrollIndicators(.automatic)
 
             if case .fullScreen = self.configuration.mode {
                 Spacer()
@@ -58,6 +36,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
                 foregroundColor: self.configuration.colors.text1Color
             )
             .font(self.configuration.mode.offerDetailsFont)
+            .multilineTextAlignment(.center)
 
             self.button
                 .padding(.horizontal)
@@ -68,6 +47,37 @@ struct OnePackageStandardTemplate: TemplateViewType {
                            purchaseHandler: self.purchaseHandler)
             }
         }
+    }
+
+    @ViewBuilder
+    private var scrollableContent: some View {
+        VStack(spacing: self.configuration.mode.verticalSpacing) {
+            self.headerImage
+
+            Spacer()
+
+            Group {
+                Text(verbatim: self.localization.title)
+                    .font(self.configuration.mode.titleFont)
+                    .fontWeight(.heavy)
+                    .padding(
+                        self.configuration.mode.displaySubtitle
+                            ? .bottom
+                            : []
+                    )
+
+                if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
+                    Text(verbatim: subtitle)
+                        .font(self.configuration.mode.subtitleFont)
+                }
+            }
+            .padding(.horizontal, 20)
+
+            Spacer()
+        }
+        .foregroundColor(self.configuration.colors.text1Color)
+        .multilineTextAlignment(.center)
+        .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
     }
 
     @ViewBuilder
@@ -86,7 +96,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
             self.asyncImage
                 .clipShape(
                     Circle()
-                        .offset(y: -140)
+                        .offset(y: -120)
                         .scale(3.0)
                 )
                 .padding(.bottom)
