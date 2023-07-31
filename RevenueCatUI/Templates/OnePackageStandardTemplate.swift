@@ -5,33 +5,15 @@ import SwiftUI
 struct OnePackageStandardTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
-    @EnvironmentObject
-    private var introEligibility: IntroEligibilityViewModel
-
-    init(_ configuration: TemplateViewConfiguration) {
-        self.configuration = configuration
-    }
-
-    var body: some View {
-        OnePackageTemplateContent(configuration: self.configuration,
-                                  introEligibility: self.introEligibility.singleEligibility)
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-private struct OnePackageTemplateContent: View {
-
-    private var configuration: TemplateViewConfiguration
-    private var introEligibility: IntroEligibilityStatus?
     private var localization: ProcessedLocalizedConfiguration
 
     @EnvironmentObject
+    private var introEligibilityViewModel: IntroEligibilityViewModel
+    @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
-    init(configuration: TemplateViewConfiguration, introEligibility: IntroEligibilityStatus?) {
+    init(_ configuration: TemplateViewConfiguration) {
         self.configuration = configuration
-        self.introEligibility = introEligibility
         self.localization = configuration.packages.single.localization
     }
 
@@ -128,12 +110,18 @@ private struct OnePackageTemplateContent: View {
     private var button: some View {
         PurchaseButton(
             package: self.configuration.packages.single.content,
-            purchaseHandler: self.purchaseHandler,
             colors: self.configuration.colors,
             localization: self.localization,
             introEligibility: self.introEligibility,
-            mode: self.configuration.mode
+            mode: self.configuration.mode,
+            purchaseHandler: self.purchaseHandler
         )
+    }
+
+    // MARK: -
+
+    private var introEligibility: IntroEligibilityStatus? {
+        return self.introEligibilityViewModel.singleEligibility
     }
 
     private static let imageAspectRatio = 1.1
