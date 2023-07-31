@@ -51,6 +51,14 @@ struct AppContentView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(.mint)
 
+                    NavigationLink {
+                        OfferingsList()
+                    } label: {
+                        Text("All offerings")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.indigo)
+
                     Spacer()
 
                     BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
