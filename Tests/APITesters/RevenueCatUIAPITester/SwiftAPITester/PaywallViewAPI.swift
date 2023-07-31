@@ -16,6 +16,13 @@ struct App: View {
     private var completed: PurchaseCompletedHandler = { (_: CustomerInfo) in }
 
     var body: some View {
+        self.content
+    }
+
+    // Note: `body` is implicitly `MainActor`, but this is not on purpose
+    // to ensure that these constructors can be called outside of `@MainActor`.
+    @ViewBuilder
+    var content: some View {
         PaywallView()
         PaywallView(mode: .fullScreen)
         PaywallView(offering: self.offering)
