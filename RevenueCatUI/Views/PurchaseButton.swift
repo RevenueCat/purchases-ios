@@ -53,7 +53,10 @@ struct PurchaseButton: View {
         .controlSize(self.mode.buttonSize)
         .buttonStyle(.borderedProminent)
         .frame(maxWidth: .infinity)
+        .dynamicTypeSize(...Self.maximumDynamicTypeSize)
     }
+
+    private static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
 
 }
 
