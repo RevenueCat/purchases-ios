@@ -40,8 +40,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: 10) {
-            self.iconImage
-
             self.scrollableContent
                 .scrollableIfNecessary()
 
@@ -62,6 +60,10 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     private var scrollableContent: some View {
         VStack {
+            Spacer()
+
+            self.iconImage
+
             Spacer()
 
             Text(self.selectedLocalization.title)
@@ -98,29 +100,12 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding(.bottom)
     }
 
     @ViewBuilder
     private func packageButton(_ package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
-        let alignment: Alignment = .leading
-
-        VStack(alignment: alignment.horizontal, spacing: 5) {
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .hidden(if: !selected)
-                    .overlay {
-                        if selected {
-                            EmptyView()
-                        } else {
-                            Circle()
-                                .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
-                        }
-                    }
-
-                Text(self.localization(for: package.content).offerName ?? package.content.productName)
-            }
-            .foregroundColor(self.configuration.colors.accent1Color)
+        VStack(alignment: Self.packageButtonAlignment.horizontal, spacing: 5) {
+            self.packageButtonTitle(package, selected: selected)
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: package.localization.offerDetails,
@@ -129,7 +114,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                 foregroundColor: selected
                     ? self.configuration.colors.backgroundColor
                     : self.configuration.colors.text1Color,
-                alignment: alignment
+                alignment: Self.packageButtonAlignment
             )
             .fixedSize(horizontal: false, vertical: true)
             .font(.body)
@@ -137,7 +122,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
         .font(.body.weight(.medium))
         .padding()
         .multilineTextAlignment(.leading)
-        .frame(maxWidth: .infinity, alignment: alignment)
+        .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
         .overlay {
             if selected {
                 EmptyView()
@@ -154,6 +139,31 @@ struct MultiPackageBoldTemplate: TemplateViewType {
                     : .clear
                 )
         }
+    }
+
+    private func packageButtonTitle(
+        _ package: TemplateViewConfiguration.Package,
+        selected: Bool
+    ) -> some View {
+        HStack {
+            Image(systemName: "checkmark.circle.fill")
+                .hidden(if: !selected)
+                .overlay {
+                    if selected {
+                        EmptyView()
+                    } else {
+                        Circle()
+                            .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
+                    }
+                }
+
+            Text(self.localization(for: package.content).offerName ?? package.content.productName)
+        }
+        .foregroundColor(
+            selected
+            ? self.configuration.colors.accent1Color
+            : self.configuration.colors.text1Color
+        )
     }
 
     private var subscribeButton: some View {
@@ -177,9 +187,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
             } else {
                 RemoteImage(url: url)
             }
-        } else {
-            DebugErrorView("Template configuration is missing background URL",
-                           releaseBehavior: .emptyView)
         }
     }
 
@@ -187,7 +194,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
     private var iconImage: some View {
         Group {
             if let url = self.configuration.iconImageURL {
-                RemoteImage(url: url, aspectRatio: 1, maxWidth: Self.iconSize)
+                RemoteImage(url: url, aspectRatio: 1, maxWidth: self.iconSize)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else {
                 // Placeholder to be able to add a consistent padding
@@ -206,8 +213,10 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
     private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
-    private static let iconSize: CGFloat = 100
+    @ScaledMetric(relativeTo: .largeTitle)
+    private var iconSize: CGFloat = 140
     private static let cornerRadius: CGFloat = 15
+    private static let packageButtonAlignment: Alignment = .leading
 
 }
 
