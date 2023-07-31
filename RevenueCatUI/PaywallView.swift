@@ -64,29 +64,31 @@ public struct PaywallView: View {
 
     @ViewBuilder
     private var content: some View {
-        if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
-            if let offering = self.offering {
-                self.paywallView(for: offering,
-                                 checker: checker,
-                                 purchaseHandler: purchaseHandler)
-                .transition(Self.transition)
-            } else {
-                LoadingPaywallView()
-                .transition(Self.transition)
-                    .task {
-                        do {
-                            guard let offering = try await Purchases.shared.offerings().current else {
-                                throw PaywallError.noCurrentOffering
-                            }
+        VStack { // Necessary to work around FB12674350 and FB12787354
+            if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
+                if let offering = self.offering {
+                    self.paywallView(for: offering,
+                                     checker: checker,
+                                     purchaseHandler: purchaseHandler)
+                    .transition(Self.transition)
+                } else {
+                    LoadingPaywallView()
+                        .transition(Self.transition)
+                        .task {
+                            do {
+                                guard let offering = try await Purchases.shared.offerings().current else {
+                                    throw PaywallError.noCurrentOffering
+                                }
 
-                            self.offering = offering
-                        } catch let error as NSError {
-                            self.error = error
+                                self.offering = offering
+                            } catch let error as NSError {
+                                self.error = error
+                            }
                         }
-                    }
+                }
+            } else {
+                DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
             }
-        } else {
-            DebugErrorView("Purchases has not been configured.", releaseBehavior: .fatalError)
         }
     }
 
