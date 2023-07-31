@@ -5,9 +5,9 @@
 //  Created by Nacho Soto on 7/17/23.
 //
 import Nimble
-import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
+import SwiftUI
 import XCTest
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
@@ -36,5 +36,28 @@ extension BaseSnapshotTest {
     static let cardSize: CGSize = .init(width: 460, height: 460)
     static let bannerSize: CGSize = .init(width: 380, height: 70)
     */
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension View {
+
+    /// Adds the receiver to a view hierarchy to be able to test lifetime logic.
+    func addToHierarchy() {
+        let controller = UIHostingController(
+            rootView: self
+                .frame(width: BaseSnapshotTest.fullScreenSize.width,
+                       height: BaseSnapshotTest.fullScreenSize.height)
+        )
+
+        let window = UIWindow()
+        window.rootViewController = controller
+        window.frame.size = BaseSnapshotTest.fullScreenSize
+        window.setNeedsLayout()
+        window.layoutIfNeeded()
+
+        controller.beginAppearanceTransition(true, animated: false)
+        controller.endAppearanceTransition()
+    }
 
 }

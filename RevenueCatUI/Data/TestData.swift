@@ -383,6 +383,18 @@ extension PurchaseHandler {
         }
     }
 
+    static func cancelling() -> Self {
+        return self.init { _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: true
+            )
+        } restorePurchases: {
+            return TestData.customerInfo
+        }
+    }
+
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay: Duration) -> Self {
         return self.map { purchaseBlock in {
