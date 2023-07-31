@@ -1615,19 +1615,24 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                    isAppBackgrounded: isAppBackgrounded) { offerings in
             if let offering = offerings.value?.current, let paywall = offering.paywall {
-                let packageTypes = Set(paywall.config.packages)
-                let products: Set<String> = .init(
-                    offering.availablePackages
-                        .lazy
-                        .filter { packageTypes.contains($0.packageType) }
-                        .map(\.storeProduct.productIdentifier)
-                )
-
-                Logger.debug(Strings.eligibility.warming_up_eligibility_cache(paywall))
-
-                self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { _ in }
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    self.warmUpEligibilityCache(offering: offering, paywall: paywall)
+                }
             }
         }
+    }
+
+    private func warmUpEligibilityCache(offering: RCOffering, paywall: PaywallData) {
+        let packageTypes = Set(paywall.config.packages)
+        let products: Set<String> = .init(
+            offering.availablePackages
+                .lazy
+                .filter { packageTypes.contains($0.packageType) }
+                .map(\.storeProduct.productIdentifier)
+        )
+
+        Logger.debug(Strings.eligibility.warming_up_eligibility_cache(paywall))
+        self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { _ in }
     }
 
 }
