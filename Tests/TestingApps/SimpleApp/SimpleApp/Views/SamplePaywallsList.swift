@@ -75,7 +75,7 @@ extension PaywallTemplate: Identifiable {
 
 }
 
-private extension PaywallTemplate {
+extension PaywallTemplate {
 
     var name: String {
         switch self {
