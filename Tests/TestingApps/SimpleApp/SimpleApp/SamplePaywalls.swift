@@ -38,6 +38,16 @@ final class SamplePaywallLoader {
         )
     }
 
+    func offeringWithDefaultPaywall() -> Offering {
+        return .init(
+            identifier: Self.offeringIdentifier,
+            serverDescription: Self.offeringIdentifier,
+            metadata: [:],
+            paywall: nil,
+            availablePackages: self.packages
+        )
+    }
+
     private func paywall(for template: PaywallTemplate) -> PaywallData {
         switch template {
         case .onePackageStandard:
