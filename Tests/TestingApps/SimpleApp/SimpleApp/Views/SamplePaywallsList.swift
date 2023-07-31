@@ -9,7 +9,6 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
-@MainActor
 struct SamplePaywallsList: View {
 
     @State
