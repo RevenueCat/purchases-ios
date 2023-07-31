@@ -12,11 +12,13 @@ import SwiftUI
 struct PurchaseButton: View {
 
     let package: Package
-    let purchaseHandler: PurchaseHandler
     let colors: PaywallData.Configuration.Colors
     let localization: ProcessedLocalizedConfiguration
     let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
+
+    @ObservedObject
+    var purchaseHandler: PurchaseHandler
 
     @Environment(\.dismiss)
     private var dismiss
@@ -102,6 +104,7 @@ private extension PaywallViewMode {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct PurchaseButton_Previews: PreviewProvider {
 
+    @MainActor
     private struct Preview: View {
 
         var mode: PaywallViewMode
@@ -112,11 +115,11 @@ struct PurchaseButton_Previews: PreviewProvider {
         var body: some View {
             PurchaseButton(
                 package: Self.package,
-                purchaseHandler: Self.purchaseHandler,
                 colors: TestData.colors,
                 localization: TestData.localization1.processVariables(with: Self.package, locale: .current),
                 introEligibility: self.eligibility,
-                mode: self.mode
+                mode: self.mode,
+                purchaseHandler: Self.purchaseHandler
             )
             .task {
                 self.eligibility = await Self.eligibilityChecker.eligibility(for: Self.package)
