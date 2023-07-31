@@ -119,18 +119,14 @@ struct PurchaseButton_Previews: PreviewProvider {
                 localization: TestData.localization1.processVariables(with: Self.package, locale: .current),
                 introEligibility: self.eligibility,
                 mode: self.mode,
-                purchaseHandler: Self.purchaseHandler
+                purchaseHandler: PreviewHelpers.purchaseHandler
             )
             .task {
-                self.eligibility = await Self.eligibilityChecker.eligibility(for: Self.package)
+                self.eligibility = await PreviewHelpers.introEligibilityChecker.eligibility(for: Self.package)
             }
         }
 
         private static let package: Package = TestData.packageWithIntroOffer
-        private static let eligibilityChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
-            .with(delay: .seconds(0.3))
-        private static let purchaseHandler: PurchaseHandler = .mock()
-            .with(delay: .seconds(0.5))
 
     }
 
