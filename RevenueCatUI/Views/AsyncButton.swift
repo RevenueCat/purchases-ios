@@ -19,10 +19,10 @@ struct AsyncButton<Label>: View where Label: View {
     @State
     private var error: NSError?
 
-    @State
-    private var inProgress: Bool = false
-
-    init(action: @escaping Action, @ViewBuilder label: () -> Label) {
+    init(
+        action: @escaping Action,
+        @ViewBuilder label: () -> Label
+    ) {
         self.action = action
         self.label = label()
     }
@@ -30,9 +30,6 @@ struct AsyncButton<Label>: View where Label: View {
     var body: some View {
         Button {
             Task<Void, Never> {
-                self.inProgress = true
-                defer { self.inProgress = false }
-
                 do {
                     try await self.action()
                 } catch let error as NSError {
@@ -42,7 +39,6 @@ struct AsyncButton<Label>: View where Label: View {
         } label: {
             self.label
         }
-        .disabled(self.inProgress)
         .displayError(self.$error)
     }
 
