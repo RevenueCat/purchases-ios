@@ -44,6 +44,7 @@ struct FooterView: View {
         .foregroundColor(self.color)
         .font(.caption.bold())
         .padding(.horizontal)
+        .padding(.bottom, 5)
     }
 
     private var separator: some View {

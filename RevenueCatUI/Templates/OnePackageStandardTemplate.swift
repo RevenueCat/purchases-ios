@@ -72,10 +72,10 @@ private struct OnePackageTemplateContent: View {
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.localization.offerDetails,
                 textWithIntroOffer: self.localization.offerDetailsWithIntroOffer,
-                introEligibility: self.introEligibility
+                introEligibility: self.introEligibility,
+                foregroundColor: self.configuration.colors.text1Color
             )
             .font(self.configuration.mode.offerDetailsFont)
-            .foregroundColor(self.configuration.colors.text1Color)
 
             self.button
                 .padding(.horizontal)
