@@ -23,6 +23,15 @@ class OtherPaywallViewTests: BaseSnapshotTest {
         view.snapshot(size: Self.fullScreenSize)
     }
 
+    func testDefaultDarkModePaywall() {
+        let view = PaywallView(offering: Self.offeringWithNoPaywall,
+                               introEligibility: Self.eligibleChecker,
+                               purchaseHandler: Self.purchaseHandler)
+            .environment(\.colorScheme, .dark)
+
+        view.snapshot(size: Self.fullScreenSize)
+    }
+
     func testLoadingPaywallView() {
         let view = LoadingPaywallView()
         view.snapshot(size: Self.fullScreenSize)
