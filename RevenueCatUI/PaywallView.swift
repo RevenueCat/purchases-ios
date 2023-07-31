@@ -6,7 +6,6 @@ import SwiftUI
 @available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(macCatalyst, unavailable, message: "RevenueCatUI does not support Catalyst yet")
-@MainActor
 public struct PaywallView: View {
 
     private let mode: PaywallViewMode
@@ -23,7 +22,6 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:mode:)`` instead.
-    @MainActor
     public init(mode: PaywallViewMode = .default) {
         self.init(
             offering: nil,
@@ -37,7 +35,6 @@ public struct PaywallView: View {
     /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
     /// a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    @MainActor
     public init(offering: Offering, mode: PaywallViewMode = .default) {
         self.init(
             offering: offering,
@@ -47,7 +44,6 @@ public struct PaywallView: View {
         )
     }
 
-    @MainActor
     init(
         offering: Offering?,
         mode: PaywallViewMode = .default,
@@ -66,6 +62,7 @@ public struct PaywallView: View {
             .displayError(self.$error, dismissOnClose: true)
     }
 
+    @MainActor
     @ViewBuilder
     private var content: some View {
         VStack { // Necessary to work around FB12674350 and FB12787354
@@ -173,6 +170,8 @@ struct LoadedOfferingPaywallView: View {
                         locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
+            .preference(key: PurchasedCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.purchasedCustomerInfo)
             .hidden(if: self.shouldHidePaywall)
             .disabled(self.purchaseHandler.actionInProgress)
 
