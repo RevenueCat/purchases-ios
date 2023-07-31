@@ -175,3 +175,23 @@ private struct FeatureView: View {
     private static let cutoffForHorizontalLayout: DynamicTypeSize = .xxxLarge
 
 }
+
+// MARK: -
+
+#if DEBUG
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(macCatalyst, unavailable)
+struct OnePackageWithFeaturesTemplate_Previews: PreviewProvider {
+
+    static var previews: some View {
+        PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
+            OnePackageWithFeaturesTemplate($0)
+        }
+    }
+
+}
+
+#endif
