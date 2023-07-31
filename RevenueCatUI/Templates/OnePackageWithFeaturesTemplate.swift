@@ -101,7 +101,7 @@ private struct OnePackageWithFeaturesTemplateContent: View {
     }
 
     private var features: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 40) {
             ForEach(self.localization.features, id: \.title) { feature in
                 FeatureView(feature: feature, colors: self.configuration.colors)
             }
