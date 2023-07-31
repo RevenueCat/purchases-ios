@@ -6,6 +6,7 @@ import SwiftUI
 @available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(macCatalyst, unavailable, message: "RevenueCatUI does not support Catalyst yet")
+@MainActor
 public struct PaywallView: View {
 
     private let mode: PaywallViewMode
@@ -22,6 +23,7 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:mode:)`` instead.
+    @MainActor
     public init(mode: PaywallViewMode = .default) {
         self.init(
             offering: nil,
@@ -35,6 +37,7 @@ public struct PaywallView: View {
     /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
     /// a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
+    @MainActor
     public init(offering: Offering, mode: PaywallViewMode = .default) {
         self.init(
             offering: offering,
@@ -44,6 +47,7 @@ public struct PaywallView: View {
         )
     }
 
+    @MainActor
     init(
         offering: Offering?,
         mode: PaywallViewMode = .default,
@@ -158,7 +162,7 @@ struct LoadedOfferingPaywallView: View {
         self._introEligibility = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
-        self.purchaseHandler = purchaseHandler
+        self._purchaseHandler = .init(initialValue: purchaseHandler)
     }
 
     var body: some View {
@@ -170,6 +174,7 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .hidden(if: self.shouldHidePaywall)
+            .disabled(self.purchaseHandler.actionInProgress)
 
         if let aspectRatio = self.mode.aspectRatio {
             view.aspectRatio(aspectRatio, contentMode: .fit)
