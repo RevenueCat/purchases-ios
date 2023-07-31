@@ -1618,7 +1618,7 @@ private extension Purchases {
         }
     }
 
-    private func warmUpEligibilityCache(offering: RevenueCat.Offering, paywall: PaywallData) {
+    private func warmUpEligibilityCache(offering: RCOffering, paywall: PaywallData) {
         let packageTypes = Set(paywall.config.packages)
         let products: [String] = offering.availablePackages
             .lazy
