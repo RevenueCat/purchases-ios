@@ -226,21 +226,14 @@ struct PaywallView_Previews: PreviewProvider {
                 PaywallView(
                     offering: offering,
                     mode: mode,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: Self.purchaseHandler
+                    introEligibility: PreviewHelpers.introEligibilityChecker,
+                    purchaseHandler: PreviewHelpers.purchaseHandler
                 )
                 .previewLayout(mode.layout)
                 .previewDisplayName("\(offering.paywall?.template.name ?? "")-\(mode)")
             }
         }
     }
-
-    private static let introEligibility: TrialOrIntroEligibilityChecker =
-        .producing(eligibility: .eligible)
-        .with(delay: .seconds(0.5))
-    private static let purchaseHandler: PurchaseHandler =
-        .mock()
-        .with(delay: .seconds(1))
 
     private static let offerings: [Offering] = [
         TestData.offeringWithIntroOffer,
