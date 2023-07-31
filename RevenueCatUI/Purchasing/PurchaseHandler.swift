@@ -10,7 +10,6 @@ import StoreKit
 import SwiftUI
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-@MainActor
 final class PurchaseHandler: ObservableObject {
 
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
@@ -26,6 +25,10 @@ final class PurchaseHandler: ObservableObject {
     /// Whether a purchase was successfully completed.
     @Published
     fileprivate(set) var purchased: Bool = false
+
+    /// When `purchased` becomes `true`, this will include the `CustomerInfo` associated to it.
+    @Published
+    fileprivate(set) var purchasedCustomerInfo: CustomerInfo?
 
     /// Whether a restore was successfully completed.
     @Published
@@ -52,6 +55,7 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension PurchaseHandler {
 
+    @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
         withAnimation(Constants.fastAnimation) {
             self.actionInProgress = true
@@ -63,12 +67,14 @@ extension PurchaseHandler {
         if !result.userCancelled {
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
+                self.purchasedCustomerInfo = result.customerInfo
             }
         }
 
         return result
     }
 
+    @MainActor
     func restorePurchases() async throws -> CustomerInfo {
         self.actionInProgress = true
         defer { self.actionInProgress = false }
@@ -87,6 +93,19 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(purchase: purchase(self.purchaseBlock),
                      restorePurchases: restore(self.restoreBlock))
+    }
+
+}
+
+// MARK: - Preference Key
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
+
+    static var defaultValue: CustomerInfo?
+
+    static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+        value = nextValue()
     }
 
 }
