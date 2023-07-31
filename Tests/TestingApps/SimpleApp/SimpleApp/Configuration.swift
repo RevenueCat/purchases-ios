@@ -18,3 +18,22 @@ enum Configuration {
     static let entitlement = "pro"
 
 }
+
+extension Configuration {
+
+    static var effectiveApiKey: String = {
+        return Self.apiKey.nonEmpty ?? Self.apiKeyFromCI
+    }()
+
+    // This is modified by CI:
+    private static let apiKeyFromCI = ""
+
+}
+
+// MARK: - Extensions
+
+private extension String {
+
+    var nonEmpty: String? { return self.isEmpty ? nil : self }
+
+}
