@@ -9,6 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
+@MainActor
 struct AppContentView: View {
 
     let customerInfoStream: AsyncStream<CustomerInfo>
@@ -30,60 +31,86 @@ struct AppContentView: View {
     @State
     private var customerInfo: CustomerInfo?
 
+    @State
+    private var didPurchase: Bool = false
+
     var body: some View {
         ZStack {
-            Rectangle()
-                .foregroundStyle(.orange.gradient)
-                .opacity(0.05)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .edgesIgnoringSafeArea(.all)
+            self.background
 
-            VStack(spacing: 20) {
-                if let info = self.customerInfo {
-                    Text(verbatim: "You're signed in: \(info.originalAppUserId)")
-                        .font(.callout)
-
-                    NavigationLink {
-                        SamplePaywallsList()
-                    } label: {
-                        Text("Sample paywalls")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.mint)
-
-                    NavigationLink {
-                        OfferingsList()
-                    } label: {
-                        Text("All offerings")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.indigo)
-
-                    Spacer()
-
-                    BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
-                        .frame(maxWidth: .infinity)
-
-                    if let date = info.latestExpirationDate {
-                        Text(verbatim: "Your subscription expires: \(date.formatted())")
-                            .font(.caption)
-                    }
-
-                    Spacer()
-                }
-            }
-            .padding(.horizontal)
-            .navigationTitle("Simple App")
-            .task {
-                for await info in self.customerInfoStream {
-                    self.customerInfo = info
-                }
-            }
+            self.content
+        }
+        .presentPaywallIfNecessary {
+            !$0.hasPro
+        } purchaseCompleted: { _ in
+            self.didPurchase = true
         }
     }
 
+    private var background: some View {
+        Rectangle()
+            .foregroundStyle(.orange.gradient)
+            .opacity(0.05)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .edgesIgnoringSafeArea(.all)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        VStack(spacing: 20) {
+            if let info = self.customerInfo {
+                Text(verbatim: "You're signed in: \(info.originalAppUserId)")
+                    .font(.callout)
+
+                Text("Thanks for purchasing!")
+                    .hidden(if: !self.didPurchase)
+
+                NavigationLink {
+                    SamplePaywallsList()
+                } label: {
+                    Text("Sample paywalls")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.mint)
+
+                NavigationLink {
+                    OfferingsList()
+                } label: {
+                    Text("All offerings")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.indigo)
+
+                Spacer()
+
+                BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
+                    .frame(maxWidth: .infinity)
+
+                if let date = info.latestExpirationDate {
+                    Text(verbatim: "Your subscription expires: \(date.formatted())")
+                        .font(.caption)
+                }
+
+                Spacer()
+            }
+        }
+        .padding(.horizontal)
+        .navigationTitle("Simple App")
+        .task {
+            for await info in self.customerInfoStream {
+                self.customerInfo = info
+            }
+        }
+    }
 }
 
+extension CustomerInfo {
+
+    var hasPro: Bool {
+        return self.entitlements.active.contains { $1.identifier == Configuration.entitlement }
+    }
+
+}
 
 #if DEBUG
 

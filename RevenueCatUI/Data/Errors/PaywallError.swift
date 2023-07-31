@@ -10,7 +10,10 @@ import Foundation
 /// Error produced when displaying paywalls.
 enum PaywallError: Error {
 
-    /// RevenueCat dashboard does not have a current offering configured
+    /// `Purchases` has not been configured yet.
+    case purchasesNotConfigured
+
+    /// RevenueCat dashboard does not have a current offering configured.
     case noCurrentOffering
 
 }
@@ -25,6 +28,9 @@ extension PaywallError: CustomNSError {
 
     private var description: String {
         switch self {
+        case .purchasesNotConfigured:
+            return "Purchases instance has not been configured yet."
+
         case .noCurrentOffering:
             return "The RevenueCat dashboard does not have a current offering configured."
         }

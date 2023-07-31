@@ -27,6 +27,10 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchased: Bool = false
 
+    /// When `purchased` becomes `true`, this will include the `CustomerInfo` associated to it.
+    @Published
+    fileprivate(set) var purchasedCustomerInfo: CustomerInfo?
+
     /// Whether a restore was successfully completed.
     @Published
     fileprivate(set) var restored: Bool = false
@@ -63,6 +67,7 @@ extension PurchaseHandler {
         if !result.userCancelled {
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
+                self.purchasedCustomerInfo = result.customerInfo
             }
         }
 
@@ -87,6 +92,19 @@ extension PurchaseHandler {
     ) -> Self {
         return .init(purchase: purchase(self.purchaseBlock),
                      restorePurchases: restore(self.restoreBlock))
+    }
+
+}
+
+// MARK: - Preference Key
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
+
+    static var defaultValue: CustomerInfo?
+
+    static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+        value = nextValue()
     }
 
 }

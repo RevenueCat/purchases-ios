@@ -173,6 +173,8 @@ struct LoadedOfferingPaywallView: View {
                         locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
+            .preference(key: PurchasedCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.purchasedCustomerInfo)
             .hidden(if: self.shouldHidePaywall)
             .disabled(self.purchaseHandler.actionInProgress)
 
