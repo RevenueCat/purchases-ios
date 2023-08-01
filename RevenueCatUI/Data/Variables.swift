@@ -23,11 +23,12 @@ protocol VariableDataProvider {
     var productName: String { get }
 
     func periodName(_ locale: Locale) -> String
+    func subscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
 }
 
-/// Processes strings, replacing `{{variable}}` with their associated content.
+/// Processes strings, replacing `{{ variable }}` with their associated content.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 enum VariableHandler {
 
@@ -101,6 +102,8 @@ private extension VariableDataProvider {
         case "product_name": return self.productName
         case "period":
             return self.periodName(locale)
+        case "subscription_duration":
+            return self.subscriptionDuration(locale) ?? ""
         case "intro_duration":
             return self.introductoryOfferDuration(locale) ?? ""
 
