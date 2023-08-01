@@ -49,6 +49,8 @@ final class SamplePaywallLoader {
             return Self.multiPackageBoldTemplate()
         case .onePackageWithFeatures:
             return Self.onePackageWithFeaturesTemplate()
+        case .multiPackageHorizontal:
+            return Self.multiPackageHorizontalTemplate()
         }
     }
 
@@ -259,6 +261,49 @@ private extension SamplePaywallLoader {
                           content: "You'll automatically get subscribed. Cancel anytime before if you didn't love our app.",
                           iconID: "attachment")
                 ]),
+            assetBaseURL: Self.paywallAssetBaseURL
+        )
+    }
+
+    static func multiPackageHorizontalTemplate() -> PaywallData {
+        return .init(
+            template: .multiPackageHorizontal,
+            config: .init(
+                packages: Array<PackageType>([.monthly, .sixMonth, .annual])
+                    .map { Package.string(from: $0)! },
+                defaultPackage: Package.string(from: .sixMonth)!,
+                images: Self.images,
+                colors: .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        text1: "#111111",
+                        callToActionBackground: "#EC807C",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#BC66FF",
+                        accent2: "#111100"
+                    ),
+                    dark: .init(
+                        background: "#000000",
+                        text1: "#EEEEEE",
+                        callToActionBackground: "#ACD27A",
+                        callToActionForeground: "#000000",
+                        accent1: "#B022BB",
+                        accent2: "#EEDDEE"
+                    )
+                ),
+                blurredBackgroundImage: true,
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                privacyURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "Call to action for better conversion.",
+                subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
+                callToAction: "Subscribe for {{ price_per_month }}/mo",
+                offerDetails: "{{ total_price_and_per_month }}",
+                offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
+                offerName: "{{ period }}",
+                features: []
+            ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
     }

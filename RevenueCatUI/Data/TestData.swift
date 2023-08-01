@@ -27,8 +27,8 @@ internal enum TestData {
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
-        price: 12.99,
-        localizedPriceString: "$12.99",
+        price: 6.99,
+        localizedPriceString: "$6.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
@@ -36,10 +36,21 @@ internal enum TestData {
         subscriptionPeriod: .init(value: 1, unit: .month),
         introductoryDiscount: Self.intro(7, .day)
     )
+    static let sixMonthProduct = TestStoreProduct(
+        localizedTitle: "Monthly",
+        price: 34.99,
+        localizedPriceString: "$34.99",
+        productIdentifier: "com.revenuecat.product_5",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 6, unit: .month),
+        introductoryDiscount: Self.intro(7, .day)
+    )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
-        price: 69.49,
-        localizedPriceString: "$69.49",
+        price: 53.99,
+        localizedPriceString: "$53.99",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
@@ -99,6 +110,12 @@ internal enum TestData {
         identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let sixMonthPackage = Package(
+        identifier: PackageType.sixMonth.identifier,
+        packageType: .sixMonth,
+        storeProduct: Self.sixMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let annualPackage = Package(
@@ -254,6 +271,47 @@ internal enum TestData {
         availablePackages: [Self.weeklyPackage,
                             Self.monthlyPackage,
                             Self.annualPackage]
+    )
+
+    static let offeringWithMultiPackageHorizontalPaywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            template: .multiPackageHorizontal,
+            config: .init(
+                packages: [PackageType.monthly.identifier,
+                           PackageType.sixMonth.identifier,
+                           PackageType.annual.identifier],
+                defaultPackage: PackageType.sixMonth.identifier,
+                images: .init(
+                    background: "background.jpg"
+                ),
+                colors: .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        text1: "#111111",
+                        callToActionBackground: "#06357D",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#D4B5FC",
+                        accent2: "#DFDFDF"
+                    )
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "Get _unlimited_ access",
+                callToAction: "Continue",
+                offerDetails: "",
+                offerDetailsWithIntroOffer: "Includes {{ intro_duration }} **free** trial",
+                offerName: "{{ subscription_duration }}",
+                features: []
+            ),
+            assetBaseURL: Bundle.module.resourceURL ?? Bundle.module.bundleURL
+        ),
+        availablePackages: [TestData.monthlyPackage,
+                            TestData.sixMonthPackage,
+                            TestData.annualPackage]
     )
 
     static let lightColors: PaywallData.Configuration.Colors = .init(

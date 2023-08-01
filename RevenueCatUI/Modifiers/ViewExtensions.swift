@@ -74,9 +74,45 @@ extension View {
             .onPreferenceChange(ViewSizePreferenceKey.self, perform: closure)
     }
 
+    /// Invokes the given closure with the dimension specified by `axis` changes whenever it changes.
+    func onSizeChange(
+        _ axis: Axis,
+        _ closure: @escaping (CGFloat) -> Void
+    ) -> some View {
+        self
+            .overlay(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(
+                            key: ViewDimensionPreferenceKey.self,
+                            value: axis == .horizontal
+                                ? geometry.size.width
+                                : geometry.size.height
+                        )
+                }
+            )
+            .onPreferenceChange(ViewDimensionPreferenceKey.self, perform: closure)
+    }
+
 }
 
-// MARK: -
+// MARK: - Preference Keys
+
+/// `PreferenceKey` for keeping track of a view dimension.
+private struct ViewDimensionPreferenceKey: PreferenceKey {
+
+    typealias Value = CGFloat
+
+    static var defaultValue: Value = 10
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        let newValue = max(value, nextValue())
+        if newValue != value {
+            value = newValue
+        }
+    }
+
+}
 
 /// `PreferenceKey` for keeping track of view size.
 private struct ViewSizePreferenceKey: PreferenceKey {

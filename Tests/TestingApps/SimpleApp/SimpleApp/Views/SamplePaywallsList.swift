@@ -103,6 +103,8 @@ extension PaywallTemplate {
             return "Multi package bold"
         case .onePackageWithFeatures:
             return "One package with features"
+        case .multiPackageHorizontal:
+            return "Multi package horizontal"
         }
     }
 
