@@ -61,10 +61,31 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         }
     }
 
+    func testCreateOnlyLifetime() throws {
+        let result = try Config.create(
+            with: [TestData.lifetimePackage],
+            filter: [.lifetime],
+            default: nil,
+            localization: Self.localization,
+            setting: .single
+        )
+
+        switch result {
+        case let .single(package):
+            expect(package.content) === TestData.lifetimePackage
+            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.lifetimePackage)
+        case .multiple:
+            fail("Invalid result: \(result)")
+        }
+    }
+
     func testCreateMultiplePackage() throws {
         let result = try Config.create(
-            with: [TestData.monthlyPackage, TestData.annualPackage, TestData.weeklyPackage],
-            filter: [.annual, .monthly],
+            with: [TestData.monthlyPackage,
+                   TestData.annualPackage,
+                   TestData.weeklyPackage,
+                   TestData.lifetimePackage],
+            filter: [.annual, .monthly, .lifetime],
             default: .monthly,
             localization: Self.localization,
             setting: .multiple
@@ -77,7 +98,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(first.content) === TestData.annualPackage
             expect(defaultPackage.content) === TestData.monthlyPackage
 
-            expect(packages).to(haveCount(2))
+            expect(packages).to(haveCount(3))
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
@@ -89,6 +110,10 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(monthly.content) === TestData.monthlyPackage
             expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
+
+            let lifetime = packages[2]
+            expect(lifetime.content) === TestData.lifetimePackage
+            Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
         }
     }
 

@@ -13,5 +13,6 @@
 "PackageType.twoMonth" = "2 month";
 "PackageType.monthly" = "Monthly";
 "PackageType.weekly" = "Weekly";
+"PackageType.lifetime" = "Lifetime";
 
 "%d%% off" = "%d%% off";
