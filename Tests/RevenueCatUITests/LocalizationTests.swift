@@ -128,11 +128,11 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
         verify(.twoMonth, "2 month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
+        verify(.lifetime, "Lifetime")
     }
 
     func testOtherValues() {
         verify(.custom, "")
-        verify(.lifetime, "")
         verify(.unknown, "")
     }
 
@@ -150,11 +150,11 @@ class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
         verify(.twoMonth, "2 meses")
         verify(.monthly, "Mensual")
         verify(.weekly, "Semanal")
+        verify(.lifetime, "Vitalicio")
     }
 
     func testOtherValues() {
         verify(.custom, "")
-        verify(.lifetime, "")
         verify(.unknown, "")
     }
 }
@@ -171,11 +171,11 @@ class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
         verify(.twoMonth, "2 month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
+        verify(.lifetime, "Lifetime")
     }
 
     func testOtherValues() {
         verify(.custom, "")
-        verify(.lifetime, "")
         verify(.unknown, "")
     }
 }
