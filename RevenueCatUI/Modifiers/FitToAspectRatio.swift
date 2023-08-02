@@ -9,7 +9,18 @@ import Foundation
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-struct FitToAspectRatio: ViewModifier {
+extension Image {
+
+    func fitToAspect(_ aspectRatio: Double, contentMode: SwiftUI.ContentMode) -> some View {
+        self.resizable()
+            .scaledToFill()
+            .modifier(FitToAspectRatio(aspectRatio: aspectRatio, contentMode: contentMode))
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private struct FitToAspectRatio: ViewModifier {
 
     let aspectRatio: Double
     let contentMode: SwiftUI.ContentMode
@@ -20,17 +31,6 @@ struct FitToAspectRatio: ViewModifier {
             .overlay(
                 content.aspectRatio(nil, contentMode: self.contentMode)
             )
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-extension Image {
-
-    func fitToAspect(_ aspectRatio: Double, contentMode: SwiftUI.ContentMode) -> some View {
-        self.resizable()
-            .scaledToFill()
-            .modifier(FitToAspectRatio(aspectRatio: aspectRatio, contentMode: contentMode))
     }
 
 }

@@ -54,8 +54,6 @@ struct OnePackageStandardTemplate: TemplateViewType {
         VStack(spacing: self.configuration.mode.verticalSpacing) {
             self.headerImage
 
-            Spacer()
-
             Group {
                 Text(verbatim: self.localization.title)
                     .font(self.configuration.mode.titleFont)
@@ -94,12 +92,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
         switch self.configuration.mode {
         case .fullScreen:
             self.asyncImage
-                .clipShape(
-                    Circle()
-                        .offset(y: -120)
-                        .scale(3.0)
-                )
-                .padding(.bottom)
+                .modifier(CircleMaskModifier())
 
             Spacer()
 
@@ -134,7 +127,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
         return self.introEligibilityViewModel.singleEligibility
     }
 
-    private static let imageAspectRatio = 1.1
+    private static let imageAspectRatio: CGFloat = 1.2
 
 }
 
@@ -178,6 +171,35 @@ private extension PaywallViewMode {
         case .card, .banner: return .caption
         }
     }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private struct CircleMaskModifier: ViewModifier {
+
+    @State
+    private var size: CGSize = .zero
+
+    func body(content: Content) -> some View {
+        content
+            .onSizeChange { self.size = $0 }
+            .clipShape(
+                Circle()
+                    .scale(Self.circleScale)
+                    .offset(y: self.circleOffset)
+            )
+    }
+
+    private var aspectRatio: CGFloat {
+        return self.size.width / self.size.height
+    }
+
+    private var circleOffset: CGFloat {
+        return (((self.size.height * Self.circleScale) - self.size.height) / 2.0 * -1)
+            .rounded(.down)
+    }
+
+    private static let circleScale: CGFloat = 3
 
 }
 
