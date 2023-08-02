@@ -37,6 +37,8 @@ struct IntroEligibilityStateView: View {
             // Hide until we've determined intro eligibility
             // only if there is a custom intro text.
             .withPendingData(self.needsToWaitForIntroEligibility, alignment: self.alignment)
+            // Hide if there is no intro but we have no text to ensure layout does not change.
+            .hidden(if: self.isNotEligibleForIntro && self.textWithNoIntroOffer.isEmpty)
             .foregroundColor(self.foregroundColor)
             .tint(self.foregroundColor)
     }
@@ -45,7 +47,9 @@ struct IntroEligibilityStateView: View {
         if let textWithIntroOffer = self.textWithIntroOffer, self.isEligibleForIntro {
             return textWithIntroOffer
         } else {
-            return self.textWithNoIntroOffer
+            // Display text with intro offer as a backup to ensure layout does not change
+            // when switching states.
+            return self.textWithNoIntroOffer.notEmpty ?? self.textWithIntroOffer ?? ""
         }
     }
 
@@ -58,6 +62,10 @@ private extension IntroEligibilityStateView {
 
     var isEligibleForIntro: Bool {
         return self.introEligibility?.isEligible != false
+    }
+
+    var isNotEligibleForIntro: Bool {
+        return self.introEligibility?.isEligible == false
     }
 
     var needsToWaitForIntroEligibility: Bool {
@@ -81,5 +89,11 @@ private extension View {
             }
             .transition(.opacity.animation(Constants.defaultAnimation))
     }
+
+}
+
+private extension String {
+
+    var notEmpty: String? { return self.isEmpty ? nil : self }
 
 }
