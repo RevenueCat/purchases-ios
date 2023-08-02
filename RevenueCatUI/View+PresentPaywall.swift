@@ -25,12 +25,10 @@ extension View {
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
     public func presentPaywallIfNecessary(
-        mode: PaywallViewMode = .default,
         requiredEntitlementIdentifier: String,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
         return self.presentPaywallIfNecessary(
-            mode: mode,
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
@@ -56,12 +54,10 @@ extension View {
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
     public func presentPaywallIfNecessary(
-        mode: PaywallViewMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
         return self.presentPaywallIfNecessary(
-            mode: mode,
             shouldDisplay: shouldDisplay,
             purchaseCompleted: purchaseCompleted,
             customerInfoFetcher: {
@@ -76,7 +72,6 @@ extension View {
 
     // Visible overload for tests
     func presentPaywallIfNecessary(
-        mode: PaywallViewMode = .default,
         offering: Offering? = nil,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
@@ -88,7 +83,6 @@ extension View {
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
                 purchaseCompleted: purchaseCompleted,
-                mode: mode,
                 offering: offering,
                 customerInfoFetcher: customerInfoFetcher,
                 introEligibility: introEligibility,
@@ -104,7 +98,6 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var purchaseCompleted: PurchaseCompletedHandler?
-    var mode: PaywallViewMode
     var offering: Offering?
 
     var customerInfoFetcher: View.CustomerInfoFetcher
@@ -120,7 +113,6 @@ private struct PresentingPaywallModifier: ViewModifier {
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
-                        mode: self.mode,
                         introEligibility: self.introEligibility ?? .default(),
                         purchaseHandler: self.purchaseHandler ?? .default()
                     )
