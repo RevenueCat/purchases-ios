@@ -47,6 +47,13 @@ class VariablesTests: TestCase {
         expect(self.process("{{ total_price_and_per_month }}")) == "$49.99 ($4.16/mo)"
     }
 
+    func testTotalPriceAndPerMonthForNonSubscriptions() {
+        self.provider.isSubscription = false
+        self.provider.isMonthly = false
+        self.provider.localizedPrice = "$49.99"
+        expect(self.process("{{ total_price_and_per_month }}")) == "$49.99"
+    }
+
     func testTotalPriceAndPerMonthWithDifferentPricesSpanish() {
         self.provider.localizedPrice = "49,99€"
         self.provider.localizedPricePerMonth = "4,16€"
@@ -137,6 +144,24 @@ class VariablesTests: TestCase {
         ]
     }
 
+    // Note: this isn't perfect, but a warning is logged
+    // and it's better than crashing.
+    func testPricePerMonthForLifetimeProductsReturnsPrice() {
+        let result = VariableHandler.processVariables(
+            in: "{{ price_per_month }}",
+            with: TestData.lifetimePackage
+        )
+        expect(result) == "$119.49"
+    }
+
+    func testTotalPriceAndPerMonthForLifetimeProductsReturnsPrice() {
+        let result = VariableHandler.processVariables(
+            in: "{{ total_price_and_per_month }}",
+            with: TestData.lifetimePackage
+        )
+        expect(result) == "$119.49"
+    }
+
 }
 
 // MARK: - Private
@@ -153,6 +178,7 @@ private extension VariablesTests {
 private struct MockVariableProvider: VariableDataProvider {
 
     var applicationName: String = ""
+    var isSubscription: Bool = true
     var isMonthly: Bool = false
     var localizedPrice: String = ""
     var localizedPricePerMonth: String = ""
