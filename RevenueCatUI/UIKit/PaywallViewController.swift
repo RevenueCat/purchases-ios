@@ -5,6 +5,8 @@
 //  Created by Nacho Soto on 8/1/23.
 //
 
+#if canImport(UIKit)
+
 import RevenueCat
 import SwiftUI
 import UIKit
@@ -70,3 +72,5 @@ public protocol PaywallViewControllerDelegate: AnyObject {
                                didFinishPurchasingWith customerInfo: CustomerInfo)
 
 }
+
+#endif
