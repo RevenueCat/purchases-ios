@@ -257,6 +257,8 @@
 		4F90AFCB2A3915340047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
 		4F90AFCC2A3915BC0047E63F /* TestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F90AFCA2A3915340047E63F /* TestMessage.swift */; };
 		4F98E9D32A465A4400DB6EAB /* TestStoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F98E9D22A465A4400DB6EAB /* TestStoreProduct.swift */; };
+		4F9BB63F2A7AFB72001C120D /* MockPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9BB63E2A7AFB72001C120D /* MockPayment.swift */; };
+		4F9BB6402A7AFB72001C120D /* MockPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9BB63E2A7AFB72001C120D /* MockPayment.swift */; };
 		4FA4C8DA2A168956007D2803 /* OfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */; };
 		4FA4C9732A16D3AC007D2803 /* MockBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */; };
 		4FA4C9742A16D3AC007D2803 /* MockBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */; };
@@ -971,6 +973,7 @@
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4F90AFCA2A3915340047E63F /* TestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestMessage.swift; sourceTree = "<group>"; };
 		4F98E9D22A465A4400DB6EAB /* TestStoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProduct.swift; sourceTree = "<group>"; };
+		4F9BB63E2A7AFB72001C120D /* MockPayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPayment.swift; sourceTree = "<group>"; };
 		4FA4C8D92A168956007D2803 /* OfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4FA4C9722A16D3AC007D2803 /* MockBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBackendConfiguration.swift; sourceTree = "<group>"; };
 		4FA696A329FC43C600D228B1 /* ReceiptParserTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ReceiptParserTests-Info.plist"; sourceTree = "<group>"; };
@@ -1786,6 +1789,7 @@
 				F575858E26C0893600C12B97 /* MockOfferingsManager.swift */,
 				57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */,
 				351B514A26D44A4A00BD2BD7 /* MockOperationDispatcher.swift */,
+				4F9BB63E2A7AFB72001C120D /* MockPayment.swift */,
 				351B517326D44F4B00BD2BD7 /* MockPaymentDiscount.swift */,
 				5733D00828CFA7A4008638D8 /* MockPaymentQueueWrapper.swift */,
 				37E35C9439E087F63ECC4F59 /* MockProductsManager.swift */,
@@ -3127,6 +3131,7 @@
 				2D90F8C226FD20F7009B9142 /* MockETagManager.swift in Sources */,
 				2D90F8B526FD2093009B9142 /* MockSystemInfo.swift in Sources */,
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
+				4F9BB6402A7AFB72001C120D /* MockPayment.swift in Sources */,
 				57DDA7B429CBEFB30098B89D /* MockPurchasedProductsFetcher.swift in Sources */,
 				57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */,
 				F5847431278D00C1001B1CE6 /* MockDNSChecker.swift in Sources */,
@@ -3510,6 +3515,7 @@
 				351B51B526D450E800BD2BD7 /* ProductsFetcherSK1Tests.swift in Sources */,
 				2DDF41CC24F6F4C3005BC22D /* AppleReceiptBuilderTests.swift in Sources */,
 				575A8EE52922C9F300936709 /* MockStoreKit2TransactionListenerDelegate.swift in Sources */,
+				4F9BB63F2A7AFB72001C120D /* MockPayment.swift in Sources */,
 				57BF87592967880C00424254 /* MockCachingTrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				2DDF41CD24F6F4C3005BC22D /* ASN1ContainerBuilderTests.swift in Sources */,
 				573A10D52800A7C800F976E5 /* SKErrorTests.swift in Sources */,

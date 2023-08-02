@@ -456,7 +456,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.logger.clearMessages()
 
         // 6. Purchase again
-        _ = try await self.purchases.purchase(package: self.monthlyPackage)
+        try await self.purchaseMonthlyProduct()
 
         self.logger.clearMessages()
 

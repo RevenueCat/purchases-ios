@@ -956,9 +956,21 @@ private extension PurchasesOrchestrator {
     func getAndRemovePurchaseCompletedCallback(
         forTransaction transaction: StoreTransaction
     ) -> PurchaseCompletedBlock? {
-        return self.purchaseCompleteCallbacksByProductID.modify {
-            $0.removeValue(forKey: transaction.productIdentifier)
-        }?.completion
+        return self.purchaseCompleteCallbacksByProductID.modify { callbacks -> PurchaseCompletedBlock? in
+            guard let value = callbacks[transaction.productIdentifier] else { return nil }
+
+            if value.date <= transaction.purchaseDate {
+                callbacks.removeValue(forKey: transaction.productIdentifier)
+                return value.completion
+            } else {
+                Logger.verbose(Strings.purchase.paymentqueue_ignoring_callback_for_older_transaction(
+                    self,
+                    transaction,
+                    value.date
+                ))
+                return nil
+            }
+        }
     }
 
     func markSyncedIfNeeded(
