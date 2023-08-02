@@ -13,3 +13,5 @@
 "PackageType.twoMonth" = "2 month";
 "PackageType.monthly" = "Monthly";
 "PackageType.weekly" = "Weekly";
+
+"%d%% off" = "%d%% off";

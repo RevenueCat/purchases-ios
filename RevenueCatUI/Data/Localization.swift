@@ -89,6 +89,20 @@ enum Localization {
         return path.flatMap(Bundle.init(path:)) ?? containerBundle
     }
 
+    /// - Returns: localized string for a discount. Example: "37% off"
+    static func localized(
+        discount: Double,
+        locale: Locale
+    ) -> String {
+        assert(discount >= 0, "Invalid discount: \(discount)")
+
+        let number = Int((discount * 100).rounded(.toNearestOrAwayFromZero))
+        let format = self.localizedBundle(locale)
+            .localizedString(forKey: "%d%% off", value: nil, table: nil)
+
+        return String(format: format, number)
+    }
+
 }
 
 // MARK: - Private
