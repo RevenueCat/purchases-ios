@@ -80,6 +80,80 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
+    func testPurchaseCallbackIsNotInvokedWhenProcessingQueueTransactionForSameProduct() {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+        let mockPayment = MockPayment()
+        mockPayment.mockProductIdentifier = product.productIdentifier
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = mockPayment
+        transaction.mockState = .purchasing
+        transaction.mockTransactionDate = Date().addingTimeInterval(-100)
+
+        self.backend.postReceiptResult = .success(.emptyInfo)
+
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        var callbackInvoked = false
+        self.purchases.purchase(product: product) { (_, _, _, _) in
+            callbackInvoked = true
+        }
+
+        transaction.mockState = .purchased
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .queue
+
+        expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
+
+        // Avoid false positives because the callback hasn't been invoked yet
+        expect(self.mockOperationDispatcher.pendingMainActorDispatches.value).toEventually(equal(0))
+        expect(callbackInvoked) == false
+    }
+
+    func testHandlesTransactionFromPurchaseIndependentlyFromQueueUpdateForSameProductIdentifier() throws {
+        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+        let mockPayment = MockPayment()
+        mockPayment.mockProductIdentifier = product.productIdentifier
+
+        let queueTransaction = MockTransaction()
+        queueTransaction.mockPayment = mockPayment
+        queueTransaction.mockState = .purchasing
+        queueTransaction.mockTransactionDate = Date().addingTimeInterval(-100)
+
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: queueTransaction)
+
+        var callbackInvoked = false
+        self.purchases.purchase(product: product) { (_, _, _, _) in
+            callbackInvoked = true
+        }
+
+        queueTransaction.mockState = .purchased
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: queueTransaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .queue
+        expect(callbackInvoked) == false
+
+        let purchaseTransaction = MockTransaction()
+        purchaseTransaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
+        purchaseTransaction.mockState = .purchasing
+        purchaseTransaction.mockTransactionDate = Date()
+
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: purchaseTransaction)
+
+        purchaseTransaction.mockState = .purchased
+        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: purchaseTransaction)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.backend.postedInitiationSource) == .purchase
+
+        expect(callbackInvoked).toEventually(beTrue())
+    }
+
     func testReceiptsSendsAsRestoreWhenNotAnonymousAndAllowingSharingAppStoreAccount() throws {
         var deprecated = purchases.deprecated
         deprecated.allowSharingAppStoreAccount = true

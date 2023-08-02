@@ -40,6 +40,9 @@ enum PurchaseStrings {
                                                              SKPaymentTransaction)
     case paymentqueue_updated_transaction(SKPaymentTransactionObserver,
                                           SKPaymentTransaction)
+    case paymentqueue_ignoring_callback_for_older_transaction(PurchasesOrchestrator,
+                                                              StoreTransactionType,
+                                                              Date)
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
@@ -167,6 +170,11 @@ extension PurchaseStrings: LogMessage {
             ]
                 .compactMap { $0 }
                 .joined(separator: " ")
+
+        case let .paymentqueue_ignoring_callback_for_older_transaction(observer, transaction, date):
+            return "\(Strings.objectDescription(observer)): will not notify callback for transaction " +
+            "'\(transaction.transactionIdentifier)'. " +
+            "Transaction date '\(transaction.purchaseDate)' - callback date '\(date)'"
 
         case .presenting_code_redemption_sheet:
             return "Presenting code redemption sheet."

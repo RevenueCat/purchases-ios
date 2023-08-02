@@ -24,7 +24,12 @@ class MockTransaction: SKPaymentTransaction {
 
     var mockTransactionDate: Date? = Date()
     override var transactionDate: Date? {
-        mockTransactionDate
+        // This matches the behavior of `SKPaymentTransaction`.
+        guard self.transactionState == .purchased || self.transactionState == .restored else {
+            return nil
+        }
+
+        return self.mockTransactionDate
     }
 
     var mockTransactionIdentifier: String? = UUID().uuidString
