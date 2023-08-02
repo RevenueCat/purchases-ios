@@ -41,8 +41,9 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
     typealias Creator = @Sendable @MainActor (TemplateViewConfiguration) -> T
 
-    private let creator: Creator
     private let configuration: Result<TemplateViewConfiguration, Error>
+    private let presentInSheet: Bool
+    private let creator: Creator
 
     @StateObject
     private var introEligibilityViewModel = IntroEligibilityViewModel(
@@ -51,6 +52,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
     init(
         offering: Offering,
+        presentInSheet: Bool = false,
         creator: @escaping Creator
     ) {
         self.configuration = offering.paywall!.configuration(
@@ -58,10 +60,24 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
             mode: .fullScreen,
             locale: .current
         )
+        self.presentInSheet = presentInSheet
         self.creator = creator
     }
 
     var body: some View {
+        if self.presentInSheet {
+            Rectangle()
+                .hidden()
+                .sheet(isPresented: .constant(true)) {
+                    self.content
+                }
+        } else {
+            self.content
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch self.configuration {
         case let .success(configuration):
             self.creator(configuration)
