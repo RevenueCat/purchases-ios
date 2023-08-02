@@ -8,6 +8,10 @@ extension Package: VariableDataProvider {
         return Bundle.main.applicationDisplayName
     }
 
+    var isSubscription: Bool {
+        return self.storeProduct.productCategory == .subscription
+    }
+
     var isMonthly: Bool {
         return self.packageType == .monthly
     }
@@ -46,7 +50,8 @@ private extension Package {
 
     var pricePerMonth: NSDecimalNumber {
         guard let price = self.storeProduct.pricePerMonth else {
-            fatalError("Unexpectedly found a package which is not a subscription: \(self)")
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.priceDecimalNumber
         }
 
         return price

@@ -16,6 +16,7 @@ protocol VariableDataProvider {
 
     var applicationName: String { get }
 
+    var isSubscription: Bool { get }
     var isMonthly: Bool { get }
 
     var localizedPrice: String { get }
@@ -92,7 +93,7 @@ private extension VariableDataProvider {
         case "price": return self.localizedPrice
         case "price_per_month": return self.localizedPricePerMonth
         case "total_price_and_per_month":
-            if self.isMonthly {
+            if !self.isSubscription || self.isMonthly {
                 return self.localizedPrice
             } else {
                 let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
