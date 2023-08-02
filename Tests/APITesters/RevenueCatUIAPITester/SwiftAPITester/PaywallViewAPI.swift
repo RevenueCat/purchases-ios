@@ -30,12 +30,12 @@ struct App: View {
     }
 
     @ViewBuilder
-    var checkPresentPaywallIfNecessary: some View {
+    var checkPresentPaywallIfNeeded: some View {
         Text("")
-            .presentPaywallIfNecessary(requiredEntitlementIdentifier: "")
-            .presentPaywallIfNecessary(requiredEntitlementIdentifier: "", purchaseCompleted: completed)
-            .presentPaywallIfNecessary { (_: CustomerInfo) in false }
-            .presentPaywallIfNecessary { (_: CustomerInfo) in false } purchaseCompleted: { completed($0) }
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", purchaseCompleted: completed)
+            .presentPaywallIfNeeded { (_: CustomerInfo) in false }
+            .presentPaywallIfNeeded { (_: CustomerInfo) in false } purchaseCompleted: { completed($0) }
     }
 
     @ViewBuilder
