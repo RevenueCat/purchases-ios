@@ -144,8 +144,8 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
         expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage], with: [.annual])) == []
     }
 
-    func testFilterOutNonSubscriptions() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.consumable], with: [.custom])) == []
+    func testConsumablesAreIncluded() {
+        expect(TemplateViewConfiguration.filter(packages: [Self.consumable], with: [.custom])) == [Self.consumable]
     }
 
     func testFilterByPackageType() {
