@@ -92,11 +92,19 @@ import Foundation
 
     public override var description: String {
         return """
-        <Offering {\n\tidentifier=\(identifier)\n\tserverDescription=\(serverDescription)\n"
-        \tavailablePackages=\(valueOrEmpty(availablePackages))\n\tlifetime=\(valueOrEmpty(lifetime))\n
-        \tannual=\(valueOrEmpty(annual))\n\tsixMonth=\(valueOrEmpty(sixMonth))\n
-        \tthreeMonth=\(valueOrEmpty(threeMonth))\n\ttwoMonth=\(valueOrEmpty(twoMonth))\n
-        \tmonthly=\(valueOrEmpty(monthly))\n\tweekly=\(valueOrEmpty(weekly))\n}>
+        <Offering {
+            identifier=\(self.identifier)
+            serverDescription=\(self.serverDescription)"
+            availablePackages=\(valueOrEmpty(self.availablePackages))
+            lifetime=\(valueOrEmpty(self.lifetime))
+            annual=\(valueOrEmpty(self.annual))
+            sixMonth=\(valueOrEmpty(self.sixMonth))
+            threeMonth=\(valueOrEmpty(self.threeMonth))
+            twoMonth=\(valueOrEmpty(self.twoMonth))
+            monthly=\(valueOrEmpty(self.monthly))
+            weekly=\(valueOrEmpty(self.weekly))
+            paywall=\(self.paywall.map { "\($0)" } ?? "nil")
+        }>
         """
     }
 
