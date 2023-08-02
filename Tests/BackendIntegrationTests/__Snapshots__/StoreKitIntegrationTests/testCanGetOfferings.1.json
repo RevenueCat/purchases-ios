@@ -22,7 +22,7 @@
         }
       ],
       "paywall" : {
-        "asset_base_url" : "https://d35rwhxn1vk1te.cloudfront.net",
+        "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
           "blurred_background_image" : true,
           "colors" : {
