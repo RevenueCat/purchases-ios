@@ -37,7 +37,7 @@ public final class PaywallViewController: UIViewController {
         let view = PaywallView(offering: self.offering)
             .onPurchaseCompleted { [weak self] customerInfo in
                 guard let self = self else { return }
-                self.delegate?.paywallViewController(self, didFinishPurchasing: customerInfo)
+                self.delegate?.paywallViewController(self, didFinishPurchasingWith: customerInfo)
             }
 
         return .init(rootView: AnyView(view))
@@ -67,6 +67,6 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     /// Notifies that a purchase has completed in a ``PaywallViewController``.
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
     func paywallViewController(_ controller: PaywallViewController,
-                               didFinishPurchasing with: CustomerInfo)
+                               didFinishPurchasingWith customerInfo: CustomerInfo)
 
 }

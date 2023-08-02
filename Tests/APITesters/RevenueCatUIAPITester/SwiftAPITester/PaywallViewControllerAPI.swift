@@ -19,6 +19,6 @@ func paywallViewControllerAPI(_ delegate: PaywallViewControllerDelegate, _ offer
 private final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewController(_ controller: PaywallViewController,
-                               didFinishPurchasing with: CustomerInfo) {}
+                               didFinishPurchasingWith customerInfo: CustomerInfo) {}
 
 }
