@@ -13,4 +13,7 @@ enum Constants {
     static let defaultAnimation: Animation = .easeIn(duration: 0.2)
     static let fastAnimation: Animation = .easeIn(duration: 0.1)
 
+    /// For UI elements that wouldn't make sense to keep scaling up forever
+    static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
+
 }
