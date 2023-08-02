@@ -33,6 +33,7 @@ struct SimpleApp: App {
             .overlay {
                 DebugView()
                     .frame(maxHeight: .infinity, alignment: .bottom)
+                    .offset(y: -50)
             }
             #endif
         }
