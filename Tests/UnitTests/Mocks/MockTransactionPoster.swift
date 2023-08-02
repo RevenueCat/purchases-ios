@@ -43,9 +43,11 @@ final class MockTransactionPoster: TransactionPosterType {
         }
 
         self.invokedHandlePurchasedTransaction.value = true
-        self.invokedHandlePurchasedTransactionCount.value += 1
+        self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
         self.invokedHandlePurchasedTransactionParameters.value = (transaction, data)
-        self.invokedHandlePurchasedTransactionParameterList.value.append((transaction, data))
+        self.invokedHandlePurchasedTransactionParameterList.modify {
+            $0.append((transaction, data))
+        }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in
             completion(result)

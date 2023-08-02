@@ -97,12 +97,15 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberData) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
+
         expect(
-            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
-                .map(\.transaction)
-                .compactMap { $0 as? StoreTransaction }
+            Set(
+                self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
+                    .map(\.transaction)
+                    .compactMap { $0 as? StoreTransaction }
+            )
         )
-            == transactions
+            == Set(transactions)
 
         self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
@@ -141,11 +144,12 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
         expect(
-            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
-                .map(\.transaction)
-                .compactMap { $0 as? StoreTransaction }
-        )
-            == transactions
+            Set(
+                self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
+                    .map(\.transaction)
+                    .compactMap { $0 as? StoreTransaction }
+            )
+        ) == Set(transactions)
 
         self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
