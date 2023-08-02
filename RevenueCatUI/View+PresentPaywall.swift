@@ -117,15 +117,26 @@ private struct PresentingPaywallModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: self.$isDisplayed) {
-                PaywallView(
-                    offering: self.offering,
-                    mode: self.mode,
-                    introEligibility: self.introEligibility ?? .default(),
-                    purchaseHandler: self.purchaseHandler ?? .default()
-                )
+                NavigationView {
+                    PaywallView(
+                        offering: self.offering,
+                        mode: self.mode,
+                        introEligibility: self.introEligibility ?? .default(),
+                        purchaseHandler: self.purchaseHandler ?? .default()
+                    )
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)
                     }
+                    .toolbar {
+                        ToolbarItem(placement: .destructiveAction) {
+                            Button {
+                                self.isDisplayed = false
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+                }
             }
             .task {
                 guard let info = try? await self.customerInfoFetcher() else { return }
