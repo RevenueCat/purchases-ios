@@ -54,6 +54,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case let .single(package):
             expect(package.content) === TestData.monthlyPackage
+            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
         case .multiple:
             fail("Invalid result: \(result)")
@@ -80,10 +81,13 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
+            expect(annual.discountRelativeToMostExpensivePerMonth)
+                .to(beCloseTo(0.55, within: 0.01))
             Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
             let monthly = packages[1]
             expect(monthly.content) === TestData.monthlyPackage
+            expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
         }
     }
