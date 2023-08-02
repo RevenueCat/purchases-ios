@@ -53,7 +53,7 @@ struct AppContentView: View {
                     Label("All paywalls", systemImage: "network")
                 }
         }
-        .presentPaywallIfNecessary {
+        .presentPaywallIfNeeded {
             !$0.hasPro
         } purchaseCompleted: { _ in
             self.didPurchase = true
