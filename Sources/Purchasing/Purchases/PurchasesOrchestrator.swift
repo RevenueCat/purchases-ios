@@ -43,9 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
-    private let purchaseCompleteCallbacksByProductID: Atomic<[
-        String: (completion: PurchaseCompletedBlock, date: Date)
-    ]> = .init([:])
+    private let purchaseCompleteCallbacksByProductID: Atomic<[String: CallbackData]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -837,7 +835,8 @@ private extension PurchasesOrchestrator {
             // Having a purchase completed callback implies that the transation comes from an explicit call
             // to `purchase()` instead of a StoreKit transaction notification.
             // As long as the transaction date is _after_ the completion block was added.
-            let completionBlockDate = self.purchaseCompleteCallbacksByProductID.value[productIdentifier]?.date
+            let completionBlockDate = self.purchaseCompleteCallbacksByProductID.value[productIdentifier]?
+                .creationDate
 
             switch (completionBlockDate, restored) {
             case let (.some(completionBlockDate), false):
@@ -920,6 +919,18 @@ extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
 private extension PurchasesOrchestrator {
 
+    struct CallbackData {
+
+        var completion: PurchaseCompletedBlock
+        var creationDate: Date
+
+        init(_ completion: @escaping PurchaseCompletedBlock, _ creationDate: Date = Date()) {
+            self.completion = completion
+            self.creationDate = creationDate
+        }
+
+    }
+
     /// - Returns: whether the callback was added
     @discardableResult
     func addPurchaseCompletedCallback(
@@ -948,7 +959,7 @@ private extension PurchasesOrchestrator {
                 return false
             }
 
-            callbacks[productIdentifier] = (completion, Date())
+            callbacks[productIdentifier] = .init(completion)
             return true
         }
     }
@@ -959,14 +970,14 @@ private extension PurchasesOrchestrator {
         return self.purchaseCompleteCallbacksByProductID.modify { callbacks -> PurchaseCompletedBlock? in
             guard let value = callbacks[transaction.productIdentifier] else { return nil }
 
-            if value.date <= transaction.purchaseDate {
+            if value.creationDate <= transaction.purchaseDate {
                 callbacks.removeValue(forKey: transaction.productIdentifier)
                 return value.completion
             } else {
                 Logger.verbose(Strings.purchase.paymentqueue_ignoring_callback_for_older_transaction(
                     self,
                     transaction,
-                    value.date
+                    value.creationDate
                 ))
                 return nil
             }
