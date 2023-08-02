@@ -48,17 +48,7 @@ enum VariableHandler {
     }
 
     private static func extractVariables(from expression: String) -> [VariableMatch] {
-        let variablePattern = Regex {
-            OneOrMore {
-                "{{ "
-                Capture {
-                    OneOrMore(.word)
-                }
-                " }}"
-            }
-        }
-
-        return expression.matches(of: variablePattern).map { match in
+        return expression.matches(of: Self.regex).map { match in
             let (_, variable) = match.output
             return VariableMatch(variable: String(variable), range: match.range)
         }
@@ -69,6 +59,16 @@ enum VariableHandler {
         let variable: String
         let range: Range<String.Index>
 
+    }
+
+    private static let regex = Regex {
+        OneOrMore {
+            "{{ "
+            Capture {
+                OneOrMore(.word)
+            }
+            " }}"
+        }
     }
 
 }
