@@ -19,8 +19,12 @@ public final class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     public weak var delegate: PaywallViewControllerDelegate?
 
+    private let offering: Offering?
+
     // swiftlint:disable:next missing_docs
-    public init() {
+    public init(offering: Offering? = nil) {
+        self.offering = offering
+
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -30,7 +34,7 @@ public final class PaywallViewController: UIViewController {
     }
 
     private lazy var hostingController: UIHostingController<AnyView> = {
-        let view = PaywallView()
+        let view = PaywallView(offering: self.offering)
             .onPurchaseCompleted { [weak self] customerInfo in
                 guard let self = self else { return }
                 self.delegate?.paywallViewController(self, didFinishPurchasing: customerInfo)

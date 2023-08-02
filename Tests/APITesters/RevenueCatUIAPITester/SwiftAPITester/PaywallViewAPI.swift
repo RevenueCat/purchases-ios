@@ -25,6 +25,7 @@ struct App: View {
     var content: some View {
         PaywallView()
         PaywallView(mode: .fullScreen)
+        PaywallView(offering: nil)
         PaywallView(offering: self.offering)
         PaywallView(offering: self.offering, mode: .fullScreen)
     }
