@@ -188,7 +188,7 @@ private extension SamplePaywallLoader {
     )
 
     static let offeringIdentifier = "offering"
-    static let paywallAssetBaseURL = URL(string: "https://d35rwhxn1vk1te.cloudfront.net")!
+    static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
     static let tosURL = URL(string: "https://revenuecat.com/tos")!
 
 }
