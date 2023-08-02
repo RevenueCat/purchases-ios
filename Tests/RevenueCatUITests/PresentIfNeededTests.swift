@@ -1,5 +1,5 @@
 //
-//  PresentIfNecessaryTests.swift
+//  PresentIfNeededTests.swift
 //  
 //
 //  Created by Nacho Soto on 7/31/23.
@@ -15,15 +15,15 @@ import XCTest
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 @MainActor
-class PresentIfNecessaryTests: TestCase {
+class PresentIfNeededTests: TestCase {
 
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 
         Text("")
-            .presentPaywallIfNecessary(offering: Self.offering,
-                                       introEligibility: .producing(eligibility: .eligible),
-                                       purchaseHandler: Self.purchaseHandler) { _ in
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: Self.purchaseHandler) { _ in
                 return true
             } purchaseCompleted: {
                 customerInfo = $0
