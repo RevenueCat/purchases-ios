@@ -173,9 +173,7 @@ extension TemplateViewConfiguration {
 
     /// Filters `packages`, extracting only the values corresponding to `list`.
     static func filter(packages: [RevenueCat.Package], with list: [PackageType]) -> [RevenueCat.Package] {
-        // Only subscriptions are supported at the moment
-        let subscriptions = packages.filter { $0.storeProduct.productCategory == .subscription }
-        let map = Dictionary(grouping: subscriptions) { $0.packageType }
+        let map = Dictionary(grouping: packages) { $0.packageType }
 
         return list.compactMap { type in
             if let packages = map[type] {
