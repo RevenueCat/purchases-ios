@@ -19,16 +19,16 @@ extension View {
     /// ```swift
     /// var body: some View {
     ///    YourApp()
-    ///      .presentPaywallIfNecessary(requiredEntitlementIdentifier: "pro")
+    ///      .presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro")
     /// }
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
-    public func presentPaywallIfNecessary(
+    public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
-        return self.presentPaywallIfNecessary(
+        return self.presentPaywallIfNeeded(
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
@@ -44,7 +44,7 @@ extension View {
     /// ```swift
     /// var body: some View {
     ///    YourApp()
-    ///      .presentPaywallIfNecessary {
+    ///      .presentPaywallIfNeeded {
     ///         !$0.entitlements.active.keys.contains("entitlement_identifier")
     ///     } purchaseCompleted: { customerInfo in
     ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
@@ -53,11 +53,11 @@ extension View {
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
-    public func presentPaywallIfNecessary(
+    public func presentPaywallIfNeeded(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
-        return self.presentPaywallIfNecessary(
+        return self.presentPaywallIfNeeded(
             shouldDisplay: shouldDisplay,
             purchaseCompleted: purchaseCompleted,
             customerInfoFetcher: {
@@ -71,7 +71,7 @@ extension View {
     }
 
     // Visible overload for tests
-    func presentPaywallIfNecessary(
+    func presentPaywallIfNeeded(
         offering: Offering? = nil,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
