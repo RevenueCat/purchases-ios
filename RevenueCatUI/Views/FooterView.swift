@@ -13,7 +13,15 @@ struct FooterView: View {
 
     var configuration: PaywallData.Configuration
     var color: Color
+    var bold: Bool
     var purchaseHandler: PurchaseHandler
+
+    init(configuration: PaywallData.Configuration, color: Color, bold: Bool = true, purchaseHandler: PurchaseHandler) {
+        self.configuration = configuration
+        self.color = color
+        self.bold = bold
+        self.purchaseHandler = purchaseHandler
+    }
 
     var body: some View {
         HStack {
@@ -42,20 +50,40 @@ struct FooterView: View {
             }
         }
         .foregroundColor(self.color)
-        .font(.caption.bold())
+        .font(Self.font.weight(self.fontWeight))
         .padding(.horizontal)
         .padding(.bottom, 5)
+        .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
     }
 
     private var separator: some View {
-        Image(systemName: "circle.fill")
-            .font(.system(size: 5))
-            .accessibilityHidden(true)
+        SeparatorView(bold: self.bold)
     }
 
     private var hasTOS: Bool { self.configuration.termsOfServiceURL != nil }
     private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
+    private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
+    private static let font: Font = .caption
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+private struct SeparatorView: View {
+
+    var bold: Bool
+
+    var body: some View {
+        Image(systemName: "circle.fill")
+            .font(.system(size: self.bold ? self.boldSeparatorSize : self.separatorSize))
+            .accessibilityHidden(true)
+    }
+
+    @ScaledMetric(relativeTo: .caption)
+    private var separatorSize: CGFloat = 4
+
+    @ScaledMetric(relativeTo: .caption)
+    private var boldSeparatorSize: CGFloat = 5
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
@@ -154,12 +182,21 @@ struct Footer_Previews: PreviewProvider {
             privacyURL: URL(string: "https://revenuecat.com/tos")!
         )
         .previewDisplayName("All")
+
+        Self.create(
+            displayRestorePurchases: true,
+            termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+            privacyURL: URL(string: "https://revenuecat.com/tos")!,
+            bold: false
+        )
+        .previewDisplayName("Not bold")
     }
 
     private static func create(
         displayRestorePurchases: Bool = true,
         termsOfServiceURL: URL? = nil,
-        privacyURL: URL? = nil
+        privacyURL: URL? = nil,
+        bold: Bool = true
     ) -> some View {
         FooterView(
             configuration: .init(
@@ -171,6 +208,7 @@ struct Footer_Previews: PreviewProvider {
                 privacyURL: privacyURL
             ),
             color: TestData.colors.text1Color,
+            bold: bold,
             purchaseHandler: PreviewHelpers.purchaseHandler
         )
     }
