@@ -47,6 +47,16 @@ internal enum TestData {
         subscriptionPeriod: .init(value: 1, unit: .year),
         introductoryDiscount: Self.intro(14, .day)
     )
+    static let lifetimeProduct = TestStoreProduct(
+        localizedTitle: "Lifetime",
+        price: 119.49,
+        localizedPriceString: "$119.49",
+        productIdentifier: "com.revenuecat.product_lifetime",
+        productType: .consumable,
+        localizedDescription: "Lifetime purchase",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: nil
+    )
     static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
         price: 3.99,
@@ -108,6 +118,12 @@ internal enum TestData {
         identifier: "annual",
         packageType: .annual,
         storeProduct: productWithNoIntroOffer.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let lifetimePackage = Package(
+        identifier: "lifetime",
+        packageType: .lifetime,
+        storeProduct: Self.lifetimeProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
 

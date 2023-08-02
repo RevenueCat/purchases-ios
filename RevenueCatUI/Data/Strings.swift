@@ -12,6 +12,7 @@ import RevenueCat
 
 enum Strings {
 
+    case package_not_subscription(Package)
     case found_multiple_packages_of_same_type(PackageType)
     case could_not_find_content_for_variable(variableName: String)
 
@@ -25,6 +26,10 @@ extension Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case let .package_not_subscription(package):
+            return "Expected package '\(package.identifier)' to be a subscription. " +
+            "Type: \(package.packageType.debugDescription)"
+
         case let .found_multiple_packages_of_same_type(type):
             return "Found multiple \(type) packages. Will use the first one."
 
