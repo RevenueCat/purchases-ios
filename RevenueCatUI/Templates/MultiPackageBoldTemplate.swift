@@ -30,10 +30,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
         self.content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background {
-                self.backgroundImage
-                    .unredacted()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .edgesIgnoringSafeArea(.all)
+                TemplateBackgroundImageView(configuration: self.configuration)
             }
     }
 
@@ -53,7 +50,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
             }
         }
         .animation(Constants.fastAnimation, value: self.selectedPackage)
-        .frame(maxHeight: .infinity)
         .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
     }
@@ -175,19 +171,6 @@ struct MultiPackageBoldTemplate: TemplateViewType {
             mode: self.configuration.mode,
             purchaseHandler: self.purchaseHandler
         )
-    }
-
-    @ViewBuilder
-    private var backgroundImage: some View {
-        if let url = self.configuration.backgroundImageURL {
-            if self.configuration.configuration.blurredBackgroundImage {
-                RemoteImage(url: url)
-                    .blur(radius: 40)
-                    .opacity(0.7)
-            } else {
-                RemoteImage(url: url)
-            }
-        }
     }
 
     @ViewBuilder
