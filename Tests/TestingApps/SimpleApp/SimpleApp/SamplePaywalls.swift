@@ -16,7 +16,8 @@ final class SamplePaywallLoader {
         self.packages = [
             Self.weeklyPackage,
             Self.monthlyPackage,
-            Self.annualPackage
+            Self.annualPackage,
+            Self.lifetimePackage
         ]
     }
 
@@ -75,6 +76,12 @@ private extension SamplePaywallLoader {
         storeProduct: annualProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
     )
+    static let lifetimePackage = Package(
+        identifier: "lifetime",
+        packageType: .lifetime,
+        storeProduct: lifetimeProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
 
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
@@ -124,6 +131,16 @@ private extension SamplePaywallLoader {
             type: .introductory
         )
     )
+    static let lifetimeProduct = TestStoreProduct(
+        localizedTitle: "Lifetime",
+        price: 119.49,
+        localizedPriceString: "$119.49",
+        productIdentifier: "com.revenuecat.product_lifetime",
+        productType: .consumable,
+        localizedDescription: "Lifetime purchase",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: nil
+    )
 
 }
 
@@ -171,7 +188,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .multiPackageBold,
             config: .init(
-                packages: [.weekly, .monthly, .annual],
+                packages: [.weekly, .monthly, .annual, .lifetime],
                 images: Self.images,
                 colors:  .init(
                     light: .init(
