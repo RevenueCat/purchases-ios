@@ -12,20 +12,12 @@ final class SamplePaywallLoader {
 
     private let packages: [Package]
 
-    init(packages: [Package]) {
-        self.packages = packages
-    }
-
-    static func create() async throws -> Self {
-        struct PurchasesNotConfigured: Error {}
-
-        guard Purchases.isConfigured else {
-            throw PurchasesNotConfigured()
-        }
-
-        let packages = try await Purchases.shared.offerings().current?.availablePackages
-
-        return .init(packages: packages ?? [])
+    init() {
+        self.packages = [
+            Self.weeklyPackage,
+            Self.monthlyPackage,
+            Self.annualPackage
+        ]
     }
 
     func offering(for template: PaywallTemplate) -> Offering {
@@ -60,6 +52,82 @@ final class SamplePaywallLoader {
     }
 
 }
+
+// MARK: - Packages
+
+private extension SamplePaywallLoader {
+
+    static let weeklyPackage = Package(
+        identifier: "weekly",
+        packageType: .weekly,
+        storeProduct: weeklyProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
+    static let monthlyPackage = Package(
+        identifier: "monthly",
+        packageType: .monthly,
+        storeProduct: monthlyProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
+    static let annualPackage = Package(
+        identifier: "annual",
+        packageType: .annual,
+        storeProduct: annualProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
+
+    static let weeklyProduct = TestStoreProduct(
+        localizedTitle: "Weekly",
+        price: 1.99,
+        localizedPriceString: "$1.99",
+        productIdentifier: "com.revenuecat.product_1",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO weekly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .week)
+    )
+    static let monthlyProduct = TestStoreProduct(
+        localizedTitle: "Monthly",
+        price: 12.99,
+        localizedPriceString: "$12.99",
+        productIdentifier: "com.revenuecat.product_2",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .month),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 1, unit: .week),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    )
+    static let annualProduct = TestStoreProduct(
+        localizedTitle: "Annual",
+        price: 69.49,
+        localizedPriceString: "$69.49",
+        productIdentifier: "com.revenuecat.product_3",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO annual",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 1, unit: .year),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 14, unit: .day),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    )
+
+}
+
+// MARK: - Paywalls
 
 private extension SamplePaywallLoader {
     
