@@ -34,10 +34,24 @@ struct AppContentView: View {
     private var didPurchase: Bool = false
 
     var body: some View {
-        ZStack {
-            self.background
+        TabView {
+            ZStack {
+                self.background
+                self.content
+            }
+            .tabItem {
+                Label("App", systemImage: "iphone")
+            }
 
-            self.content
+            SamplePaywallsList()
+                .tabItem {
+                    Label("Examples", systemImage: "pawprint")
+                }
+
+            OfferingsList()
+                .tabItem {
+                    Label("All paywalls", systemImage: "network")
+                }
         }
         .presentPaywallIfNecessary {
             !$0.hasPro
@@ -64,22 +78,6 @@ struct AppContentView: View {
                 if self.didPurchase {
                     Text("Thanks for purchasing!")
                 }
-                
-                NavigationLink {
-                    SamplePaywallsList()
-                } label: {
-                    Text("Sample paywalls")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.mint)
-
-                NavigationLink {
-                    OfferingsList()
-                } label: {
-                    Text("All offerings")
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.indigo)
 
                 Spacer()
 

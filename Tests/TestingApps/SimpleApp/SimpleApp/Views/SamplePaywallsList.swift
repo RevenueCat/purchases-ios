@@ -12,43 +12,19 @@ import SwiftUI
 struct SamplePaywallsList: View {
 
     @State
-    private var loader: Result<SamplePaywallLoader, NSError>?
-
-    @State
     private var display: Display?
 
     var body: some View {
-        self.content
-            .navigationTitle("Paywalls")
-            .task {
-                do {
-                    self.loader = .success(try await .create())
-                } catch let error as NSError {
-                    self.loader = .failure(error)
+        self.list(with: Self.loader)
+            .sheet(item: self.$display) { display in
+                switch display {
+                case let .template(template):
+                    PaywallView(offering: Self.loader.offering(for: template))
+                case .defaultTemplate:
+                    PaywallView(offering: Self.loader.offeringWithDefaultPaywall())
                 }
             }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        switch self.loader {
-        case let .success(loader):
-            self.list(with: loader)
-                .sheet(item: self.$display) { display in
-                    switch display {
-                    case let .template(template):
-                        PaywallView(offering: loader.offering(for: template))
-                    case .defaultTemplate:
-                        PaywallView(offering: loader.offeringWithDefaultPaywall())
-                    }
-                }
-
-        case let .failure(error):
-            Text(error.description)
-
-        case .none:
-            ProgressView()
-        }
+            .navigationTitle("Paywalls")
     }
 
     private func list(with loader: SamplePaywallLoader) -> some View {
@@ -74,6 +50,8 @@ struct SamplePaywallsList: View {
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
     }
+
+    private static let loader: SamplePaywallLoader = .init()
 
 }
 
