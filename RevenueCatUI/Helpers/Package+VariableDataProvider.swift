@@ -29,8 +29,12 @@ extension Package: VariableDataProvider {
                                       locale: locale)
     }
 
+    func subscriptionDuration(_ locale: Locale) -> String? {
+        return self.periodDuration(locale)
+    }
+
     func introductoryOfferDuration(_ locale: Locale) -> String? {
-        self.introDuration(locale)
+        return self.introDuration(locale)
     }
 
 }
@@ -52,6 +56,12 @@ private extension Package {
         // `priceFormatter` can only be `nil` for SK2 products
         // with an unknown code, which should be rare.
         return self.storeProduct.priceFormatter ?? .init()
+    }
+
+    func periodDuration(_ locale: Locale) -> String? {
+        guard let period = self.storeProduct.subscriptionPeriod else { return nil }
+
+        return Localization.localizedDuration(for: period, locale: locale)
     }
 
     func introDuration(_ locale: Locale) -> String? {
