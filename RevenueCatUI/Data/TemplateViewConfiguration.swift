@@ -30,6 +30,7 @@ extension TemplateViewConfiguration {
 
         let content: RevenueCat.Package
         let localization: ProcessedLocalizedConfiguration
+        let discountRelativeToMostExpensivePerMonth: Double?
 
     }
 
@@ -107,16 +108,22 @@ extension TemplateViewConfiguration.PackageConfiguration {
         guard !packages.isEmpty else { throw TemplateError.noPackages }
         guard !filter.isEmpty else { throw TemplateError.emptyPackageList }
 
-        let filtered = TemplateViewConfiguration
-            .filter(packages: packages, with: filter)
+        let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
+        let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
+
+        let filteredPackages = filtered
             .map { package in
                 TemplateViewConfiguration.Package(
                     content: package,
-                    localization: localization.processVariables(with: package, locale: locale)
+                    localization: localization.processVariables(with: package, locale: locale),
+                    discountRelativeToMostExpensivePerMonth: Self.discount(
+                        from: package.storeProduct.pricePerMonth?.doubleValue,
+                        relativeTo: mostExpensivePricePerMonth
+                    )
                 )
             }
 
-        guard let firstPackage = filtered.first else {
+        guard let firstPackage = filteredPackages.first else {
             throw TemplateError.couldNotFindAnyPackages(expectedTypes: filter)
         }
 
@@ -124,14 +131,39 @@ extension TemplateViewConfiguration.PackageConfiguration {
         case .single:
             return .single(firstPackage)
         case .multiple:
-            let defaultPackage = filtered
+            let defaultPackage = filteredPackages
                 .first { $0.content.packageType == `default` }
                 ?? firstPackage
 
             return .multiple(first: firstPackage,
                              default: defaultPackage,
-                             all: filtered)
+                             all: filteredPackages)
         }
+    }
+
+    private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
+        return packages
+            .lazy
+            .map(\.storeProduct)
+            .compactMap { product in
+                product.pricePerMonth.map {
+                    return (
+                        product: product,
+                        pricePerMonth: $0
+                    )
+                }
+            }
+            .max { productA, productB in
+                return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
+            }
+            .map(\.pricePerMonth.doubleValue)
+    }
+
+    private static func discount(from pricePerMonth: Double?, relativeTo mostExpensive: Double?) -> Double? {
+        guard let pricePerMonth, let mostExpensive else { return nil }
+        guard pricePerMonth < mostExpensive else { return nil }
+
+        return (mostExpensive - pricePerMonth) / mostExpensive
     }
 
 }
