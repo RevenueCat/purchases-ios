@@ -11,10 +11,10 @@ import SwiftUI
 struct RemoteImage: View {
 
     let url: URL
-    let aspectRatio: Double?
+    let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
 
-    init(url: URL, aspectRatio: Double? = nil, maxWidth: CGFloat? = nil) {
+    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
         self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
@@ -34,11 +34,6 @@ struct RemoteImage: View {
                     image
                         .resizable()
                 }
-            } else if let error = phase.error {
-                DebugErrorView("Error loading image from '\(self.url)': \(error)",
-                               releaseBehavior: .emptyView)
-                .font(.footnote)
-                .textCase(.none)
             } else {
                 Group {
                     if let aspectRatio {
@@ -49,6 +44,14 @@ struct RemoteImage: View {
                     }
                 }
                 .frame(maxWidth: self.maxWidth)
+                .overlay {
+                    if let error = phase.error {
+                        DebugErrorView("Error loading image from '\(self.url)': \(error)",
+                                       releaseBehavior: .emptyView)
+                        .font(.footnote)
+                        .textCase(.none)
+                    }
+                }
             }
         }
     }
