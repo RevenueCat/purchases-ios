@@ -34,16 +34,8 @@ struct App: View {
         Text("")
             .presentPaywallIfNecessary(requiredEntitlementIdentifier: "")
             .presentPaywallIfNecessary(requiredEntitlementIdentifier: "", purchaseCompleted: completed)
-            .presentPaywallIfNecessary(mode: .fullScreen,
-                                       requiredEntitlementIdentifier: "",
-                                       purchaseCompleted: completed)
             .presentPaywallIfNecessary { (_: CustomerInfo) in false }
             .presentPaywallIfNecessary { (_: CustomerInfo) in false } purchaseCompleted: { completed($0) }
-            .presentPaywallIfNecessary(mode: .fullScreen) { (_: CustomerInfo) in
-                return false
-            } purchaseCompleted: {
-                completed($0)
-            }
     }
 
     @ViewBuilder
