@@ -219,8 +219,9 @@ private extension PackageType {
         case .twoMonth: return "\(keyPrefix)twoMonth"
         case .monthly: return "\(keyPrefix)monthly"
         case .weekly: return "\(keyPrefix)weekly"
+        case .lifetime: return "\(keyPrefix)lifetime"
 
-        case .unknown, .custom, .lifetime:
+        case .unknown, .custom:
             return nil
         }
     }
