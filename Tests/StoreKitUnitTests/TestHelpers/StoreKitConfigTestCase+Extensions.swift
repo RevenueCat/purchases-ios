@@ -96,11 +96,12 @@ extension StoreKitConfigTestCase {
         self.testSession.storefront = new
 
         try await asyncWait(
-            until: { await Storefront.currentStorefront?.countryCode == new },
+            description: "Storefront change not detected",
             timeout: .seconds(1),
-            pollInterval: .milliseconds(100),
-            description: "Storefront change not detected"
-        )
+            pollInterval: .milliseconds(100)
+        ) {
+            await Storefront.currentStorefront?.countryCode == new
+        }
     }
 
 }

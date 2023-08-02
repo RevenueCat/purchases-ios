@@ -315,13 +315,14 @@ private extension StoreKit2TransactionListenerBaseTests {
         line: UInt = #line
     ) async throws {
         try await asyncWait(
-            until: { await self.delegate.invokedTransactionUpdated == true },
+            description: "Transaction update",
             timeout: .seconds(4),
             pollInterval: .milliseconds(100),
-            description: "Transaction update",
             file: file,
             line: line
-        )
+        ) {
+            await self.delegate.invokedTransactionUpdated == true
+        }
     }
 
 }
