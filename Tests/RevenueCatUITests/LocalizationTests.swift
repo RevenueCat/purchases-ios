@@ -180,6 +180,51 @@ class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
     }
 }
 
+// MARK: - Discount
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class DiscountEnglishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "en_US") }
+
+    func testLocalization() {
+        verify(0, "0% off")
+        verify(0.1, "10% off")
+        verify(0.331, "33% off")
+        verify(0.5, "50% off")
+        verify(1, "100% off")
+        verify(1.1, "110% off")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class DiscountSpanishLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "es_ES") }
+
+    func testLocalization() {
+        verify(0, "Ahorra 0%")
+        verify(0.1, "Ahorra 10%")
+        verify(0.331, "Ahorra 33%")
+        verify(0.5, "Ahorra 50%")
+        verify(1, "Ahorra 100%")
+        verify(1.1, "Ahorra 110%")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "fr") }
+
+    func testLocalizationDefaultsToEnglish() {
+        verify(1, "100% off")
+    }
+
+}
+
 // MARK: - Private
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
@@ -215,6 +260,17 @@ private extension BaseLocalizationTests {
         line: UInt = #line
     ) {
         let result = Localization.localized(packageType: packageType,
+                                            locale: self.locale)
+        expect(file: file, line: line, result) == expected
+    }
+
+    func verify(
+        _ discount: Double,
+        _ expected: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let result = Localization.localized(discount: discount,
                                             locale: self.locale)
         expect(file: file, line: line, result) == expected
     }
