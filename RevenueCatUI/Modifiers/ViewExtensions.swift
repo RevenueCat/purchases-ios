@@ -54,4 +54,32 @@ extension View {
         }
     }
 
+    /// Invokes the given closure whethever the view size changes.
+    func onSizeChange(_ closure: @escaping (CGSize) -> Void) -> some View {
+        self
+            .overlay(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(key: ViewSizePreferenceKey.self,
+                                    value: geometry.size)
+                }
+            )
+            .onPreferenceChange(ViewSizePreferenceKey.self, perform: closure)
+    }
+
+}
+
+// MARK: -
+
+/// `PreferenceKey` for keeping track of view size.
+private struct ViewSizePreferenceKey: PreferenceKey {
+
+    typealias Value = CGSize
+
+    static var defaultValue: Value = .init(width: 10, height: 10)
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value = nextValue()
+    }
+
 }
