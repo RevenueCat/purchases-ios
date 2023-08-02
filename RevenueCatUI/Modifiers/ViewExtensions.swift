@@ -48,7 +48,7 @@ extension View {
         ViewThatFits(in: axes) {
             self
 
-            ScrollView {
+            ScrollView(axes) {
                 self
             }
         }
