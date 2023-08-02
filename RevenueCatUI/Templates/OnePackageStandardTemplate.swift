@@ -43,7 +43,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
 
             if case .fullScreen = self.configuration.mode {
                 FooterView(configuration: self.configuration.configuration,
-                           color: self.configuration.colors.text1Color,
+                           color: self.configuration.colors.callToActionBackgroundColor,
                            purchaseHandler: self.purchaseHandler)
             }
         }
