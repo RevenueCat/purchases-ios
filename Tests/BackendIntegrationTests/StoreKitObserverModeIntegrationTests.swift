@@ -54,17 +54,16 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         XCTExpectFailure("This test currently does not pass (see FB12231111)")
 
         try await asyncWait(
-            until: {
-                let entitlement = await self.purchasesDelegate
-                    .customerInfo?
-                    .entitlements[Self.entitlementIdentifier]
-
-                return entitlement?.isActive == true
-            },
+            description: "Entitlement didn't become active",
             timeout: .seconds(5),
-            pollInterval: .milliseconds(500),
-            description: "Entitlement didn't become active"
-        )
+            pollInterval: .milliseconds(500)
+        ) {
+            let entitlement = await self.purchasesDelegate
+                .customerInfo?
+                .entitlements[Self.entitlementIdentifier]
+
+            return entitlement?.isActive == true
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -101,13 +100,12 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
 
         try await asyncWait(
-            until: {
-                await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
-            },
+            description: "Delegate should be notified",
             timeout: .seconds(4),
-            pollInterval: .milliseconds(100),
-            description: "Delegate should be notified"
-        )
+            pollInterval: .milliseconds(100)
+        ) {
+            await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
+        }
 
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
         try await self.verifyEntitlementWentThrough(customerInfo)

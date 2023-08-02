@@ -137,12 +137,14 @@ extension TestLogHandler {
         let condition = Self.entryCondition(message: message, level: level)
 
         try await asyncWait(
-            until: { self.messages.contains(where: condition) },
-            timeout: timeout, pollInterval: pollInterval,
             description: "Message '\(message)' not found. Logged messages: \(self.messages)",
+            timeout: timeout,
+            pollInterval: pollInterval,
             file: file,
             line: line
-        )
+        ) {
+            self.messages.contains(where: condition)
+        }
     }
 
     /// - Parameter allowNoMessages: by default, this method requires logs to not be empty

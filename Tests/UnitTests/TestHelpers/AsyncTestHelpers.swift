@@ -66,12 +66,12 @@ func waitUntilValue<Value>(
 // Fix-me: remove once we can use Quick v6.x:
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait(
-    until condition: @Sendable () async -> Bool,
+    description: String? = nil,
     timeout: DispatchTimeInterval = defaultTimeout,
     pollInterval: DispatchTimeInterval = defaultPollInterval,
-    description: String? = nil,
     file: FileString = #fileID,
-    line: UInt = #line
+    line: UInt = #line,
+    until condition: @Sendable () async -> Bool
 ) async throws {
     let start = Date()
     var foundCorrectValue = false
