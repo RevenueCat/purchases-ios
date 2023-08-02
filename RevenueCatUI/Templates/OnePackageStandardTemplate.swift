@@ -1,7 +1,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 struct OnePackageStandardTemplate: TemplateViewType {
 
@@ -22,9 +22,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
         VStack(spacing: self.configuration.mode.verticalSpacing) {
             self.scrollableContent
                 .scrollableIfNecessary()
-                .scrollContentBackground(.hidden)
                 .scrollBounceBehaviorBasedOnSize()
-                .scrollIndicators(.automatic)
 
             if case .fullScreen = self.configuration.mode {
                 Spacer()
@@ -134,7 +132,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
 
 // MARK: - Extensions
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewMode {
 
     var verticalSpacing: CGFloat? {
@@ -175,7 +173,7 @@ private extension PaywallViewMode {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct CircleMaskModifier: ViewModifier {
 
     @State

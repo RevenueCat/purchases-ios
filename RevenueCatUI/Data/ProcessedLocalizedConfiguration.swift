@@ -2,7 +2,7 @@ import Foundation
 import RevenueCat
 
 /// A `PaywallData.LocalizedConfiguration` with processed variables
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
 
     typealias Feature = PaywallData.LocalizedConfiguration.Feature
@@ -61,5 +61,5 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension ProcessedLocalizedConfiguration: Equatable {}

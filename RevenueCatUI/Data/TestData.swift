@@ -354,7 +354,7 @@ internal enum TestData {
     }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
@@ -374,6 +374,7 @@ extension TrialOrIntroEligibilityChecker {
     }
 
     /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
     func with(delay: Duration) -> Self {
         return .init { [checker = self.checker] in
             try? await Task.sleep(for: delay)
@@ -384,7 +385,7 @@ extension TrialOrIntroEligibilityChecker {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PurchaseHandler {
 
     static func mock() -> Self {
@@ -412,6 +413,7 @@ extension PurchaseHandler {
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
     func with(delay: Duration) -> Self {
         return self.map { purchaseBlock in {
             try? await Task.sleep(for: delay)

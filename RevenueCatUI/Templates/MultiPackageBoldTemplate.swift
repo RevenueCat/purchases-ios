@@ -1,7 +1,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 struct MultiPackageBoldTemplate: TemplateViewType {
 
@@ -202,7 +202,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
 // MARK: - Extensions
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 private extension MultiPackageBoldTemplate {
 
