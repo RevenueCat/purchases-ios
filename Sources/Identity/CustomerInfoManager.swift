@@ -322,24 +322,36 @@ private extension CustomerInfoManager {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
                 if !transactions.isEmpty {
-                    var results: [Result<CustomerInfo, BackendError>] = []
-                    let storefront = await Storefront.currentStorefront
-
                     Logger.debug(
                         Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
                     )
 
-                    for transaction in transactions {
-                        results.append(
-                            await self.transactionPoster.handlePurchasedTransaction(
-                                transaction,
-                                data: .init(appUserID: appUserID,
-                                            presentedOfferingID: nil,
-                                            unsyncedAttributes: [:],
-                                            storefront: storefront,
-                                            source: Self.sourceForUnfinishedTransaction)
-                            )
-                        )
+                    let storefront = await Storefront.currentStorefront
+
+                    // Process all transactions in parallel
+                    let results: [Result<CustomerInfo, BackendError>] = await withTaskGroup(
+                        of: Result<CustomerInfo, BackendError>.self
+                    ) { group in
+                        for transaction in transactions {
+                            group.addTask {
+                                return await self.transactionPoster.handlePurchasedTransaction(
+                                    transaction,
+                                    data: .init(appUserID: appUserID,
+                                                presentedOfferingID: nil,
+                                                unsyncedAttributes: [:],
+                                                storefront: storefront,
+                                                source: Self.sourceForUnfinishedTransaction)
+                                )
+                            }
+                        }
+
+                        var results: [Result<CustomerInfo, BackendError>] = []
+
+                        for await result in group {
+                            results.append(result)
+                        }
+
+                        return results
                     }
 
                     // Any of the POST receipt operations will have posted the same receipt contents

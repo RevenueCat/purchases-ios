@@ -22,6 +22,7 @@ enum NetworkStrings {
     case api_request_failed(_ request: HTTPRequest, httpCode: HTTPStatusCode?, error: NetworkError)
     case api_request_failed_status_code(HTTPStatusCode)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
+    case enqueing_operation(CacheableNetworkOperation.Type, cacheKey: String)
     case creating_json_error(error: String)
     case json_data_received(dataString: String)
     case parsing_json_error(error: Error)
@@ -63,6 +64,9 @@ extension NetworkStrings: LogMessage {
         case let .reusing_existing_request_for_operation(operationType, cacheKey):
             return "Network operation '\(operationType)' found with the same cache key " +
             "'\(cacheKey)'. Skipping request."
+
+        case let .enqueing_operation(operationType, cacheKey):
+            return "Enqueing network operation '\(operationType)' with cache key: '\(cacheKey)'"
 
         case let .creating_json_error(error):
             return "Error creating request with body: \(error)"

@@ -244,6 +244,25 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptOnlyOnce() async throws {
+        self.serverDown()
+
+        _ = try await self.purchaseMonthlyProduct()
+        _ = try await Purchases.shared.purchase(product: self.product(Self.group3MonthlyTrialProductID))
+
+        self.serverUp()
+
+        let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(customerInfo.activeSubscriptions).to(haveCount(2))
+
+        self.logger.verifyMessageWasLogged(
+            "API request completed: POST /v1/receipts",
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 
