@@ -78,6 +78,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{ period }}")) == "Monthly"
     }
 
+    func testSubscriptionDuration() {
+        self.provider.subscriptionDuration = "1 month"
+        expect(self.process("{{ subscription_duration }}")) == "1 month"
+    }
+
     func testIntroDurationName() {
         self.provider.introductoryOfferDuration = "1 week"
         expect(self.process("Start {{ intro_duration }} trial")) == "Start 1 week trial"
@@ -100,7 +105,7 @@ class VariablesTests: TestCase {
             callToAction: "Unlock {{ product_name }} for {{ price_per_month }}",
             callToActionWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
             "Then {{ price_per_month }} every month",
-            offerDetails: "Purchase for {{ price }}",
+            offerDetails: "Purchase for {{ price }} every {{ subscription_duration }}",
             offerDetailsWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
             "Then {{ price_per_month }} every month",
             offerName: "{{ period }}",
@@ -119,7 +124,7 @@ class VariablesTests: TestCase {
         expect(processed.subtitle) == "Price: $3.99"
         expect(processed.callToAction) == "Unlock PRO monthly for $3.99"
         expect(processed.callToActionWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
-        expect(processed.offerDetails) == "Purchase for $3.99"
+        expect(processed.offerDetails) == "Purchase for $3.99 every 1 month"
         expect(processed.offerDetailsWithIntroOffer) == "Start your 1 week free trial\nThen $3.99 every month"
         expect(processed.offerName) == "Monthly"
         expect(processed.features) == [
@@ -153,10 +158,15 @@ private struct MockVariableProvider: VariableDataProvider {
     var localizedPricePerMonth: String = ""
     var productName: String = ""
     var periodName: String = ""
+    var subscriptionDuration: String?
     var introductoryOfferDuration: String?
 
     func periodName(_ locale: Locale) -> String {
         return self.periodName
+    }
+
+    func subscriptionDuration(_ locale: Locale) -> String? {
+        return self.subscriptionDuration
     }
 
     func introductoryOfferDuration(_ locale: Locale) -> String? {
