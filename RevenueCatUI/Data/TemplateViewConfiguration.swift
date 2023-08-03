@@ -117,8 +117,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
     /// - Throws: `TemplateError`
     static func create(
         with packages: [RevenueCat.Package],
-        filter: [PackageType],
-        default: PackageType?,
+        filter: [String],
+        default: String?,
         localization: PaywallData.LocalizedConfiguration,
         setting: TemplateViewConfiguration.PackageSetting,
         locale: Locale = .current
@@ -150,7 +150,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
             return .single(firstPackage)
         case .multiple:
             let defaultPackage = filteredPackages
-                .first { $0.content.packageType == `default` }
+                .first { $0.content.identifier == `default` }
                 ?? firstPackage
 
             return .multiple(first: firstPackage,
@@ -189,12 +189,12 @@ extension TemplateViewConfiguration.PackageConfiguration {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 extension TemplateViewConfiguration {
 
-    /// Filters `packages`, extracting only the values corresponding to `list`.
-    static func filter(packages: [RevenueCat.Package], with list: [PackageType]) -> [RevenueCat.Package] {
-        let map = Dictionary(grouping: packages) { $0.packageType }
+    /// Filters `packages`, extracting only the values corresponding to `identifiers`.
+    static func filter(packages: [RevenueCat.Package], with identifiers: [String]) -> [RevenueCat.Package] {
+        let map = Dictionary(grouping: packages) { $0.identifier }
 
-        return list.compactMap { type in
-            if let packages = map[type] {
+        return identifiers.compactMap { identifier in
+            if let packages = map[identifier] {
                 switch packages.count {
                 case 0:
                     // This isn't actually possible because of `Dictionary(grouping:by:)
@@ -202,7 +202,7 @@ extension TemplateViewConfiguration {
                 case 1:
                     return packages.first
                 default:
-                    Logger.warning(Strings.found_multiple_packages_of_same_type(type))
+                    Logger.warning(Strings.found_multiple_packages_of_same_identifier(identifier))
                     return packages.first
                 }
             } else {

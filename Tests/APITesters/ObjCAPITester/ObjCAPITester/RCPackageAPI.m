@@ -23,10 +23,16 @@
     RCStoreProduct *storeProduct = p.storeProduct;
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
+    NSString *oid = p.offeringIdentifier;
     NSString *lps = p.localizedPriceString;
     NSString *lips = p.localizedIntroductoryPriceString;
 
     NSLog(p, storeProduct, i, t, lps, lips);
+
+    RCPackage *package __unused = [[RCPackage alloc] initWithIdentifier:i
+                                                            packageType:RCPackageTypeAnnual
+                                                           storeProduct:storeProduct
+                                                     offeringIdentifier:oid];
 }
 
 + (void)checkEnums {

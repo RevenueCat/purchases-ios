@@ -52,7 +52,7 @@ internal enum TestData {
         price: 119.49,
         localizedPriceString: "$119.49",
         productIdentifier: "com.revenuecat.product_lifetime",
-        productType: .consumable,
+        productType: .nonConsumable,
         localizedDescription: "Lifetime purchase",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: nil
@@ -90,38 +90,38 @@ internal enum TestData {
         discounts: []
     )
     static let weeklyPackage = Package(
-        identifier: "weekly",
+        identifier: PackageType.weekly.identifier,
         packageType: .weekly,
         storeProduct: Self.weeklyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let monthlyPackage = Package(
-        identifier: "monthly",
+        identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let annualPackage = Package(
-        identifier: "annual",
+        identifier: PackageType.annual.identifier,
         packageType: .annual,
         storeProduct: Self.annualProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
 
     static let packageWithIntroOffer = Package(
-        identifier: "monthly",
+        identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: productWithIntroOffer.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let packageWithNoIntroOffer = Package(
-        identifier: "annual",
+        identifier: PackageType.annual.identifier,
         packageType: .annual,
         storeProduct: productWithNoIntroOffer.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let lifetimePackage = Package(
-        identifier: "lifetime",
+        identifier: PackageType.lifetime.identifier,
         packageType: .lifetime,
         storeProduct: Self.lifetimeProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
@@ -135,7 +135,7 @@ internal enum TestData {
     static let paywallWithIntroOffer = PaywallData(
         template: .onePackageStandard,
         config: .init(
-            packages: [.monthly],
+            packages: [PackageType.monthly.identifier],
             images: Self.images,
             colors: .init(light: Self.lightColors, dark: Self.darkColors),
             termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
@@ -147,7 +147,7 @@ internal enum TestData {
     static let paywallWithNoIntroOffer = PaywallData(
         template: .onePackageStandard,
         config: .init(
-            packages: [.annual],
+            packages: [PackageType.annual.identifier],
             images: Self.images,
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
@@ -178,7 +178,7 @@ internal enum TestData {
         paywall: .init(
             template: .multiPackageBold,
             config: .init(
-                packages: [.annual, .monthly],
+                packages: [PackageType.annual.identifier, PackageType.monthly.identifier],
                 images: Self.images,
                 colors: .init(
                     light: .init(
@@ -217,7 +217,7 @@ internal enum TestData {
         paywall: .init(
             template: .onePackageWithFeatures,
             config: .init(
-                packages: [.annual],
+                packages: [PackageType.annual.identifier],
                 images: Self.images,
                 colors: .init(
                     light: .init(
@@ -434,6 +434,14 @@ extension PaywallColor: ExpressibleByStringLiteral {
     public init(stringLiteral value: StringLiteralType) {
         // swiftlint:disable:next force_try
         try! self.init(stringRepresentation: value)
+    }
+
+}
+
+extension PackageType {
+
+    var identifier: String {
+        return Package.string(from: self)!
     }
 
 }

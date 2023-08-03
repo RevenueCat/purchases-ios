@@ -65,19 +65,19 @@ private extension SamplePaywallLoader {
         offeringIdentifier: offeringIdentifier
     )
     static let monthlyPackage = Package(
-        identifier: "monthly",
+        identifier: Package.string(from: .monthly)!,
         packageType: .monthly,
         storeProduct: monthlyProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
     )
     static let annualPackage = Package(
-        identifier: "annual",
+        identifier: Package.string(from: .annual)!,
         packageType: .annual,
         storeProduct: annualProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
     )
     static let lifetimePackage = Package(
-        identifier: "lifetime",
+        identifier: Package.string(from: .lifetime)!,
         packageType: .lifetime,
         storeProduct: lifetimeProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
@@ -152,7 +152,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .onePackageStandard,
             config: .init(
-                packages: [.monthly],
+                packages: [Package.string(from: PackageType.monthly)!],
                 images: Self.images,
                 colors:  .init(
                     light: .init(
@@ -188,7 +188,8 @@ private extension SamplePaywallLoader {
         return .init(
             template: .multiPackageBold,
             config: .init(
-                packages: [.weekly, .monthly, .annual, .lifetime],
+                packages: Array<PackageType>([.weekly, .monthly, .annual, .lifetime])
+                    .map { Package.string(from: $0)! },
                 images: Self.images,
                 colors:  .init(
                     light: .init(
@@ -227,7 +228,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .onePackageWithFeatures,
             config: .init(
-                packages: [.annual],
+                packages: [Package.string(from: .annual)!],
                 images: Self.images,
                 colors: .init(
                     light: .init(
