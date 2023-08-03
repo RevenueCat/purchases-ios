@@ -33,7 +33,7 @@ struct IntroEligibilityStateView: View {
     }
 
     var body: some View {
-        Text(self.text)
+        Text(.init(self.text))
             // Hide until we've determined intro eligibility
             // only if there is a custom intro text.
             .withPendingData(self.needsToWaitForIntroEligibility, alignment: self.alignment)
