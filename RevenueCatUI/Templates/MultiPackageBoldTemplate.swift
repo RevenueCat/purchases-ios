@@ -19,11 +19,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
         self._selectedPackage = .init(initialValue: configuration.packages.default.content)
 
         self.configuration = configuration
-        self.localization = Dictionary(
-            uniqueKeysWithValues: configuration.packages.all
-                .lazy
-                .map { ($0.content, $0.localization) }
-            )
+        self.localization = configuration.packages.localizationPerPackage()
     }
 
     var body: some View {
