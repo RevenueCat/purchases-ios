@@ -20,7 +20,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [],
-                filter: [.monthly],
+                filter: [PackageType.monthly.identifier],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
                 setting: .single
@@ -43,7 +43,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateSinglePackage() throws {
         let result = try Config.create(
             with: [TestData.monthlyPackage],
-            filter: [.monthly],
+            filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
             setting: .single
@@ -62,7 +62,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateOnlyLifetime() throws {
         let result = try Config.create(
             with: [TestData.lifetimePackage],
-            filter: [.lifetime],
+            filter: [PackageType.lifetime.identifier],
             default: nil,
             localization: Self.localization,
             setting: .single
@@ -82,9 +82,13 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             with: [TestData.monthlyPackage,
                    TestData.annualPackage,
                    TestData.weeklyPackage,
-                   TestData.lifetimePackage],
-            filter: [.annual, .monthly, .lifetime],
-            default: .monthly,
+                   TestData.lifetimePackage,
+                   Self.consumable],
+            filter: [PackageType.annual.identifier,
+                     PackageType.monthly.identifier,
+                     PackageType.lifetime.identifier,
+                     Self.consumable.identifier],
+            default: PackageType.monthly.identifier,
             localization: Self.localization,
             setting: .multiple
         )
@@ -96,7 +100,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(first.content) === TestData.annualPackage
             expect(defaultPackage.content) === TestData.monthlyPackage
 
-            expect(packages).to(haveCount(3))
+            expect(packages).to(haveCount(4))
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
@@ -112,6 +116,10 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             let lifetime = packages[2]
             expect(lifetime.content) === TestData.lifetimePackage
             Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
+
+            let consumable = packages[3]
+            expect(consumable.content) === Self.consumable
+            Self.verifyLocalizationWasProcessed(consumable.localization, for: Self.consumable)
         }
     }
 
@@ -133,7 +141,7 @@ class TemplateViewConfigurationHelpersTests: BaseTemplateViewConfigurationTests 
     func testLocalizationPerPackageWithOnePackage() throws {
         let configuration = try Config.create(
             with: [TestData.monthlyPackage],
-            filter: [.monthly],
+            filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
             setting: .single
@@ -150,8 +158,10 @@ class TemplateViewConfigurationHelpersTests: BaseTemplateViewConfigurationTests 
                    TestData.annualPackage,
                    TestData.weeklyPackage,
                    TestData.lifetimePackage],
-            filter: [.annual, .monthly, .lifetime],
-            default: .monthly,
+            filter: [PackageType.annual.identifier,
+                     PackageType.monthly.identifier,
+                     PackageType.lifetime.identifier],
+            default: PackageType.monthly.identifier,
             localization: Self.localization,
             setting: .multiple
         )
@@ -169,16 +179,21 @@ class TemplateViewConfigurationHelpersTests: BaseTemplateViewConfigurationTests 
             with: [TestData.monthlyPackage,
                    TestData.annualPackage,
                    TestData.weeklyPackage,
-                   TestData.lifetimePackage],
-            filter: [.monthly, .monthly, .annual],
-            default: .monthly,
+                   TestData.lifetimePackage,
+                   Self.consumable],
+            filter: [PackageType.monthly.identifier,
+                     PackageType.monthly.identifier,
+                     PackageType.annual.identifier,
+                     Self.consumable.identifier],
+            default: PackageType.monthly.identifier,
             localization: Self.localization,
             setting: .multiple
         )
 
         expect(configuration.localizationPerPackage()) == [
             TestData.monthlyPackage: Self.localization.processVariables(with: TestData.monthlyPackage),
-            TestData.annualPackage: Self.localization.processVariables(with: TestData.annualPackage)
+            TestData.annualPackage: Self.localization.processVariables(with: TestData.annualPackage),
+            Self.consumable: Self.localization.processVariables(with: Self.consumable)
         ]
     }
 
@@ -188,31 +203,39 @@ class TemplateViewConfigurationHelpersTests: BaseTemplateViewConfigurationTests 
 class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTests {
 
     func testFilterNoPackages() {
-        expect(TemplateViewConfiguration.filter(packages: [], with: [.monthly])) == []
+        expect(TemplateViewConfiguration.filter(packages: [],
+                                                with: [PackageType.monthly.identifier])) == []
     }
 
     func testFilterPackagesWithEmptyList() {
-        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage], with: [])) == []
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage],
+                                                with: [])) == []
     }
 
     func testFilterOutSinglePackge() {
-        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage], with: [.annual])) == []
+        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage],
+                                                with: [PackageType.annual.identifier])) == []
     }
 
     func testConsumablesAreIncluded() {
-        expect(TemplateViewConfiguration.filter(packages: [Self.consumable], with: [.custom])) == [Self.consumable]
+        expect(TemplateViewConfiguration.filter(packages: [Self.consumable],
+                                                with: [Self.consumable.identifier])) == [Self.consumable]
     }
 
     func testFilterByPackageType() {
         expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage, TestData.annualPackage],
-                                                with: [.monthly])) == [
+                                                with: [PackageType.monthly.identifier])) == [
             TestData.monthlyPackage
         ]
     }
 
     func testFilterWithDuplicatedPackageTypes() {
-        expect(TemplateViewConfiguration.filter(packages: [TestData.monthlyPackage, TestData.annualPackage],
-                                                with: [.monthly, .monthly])) == [
+        expect(
+            TemplateViewConfiguration.filter(
+                packages: [TestData.monthlyPackage, TestData.annualPackage],
+                with: [PackageType.monthly.identifier, PackageType.monthly.identifier]
+            )
+        ) == [
             TestData.monthlyPackage,
             TestData.monthlyPackage
         ]
@@ -222,7 +245,8 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
         expect(TemplateViewConfiguration.filter(packages: [TestData.weeklyPackage,
                                                            TestData.monthlyPackage,
                                                            TestData.annualPackage],
-                                                with: [.weekly, .monthly])) == [
+                                                with: [PackageType.weekly.identifier,
+                                                       PackageType.monthly.identifier])) == [
             TestData.weeklyPackage,
             TestData.monthlyPackage
         ]
@@ -234,7 +258,7 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
                 packages: [TestData.weeklyPackage,
                            TestData.monthlyPackage,
                            TestData.annualPackage],
-                with: [.monthly, .weekly])
+                with: [PackageType.monthly.identifier, PackageType.weekly.identifier])
         ) == [
             TestData.monthlyPackage,
             TestData.weeklyPackage
