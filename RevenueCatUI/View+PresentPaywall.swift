@@ -10,6 +10,7 @@ import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
+@available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension View {
 
     typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
@@ -93,7 +94,8 @@ extension View {
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
