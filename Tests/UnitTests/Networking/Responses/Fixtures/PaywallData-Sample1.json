@@ -39,7 +39,7 @@
     },
     "default_locale": "en_US",
     "config": {
-        "packages": ["$rc_monthly", "$rc_annual"],
+        "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
         "default_package": "$rc_annual",
         "images": {
             "header": "header.jpg",

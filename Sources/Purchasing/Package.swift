@@ -46,6 +46,7 @@ import Foundation
     }
 
     /// Initialize a ``Package``.
+    @objc
     public init(
         identifier: String,
         packageType: PackageType,
