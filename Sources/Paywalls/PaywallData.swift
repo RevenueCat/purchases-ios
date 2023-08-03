@@ -179,11 +179,11 @@ extension PaywallData {
     /// Generic configuration for any paywall.
     public struct Configuration {
 
-        /// The list of package types this paywall will display
-        public var packages: [PackageType]
+        /// The list of package identifiers this paywall will display
+        public var packages: [String]
 
         /// The package to be selected by default.
-        public var defaultPackage: PackageType?
+        public var defaultPackage: String?
 
         /// The images for this template.
         public var images: Images
@@ -217,8 +217,8 @@ extension PaywallData {
 
         // swiftlint:disable:next missing_docs
         public init(
-            packages: [PackageType],
-            defaultPackage: PackageType? = nil,
+            packages: [String],
+            defaultPackage: String? = nil,
             images: Images,
             colors: ColorInformation,
             blurredBackgroundImage: Bool = false,
