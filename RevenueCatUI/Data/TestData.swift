@@ -232,14 +232,14 @@ internal enum TestData {
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
             ),
             localization: .init(
-                title: "How your free trial works",
+                title: "How your **free** trial works",
                 callToAction: "Start",
                 callToActionWithIntroOffer: "Start your {{ intro_duration }} free",
                 offerDetails: "Only {{ price }} per {{ period }}",
                 offerDetailsWithIntroOffer: "First {{ intro_duration }} free,\nthen {{ total_price_and_per_month }}",
                 features: [
                     .init(title: "Today",
-                          content: "Full access to 1000+ workouts plus free meal plan worth {{ price }}.",
+                          content: "Full access to 1000+ workouts plus _free_ meal plan worth {{ price }}.",
                           iconID: "tick"),
                     .init(title: "Day 7",
                           content: "Get a reminder about when your trial is about to end.",
@@ -313,8 +313,8 @@ internal enum TestData {
     }()
 
     static let localization1: PaywallData.LocalizedConfiguration = .init(
-        title: "Ignite your child's curiosity",
-        subtitle: "Get access to all our educational content trusted by thousands of parents.",
+        title: "Ignite your child's *curiosity*",
+        subtitle: "Get access to all our educational content trusted by **thousands** of parents.",
         callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: "Purchase for {{ price_per_month }} per month",
         offerDetails: "{{ price_per_month }} per month",
@@ -322,8 +322,8 @@ internal enum TestData {
         features: []
     )
     static let localization2: PaywallData.LocalizedConfiguration = .init(
-        title: "Call to action for better conversion.",
-        subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
+        title: "Call to action for _better_ conversion.",
+        subtitle: "Lorem ipsum is simply dummy text of the ~printing and~ typesetting industry.",
         callToAction: "Subscribe for {{ price_per_month }}/mo",
         offerDetails: "{{ total_price_and_per_month }}",
         offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
