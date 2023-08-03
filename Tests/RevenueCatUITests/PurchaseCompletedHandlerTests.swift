@@ -29,7 +29,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         var customerInfo: CustomerInfo?
         var purchased = false
 
-        PaywallView(
+        try PaywallView(
             offering: Self.offering.withLocalImages,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: handler
@@ -51,7 +51,7 @@ class PurchaseCompletedHandlerTests: TestCase {
     func testOnPurchaseCompleted() throws {
         var customerInfo: CustomerInfo?
 
-        PaywallView(
+        try PaywallView(
             offering: Self.offering.withLocalImages,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler

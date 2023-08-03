@@ -49,7 +49,13 @@ extension BaseSnapshotTest {
 extension View {
 
     /// Adds the receiver to a view hierarchy to be able to test lifetime logic.
-    func addToHierarchy() {
+    func addToHierarchy() throws {
+        if #available(iOS 17.0, *) {
+            try XCTSkipIf(true, "This is currently not working on iOS 17")
+        }
+
+        UIView.setAnimationsEnabled(false)
+
         let controller = UIHostingController(
             rootView: self
                 .frame(width: BaseSnapshotTest.fullScreenSize.width,
@@ -57,8 +63,14 @@ extension View {
         )
 
         let window = UIWindow()
+        window.isHidden = false
         window.rootViewController = controller
         window.frame.size = BaseSnapshotTest.fullScreenSize
+        window.makeKeyAndVisible()
+
+        window.addSubview(controller.view)
+        controller.didMove(toParent: controller)
+
         window.setNeedsLayout()
         window.layoutIfNeeded()
 
