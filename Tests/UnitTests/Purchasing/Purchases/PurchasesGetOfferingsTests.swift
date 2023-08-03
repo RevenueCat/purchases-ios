@@ -128,13 +128,13 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
             paywall: paywall,
             availablePackages: [
                 .init(
-                    identifier: "weekly",
+                    identifier: "$rc_weekly",
                     packageType: .weekly,
                     storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "product_1")),
                     offeringIdentifier: "offering"
                 ),
                 .init(
-                    identifier: "monthly",
+                    identifier: "$rc_monthly",
                     packageType: .monthly,
                     storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "product_2")),
                     offeringIdentifier: "offering"
