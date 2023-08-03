@@ -54,12 +54,14 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(offering.identifier) == "alternate"
         expect(offering.description) == "alternate offering"
         expect(offering.metadata) == [:]
-        expect(offering.packages).to(haveCount(1))
+        expect(offering.packages).to(haveCount(2))
 
-        let package = try XCTUnwrap(offering.packages.first)
-
-        expect(package.identifier) == PackageType.lifetime.description
-        expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
+        let package1 = try XCTUnwrap(offering.packages[safe: 0])
+        expect(package1.identifier) == PackageType.lifetime.description
+        expect(package1.platformProductIdentifier) == "com.revenuecat.other_product"
+        let package2 = try XCTUnwrap(offering.packages[safe: 1])
+        expect(package2.identifier) == "custom_package"
+        expect(package2.platformProductIdentifier) == "com.revenuecat.other_product_2"
     }
 
     func testDecodesMetadataOffering() throws {
@@ -112,7 +114,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(paywall.defaultLocale) == Locale(identifier: "en_US")
         try expect(paywall.assetBaseURL) == XCTUnwrap(URL(string: "https://rc-paywalls.s3.amazonaws.com"))
 
-        expect(paywall.config.packages) == [.monthly, .annual]
+        expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage).to(beNil())
         expect(paywall.config.images.header) == "header.jpg"
         expect(paywall.config.images.background).to(beNil())

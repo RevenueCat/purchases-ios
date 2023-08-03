@@ -29,19 +29,19 @@ func checkPaywallData(_ data: PaywallData) {
 func checkPaywallConfiguration(_ config: PaywallData.Configuration,
                                _ images: PaywallData.Configuration.Images,
                                _ colors: PaywallData.Configuration.ColorInformation) {
-    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
+    let _: PaywallData.Configuration = .init(packages: ["$rc_monthly", "$rc_annual"],
                                              images: images,
                                              colors: colors)
-    let _: PaywallData.Configuration = .init(packages: [.monthly, .annual],
-                                             defaultPackage: .monthly,
+    let _: PaywallData.Configuration = .init(packages: ["$rc_monthly", "custom"],
+                                             defaultPackage: "custom",
                                              images: images,
                                              colors: colors,
                                              blurredBackgroundImage: true,
                                              displayRestorePurchases: true,
                                              termsOfServiceURL: URL(string: ""),
                                              privacyURL: URL(string: ""))
-    let _: [PackageType] = config.packages
-    let _: PackageType? = config.defaultPackage
+    let _: [String] = config.packages
+    let _: String? = config.defaultPackage
     let _: PaywallData.Configuration.Images = config.images
     let _: PaywallData.Configuration.ColorInformation = config.colors
     let _: Bool = config.blurredBackgroundImage

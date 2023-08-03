@@ -32,8 +32,8 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.template) == .onePackageStandard
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
-        expect(paywall.config.packages) == [.monthly, .annual]
-        expect(paywall.config.defaultPackage) == .annual
+        expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
+        expect(paywall.config.defaultPackage) == "$rc_annual"
         expect(paywall.config.images) == .init(
             header: "header.jpg",
             background: "background.jpg",
