@@ -12,7 +12,7 @@ import SwiftUI
 struct OfferingsList: View {
 
     @State
-    private var offerings: Result<Offerings, NSError>?
+    private var offerings: Result<[Offering], NSError>?
 
     @State
     private var selectedOffering: Offering?
@@ -22,7 +22,12 @@ struct OfferingsList: View {
             .navigationTitle("Offerings")
             .task {
                 do {
-                    self.offerings = .success(try await Purchases.shared.offerings())
+                    self.offerings = .success(
+                        try await Purchases.shared.offerings()
+                            .all
+                            .map(\.value)
+                            .sorted { $0.serverDescription > $1.serverDescription }
+                    )
                 } catch let error as NSError {
                     self.offerings = .failure(error)
                 }
@@ -33,7 +38,7 @@ struct OfferingsList: View {
     private var content: some View {
         switch self.offerings {
         case let .success(offerings):
-            self.list(with: offerings.all.values)
+            self.list(with: offerings)
                 .sheet(item: self.$selectedOffering) { offering in
                     PaywallView(offering: offering)
                 }
