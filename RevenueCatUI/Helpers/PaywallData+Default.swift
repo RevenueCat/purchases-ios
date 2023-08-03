@@ -15,22 +15,24 @@ extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
     /// that has no paywall configuration, or when that configuration is invalid.
-    public static let `default`: Self = .init(
-        template: .multiPackageBold,
-        config: .init(
-            packages: [
-                Package.string(from: .weekly)!,
-                Package.string(from: .monthly)!,
-                Package.string(from: .annual)!
-            ],
-            images: .init(background: Self.backgroundImage),
-            colors: Self.colors,
-            blurredBackgroundImage: true,
-            displayRestorePurchases: true
-        ),
-        localization: Self.localization,
-        assetBaseURL: Self.defaultTemplateBaseURL
-    )
+    static func createDefault(with packages: [Package]) -> Self {
+        return self.createDefault(with: packages.map(\.identifier))
+    }
+
+    static func createDefault(with packageIdentifiers: [String]) -> Self {
+        return .init(
+            template: .multiPackageBold,
+            config: .init(
+                packages: packageIdentifiers,
+                images: .init(background: Self.backgroundImage),
+                colors: Self.colors,
+                blurredBackgroundImage: true,
+                displayRestorePurchases: true
+            ),
+            localization: Self.localization,
+            assetBaseURL: Self.defaultTemplateBaseURL
+        )
+    }
 
 }
 
@@ -91,7 +93,11 @@ struct DefaultPaywall_Previews: PreviewProvider {
         identifier: "offering",
         serverDescription: "Main offering",
         metadata: [:],
-        paywall: .default,
+        paywall: .createDefault(with: [
+            TestData.weeklyPackage,
+            TestData.monthlyPackage,
+            TestData.annualPackage
+        ]),
         availablePackages: TestData.packages
     )
 
