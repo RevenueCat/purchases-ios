@@ -392,7 +392,7 @@ class StoreProductTests: StoreKitConfigTestCase {
 
         // Verify warning is only logged when calling method.
         expect(product.productType) == .defaultType
-        self.logger.verifyMessageWasLogged(Strings.storeKit.sk1_no_known_product_type, level: .warn)
+        self.logger.verifyMessageWasLogged(Strings.storeKit.sk1_no_known_product_type, level: .debug)
     }
 
 }

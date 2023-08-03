@@ -33,7 +33,7 @@ internal struct SK1StoreProduct: StoreProductType {
     }
 
     var productType: StoreProduct.ProductType {
-        Logger.warn(Strings.storeKit.sk1_no_known_product_type)
+        Logger.debug(Strings.storeKit.sk1_no_known_product_type)
 
         return .defaultType
     }
