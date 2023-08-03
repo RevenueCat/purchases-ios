@@ -62,13 +62,13 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
             Spacer()
 
-            Text(self.selectedLocalization.title)
+            Text(.init(self.selectedLocalization.title))
                 .foregroundColor(self.configuration.colors.text1Color)
                 .font(.largeTitle.bold())
 
             Spacer()
 
-            Text(self.selectedLocalization.subtitle ?? "")
+            Text(.init(self.selectedLocalization.subtitle ?? ""))
                 .foregroundColor(self.configuration.colors.text1Color)
                 .font(.title3)
 

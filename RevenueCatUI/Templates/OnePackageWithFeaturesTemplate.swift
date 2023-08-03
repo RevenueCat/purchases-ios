@@ -40,7 +40,7 @@ struct OnePackageWithFeaturesTemplate: TemplateViewType {
                     .cornerRadius(8)
             }
 
-            Text(self.localization.title)
+            Text(.init(self.localization.title))
                 .font(.title)
                 .foregroundStyle(self.configuration.colors.text1Color)
                 .multilineTextAlignment(.center)
@@ -145,14 +145,14 @@ private struct FeatureView: View {
                     self.icon
                 }
 
-                Text(self.feature.title)
+                Text(.init(self.feature.title))
                     .foregroundStyle(self.colors.text1Color)
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let content = self.feature.content {
-                Text(content)
+                Text(.init(content))
                     .foregroundStyle(self.colors.accent2Color)
                     .font(.body)
             }

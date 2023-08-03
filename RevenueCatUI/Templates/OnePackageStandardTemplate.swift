@@ -55,7 +55,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
             self.headerImage
 
             Group {
-                Text(verbatim: self.localization.title)
+                Text(.init(self.localization.title))
                     .font(self.configuration.mode.titleFont)
                     .fontWeight(.heavy)
                     .padding(
@@ -65,7 +65,7 @@ struct OnePackageStandardTemplate: TemplateViewType {
                     )
 
                 if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
-                    Text(verbatim: subtitle)
+                    Text(.init(subtitle))
                         .font(self.configuration.mode.subtitleFont)
                 }
             }
