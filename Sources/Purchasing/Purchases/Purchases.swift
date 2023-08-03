@@ -1623,7 +1623,7 @@ private extension Purchases {
         let products: Set<String> = .init(
             offering.availablePackages
                 .lazy
-                .filter { packageTypes.contains($0.packageType) }
+                .filter { packageTypes.contains($0.identifier) }
                 .map(\.storeProduct.productIdentifier)
         )
 
