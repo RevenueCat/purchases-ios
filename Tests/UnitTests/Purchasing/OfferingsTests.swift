@@ -123,9 +123,11 @@ class OfferingsTests: TestCase {
     func testOfferingsIsCreated() throws {
         let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
+        let customProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.custom")
         let products = [
             "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
-            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct)
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
+            "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
         ]
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(
@@ -141,16 +143,26 @@ class OfferingsTests: TestCase {
                         .init(identifier: "offering_b",
                               description: "This is the base offering b",
                               packages: [
-                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
                               ])
                     ]
                 )
             )
         )
 
-        expect(offerings["offering_a"]).toNot(beNil())
-        expect(offerings["offering_b"]).toNot(beNil())
-        expect(offerings.current) == offerings["offering_a"]
+        let offeringA = try XCTUnwrap(offerings["offering_a"])
+        let offeringB = try XCTUnwrap(offerings["offering_b"])
+        expect(offerings.current) === offeringA
+
+        expect(offeringA.availablePackages).to(haveCount(1))
+        expect(offeringA.availablePackages.first?.packageType) == .sixMonth
+
+        expect(offeringB.availablePackages).to(haveCount(2))
+        expect(offeringB.availablePackages[safe: 0]?.identifier) == PackageType.monthly.description
+        expect(offeringB.availablePackages[safe: 0]?.packageType) == .monthly
+        expect(offeringB.availablePackages[safe: 1]?.identifier) == "custom_package"
+        expect(offeringB.availablePackages[safe: 1]?.packageType) == .custom
     }
 
     func testOfferingsWithMetadataIsCreated() throws {
@@ -370,7 +382,7 @@ private extension OfferingsTests {
             expect(offerings.current?.weekly).to(beNil())
         }
         let package = offerings["offering_a"]?.package(identifier: identifier)
-        expect(package?.packageType).to(equal(packageType))
+        expect(package?.packageType) == packageType
     }
 
 }
