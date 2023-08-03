@@ -57,7 +57,7 @@ enum PaywallIcon: String, CaseIterable {
     case layers
     case lineChart = "line_chart"
     case lock
-    case notifications
+    case notification
     case person
     case phone
     case playCircle = "play_circle"
@@ -71,7 +71,7 @@ enum PaywallIcon: String, CaseIterable {
     case tick
     case transfer
     case twoWayArrows = "two_way_arrows"
-    case vpnKey = "vpn_key"
+    case key
     case warning
 
 }
