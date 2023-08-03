@@ -11,7 +11,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var subtitle: String?
     var callToAction: String
     var callToActionWithIntroOffer: String?
-    var offerDetails: String
+    var offerDetails: String?
     var offerDetailsWithIntroOffer: String?
     var offerName: String?
     var features: [Feature]
@@ -27,7 +27,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
             callToAction: configuration.callToAction.processed(with: dataProvider, locale: locale),
             callToActionWithIntroOffer: configuration.callToActionWithIntroOffer?.processed(with: dataProvider,
                                                                                             locale: locale),
-            offerDetails: configuration.offerDetails.processed(with: dataProvider, locale: locale),
+            offerDetails: configuration.offerDetails?.processed(with: dataProvider, locale: locale),
             offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer?.processed(with: dataProvider,
                                                                                             locale: locale),
             offerName: configuration.offerName?.processed(with: dataProvider, locale: locale),
@@ -44,7 +44,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         subtitle: String?,
         callToAction: String,
         callToActionWithIntroOffer: String?,
-        offerDetails: String,
+        offerDetails: String?,
         offerDetailsWithIntroOffer: String?,
         offerName: String?,
         features: [Feature]
