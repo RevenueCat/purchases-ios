@@ -20,6 +20,12 @@ class BaseSnapshotTest: TestCase {
         // isRecording = true
     }
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+    }
+
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
