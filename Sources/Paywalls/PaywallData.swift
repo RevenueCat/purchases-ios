@@ -46,7 +46,7 @@ public protocol PaywallLocalizedConfiguration {
     /// If `nil`, no information regarding trial eligibility will be displayed.
     var callToActionWithIntroOffer: String? { get }
     /// Description for the offer to be purchased.
-    var offerDetails: String { get }
+    var offerDetails: String? { get }
     /// Description for the offer to be purchased when an intro offer is available.
     /// If `nil`, no information regarding trial eligibility will be displayed.
     var offerDetailsWithIntroOffer: String? { get }
@@ -68,10 +68,11 @@ extension PaywallData {
         public var title: String
         public var subtitle: String?
         public var callToAction: String
-        public var offerDetails: String
         public var offerName: String?
         @NonEmptyStringDecodable
         var _callToActionWithIntroOffer: String?
+        @NonEmptyStringDecodable
+        var _offerDetails: String?
         @NonEmptyStringDecodable
         var _offerDetailsWithIntroOffer: String?
         @DefaultDecodable.EmptyArray
@@ -80,6 +81,10 @@ extension PaywallData {
         public var callToActionWithIntroOffer: String? {
             get { return self._callToActionWithIntroOffer }
             set { self._callToActionWithIntroOffer = newValue }
+        }
+        public var offerDetails: String? {
+            get { return self._offerDetails }
+            set { self._offerDetails = newValue }
         }
         public var offerDetailsWithIntroOffer: String? {
             get { return self._offerDetailsWithIntroOffer }
@@ -95,7 +100,7 @@ extension PaywallData {
             subtitle: String? = nil,
             callToAction: String,
             callToActionWithIntroOffer: String? = nil,
-            offerDetails: String,
+            offerDetails: String?,
             offerDetailsWithIntroOffer: String? = nil,
             offerName: String? = nil,
             features: [Feature] = []
@@ -104,7 +109,7 @@ extension PaywallData {
             self.subtitle = subtitle
             self.callToAction = callToAction
             self._callToActionWithIntroOffer = callToActionWithIntroOffer
-            self.offerDetails = offerDetails
+            self._offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
             self.offerName = offerName
             self.features = features
@@ -395,7 +400,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case subtitle
         case callToAction
         case _callToActionWithIntroOffer = "callToActionWithIntroOffer"
-        case offerDetails
+        case _offerDetails = "offerDetails"
         case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
         case offerName
         case _features = "features"
