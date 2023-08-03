@@ -12,14 +12,14 @@ import SwiftUI
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 struct IntroEligibilityStateView: View {
 
-    var textWithNoIntroOffer: String
+    var textWithNoIntroOffer: String?
     var textWithIntroOffer: String?
     var introEligibility: IntroEligibilityStatus?
     var foregroundColor: Color?
     var alignment: Alignment
 
     init(
-        textWithNoIntroOffer: String,
+        textWithNoIntroOffer: String?,
         textWithIntroOffer: String?,
         introEligibility: IntroEligibilityStatus?,
         foregroundColor: Color? = nil,
@@ -38,7 +38,7 @@ struct IntroEligibilityStateView: View {
             // only if there is a custom intro text.
             .withPendingData(self.needsToWaitForIntroEligibility, alignment: self.alignment)
             // Hide if there is no intro but we have no text to ensure layout does not change.
-            .hidden(if: self.isNotEligibleForIntro && self.textWithNoIntroOffer.isEmpty)
+            .hidden(if: self.isNotEligibleForIntro && self.textWithNoIntroOffer == nil)
             .foregroundColor(self.foregroundColor)
             .tint(self.foregroundColor)
     }
@@ -49,7 +49,7 @@ struct IntroEligibilityStateView: View {
         } else {
             // Display text with intro offer as a backup to ensure layout does not change
             // when switching states.
-            return self.textWithNoIntroOffer.notEmpty ?? self.textWithIntroOffer ?? ""
+            return self.textWithNoIntroOffer ?? self.textWithIntroOffer ?? ""
         }
     }
 
@@ -89,11 +89,5 @@ private extension View {
             }
             .transition(.opacity.animation(Constants.defaultAnimation))
     }
-
-}
-
-private extension String {
-
-    var notEmpty: String? { return self.isEmpty ? nil : self }
 
 }
