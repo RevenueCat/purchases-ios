@@ -21,6 +21,7 @@ import XCTest
 class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     private var productsManager: MockProductsManager!
+    private var purchasedProductsFetcher: MockPurchasedProductsFetcher!
     private var storeKit1Wrapper: MockStoreKit1Wrapper!
     private var systemInfo: MockSystemInfo!
     private var subscriberAttributesManager: MockSubscriberAttributesManager!
@@ -52,6 +53,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.productsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                    requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        self.purchasedProductsFetcher = .init()
         self.operationDispatcher = MockOperationDispatcher()
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: self.systemInfo)
         self.receiptParser = MockReceiptParser()
@@ -196,6 +198,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         return .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
+            purchasedProductsFetcher: self.purchasedProductsFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
