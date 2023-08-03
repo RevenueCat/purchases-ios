@@ -43,6 +43,10 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
 
+    var hasKnownPurchaseDate: Bool {
+        return self.transaction.hasKnownPurchaseDate
+    }
+
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self.transaction.finish(wrapper, completion: completion)
     }
@@ -89,6 +93,10 @@ internal protocol StoreTransactionType: Sendable {
     /// The date that App Store charged the user’s account for a purchased or restored product,
     /// or for a subscription purchase or renewal after a lapse.
     var purchaseDate: Date { get }
+
+    /// Whether the underlying transaction has a non-nil purchase date.
+    /// See `SK1StoreTransaction/purchaseDate``
+    var hasKnownPurchaseDate: Bool { get }
 
     /// The unique identifier for the transaction.
     var transactionIdentifier: String { get }

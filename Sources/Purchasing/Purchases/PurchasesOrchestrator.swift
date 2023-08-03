@@ -970,7 +970,7 @@ private extension PurchasesOrchestrator {
         return self.purchaseCompleteCallbacksByProductID.modify { callbacks -> PurchaseCompletedBlock? in
             guard let value = callbacks[transaction.productIdentifier] else { return nil }
 
-            if value.creationDate <= transaction.purchaseDate {
+            if !transaction.hasKnownPurchaseDate || value.creationDate <= transaction.purchaseDate {
                 callbacks.removeValue(forKey: transaction.productIdentifier)
                 return value.completion
             } else {
