@@ -213,7 +213,7 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
-    var enableReceiptFetchRetry: Bool { return true }
+    var enableReceiptFetchRetry: Bool { return false }
     var forceServerErrors: Bool { return false }
     var forceSignatureFailures: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
