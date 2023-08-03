@@ -2,6 +2,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(tvOS, unavailable)
 struct MultiPackageBoldTemplate: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
@@ -202,6 +203,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 // MARK: - Extensions
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(tvOS, unavailable)
 private extension MultiPackageBoldTemplate {
 
     func localization(for package: Package) -> ProcessedLocalizedConfiguration {
@@ -222,6 +224,7 @@ private extension MultiPackageBoldTemplate {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
+@available(tvOS, unavailable)
 @available(macCatalyst, unavailable)
 struct MultiPackageBoldTemplate_Previews: PreviewProvider {
 
