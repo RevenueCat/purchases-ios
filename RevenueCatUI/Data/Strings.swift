@@ -13,7 +13,7 @@ import RevenueCat
 enum Strings {
 
     case package_not_subscription(Package)
-    case found_multiple_packages_of_same_type(PackageType)
+    case found_multiple_packages_of_same_identifier(String)
     case could_not_find_content_for_variable(variableName: String)
 
     case determining_whether_to_display_paywall
@@ -30,8 +30,8 @@ extension Strings: CustomStringConvertible {
             return "Expected package '\(package.identifier)' to be a subscription. " +
             "Type: \(package.packageType.debugDescription)"
 
-        case let .found_multiple_packages_of_same_type(type):
-            return "Found multiple \(type) packages. Will use the first one."
+        case let .found_multiple_packages_of_same_identifier(identifier):
+            return "Found multiple packages with same identifier '\(identifier)'. Will use the first one."
 
         case let .could_not_find_content_for_variable(variableName):
             return "Couldn't find content for variable '\(variableName)'"
