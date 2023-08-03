@@ -107,7 +107,7 @@ private extension OfferingsList {
 
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationStack {
+        NavigationView {
             SamplePaywallsList()
         }
     }

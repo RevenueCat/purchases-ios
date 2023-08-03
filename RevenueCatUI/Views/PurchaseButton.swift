@@ -8,7 +8,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 struct PurchaseButton: View {
 
@@ -49,7 +49,7 @@ struct PurchaseButton: View {
                 )
         }
         .font(self.mode.buttonFont.weight(.semibold))
-        .tint(self.colors.callToActionBackgroundColor.gradient)
+        .tint(self.colors.callToActionBackgroundColor)
         .buttonBorderShape(self.mode.buttonBorderShape)
         .controlSize(self.mode.buttonSize)
         .buttonStyle(.borderedProminent)
@@ -59,7 +59,7 @@ struct PurchaseButton: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewMode {
 
     var buttonFont: Font {

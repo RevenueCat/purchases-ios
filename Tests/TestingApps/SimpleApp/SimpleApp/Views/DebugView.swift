@@ -10,6 +10,7 @@ import RevenueCat
 
 #if DEBUG
 
+@available(iOS 16.0, macOS 13.0, *)
 struct DebugView: View {
 
     @State

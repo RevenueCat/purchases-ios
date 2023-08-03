@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension TemplateViewConfiguration {
 
     var headerImageURL: URL? { self.url(for: \.header) }
@@ -17,7 +17,7 @@ extension TemplateViewConfiguration {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension TemplateViewConfiguration {
 
     func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
