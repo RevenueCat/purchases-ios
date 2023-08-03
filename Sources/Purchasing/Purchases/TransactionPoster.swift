@@ -90,8 +90,7 @@ final class TransactionPoster: TransactionPosterType {
         ))
 
         self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
-          transaction.transactionIdentifier
-        ) { jwsRepresentation in
+          transaction.transactionIdentifier) { jwsRepresentation in
           guard let jwsRepresentation = jwsRepresentation else {
             fatalError("Could not fetch jswRepesentation")
           }

@@ -117,6 +117,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.transactionPoster = TransactionPoster(
             productsManager: self.mockProductsManager,
             receiptFetcher: self.mockReceiptFetcher,
+            purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
