@@ -79,7 +79,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(esConfig.subtitle).to(beNil())
         expect(esConfig.callToAction) == "Comprar"
         expect(esConfig.callToActionWithIntroOffer).to(beNil())
-        expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
+        expect(esConfig.offerDetails).to(beNil())
         expect(esConfig.offerDetailsWithIntroOffer).to(beNil())
         expect(esConfig.offerName) == "{{ period }}"
         expect(esConfig.features) == [
