@@ -8,7 +8,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct FooterView: View {
 
     var configuration: PaywallData.Configuration
@@ -68,7 +68,7 @@ struct FooterView: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct SeparatorView: View {
 
     var bold: Bool
@@ -86,7 +86,7 @@ private struct SeparatorView: View {
     private var boldSeparatorSize: CGFloat = 5
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct RestorePurchasesButton: View {
 
     let purchaseHandler: PurchaseHandler
@@ -99,9 +99,13 @@ private struct RestorePurchasesButton: View {
             _ = try await self.purchaseHandler.restorePurchases()
             self.displayRestoredAlert = true
         } label: {
-            ViewThatFits {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+                ViewThatFits {
+                    Text("Restore purchases", bundle: .module)
+                    Text("Restore", bundle: .module)
+                }
+            } else {
                 Text("Restore purchases", bundle: .module)
-                Text("Restore", bundle: .module)
             }
         }
         .buttonStyle(.plain)
@@ -112,7 +116,7 @@ private struct RestorePurchasesButton: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct LinkButton: View {
 
     @Environment(\.locale)
@@ -129,18 +133,26 @@ private struct LinkButton: View {
     var body: some View {
         let bundle = Localization.localizedBundle(self.locale)
 
-        ViewThatFits {
-            ForEach(self.titles, id: \.self) { title in
-                Link(
-                    bundle.localizedString(
-                        forKey: title,
-                        value: nil,
-                        table: nil
-                    ),
-                    destination: self.url
-                )
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+            ViewThatFits {
+                ForEach(self.titles, id: \.self) { title in
+                    self.link(for: title, bundle: bundle)
+                }
             }
+        } else if let first = self.titles.first {
+            self.link(for: first, bundle: bundle)
         }
+    }
+
+    private func link(for title: String, bundle: Bundle) -> some View {
+        Link(
+            bundle.localizedString(
+                forKey: title,
+                value: nil,
+                table: nil
+            ),
+            destination: self.url
+        )
     }
 
 }

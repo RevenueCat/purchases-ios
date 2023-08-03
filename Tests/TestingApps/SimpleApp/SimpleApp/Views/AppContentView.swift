@@ -62,7 +62,7 @@ struct AppContentView: View {
 
     private var background: some View {
         Rectangle()
-            .foregroundStyle(.orange.gradient)
+            .foregroundStyle(.orange)
             .opacity(0.05)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .edgesIgnoringSafeArea(.all)

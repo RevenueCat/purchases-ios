@@ -324,6 +324,26 @@ jobs:
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
 
+  spm-revenuecat-ui-ios-15:
+    <<: *base-job
+    steps:
+      - checkout
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 13,OS=15.5
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   spm-revenuecat-ui-ios-16:
     <<: *base-job
     steps:
@@ -924,6 +944,8 @@ workflows:
       - spm-custom-entitlement-computation-build:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
