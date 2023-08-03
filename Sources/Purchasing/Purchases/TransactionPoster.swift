@@ -58,6 +58,7 @@ final class TransactionPoster: TransactionPosterType {
 
     private let productsManager: ProductsManagerType
     private let receiptFetcher: ReceiptFetcher
+    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let backend: Backend
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
@@ -66,6 +67,7 @@ final class TransactionPoster: TransactionPosterType {
     init(
         productsManager: ProductsManagerType,
         receiptFetcher: ReceiptFetcher,
+        purchasedProductsFetcher: PurchasedProductsFetcherType?,
         backend: Backend,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
@@ -73,6 +75,7 @@ final class TransactionPoster: TransactionPosterType {
     ) {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
+        self.purchasedProductsFetcher = purchasedProductsFetcher
         self.backend = backend
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
@@ -90,22 +93,18 @@ final class TransactionPoster: TransactionPosterType {
             paywallSessionID: data.presentedPaywall?.sessionIdentifier
         ))
 
-        self.receiptFetcher.receiptData(
-            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
-        ) { receiptData, receiptURL in
-            if let receiptData = receiptData, !receiptData.isEmpty {
-                self.fetchProductsAndPostReceipt(
-                    transaction: transaction,
-                    data: data,
-                    receiptData: receiptData,
-                    completion: completion
-                )
-            } else {
-                self.handleReceiptPost(withTransaction: transaction,
-                                       result: .failure(.missingReceiptFile(receiptURL)),
-                                       subscriberAttributes: nil,
-                                       completion: completion)
-            }
+        self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
+          transaction.transactionIdentifier
+        ) { jwsRepresentation in
+          guard let jwsRepresentation = jwsRepresentation else {
+            fatalError("Could not fetch jswRepesentation")
+          }
+          self.fetchProductsAndPostReceipt(
+              transaction: transaction,
+              data: data,
+              receiptData: jwsRepresentation.asData,
+              completion: completion
+          )
         }
     }
 
