@@ -78,6 +78,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.purchaseDate.timeIntervalSinceNow) <= 5
         expect(transaction.transactionIdentifier) == String(sk2Transaction.id)
         expect(transaction.quantity) == sk2Transaction.purchasedQuantity
+        expect(transaction.hasKnownPurchaseDate) == true
 
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             let expected = await Storefront.currentStorefront
