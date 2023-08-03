@@ -11,6 +11,7 @@
 		4F592A502A1FDC6F00851F36 /* PaywallViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F592A4F2A1FDC6F00851F36 /* PaywallViewAPI.swift */; };
 		4FD737882A61AD71002AFE75 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4FD737872A61AD71002AFE75 /* RevenueCatUI */; };
 		4FD7378A2A61ADF8002AFE75 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4FD737892A61ADF8002AFE75 /* RevenueCat */; };
+		57028D4E2A79325200DB1D9A /* PaywallViewControllerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57028D4D2A79325200DB1D9A /* PaywallViewControllerAPI.swift */; };
 		5738F42127866F8F0096D623 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C626EBE7EA007DDB75 /* main.swift */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		2C396F5B281C64AF00669657 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = System/Library/Frameworks/AdServices.framework; sourceTree = SDKROOT; };
 		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F592A4F2A1FDC6F00851F36 /* PaywallViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewAPI.swift; sourceTree = "<group>"; };
+		57028D4D2A79325200DB1D9A /* PaywallViewControllerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerAPI.swift; sourceTree = "<group>"; };
 		A5D614C626EBE7EA007DDB75 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				4F592A4F2A1FDC6F00851F36 /* PaywallViewAPI.swift */,
+				57028D4D2A79325200DB1D9A /* PaywallViewControllerAPI.swift */,
 				A5D614C626EBE7EA007DDB75 /* main.swift */,
 			);
 			path = SwiftAPITester;
@@ -159,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5738F42127866F8F0096D623 /* main.swift in Sources */,
+				57028D4E2A79325200DB1D9A /* PaywallViewControllerAPI.swift in Sources */,
 				4F592A502A1FDC6F00851F36 /* PaywallViewAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
