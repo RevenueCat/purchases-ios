@@ -13,7 +13,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallViewLocalizationTests: BaseSnapshotTest {
-    
+
     func testSpanish() {
         Self.test(.init(identifier: "es_ES"))
     }
