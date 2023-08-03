@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 enum Constants {
 
     static let defaultAnimation: Animation = .easeIn(duration: 0.2)
