@@ -5,7 +5,7 @@ import SnapshotTesting
 
 #if !os(macOS)
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class MultiPackageBoldPaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
@@ -16,7 +16,7 @@ class MultiPackageBoldPaywallViewTests: BaseSnapshotTest {
     }
 
     func testPurchasingState() {
-        let handler = Self.purchaseHandler.with(delay: .seconds(120))
+        let handler = Self.purchaseHandler.with(delay: 120)
 
         let view = PaywallView(offering: Self.offering.withLocalImages,
                                introEligibility: Self.eligibleChecker,

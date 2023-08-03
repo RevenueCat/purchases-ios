@@ -65,7 +65,7 @@ private extension VariableDataProvider {
         case "price": return self.localizedPrice
         case "price_per_month": return self.localizedPricePerMonth
         case "total_price_and_per_month":
-            if self.isMonthly {
+            if !self.isSubscription || self.isMonthly {
                 return self.localizedPrice
             } else {
                 let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
@@ -87,7 +87,6 @@ private extension VariableDataProvider {
     }
 
 }
-
 
 // MARK: - Regex iOS 16
 

@@ -6,7 +6,7 @@ import SwiftUI
 
 #if !os(macOS)
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class OnePackageStandardPaywallViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
@@ -59,7 +59,7 @@ class OnePackageStandardPaywallViewTests: BaseSnapshotTest {
         let view = PaywallView(
             offering: Self.offeringWithIntroOffer,
             introEligibility: Self.ineligibleChecker
-                .with(delay: .seconds(30)),
+                .with(delay: 30),
             purchaseHandler: Self.purchaseHandler
         )
 

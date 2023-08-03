@@ -10,7 +10,7 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class BaseSnapshotTest: TestCase {
 
@@ -22,7 +22,7 @@ class BaseSnapshotTest: TestCase {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension BaseSnapshotTest {
 
     static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)

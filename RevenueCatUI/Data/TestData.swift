@@ -374,10 +374,9 @@ extension TrialOrIntroEligibilityChecker {
     }
 
     /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-    func with(delay: Duration) -> Self {
+    func with(delay seconds: TimeInterval) -> Self {
         return .init { [checker = self.checker] in
-            try? await Task.sleep(for: delay)
+            await Task.sleep(seconds: seconds)
 
             return await checker($0)
         }
@@ -413,15 +412,14 @@ extension PurchaseHandler {
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-    func with(delay: Duration) -> Self {
+    func with(delay seconds: TimeInterval) -> Self {
         return self.map { purchaseBlock in {
-            try? await Task.sleep(for: delay)
+            await Task.sleep(seconds: seconds)
 
             return try await purchaseBlock($0)
         }
         } restore: { restoreBlock in {
-            try? await Task.sleep(for: delay)
+            await Task.sleep(seconds: seconds)
 
             return try await restoreBlock()
         }
@@ -444,6 +442,15 @@ extension PackageType {
 
     var identifier: String {
         return Package.string(from: self)!
+    }
+
+}
+
+@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
+private extension Task where Success == Never, Failure == Never {
+
+    static func sleep(seconds: TimeInterval) async {
+        try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 
 }
