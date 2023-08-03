@@ -108,7 +108,7 @@ public struct PaywallView: View {
             LoadedOfferingPaywallView(
                 offering: offering,
                 paywall: paywall,
-                mode: mode,
+                mode: self.mode,
                 introEligibility: checker,
                 purchaseHandler: purchaseHandler
             )
@@ -121,8 +121,8 @@ public struct PaywallView: View {
                     AnyView(
                         LoadedOfferingPaywallView(
                             offering: offering,
-                            paywall: .default,
-                            mode: mode,
+                            paywall: .createDefault(with: offering.availablePackages),
+                            mode: self.mode,
                             introEligibility: checker,
                             purchaseHandler: purchaseHandler
                         )
