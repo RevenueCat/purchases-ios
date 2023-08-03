@@ -59,7 +59,7 @@ class OnePackageStandardPaywallViewTests: BaseSnapshotTest {
         let view = PaywallView(
             offering: Self.offeringWithIntroOffer,
             introEligibility: Self.ineligibleChecker
-                .with(delay: .seconds(30)),
+                .with(delay: 30),
             purchaseHandler: Self.purchaseHandler
         )
 

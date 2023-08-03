@@ -20,7 +20,7 @@ class BaseLocalizationTests: TestCase {
 
 // MARK: - Abbreviated Unit
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "en_US") }
@@ -39,7 +39,7 @@ class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
@@ -60,7 +60,7 @@ class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
 
 // MARK: - SubscriptionPeriod
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class SubscriptionPeriodEnglishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "en_US") }
@@ -87,7 +87,7 @@ class SubscriptionPeriodEnglishLocalizationTests: BaseLocalizationTests {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class SubscriptionPeriodSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
@@ -116,7 +116,7 @@ class SubscriptionPeriodSpanishLocalizationTests: BaseLocalizationTests {
 
 // MARK: - PackageType
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "en_US") }
@@ -138,7 +138,7 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
@@ -159,7 +159,7 @@ class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
     }
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "fr") }
@@ -182,7 +182,7 @@ class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
 
 // MARK: - Discount
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiscountEnglishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "en_US") }
@@ -198,7 +198,7 @@ class DiscountEnglishLocalizationTests: BaseLocalizationTests {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiscountSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
@@ -214,7 +214,7 @@ class DiscountSpanishLocalizationTests: BaseLocalizationTests {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "fr") }
@@ -227,7 +227,7 @@ class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
 
 // MARK: - Private
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension BaseLocalizationTests {
 
     func verify(

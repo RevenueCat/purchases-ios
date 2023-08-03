@@ -3,7 +3,7 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class VariablesTests: TestCase {
 
     private var provider: MockVariableProvider!
@@ -166,7 +166,7 @@ class VariablesTests: TestCase {
 
 // MARK: - Private
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension VariablesTests {
 
     func process(_ string: String, locale: Locale = .current) -> String {
