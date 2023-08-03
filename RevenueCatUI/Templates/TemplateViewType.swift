@@ -2,7 +2,7 @@ import RevenueCat
 import SwiftUI
 
 /// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 protocol TemplateViewType: SwiftUI.View {
 
@@ -10,7 +10,7 @@ protocol TemplateViewType: SwiftUI.View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallTemplate {
 
     var packageSetting: TemplateViewConfiguration.PackageSetting {
@@ -23,7 +23,7 @@ private extension PaywallTemplate {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 extension PaywallData {
 
