@@ -21,14 +21,10 @@ struct LoadingPaywallView: View {
                 identifier: Self.offeringIdentifier,
                 serverDescription: "",
                 metadata: [:],
-                paywall: .default,
-                availablePackages: [
-                    Self.monthlyPackage,
-                    Self.weeklyPackage,
-                    Self.annualPackage
-                ]
+                paywall: Self.defaultPaywall,
+                availablePackages: Self.packages
             ),
-            paywall: .default,
+            paywall: Self.defaultPaywall,
             mode: .fullScreen,
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
@@ -36,6 +32,14 @@ struct LoadingPaywallView: View {
         .disabled(true)
         .redacted(reason: .placeholder)
     }
+
+    private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages)
+
+    private static let packages: [Package] = [
+        Self.monthlyPackage,
+        Self.weeklyPackage,
+        Self.annualPackage
+    ]
 
 }
 
