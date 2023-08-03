@@ -18,7 +18,7 @@ enum TemplateError: Error {
     case emptyPackageList
 
     /// No packages from the `PackageType` list could be found.
-    case couldNotFindAnyPackages(expectedTypes: [PackageType])
+    case couldNotFindAnyPackages(expectedTypes: [String])
 
 }
 

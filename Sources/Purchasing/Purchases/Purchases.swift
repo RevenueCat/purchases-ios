@@ -1622,7 +1622,7 @@ private extension Purchases {
         let packageTypes = Set(paywall.config.packages)
         let products: [String] = offering.availablePackages
             .lazy
-            .filter { packageTypes.contains($0.packageType) }
+            .filter { packageTypes.contains($0.identifier) }
             .map(\.storeProduct.productIdentifier)
 
         Logger.debug(Strings.eligibility.warming_up_eligibility_cache(paywall))

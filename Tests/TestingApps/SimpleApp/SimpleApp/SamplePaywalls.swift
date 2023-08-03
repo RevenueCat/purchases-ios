@@ -152,7 +152,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .onePackageStandard,
             config: .init(
-                packages: [.monthly],
+                packages: [Package.string(from: PackageType.monthly)!],
                 images: Self.images,
                 colors:  .init(
                     light: .init(
@@ -188,7 +188,8 @@ private extension SamplePaywallLoader {
         return .init(
             template: .multiPackageBold,
             config: .init(
-                packages: [.weekly, .monthly, .annual, .lifetime],
+                packages: Array<PackageType>([.weekly, .monthly, .annual, .lifetime])
+                    .map { Package.string(from: $0)! },
                 images: Self.images,
                 colors:  .init(
                     light: .init(
@@ -227,7 +228,7 @@ private extension SamplePaywallLoader {
         return .init(
             template: .onePackageWithFeatures,
             config: .init(
-                packages: [.annual],
+                packages: [Package.string(from: .annual)!],
                 images: Self.images,
                 colors: .init(
                     light: .init(
