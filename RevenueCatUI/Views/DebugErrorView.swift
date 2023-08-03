@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 /// A view that displays an error in debug builds
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct DebugErrorView: View {
 
     private let description: String
@@ -77,7 +77,7 @@ struct DebugErrorView: View {
                     .edgesIgnoringSafeArea(.all)
             )
             .foregroundColor(.white)
-            .bold()
+            .font(.body.bold())
             .minimumScaleFactor(0.5)
             .cornerRadius(8)
             .shadow(radius: 8)
