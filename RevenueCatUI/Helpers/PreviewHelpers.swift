@@ -19,10 +19,10 @@ enum PreviewHelpers {
 
     static let introEligibilityChecker: TrialOrIntroEligibilityChecker =
         .producing(eligibility: .eligible)
-        .with(delay: .seconds(0.5))
+        .with(delay: 0.5)
     static let purchaseHandler: PurchaseHandler =
         .mock()
-        .with(delay: .seconds(0.5))
+        .with(delay: 0.5)
 
 }
 
