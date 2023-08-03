@@ -44,16 +44,16 @@ class ReceiptFetcher {
 
         switch refreshPolicy {
         case .always:
-            if self.shouldThrottleRefreshRequest() {
+//            if self.shouldThrottleRefreshRequest() {
                 Logger.debug(Strings.receipt.throttling_force_refreshing_receipt)
 
                 // If requested to refresh again within the throttle duration
                 // Use `ReceiptRefreshPolicy.onlyIfEmpty` so receipt is not refreshed if it's already loaded.
                 self.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-            } else {
-                Logger.debug(Strings.receipt.force_refreshing_receipt)
-                self.refreshReceipt(completion)
-            }
+//            } else {
+//                Logger.debug(Strings.receipt.force_refreshing_receipt)
+//                self.refreshReceipt(completion)
+//            }
 
         case .onlyIfEmpty:
             let receiptData = self.receiptData()
