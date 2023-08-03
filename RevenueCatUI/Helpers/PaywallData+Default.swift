@@ -18,7 +18,11 @@ extension PaywallData {
     public static let `default`: Self = .init(
         template: .multiPackageBold,
         config: .init(
-            packages: [.weekly, .monthly, .annual],
+            packages: [
+                Package.string(from: .weekly)!,
+                Package.string(from: .monthly)!,
+                Package.string(from: .annual)!
+            ],
             images: .init(background: Self.backgroundImage),
             colors: Self.colors,
             blurredBackgroundImage: true,
