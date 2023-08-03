@@ -55,7 +55,9 @@ import SwiftUI
         paywall: .init(
             template: .multiPackageBold,
             config: .init(
-                packages: [.weekly, .annual, .monthly],
+                packages: [PackageType.weekly.identifier,
+                           PackageType.annual.identifier,
+                           PackageType.monthly.identifier],
                 images: TestData.images,
                 colors: .init(
                     light: TestData.lightColors,
