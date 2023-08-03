@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension Image {
 
     func fitToAspect(_ aspectRatio: Double, contentMode: SwiftUI.ContentMode) -> some View {
@@ -19,7 +19,7 @@ extension Image {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct FitToAspectRatio: ViewModifier {
 
     let aspectRatio: Double
