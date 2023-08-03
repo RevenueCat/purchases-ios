@@ -43,11 +43,18 @@ extension View {
         }
     }
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    @ViewBuilder
     func scrollableIfNecessary(_ axes: Axis.Set = .vertical) -> some View {
-        ViewThatFits(in: axes) {
-            self
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            ViewThatFits(in: axes) {
+                self
 
+                ScrollView(axes) {
+                    self
+                }
+            }
+        } else {
             ScrollView(axes) {
                 self
             }

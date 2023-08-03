@@ -136,7 +136,7 @@ public struct PaywallView: View {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -202,7 +202,7 @@ struct LoadedOfferingPaywallView: View {
 
 // MARK: - Extensions
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewMode {
 
     var aspectRatio: CGFloat? {
@@ -258,7 +258,7 @@ struct PaywallView_Previews: PreviewProvider {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewMode {
 
     var layout: PreviewLayout {
@@ -270,7 +270,7 @@ private extension PaywallViewMode {
 
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallTemplate {
 
     var name: String {
