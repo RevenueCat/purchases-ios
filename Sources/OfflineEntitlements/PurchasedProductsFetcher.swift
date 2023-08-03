@@ -19,6 +19,8 @@ protocol PurchasedProductsFetcherType {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product]
 
+    func fetchPurchasedProductForTransaction(_ transactionId: String, completion: @escaping (String?) -> Void)
+
     func clearCache()
 
 }
@@ -59,6 +61,32 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         }
 
         return result
+    }
+
+    func fetchPurchasedProductForTransaction(_ transactionId: String, completion: @escaping (String?) -> Void) {
+      Task<Void, Never> {
+        do {
+          for transaction in try await self.transactions {
+            if String(transaction.underlyingTransaction.id) != transactionId {
+              continue
+            }
+            switch transaction {
+            case let .unverified(transaction, verificationError):
+              Logger.appleWarning(
+                  Strings.offlineEntitlements.found_unverified_transactions_in_sk2(transactionID: transaction.id,
+                                                                                   verificationError)
+              )
+              completion(nil)
+            case .verified:
+              completion(transaction.jwsRepresentation)
+            }
+            return
+          }
+        } catch {
+          Logger.error("Error fetching transactions")
+          completion(nil)
+        }
+      }
     }
 
     func clearCache() {
