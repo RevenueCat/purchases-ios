@@ -55,6 +55,7 @@ class BaseBackendIntegrationTests: TestCase {
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
     }
+    var enableReceiptFetchRetry: Bool = true
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
@@ -215,7 +216,6 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
-    var enableReceiptFetchRetry: Bool { return true }
     var forceServerErrors: Bool { return self.serverIsDown }
     var forceSignatureFailures: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
