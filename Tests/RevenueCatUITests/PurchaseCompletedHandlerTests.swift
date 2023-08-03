@@ -17,6 +17,12 @@ import XCTest
 @MainActor
 class PurchaseCompletedHandlerTests: TestCase {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+    }
+
     func testOnPurchaseCompletedWithCancellation() throws {
         let handler: PurchaseHandler = .cancelling()
 

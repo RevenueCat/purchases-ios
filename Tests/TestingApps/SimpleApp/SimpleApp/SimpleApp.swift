@@ -26,14 +26,16 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
+            NavigationView {
                 AppContentView()
             }
             #if DEBUG
             .overlay {
-                DebugView()
-                    .frame(maxHeight: .infinity, alignment: .bottom)
-                    .offset(y: -50)
+                if #available(iOS 16.0, macOS 13.0, *) {
+                    DebugView()
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                        .offset(y: -50)
+                }
             }
             #endif
         }

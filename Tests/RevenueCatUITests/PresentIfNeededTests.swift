@@ -17,6 +17,12 @@ import XCTest
 @MainActor
 class PresentIfNeededTests: TestCase {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+    }
+
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 

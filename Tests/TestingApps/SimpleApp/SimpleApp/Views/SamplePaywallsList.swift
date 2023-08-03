@@ -112,7 +112,7 @@ extension PaywallTemplate {
 
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationStack {
+        NavigationView {
             SamplePaywallsList()
         }
     }
