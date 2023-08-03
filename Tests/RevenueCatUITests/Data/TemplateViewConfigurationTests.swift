@@ -16,8 +16,6 @@ class BaseTemplateViewConfigurationTests: TestCase {}
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests {
 
-    private typealias Config = TemplateViewConfiguration.PackageConfiguration
-
     func testCreateWithNoPackages() {
         expect {
             try Config.create(
@@ -130,6 +128,63 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 }
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+class TemplateViewConfigurationHelpersTests: BaseTemplateViewConfigurationTests {
+
+    func testLocalizationPerPackageWithOnePackage() throws {
+        let configuration = try Config.create(
+            with: [TestData.monthlyPackage],
+            filter: [.monthly],
+            default: nil,
+            localization: Self.localization,
+            setting: .single
+        )
+
+        expect(configuration.localizationPerPackage()) == [
+            TestData.monthlyPackage: Self.localization.processVariables(with: TestData.monthlyPackage)
+        ]
+    }
+
+    func testLocalizationPerPackageWithMultiplePackages() throws {
+        let configuration = try Config.create(
+            with: [TestData.monthlyPackage,
+                   TestData.annualPackage,
+                   TestData.weeklyPackage,
+                   TestData.lifetimePackage],
+            filter: [.annual, .monthly, .lifetime],
+            default: .monthly,
+            localization: Self.localization,
+            setting: .multiple
+        )
+
+        expect(configuration.localizationPerPackage()) == [
+            TestData.monthlyPackage: Self.localization.processVariables(with: TestData.monthlyPackage),
+            TestData.annualPackage: Self.localization.processVariables(with: TestData.annualPackage),
+            TestData.lifetimePackage: Self.localization.processVariables(with: TestData.lifetimePackage)
+        ]
+    }
+
+    // Frontend ensures that having duplicates isn't possible, but this ensures proper behavior.
+    func testLocalizationPerPackageWithDuplicatePackages() throws {
+        let configuration = try Config.create(
+            with: [TestData.monthlyPackage,
+                   TestData.annualPackage,
+                   TestData.weeklyPackage,
+                   TestData.lifetimePackage],
+            filter: [.monthly, .monthly, .annual],
+            default: .monthly,
+            localization: Self.localization,
+            setting: .multiple
+        )
+
+        expect(configuration.localizationPerPackage()) == [
+            TestData.monthlyPackage: Self.localization.processVariables(with: TestData.monthlyPackage),
+            TestData.annualPackage: Self.localization.processVariables(with: TestData.annualPackage)
+        ]
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTests {
 
     func testFilterNoPackages() {
@@ -192,6 +247,8 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension BaseTemplateViewConfigurationTests {
+
+    typealias Config = TemplateViewConfiguration.PackageConfiguration
 
     static let consumable = Package(
         identifier: "consumable",
