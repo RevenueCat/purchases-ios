@@ -30,6 +30,12 @@ final class MockStoreTransaction: StoreTransactionType {
         self.storefront = nil
     }
 
+    private let _hasKnownPurchaseDate: Atomic<Bool> = true
+    var hasKnownPurchaseDate: Bool {
+        get { return self._hasKnownPurchaseDate.value }
+        set { self._hasKnownPurchaseDate.value = newValue }
+    }
+
     private let _finishInvoked: Atomic<Bool> = false
     var finishInvoked: Bool { return self._finishInvoked.value }
 

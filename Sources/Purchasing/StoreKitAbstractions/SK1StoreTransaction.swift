@@ -36,6 +36,10 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         return nil
     }
 
+    var hasKnownPurchaseDate: Bool {
+        return self.underlyingSK1Transaction.transactionDate != nil
+    }
+
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         wrapper.finishTransaction(self.underlyingSK1Transaction, completion: completion)
     }
