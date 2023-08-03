@@ -11,7 +11,7 @@ import SwiftUI
 /// Features:
 /// - Automatic handling of disabled state
 /// - Replaces itself with a loading indicator if it's the selected package.
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct PackageButtonStyle: ButtonStyle {
 
     var isSelected: Bool
