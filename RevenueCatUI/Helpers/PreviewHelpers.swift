@@ -37,6 +37,7 @@ enum PreviewHelpers {
 /// ```
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(macOS, unavailable)
+@available(tvOS, unavailable)
 struct PreviewableTemplate<T: TemplateViewType>: View {
 
     typealias Creator = @Sendable @MainActor (TemplateViewConfiguration) -> T
