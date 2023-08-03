@@ -1,7 +1,7 @@
 import Foundation
 import RevenueCat
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension Package: VariableDataProvider {
 
     var applicationName: String {
@@ -45,7 +45,7 @@ extension Package: VariableDataProvider {
 
 // MARK: - Private
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
 
     var pricePerMonth: NSDecimalNumber {
