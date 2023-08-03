@@ -50,6 +50,7 @@ class BasePurchasesTests: TestCase {
             self.paywallEventsManager = nil
         }
         self.requestFetcher = MockRequestFetcher()
+        self.purchasedProductsFetcher = .init()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockOperationDispatcher = MockOperationDispatcher()
@@ -142,6 +143,7 @@ class BasePurchasesTests: TestCase {
     var receiptFetcher: MockReceiptFetcher!
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
+    var purchasedProductsFetcher: MockPurchasedProductsFetcher!
     var backend: MockBackend!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
     var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
@@ -191,6 +193,7 @@ class BasePurchasesTests: TestCase {
         return .init(
             productsManager: self.mockProductsManager,
             receiptFetcher: self.receiptFetcher,
+            purchasedProductsFetcher: self.purchasedProductsFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,

@@ -19,6 +19,7 @@ import XCTest
 class TransactionPosterTests: TestCase {
 
     private var productsManager: MockProductsManager!
+    private var purchasedProductsFetcher: MockPurchasedProductsFetcher!
     private var receiptFetcher: MockReceiptFetcher!
     private var backend: MockBackend!
     private var paymentQueueWrapper: MockPaymentQueueWrapper!
@@ -263,6 +264,7 @@ private extension TransactionPosterTests {
         self.operationDispatcher = .init()
         self.systemInfo = .init(finishTransactions: !observerMode)
         self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
+        self.purchasedProductsFetcher = .init()
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
         self.backend = .init()
@@ -271,6 +273,7 @@ private extension TransactionPosterTests {
         self.poster = .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
+            purchasedProductsFetcher: self.purchasedProductsFetcher,
             backend: self.backend,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,
