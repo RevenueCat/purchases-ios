@@ -2,7 +2,7 @@ import RevenueCat
 import SwiftUI
 
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")

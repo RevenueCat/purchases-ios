@@ -92,7 +92,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
 // MARK: - Helpers
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension TemplateViewConfiguration.PackageConfiguration {
 
     /// - Returns: a dictionary for all localizations keyed by each package.

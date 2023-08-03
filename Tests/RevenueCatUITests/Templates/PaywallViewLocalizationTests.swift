@@ -11,7 +11,7 @@ import RevenueCat
 import SnapshotTesting
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 class PaywallViewLocalizationTests: BaseSnapshotTest {
 
     func testSpanish() {
@@ -20,7 +20,7 @@ class PaywallViewLocalizationTests: BaseSnapshotTest {
 
  }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension PaywallViewLocalizationTests {
 
     static func test(_ locale: Locale) {
