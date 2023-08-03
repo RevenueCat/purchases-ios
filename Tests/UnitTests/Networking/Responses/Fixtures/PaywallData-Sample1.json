@@ -25,7 +25,6 @@
         "es_ES": {
             "title": "Tienda",
             "call_to_action": "Comprar",
-            "offer_details": "{{ price_per_month }} cada mes",
             "offer_details_with_intro_offer": " ",
             "offer_name": "{{ period }}",
             "features": [

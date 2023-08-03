@@ -55,7 +55,7 @@ func checkPaywallLocalizedConfig(_ config: PaywallData.LocalizedConfiguration) {
     let subtitle: String? = config.subtitle
     let callToAction: String = config.callToAction
     let callToActionWithIntroOffer: String? = config.callToActionWithIntroOffer
-    let offerDetails: String = config.offerDetails
+    let offerDetails: String? = config.offerDetails
     let offerDetailsWithIntroOffer: String? = config.offerDetailsWithIntroOffer
     let offerName: String? = config.offerName
     let features: [PaywallData.LocalizedConfiguration.Feature] = config.features
