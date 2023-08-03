@@ -20,15 +20,17 @@ func checkPackageAPI() {
     let ident: String = pack.identifier
     let pType: PackageType = pack.packageType
     let prod: StoreProduct = pack.storeProduct
+    let oID: String = pack.offeringIdentifier
     let lps: String = pack.localizedPriceString
     let lips: String? = pack.localizedIntroductoryPriceString
 
-    print(pack!, ident, pType, prod, lps, lips!)
+    print(pack!, ident, pType, prod, oID, lps, lips!)
 }
 
 private func checkCreatePackageAPI(product: StoreProduct) {
     _ = Package(
-        identifier: "", packageType: PackageType.annual,
+        identifier: "",
+        packageType: PackageType.annual,
         storeProduct: product,
         offeringIdentifier: ""
     )
