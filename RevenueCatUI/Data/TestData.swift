@@ -243,7 +243,7 @@ internal enum TestData {
                           iconID: "tick"),
                     .init(title: "Day 7",
                           content: "Get a reminder about when your trial is about to end.",
-                          iconID: "notifications"),
+                          iconID: "notification"),
                     .init(title: "Day 14",
                           content: "You'll automatically get subscribed. " +
                           "Cancel anytime before if you didn't love our app.",
