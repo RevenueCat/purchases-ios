@@ -9,6 +9,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(tvOS, unavailable)
 struct PurchaseButton: View {
 
     let package: Package
@@ -75,6 +76,7 @@ private extension PaywallViewMode {
         }
     }
 
+    @available(tvOS, unavailable)
     var buttonSize: ControlSize {
         switch self {
         case .fullScreen: return .large
@@ -86,7 +88,7 @@ private extension PaywallViewMode {
     var buttonBorderShape: ButtonBorderShape {
         switch self {
         case .fullScreen:
-            #if os(macOS)
+            #if os(macOS) || os(tvOS)
             return .roundedRectangle
             #else
             return .capsule
@@ -103,6 +105,7 @@ private extension PaywallViewMode {
 #if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 struct PurchaseButton_Previews: PreviewProvider {
 
     @MainActor
