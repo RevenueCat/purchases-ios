@@ -45,12 +45,9 @@ struct MultiPackageHorizontalTemplate: TemplateViewType {
                 .edgesIgnoringSafeArea(.bottom)
                 .frame(maxWidth: .infinity, alignment: .bottom)
                 .background(self.configuration.colors.backgroundColor)
-                // TODO: relative shape?
-                // TODO: bottom corners
-                .mask(
-                    RoundedRectangle(cornerRadius: Self.cornerRadius)
-                        .edgesIgnoringSafeArea(.bottom)
-                )
+                .roundedCorner(Self.cornerRadius,
+                               corners: [.topLeft, .topRight],
+                               edgesIgnoringSafeArea: .bottom)
         }
     }
 
