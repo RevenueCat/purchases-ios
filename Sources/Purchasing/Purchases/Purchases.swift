@@ -1498,7 +1498,7 @@ private extension Purchases {
 
         #if os(iOS) || os(macOS)
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
-            self.attribution.postAdServicesTokenOnlyOncePerInstallIfNeeded()
+            self.attribution.postAdServicesTokenOncePerInstallIfNeeded()
         }
         #endif
 

@@ -127,7 +127,7 @@ final class AttributionPoster {
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func postAdServicesTokenOnlyOncePerInstallIfNeeded() {
+    func postAdServicesTokenOncePerInstallIfNeeded() {
         guard let attributionToken = self.adServicesTokenToPostIfNeeded else { return }
 
         self.post(adServicesToken: attributionToken)
