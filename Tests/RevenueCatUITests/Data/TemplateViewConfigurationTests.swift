@@ -105,7 +105,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
             expect(annual.discountRelativeToMostExpensivePerMonth)
-                .to(beCloseTo(0.55, within: 0.01))
+                .to(beCloseTo(0.36, within: 0.01))
             Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
             let monthly = packages[1]
