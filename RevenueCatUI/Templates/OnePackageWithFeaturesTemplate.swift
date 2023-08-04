@@ -36,7 +36,7 @@ struct OnePackageWithFeaturesTemplate: TemplateViewType {
     private var content: some View {
         VStack {
             if let url = self.configuration.iconImageURL {
-                RemoteImage(url: url)
+                RemoteImage(url: url, aspectRatio: 1)
                     .frame(width: self.iconSize, height: self.iconSize)
                     .cornerRadius(8)
             }
@@ -103,7 +103,7 @@ struct OnePackageWithFeaturesTemplate: TemplateViewType {
     }
 
     @ScaledMetric(relativeTo: .title)
-    private var iconSize = 55
+    private var iconSize = 65
 
 }
 
