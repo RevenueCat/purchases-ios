@@ -36,6 +36,9 @@ extension View {
     ///     }
     ///  }
     /// ```
+    /// 
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func onPurchaseCompleted(
         _ handler: @escaping PurchaseCompletedHandler
     ) -> some View {
