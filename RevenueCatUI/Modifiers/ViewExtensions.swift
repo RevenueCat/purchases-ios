@@ -111,6 +111,8 @@ extension View {
 
 // MARK: - Rounded corners
 
+#if canImport(UIKit)
+
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension View {
 
@@ -141,6 +143,8 @@ private struct RoundedCorner: Shape {
     }
 
 }
+
+#endif
 
 // MARK: - Preference Keys
 

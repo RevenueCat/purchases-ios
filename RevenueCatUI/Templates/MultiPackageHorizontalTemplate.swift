@@ -45,9 +45,11 @@ struct MultiPackageHorizontalTemplate: TemplateViewType {
                 .edgesIgnoringSafeArea(.bottom)
                 .frame(maxWidth: .infinity, alignment: .bottom)
                 .background(self.configuration.colors.backgroundColor)
+            #if canImport(UIKit)
                 .roundedCorner(Self.cornerRadius,
                                corners: [.topLeft, .topRight],
                                edgesIgnoringSafeArea: .bottom)
+            #endif
         }
     }
 
