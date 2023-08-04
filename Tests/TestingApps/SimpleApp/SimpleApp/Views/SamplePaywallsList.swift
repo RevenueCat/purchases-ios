@@ -5,8 +5,10 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
+#if DEBUG
+
 import RevenueCat
-import RevenueCatUI
+@testable import RevenueCatUI
 import SwiftUI
 
 struct SamplePaywallsList: View {
@@ -19,9 +21,13 @@ struct SamplePaywallsList: View {
             .sheet(item: self.$display) { display in
                 switch display {
                 case let .template(template):
-                    PaywallView(offering: Self.loader.offering(for: template))
+                    PaywallView(offering: Self.loader.offering(for: template),
+                                introEligibility: Self.introEligibility,
+                                purchaseHandler: .default())
                 case .defaultTemplate:
-                    PaywallView(offering: Self.loader.offeringWithDefaultPaywall())
+                    PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
+                                introEligibility: Self.introEligibility,
+                                purchaseHandler: .default())
                 }
             }
             .navigationTitle("Paywalls")
@@ -52,6 +58,18 @@ struct SamplePaywallsList: View {
     }
 
     private static let loader: SamplePaywallLoader = .init()
+    private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
+        return Dictionary(
+            uniqueKeysWithValues: Set(packages)
+                .map { package in
+                    let result: IntroEligibilityStatus = package.storeProduct.hasIntroDiscount
+                    ? Bool.random() ? .eligible : .ineligible
+                    : .noIntroOfferExists
+
+                    return (package, result)
+                }
+        )
+    }
 
 }
 
@@ -103,6 +121,8 @@ extension PaywallTemplate {
             return "Multi package bold"
         case .onePackageWithFeatures:
             return "One package with features"
+        case .multiPackageHorizontal:
+            return "Multi package horizontal"
         }
     }
 
@@ -117,5 +137,7 @@ struct SamplePaywallsList_Previews: PreviewProvider {
         }
     }
 }
+
+#endif
 
 #endif

@@ -20,6 +20,7 @@ struct SimpleApp: App {
 
         Purchases.configure(
             with: .init(withAPIKey: Configuration.effectiveApiKey)
+                .with(entitlementVerificationMode: .informational)
                 .with(usesStoreKit2IfAvailable: true)
         )
     }

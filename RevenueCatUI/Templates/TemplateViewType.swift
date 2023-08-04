@@ -18,6 +18,7 @@ private extension PaywallTemplate {
         case .onePackageStandard: return .single
         case .multiPackageBold: return .multiple
         case .onePackageWithFeatures: return .single
+        case .multiPackageHorizontal: return .multiple
         }
     }
 
@@ -84,6 +85,8 @@ extension PaywallData {
             MultiPackageBoldTemplate(configuration)
         case .onePackageWithFeatures:
             OnePackageWithFeaturesTemplate(configuration)
+        case .multiPackageHorizontal:
+            MultiPackageHorizontalTemplate(configuration)
         }
     }
 
