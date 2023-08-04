@@ -275,10 +275,10 @@ private extension PaywallTemplate {
 
     var name: String {
         switch self {
-        case .onePackageStandard: return "single"
-        case .multiPackageBold: return "multi"
-        case .onePackageWithFeatures: return "features"
-        case .multiPackageHorizontal: return "horizontal"
+        case .template1: return "Minimalist"
+        case .template2: return "Bold Packages"
+        case .template3: return "Feature List"
+        case .template4: return "Horizontal"
         }
     }
 

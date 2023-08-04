@@ -3,7 +3,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-struct OnePackageStandardTemplate: TemplateViewType {
+struct Template1View: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
     private var localization: ProcessedLocalizedConfiguration
@@ -211,11 +211,11 @@ private struct CircleMaskModifier: ViewModifier {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(macCatalyst, unavailable)
-struct OnePackageStandardTemplate_Previews: PreviewProvider {
+struct Template1View_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: TestData.offeringWithIntroOffer) {
-            OnePackageStandardTemplate($0)
+            Template1View($0)
         }
     }
 

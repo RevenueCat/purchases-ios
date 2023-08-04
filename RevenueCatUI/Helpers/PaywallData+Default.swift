@@ -21,7 +21,7 @@ extension PaywallData {
 
     static func createDefault(with packageIdentifiers: [String]) -> Self {
         return .init(
-            template: .multiPackageBold,
+            template: .template2,
             config: .init(
                 packages: packageIdentifiers,
                 images: .init(background: Self.backgroundImage),
@@ -85,7 +85,7 @@ struct DefaultPaywall_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: Self.offering) {
-            MultiPackageBoldTemplate($0)
+            Template2View($0)
         }
     }
 
