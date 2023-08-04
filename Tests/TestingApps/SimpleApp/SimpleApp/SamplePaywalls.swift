@@ -16,6 +16,7 @@ final class SamplePaywallLoader {
         self.packages = [
             Self.weeklyPackage,
             Self.monthlyPackage,
+            Self.sixMonthPackage,
             Self.annualPackage,
             Self.lifetimePackage
         ]
@@ -49,6 +50,8 @@ final class SamplePaywallLoader {
             return Self.multiPackageBoldTemplate()
         case .onePackageWithFeatures:
             return Self.onePackageWithFeaturesTemplate()
+        case .multiPackageHorizontal:
+            return Self.multiPackageHorizontalTemplate()
         }
     }
 
@@ -68,6 +71,12 @@ private extension SamplePaywallLoader {
         identifier: Package.string(from: .monthly)!,
         packageType: .monthly,
         storeProduct: monthlyProduct.toStoreProduct(),
+        offeringIdentifier: offeringIdentifier
+    )
+    static let sixMonthPackage = Package(
+        identifier: Package.string(from: .sixMonth)!,
+        packageType: .sixMonth,
+        storeProduct: sixMonthProduct.toStoreProduct(),
         offeringIdentifier: offeringIdentifier
     )
     static let annualPackage = Package(
@@ -95,8 +104,8 @@ private extension SamplePaywallLoader {
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
-        price: 12.99,
-        localizedPriceString: "$12.99",
+        price: 6.99,
+        localizedPriceString: "$6.99",
         productIdentifier: "com.revenuecat.product_2",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
@@ -112,10 +121,29 @@ private extension SamplePaywallLoader {
             type: .introductory
         )
     )
+    static let sixMonthProduct = TestStoreProduct(
+        localizedTitle: "Monthly",
+        price: 34.99,
+        localizedPriceString: "$34.99",
+        productIdentifier: "com.revenuecat.product_4",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 6, unit: .month),
+        introductoryDiscount: .init(
+            identifier: "intro",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 7, unit: .day),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
-        price: 69.49,
-        localizedPriceString: "$69.49",
+        price: 53.99,
+        localizedPriceString: "$53.99",
         productIdentifier: "com.revenuecat.product_3",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO annual",
@@ -259,6 +287,37 @@ private extension SamplePaywallLoader {
                           content: "You'll automatically get subscribed. Cancel anytime before if you didn't love our app.",
                           iconID: "attachment")
                 ]),
+            assetBaseURL: Self.paywallAssetBaseURL
+        )
+    }
+
+    static func multiPackageHorizontalTemplate() -> PaywallData {
+        return .init(
+            template: .multiPackageHorizontal,
+            config: .init(
+                packages: Array<PackageType>([.monthly, .sixMonth, .annual])
+                    .map { Package.string(from: $0)! },
+                defaultPackage: Package.string(from: .sixMonth)!,
+                images: .init(background: "300883_1690710097.jpg"),
+                colors: .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        text1: "#111111",
+                        callToActionBackground: "#06357D",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#D4B5FC",
+                        accent2: "#DFDFDF"
+                    )
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "Get _unlimited_ access",
+                callToAction: "Continue",
+                offerDetails: nil,
+                offerDetailsWithIntroOffer: "Includes {{ intro_duration }} **free** trial",
+                offerName: "{{ subscription_duration }}"
+            ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
     }
