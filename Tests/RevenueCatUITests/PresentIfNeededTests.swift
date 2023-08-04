@@ -26,7 +26,7 @@ class PresentIfNeededTests: TestCase {
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 
-        Text("")
+        try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: Self.purchaseHandler) { _ in
