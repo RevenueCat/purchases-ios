@@ -379,6 +379,26 @@ jobs:
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
 
+  spm-revenuecat-ui-ios-17:
+    <<: *base-job
+    steps:
+      - checkout
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 14 Pro,OS=17.0
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+          
   run-test-ios-17:
     <<: *base-job
     steps:
@@ -961,6 +981,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-17:
+          xcode_version: '15.0.0'
       # Disabled until we drop support for iOS 11
       # - run-test-ios-17:
       #     xcode_version: '15.0.0'
