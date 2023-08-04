@@ -29,12 +29,16 @@ class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
         verify(.day, "day")
     }
 
+    func testWeek() {
+        verify(.week, "wk")
+    }
+
     func testMonth() {
         verify(.month, "mo")
     }
 
     func testYear() {
-        verify(.year, "y")
+        verify(.year, "yr")
     }
 
 }
@@ -48,8 +52,12 @@ class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
         verify(.day, "día")
     }
 
+    func testWeek() {
+        verify(.week, "sem")
+    }
+
     func testMonth() {
-        verify(.month, "mes")
+        verify(.month, "m.")
     }
 
     func testYear() {
@@ -243,7 +251,7 @@ private extension BaseLocalizationTests {
     }
 
     func verify(
-        _ unit: NSCalendar.Unit,
+        _ unit: SubscriptionPeriod.Unit,
         _ expected: String,
         file: StaticString = #file,
         line: UInt = #line
