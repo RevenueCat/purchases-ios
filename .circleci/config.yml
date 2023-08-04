@@ -369,7 +369,7 @@ jobs:
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
-          no_output_timeout: 5m
+          no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 Pro,OS=17.0
       - compress_result_bundle:
