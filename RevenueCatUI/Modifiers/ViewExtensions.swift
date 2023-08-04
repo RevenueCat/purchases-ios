@@ -20,6 +20,13 @@ extension View {
         }
     }
 
+}
+
+// MARK: - Scrolling
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+extension View {
+
     @ViewBuilder
     func scrollable(
         _ axes: Axis.Set = .vertical,
@@ -60,6 +67,12 @@ extension View {
             }
         }
     }
+}
+
+// MARK: - Size changes
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+extension View {
 
     /// Invokes the given closure whethever the view size changes.
     func onSizeChange(_ closure: @escaping (CGSize) -> Void) -> some View {
@@ -74,9 +87,82 @@ extension View {
             .onPreferenceChange(ViewSizePreferenceKey.self, perform: closure)
     }
 
+    /// Invokes the given closure with the dimension specified by `axis` changes whenever it changes.
+    func onSizeChange(
+        _ axis: Axis,
+        _ closure: @escaping (CGFloat) -> Void
+    ) -> some View {
+        self
+            .overlay(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(
+                            key: ViewDimensionPreferenceKey.self,
+                            value: axis == .horizontal
+                                ? geometry.size.width
+                                : geometry.size.height
+                        )
+                }
+            )
+            .onPreferenceChange(ViewDimensionPreferenceKey.self, perform: closure)
+    }
+
 }
 
-// MARK: -
+// MARK: - Rounded corners
+
+#if canImport(UIKit)
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+extension View {
+
+    func roundedCorner(
+        _ radius: CGFloat,
+        corners: UIRectCorner,
+        edgesIgnoringSafeArea edges: Edge.Set = []
+    ) -> some View {
+        self.mask(
+            RoundedCorner(radius: radius, corners: corners)
+                .edgesIgnoringSafeArea(edges)
+        )
+    }
+
+}
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private struct RoundedCorner: Shape {
+
+    var radius: CGFloat
+    var corners: UIRectCorner
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect,
+                                byRoundingCorners: self.corners,
+                                cornerRadii: CGSize(width: self.radius, height: self.radius))
+        return Path(path.cgPath)
+    }
+
+}
+
+#endif
+
+// MARK: - Preference Keys
+
+/// `PreferenceKey` for keeping track of a view dimension.
+private struct ViewDimensionPreferenceKey: PreferenceKey {
+
+    typealias Value = CGFloat
+
+    static var defaultValue: Value = 10
+
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        let newValue = max(value, nextValue())
+        if newValue != value {
+            value = newValue
+        }
+    }
+
+}
 
 /// `PreferenceKey` for keeping track of view size.
 private struct ViewSizePreferenceKey: PreferenceKey {
