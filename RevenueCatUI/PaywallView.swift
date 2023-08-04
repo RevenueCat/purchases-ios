@@ -278,6 +278,7 @@ private extension PaywallTemplate {
         case .onePackageStandard: return "single"
         case .multiPackageBold: return "multi"
         case .onePackageWithFeatures: return "features"
+        case .multiPackageHorizontal: return "horizontal"
         }
     }
 
