@@ -174,15 +174,31 @@ struct Template2View: TemplateViewType {
     private var iconImage: some View {
         Group {
             if let url = self.configuration.iconImageURL {
-                RemoteImage(url: url, aspectRatio: 1, maxWidth: self.iconSize)
+                Group {
+                    if url.pathComponents.contains(PaywallData.appIconPlaceholder) {
+                        if let appIcon = Bundle.main.appIcon {
+                            Image(uiImage: appIcon)
+                                .resizable()
+                                .frame(width: self.appIconSize, height: self.appIconSize)
+                        } else {
+                            self.placeholderIconImage
+                        }
+                    } else {
+                        RemoteImage(url: url, aspectRatio: 1, maxWidth: self.iconSize)
+                    }
+                }
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else {
-                // Placeholder to be able to add a consistent padding
-                Text(verbatim: "")
-                    .hidden()
+                self.placeholderIconImage
             }
         }
         .padding(.top)
+    }
+
+    private var placeholderIconImage: some View {
+        // Placeholder to be able to add a consistent padding
+        Text(verbatim: "")
+            .hidden()
     }
 
     // MARK: -
@@ -193,6 +209,8 @@ struct Template2View: TemplateViewType {
 
     private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
+    @ScaledMetric(relativeTo: .largeTitle)
+    private var appIconSize: CGFloat = 100
     @ScaledMetric(relativeTo: .largeTitle)
     private var iconSize: CGFloat = 140
     private static let cornerRadius: CGFloat = 15
@@ -213,6 +231,20 @@ private extension Template2View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.localization(for: self.selectedPackage)
+    }
+
+}
+
+private extension Bundle {
+
+    var appIcon: UIImage? {
+        if let icons = infoDictionary?["CFBundleIcons"] as? [String: Any],
+           let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
+           let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
+           let lastIcon = iconFiles.last {
+            return .init(named: lastIcon)
+        }
+        return nil
     }
 
 }
