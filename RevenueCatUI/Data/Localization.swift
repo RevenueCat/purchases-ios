@@ -12,16 +12,23 @@ enum Localization {
 
     /// - Returns: an appropriately short abbreviation for the given `unit`.
     static func abbreviatedUnitLocalizedString(
-        for unit: NSCalendar.Unit,
+        for unit: SubscriptionPeriod.Unit,
         locale: Locale = .current
     ) -> String {
-        let (full, abbreviated) = self.unitLocalizedString(for: unit, locale: locale)
+        let (full, brief, abbreviated) = self.unitLocalizedString(for: unit.calendarUnit, locale: locale)
 
-        if full.count <= Self.unitAbbreviationMaximumLength {
-            return full
-        } else {
-            return abbreviated
-        }
+        let options = [
+            full,
+            brief,
+            abbreviated
+        ]
+
+        // Return the first option that matches the preferred length
+        return self.unitAbbreviationLengthPriorities
+            .lazy
+            .compactMap { length in options.first { $0.count == length } }
+            .first
+        ?? options.last!
     }
 
     static func localizedDuration(
@@ -112,7 +119,7 @@ private extension Localization {
     static func unitLocalizedString(
         for unit: NSCalendar.Unit,
         locale: Locale = .current
-    ) -> (full: String, abbreviated: String) {
+    ) -> (full: String, brief: String, abbreviated: String) {
         var calendar: Calendar = .current
         calendar.locale = locale
 
@@ -122,7 +129,7 @@ private extension Localization {
 
         guard let sinceUnits = calendar.date(byAdding: component,
                                              value: value,
-                                             to: date) else { return ("", "") }
+                                             to: date) else { return ("", "", "") }
 
         let formatter = DateComponentsFormatter()
         formatter.calendar = calendar
@@ -138,10 +145,12 @@ private extension Localization {
         }
 
         return (full: result(for: .full),
+                brief: result(for: .brief),
                 abbreviated: result(for: .abbreviated))
     }
 
-    static let unitAbbreviationMaximumLength = 3
+    /// The order in which unit abbreviations are preferred.
+    static let unitAbbreviationLengthPriorities = [ 2, 3 ]
 
     /// For falling back in case language isn't localized.
     static let defaultLocale: Locale = .init(identifier: "en_US")
