@@ -17,10 +17,10 @@ import Foundation
 public enum PaywallTemplate: String {
 
     // swiftlint:disable missing_docs
-    case onePackageStandard = "one_package_standard"
-    case multiPackageBold = "multi_package_bold"
-    case onePackageWithFeatures = "one_package_with_features"
-    case multiPackageHorizontal = "multi_package_horizontal"
+    case template1 = "1"
+    case template2 = "2"
+    case template3 = "3"
+    case template4 = "4"
 
     // swiftlint:enable missing_docs
 
