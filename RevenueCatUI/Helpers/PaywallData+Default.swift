@@ -11,6 +11,7 @@ import SwiftUI
 
 #if canImport(SwiftUI) && swift(>=5.7)
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
@@ -24,7 +25,10 @@ extension PaywallData {
             template: .template2,
             config: .init(
                 packages: packageIdentifiers,
-                images: .init(background: Self.backgroundImage),
+                images: .init(
+                    background: Self.backgroundImage,
+                    icon: Self.appIconPlaceholder
+                ),
                 colors: Self.colors,
                 blurredBackgroundImage: true,
                 displayRestorePurchases: true
@@ -34,36 +38,46 @@ extension PaywallData {
         )
     }
 
+    static let appIconPlaceholder = "revenuecatui_default_paywall_app_icon"
+
 }
 
 private extension PaywallData {
 
-    // swiftlint:disable force_try
-    static let colors: PaywallData.Configuration.ColorInformation = .init(
-        light: .init(
-            background: try! .init(stringRepresentation: "#FFFFFF"),
-            text1: try! .init(stringRepresentation: "#000000"),
-            callToActionBackground: try! .init(stringRepresentation: "#FF8181"),
-            callToActionForeground: try! .init(stringRepresentation: "#FFFFFF"),
-            accent1: try! .init(stringRepresentation: "#BC66FF"),
-            accent2: try! .init(stringRepresentation: "#111111")
-        ),
-        dark: .init(
-            background: try! .init(stringRepresentation: "#000000"),
-            text1: try! .init(stringRepresentation: "#FFFFFF"),
-            callToActionBackground: try! .init(stringRepresentation: "#ACD27A"),
-            callToActionForeground: try! .init(stringRepresentation: "#000000"),
-            accent1: try! .init(stringRepresentation: "#BC66FF"),
-            accent2: try! .init(stringRepresentation: "#EEEEEE")
+    static let colors: PaywallData.Configuration.ColorInformation = {
+        guard #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) else {
+            // Paywalls aren't available prior to iOS 13 anyway,
+            // but `PaywallData` is.
+            // swiftlint:disable:next force_try
+            let defaultColor: PaywallColor = try! .init(stringRepresentation: "#FFFFFF")
+
+            return .init(light: .init(
+                background: defaultColor,
+                text1: defaultColor,
+                callToActionBackground: defaultColor,
+                callToActionForeground: defaultColor
+            ))
+        }
+
+        let background: PaywallColor = .init(light: Color.white.asPaywallColor, dark: Color.black.asPaywallColor)
+
+        return .init(
+            light: .init(
+                background: background,
+                text1: Color.primary.asPaywallColor,
+                callToActionBackground: Color.accentColor.asPaywallColor,
+                callToActionForeground: background,
+                accent1: Color.accentColor.asPaywallColor,
+                accent2: Color.primary.asPaywallColor
+            )
         )
-    )
-    // swiftlint:enable force_try
+    }()
 
     static let localization: PaywallData.LocalizedConfiguration = .init(
         title: "{{ app_name }}",
-        subtitle: "Unlock full access with these subscriptions:",
+        subtitle: nil,
         callToAction: "Continue",
-        offerDetails: "{{ total_price_and_per_month }}.",
+        offerDetails: "{{ total_price_and_per_month }}",
         offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}."
     )
 
