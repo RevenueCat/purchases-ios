@@ -117,7 +117,8 @@ public struct PaywallView: View {
             )
         } else {
             DebugErrorView(
-                "Offering '\(offering.identifier)' has no configured paywall.\n" +
+                "Offering '\(offering.identifier)' has no configured paywall, or it has invalid data.\n" +
+                "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
                 "The displayed paywall contains default configuration.\n" +
                 "This error will be hidden in production.",
                 releaseBehavior: .replacement(
