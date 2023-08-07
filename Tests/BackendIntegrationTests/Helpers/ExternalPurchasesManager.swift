@@ -7,16 +7,15 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CustomPuchasesOrchestrator.swift
+//  ExternalPurchasesManager.swift
 //
 //  Created by Nacho Soto on 7/27/23.
 
 @testable import RevenueCat
 import StoreKit
 
-/// A simplified `PurchasesOrchestrator` used for simulating purchases
-/// made from outside the SDK.
-final class CustomPurchasesOrchestrator: NSObject {
+/// Used for simulating purchases made from outside the SDK.
+final class ExternalPurchasesManager: NSObject {
 
     typealias SK1PurchaseCompletedResult = SK1Transaction
 
@@ -81,7 +80,7 @@ final class CustomPurchasesOrchestrator: NSObject {
 
 }
 
-extension CustomPurchasesOrchestrator {
+extension ExternalPurchasesManager {
 
     func purchase(sk1Product product: SK1Product) async throws -> SK1PurchaseCompletedResult {
         return try await withCheckedThrowingContinuation { continuation in
@@ -97,7 +96,7 @@ extension CustomPurchasesOrchestrator {
 
 }
 
-extension CustomPurchasesOrchestrator: SKPaymentTransactionObserver {
+extension ExternalPurchasesManager: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         for transaction in transactions {

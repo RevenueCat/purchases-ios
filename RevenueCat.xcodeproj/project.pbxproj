@@ -273,8 +273,8 @@
 		4FCEEA5E2A379B80002C2112 /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */; };
 		4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */; };
 		4FDA13842A33D9BD00C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */; };
-		4FDF10E72A725EA6004F3680 /* CustomPuchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* CustomPuchasesOrchestrator.swift */; };
-		4FDF10E82A725EA6004F3680 /* CustomPuchasesOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* CustomPuchasesOrchestrator.swift */; };
+		4FDF10E72A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
+		4FDF10E82A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
 		4FDF10EA2A726269004F3680 /* ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E92A726269004F3680 /* ObserverModeManager.swift */; };
 		4FDF10EB2A726269004F3680 /* ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E92A726269004F3680 /* ObserverModeManager.swift */; };
 		4FDF10ED2A726291004F3680 /* SK1ProductFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10EC2A726291004F3680 /* SK1ProductFetcher.swift */; };
@@ -994,7 +994,7 @@
 		4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshot.swift; sourceTree = "<group>"; };
 		4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcherTests.swift; sourceTree = "<group>"; };
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		4FDF10E62A725EA6004F3680 /* CustomPuchasesOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPuchasesOrchestrator.swift; sourceTree = "<group>"; };
+		4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesManager.swift; sourceTree = "<group>"; };
 		4FDF10E92A726269004F3680 /* ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
 		4FDF10EC2A726291004F3680 /* SK1ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1ProductFetcher.swift; sourceTree = "<group>"; };
 		4FDF10EF2A7262D8004F3680 /* SK2ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2ProductFetcher.swift; sourceTree = "<group>"; };
@@ -2220,7 +2220,7 @@
 		4F90AFC92A39152A0047E63F /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
-				4FDF10E62A725EA6004F3680 /* CustomPuchasesOrchestrator.swift */,
+				4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */,
 				4FDF10E92A726269004F3680 /* ObserverModeManager.swift */,
 				4FDF10EC2A726291004F3680 /* SK1ProductFetcher.swift */,
 				4FDF10EF2A7262D8004F3680 /* SK2ProductFetcher.swift */,
@@ -3670,7 +3670,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4FDF10E72A725EA6004F3680 /* CustomPuchasesOrchestrator.swift in Sources */,
+				4FDF10E72A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */,
 				4F82C2682A3CD58200EC98AF /* Matchers.swift in Sources */,
 				4FB3FE132A38CB1F004789C6 /* SignatureVerificationIntegrationTests.swift in Sources */,
 				57488AFF29CA58050000EE7E /* LoadShedderIntegrationTests.swift in Sources */,
@@ -3731,7 +3731,7 @@
 				4F83F6BA2A5DB807003F90A5 /* CurrentTestCaseTracker.swift in Sources */,
 				4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */,
 				4F6BEE1F2A27B02400CD9322 /* CustomEntitlementsComputationIntegrationTests.swift in Sources */,
-				4FDF10E82A725EA6004F3680 /* CustomPuchasesOrchestrator.swift in Sources */,
+				4FDF10E82A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */,
 				4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */,
 				4F7C37E52A27EFF7001E17D3 /* BaseStoreKitIntegrationTests.swift in Sources */,
 				4F83F6B92A5DB805003F90A5 /* TestCase.swift in Sources */,

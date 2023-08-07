@@ -21,12 +21,12 @@ final class ObserverModeManager: ObservableObject {
 
     private let productFetcherSK1: SK1ProductFetcher
     private let productFetcherSK2: SK2ProductFetcher
-    private let purchasesOrchestrator: CustomPurchasesOrchestrator
+    private let purchasesManager: ExternalPurchasesManager
 
     init() {
         self.productFetcherSK1 = .init()
         self.productFetcherSK2 = .init()
-        self.purchasesOrchestrator = .init(finishTransactions: true)
+        self.purchasesManager = .init(finishTransactions: true)
     }
 
     @discardableResult
@@ -36,7 +36,7 @@ final class ObserverModeManager: ObservableObject {
         let products = try await self.productFetcherSK1.products(with: [productIdentifier])
         let product = try XCTUnwrap(products.onlyElement)
 
-        return try await self.purchasesOrchestrator.purchase(sk1Product: product)
+        return try await self.purchasesManager.purchase(sk1Product: product)
     }
 
     /// Purchases a product directly with StoreKit.
@@ -48,6 +48,6 @@ final class ObserverModeManager: ObservableObject {
         let products = try await StoreKit.Product.products(for: [productIdentifier])
         let product = try XCTUnwrap(products.onlyElement)
 
-        return try await self.purchasesOrchestrator.purchase(sk2Product: product)
+        return try await self.purchasesManager.purchase(sk2Product: product)
     }
 }
