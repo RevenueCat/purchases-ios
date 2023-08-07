@@ -43,7 +43,7 @@
                 }
             ],
             "paywall": {
-                "template_name": "one_package_standard",
+                "template_name": "1",
                 "localized_strings": {
                     "en_US": {
                         "title": "Paywall",

@@ -1,5 +1,5 @@
 //
-//  MultiPackageHorizontalTemplate.swift
+//  Template4View.swift
 //  
 //
 //  Created by Nacho Soto on 8/1/23.
@@ -9,7 +9,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-struct MultiPackageHorizontalTemplate: TemplateViewType {
+struct Template4View: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
     private var localization: [Package: ProcessedLocalizedConfiguration]
@@ -207,7 +207,7 @@ private struct PackageButton: View {
         self.buttonTitle(self.package)
             .frame(width: self.packageWidth)
             .background { // Stroke
-                RoundedRectangle(cornerRadius: MultiPackageHorizontalTemplate.cornerRadius)
+                RoundedRectangle(cornerRadius: Template4View.cornerRadius)
                     .stroke(
                         self.selected
                         ? self.configuration.colors.accent1Color
@@ -219,7 +219,7 @@ private struct PackageButton: View {
                     .padding(Self.borderWidth)
             }
             .background { // Background
-                RoundedRectangle(cornerRadius: MultiPackageHorizontalTemplate.cornerRadius)
+                RoundedRectangle(cornerRadius: Template4View.cornerRadius)
                     .foregroundStyle(self.configuration.colors.backgroundColor)
                     .frame(width: self.packageWidth)
                     .padding(Self.borderWidth)
@@ -280,7 +280,7 @@ private struct PackageButton: View {
 
     private func discountOverlay(_ discount: Double) -> some View {
         ZStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: MultiPackageHorizontalTemplate.cornerRadius)
+            RoundedRectangle(cornerRadius: Template4View.cornerRadius)
                 .foregroundStyle(
                     self.selected
                     ? self.configuration.colors.accent1Color
@@ -310,7 +310,7 @@ private struct PackageButton: View {
     private static let borderWidth: CGFloat = 2
 
     private var discountOverlayHeight: CGFloat {
-        return self.discountLabelHeight + MultiPackageHorizontalTemplate.verticalPadding
+        return self.discountLabelHeight + Template4View.verticalPadding
     }
 
 }
@@ -318,7 +318,7 @@ private struct PackageButton: View {
 // MARK: - Extensions
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension MultiPackageHorizontalTemplate {
+private extension Template4View {
 
     func localization(for package: Package) -> ProcessedLocalizedConfiguration {
         // Because of how packages are constructed this is known to exist
@@ -339,11 +339,11 @@ private extension MultiPackageHorizontalTemplate {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(macCatalyst, unavailable)
-struct MultiPackageHorizontalTemplate_Previews: PreviewProvider {
+struct Template4View_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: TestData.offeringWithMultiPackageHorizontalPaywall) {
-            MultiPackageHorizontalTemplate($0)
+            Template4View($0)
         }
     }
 
