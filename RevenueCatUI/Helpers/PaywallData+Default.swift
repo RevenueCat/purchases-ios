@@ -64,7 +64,7 @@ private extension PaywallData {
         subtitle: "Unlock full access with these subscriptions:",
         callToAction: "Continue",
         offerDetails: "{{ total_price_and_per_month }}.",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ total_price_and_per_month }}."
+        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}."
     )
 
     static let backgroundImage = "background.jpg"
