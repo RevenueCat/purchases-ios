@@ -115,14 +115,14 @@ extension PaywallTemplate {
 
     var name: String {
         switch self {
-        case .onePackageStandard:
-            return "One package standard"
-        case .multiPackageBold:
-            return "Multi package bold"
-        case .onePackageWithFeatures:
-            return "One package with features"
-        case .multiPackageHorizontal:
-            return "Multi package horizontal"
+        case .template1:
+            return "Minimalist"
+        case .template2:
+            return "Bold packages"
+        case .template3:
+            return "Feature list"
+        case .template4:
+            return "Horizontal packages"
         }
     }
 
