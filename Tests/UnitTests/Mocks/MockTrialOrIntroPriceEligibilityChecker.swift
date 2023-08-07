@@ -34,11 +34,11 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount = 0
-    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: [String]?
-    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList = [Set<String>]()
+    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters: Set<String>?
+    var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList: [Set<String>] = []
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
-    override func checkEligibility(productIdentifiers: [String],
+    override func checkEligibility(productIdentifiers: Set<String>,
                                    completion: @escaping ReceiveIntroEligibilityBlock) {
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = true
         invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount += 1
@@ -49,11 +49,11 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
     var invokedSk1checkTrialOrIntroPriceEligibility = false
     var invokedSk1checkTrialOrIntroPriceEligibilityCount = 0
-    var invokedSk1checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: [String], Void)?
-    var invokedSk1checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: [String], Void)]()
+    var invokedSk1checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: Set<String>, Void)?
+    var invokedSk1checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: Set<String>, Void)]()
     var stubbedSk1checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
-    override func sk1CheckEligibility(_ productIdentifiers: [String],
+    override func sk1CheckEligibility(_ productIdentifiers: Set<String>,
                                       completion: @escaping ReceiveIntroEligibilityBlock) {
         invokedSk1checkTrialOrIntroPriceEligibility = true
         invokedSk1checkTrialOrIntroPriceEligibilityCount += 1
@@ -64,12 +64,12 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
 
     var invokedSk2checkTrialOrIntroPriceEligibility = false
     var invokedSk2checkTrialOrIntroPriceEligibilityCount = 0
-    var invokedSk2checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: [String], Void)?
-    var invokedSk2checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: [String], Void)]()
+    var invokedSk2checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: Set<String>, Void)?
+    var invokedSk2checkTrialOrIntroPriceEligibilityParametersList = [(productIdentifiers: Set<String>, Void)]()
     var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2CheckEligibility(_ productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    override func sk2CheckEligibility(_ productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())

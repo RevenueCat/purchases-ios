@@ -17,9 +17,9 @@ import StoreKit
 typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 
 /// A type that can determine `IntroEligibility` for products.
-protocol TrialOrIntroPriceEligibilityCheckerType {
+protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
-    func checkEligibility(productIdentifiers: [String], completion: @escaping ReceiveIntroEligibilityBlock)
+    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock)
 }
 
 class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
@@ -52,7 +52,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.productsManager = productsManager
     }
 
-    func checkEligibility(productIdentifiers: [String],
+    func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !productIdentifiers.isEmpty else {
             Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
@@ -78,7 +78,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
     }
 
-    func sk1CheckEligibility(_ productIdentifiers: [String],
+    func sk1CheckEligibility(_ productIdentifiers: Set<String>,
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         // We don't want to refresh receipts because it will likely prompt the user for their credentials,
         // and intro eligibility is triggered programmatically.
@@ -97,13 +97,12 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckEligibility(_ productIdentifiers: [String]) async throws -> [String: IntroEligibility] {
-        let identifiers = Set(productIdentifiers)
-        var introDictionary: [String: IntroEligibility] = identifiers.dictionaryWithValues { _ in
+    func sk2CheckEligibility(_ productIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
+        var introDictionary: [String: IntroEligibility] = productIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
 
-        let products = try await self.productsManager.sk2Products(withIdentifiers: identifiers)
+        let products = try await self.productsManager.sk2Products(withIdentifiers: productIdentifiers)
         for sk2StoreProduct in products {
             let sk2Product = sk2StoreProduct.underlyingSK2Product
 
@@ -145,11 +144,11 @@ private extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
     func sk1CheckEligibility(with receiptData: Data,
-                             productIdentifiers: [String],
+                             productIdentifiers: Set<String>,
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         introEligibilityCalculator
             .checkEligibility(with: receiptData,
-                              productIdentifiers: Set(productIdentifiers)) { receivedEligibility, error in
+                              productIdentifiers: productIdentifiers) { receivedEligibility, error in
                 if let error = error {
                     Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
                     self.getIntroEligibility(with: receiptData,
@@ -167,7 +166,7 @@ private extension TrialOrIntroPriceEligibilityChecker {
     }
 
     func getIntroEligibility(with receiptData: Data,
-                             productIdentifiers: [String],
+                             productIdentifiers: Set<String>,
                              completion: @escaping ReceiveIntroEligibilityBlock) {
         if #available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *) {
             // Products that don't have an introductory discount don't need to be sent to the backend
@@ -197,9 +196,9 @@ private extension TrialOrIntroPriceEligibilityChecker {
 extension TrialOrIntroPriceEligibilityChecker {
 
     @available(iOS 11.2, macOS 10.13.2, macCatalyst 13.0, tvOS 11.2, watchOS 6.2, *)
-    func productsWithKnownIntroEligibilityStatus(productIdentifiers: [String],
+    func productsWithKnownIntroEligibilityStatus(productIdentifiers: Set<String>,
                                                  completion: @escaping ReceiveIntroEligibilityBlock) {
-        self.productsManager.products(withIdentifiers: Set(productIdentifiers)) { products in
+        self.productsManager.products(withIdentifiers: productIdentifiers) { products in
             let eligibility: [(String, IntroEligibility)] = Array(products.value ?? [])
                 .filter { $0.introductoryDiscount == nil }
                 .map { ($0.productIdentifier, IntroEligibility(eligibilityStatus: .noIntroOfferExists)) }
@@ -210,7 +209,7 @@ extension TrialOrIntroPriceEligibilityChecker {
     }
 
     func getIntroEligibilityFromBackend(with receiptData: Data,
-                                        productIdentifiers: [String],
+                                        productIdentifiers: Set<String>,
                                         completion: @escaping ReceiveIntroEligibilityBlock) {
         if productIdentifiers.isEmpty {
             completion([:])
@@ -223,7 +222,7 @@ extension TrialOrIntroPriceEligibilityChecker {
             let result: [String: IntroEligibility] = {
                 if let error = error {
                     Logger.error(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
-                    return Set(productIdentifiers)
+                    return productIdentifiers
                         .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
                 } else {
                     return backendResult

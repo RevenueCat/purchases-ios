@@ -884,8 +884,8 @@ public extension Purchases {
     @objc(checkTrialOrIntroDiscountEligibility:completion:)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String],
                                               completion: @escaping ([String: IntroEligibility]) -> Void) {
-        trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIdentifiers,
-                                                             completion: completion)
+        self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: Set(productIdentifiers),
+                                                                  completion: completion)
     }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)

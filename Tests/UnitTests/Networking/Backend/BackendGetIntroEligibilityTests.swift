@@ -43,9 +43,9 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
                             response: ["producta": true, "productb": false, "productd": NSNull()])
         )
 
-        let products = ["producta", "productb", "productc", "productd"]
+        let products: Set<String> = ["producta", "productb", "productc", "productd"]
 
-        let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
+        let result: [String: IntroEligibility]? = waitUntilValue { completed in
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data(1...3),
                                                productIdentifiers: products,
@@ -57,11 +57,12 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
         expect(self.httpClient.calls).to(haveCount(1))
 
-        expect(eligibility?.keys).to(contain(products))
-        expect(eligibility?["producta"]?.status) == .eligible
-        expect(eligibility?["productb"]?.status) == .ineligible
-        expect(eligibility?["productc"]?.status) == .unknown
-        expect(eligibility?["productd"]?.status) == .unknown
+        let eligibility = try XCTUnwrap(result)
+        expect(Set(eligibility.keys)) == products
+        expect(eligibility["producta"]?.status) == .eligible
+        expect(eligibility["productb"]?.status) == .ineligible
+        expect(eligibility["productc"]?.status) == .unknown
+        expect(eligibility["productd"]?.status) == .unknown
     }
 
     func testEligibilityUnknownIfError() {
@@ -71,7 +72,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         )
 
         let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
-            let products = ["producta", "productb", "productc"]
+            let products: Set<String> = ["producta", "productb", "productc"]
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data.init(1...2),
                                                productIdentifiers: products,
@@ -93,7 +94,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         )
 
         var eligibility: [String: IntroEligibility]?
-        let products = ["producta"]
+        let products: Set<String> = ["producta"]
         var eventualError: BackendError?
         self.backend.offerings.getIntroEligibility(appUserID: "",
                                                    receiptData: Data.init(1...2),
@@ -130,7 +131,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
             response: .init(error: error)
         )
 
-        let products = ["producta", "productb", "productc"]
+        let products: Set<String> = ["producta", "productb", "productc"]
 
         let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
 
@@ -149,7 +150,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     }
 
     func testEligibilityUnknownIfNoReceipt() {
-        let products = ["producta", "productb", "productc"]
+        let products: Set<String> = ["producta", "productb", "productc"]
         let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
             self.offerings.getIntroEligibility(appUserID: Self.userID,
                                                receiptData: Data(),

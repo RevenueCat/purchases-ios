@@ -49,7 +49,7 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
 extension CachingTrialOrIntroPriceEligibilityChecker {
 
     func checkEligibility(
-        productIdentifiers: [String],
+        productIdentifiers: Set<String>,
         completion: @escaping ReceiveIntroEligibilityBlock
     ) {
         guard !productIdentifiers.isEmpty else {
@@ -73,7 +73,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         if missingProducts.isEmpty {
             completion(cached)
         } else {
-            self.checker.checkEligibility(productIdentifiers: Array(missingProducts)) { result in
+            self.checker.checkEligibility(productIdentifiers: missingProducts) { result in
                 let productsToCache = result.filter { $0.value.shouldCache }
 
                 Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
@@ -85,6 +85,10 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension CachingTrialOrIntroPriceEligibilityChecker: @unchecked Sendable {}
 
 // MARK: - Private
 

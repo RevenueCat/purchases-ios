@@ -91,7 +91,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testCachesResultForMultipleProducts() async {
-        let productIDs = [
+        let productIDs: Set<String> = [
             Self.productID1,
             Self.productID2
         ]
@@ -109,12 +109,11 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(result) == expected
 
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters)
-            .to(contain(productIDs))
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == productIDs
     }
 
     func testOnlyCachesEligibilitiesThatDidNotFail() async {
-        let productIDs = [
+        let productIDs: Set<String> = [
             Self.productID1,
             Self.productID2
         ]
@@ -140,11 +139,11 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     }
 
     func testFetchesOnlyMissingProductsFromCache() async {
-        let cachedProductIDs = [
+        let cachedProductIDs: Set<String> = [
             Self.productID1,
             Self.productID2
         ]
-        let productIDs = [
+        let productIDs: Set<String> = [
             Self.productID1,
             Self.productID2,
             Self.productID3
@@ -226,7 +225,7 @@ private extension CachingTrialOrIntroPriceEligibilityCheckerTests {
 @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 private extension TrialOrIntroPriceEligibilityCheckerType {
 
-    func checkEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
         return await Async.call { completion in
             self.checkEligibility(productIdentifiers: productIdentifiers) { result in
                 completion(result)
