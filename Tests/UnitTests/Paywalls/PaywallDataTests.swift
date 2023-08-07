@@ -29,7 +29,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testSample1() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
-        expect(paywall.template) == .onePackageStandard
+        expect(paywall.template) == .template1
         expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]

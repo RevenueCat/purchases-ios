@@ -24,11 +24,11 @@
       "paywall" : {
         "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
-          "blurred_background_image" : true,
+          "blurred_background_image" : false,
           "colors" : {
             "light" : {
               "accent1" : "#ec64e5",
-              "accent2" : "#d9d9d9",
+              "accent2" : "#000000",
               "background" : "#ffffff",
               "call_to_action_background" : "#45c186",
               "call_to_action_foreground" : "#ffffff",
@@ -38,8 +38,8 @@
           "default_package" : "$rc_monthly",
           "display_restore_purchases" : true,
           "images" : {
-            "background" : "300883_1690710097.jpg",
-            "icon" : "300883_1690710150.jpg"
+            "background" : "300883_1691437592.jpg",
+            "icon" : "300883_1691437591.jpg"
           },
           "packages" : [
             "$rc_monthly",
@@ -57,13 +57,13 @@
 
             ],
             "offer_details" : "{{ total_price_and_per_month }}",
-            "offer_details_with_intro_offer" : "{{ total_price_and_per_month }} after {{ sub_offer_duration }} trial",
-            "offer_name" : "{{ period }}",
-            "subtitle" : "Gert access to all our educational content trusted by thousands of parents",
+            "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
+            "offer_name" : "{{ sub_period }}",
+            "subtitle" : "Get access to all our educational content trusted by thousands of parents",
             "title" : "Ignite your child's curiosity"
           }
         },
-        "template_name" : "multi_package_bold"
+        "template_name" : "2"
       }
     },
     {
