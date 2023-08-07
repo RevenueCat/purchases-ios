@@ -56,7 +56,7 @@ internal enum TestData {
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: Self.intro(14, .day)
+        introductoryDiscount: Self.intro(14, .day, priceString: "$1.99")
     )
     static let lifetimeProduct = TestStoreProduct(
         localizedTitle: "Lifetime",
@@ -251,9 +251,10 @@ internal enum TestData {
             localization: .init(
                 title: "How your **free** trial works",
                 callToAction: "Start",
-                callToActionWithIntroOffer: "Start your {{ intro_duration }} free",
-                offerDetails: "Only {{ price }} per {{ period }}",
-                offerDetailsWithIntroOffer: "First {{ intro_duration }} free,\nthen {{ total_price_and_per_month }}",
+                callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free",
+                offerDetails: "Only {{ price }} per {{ sub_period }}",
+                offerDetailsWithIntroOffer: "First {{ sub_offer_duration }} free,\n" +
+                "then {{ total_price_and_per_month }}",
                 features: [
                     .init(title: "Today",
                           content: "Full access to 1000+ workouts plus _free_ meal plan worth {{ price }}.",
@@ -303,8 +304,8 @@ internal enum TestData {
                 title: "Get _unlimited_ access",
                 callToAction: "Continue",
                 offerDetails: "",
-                offerDetailsWithIntroOffer: "Includes {{ intro_duration }} **free** trial",
-                offerName: "{{ subscription_duration }}"
+                offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
+                offerName: "{{ sub_duration }}"
             ),
             assetBaseURL: Bundle.module.resourceURL ?? Bundle.module.bundleURL
         ),
@@ -373,18 +374,19 @@ internal enum TestData {
         title: "Ignite your child's *curiosity*",
         subtitle: "Get access to all our educational content trusted by **thousands** of parents.",
         callToAction: "Purchase for {{ price }}",
-        callToActionWithIntroOffer: "Purchase for {{ price_per_month }} per month",
-        offerDetails: "{{ price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+        callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
+        offerDetails: "{{ sub_price_per_month }} per month",
+        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+        "then {{ sub_price_per_month }} per month",
         features: []
     )
     static let localization2: PaywallData.LocalizedConfiguration = .init(
         title: "Call to action for _better_ conversion.",
         subtitle: "Lorem ipsum is simply dummy text of the ~printing and~ typesetting industry.",
-        callToAction: "Subscribe for {{ price_per_month }}/mo",
+        callToAction: "Subscribe for {{ sub_price_per_month }}/mo",
         offerDetails: "{{ total_price_and_per_month }}",
-        offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
-        offerName: "{{ period }}",
+        offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ sub_offer_duration }} trial",
+        offerName: "{{ sub_period }}",
         features: []
     )
     static let paywallHeaderImageName = "9a17e0a7_1689854430..jpeg"
@@ -398,11 +400,15 @@ internal enum TestData {
 
     private static let offeringIdentifier = "offering"
 
-    private static func intro(_ duration: Int, _ unit: SubscriptionPeriod.Unit) -> TestStoreProductDiscount {
+    private static func intro(
+        _ duration: Int,
+        _ unit: SubscriptionPeriod.Unit,
+        priceString: String = "$0.00"
+    ) -> TestStoreProductDiscount {
         return .init(
             identifier: "intro",
             price: 0,
-            localizedPriceString: "$0.00",
+            localizedPriceString: priceString,
             paymentMode: .freeTrial,
             subscriptionPeriod: .init(value: duration, unit: .day),
             numberOfPeriods: 1,
