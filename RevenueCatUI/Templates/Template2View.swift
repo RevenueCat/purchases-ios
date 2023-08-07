@@ -123,12 +123,13 @@ struct Template2View: TemplateViewType {
             }
         }
         .background {
-            RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
-                .foregroundColor(
-                    selected
-                    ? self.selectedBackgroundColor
-                    : .clear
-                )
+            if selected {
+                RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                    .foregroundColor(self.selectedBackgroundColor)
+            } else {
+                RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                    .foregroundStyle(.thinMaterial)
+            }
         }
     }
 
