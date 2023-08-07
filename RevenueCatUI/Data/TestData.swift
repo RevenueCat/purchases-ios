@@ -240,10 +240,10 @@ internal enum TestData {
                     light: .init(
                         background: "#272727",
                         text1: "#FFFFFF",
+                        text2: "#B7B7B7",
                         callToActionBackground: "#FFFFFF",
                         callToActionForeground: "#000000",
-                        accent1: "#F4E971",
-                        accent2: "#B7B7B7"
+                        accent1: "#F4E971"
                     )
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
