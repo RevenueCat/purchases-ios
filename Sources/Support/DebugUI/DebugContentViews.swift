@@ -41,6 +41,9 @@ struct DebugSwiftUIRootView: View {
 
                     case let .package(package):
                         DebugPackageView(package: package)
+
+                    case let .paywall(paywall):
+                        DebugPaywallJSONView(paywall: paywall)
                     }
                 }
                 .background(
@@ -73,6 +76,7 @@ private enum DebugViewPath: Hashable {
 
     case offering(Offering)
     case package(Package)
+    case paywall(PaywallData)
 
 }
 
@@ -242,6 +246,14 @@ private struct DebugOfferingView: View {
                 }
             }
 
+            if let paywall = self.offering.paywall {
+                Section("RevenueCatUI paywall") {
+                    NavigationLink(value: DebugViewPath.paywall(paywall)) {
+                        Text("View data")
+                    }
+                }
+            }
+
             if #available(iOS 17.0, macOS 14.0, tvOS 17.0, *) {
                 Section("Paywalls") {
                     Button {
@@ -376,11 +388,58 @@ private struct DebugPackageView: View {
 }
 
 @available(iOS 16.0, macOS 13.0, *)
+private struct DebugPaywallJSONView: View {
+
+    let paywall: PaywallData
+
+    var body: some View {
+        ScrollView(.vertical) {
+            Text(self.json)
+                .multilineTextAlignment(.leading)
+                .font(.caption)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationTitle("RevenueCatUI Paywall")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                ShareLink(item: self.paywall, preview: .init("Paywall")) {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+    }
+
+    private var json: String {
+        return (try? self.paywall.prettyPrintedJSON) ?? ""
+    }
+
+}
+
+// MARK: - Transferable
+
+@available(iOS 16.0, macOS 13.0, *)
 extension DebugViewModel.Configuration: Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
         return CodableRepresentation(
             for: DebugViewModel.Configuration.self,
+            contentType: .plainText,
+            encoder: JSONEncoder.prettyPrinted,
+            decoder: JSONDecoder.default
+        )
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, *)
+extension PaywallData: Transferable {
+
+    // swiftlint:disable:next missing_docs
+    public static var transferRepresentation: some TransferRepresentation {
+        return CodableRepresentation(
+            for: PaywallData.self,
             contentType: .plainText,
             encoder: JSONEncoder.prettyPrinted,
             decoder: JSONDecoder.default
