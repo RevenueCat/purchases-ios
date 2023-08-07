@@ -17,12 +17,12 @@ class GetIntroEligibilityOperation: NetworkOperation {
 
     private let configuration: UserSpecificConfiguration
     private let receiptData: Data
-    private let productIdentifiers: [String]
+    private let productIdentifiers: Set<String>
     private let responseHandler: OfferingsAPI.IntroEligibilityResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          receiptData: Data,
-         productIdentifiers: [String],
+         productIdentifiers: Set<String>,
          responseHandler: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
         self.configuration = configuration
         self.receiptData = receiptData
@@ -49,7 +49,7 @@ private extension GetIntroEligibilityOperation {
         }
 
         // Requested products with unknown eligibilities
-        let unknownEligibilities: [String: IntroEligibility] = Set(self.productIdentifiers)
+        let unknownEligibilities: [String: IntroEligibility] = self.productIdentifiers
             .dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
 
         guard !self.receiptData.isEmpty else {
@@ -88,12 +88,12 @@ private extension GetIntroEligibilityOperation {
 
     func handleIntroEligibility(
         result: VerifiedHTTPResponse<GetIntroEligibilityResponse>.Result,
-        productIdentifiers: [String],
+        productIdentifiers: Set<String>,
         completion: OfferingsAPI.IntroEligibilityResponseHandler
     ) {
         let eligibilities = result.value?.body.eligibilityByProductIdentifier
 
-        let result: [String: IntroEligibility] = Set(productIdentifiers)
+        let result: [String: IntroEligibility] = productIdentifiers
             .dictionaryWithValues { productID in eligibilities?[productID] ?? .unknown }
             .mapValues(IntroEligibility.init)
 
@@ -108,6 +108,22 @@ private extension GetIntroEligibilityOperation {
 
         let productIdentifiers: [String]
         let fetchToken: String
+
+        init(productIdentifiers: Set<String>, fetchToken: String) {
+            let identifiers: [String]
+
+            #if DEBUG
+            identifiers = ProcessInfo.isRunningUnitTests
+                // Sort for snapshot tests
+                ? Array(productIdentifiers.sorted())
+                : Array(productIdentifiers)
+            #else
+            identifiers = Array(productIdentifiers)
+            #endif
+
+            self.productIdentifiers = identifiers
+            self.fetchToken = fetchToken
+        }
 
     }
 

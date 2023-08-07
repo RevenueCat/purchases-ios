@@ -94,7 +94,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
                         ("com.revenuecat.annual_39.99.2_week_intro", MockSKProductDiscount()),
                         ("lifetime", MockSKProductDiscount())
         ]
-        let productIdentifiers = productIdentifiersAndDiscounts.map({$0.0})
+        let productIdentifiers = Set(productIdentifiersAndDiscounts.map(\.0))
         let storeProducts = productIdentifiersAndDiscounts.map { (productIdentifier, discount) -> StoreProduct in
             let sk1Product = MockSK1Product(mockProductIdentifier: productIdentifier)
             sk1Product.mockDiscount = discount

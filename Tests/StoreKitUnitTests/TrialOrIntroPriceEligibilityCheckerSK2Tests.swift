@@ -61,10 +61,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testSK2CheckEligibilityAsync() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let products = ["product_id",
-                        "com.revenuecat.monthly_4.99.1_week_intro",
-                        "com.revenuecat.annual_39.99.2_week_intro",
-                        "lifetime"]
+        let products: Set<String> = ["product_id",
+                                     "com.revenuecat.monthly_4.99.1_week_intro",
+                                     "com.revenuecat.annual_39.99.2_week_intro",
+                                     "lifetime"]
         let expected = ["product_id": IntroEligibilityStatus.unknown,
                         "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.eligible,
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
@@ -84,10 +84,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityNoAsync() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let products = ["product_id",
-                        "com.revenuecat.monthly_4.99.1_week_intro",
-                        "com.revenuecat.annual_39.99.2_week_intro",
-                        "lifetime"]
+        let products: Set<String> = ["product_id",
+                                     "com.revenuecat.monthly_4.99.1_week_intro",
+                                     "com.revenuecat.annual_39.99.2_week_intro",
+                                     "lifetime"]
         let expected = ["product_id": IntroEligibilityStatus.unknown,
                         "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.eligible,
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.eligible,
@@ -113,10 +113,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     func testCheckEligibilityNoAsyncWithFailure() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let products = ["product_id",
-                        "com.revenuecat.monthly_4.99.1_week_intro",
-                        "com.revenuecat.annual_39.99.2_week_intro",
-                        "lifetime"]
+        let products: Set<String> = ["product_id",
+                                     "com.revenuecat.monthly_4.99.1_week_intro",
+                                     "com.revenuecat.annual_39.99.2_week_intro",
+                                     "lifetime"]
         let expected = ["product_id": IntroEligibilityStatus.unknown,
                         "com.revenuecat.monthly_4.99.1_week_intro": IntroEligibilityStatus.unknown,
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.unknown,

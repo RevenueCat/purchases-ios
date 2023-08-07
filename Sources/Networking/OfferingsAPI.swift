@@ -49,7 +49,7 @@ class OfferingsAPI {
 
     func getIntroEligibility(appUserID: String,
                              receiptData: Data,
-                             productIdentifiers: [String],
+                             productIdentifiers: Set<String>,
                              completion: @escaping IntroEligibilityResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)

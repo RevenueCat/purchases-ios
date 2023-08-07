@@ -19,16 +19,16 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetIntroEligibility = false
     var invokedGetIntroEligibilityCount = 0
-    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: [String]?, completion: OfferingsAPI.IntroEligibilityResponseHandler?)?
+    var invokedGetIntroEligibilityParameters: (appUserID: String?, receiptData: Data?, productIdentifiers: Set<String>?, completion: OfferingsAPI.IntroEligibilityResponseHandler?)?
     var invokedGetIntroEligibilityParametersList = [(appUserID: String?,
                                                      receiptData: Data?,
-                                                     productIdentifiers: [String]?,
+                                                     productIdentifiers: Set<String>?,
                                                      completion: OfferingsAPI.IntroEligibilityResponseHandler?)]()
     var stubbedGetIntroEligibilityCompletionResult: (eligibilities: [String: IntroEligibility], error: BackendError?)?
 
     override func getIntroEligibility(appUserID: String,
                                       receiptData: Data,
-                                      productIdentifiers: [String],
+                                      productIdentifiers: Set<String>,
                                       completion: @escaping IntroEligibilityResponseHandler) {
         self.invokedGetIntroEligibility = true
         self.invokedGetIntroEligibilityCount += 1

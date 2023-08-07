@@ -312,11 +312,11 @@ extension BasePurchasesTests {
 
     final class MockOfferingsAPI: OfferingsAPI {
 
-        var postedProductIdentifiers: [String]?
+        var postedProductIdentifiers: Set<String>?
 
         override func getIntroEligibility(appUserID: String,
                                           receiptData: Data,
-                                          productIdentifiers: [String],
+                                          productIdentifiers: Set<String>,
                                           completion: @escaping OfferingsAPI.IntroEligibilityResponseHandler) {
             self.postedProductIdentifiers = productIdentifiers
 
