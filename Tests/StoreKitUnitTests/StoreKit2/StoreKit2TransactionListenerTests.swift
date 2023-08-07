@@ -43,15 +43,16 @@ class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 
-    func testStopsListeningToTransactions() throws {
+    func testStopsListeningToTransactions() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         var handle: Task<Void, Never>?
 
-        expect(self.listener!.taskHandle).to(beNil())
+        handle = await self.listener.taskHandle
+        expect(handle).to(beNil())
 
-        self.listener!.listenForTransactions()
-        handle = self.listener!.taskHandle
+        await self.listener.listenForTransactions()
+        handle = await self.listener.taskHandle
 
         expect(handle).toNot(beNil())
         expect(handle?.isCancelled) == false
@@ -113,7 +114,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     }
 
     func testPurchasingDoesNotFinishTransaction() async throws {
-        self.listener.listenForTransactions()
+        await self.listener.listenForTransactions()
 
         await self.verifyNoUnfinishedTransactions()
 
@@ -181,33 +182,37 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionListenerBaseTests {
 
     func testPurchasingInTheAppDoesNotNotifyDelegate() async throws {
-        self.listener.listenForTransactions()
+        await self.listener.listenForTransactions()
 
         try await self.simulateAnyPurchase(finishTransaction: true)
         try await self.verifyTransactionsWereNotUpdated()
     }
 
-    func testPurchasingOutsideTheAppNotifiesDelegate() throws {
-        self.listener.listenForTransactions()
+    func testPurchasingOutsideTheAppNotifiesDelegate() async throws {
+        await self.listener.listenForTransactions()
 
         try self.testSession.buyProduct(productIdentifier: Self.productID)
 
-        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+        try await asyncWait {
+            await self.delegate.invokedTransactionUpdated == true
+        }
     }
 
-    func testNotifiesDelegateForExistingTransactions() throws {
+    func testNotifiesDelegateForExistingTransactions() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.productID)
 
-        self.listener.listenForTransactions()
+        await self.listener.listenForTransactions()
 
-        expect(self.delegate.invokedTransactionUpdated).toEventually(beTrue())
+        try await asyncWait {
+            await self.delegate.invokedTransactionUpdated == true
+        }
     }
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func testNotifiesDelegateForRenewals() async throws {
         try await self.simulateAnyPurchase(finishTransaction: true)
 
-        self.listener.listenForTransactions()
+        await self.listener.listenForTransactions()
 
         try? self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
 
