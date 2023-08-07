@@ -18,13 +18,16 @@ import XCTest
 class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
+    private var imageFetcher: MockPaywallImageFetcher!
     private var cache: PaywallCacheWarmingType!
 
     override func setUp() {
         super.setUp()
 
         self.eligibilityChecker = .init()
-        self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker)
+        self.imageFetcher = .init()
+        self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker,
+                                         imageFetcher: self.imageFetcher)
     }
 
     func testOfferingsWithNoPaywallsDoesNotCheckEligibility() throws {
@@ -76,10 +79,33 @@ class PaywallCacheWarmingTests: TestCase {
         ]
 
         self.logger.verifyMessageWasLogged(
-            Strings.eligibility.warming_up_eligibility_cache(products: ["product_1", "product_3"]),
+            Strings.paywalls.warming_up_eligibility_cache(products: ["product_1", "product_3"]),
             level: .debug,
             expectedCount: 1
         )
+    }
+
+    func testWarmsUpImages() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: paywall,
+                products: []
+            )
+        ])
+
+        let expectedURLs: Set<String> = [
+            "https://rc-paywalls.s3.amazonaws.com/header.jpg",
+            "https://rc-paywalls.s3.amazonaws.com/background.jpg",
+            "https://rc-paywalls.s3.amazonaws.com/icon.jpg"
+        ]
+
+        self.cache.warmUpPaywallImagesCache(offerings: offerings)
+
+        expect(self.imageFetcher.images).toEventually(equal(expectedURLs))
     }
 
 }
@@ -130,5 +156,20 @@ private extension PaywallCacheWarmingTests {
 
     static let bundle = Bundle(for: PaywallCacheWarmingTests.self)
     static let offeringIdentifier = "offering"
+
+}
+
+private final class MockPaywallImageFetcher: PaywallImageFetcherType {
+
+    let downloadedImages: Atomic<Set<URL>> = .init([])
+
+    var images: Set<String> {
+        return Set(self.downloadedImages.value.map(\.absoluteString))
+    }
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func downloadImage(_ url: URL) async throws {
+        self.downloadedImages.modify { $0.insert(url) }
+    }
 
 }

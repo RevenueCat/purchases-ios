@@ -1624,6 +1624,7 @@ private extension Purchases {
             if let offerings = offerings.value {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     cache.warmUpEligibilityCache(offerings: offerings)
+                    cache.warmUpPaywallImagesCache(offerings: offerings)
                 }
             }
         }
