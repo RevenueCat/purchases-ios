@@ -286,8 +286,9 @@ private extension BaseTemplateViewConfigurationTests {
         subtitle: "Get access to all our educational content trusted by thousands of parents.",
         callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: nil,
-        offerDetails: "{{ price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+        offerDetails: "{{ sub_price_per_month }} per month",
+        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+        "then {{ sub_price_per_month }} per month",
         features: []
     )
 
