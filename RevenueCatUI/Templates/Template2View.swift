@@ -104,9 +104,7 @@ struct Template2View: TemplateViewType {
                 textWithNoIntroOffer: package.localization.offerDetails,
                 textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
                 introEligibility: self.introEligibility[package.content],
-                foregroundColor: selected
-                    ? self.configuration.colors.accent1Color
-                    : self.configuration.colors.text1Color,
+                foregroundColor: self.textColor(selected),
                 alignment: Self.packageButtonAlignment
             )
             .fixedSize(horizontal: false, vertical: true)
@@ -152,11 +150,13 @@ struct Template2View: TemplateViewType {
 
             Text(self.localization(for: package.content).offerName ?? package.content.productName)
         }
-        .foregroundColor(
-            selected
-            ? self.configuration.colors.accent1Color
-            : self.configuration.colors.text1Color
-        )
+        .foregroundColor(self.textColor(selected))
+    }
+
+    private func textColor(_ selected: Bool) -> Color {
+        return selected
+        ? self.configuration.colors.accent1Color
+        : self.configuration.colors.text1Color
     }
 
     private var subscribeButton: some View {
