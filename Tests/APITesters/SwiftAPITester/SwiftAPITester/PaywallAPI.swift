@@ -146,13 +146,13 @@ func checkPaywallColor(_ color: PaywallColor) throws {
 
 func checkPaywallTemplate(_ template: PaywallTemplate) {
     switch template {
-    case .onePackageStandard:
+    case .template1:
         break
-    case .multiPackageBold:
+    case .template2:
         break
-    case .onePackageWithFeatures:
+    case .template3:
         break
-    case .multiPackageHorizontal:
+    case .template4:
         break
     @unknown default:
         break
