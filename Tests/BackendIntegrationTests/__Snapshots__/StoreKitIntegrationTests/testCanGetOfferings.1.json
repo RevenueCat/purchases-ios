@@ -51,13 +51,13 @@
         "default_locale" : "en_US",
         "localized_strings" : {
           "en_US" : {
-            "call_to_action" : "Purchase for {{ price_per_month }} per month",
-            "call_to_action_with_intro_offer" : "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month",
+            "call_to_action" : "Purchase for {{ sub_price_per_month }} per month",
+            "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
             "features" : [
 
             ],
             "offer_details" : "{{ total_price_and_per_month }}",
-            "offer_details_with_intro_offer" : "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
+            "offer_details_with_intro_offer" : "{{ total_price_and_per_month }} after {{ sub_offer_duration }} trial",
             "offer_name" : "{{ period }}",
             "subtitle" : "Gert access to all our educational content trusted by thousands of parents",
             "title" : "Ignite your child's curiosity"
