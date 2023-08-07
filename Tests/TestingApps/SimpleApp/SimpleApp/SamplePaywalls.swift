@@ -44,14 +44,14 @@ final class SamplePaywallLoader {
 
     private func paywall(for template: PaywallTemplate) -> PaywallData {
         switch template {
-        case .onePackageStandard:
-            return Self.onePackageStandardTemplate()
-        case .multiPackageBold:
-            return Self.multiPackageBoldTemplate()
-        case .onePackageWithFeatures:
-            return Self.onePackageWithFeaturesTemplate()
-        case .multiPackageHorizontal:
-            return Self.multiPackageHorizontalTemplate()
+        case .template1:
+            return Self.template1()
+        case .template2:
+            return Self.template2()
+        case .template3:
+            return Self.template3()
+        case .template4:
+            return Self.template4()
         }
     }
 
@@ -176,9 +176,9 @@ private extension SamplePaywallLoader {
 
 private extension SamplePaywallLoader {
     
-    static func onePackageStandardTemplate() -> PaywallData {
+    static func template1() -> PaywallData {
         return .init(
-            template: .onePackageStandard,
+            template: .template1,
             config: .init(
                 packages: [Package.string(from: PackageType.monthly)!],
                 images: Self.images,
@@ -212,9 +212,9 @@ private extension SamplePaywallLoader {
         )
     }
 
-    static func multiPackageBoldTemplate() -> PaywallData {
+    static func template2() -> PaywallData {
         return .init(
-            template: .multiPackageBold,
+            template: .template2,
             config: .init(
                 packages: Array<PackageType>([.weekly, .monthly, .annual, .lifetime])
                     .map { Package.string(from: $0)! },
@@ -252,9 +252,9 @@ private extension SamplePaywallLoader {
         )
     }
 
-    static func onePackageWithFeaturesTemplate() -> PaywallData {
+    static func template3() -> PaywallData {
         return .init(
-            template: .onePackageWithFeatures,
+            template: .template3,
             config: .init(
                 packages: [Package.string(from: .annual)!],
                 images: Self.images,
@@ -291,9 +291,9 @@ private extension SamplePaywallLoader {
         )
     }
 
-    static func multiPackageHorizontalTemplate() -> PaywallData {
+    static func template4() -> PaywallData {
         return .init(
-            template: .multiPackageHorizontal,
+            template: .template4,
             config: .init(
                 packages: Array<PackageType>([.monthly, .sixMonth, .annual])
                     .map { Package.string(from: $0)! },

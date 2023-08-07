@@ -1,5 +1,5 @@
 //
-//  OnePackageWithFeaturesTemplate.swift
+//  Template3View.swift
 //  
 //
 //  Created by Nacho Soto on 7/26/23.
@@ -10,7 +10,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-struct OnePackageWithFeaturesTemplate: TemplateViewType {
+struct Template3View: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
     private let localization: ProcessedLocalizedConfiguration
@@ -186,11 +186,11 @@ private struct FeatureView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(macCatalyst, unavailable)
-struct OnePackageWithFeaturesTemplate_Previews: PreviewProvider {
+struct Template3View_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: TestData.offeringWithSinglePackageFeaturesPaywall) {
-            OnePackageWithFeaturesTemplate($0)
+            Template3View($0)
         }
     }
 
