@@ -3,7 +3,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-struct MultiPackageBoldTemplate: TemplateViewType {
+struct Template2View: TemplateViewType {
 
     private let configuration: TemplateViewConfiguration
     private var localization: [Package: ProcessedLocalizedConfiguration]
@@ -204,7 +204,7 @@ struct MultiPackageBoldTemplate: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-private extension MultiPackageBoldTemplate {
+private extension Template2View {
 
     func localization(for package: Package) -> ProcessedLocalizedConfiguration {
         // Because of how packages are constructed this is known to exist
@@ -226,11 +226,11 @@ private extension MultiPackageBoldTemplate {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(macCatalyst, unavailable)
-struct MultiPackageBoldTemplate_Previews: PreviewProvider {
+struct Template2View_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
-            MultiPackageBoldTemplate($0)
+            Template2View($0)
         }
     }
 
