@@ -53,7 +53,7 @@ private extension PaywallViewLocalizationTests {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .multiPackageBold,
+            template: .template2,
             config: .init(
                 packages: [PackageType.weekly.identifier,
                            PackageType.annual.identifier,
