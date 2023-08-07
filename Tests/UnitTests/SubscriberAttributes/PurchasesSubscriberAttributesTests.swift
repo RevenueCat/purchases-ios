@@ -197,6 +197,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               systemInfo: systemInfo,
                               offeringsFactory: mockOfferingsFactory,
                               deviceCache: mockDeviceCache,
+                              paywallCache: MockPaywallCacheWarming(),
                               identityManager: mockIdentityManager,
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
@@ -206,7 +207,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
-                              trialOrIntroPriceEligibilityChecker: trialOrIntroductoryPriceEligibilityChecker)
+                              trialOrIntroPriceEligibilityChecker: .create(
+                                with: trialOrIntroductoryPriceEligibilityChecker
+                              ))
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
