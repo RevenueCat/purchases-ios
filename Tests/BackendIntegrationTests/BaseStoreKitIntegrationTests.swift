@@ -34,14 +34,7 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
         super.initializeLogger()
 
         if self.testSession == nil {
-            try self.configureTestSession()
-        }
-
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            // Despite calling `SKTestSession.clearTransactions` tests sometimes
-            // begin with leftover transactions. This ensures that we remove them
-            // to always start with a clean state.
-            await self.deleteAllTransactions(session: self.testSession)
+            try await self.configureTestSession()
         }
 
         // Initialize `Purchases` *after* the fresh new session has been created
@@ -62,7 +55,7 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
         try await super.tearDown()
     }
 
-    func configureTestSession() throws {
+    func configureTestSession() async throws {
         assert(self.testSession == nil, "Attempted to configure session multiple times")
 
         self.testSession = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
@@ -73,6 +66,13 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
             self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
         } else {
             self.testSession.timeRate = .oneSecondIsOneDay
+        }
+
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Despite calling `SKTestSession.clearTransactions` tests sometimes
+            // begin with leftover transactions. This ensures that we remove them
+            // to always start with a clean state.
+            await self.deleteAllTransactions(session: self.testSession)
         }
     }
 
@@ -320,25 +320,6 @@ extension BaseStoreKitIntegrationTests {
         } catch {
             Logger.error(TestMessage.error_parsing_receipt(error))
         }
-    }
-
-    /// Purchases a product directly with StoreKit.
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    @discardableResult
-    func purchaseProductFromStoreKit(
-        productIdentifier: String = BaseStoreKitIntegrationTests.monthlyNoIntroProductID,
-        finishTransaction: Bool = false
-    ) async throws -> Product.PurchaseResult {
-        let products = try await StoreKit.Product.products(for: [productIdentifier])
-        let product = try XCTUnwrap(products.onlyElement)
-
-        let result = try await product.purchase()
-
-        if finishTransaction {
-            await result.verificationResult?.underlyingTransaction.finish()
-        }
-
-        return result
     }
 
 }

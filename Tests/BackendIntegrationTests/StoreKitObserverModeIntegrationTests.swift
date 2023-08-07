@@ -24,6 +24,14 @@ class BaseStoreKitObserverModeIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var observerMode: Bool { return true }
 
+    var manager: ObserverModeManager!
+
+    final override func configureTestSession() async throws {
+        try await super.configureTestSession()
+
+        self.manager = .init()
+    }
+
 }
 
 class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTests {
@@ -38,7 +46,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseInDevicePostsReceipt() async throws {
-        let result = try await self.purchaseProductFromStoreKit()
+        let result = try await self.manager.purchaseProductFromStoreKit2()
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
@@ -65,7 +73,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         let productID = Self.monthlyNoIntroProductID
 
-        try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
+        try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
@@ -116,7 +124,7 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         let productID = Self.monthlyNoIntroProductID
 
-        try await self.purchaseProductFromStoreKit(productIdentifier: productID, finishTransaction: true)
+        try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
         try? self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
@@ -165,19 +173,36 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     }
 
     override func setUp() async throws {
+        // Not calling `super.setUp` so each test can
+        // do something else before initializing SDK.
+    }
+
+    func testDoesNotSyncExistingSK1Purchases() async throws {
         // 1. Create `SKTestSession`
-        try self.configureTestSession()
+        try await self.configureTestSession()
 
         // 2. Purchase product directly from StoreKit
-        try await self.purchaseProductFromStoreKit()
+        try await self.manager.purchaseProductFromStoreKit1()
 
         // 3. Configure SDK
         try await super.setUp()
+
+        // 4. Sync customer info
+        let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        self.assertNoPurchases(info)
     }
 
-    func testDoesNotSyncExistingPurchase() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    func testDoesNotSyncExistingSK2Purchases() async throws {
+        // 1. Create `SKTestSession`
+        try await self.configureTestSession()
 
+        // 2. Purchase product directly from StoreKit
+        try await self.manager.purchaseProductFromStoreKit2()
+
+        // 3. Configure SDK
+        try await super.setUp()
+
+        // 4. Sync customer info
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
     }
