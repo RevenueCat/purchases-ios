@@ -219,6 +219,7 @@
 		4F5C05BF2A43A2C500651C7D /* LocaleExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C05BE2A43A2C500651C7D /* LocaleExtensionsTests.swift */; };
 		4F5D52D92A5713A800E1C758 /* DebugViewSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */; };
 		4F5D52EC2A57152B00E1C758 /* ImageSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */; };
+		4F6423F62A72C20F0071BFD1 /* PostedTransactionCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6423F52A72C20F0071BFD1 /* PostedTransactionCache.swift */; };
 		4F69EB092A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F69EB0A2A14406E00ED6D4B /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F6BED592A26A14400CD9322 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BED582A26A14400CD9322 /* DebugView.swift */; };
@@ -267,6 +268,7 @@
 		4FBBC5682A61E42F0077281F /* NonEmptyStringDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */; };
 		4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */; };
 		4FC0832B2A4A361700A97089 /* IntegerExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */; };
+		4FC6F8892A73E445002139B2 /* PostedTransactionCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */; };
 		4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
@@ -955,6 +957,7 @@
 		4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionPoster.swift; sourceTree = "<group>"; };
 		4F5C05BC2A43A21A00651C7D /* Locale+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Extensions.swift"; sourceTree = "<group>"; };
 		4F5C05BE2A43A2C500651C7D /* LocaleExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensionsTests.swift; sourceTree = "<group>"; };
+		4F6423F52A72C20F0071BFD1 /* PostedTransactionCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostedTransactionCache.swift; sourceTree = "<group>"; };
 		4F69EB082A14406E00ED6D4B /* Matchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matchers.swift; sourceTree = "<group>"; };
 		4F6BED582A26A14400CD9322 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		4F6BEDD82A26B55C00CD9322 /* DebugViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewModel.swift; sourceTree = "<group>"; };
@@ -979,6 +982,7 @@
 		4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NonEmptyStringDecodable.swift; sourceTree = "<group>"; };
 		4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Integer+Extensions.swift"; sourceTree = "<group>"; };
 		4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerExtensionsTests.swift; sourceTree = "<group>"; };
+		4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostedTransactionCacheTests.swift; sourceTree = "<group>"; };
 		4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
@@ -2143,6 +2147,7 @@
 			children = (
 				37E35D87B7E6F91E27E98F42 /* DeviceCacheTests.swift */,
 				37E35E3250FBBB03D92E06EC /* InMemoryCachedObjectTests.swift */,
+				4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -2601,6 +2606,7 @@
 			children = (
 				B3B5FBC0269E17CE00104A0C /* DeviceCache.swift */,
 				B3B5FBBE269E081E00104A0C /* InMemoryCachedObject.swift */,
+				4F6423F52A72C20F0071BFD1 /* PostedTransactionCache.swift */,
 			);
 			path = Caching;
 			sourceTree = "<group>";
@@ -3232,6 +3238,7 @@
 				57E6C27C29723A94001AFE98 /* Signing.swift in Sources */,
 				57CB2AD429CCF21A00C91439 /* RedirectLoggerTaskDelegate.swift in Sources */,
 				57C381DC27961547009E3940 /* SK2StoreProductDiscount.swift in Sources */,
+				4F6423F62A72C20F0071BFD1 /* PostedTransactionCache.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
@@ -3450,6 +3457,7 @@
 				5766AA5A283D4CAB00FA6091 /* IgnoreHashableTests.swift in Sources */,
 				B36824BF268FBC8700957E4C /* SubscriberAttributeTests.swift in Sources */,
 				351B51BC26D450E800BD2BD7 /* OfferingsTests.swift in Sources */,
+				4FC6F8892A73E445002139B2 /* PostedTransactionCacheTests.swift in Sources */,
 				5796A38827D6B85900653165 /* BackendPostReceiptDataTests.swift in Sources */,
 				5752E8482892DC500069281E /* ErrorUtilsTests.swift in Sources */,
 				57488BF229CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift in Sources */,

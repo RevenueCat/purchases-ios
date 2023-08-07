@@ -46,6 +46,26 @@ class DeviceCache {
         Logger.verbose(Strings.purchase.device_cache_deinit(self))
     }
 
+    // MARK: - generic methods
+
+    func update<Key: DeviceCacheKeyType, Value: Codable>(
+        key: Key,
+        default defaultValue: Value,
+        updater: @Sendable (inout Value) -> Void
+    ) {
+        self.userDefaults.write {
+            var value: Value = $0.value(forKey: key) ?? defaultValue
+            updater(&value)
+            $0.set(codable: value, forKey: key)
+        }
+    }
+
+    func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+        self.userDefaults.read {
+            $0.value(forKey: key)
+        }
+    }
+
     // MARK: - appUserID
 
     func cache(appUserID: String) {
@@ -143,11 +163,8 @@ class DeviceCache {
 
     func cache(offerings: Offerings, appUserID: String) {
         self.cacheInMemory(offerings: offerings)
-
-        if let jsonData = try? JSONEncoder.default.encode(value: offerings.response, logErrors: true) {
-            self.userDefaults.write {
-                $0.set(jsonData, forKey: CacheKey.offerings(appUserID))
-            }
+        self.userDefaults.write {
+            $0.set(codable: offerings.response, forKey: CacheKey.offerings(appUserID))
         }
     }
 
@@ -323,7 +340,7 @@ class DeviceCache {
 
     // MARK: - Helper functions
 
-    internal enum CacheKeys: String, CacheKeyType {
+    internal enum CacheKeys: String, DeviceCacheKeyType {
 
         case legacyGeneratedAppUserDefaults = "com.revenuecat.userdefaults.appUserID"
         case appUserDefaults = "com.revenuecat.userdefaults.appUserID.new"
@@ -333,7 +350,7 @@ class DeviceCache {
 
     }
 
-    fileprivate enum CacheKey: CacheKeyType {
+    fileprivate enum CacheKey: DeviceCacheKeyType {
 
         static let base = "com.revenuecat.userdefaults."
         static let legacySubscriberAttributesBase = "\(Self.base)subscriberAttributes."
@@ -552,19 +569,28 @@ private extension DeviceCache {
         _ userDefaults: UserDefaults,
         productEntitlementMapping mapping: ProductEntitlementMapping
     ) {
-        guard let data = try? JSONEncoder.default.encode(value: mapping, logErrors: true) else {
-            return
+        if userDefaults.set(codable: mapping,
+                            forKey: CacheKeys.productEntitlementMapping) {
+            userDefaults.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
         }
-
-        userDefaults.set(data, forKey: CacheKeys.productEntitlementMapping)
-        userDefaults.set(Date(), forKey: CacheKeys.productEntitlementMappingLastUpdated)
     }
 
 }
 
 fileprivate extension UserDefaults {
 
-    func value<T: Decodable>(forKey key: CacheKeyType) -> T? {
+    /// - Returns: whether the value could be saved
+    @discardableResult
+    func set<T: Codable>(codable: T, forKey key: DeviceCacheKeyType) -> Bool {
+        guard let data = try? JSONEncoder.default.encode(value: codable, logErrors: true) else {
+            return false
+        }
+
+        self.set(data, forKey: key)
+        return true
+    }
+
+    func value<T: Decodable>(forKey key: DeviceCacheKeyType) -> T? {
         guard let data = self.data(forKey: key) else {
             return nil
         }
@@ -572,27 +598,27 @@ fileprivate extension UserDefaults {
         return try? JSONDecoder.default.decode(jsonData: data, logErrors: true)
     }
 
-    func set(_ value: Any?, forKey key: CacheKeyType) {
+    func set(_ value: Any?, forKey key: DeviceCacheKeyType) {
         self.set(value, forKey: key.rawValue)
     }
 
-    func string(forKey defaultName: CacheKeyType) -> String? {
+    func string(forKey defaultName: DeviceCacheKeyType) -> String? {
         return self.string(forKey: defaultName.rawValue)
     }
 
-    func removeObject(forKey defaultName: CacheKeyType) {
+    func removeObject(forKey defaultName: DeviceCacheKeyType) {
         self.removeObject(forKey: defaultName.rawValue)
     }
 
-    func dictionary(forKey defaultName: CacheKeyType) -> [String: Any]? {
+    func dictionary(forKey defaultName: DeviceCacheKeyType) -> [String: Any]? {
         return self.dictionary(forKey: defaultName.rawValue)
     }
 
-    func date(forKey defaultName: CacheKeyType) -> Date? {
+    func date(forKey defaultName: DeviceCacheKeyType) -> Date? {
         return self.object(forKey: defaultName.rawValue) as? Date
     }
 
-    func data(forKey key: CacheKeyType) -> Data? {
+    func data(forKey key: DeviceCacheKeyType) -> Data? {
         return self.data(forKey: key.rawValue)
     }
 
@@ -642,7 +668,7 @@ private extension DeviceCache {
 
 }
 
-private protocol CacheKeyType {
+protocol DeviceCacheKeyType {
 
     var rawValue: String { get }
 
