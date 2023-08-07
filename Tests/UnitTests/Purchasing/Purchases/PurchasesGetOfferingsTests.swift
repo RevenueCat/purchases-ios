@@ -99,7 +99,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
-    func testWarmsUpEligibilityCache() throws {
+    func testWarmsUpPaywallsCache() throws {
         let bundle = Bundle(for: Self.self)
         let offeringsURL = try XCTUnwrap(bundle.url(forResource: "Offerings",
                                                     withExtension: "json",
@@ -126,8 +126,12 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.setupPurchases()
 
         expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+
         expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
         expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) == offerings
+
+        expect(self.paywallCache.invokedWarmUpPaywallImagesCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
     }
 
 }
