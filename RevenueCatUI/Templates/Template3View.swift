@@ -57,7 +57,7 @@ struct Template3View: TemplateViewType {
                 textWithNoIntroOffer: self.localization.offerDetails,
                 textWithIntroOffer: self.localization.offerDetailsWithIntroOffer,
                 introEligibility: self.introEligibility,
-                foregroundColor: self.configuration.colors.accent2Color
+                foregroundColor: self.configuration.colors.text2Color
             )
             .multilineTextAlignment(.center)
             .font(.subheadline)
@@ -74,7 +74,7 @@ struct Template3View: TemplateViewType {
             .padding(.bottom)
 
             FooterView(configuration: self.configuration.configuration,
-                       color: self.configuration.colors.accent2Color,
+                       color: self.configuration.colors.text2Color,
                        purchaseHandler: self.purchaseHandler)
         }
         .padding(.horizontal)
@@ -154,7 +154,7 @@ private struct FeatureView: View {
 
             if let content = self.feature.content {
                 Text(.init(content))
-                    .foregroundStyle(self.colors.accent2Color)
+                    .foregroundStyle(self.colors.text2Color)
                     .font(.body)
             }
         }
