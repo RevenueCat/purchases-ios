@@ -125,9 +125,9 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(enConfig.subtitle) == "Description"
         expect(enConfig.callToAction) == "Purchase now"
         expect(enConfig.callToActionWithIntroOffer) == "Purchase now"
-        expect(enConfig.offerDetails) == "{{ price_per_month }} per month"
+        expect(enConfig.offerDetails) == "{{ sub_price_per_month }} per month"
         expect(enConfig.offerDetailsWithIntroOffer)
-        == "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+        == "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
         expect(enConfig.offerName).to(beNil())
         expect(enConfig.features) == [
             .init(title: "Feature 1", content: "Content", iconID: "lock")
@@ -138,9 +138,9 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(esConfig.subtitle).to(beNil())
         expect(esConfig.callToAction) == "Comprar"
         expect(esConfig.callToActionWithIntroOffer) == "Comprar"
-        expect(esConfig.offerDetails) == "{{ price_per_month }} cada mes"
+        expect(esConfig.offerDetails) == "{{ sub_price_per_month }} cada mes"
         expect(esConfig.offerDetailsWithIntroOffer)
-        == "Comienza tu prueba de {{ intro_duration }}, y después {{ price_per_month }} cada mes"
+        == "Comienza tu prueba de {{ sub_offer_duration }}, y después {{ sub_price_per_month }} cada mes"
         expect(esConfig.offerName).to(beNil())
         expect(esConfig.features).to(beEmpty())
 
