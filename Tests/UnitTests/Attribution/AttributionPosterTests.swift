@@ -311,35 +311,35 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
         expect(self.attributionPoster.adServicesTokenToPostIfNeeded).toNot(beNil())
 
-        self.attributionPoster.postAdServicesTokenIfNeeded()
+        self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
 
         expect(self.attributionPoster.adServicesTokenToPostIfNeeded).to(beNil())
     }
 
-    func testPostAdServicesTokenIfNeededSkipsIfAlreadySent() {
+    func testPostAdServicesTokenOncePerInstallIfNeededSkipsIfAlreadySent() {
         backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
-        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
 
-        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
-    func testPostAdServicesTokenIfNeededSkipsIfNilToken() throws {
+    func testPostAdServicesTokenOncePerInstallIfNeededSkipsIfNilToken() throws {
         backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
         attributionFetcher.adServicesTokenToReturn = nil
-        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
-    func testPostAdServicesTokenIfNeededDoesNotCacheOnAPIError() throws {
+    func testPostAdServicesTokenOncePerInstallIfNeededDoesNotCacheOnAPIError() throws {
         let stubbedError: BackendError = .networkError(
             .errorResponse(.init(code: .invalidAPIKey,
                                  originalCode: BackendErrorCode.invalidAPIKey.rawValue,
@@ -350,7 +350,7 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         backend.stubbedPostAdServicesTokenCompletionResult = .failure(stubbedError)
 
         attributionFetcher.adServicesTokenToReturn = nil
-        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 0
     }
 
@@ -359,7 +359,7 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
         let adServicesToken = "asdf"
         attributionFetcher.adServicesTokenToReturn = adServicesToken
-        attributionPoster.postAdServicesTokenIfNeeded()
+        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) ==
             ([.adServices: adServicesToken], currentUserProvider.currentAppUserID)

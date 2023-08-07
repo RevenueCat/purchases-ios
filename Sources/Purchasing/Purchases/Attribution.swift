@@ -63,13 +63,13 @@ public extension Attribution {
     @objc func enableAdServicesAttributionTokenCollection() {
         self.automaticAdServicesAttributionTokenCollection = true
 
-        self.postAdServicesTokenIfNeeded()
+        self.postAdServicesTokenOncePerInstallIfNeeded()
     }
 
-    internal func postAdServicesTokenIfNeeded() {
+    internal func postAdServicesTokenOncePerInstallIfNeeded() {
         if self.automaticAdServicesAttributionTokenCollection,
            self.automaticAdServicesTokenPostingEnabled {
-            self.attributionPoster.postAdServicesTokenIfNeeded()
+            self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
         }
     }
 
