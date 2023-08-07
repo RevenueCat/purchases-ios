@@ -23,7 +23,6 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
         get { return self._invokedWarmUpEligibilityCache.value }
         set { self._invokedWarmUpEligibilityCache.value = newValue }
     }
-
     var invokedWarmUpEligibilityCacheOfferings: Offerings? {
         get { return self._invokedWarmUpEligibilityCacheOfferings.value }
         set { self._invokedWarmUpEligibilityCacheOfferings.value = newValue }
@@ -32,6 +31,25 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
     func warmUpEligibilityCache(offerings: Offerings) {
         self.invokedWarmUpEligibilityCache = true
         self.invokedWarmUpEligibilityCacheOfferings = offerings
+    }
+
+    // MARK: -
+
+    private let _invokedWarmUpPaywallImagesCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallImagesCacheOfferings: Atomic<Offerings?> = nil
+
+    var invokedWarmUpPaywallImagesCache: Bool {
+        get { return self._invokedWarmUpPaywallImagesCache.value }
+        set { self._invokedWarmUpPaywallImagesCache.value = newValue }
+    }
+    var invokedWarmUpPaywallImagesCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallImagesCacheOfferings.value }
+        set { self._invokedWarmUpPaywallImagesCacheOfferings.value = newValue }
+    }
+
+    func warmUpPaywallImagesCache(offerings: Offerings) {
+        self.invokedWarmUpPaywallImagesCache = true
+        self.invokedWarmUpPaywallImagesCacheOfferings = offerings
     }
 
 }
