@@ -442,13 +442,13 @@ extension PaywallData: Codable {
 
 // MARK: - Equatable
 
-extension PaywallData.LocalizedConfiguration.Feature: Equatable {}
-extension PaywallData.LocalizedConfiguration: Equatable {}
-extension PaywallData.Configuration.ColorInformation: Equatable {}
-extension PaywallData.Configuration.Colors: Equatable {}
-extension PaywallData.Configuration.Images: Equatable {}
-extension PaywallData.Configuration: Equatable {}
-extension PaywallData: Equatable {}
+extension PaywallData.LocalizedConfiguration.Feature: Hashable {}
+extension PaywallData.LocalizedConfiguration: Hashable {}
+extension PaywallData.Configuration.ColorInformation: Hashable {}
+extension PaywallData.Configuration.Colors: Hashable {}
+extension PaywallData.Configuration.Images: Hashable {}
+extension PaywallData.Configuration: Hashable {}
+extension PaywallData: Hashable {}
 
 // MARK: - Sendable
 

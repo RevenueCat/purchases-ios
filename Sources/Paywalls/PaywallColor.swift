@@ -225,6 +225,14 @@ extension PaywallColor: Equatable {
 
 }
 
+extension PaywallColor: Hashable {
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.stringRepresentation)
+    }
+
+}
+
 extension PaywallColor: Sendable {}
 extension PaywallColor: Codable {
 
