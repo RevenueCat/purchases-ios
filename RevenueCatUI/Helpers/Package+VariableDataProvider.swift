@@ -8,20 +8,16 @@ extension Package: VariableDataProvider {
         return Bundle.main.applicationDisplayName
     }
 
-    var isSubscription: Bool {
-        return self.storeProduct.productCategory == .subscription
-    }
-
-    var isMonthly: Bool {
-        return self.packageType == .monthly
-    }
-
     var localizedPrice: String {
         return self.storeProduct.localizedPriceString
     }
 
     var localizedPricePerMonth: String {
         return self.priceFormatter.string(from: self.pricePerMonth) ?? ""
+    }
+
+    var localizedIntroductoryOfferPrice: String? {
+        return self.storeProduct.introductoryDiscount?.localizedPriceString
     }
 
     var productName: String {
@@ -41,12 +37,38 @@ extension Package: VariableDataProvider {
         return self.introDuration(locale)
     }
 
+    func localizedPricePerPeriod(_ locale: Locale) -> String {
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return self.localizedPrice
+        }
+
+        let unit = Localization.abbreviatedUnitLocalizedString(for: period.unit, locale: locale)
+        return "\(self.localizedPrice)/\(unit)"
+    }
+
+    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
+        if !self.isSubscription || self.isMonthly {
+            return self.localizedPrice
+        } else {
+            let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
+            return "\(self.localizedPrice) (\(self.localizedPricePerMonth)/\(unit))"
+        }
+    }
+
 }
 
 // MARK: - Private
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Package {
+
+    var isSubscription: Bool {
+        return self.storeProduct.productCategory == .subscription
+    }
+
+    var isMonthly: Bool {
+        return self.packageType == .monthly
+    }
 
     var pricePerMonth: NSDecimalNumber {
         guard let price = self.storeProduct.pricePerMonth else {
