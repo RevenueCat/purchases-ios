@@ -16,16 +16,17 @@ protocol VariableDataProvider {
 
     var applicationName: String { get }
 
-    var isSubscription: Bool { get }
-    var isMonthly: Bool { get }
-
     var localizedPrice: String { get }
     var localizedPricePerMonth: String { get }
+    var localizedIntroductoryOfferPrice: String? { get }
     var productName: String { get }
 
     func periodName(_ locale: Locale) -> String
     func subscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
+
+    func localizedPricePerPeriod(_ locale: Locale) -> String
+    func localizedPriceAndPerMonth(_ locale: Locale) -> String
 
 }
 
@@ -59,26 +60,19 @@ extension String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension VariableDataProvider {
 
+    // swiftlint:disable:next cyclomatic_complexity
     func value(for variableName: String, locale: Locale) -> String {
         switch variableName {
         case "app_name": return self.applicationName
         case "price": return self.localizedPrice
-        case "price_per_month": return self.localizedPricePerMonth
-        case "total_price_and_per_month":
-            if !self.isSubscription || self.isMonthly {
-                return self.localizedPrice
-            } else {
-                let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
-                return "\(self.localizedPrice) (\(self.localizedPricePerMonth)/\(unit))"
-            }
-
+        case "price_per_period": return self.localizedPricePerPeriod(locale)
+        case "total_price_and_per_month": return self.localizedPriceAndPerMonth(locale)
         case "product_name": return self.productName
-        case "period":
-            return self.periodName(locale)
-        case "subscription_duration":
-            return self.subscriptionDuration(locale) ?? ""
-        case "intro_duration":
-            return self.introductoryOfferDuration(locale) ?? ""
+        case "sub_period": return self.periodName(locale)
+        case "sub_price_per_month": return self.localizedPricePerMonth
+        case "sub_duration": return self.subscriptionDuration(locale) ?? ""
+        case "sub_offer_duration": return self.introductoryOfferDuration(locale) ?? ""
+        case "sub_offer_price": return self.localizedIntroductoryOfferPrice ?? ""
 
         default:
             Logger.warning(Strings.could_not_find_content_for_variable(variableName: variableName))
