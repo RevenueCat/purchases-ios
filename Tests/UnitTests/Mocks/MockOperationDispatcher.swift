@@ -27,6 +27,7 @@ class MockOperationDispatcher: OperationDispatcher {
 
     var invokedDispatchAsyncOnMainThread = false
     var invokedDispatchAsyncOnMainThreadCount = 0
+    var pendingMainActorDispatches: Atomic<Int> = .init(0)
 
     override func dispatchAsyncOnMainThread(_ block: @escaping @Sendable () -> Void) {
         self.invokedDispatchAsyncOnMainThread = true
@@ -36,15 +37,19 @@ class MockOperationDispatcher: OperationDispatcher {
     }
 
     override func dispatchOnMainActor(_ block: @escaping @Sendable @MainActor () -> Void) {
+        let invoke: @Sendable @MainActor () -> Void = { [atomic = self.pendingMainActorDispatches] in
+            block()
+            atomic.modify { $0 -= 1 }
+        }
+
         self.invokedDispatchOnMainThread = true
         self.invokedDispatchOnMainThreadCount += 1
+        self.pendingMainActorDispatches.modify { $0 += 1 }
 
         if self.forwardToOriginalDispatchOnMainThread {
-            super.dispatchOnMainActor(block)
+            super.dispatchOnMainActor(invoke)
         } else {
-            OperationDispatcher.dispatchOnMainActor {
-                block()
-            }
+            OperationDispatcher.dispatchOnMainActor(invoke)
         }
     }
 

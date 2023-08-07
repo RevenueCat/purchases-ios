@@ -40,6 +40,9 @@ enum PurchaseStrings {
                                                              SKPaymentTransaction)
     case paymentqueue_updated_transaction(SKPaymentTransactionObserver,
                                           SKPaymentTransaction)
+    case paymentqueue_ignoring_callback_for_older_transaction(PurchasesOrchestrator,
+                                                              StoreTransactionType,
+                                                              Date)
     case presenting_code_redemption_sheet
     case unable_to_present_redemption_sheet
     case purchases_synced
@@ -51,7 +54,7 @@ enum PurchaseStrings {
     case product_purchase_failed(productIdentifier: String, error: Error)
     case skpayment_missing_from_skpaymenttransaction
     case skpayment_missing_product_identifier
-    case sktransaction_missing_transaction_date
+    case sktransaction_missing_transaction_date(SKPaymentTransactionState)
     case sktransaction_missing_transaction_identifier
     case could_not_purchase_product_id_not_found
     case payment_identifier_nil
@@ -168,6 +171,11 @@ extension PurchaseStrings: LogMessage {
                 .compactMap { $0 }
                 .joined(separator: " ")
 
+        case let .paymentqueue_ignoring_callback_for_older_transaction(observer, transaction, date):
+            return "\(Strings.objectDescription(observer)): will not notify callback for transaction " +
+            "'\(transaction.transactionIdentifier)'. " +
+            "Transaction date '\(transaction.purchaseDate)' - callback date '\(date)'"
+
         case .presenting_code_redemption_sheet:
             return "Presenting code redemption sheet."
 
@@ -208,11 +216,12 @@ extension PurchaseStrings: LogMessage {
             return "There is a problem with the SKPayment missing " +
             "a product identifier - this is an issue with the App Store."
 
-        case .sktransaction_missing_transaction_date:
+        case let .sktransaction_missing_transaction_date(transactionState):
             return """
             The SKPaymentTransaction has a nil value for transaction date - this is a bug in StoreKit.
             Unix Epoch will be used instead for the transaction within the app.
             Transactions in the backend and in webhooks are unaffected and will have the correct timestamps.
+            Transaction state: \(transactionState)
             """
 
         case .sktransaction_missing_transaction_identifier:

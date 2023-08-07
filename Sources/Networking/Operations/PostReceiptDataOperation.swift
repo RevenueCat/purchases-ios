@@ -163,7 +163,10 @@ private extension PostReceiptDataOperation {
     func printReceiptData() {
         do {
             let receipt = try PurchasesReceiptParser.default.parse(from: self.postData.receiptData)
-            self.log(Strings.receipt.posting_receipt(receipt))
+            self.log(Strings.receipt.posting_receipt(
+                receipt,
+                initiationSource: self.postData.initiationSource.rawValue
+            ))
 
             for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
                 Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(

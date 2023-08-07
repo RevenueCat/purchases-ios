@@ -204,7 +204,7 @@ extension BaseStoreKitIntegrationTests {
         }
 
         if !entitlement.isActive {
-            try await failTest("Entitlement is not active")
+            try await failTest("Entitlement is not active: \(entitlement)")
         }
 
         return entitlement
