@@ -16,7 +16,10 @@
 import Foundation
 
 /// The data necessary to display a paywall using the `RevenueCatUI` library.
-/// They can be created and configured in the dashboard, then access from ``Offering/paywall``.
+/// They can be created and configured in the dashboard, then accessed from ``Offering/paywall``.
+///
+/// ### Related Articles
+/// [Documentation](https://rev.cat/paywalls)
 public struct PaywallData {
 
     /// The type of template used to display this paywall.
