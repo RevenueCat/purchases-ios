@@ -68,15 +68,3 @@ class StoreKit2StorefrontListener {
     }
 
 }
-
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-private extension AsyncSequence {
-
-    func toAsyncStream() -> AsyncStream<Element> {
-        var asyncIterator = self.makeAsyncIterator()
-        return AsyncStream<Element> {
-            try? await asyncIterator.next()
-        }
-    }
-
-}

@@ -125,3 +125,15 @@ internal extension AsyncSequence {
     }
 
 }
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+internal extension AsyncSequence {
+
+    func toAsyncStream() -> AsyncStream<Element> {
+        var asyncIterator = self.makeAsyncIterator()
+        return AsyncStream<Element> {
+            try? await asyncIterator.next()
+        }
+    }
+
+}
