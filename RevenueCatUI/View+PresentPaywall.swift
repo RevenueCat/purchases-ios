@@ -25,6 +25,9 @@ extension View {
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
+    /// 
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
         purchaseCompleted: PurchaseCompletedHandler? = nil
