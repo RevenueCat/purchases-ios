@@ -974,6 +974,8 @@ private extension PurchasesOrchestrator {
                 callbacks.removeValue(forKey: transaction.productIdentifier)
                 return value.completion
             } else {
+                // This callback was added to handle a purchase _after_ the transaction was created,
+                // therefore it should not be notified.
                 Logger.verbose(Strings.purchase.paymentqueue_ignoring_callback_for_older_transaction(
                     self,
                     transaction,
