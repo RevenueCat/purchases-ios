@@ -40,6 +40,7 @@ class BasePurchasesTests: TestCase {
         self.systemInfo = MockSystemInfo(finishTransactions: true, storeKit2Setting: self.storeKit2Setting)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
+        self.paywallCache = .init()
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -139,6 +140,7 @@ class BasePurchasesTests: TestCase {
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
+    var paywallCache: MockPaywallCacheWarming!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -208,7 +210,6 @@ class BasePurchasesTests: TestCase {
     }
 
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
-
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
@@ -250,6 +251,7 @@ class BasePurchasesTests: TestCase {
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
+                                   paywallCache: self.paywallCache,
                                    identityManager: self.identityManager,
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
@@ -500,6 +502,7 @@ private extension BasePurchasesTests {
         self.mockBeginRefundRequestHelper = nil
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
+        self.paywallCache = nil
         self.purchases = nil
     }
 
