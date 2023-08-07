@@ -31,7 +31,7 @@ extension PaywallsStrings: LogMessage {
             return "Warming up intro eligibility cache for \(products.count) products"
 
         case let .warming_up_images(imageURLs):
-            return "Warming up paywall images: \(imageURLs)"
+            return "Warming up paywall images cache: \(imageURLs)"
 
         case let .error_prefetching_image(url, error):
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
