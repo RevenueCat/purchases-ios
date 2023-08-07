@@ -105,7 +105,7 @@ struct Template2View: TemplateViewType {
                 textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
                 introEligibility: self.introEligibility[package.content],
                 foregroundColor: selected
-                    ? self.configuration.colors.backgroundColor
+                    ? self.configuration.colors.accent1Color
                     : self.configuration.colors.text1Color,
                 alignment: Self.packageButtonAlignment
             )
