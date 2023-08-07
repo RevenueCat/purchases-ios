@@ -237,6 +237,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionPoster: AttributionPoster
     private let backend: Backend
     private let deviceCache: DeviceCache
+    private let paywallCache: PaywallCacheWarmingType
     private let identityManager: IdentityManager
     private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
@@ -417,13 +418,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             }
         }()
 
-        let trialOrIntroPriceChecker = TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                                           receiptFetcher: receiptFetcher,
-                                                                           introEligibilityCalculator: introCalculator,
-                                                                           backend: backend,
-                                                                           currentUserProvider: identityManager,
-                                                                           operationDispatcher: operationDispatcher,
-                                                                           productsManager: productsManager)
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
+            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                      receiptFetcher: receiptFetcher,
+                                                      introEligibilityCalculator: introCalculator,
+                                                      backend: backend,
+                                                      currentUserProvider: identityManager,
+                                                      operationDispatcher: operationDispatcher,
+                                                      productsManager: productsManager)
+        )
+
+        let paywallCache = PaywallCacheWarming(introEligibiltyChecker: trialOrIntroPriceChecker)
 
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
@@ -437,6 +442,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   systemInfo: systemInfo,
                   offeringsFactory: offeringsFactory,
                   deviceCache: deviceCache,
+                  paywallCache: paywallCache,
                   identityManager: identityManager,
                   subscriberAttributes: subscriberAttributes,
                   operationDispatcher: operationDispatcher,
@@ -448,6 +454,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   purchasedProductsFetcher: purchasedProductsFetcher,
                   trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
     }
+
     // swiftlint:disable:next function_body_length
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
@@ -461,6 +468,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          systemInfo: SystemInfo,
          offeringsFactory: OfferingsFactory,
          deviceCache: DeviceCache,
+         paywallCache: PaywallCacheWarmingType,
          identityManager: IdentityManager,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -470,7 +478,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
-         trialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType
+         trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -504,6 +512,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.paymentQueueWrapper = paymentQueueWrapper
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
+        self.paywallCache = paywallCache
         self.identityManager = identityManager
         self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
@@ -516,7 +525,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
-        self.trialOrIntroPriceEligibilityChecker = .create(with: trialOrIntroPriceEligibilityChecker)
+        self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
 
         super.init()
 
@@ -1608,27 +1617,16 @@ private extension Purchases {
     }
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
-        self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
-                                                   isAppBackgrounded: isAppBackgrounded) { offerings in
-            if let offering = offerings.value?.current, let paywall = offering.paywall {
+        self.offeringsManager.updateOfferingsCache(
+            appUserID: self.appUserID,
+            isAppBackgrounded: isAppBackgrounded
+        ) { [cache = self.paywallCache] offerings in
+            if let offerings = offerings.value {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    self.warmUpEligibilityCache(offering: offering, paywall: paywall)
+                    cache.warmUpEligibilityCache(offerings: offerings)
                 }
             }
         }
-    }
-
-    private func warmUpEligibilityCache(offering: RCOffering, paywall: PaywallData) {
-        let packageTypes = Set(paywall.config.packages)
-        let products: Set<String> = .init(
-            offering.availablePackages
-                .lazy
-                .filter { packageTypes.contains($0.identifier) }
-                .map(\.storeProduct.productIdentifier)
-        )
-
-        Logger.debug(Strings.eligibility.warming_up_eligibility_cache(paywall))
-        self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: products) { _ in }
     }
 
 }
