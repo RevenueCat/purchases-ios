@@ -36,43 +36,19 @@ class VariablesTests: TestCase {
         expect(self.process("Purchase for {{ price }}")) == "Purchase for $10.99"
     }
 
+    func testPricePerPeriod() {
+        self.provider.localizedPricePerPeriod = "$3.99/yr"
+        expect(self.process("{{ price_per_period }}")) == "$3.99/yr"
+    }
+
     func testPricePerMonth() {
         self.provider.localizedPricePerMonth = "$3.99"
-        expect(self.process("{{ price_per_month }} per month")) == "$3.99 per month"
+        expect(self.process("{{ sub_price_per_month }} per month")) == "$3.99 per month"
     }
 
-    func testTotalPriceAndPerMonthWithDifferentPrices() {
-        self.provider.localizedPrice = "$49.99"
-        self.provider.localizedPricePerMonth = "$4.16"
-        expect(self.process("{{ total_price_and_per_month }}")) == "$49.99 ($4.16/mo)"
-    }
-
-    func testTotalPriceAndPerMonthForNonSubscriptions() {
-        self.provider.isSubscription = false
-        self.provider.isMonthly = false
-        self.provider.localizedPrice = "$49.99"
-        expect(self.process("{{ total_price_and_per_month }}")) == "$49.99"
-    }
-
-    func testTotalPriceAndPerMonthWithDifferentPricesSpanish() {
-        self.provider.localizedPrice = "49,99€"
-        self.provider.localizedPricePerMonth = "4,16€"
-        expect(self.process("{{ total_price_and_per_month }}",
-                            locale: .init(identifier: "es_ES"))) == "49,99€ (4,16€/mes)"
-    }
-
-    func testTotalPriceAndPerMonthWithDifferentPricesFrench() {
-        self.provider.isMonthly = false
-        self.provider.localizedPrice = "49,99€"
-        self.provider.localizedPricePerMonth = "4,16€"
-        expect(self.process("{{ total_price_and_per_month }}",
-                            locale: .init(identifier: "fr_FR"))) == "49,99€ (4,16€/m)"
-    }
-
-    func testTotalPriceAndPerMonthWithSamePrice() {
-        self.provider.isMonthly = true
-        self.provider.localizedPrice = "$4.99"
-        expect(self.process("{{ total_price_and_per_month }}")) == "$4.99"
+    func testTotalPriceAndPerMonth() {
+        self.provider.localizedPriceAndPerMonth = "$49.99 ($4.16/mth)"
+        expect(self.process("{{ total_price_and_per_month }}")) == self.provider.localizedPriceAndPerMonth
     }
 
     func testProductName() {
@@ -82,23 +58,28 @@ class VariablesTests: TestCase {
 
     func testPeriodName() {
         self.provider.periodName = "Monthly"
-        expect(self.process("{{ period }}")) == "Monthly"
+        expect(self.process("{{ sub_period }}")) == "Monthly"
     }
 
     func testSubscriptionDuration() {
         self.provider.subscriptionDuration = "1 month"
-        expect(self.process("{{ subscription_duration }}")) == "1 month"
+        expect(self.process("{{ sub_duration }}")) == "1 month"
     }
 
     func testIntroDurationName() {
         self.provider.introductoryOfferDuration = "1 week"
-        expect(self.process("Start {{ intro_duration }} trial")) == "Start 1 week trial"
+        expect(self.process("Start {{ sub_offer_duration }} trial")) == "Start 1 week trial"
+    }
+
+    func testIntroPrice() {
+        self.provider.introductoryOfferPrice = "$4.99"
+        expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice
     }
 
     func testMultipleVariables() {
         self.provider.productName = "Pro"
         self.provider.localizedPricePerMonth = "$1.99"
-        expect(self.process("Unlock {{ product_name }} for {{ price_per_month }}")) == "Unlock Pro for $1.99"
+        expect(self.process("Unlock {{ product_name }} for {{ sub_price_per_month }}")) == "Unlock Pro for $1.99"
     }
 
     func testHandlesUnknownVariablesGracefully() {
@@ -109,19 +90,19 @@ class VariablesTests: TestCase {
         let configuration = PaywallData.LocalizedConfiguration(
             title: "Buy {{ product_name }} for {{ app_name }}",
             subtitle: "Price: {{ price }}",
-            callToAction: "Unlock {{ product_name }} for {{ price_per_month }}",
-            callToActionWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
-            "Then {{ price_per_month }} every month",
-            offerDetails: "Purchase for {{ price }} every {{ subscription_duration }}",
-            offerDetailsWithIntroOffer: "Start your {{ intro_duration }} free trial\n" +
-            "Then {{ price_per_month }} every month",
-            offerName: "{{ period }}",
+            callToAction: "Unlock {{ product_name }} for {{ sub_price_per_month }}",
+            callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial\n" +
+            "Then {{ sub_price_per_month }} every month",
+            offerDetails: "Purchase for {{ price }} every {{ sub_duration }}",
+            offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} free trial\n" +
+            "Then {{ sub_price_per_month }} every month",
+            offerName: "{{ sub_period }}",
             features: [
                 .init(title: "Purchase {{ product_name }}",
-                      content: "Trial lasts {{ intro_duration }}",
+                      content: "Trial lasts {{ sub_offer_duration }}",
                       iconID: nil),
                 .init(title: "Only {{ price }}",
-                      content: "{{ period }} subscription",
+                      content: "{{ sub_period }} subscription",
                       iconID: nil)
             ]
         )
@@ -148,7 +129,7 @@ class VariablesTests: TestCase {
     // and it's better than crashing.
     func testPricePerMonthForLifetimeProductsReturnsPrice() {
         let result = VariableHandler.processVariables(
-            in: "{{ price_per_month }}",
+            in: "{{ sub_price_per_month }}",
             with: TestData.lifetimePackage
         )
         expect(result) == "$119.49"
@@ -178,14 +159,15 @@ private extension VariablesTests {
 private struct MockVariableProvider: VariableDataProvider {
 
     var applicationName: String = ""
-    var isSubscription: Bool = true
-    var isMonthly: Bool = false
     var localizedPrice: String = ""
     var localizedPricePerMonth: String = ""
+    var localizedPriceAndPerMonth: String = ""
+    var localizedPricePerPeriod: String = ""
     var productName: String = ""
     var periodName: String = ""
     var subscriptionDuration: String?
     var introductoryOfferDuration: String?
+    var introductoryOfferPrice: String = ""
 
     func periodName(_ locale: Locale) -> String {
         return self.periodName
@@ -197,6 +179,18 @@ private struct MockVariableProvider: VariableDataProvider {
 
     func introductoryOfferDuration(_ locale: Locale) -> String? {
         return self.introductoryOfferDuration
+    }
+
+    func localizedPricePerPeriod(_ locale: Locale) -> String {
+        return self.localizedPricePerPeriod
+    }
+
+    func localizedPriceAndPerMonth(_ locale: Locale) -> String {
+        return self.localizedPriceAndPerMonth
+    }
+
+    var localizedIntroductoryOfferPrice: String? {
+        return self.introductoryOfferPrice
     }
 
 }

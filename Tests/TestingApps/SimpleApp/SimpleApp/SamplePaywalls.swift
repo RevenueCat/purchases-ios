@@ -204,9 +204,9 @@ private extension SamplePaywallLoader {
                 title: "Ignite your child's curiosity",
                 subtitle: "Get access to all our educational content trusted by thousands of parents.",
                 callToAction: "Purchase for {{ price }}",
-                callToActionWithIntroOffer: "Purchase for {{ price_per_month }} per month",
-                offerDetails: "{{ price_per_month }} per month",
-                offerDetailsWithIntroOffer: "Start your {{ intro_duration }} trial, then {{ price_per_month }} per month"
+                callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
+                offerDetails: "{{ sub_price_per_month }} per month",
+                offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
@@ -243,10 +243,10 @@ private extension SamplePaywallLoader {
             localization: .init(
                 title: "Call to action for better conversion.",
                 subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
-                callToAction: "Subscribe for {{ price_per_month }}/mo",
+                callToAction: "Subscribe for {{ sub_price_per_month }}/mo",
                 offerDetails: "{{ total_price_and_per_month }}",
-                offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ intro_duration }} trial",
-                offerName: "{{ period }}"
+                offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ sub_offer_duration }} trial",
+                offerName: "{{ sub_period }}"
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
@@ -273,9 +273,9 @@ private extension SamplePaywallLoader {
             localization: .init(
                 title: "How your free trial works",
                 callToAction: "Start",
-                callToActionWithIntroOffer: "Start your {{ intro_duration }} free",
-                offerDetails: "Only {{ price }} per {{ period }}",
-                offerDetailsWithIntroOffer: "First {{ intro_duration }} free, then\n{{ price }} per year ({{ price_per_month }} per month)",
+                callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free",
+                offerDetails: "Only {{ price_per_period }}",
+                offerDetailsWithIntroOffer: "First {{ sub_offer_duration }} free, then\n{{ price }} per year ({{ sub_price_per_month }} per month)",
                 features: [
                     .init(title: "Today",
                           content: "Full access to 1000+ workouts plus free meal plan worth $49.99.",
@@ -315,8 +315,8 @@ private extension SamplePaywallLoader {
                 title: "Get _unlimited_ access",
                 callToAction: "Continue",
                 offerDetails: nil,
-                offerDetailsWithIntroOffer: "Includes {{ intro_duration }} **free** trial",
-                offerName: "{{ subscription_duration }}"
+                offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
+                offerName: "{{ sub_duration }}"
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
