@@ -5,7 +5,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct Template1View: TemplateViewType {
 
-    private let configuration: TemplateViewConfiguration
+    let configuration: TemplateViewConfiguration
     private var localization: ProcessedLocalizedConfiguration
 
     @EnvironmentObject
@@ -34,14 +34,14 @@ struct Template1View: TemplateViewType {
                 introEligibility: self.introEligibility,
                 foregroundColor: self.configuration.colors.text1Color
             )
-            .font(self.configuration.mode.offerDetailsFont)
+            .font(self.font(for: self.configuration.mode.offerDetailsFont))
             .multilineTextAlignment(.center)
 
             self.button
                 .padding(.horizontal)
 
             if case .fullScreen = self.configuration.mode {
-                FooterView(configuration: self.configuration.configuration,
+                FooterView(configuration: self.configuration,
                            color: self.configuration.colors.callToActionBackgroundColor,
                            purchaseHandler: self.purchaseHandler)
             }
@@ -55,7 +55,7 @@ struct Template1View: TemplateViewType {
 
             Group {
                 Text(.init(self.localization.title))
-                    .font(self.configuration.mode.titleFont)
+                    .font(self.font(for: self.configuration.mode.titleFont))
                     .fontWeight(.heavy)
                     .padding(
                         self.configuration.mode.displaySubtitle
@@ -65,7 +65,7 @@ struct Template1View: TemplateViewType {
 
                 if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
                     Text(.init(subtitle))
-                        .font(self.configuration.mode.subtitleFont)
+                        .font(self.font(for: self.configuration.mode.subtitleFont))
                 }
             }
             .padding(.horizontal, 20)
@@ -112,10 +112,9 @@ struct Template1View: TemplateViewType {
     private var button: some View {
         PurchaseButton(
             package: self.configuration.packages.single.content,
-            colors: self.configuration.colors,
             localization: self.localization,
+            configuration: self.configuration,
             introEligibility: self.introEligibility,
-            mode: self.configuration.mode,
             purchaseHandler: self.purchaseHandler
         )
     }
@@ -142,7 +141,7 @@ private extension PaywallViewMode {
         }
     }
 
-    var titleFont: Font {
+    var titleFont: Font.TextStyle {
         switch self {
         case .fullScreen: return .largeTitle
         case .card: return .title
@@ -150,7 +149,7 @@ private extension PaywallViewMode {
         }
     }
 
-    var subtitleFont: Font {
+    var subtitleFont: Font.TextStyle {
         switch self {
         case .fullScreen: return .subheadline
         case .card, .banner: return .callout
@@ -164,7 +163,7 @@ private extension PaywallViewMode {
         }
     }
 
-    var offerDetailsFont: Font {
+    var offerDetailsFont: Font.TextStyle {
         switch self {
         case .fullScreen: return .callout
         case .card, .banner: return .caption
