@@ -48,6 +48,8 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
 
 }
 
+#if canImport(UIKit)
+
 /// A ``PaywallFontProvider`` implementation that allows you to provide a custom
 /// font name, and it will automatically scale up based on the size category.
 open class CustomPaywallFontProvider: PaywallFontProvider {
@@ -69,7 +71,11 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
 
 }
 
+#endif
+
 // MARK: - Private
+
+#if canImport(UIKit)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension Font.TextStyle {
@@ -92,3 +98,5 @@ private extension Font.TextStyle {
     }
 
 }
+
+#endif
