@@ -59,6 +59,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
         self.configuration = offering.paywall!.configuration(
             for: offering,
             mode: .fullScreen,
+            fonts: DefaultPaywallFontProvider(),
             locale: .current
         )
         self.presentInSheet = presentInSheet
