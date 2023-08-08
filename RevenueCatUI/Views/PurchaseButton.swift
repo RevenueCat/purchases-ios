@@ -14,12 +14,49 @@ struct PurchaseButton: View {
 
     let package: Package
     let colors: PaywallData.Configuration.Colors
+    let fonts: PaywallFontProvider
     let localization: ProcessedLocalizedConfiguration
     let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
 
     @ObservedObject
     var purchaseHandler: PurchaseHandler
+
+    init(
+        package: Package,
+        localization: ProcessedLocalizedConfiguration,
+        configuration: TemplateViewConfiguration,
+        introEligibility: IntroEligibilityStatus?,
+        purchaseHandler: PurchaseHandler
+    ) {
+        self.init(
+            package: package,
+            colors: configuration.colors,
+            fonts: configuration.fonts,
+            localization: localization,
+            introEligibility: introEligibility,
+            mode: configuration.mode,
+            purchaseHandler: purchaseHandler
+        )
+    }
+
+    init(
+        package: Package,
+        colors: PaywallData.Configuration.Colors,
+        fonts: PaywallFontProvider,
+        localization: ProcessedLocalizedConfiguration,
+        introEligibility: IntroEligibilityStatus?,
+        mode: PaywallViewMode,
+        purchaseHandler: PurchaseHandler
+    ) {
+        self.package = package
+        self.colors = colors
+        self.fonts = fonts
+        self.localization = localization
+        self.introEligibility = introEligibility
+        self.mode = mode
+        self.purchaseHandler = purchaseHandler
+    }
 
     @Environment(\.dismiss)
     private var dismiss
@@ -48,7 +85,7 @@ struct PurchaseButton: View {
                         : nil
                 )
         }
-        .font(self.mode.buttonFont.weight(.semibold))
+        .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
         .tint(self.colors.callToActionBackgroundColor)
         .buttonBorderShape(self.mode.buttonBorderShape)
         .controlSize(self.mode.buttonSize)
@@ -62,7 +99,7 @@ struct PurchaseButton: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewMode {
 
-    var buttonFont: Font {
+    var buttonFont: Font.TextStyle {
         switch self {
         case .fullScreen, .card: return .title3
         case .banner: return .footnote
@@ -120,6 +157,7 @@ struct PurchaseButton_Previews: PreviewProvider {
             PurchaseButton(
                 package: Self.package,
                 colors: TestData.colors,
+                fonts: DefaultPaywallFontProvider(),
                 localization: TestData.localization1.processVariables(with: Self.package, locale: .current),
                 introEligibility: self.eligibility,
                 mode: self.mode,
