@@ -9,10 +9,18 @@ import SnapshotTesting
 class Template2ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        let view = PaywallView(offering: Self.offering.withLocalImages,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-        view.snapshot(size: Self.fullScreenSize)
+        PaywallView(offering: Self.offering.withLocalImages,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.fullScreenSize)
+    }
+
+    func testCustomFont() {
+        PaywallView(offering: Self.offering.withLocalImages,
+                    fonts: Self.fonts,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.fullScreenSize)
     }
 
     func testPurchasingState() {

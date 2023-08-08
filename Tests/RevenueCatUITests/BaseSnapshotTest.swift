@@ -34,6 +34,7 @@ extension BaseSnapshotTest {
     static let eligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .eligible)
     static let ineligibleChecker: TrialOrIntroEligibilityChecker = .producing(eligibility: .ineligible)
     static let purchaseHandler: PurchaseHandler = .mock()
+    static let fonts: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)
 

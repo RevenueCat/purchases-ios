@@ -12,7 +12,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct Template3View: TemplateViewType {
 
-    private let configuration: TemplateViewConfiguration
+    let configuration: TemplateViewConfiguration
     private let localization: ProcessedLocalizedConfiguration
 
     @EnvironmentObject
@@ -42,7 +42,7 @@ struct Template3View: TemplateViewType {
             }
 
             Text(.init(self.localization.title))
-                .font(.title)
+                .font(self.font(for: .title))
                 .foregroundStyle(self.configuration.colors.text1Color)
                 .multilineTextAlignment(.center)
 
@@ -60,20 +60,19 @@ struct Template3View: TemplateViewType {
                 foregroundColor: self.configuration.colors.text2Color
             )
             .multilineTextAlignment(.center)
-            .font(.subheadline)
+            .font(self.font(for: .subheadline))
             .padding(.bottom)
 
             PurchaseButton(
                 package: self.configuration.packages.single.content,
-                colors: self.configuration.colors,
                 localization: self.localization,
+                configuration: self.configuration,
                 introEligibility: self.introEligibility,
-                mode: self.configuration.mode,
                 purchaseHandler: self.purchaseHandler
             )
             .padding(.bottom)
 
-            FooterView(configuration: self.configuration.configuration,
+            FooterView(configuration: self.configuration,
                        color: self.configuration.colors.text2Color,
                        purchaseHandler: self.purchaseHandler)
         }
@@ -84,7 +83,9 @@ struct Template3View: TemplateViewType {
     private var features: some View {
         VStack(spacing: 40) {
             ForEach(self.localization.features, id: \.title) { feature in
-                FeatureView(feature: feature, colors: self.configuration.colors)
+                FeatureView(feature: feature,
+                            colors: self.configuration.colors,
+                            fonts: self.configuration.fonts)
                     .accessibilityElement(children: .combine)
             }
         }
@@ -112,6 +113,7 @@ private struct FeatureView: View {
 
     let feature: PaywallData.LocalizedConfiguration.Feature
     let colors: PaywallData.Configuration.Colors
+    let fonts: PaywallFontProvider
 
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
@@ -148,14 +150,14 @@ private struct FeatureView: View {
 
                 Text(.init(self.feature.title))
                     .foregroundStyle(self.colors.text1Color)
-                    .font(.headline)
+                    .font(self.font(for: .headline))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             if let content = self.feature.content {
                 Text(.init(content))
                     .foregroundStyle(self.colors.text2Color)
-                    .font(.body)
+                    .font(self.font(for: .body))
             }
         }
         .frame(maxWidth: .infinity)
@@ -165,6 +167,10 @@ private struct FeatureView: View {
     /// Determines whether the icon is displayed to the left of `content`.
     private var horizontalIconLayout: Bool {
         return self.dynamicTypeSize < Self.cutoffForHorizontalLayout
+    }
+
+    private func font(for textStyle: Font.TextStyle) -> Font {
+        return self.fonts.font(for: textStyle)
     }
 
     @ScaledMetric(relativeTo: .headline)
