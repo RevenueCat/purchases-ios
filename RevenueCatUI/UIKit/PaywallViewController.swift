@@ -36,7 +36,9 @@ public final class PaywallViewController: UIViewController {
     }
 
     private lazy var hostingController: UIHostingController<AnyView> = {
-        let view = PaywallView(offering: self.offering)
+        let paywallView = self.offering.map { PaywallView(offering: $0) } ?? PaywallView()
+
+        let view = paywallView
             .onPurchaseCompleted { [weak self] customerInfo in
                 guard let self = self else { return }
                 self.delegate?.paywallViewController(self, didFinishPurchasingWith: customerInfo)
