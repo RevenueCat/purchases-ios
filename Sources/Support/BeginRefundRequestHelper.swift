@@ -23,7 +23,7 @@ class BeginRefundRequestHelper {
     private let customerInfoManager: CustomerInfoManager
     private let currentUserProvider: CurrentUserProvider
 
-#if os(iOS)
+#if os(iOS) || os(xrOS)
 
     private var _sk2Helper: Any?
 
@@ -49,7 +49,7 @@ class BeginRefundRequestHelper {
         self.customerInfoManager = customerInfoManager
         self.currentUserProvider = currentUserProvider
 
-        #if os(iOS)
+        #if os(iOS) || os(xrOS)
         if #available(iOS 15, *) {
             self._sk2Helper = SK2BeginRefundRequestHelper()
         } else {
@@ -58,7 +58,7 @@ class BeginRefundRequestHelper {
         #endif
     }
 
-#if os(iOS)
+#if os(iOS) || os(xrOS)
     /*
      * Entry point for beginning the refund request. Handles getting the current windowScene and verifying the
      * transaction before calling into `SK2BeginRefundRequestHelper`'s `initiateRefundRequest`.
@@ -103,7 +103,7 @@ extension BeginRefundRequestHelper: @unchecked Sendable {}
 
 // MARK: - Private
 
-#if os(iOS)
+#if os(iOS) || os(xrOS)
 @available(iOS 15.0, *)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)

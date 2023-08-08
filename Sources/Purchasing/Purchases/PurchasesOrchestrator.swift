@@ -541,7 +541,7 @@ final class PurchasesOrchestrator {
         self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
     }
 
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || os(xrOS)
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -557,7 +557,7 @@ final class PurchasesOrchestrator {
     }
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(xrOS)
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -695,7 +695,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
 
 extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
     @available(iOS 13.4, macCatalyst 13.4, *)
     var paymentQueueWrapperShouldShowPriceConsent: Bool {
         return self.storeKit1WrapperShouldShowPriceConsent

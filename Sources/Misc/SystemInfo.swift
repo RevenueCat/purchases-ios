@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(tvOS) || os(xrOS) || targetEnvironment(macCatalyst)
 import UIKit
 #elseif os(watchOS)
 import UIKit
@@ -142,7 +142,7 @@ class SystemInfo {
     /// - Seealso: `isApplicationBackgrounded(completion:)`
     @MainActor
     var isApplicationBackgrounded: Bool {
-    #if os(iOS) || os(tvOS)
+    #if os(iOS) || os(tvOS) || os(xrOS)
         return self.isApplicationBackgroundedIOSAndTVOS
     #elseif os(macOS)
         return false
@@ -161,7 +161,7 @@ class SystemInfo {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }
 
-    #if os(iOS) || os(tvOS)
+    #if os(iOS) || os(tvOS) || os(xrOS)
     var sharedUIApplication: UIApplication? {
         return Self.sharedUIApplication
     }
@@ -179,7 +179,7 @@ class SystemInfo {
 
 }
 
-#if os(iOS)
+#if os(iOS) || os(xrOS)
 extension SystemInfo {
 
     @available(iOS 13.0, macCatalystApplicationExtension 13.1, *)
@@ -217,6 +217,8 @@ extension SystemInfo {
     static let platformHeaderConstant = "tvOS"
     #elseif os(macOS)
     static let platformHeaderConstant = "macOS"
+    #elseif os(xrOS)
+    static let platformHeaderConstant = "visionOS"
     #endif
 
 }
@@ -224,7 +226,7 @@ extension SystemInfo {
 extension SystemInfo {
 
     static var applicationWillEnterForegroundNotification: Notification.Name {
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(tvOS) || os(xrOS)
             UIApplication.willEnterForegroundNotification
         #elseif os(macOS)
             NSApplication.willBecomeActiveNotification
@@ -234,7 +236,7 @@ extension SystemInfo {
     }
 
     static var applicationDidEnterBackgroundNotification: Notification.Name {
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(tvOS) || os(xrOS)
             UIApplication.didEnterBackgroundNotification
         #elseif os(macOS)
             NSApplication.didResignActiveNotification
@@ -251,7 +253,7 @@ extension SystemInfo {
 
 private extension SystemInfo {
 
-    #if os(iOS) || os(tvOS)
+    #if os(iOS) || os(tvOS) || os(xrOS)
 
     // iOS/tvOS App extensions can't access UIApplication.sharedApplication, and will fail to compile if any calls to
     // it are made. There are no pre-processor macros available to check if the code is running in an app extension,

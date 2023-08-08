@@ -184,7 +184,7 @@ extension Purchases {
 
     #endif
 
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || os(xrOS)
 
     @available(iOS 13.0, macOS 10.15, *)
     @available(watchOS, unavailable)

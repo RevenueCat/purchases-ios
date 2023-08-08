@@ -11,7 +11,7 @@
 //
 //  Created by Madeline Beyl on 10/21/21.
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
 import Foundation
 import StoreKit
 import UIKit
