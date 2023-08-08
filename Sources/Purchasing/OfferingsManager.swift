@@ -73,11 +73,7 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        Logger.debug(isAppBackgrounded
-                     ? Strings.offering.offerings_stale_updating_in_background
-                     : Strings.offering.offerings_stale_updating_in_foreground)
-
-        self.backend.offerings.getOfferings(appUserID: appUserID, withRandomDelay: isAppBackgrounded) { result in
+        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
                 self.handleOfferingsBackendResult(with: response,

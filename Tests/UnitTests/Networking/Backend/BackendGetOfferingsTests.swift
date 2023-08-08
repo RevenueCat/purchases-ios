@@ -30,7 +30,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(result).to(beSuccess())
@@ -45,7 +45,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: true, completion: completed)
+            self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: true, completion: completed)
         }
 
         expect(result).to(beSuccess())
@@ -60,8 +60,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
                             response: Self.noOfferingsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -73,8 +73,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
                             response: Self.noOfferingsResponse as [String: Any],
                             delay: .milliseconds(10))
         )
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
@@ -92,8 +92,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.httpClient.mock(requestPath: .getOfferings(appUserID: Self.userID), response: response)
         self.httpClient.mock(requestPath: .getOfferings(appUserID: userID2), response: response)
 
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: { _ in })
-        self.offerings.getOfferings(appUserID: userID2, withRandomDelay: false, completion: { _ in })
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false, completion: { _ in })
+        self.offerings.getOfferings(appUserID: userID2, isAppBackgrounded: false, completion: { _ in })
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -105,7 +105,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         let result: Atomic<Result<OfferingsResponse, BackendError>?> = nil
-        self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false) {
+        self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
@@ -135,7 +135,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(result).to(beFailure())
@@ -150,7 +150,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offerings.getOfferings(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(result).to(beFailure())
@@ -159,7 +159,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
     func testGetOfferingsSkipsBackendCallIfAppUserIDIsEmpty() {
         waitUntil { completed in
-            self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { _ in
+            self.offerings.getOfferings(appUserID: "", isAppBackgrounded: false) { _ in
                 completed()
             }
         }
@@ -169,7 +169,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
     func testGetOfferingsCallsCompletionWithErrorIfAppUserIDIsEmpty() {
         let receivedError = waitUntilValue { completed in
-            self.offerings.getOfferings(appUserID: "", withRandomDelay: false) { result in
+            self.offerings.getOfferings(appUserID: "", isAppBackgrounded: false) { result in
                 completed(result.error)
             }
         }

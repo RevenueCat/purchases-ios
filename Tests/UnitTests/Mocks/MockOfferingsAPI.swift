@@ -39,17 +39,17 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, randomDelay: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, randomDelay: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
 
     override func getOfferings(appUserID: String,
-                               withRandomDelay randomDelay: Bool,
+                               isAppBackgrounded: Bool,
                                completion: @escaping OfferingsResponseHandler) {
         self.invokedGetOfferingsForAppUserID = true
         self.invokedGetOfferingsForAppUserIDCount += 1
-        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, randomDelay, completion)
-        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, randomDelay, completion))
+        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, completion)
+        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, completion))
 
         completion(self.stubbedGetOfferingsCompletionResult!)
     }

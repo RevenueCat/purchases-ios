@@ -348,7 +348,7 @@ extension OfferingsManagerTests {
         // then
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == expectedCallCount
         expect(self.mockDeviceCache.cacheOfferingsCount) == expectedCallCount
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.randomDelay) == true
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.isAppBackgrounded) == true
         expect(result).to(beSuccess())
 
         let offerings = try XCTUnwrap(result?.value)
