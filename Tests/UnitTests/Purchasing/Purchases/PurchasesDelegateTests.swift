@@ -60,22 +60,47 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.userID).toEventuallyNot(beNil())
     }
 
-    func testAutomaticallyFetchesCustomerInfoOnDidBecomeActiveIfCacheStale() {
+    func testAutomaticallyFetchesCustomerInfoOnWillEnterForegroundIfCacheStale() {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.clock.advance(by: SystemInfo.cacheUpdateThrottleDuration + .seconds(1))
+
         self.notificationCenter.fireNotifications()
 
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(2))
     }
 
-    func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
+    func testDoesntAutomaticallyFetchCustomerInfoOnWillEnterForegroundIfCacheValid() {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
         self.deviceCache.stubbedIsCustomerInfoCacheStale = false
 
         self.notificationCenter.fireNotifications()
 
+        expect(self.backend.getCustomerInfoCallCount) == 1
+    }
+
+    func testDoesNotFetchCustomerInfoTwiceOnAppLaunch() {
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+
+        self.notificationCenter.fireNotifications()
+        expect(self.backend.getCustomerInfoCallCount) == 1
+        expect(self.deviceCache.cachedCustomerInfoCount) == 1
+    }
+
+    func testForegroundingAppMultipleTimesDoesNotFetchCustomerInfoRepeteadly() {
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = true
+
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+
+        for _ in 0..<10 {
+            self.notificationCenter.fireNotifications()
+        }
+
+        expect(self.backend.getCustomerInfoCallCount) == 1
+        expect(self.deviceCache.cachedCustomerInfoCount) == 1
     }
 
     func testAutomaticallyCallsDelegateOnDidBecomeActiveAndUpdate() {

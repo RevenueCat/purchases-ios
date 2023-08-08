@@ -37,7 +37,10 @@ class BasePurchasesTests: TestCase {
         self.mockPaymentQueueWrapper = MockPaymentQueueWrapper()
 
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
-        self.systemInfo = MockSystemInfo(finishTransactions: true, storeKit2Setting: self.storeKit2Setting)
+        self.clock = TestClock()
+        self.systemInfo = MockSystemInfo(finishTransactions: true,
+                                         storeKit2Setting: self.storeKit2Setting,
+                                         clock: self.clock)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.requestFetcher = MockRequestFetcher()
@@ -142,6 +145,7 @@ class BasePurchasesTests: TestCase {
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
+    var clock: TestClock!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
     var mockIntroEligibilityCalculator: MockIntroEligibilityCalculator!
@@ -203,7 +207,8 @@ class BasePurchasesTests: TestCase {
     func setUpPurchasesObserverModeOn() {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
-                                         storeKit2Setting: self.storeKit2Setting)
+                                         storeKit2Setting: self.storeKit2Setting,
+                                         clock: self.clock)
         self.initializePurchasesInstance(appUserId: nil)
     }
 

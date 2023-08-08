@@ -18,12 +18,14 @@ class MockSystemInfo: SystemInfo {
 
     convenience init(finishTransactions: Bool,
                      storeKit2Setting: StoreKit2Setting = .default,
-                     customEntitlementsComputation: Bool = false) {
+                     customEntitlementsComputation: Bool = false,
+                     clock: ClockType = TestClock()) {
         let dangerousSettings = DangerousSettings(customEntitlementComputation: customEntitlementsComputation)
         self.init(platformInfo: nil,
                   finishTransactions: finishTransactions,
                   storeKit2Setting: storeKit2Setting,
-                  dangerousSettings: dangerousSettings)
+                  dangerousSettings: dangerousSettings,
+                  clock: clock)
     }
 
     override func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {

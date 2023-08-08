@@ -233,6 +233,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.systemInfo.finishTransactions = newValue }
     }
 
+    private let lastCacheUpdateTime: Atomic<DispatchTime?> = nil
+
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
@@ -1487,10 +1489,13 @@ private extension Purchases {
     @objc func applicationWillEnterForeground() {
         Logger.debug(Strings.configure.application_foregrounded)
 
+        guard !self.shouldSkipCacheUpdate() else { return }
+
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false)
+        self.setLastCacheUpdateTime()
         self.dispatchSyncSubscriberAttributes()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -1535,6 +1540,8 @@ private extension Purchases {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     self.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
                 }
+
+                self.setLastCacheUpdateTime()
             }
         }
     }
@@ -1601,6 +1608,23 @@ private extension Purchases {
         self.offeringsManager.updateOfferingsCache(appUserID: self.appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
                                                    completion: nil)
+    }
+
+    func shouldSkipCacheUpdate() -> Bool {
+        guard let lastUpdate = self.lastCacheUpdateTime.value else { return false }
+
+        let interval = self.systemInfo.clock.durationSince(lastUpdate)
+        let shouldSkip = interval <= SystemInfo.cacheUpdateThrottleDuration.seconds
+
+        if shouldSkip {
+            Logger.debug(Strings.purchase.throttling_cache_update(interval))
+        }
+
+        return shouldSkip
+    }
+
+    func setLastCacheUpdateTime() {
+        self.lastCacheUpdateTime.value = .now()
     }
 
 }

@@ -111,4 +111,16 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
+    func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
+        try await self.logger.verifyMessageIsEventuallyLogged("GetCustomerInfoOperation: Finished")
+
+        self.logger.clearMessages()
+
+        // This notification is posted automatically on app launch
+        NotificationCenter.default.post(name: SystemInfo.applicationWillEnterForegroundNotification,
+                                        object: nil)
+
+        try await self.logger.verifyMessageIsEventuallyLogged("Throttling cache update", level: .debug)
+    }
+
 }

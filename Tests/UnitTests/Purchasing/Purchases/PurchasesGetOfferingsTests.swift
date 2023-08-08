@@ -50,6 +50,39 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.mockOfflineEntitlementsManager.invokedUpdateProductsEntitlementsCacheIfStale) == false
     }
 
+    func testForegroundingAppUpdatesOfferingsIfCacheIsStale() {
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+
+        self.deviceCache.stubbedIsOfferingsCacheStale = true
+        self.clock.advance(by: SystemInfo.cacheUpdateThrottleDuration + .seconds(1))
+
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 2
+    }
+
+    func testForegroundingAppDoesNotUpdateOfferingsIfCacheIsNotStale() {
+        self.setupPurchases()
+
+        self.deviceCache.stubbedIsOfferingsCacheStale = false
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+    }
+
+    func testForegroundingAppMultipleTimesDoesNotFetchOfferingsRepeteadly() {
+        self.setupPurchases()
+        self.deviceCache.stubbedIsOfferingsCacheStale = true
+
+        for _ in 0..<10 {
+            self.notificationCenter.fireNotifications()
+        }
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount) == 1
+    }
+
     func testProductDataIsCachedForOfferings() throws {
         self.setupPurchases()
 

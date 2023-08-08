@@ -36,7 +36,7 @@ class Backend {
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
-                                    signing: Signing(apiKey: apiKey),
+                                    signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
                                     requestTimeout: httpClientTimeout)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,

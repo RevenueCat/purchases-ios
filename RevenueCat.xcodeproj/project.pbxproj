@@ -237,6 +237,7 @@
 		4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE61A83264190830021CEA0 /* Constants.swift */; };
 		4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
 		4F6E81E62A82AAE1006EF181 /* HTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6E81E52A82AAE1006EF181 /* HTTPRequestPath.swift */; };
+		4F6E81982A81BC30006EF181 /* TestClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA492948EF4F001700FD /* TestClock.swift */; };
 		4F6EEBD92A38ED76007FD783 /* FakeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6EEBD82A38ED76007FD783 /* FakeSigning.swift */; };
 		4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE02922C56300936709 /* AsyncTestHelpers.swift */; };
 		4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
@@ -3139,6 +3140,7 @@
 				4FA4C9752A16D49E007D2803 /* MockOfflineEntitlementsManager.swift in Sources */,
 				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
+				4F6E81982A81BC30006EF181 /* TestClock.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
 				F535515F286B5BE5009CA47A /* MockOfferingsManager.swift in Sources */,

@@ -33,7 +33,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
-    let systemInfo: SystemInfo = MockSystemInfo(finishTransactions: true)
+    var systemInfo: MockSystemInfo!
+    var clock: TestClock!
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
     var mockAttributionPoster: AttributionPoster!
@@ -67,7 +68,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.clock = TestClock()
+        self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
+
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
@@ -218,8 +222,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     // MARK: Notifications
 
+    func testUpdatingOnForegroundIsThrottled() {
+        self.setupPurchases()
+
+        self.mockNotificationCenter.fireNotifications()
+
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
+    }
+
     func testSubscribesToForegroundNotifications() {
-        setupPurchases()
+        self.setupPurchases()
 
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
@@ -227,12 +239,14 @@ class PurchasesSubscriberAttributesTests: TestCase {
             $0.notificationName == SystemInfo.applicationWillEnterForegroundNotification
         })
 
+        self.clock.advance(by: SystemInfo.cacheUpdateThrottleDuration + .seconds(1))
         self.mockNotificationCenter.fireNotifications()
+
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
     func testSubscribesToBackgroundNotifications() {
-        setupPurchases()
+        self.setupPurchases()
 
         expect(self.mockNotificationCenter.observers).toNot(beEmpty())
 
@@ -240,8 +254,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
             $0.notificationName == SystemInfo.applicationDidEnterBackgroundNotification
         })
 
+        let previousCount = self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount
         self.mockNotificationCenter.fireNotifications()
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == previousCount + 1
     }
 
     func testSubscriberAttributesSyncIsPerformedAfterCustomerInfoSync() throws {
@@ -256,7 +272,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         self.mockNotificationCenter.fireNotifications()
 
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
         expect(self.mockDeviceCache.cachedCustomerInfo.count) == 1
     }

@@ -26,6 +26,7 @@ enum PurchaseStrings {
     case purchases_orchestrator_init(PurchasesOrchestrator)
     case purchases_orchestrator_deinit(PurchasesOrchestrator)
     case updating_all_caches
+    case throttling_cache_update(TimeInterval)
     case not_updating_caches_while_products_are_in_progress
     case cannot_purchase_product_appstore_configuration_error
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
@@ -109,6 +110,9 @@ extension PurchaseStrings: LogMessage {
 
         case .updating_all_caches:
             return "Updating all caches"
+
+        case let .throttling_cache_update(timeInterval):
+            return String(format: "Throttling cache update, only %.1f seconds elapsed", timeInterval)
 
         case .not_updating_caches_while_products_are_in_progress:
             return "Detected purchase in progress: will skip cache updates"
