@@ -26,6 +26,7 @@ struct LoadingPaywallView: View {
             ),
             paywall: Self.defaultPaywall,
             mode: .fullScreen,
+            fonts: DefaultPaywallFontProvider(),
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
         )
