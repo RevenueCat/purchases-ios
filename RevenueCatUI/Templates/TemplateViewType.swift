@@ -6,7 +6,18 @@ import SwiftUI
 @available(tvOS, unavailable)
 protocol TemplateViewType: SwiftUI.View {
 
+    var configuration: TemplateViewConfiguration { get }
+
     init(_ configuration: TemplateViewConfiguration)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension TemplateViewType {
+
+    func font(for textStyle: Font.TextStyle) -> Font {
+        return self.configuration.fonts.font(for: textStyle)
+    }
 
 }
 
@@ -31,9 +42,10 @@ extension PaywallData {
     @ViewBuilder
     func createView(for offering: Offering,
                     mode: PaywallViewMode,
+                    fonts: PaywallFontProvider,
                     introEligibility: IntroEligibilityViewModel,
                     locale: Locale) -> some View {
-        switch self.configuration(for: offering, mode: mode, locale: locale) {
+        switch self.configuration(for: offering, mode: mode, fonts: fonts, locale: locale) {
         case let .success(configuration):
             Self.createView(template: self.template, configuration: configuration)
                 .task(id: offering) {
@@ -57,6 +69,7 @@ extension PaywallData {
     func configuration(
         for offering: Offering,
         mode: PaywallViewMode,
+        fonts: PaywallFontProvider,
         locale: Locale
     ) -> Result<TemplateViewConfiguration, Error> {
         return Result {
@@ -70,6 +83,7 @@ extension PaywallData {
                                       locale: locale),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
+                fonts: fonts,
                 assetBaseURL: self.assetBaseURL
             )
         }

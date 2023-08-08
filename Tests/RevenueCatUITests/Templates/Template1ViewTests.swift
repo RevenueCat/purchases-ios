@@ -10,10 +10,18 @@ import SwiftUI
 class Template1ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-        view.snapshot(size: Self.fullScreenSize)
+        PaywallView(offering: Self.offeringWithNoIntroOffer,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.fullScreenSize)
+    }
+
+    func testCustomFont() {
+        PaywallView(offering: Self.offeringWithNoIntroOffer,
+                    fonts: Self.fonts,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.fullScreenSize)
     }
 
     // Disabled until we bring modes back.

@@ -13,6 +13,7 @@ import SwiftUI
 struct App: View {
 
     private var offering: Offering
+    private var fonts: PaywallFontProvider
     private var completed: PurchaseCompletedHandler = { (_: CustomerInfo) in }
 
     var body: some View {
@@ -25,18 +26,27 @@ struct App: View {
     var content: some View {
         PaywallView()
         PaywallView(mode: .fullScreen)
-        PaywallView(offering: nil)
+        PaywallView(fonts: self.fonts)
+        PaywallView(mode: .fullScreen, fonts: self.fonts)
         PaywallView(offering: self.offering)
         PaywallView(offering: self.offering, mode: .fullScreen)
+        PaywallView(offering: self.offering, fonts: self.fonts)
+        PaywallView(offering: self.offering, mode: .fullScreen, fonts: self.fonts)
     }
 
     @ViewBuilder
     var checkPresentPaywallIfNeeded: some View {
         Text("")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", purchaseCompleted: completed)
-            .presentPaywallIfNeeded { (_: CustomerInfo) in false }
-            .presentPaywallIfNeeded { (_: CustomerInfo) in false } purchaseCompleted: { completed($0) }
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts, purchaseCompleted: completed)
+            .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
+            .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                completed($0)
+            }
     }
 
     @ViewBuilder
@@ -54,6 +64,20 @@ struct App: View {
         case .banner:
             break
         }
+    }
+
+    private func fontProviders() {
+        let _: PaywallFontProvider = DefaultPaywallFontProvider()
+        let _: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    }
+
+}
+
+private struct CustomFontProvider: PaywallFontProvider {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    func font(for textStyle: Font.TextStyle) -> Font {
+        return Font.body
     }
 
 }
