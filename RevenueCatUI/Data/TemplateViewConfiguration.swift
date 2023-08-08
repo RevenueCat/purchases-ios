@@ -16,6 +16,7 @@ struct TemplateViewConfiguration {
     let packages: PackageConfiguration
     let configuration: PaywallData.Configuration
     let colors: PaywallData.Configuration.Colors
+    let fonts: PaywallFontProvider
     let assetBaseURL: URL
 
 }

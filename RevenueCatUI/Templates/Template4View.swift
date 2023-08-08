@@ -11,7 +11,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct Template4View: TemplateViewType {
 
-    private let configuration: TemplateViewConfiguration
+    let configuration: TemplateViewConfiguration
     private var localization: [Package: ProcessedLocalizedConfiguration]
 
     @State
@@ -58,7 +58,7 @@ struct Template4View: TemplateViewType {
         VStack(spacing: 20) {
             Text(.init(self.selectedLocalization.title))
                 .foregroundColor(self.configuration.colors.text1Color)
-                .font(.title.bold())
+                .font(self.font(for: .title).bold())
                 .padding([.top, .bottom, .horizontal])
                 .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
 
@@ -76,13 +76,13 @@ struct Template4View: TemplateViewType {
                 introEligibility: self.introEligibility[self.selectedPackage],
                 foregroundColor: self.configuration.colors.text1Color
             )
-            .font(.body.weight(.light))
+            .font(self.font(for: .body).weight(.light))
             .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
 
             self.subscribeButton
                 .padding(.horizontal)
 
-            FooterView(configuration: self.configuration.configuration,
+            FooterView(configuration: self.configuration,
                        color: self.configuration.colors.callToActionBackgroundColor,
                        bold: false,
                        purchaseHandler: self.purchaseHandler)
@@ -120,10 +120,9 @@ struct Template4View: TemplateViewType {
     private var subscribeButton: some View {
         PurchaseButton(
             package: self.selectedPackage,
-            colors: self.configuration.colors,
             localization: self.selectedLocalization,
+            configuration: self.configuration,
             introEligibility: self.introEligibility[self.selectedPackage],
-            mode: self.configuration.mode,
             purchaseHandler: self.purchaseHandler
         )
     }
@@ -246,7 +245,7 @@ private struct PackageButton: View {
             self.offerName
 
             Text(self.package.content.localizedPrice)
-                .font(.title2.weight(.semibold))
+                .font(self.font(for: .title2).weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -263,10 +262,10 @@ private struct PackageButton: View {
                 if components.count == 2 {
                     VStack {
                         Text(components[0])
-                            .font(.title.bold())
+                            .font(self.font(for: .title).bold())
 
                         Text(components[1])
-                            .font(.title3)
+                            .font(self.font(for: .title3))
                     }
                 } else {
                     Text(offerName)
@@ -275,7 +274,7 @@ private struct PackageButton: View {
                 Text(self.package.content.productName)
             }
         }
-            .font(.title3.weight(.regular))
+            .font(self.font(for: .title3).weight(.regular))
     }
 
     private func discountOverlay(_ discount: Double) -> some View {
@@ -290,7 +289,7 @@ private struct PackageButton: View {
             Text(Localization.localized(discount: discount, locale: self.locale))
                 .textCase(.uppercase)
                 .foregroundColor(self.configuration.colors.text1Color)
-                .font(.caption.weight(.semibold))
+                .font(self.font(for: .caption).weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .padding(.horizontal, 2)
@@ -311,6 +310,10 @@ private struct PackageButton: View {
 
     private var discountOverlayHeight: CGFloat {
         return self.discountLabelHeight + Template4View.verticalPadding
+    }
+
+    private func font(for textStyle: Font.TextStyle) -> Font {
+        return self.configuration.fonts.font(for: textStyle)
     }
 
 }

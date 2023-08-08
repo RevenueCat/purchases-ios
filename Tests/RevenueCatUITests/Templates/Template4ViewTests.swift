@@ -15,6 +15,14 @@ class Template4ViewTests: BaseSnapshotTest {
         .snapshot(size: Self.fullScreenSize)
     }
 
+    func testCustomFont() {
+        PaywallView(offering: Self.offering.withLocalImages,
+                    fonts: Self.fonts,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.fullScreenSize)
+    }
+
     func testLargeDynamicType() {
         PaywallView(offering: Self.offering.withLocalImages,
                     introEligibility: Self.eligibleChecker,

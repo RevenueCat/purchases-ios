@@ -12,12 +12,34 @@ import SwiftUI
 struct FooterView: View {
 
     var configuration: PaywallData.Configuration
+    var fonts: PaywallFontProvider
     var color: Color
     var bold: Bool
     var purchaseHandler: PurchaseHandler
 
-    init(configuration: PaywallData.Configuration, color: Color, bold: Bool = true, purchaseHandler: PurchaseHandler) {
+    init(
+        configuration: TemplateViewConfiguration,
+        color: Color,
+        bold: Bool = true,
+        purchaseHandler: PurchaseHandler
+    ) {
+        self.init(
+            configuration: configuration.configuration,
+            fonts: configuration.fonts,
+            color: color,
+            purchaseHandler: purchaseHandler
+        )
+    }
+
+    init(
+        configuration: PaywallData.Configuration,
+        fonts: PaywallFontProvider,
+        color: Color,
+        bold: Bool = true,
+        purchaseHandler: PurchaseHandler
+    ) {
         self.configuration = configuration
+        self.fonts = fonts
         self.color = color
         self.bold = bold
         self.purchaseHandler = purchaseHandler
@@ -50,7 +72,7 @@ struct FooterView: View {
             }
         }
         .foregroundColor(self.color)
-        .font(Self.font.weight(self.fontWeight))
+        .font(self.fonts.font(for: Self.font).weight(self.fontWeight))
         .padding(.horizontal)
         .padding(.bottom, 5)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
@@ -64,7 +86,7 @@ struct FooterView: View {
     private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
     private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
-    private static let font: Font = .caption
+    private static let font: Font.TextStyle = .caption
 
 }
 
@@ -219,6 +241,7 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
+            fonts: DefaultPaywallFontProvider(),
             color: TestData.colors.text1Color,
             bold: bold,
             purchaseHandler: PreviewHelpers.purchaseHandler
