@@ -13,6 +13,7 @@ import SwiftUI
 public struct PaywallView: View {
 
     private let mode: PaywallViewMode
+    private let fonts: PaywallFontProvider
     private let introEligibility: TrialOrIntroEligibilityChecker?
     private let purchaseHandler: PurchaseHandler?
 
@@ -26,10 +27,14 @@ public struct PaywallView: View {
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:mode:)`` instead.
-    public init(mode: PaywallViewMode = .default) {
+    public init(
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider()
+    ) {
         self.init(
             offering: nil,
             mode: mode,
+            fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
         )
@@ -39,10 +44,15 @@ public struct PaywallView: View {
     /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
     /// a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    public init(offering: Offering?, mode: PaywallViewMode = .default) {
+    public init(
+        offering: Offering,
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider()
+    ) {
         self.init(
             offering: offering,
             mode: mode,
+            fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
         )
@@ -51,6 +61,7 @@ public struct PaywallView: View {
     init(
         offering: Offering?,
         mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
@@ -58,6 +69,7 @@ public struct PaywallView: View {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.mode = mode
+        self.fonts = fonts
     }
 
     // swiftlint:disable:next missing_docs
@@ -73,6 +85,7 @@ public struct PaywallView: View {
             if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
                 if let offering = self.offering {
                     self.paywallView(for: offering,
+                                     fonts: self.fonts,
                                      checker: checker,
                                      purchaseHandler: purchaseHandler)
                     .transition(Self.transition)
@@ -104,6 +117,7 @@ public struct PaywallView: View {
     @ViewBuilder
     private func paywallView(
         for offering: Offering,
+        fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
@@ -112,6 +126,7 @@ public struct PaywallView: View {
                 offering: offering,
                 paywall: paywall,
                 mode: self.mode,
+                fonts: fonts,
                 introEligibility: checker,
                 purchaseHandler: purchaseHandler
             )
@@ -127,6 +142,7 @@ public struct PaywallView: View {
                             offering: offering,
                             paywall: .createDefault(with: offering.availablePackages),
                             mode: self.mode,
+                            fonts: fonts,
                             introEligibility: checker,
                             purchaseHandler: purchaseHandler
                         )
@@ -147,6 +163,7 @@ struct LoadedOfferingPaywallView: View {
     private let offering: Offering
     private let paywall: PaywallData
     private let mode: PaywallViewMode
+    private let fonts: PaywallFontProvider
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -160,12 +177,14 @@ struct LoadedOfferingPaywallView: View {
         offering: Offering,
         paywall: PaywallData,
         mode: PaywallViewMode,
+        fonts: PaywallFontProvider,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) {
         self.offering = offering
         self.paywall = paywall
         self.mode = mode
+        self.fonts = fonts
         self._introEligibility = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
@@ -176,6 +195,7 @@ struct LoadedOfferingPaywallView: View {
         let view = self.paywall
             .createView(for: self.offering,
                         mode: self.mode,
+                        fonts: self.fonts,
                         introEligibility: self.introEligibility,
                         locale: self.locale)
             .environmentObject(self.introEligibility)

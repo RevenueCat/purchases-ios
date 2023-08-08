@@ -5,7 +5,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
-    private let configuration: TemplateViewConfiguration
+    let configuration: TemplateViewConfiguration
     private var localization: [Package: ProcessedLocalizedConfiguration]
 
     @State
@@ -41,7 +41,7 @@ struct Template2View: TemplateViewType {
                 .padding(.horizontal)
 
             if case .fullScreen = self.configuration.mode {
-                FooterView(configuration: self.configuration.configuration,
+                FooterView(configuration: self.configuration,
                            color: self.configuration.colors.text1Color,
                            purchaseHandler: self.purchaseHandler)
             }
@@ -61,13 +61,13 @@ struct Template2View: TemplateViewType {
 
             Text(.init(self.selectedLocalization.title))
                 .foregroundColor(self.configuration.colors.text1Color)
-                .font(.largeTitle.bold())
+                .font(self.font(for: .largeTitle).bold())
 
             Spacer()
 
             Text(.init(self.selectedLocalization.subtitle ?? ""))
                 .foregroundColor(self.configuration.colors.text1Color)
-                .font(.title3)
+                .font(self.font(for: .title3))
 
             Spacer()
 
@@ -108,9 +108,9 @@ struct Template2View: TemplateViewType {
                 alignment: Self.packageButtonAlignment
             )
             .fixedSize(horizontal: false, vertical: true)
-            .font(.body)
+            .font(self.font(for: .body))
         }
-        .font(.body.weight(.medium))
+        .font(self.font(for: .body).weight(.medium))
         .padding()
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
@@ -163,10 +163,9 @@ struct Template2View: TemplateViewType {
     private var subscribeButton: some View {
         PurchaseButton(
             package: self.selectedPackage,
-            colors: self.configuration.colors,
             localization: self.selectedLocalization,
+            configuration: self.configuration,
             introEligibility: self.introEligibility[self.selectedPackage],
-            mode: self.configuration.mode,
             purchaseHandler: self.purchaseHandler
         )
     }

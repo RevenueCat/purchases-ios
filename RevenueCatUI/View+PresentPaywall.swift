@@ -30,6 +30,7 @@ extension View {
     /// [Documentation](https://rev.cat/paywalls)
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -58,6 +59,7 @@ extension View {
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
     public func presentPaywallIfNeeded(
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseCompletedHandler? = nil
     ) -> some View {
@@ -77,6 +79,7 @@ extension View {
     // Visible overload for tests
     func presentPaywallIfNeeded(
         offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
@@ -88,6 +91,7 @@ extension View {
                 shouldDisplay: shouldDisplay,
                 purchaseCompleted: purchaseCompleted,
                 offering: offering,
+                fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
@@ -104,6 +108,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var purchaseCompleted: PurchaseCompletedHandler?
     var offering: Offering?
+    var fontProvider: PaywallFontProvider
 
     var customerInfoFetcher: View.CustomerInfoFetcher
     var introEligibility: TrialOrIntroEligibilityChecker?
@@ -118,6 +123,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
+                        fonts: self.fontProvider,
                         introEligibility: self.introEligibility ?? .default(),
                         purchaseHandler: self.purchaseHandler ?? .default()
                     )
