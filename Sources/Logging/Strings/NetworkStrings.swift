@@ -34,7 +34,7 @@ enum NetworkStrings {
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
-    case request_handled_by_load_shedder(HTTPRequest.Path)
+    case request_handled_by_load_shedder(HTTPRequestPath)
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
@@ -105,7 +105,7 @@ extension NetworkStrings: LogMessage {
             return "\(operation): \(state)"
 
         case let .request_handled_by_load_shedder(path):
-            return "Request was handled by load shedder: \(path.description)"
+            return "Request was handled by load shedder: \(path.relativePath)"
 
         #if DEBUG
         case let .api_request_forcing_server_error(request):
@@ -124,7 +124,7 @@ extension NetworkStrings: LogMessage {
 private extension HTTPRequest {
 
     var description: String {
-        return "\(self.method.httpMethod) \(self.path.url?.path ?? "")"
+        return "\(self.method.httpMethod) \(self.path.relativePath)"
     }
 
 }

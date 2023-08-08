@@ -321,21 +321,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
 
-    func testProxyURL() {
-        expect(SystemInfo.proxyURL).to(beNil())
-        let defaultHostURL = URL(string: "https://api.revenuecat.com")
-        expect(SystemInfo.serverHostURL) == defaultHostURL
-
-        let testURL = URL(string: "https://test_url")
-        Purchases.proxyURL = testURL
-
-        expect(SystemInfo.serverHostURL) == testURL
-
-        Purchases.proxyURL = nil
-
-        expect(SystemInfo.serverHostURL) == defaultHostURL
-    }
-
     func testIsAnonymous() {
         setupAnonPurchases()
         expect(self.purchases.isAnonymous).to(beTrue())

@@ -66,7 +66,7 @@ class HTTPRequestTests: TestCase {
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
-            expect(path.description).toNot(beginWith("/"))
+            expect(path.relativePath).toNot(beginWith("/"))
         }
     }
 
@@ -170,11 +170,11 @@ class HTTPRequestTests: TestCase {
 
     func testPathsEscapeUserID() {
         for path in Self.pathsWithUserID {
-            expect(path.description).toNot(
+            expect(path.relativePath).toNot(
                 contain(Self.anonymousUser),
                 description: "Path '\(path)' should escape user ID"
             )
-            expect(path.description).to(
+            expect(path.relativePath).to(
                 contain(Self.anonymousUser.trimmedAndEscaped),
                 description: "Path '\(path)' should escape user ID"
             )
@@ -186,7 +186,17 @@ class HTTPRequestTests: TestCase {
         let encodedUserID = "userid%20with%20spaces"
         let expectedPath = "subscribers/\(encodedUserID)"
 
-        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).description) == expectedPath
+        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).relativePath) == expectedPath
+    }
+
+    func testURLWithNoProxy() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(proxyURL: nil)) == URL(string: "https://api.revenuecat.com/v1/health")
+    }
+
+    func testURLWithProxy() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(proxyURL: URL(string: "https://test_url"))) == URL(string: "https://test_url/v1/health")
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

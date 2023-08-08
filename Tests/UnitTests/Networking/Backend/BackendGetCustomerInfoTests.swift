@@ -134,7 +134,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(firstResult.value).to(beSuccess())
         expect(secondResult.value?.value) == firstResult.value?.value
 
-        expect(self.httpClient.calls.map { $0.request.path }) == [path]
+        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [path]
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

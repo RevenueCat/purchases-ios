@@ -22,10 +22,10 @@ enum NetworkError: Swift.Error, Equatable {
     case offlineConnection(Source)
     case networkError(NSError, Source)
     case dnsError(failedURL: URL, resolvedHost: String?, Source)
-    case unableToCreateRequest(HTTPRequest.Path, Source)
+    case unableToCreateRequest(path: String, Source)
     case unexpectedResponse(URLResponse?, Source)
     case errorResponse(ErrorResponse, HTTPStatusCode, Source)
-    case signatureVerificationFailed(HTTPRequest.Path, HTTPStatusCode, Source)
+    case signatureVerificationFailed(path: String, HTTPStatusCode, Source)
 
 }
 
@@ -67,10 +67,10 @@ extension NetworkError {
     }
 
     static func unableToCreateRequest(
-        _ path: HTTPRequest.Path,
+        _ path: HTTPRequestPath,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
-        return .unableToCreateRequest(path, .init(file: file, function: function, line: line))
+        return .unableToCreateRequest(path: path.relativePath, .init(file: file, function: function, line: line))
     }
 
     static func unexpectedResponse(
@@ -88,12 +88,12 @@ extension NetworkError {
     }
 
     static func signatureVerificationFailed(
-        path: HTTPRequest.Path,
+        path: HTTPRequestPath,
         code: HTTPStatusCode,
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .signatureVerificationFailed(
-            path,
+            path: path.relativePath,
             code,
             .init(file: file, function: function, line: line)
         )
@@ -140,7 +140,7 @@ extension NetworkError: PurchasesErrorConvertible {
         case let .unableToCreateRequest(path, source):
             return ErrorUtils.networkError(
                 extraUserInfo: [
-                    "request_url": path.description
+                    "request_path": path
                 ],
                 fileName: source.file,
                 functionName: source.function,

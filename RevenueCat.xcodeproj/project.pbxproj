@@ -236,6 +236,7 @@
 		4F6BEE3B2A27B45300CD9322 /* StoreKitTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571E7AD3279F2D0C003B3606 /* StoreKitTestHelpers.swift */; };
 		4F6BEE3C2A27B45900CD9322 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE61A83264190830021CEA0 /* Constants.swift */; };
 		4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57057FF728B0048900995F21 /* TestLogHandler.swift */; };
+		4F6E81E62A82AAE1006EF181 /* HTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6E81E52A82AAE1006EF181 /* HTTPRequestPath.swift */; };
 		4F6EEBD92A38ED76007FD783 /* FakeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6EEBD82A38ED76007FD783 /* FakeSigning.swift */; };
 		4F7C37B22A27E2E8001E17D3 /* AsyncTestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A8EE02922C56300936709 /* AsyncTestHelpers.swift */; };
 		4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579234E127F777EE00B39C68 /* BaseBackendIntegrationTests.swift */; };
@@ -975,6 +976,7 @@
 		4F6BEDE12A26B69500CD9322 /* DebugContentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugContentViews.swift; sourceTree = "<group>"; };
 		4F6BEE022A27ADF900CD9322 /* CustomEntitlementsComputationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomEntitlementsComputationIntegrationTests.swift; sourceTree = "<group>"; };
 		4F6BEE312A27B02400CD9322 /* BackendCustomEntitlementsIntegrationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackendCustomEntitlementsIntegrationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6E81E52A82AAE1006EF181 /* HTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestPath.swift; sourceTree = "<group>"; };
 		4F6EEBD82A38ED76007FD783 /* FakeSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakeSigning.swift; sourceTree = "<group>"; };
 		4F7D8E552A56290100F17FFC /* HTTPRequestBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestBody.swift; sourceTree = "<group>"; };
 		4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
@@ -2593,6 +2595,7 @@
 				35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */,
 				57D5414127F656D9004CC35C /* NetworkError.swift */,
 				57CB2AD329CCF21900C91439 /* RedirectLoggerTaskDelegate.swift */,
+				4F6E81E52A82AAE1006EF181 /* HTTPRequestPath.swift */,
 			);
 			path = HTTPClient;
 			sourceTree = "<group>";
@@ -3403,6 +3406,7 @@
 				57F2C60C29784C11009EE527 /* SwiftVersionCheck.swift in Sources */,
 				57EAE527274324C60060EB74 /* Lock.swift in Sources */,
 				4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */,
+				4F6E81E62A82AAE1006EF181 /* HTTPRequestPath.swift in Sources */,
 				B32B74FF26868AEB005647BF /* Package.swift in Sources */,
 				578DAA482948EEAD001700FD /* Clock.swift in Sources */,
 				2DDF41B324F6F387005BC22D /* InAppPurchaseBuilder.swift in Sources */,

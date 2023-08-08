@@ -92,22 +92,12 @@ class SystemInfo {
         #endif
     }
 
-    static var serverHostURL: URL {
-        return Self.proxyURL ?? Self.defaultServerHostURL
-    }
-
     static var proxyURL: URL? {
         didSet {
             if let privateProxyURLString = proxyURL?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set(url: privateProxyURLString))
             }
         }
-    }
-
-    private static let defaultServerHostName = "https://api.revenuecat.com"
-
-    private static var defaultServerHostURL: URL {
-        return URL(string: defaultServerHostName)!
     }
 
     init(platformInfo: Purchases.PlatformInfo?,

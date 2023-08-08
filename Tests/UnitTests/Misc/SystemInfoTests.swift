@@ -9,23 +9,6 @@ import WatchKit
 
 class SystemInfoTests: TestCase {
 
-    func testProxyURL() {
-        let defaultURL = URL(string: "https://api.revenuecat.com")
-        expect(SystemInfo.serverHostURL) == defaultURL
-        expect(SystemInfo.proxyURL).to(beNil())
-
-        let url = URL(string: "https://my_url")
-        SystemInfo.proxyURL = url
-
-        expect(SystemInfo.serverHostURL) == url
-        expect(SystemInfo.proxyURL) == url
-
-        SystemInfo.proxyURL = nil
-        expect(SystemInfo.proxyURL).to(beNil())
-
-        expect(SystemInfo.serverHostURL) == defaultURL
-    }
-
     func testSystemVersion() {
         expect(SystemInfo.systemVersion) == ProcessInfo().operatingSystemVersionString
     }
