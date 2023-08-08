@@ -162,14 +162,14 @@ extension StoreKit1Wrapper: PaymentQueueWrapperType {
         }
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func showPriceConsentIfNeeded() {
         self.paymentQueue.showPriceConsentIfNeeded()
     }
     #endif
 
-    #if (os(iOS) && !targetEnvironment(macCatalyst)) || os(xrOS)
+    #if (os(iOS) && !targetEnvironment(macCatalyst)) || VISION_OS
     @available(iOS 14.0, *)
     func presentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheetIfAvailable()

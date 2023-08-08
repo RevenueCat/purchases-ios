@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || os(xrOS))
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || VISION_OS)
 
 import SwiftUI
 

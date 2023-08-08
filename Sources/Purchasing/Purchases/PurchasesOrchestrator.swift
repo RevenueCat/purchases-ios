@@ -511,15 +511,9 @@ final class PurchasesOrchestrator {
         _ product: SK2Product,
         _ options: Set<Product.PurchaseOption>
     ) async throws -> Product.PurchaseResult {
-        // Note: this can be simplified as `#if swift(>=5.9) && os(xrOS)`
-        // once we drop support for Xcode 13.x
-        #if swift(>=5.9)
-            #if os(xrOS)
-            return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
-                                              options: options)
-            #else
-            return try await product.purchase(options: options)
-            #endif
+        #if VISION_OS
+        return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
+                                          options: options)
         #else
         return try await product.purchase(options: options)
         #endif
@@ -541,7 +535,7 @@ final class PurchasesOrchestrator {
         self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
     }
 
-#if os(iOS) || os(macOS) || os(xrOS)
+#if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -557,7 +551,7 @@ final class PurchasesOrchestrator {
     }
 #endif
 
-#if os(iOS) || os(xrOS)
+#if os(iOS) || VISION_OS
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -695,7 +689,7 @@ extension PurchasesOrchestrator: StoreKit1WrapperDelegate {
 
 extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     var paymentQueueWrapperShouldShowPriceConsent: Bool {
         return self.storeKit1WrapperShouldShowPriceConsent

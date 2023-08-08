@@ -906,14 +906,14 @@ public extension Purchases {
 
     #endif
 
-#if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     @objc func showPriceConsentIfNeeded() {
         self.paymentQueueWrapper.paymentQueueWrapperType.showPriceConsentIfNeeded()
     }
 #endif
 
-#if os(iOS) || os(xrOS)
+#if os(iOS) || VISION_OS
 
     @available(iOS 14.0, *)
     @available(watchOS, unavailable)
@@ -951,7 +951,7 @@ public extension Purchases {
 
     #endif
 
-#if os(iOS) || os(macOS) || os(xrOS)
+#if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -971,7 +971,7 @@ public extension Purchases {
 
 #endif
 
-#if os(iOS) || os(xrOS)
+#if os(iOS) || VISION_OS
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)
@@ -1255,7 +1255,7 @@ extension Purchases: PurchasesOrchestratorDelegate {
         self.delegate?.purchases?(self, readyForPromotedProduct: product, purchase: startPurchase)
     }
 
-#if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     var shouldShowPriceConsent: Bool {
         self.delegate?.shouldShowPriceConsent ?? true
@@ -1496,7 +1496,7 @@ private extension Purchases {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        #if os(iOS) || os(macOS) || os(xrOS)
+        #if os(iOS) || os(macOS) || VISION_OS
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
             self.attribution.postAdServicesTokenOncePerInstallIfNeeded()
         }

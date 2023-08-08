@@ -11,7 +11,7 @@
 //
 //  Created by Andrés Boedo on 8/20/21.
 
-#if os(iOS) || os(xrOS)
+#if os(iOS) || VISION_OS
 import UIKit
 
 extension UIApplication {

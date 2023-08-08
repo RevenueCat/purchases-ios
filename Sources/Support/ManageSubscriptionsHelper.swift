@@ -27,7 +27,7 @@ class ManageSubscriptionsHelper {
         self.currentUserProvider = currentUserProvider
     }
 
-#if os(iOS) || os(macOS) || os(xrOS)
+#if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

@@ -20,7 +20,7 @@ protocol PaymentQueueWrapperDelegate: AnyObject, Sendable {
                              shouldAddStorePayment payment: SKPayment,
                              for product: SK1Product) -> Bool
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     var paymentQueueWrapperShouldShowPriceConsent: Bool { get }
     #endif
@@ -33,7 +33,7 @@ protocol PaymentQueueWrapperType: AnyObject {
 
     func finishTransaction(_ transaction: SKPaymentTransaction, completion: @escaping () -> Void)
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func showPriceConsentIfNeeded()
     #endif
@@ -89,14 +89,14 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
         completion()
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func showPriceConsentIfNeeded() {
         self.paymentQueue.showPriceConsentIfNeeded()
     }
     #endif
 
-    #if (os(iOS) && !targetEnvironment(macCatalyst)) || os(xrOS)
+    #if (os(iOS) && !targetEnvironment(macCatalyst)) || VISION_OS
     @available(iOS 14.0, *)
     func presentCodeRedemptionSheet() {
         self.paymentQueue.presentCodeRedemptionSheetIfAvailable()
@@ -117,7 +117,7 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
 extension PaymentQueueWrapper: SKPaymentQueueDelegate {
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || os(xrOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
         return self.delegate?.paymentQueueWrapperShouldShowPriceConsent ?? true

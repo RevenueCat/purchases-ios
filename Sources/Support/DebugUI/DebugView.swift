@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 5/30/23.
 
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || os(xrOS))
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || VISION_OS)
 
 import SwiftUI
 
@@ -61,7 +61,7 @@ public extension View {
                 DebugSwiftUIRootView()
                 #if os(macOS)
                     .frame(width: 500, height: 600)
-                #elseif swift(>=5.9) && os(xrOS)
+                #elseif VISION_OS
                     .frame(width: 600, height: 700)
                 #endif
             }
@@ -69,7 +69,7 @@ public extension View {
     }
 
     private var detents: Set<PresentationDetent> {
-        #if swift(>=5.9) && os(xrOS)
+        #if VISION_OS
             return [.large]
         #else
             return [
