@@ -24,6 +24,13 @@ struct SamplePaywallsList: View {
                     PaywallView(offering: Self.loader.offering(for: template),
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
+
+                case let .customFont(template):
+                    PaywallView(offering: Self.loader.offering(for: template),
+                                fonts: Self.customFontProvider,
+                                introEligibility: Self.introEligibility,
+                                purchaseHandler: .default())
+
                 case .defaultTemplate:
                     PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
                                 introEligibility: Self.introEligibility,
@@ -45,6 +52,16 @@ struct SamplePaywallsList: View {
                 }
             }
 
+            Section("Custom Font") {
+                ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
+                    Button {
+                        self.display = .customFont(template)
+                    } label: {
+                        TemplateLabel(name: template.name)
+                    }
+                }
+            }
+
             Section("Other") {
                 Button {
                     self.display = .defaultTemplate
@@ -57,6 +74,7 @@ struct SamplePaywallsList: View {
         .buttonStyle(.plain)
     }
 
+    private static let customFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
     private static let loader: SamplePaywallLoader = .init()
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
@@ -92,6 +110,7 @@ private extension SamplePaywallsList {
     enum Display {
 
         case template(PaywallTemplate)
+        case customFont(PaywallTemplate)
         case defaultTemplate
 
     }
@@ -103,7 +122,11 @@ extension SamplePaywallsList.Display: Identifiable {
     public var id: String {
         switch self {
         case let .template(template):
-            return template.rawValue
+            return "template-" + template.rawValue
+
+        case let .customFont(template):
+            return "custom-font-" + template.rawValue
+
         case .defaultTemplate:
             return "default"
         }
