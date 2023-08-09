@@ -1,3 +1,29 @@
+## 4.25.3
+_This release is compatible with Xcode 15 beta 6 and visionOS beta 3_
+
+### Bugfixes
+* `visionOS`: support for `Xcode 15 beta 6` (#2989) via NachoSoto (@NachoSoto)
+* `CachingProductsManager`: avoid crash when caching different products with same identifier (#2979) via NachoSoto (@NachoSoto)
+* `PurchasesOrchestrator`: disambiguate transactions from the queue (#2890) via NachoSoto (@NachoSoto)
+### Performance Improvements
+* `StoreKit2TransactionListener`: handle transactions asynchronously (#2910) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Atomic`: avoid race conditions modifying dictionaries (#2981) via NachoSoto (@NachoSoto)
+* `Logging`: avoid logging "updating offerings" when request is cached (#2904) via NachoSoto (@NachoSoto)
+* `StoreKit2TransactionListener`: converted into an `actor` (#2909) via NachoSoto (@NachoSoto)
+* `Integration Tests`: added more observer mode tests (#2905) via NachoSoto (@NachoSoto)
+* Created `PostedTransactionCache` (#2911) via NachoSoto (@NachoSoto)
+* `IntroEligibility`: changed products to `Set<String>` (#2976) via NachoSoto (@NachoSoto)
+* `AdServices`: Rename `postAdServicesTokenIfNeeded()` to `postAdServicesTokenOncePerInstallIfNeeded()` (#2968) via Josh Holtz (@joshdholtz)
+* `SK1StoreProduct`: changed `productType` warning to debug (#2957) via NachoSoto (@NachoSoto)
+* `PrivacyInfo.xcprivacy`: added `UserDefaults` to access API types (#2913) via NachoSoto (@NachoSoto)
+* `Integration Tests`: new test to verify that SK1 purchases don't leave SK2 unfinished transactions (#2906) via NachoSoto (@NachoSoto)
+* `Logging`: log entire cache key with verbose logs (#2888) via NachoSoto (@NachoSoto)
+* `StoreProduct`: added test covering warning log (#2897) via NachoSoto (@NachoSoto)
+* `CustomEntitlementComputation`: use custom API key (#2879) via Toni Rico (@tonidero)
+* `CachingProductsManager`: removed duplicate log and added tests (#2898) via NachoSoto (@NachoSoto)
+* `Xcode 15 beta 5`: fixed test compilation (#2885) via NachoSoto (@NachoSoto)
+
 ## 4.25.2
 _This release is compatible with Xcode 15 beta 5 and visionOS beta 2_
 
