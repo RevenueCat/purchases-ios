@@ -57,7 +57,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
                 productID: package.storeProduct.productIdentifier,
-                offeringID: package.offeringIdentifier
+                offeringID: package.offeringIdentifier,
+                paywallMode: nil
             )
         )
     }
@@ -93,7 +94,24 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
                 productID: package.storeProduct.productIdentifier,
-                offeringID: package.offeringIdentifier
+                offeringID: package.offeringIdentifier,
+                paywallMode: nil
+            )
+        )
+    }
+
+    func testPurchasingPackageWithPaywallViewMode() async throws {
+        Purchases.shared.cachePresentedPaywallMode(.fullScreen)
+
+        try await self.purchaseMonthlyOffering()
+
+        let package = try await self.monthlyPackage
+
+        self.logger.verifyMessageWasLogged(
+            Strings.purchase.transaction_poster_handling_transaction(
+                productID: package.storeProduct.productIdentifier,
+                offeringID: package.offeringIdentifier,
+                paywallMode: .fullScreen
             )
         )
     }
