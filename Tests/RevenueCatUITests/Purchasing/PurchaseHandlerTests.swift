@@ -28,7 +28,7 @@ class PurchaseHandlerTests: TestCase {
     func testPurchaseSetsCustomerInfo() async throws {
         let handler: PurchaseHandler = .mock()
 
-        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer, with: .fullScreen)
 
         expect(handler.purchasedCustomerInfo) === TestData.customerInfo
         expect(handler.purchased) == true
@@ -38,7 +38,7 @@ class PurchaseHandlerTests: TestCase {
     func testCancellingPurchase() async throws {
         let handler: PurchaseHandler = .cancelling()
 
-        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer, with: .fullScreen)
         expect(handler.purchasedCustomerInfo).to(beNil())
         expect(handler.purchased) == false
         expect(handler.actionInProgress) == false

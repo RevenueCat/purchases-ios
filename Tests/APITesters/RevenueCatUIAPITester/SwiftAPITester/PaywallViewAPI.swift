@@ -55,17 +55,6 @@ struct App: View {
             .onPurchaseCompleted(self.completed)
     }
 
-    private func modes(_ mode: PaywallViewMode) {
-        switch mode {
-        case .fullScreen:
-            break
-        case .card:
-            break
-        case .banner:
-            break
-        }
-    }
-
     private func fontProviders() {
         let _: PaywallFontProvider = DefaultPaywallFontProvider()
         let _: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
