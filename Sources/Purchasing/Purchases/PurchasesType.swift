@@ -677,7 +677,7 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
 
     /**
      * Presents a refund request sheet in the current window scene for
@@ -752,7 +752,7 @@ public protocol PurchasesType: AnyObject {
     @available(macCatalyst, unavailable)
     func presentCodeRedemptionSheet()
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     /**
      * Displays price consent sheet if needed. You only need to call this manually if you implement
      * ``PurchasesDelegate/shouldShowPriceConsent`` and return false at some point.
@@ -773,7 +773,7 @@ public protocol PurchasesType: AnyObject {
     @objc func showPriceConsentIfNeeded()
     #endif
 
-    #if os(iOS) || os(macOS)
+    #if os(iOS) || os(macOS) || VISION_OS
 
     /**
      * Use this function to open the manage subscriptions page.
@@ -910,7 +910,7 @@ public protocol PurchasesSwiftType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> { get }
 
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
 
     /**
      * Presents a refund request sheet in the current window scene for

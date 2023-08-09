@@ -81,7 +81,7 @@ class SystemInfo {
         // https://developer.apple.com/documentation/uikit/uidevice?language=swift
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
 
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(tvOS) || VISION_OS
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString

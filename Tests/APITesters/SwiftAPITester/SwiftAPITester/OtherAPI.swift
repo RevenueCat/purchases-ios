@@ -11,7 +11,7 @@ import RevenueCat
 import StoreKit
 import SwiftUI
 
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS))
+#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || VISION_OS)
 
 @available(iOS 16.0, macOS 13.0, *)
 struct AppView: View {

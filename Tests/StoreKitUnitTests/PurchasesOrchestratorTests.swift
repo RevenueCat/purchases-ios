@@ -1103,7 +1103,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

@@ -91,7 +91,7 @@ class SystemInfoTests: TestCase {
 
     // MARK: - identifierForVendor
 
-    #if os(iOS) || os(tvOS)
+    #if os(iOS) || os(tvOS) || VISION_OS
 
     func testIdentifierForVendor() {
         expect(SystemInfo.default.identifierForVendor) == UIDevice.current.identifierForVendor?.uuidString

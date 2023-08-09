@@ -27,7 +27,7 @@ protocol StoreKit1WrapperDelegate: AnyObject {
     func storeKit1Wrapper(_ storeKit1Wrapper: StoreKit1Wrapper,
                           didRevokeEntitlementsForProductIdentifiers productIdentifiers: [String])
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     var storeKit1WrapperShouldShowPriceConsent: Bool { get }
     #endif
@@ -251,7 +251,7 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
 
 extension StoreKit1Wrapper: SKPaymentQueueDelegate {
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func paymentQueueShouldShowPriceConsent(_ paymentQueue: SKPaymentQueue) -> Bool {
         return self.delegate?.storeKit1WrapperShouldShowPriceConsent ?? true

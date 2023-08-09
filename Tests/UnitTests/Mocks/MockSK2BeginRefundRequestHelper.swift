@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 15.0, macCatalyst 15.0, *)
 @available(watchOS, unavailable)

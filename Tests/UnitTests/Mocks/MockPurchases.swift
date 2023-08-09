@@ -305,7 +305,7 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
 
     func presentCodeRedemptionSheet() {
         self.unimplemented()

@@ -146,7 +146,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
     purchases.invalidateCustomerInfoCache()
 
-#if os(iOS)
+#if os(iOS) || VISION_OS
     if #available(iOS 14.0, *) {
         purchases.presentCodeRedemptionSheet()
     }
@@ -166,12 +166,12 @@ private func checkIdentity(purchases: Purchases) {
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
     if #available(iOS 13.0, macOS 10.15, *) {
         purchases.showManageSubscriptions { _ in }
     }
     #endif
-    #if os(iOS) || targetEnvironment(macCatalyst)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     if #available(iOS 13.4, macCatalyst 13.4, *) {
         _ = purchases.showPriceConsentIfNeeded
         _ = purchases.delegate?.shouldShowPriceConsent
@@ -240,7 +240,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
-        #if os(iOS)
+        #if os(iOS) || VISION_OS
         try await purchases.showManageSubscriptions()
 
         if #available(iOS 15.0, *) {
@@ -255,7 +255,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
     if #available(iOS 15.0, *) {
         purchases.beginRefundRequest(forProduct: "") { (_: Result<RefundRequestStatus, PublicError>) in }
         purchases.beginRefundRequest(forEntitlement: "") { (_: Result<RefundRequestStatus, PublicError>) in }

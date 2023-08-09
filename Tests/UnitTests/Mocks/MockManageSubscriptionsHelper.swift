@@ -18,7 +18,7 @@ class MockManageSubscriptionsHelper: ManageSubscriptionsHelper {
 
     var mockError: PurchasesError?
 
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || VISION_OS
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     override func showManageSubscriptions(completion: @escaping (Result<Void, PurchasesError>) -> Void) {

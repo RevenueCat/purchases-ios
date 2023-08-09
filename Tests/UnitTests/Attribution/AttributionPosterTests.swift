@@ -181,7 +181,7 @@ class AttributionPosterTests: BaseAttributionPosterTests {
 
 }
 
-#if os(iOS)
+#if os(iOS) || VISION_OS
 // `MockTrackingManagerProxy.mockAuthorizationStatus isn't available on tvOS
 @available(iOS 14, *)
 @available(*, deprecated)
