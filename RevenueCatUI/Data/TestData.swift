@@ -451,7 +451,7 @@ extension TrialOrIntroEligibilityChecker {
 extension PurchaseHandler {
 
     static func mock() -> Self {
-        return self.init { _ in
+        return self.init { _, _ in
             return (
                 transaction: nil,
                 customerInfo: TestData.customerInfo,
@@ -463,7 +463,7 @@ extension PurchaseHandler {
     }
 
     static func cancelling() -> Self {
-        return self.init { _ in
+        return self.init { _, _ in
             return (
                 transaction: nil,
                 customerInfo: TestData.customerInfo,
@@ -479,7 +479,7 @@ extension PurchaseHandler {
         return self.map { purchaseBlock in {
             await Task.sleep(seconds: seconds)
 
-            return try await purchaseBlock($0)
+            return try await purchaseBlock($0, $1)
         }
         } restore: { restoreBlock in {
             await Task.sleep(seconds: seconds)

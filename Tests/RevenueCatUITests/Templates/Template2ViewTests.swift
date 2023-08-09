@@ -30,7 +30,8 @@ class Template2ViewTests: BaseSnapshotTest {
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: handler)
             .task {
-                _ = try? await handler.purchase(package: TestData.annualPackage)
+                _ = try? await handler.purchase(package: TestData.annualPackage,
+                                                with: .fullScreen)
             }
 
         view.snapshot(size: Self.fullScreenSize)
