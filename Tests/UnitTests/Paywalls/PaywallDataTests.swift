@@ -121,6 +121,12 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(localization.title) == "Tienda"
     }
 
+    func testEncodePaywallViewMode() {
+        for mode in PaywallViewMode.allCases {
+            expect(try mode.encodeAndDecode()) == mode
+        }
+    }
+
     #if !os(watchOS)
     func testMissingCurrentAndDefaultFails() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_and_default_locale")
