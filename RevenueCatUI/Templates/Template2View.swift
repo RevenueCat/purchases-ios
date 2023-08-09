@@ -42,7 +42,6 @@ struct Template2View: TemplateViewType {
 
             if case .fullScreen = self.configuration.mode {
                 FooterView(configuration: self.configuration,
-                           color: self.configuration.colors.text1Color,
                            purchaseHandler: self.purchaseHandler)
             }
         }
