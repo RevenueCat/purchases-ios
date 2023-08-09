@@ -352,6 +352,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let productIdentifier = "a_great_product"
         let offeringIdentifier = "a_offering"
+        let paywallMode: PaywallViewMode = .fullScreen
         let price: Decimal = 10.98
         let group = "sub_group"
 
@@ -371,6 +372,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               transactionData: .init(
                                  appUserID: Self.userID,
                                  presentedOfferingID: offeringIdentifier,
+                                 presentedPaywallMode: paywallMode,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
