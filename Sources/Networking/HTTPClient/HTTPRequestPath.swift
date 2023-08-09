@@ -30,16 +30,23 @@ protocol HTTPRequestPath {
     /// Whether endpoint requires a nonce for signature verification.
     var needsNonceForSigning: Bool { get }
 
-    /// The relative path component for this endpoint.
-    var relativePath: String { get }
+    /// The path component for this endpoint.
+    var pathComponent: String { get }
 
 }
 
 extension HTTPRequestPath {
 
-    func url(proxyURL: URL?) -> URL {
-        let baseURL = proxyURL ?? Self.serverHostURL
-        return baseURL.appendingPathComponent(self.relativePath)
+    /// The full relative path for this endpoint.
+    var relativePath: String {
+        return "/v1/\(self.pathComponent)"
+    }
+
+    var url: URL { return self.url(proxyURL: nil) }
+
+    func url(proxyURL: URL? = nil) -> URL {
+        return (proxyURL ?? Self.serverHostURL)
+            .appendingPathComponent(self.relativePath)
     }
 
 }
@@ -68,7 +75,7 @@ extension HTTPRequest {
 
 extension HTTPRequest.Path: HTTPRequestPath {
 
-    static let serverHostURL = URL(string: "https://api.revenuecat.com/v1")!
+    static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
     var authenticated: Bool {
         switch self {
@@ -143,7 +150,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         }
     }
 
-    var relativePath: String {
+    var pathComponent: String {
         switch self {
         case let .getCustomerInfo(appUserID):
             return "subscribers/\(Self.escape(appUserID))"

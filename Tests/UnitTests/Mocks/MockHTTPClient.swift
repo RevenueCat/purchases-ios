@@ -121,12 +121,6 @@ class MockHTTPClient: HTTPClient {
 
 }
 
-private extension HTTPRequestPath {
-
-    var url: URL { return self.url(proxyURL: nil) }
-
-}
-
 // MARK: - MockHTTPClient.Call Encodable
 
 extension HTTPRequest: Encodable {

@@ -191,6 +191,7 @@ class HTTPRequestTests: TestCase {
 
     func testURLWithNoProxy() {
         let path: HTTPRequest.Path = .health
+        expect(path.url) == URL(string: "https://api.revenuecat.com/v1/health")
         expect(path.url(proxyURL: nil)) == URL(string: "https://api.revenuecat.com/v1/health")
     }
 
