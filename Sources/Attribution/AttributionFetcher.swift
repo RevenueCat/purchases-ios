@@ -46,7 +46,7 @@ class AttributionFetcher {
     var identifierForAdvertisers: String? {
         // should match available platforms here:
         // https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614151-advertisingidentifier
-#if os(iOS) || os(tvOS) || os(macOS)
+#if os(iOS) || os(tvOS) || os(macOS) || VISION_OS
         if #available(macOS 10.14, *) {
             let identifierManagerProxy = attributionFactory.asIdProxy()
             guard let identifierManagerProxy = identifierManagerProxy else {
@@ -67,7 +67,7 @@ class AttributionFetcher {
     func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Swift.Error?) -> Void) {
         // Should match available platforms in
         // https://developer.apple.com/documentation/iad/adclient?language=swift
-#if os(iOS)
+#if os(iOS) || VISION_OS
         guard let afficheClientProxy = attributionFactory.afficheClientProxy() else {
             Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_ad_framework)
             completion(nil, Error.identifierForAdvertiserFrameworksUnavailable)

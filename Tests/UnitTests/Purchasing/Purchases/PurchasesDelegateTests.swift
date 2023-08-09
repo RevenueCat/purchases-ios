@@ -42,7 +42,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(name) == SystemInfo.applicationWillEnterForegroundNotification
     }
 
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
 
     // We shouldn't use this notification because it's called when
     // apps lose focus when presenting popups during a purchase.

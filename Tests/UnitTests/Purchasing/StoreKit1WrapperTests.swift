@@ -320,7 +320,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
                                       level: .warn)
     }
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     func testShouldShowPriceConsentWiredUp() throws {
         guard #available(iOS 13.4, macCatalyst 13.4, *) else {
             throw XCTSkip()

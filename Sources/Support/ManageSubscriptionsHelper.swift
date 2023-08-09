@@ -27,7 +27,7 @@ class ManageSubscriptionsHelper {
         self.currentUserProvider = currentUserProvider
     }
 
-#if os(iOS) || os(macOS)
+#if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -80,7 +80,7 @@ private extension ManageSubscriptionsHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
                                       completion: @escaping (Result<Void, PurchasesError>) -> Void) {
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !targetEnvironment(macCatalyst) || VISION_OS
         if #available(iOS 15.0, *),
            // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon
            // https://developer.apple.com/documentation/storekit/appstore/3803198-showmanagesubscriptions#
@@ -95,7 +95,7 @@ private extension ManageSubscriptionsHelper {
     }
 
     func openURL(_ url: URL, completion: @escaping (Result<Void, PurchasesError>) -> Void) {
-#if os(iOS)
+#if os(iOS) || VISION_OS
         openURLIfNotAppExtension(url: url)
 #elseif os(macOS)
         NSWorkspace.shared.open(url)
@@ -103,7 +103,7 @@ private extension ManageSubscriptionsHelper {
         completion(.success(()))
     }
 
-#if os(iOS)
+#if os(iOS) || VISION_OS
     // we can't directly reference UIApplication.shared in case this SDK is embedded into an app extension.
     // so we ensure that it's not running in an app extension and use selectors to call UIApplication methods.
     func openURLIfNotAppExtension(url: URL) {
@@ -132,7 +132,7 @@ private extension ManageSubscriptionsHelper {
             return .failure(ErrorUtils.purchasesError(withUntypedError: error))
         }
 
-#if os(iOS)
+#if os(iOS) || VISION_OS
         // Note: we're ignoring the result of AppStore.showManageSubscriptions(in:) because as of
         // iOS 15.2, it only returns after the sheet is dismissed, which isn't desired.
         _ = Task<Void, Never> {

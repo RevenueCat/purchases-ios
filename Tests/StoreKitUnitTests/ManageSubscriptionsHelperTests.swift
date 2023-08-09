@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-#if os(macOS) || os(iOS)
+#if os(macOS) || os(iOS) || VISION_OS
 
 class ManageSubscriptionsHelperTests: TestCase {
 

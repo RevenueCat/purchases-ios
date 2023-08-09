@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && (os(iOS) || VISION_OS) && swift(>=5.8)
 
 import Nimble
 @testable import RevenueCat

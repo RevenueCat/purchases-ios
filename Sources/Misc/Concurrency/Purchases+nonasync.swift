@@ -20,7 +20,7 @@ import Foundation
 /// Because `async` APIs are implicitly available in Objective-C, these can be Swift only.
 public extension Purchases {
 
-    #if os(iOS)
+    #if os(iOS) || VISION_OS
 
     @available(iOS 15.0, *)
     @available(macOS, unavailable)

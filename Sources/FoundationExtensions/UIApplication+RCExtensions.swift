@@ -11,8 +11,7 @@
 //
 //  Created by Andrés Boedo on 8/20/21.
 
-import Foundation
-#if os(iOS)
+#if os(iOS) || VISION_OS
 import UIKit
 
 extension UIApplication {

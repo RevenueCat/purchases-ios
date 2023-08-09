@@ -18,7 +18,7 @@ import XCTest
 
 @testable import RevenueCat
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 class BeginRefundRequestHelperTests: TestCase {
 

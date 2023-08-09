@@ -35,7 +35,7 @@ final class MockPaymentQueue: SKPaymentQueue {
         finishedTransactions.append(transaction)
     }
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     @available(iOS 13.4, macCatalyst 13.4, *)
     func simulatePaymentQueueShouldShowPriceConsent() -> [Bool] {
         return self.observers
