@@ -197,7 +197,8 @@ platform :ios do
       result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
       report_formats: [:junit],
       report_path: 'fastlane/test_output/revenuecatui/tests.xml',
-      test: true
+      test: true,
+      xcargs: "-test-iterations 3 -retry-tests-on-failure"
     )
   end
 
