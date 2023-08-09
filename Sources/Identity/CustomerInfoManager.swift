@@ -335,6 +335,7 @@ private extension CustomerInfoManager {
                                 transaction,
                                 data: .init(appUserID: appUserID,
                                             presentedOfferingID: nil,
+                                            presentedPaywallMode: nil,
                                             unsyncedAttributes: [:],
                                             storefront: storefront,
                                             source: Self.sourceForUnfinishedTransaction)

@@ -75,7 +75,9 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
-    case transaction_poster_handling_transaction(productID: String, offeringID: String?)
+    case transaction_poster_handling_transaction(productID: String,
+                                                 offeringID: String?,
+                                                 paywallMode: PaywallViewMode?)
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
@@ -283,14 +285,18 @@ extension PurchaseStrings: LogMessage {
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
 
-        case let .transaction_poster_handling_transaction(productID, offeringID):
-            let prefix = "TransactionPoster: handling transaction for product '\(productID)'"
+        case let .transaction_poster_handling_transaction(productID, offeringID, paywallMode):
+            var message = "TransactionPoster: handling transaction for product '\(productID)'"
 
             if let offeringIdentifier = offeringID {
-                return prefix + " in Offering '\(offeringIdentifier)'"
-            } else {
-                return prefix
+                message += " in Offering '\(offeringIdentifier)'"
             }
+
+            if let paywallMode = paywallMode {
+                message += " with PaywallViewMode '\(paywallMode.identifier)'"
+            }
+
+            return message
 
         case let .caching_presented_offering_identifier(offeringID, productID):
             return "Caching presented offering identifier '\(offeringID)' for product '\(productID)'"

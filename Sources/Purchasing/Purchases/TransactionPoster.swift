@@ -26,6 +26,7 @@ struct PurchasedTransactionData {
 
     var appUserID: String
     var presentedOfferingID: String?
+    var presentedPaywallMode: PaywallViewMode?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var aadAttributionToken: String?
     var storefront: StorefrontType?
@@ -83,7 +84,8 @@ final class TransactionPoster: TransactionPosterType {
                                     completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
             productID: transaction.productIdentifier,
-            offeringID: data.presentedOfferingID
+            offeringID: data.presentedOfferingID,
+            paywallMode: data.presentedPaywallMode
         ))
 
         self.receiptFetcher.receiptData(
