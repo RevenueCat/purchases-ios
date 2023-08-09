@@ -77,7 +77,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                 let productsToCache = result.filter { $0.value.shouldCache }
 
                 Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
-                self.cache.value += productsToCache
+                self.cache.modify { $0 += productsToCache }
 
                 completion(cached + result)
             }
