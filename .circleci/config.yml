@@ -528,6 +528,16 @@ jobs:
           command: bundle exec fastlane build_tv_watch_mac
           no_output_timeout: 30m
 
+  build-visionos:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Build visionOS
+          command: bundle exec fastlane build_visionos
+          no_output_timeout: 30m
+
   backend-integration-tests:
     <<: *base-job
     steps:
@@ -902,6 +912,8 @@ workflows:
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
+      - build-visionos:
+          xcode_version: '15.0.0'
       - backend-integration-tests:
           xcode_version: '14.3.0'
           filters:

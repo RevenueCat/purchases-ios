@@ -197,6 +197,15 @@ platform :ios do
     carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
   end
 
+  desc "visionOS build"
+  lane :build_visionos do |options|
+    xcodebuild(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCat',
+      destination: 'generic/platform=visionOS'
+    )
+  end
+
   desc "Run the carthage archive steps to prepare for carthage distribution"
   lane :carthage_archive do |options|
     carthage_archive
