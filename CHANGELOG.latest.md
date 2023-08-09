@@ -1,3 +1,5 @@
+_This release is compatible with Xcode 15 beta 6 and visionOS beta 3_
+
 ### Bugfixes
 * `visionOS`: support for `Xcode 15 beta 6` (#2989) via NachoSoto (@NachoSoto)
 * `CachingProductsManager`: avoid crash when caching different products with same identifier (#2979) via NachoSoto (@NachoSoto)
