@@ -158,3 +158,16 @@ func checkPaywallTemplate(_ template: PaywallTemplate) {
         break
     }
 }
+
+func checkPaywallViewMode(_ mode: PaywallViewMode) {
+    switch mode {
+    case .fullScreen:
+        break
+    case .card:
+        break
+    case .banner:
+        break
+    @unknown default:
+        break
+    }
+}
