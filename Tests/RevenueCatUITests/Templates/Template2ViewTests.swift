@@ -23,6 +23,22 @@ class Template2ViewTests: BaseSnapshotTest {
         .snapshot(size: Self.fullScreenSize)
     }
 
+    func testCardPaywall() {
+        PaywallView(offering: Self.offering.withLocalImages,
+                    mode: .card,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.cardSize)
+    }
+
+    func testCondensedCardPaywall() {
+        PaywallView(offering: Self.offering.withLocalImages,
+                    mode: .condensedCard,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.cardSize)
+    }
+
     func testPurchasingState() {
         let handler = Self.purchaseHandler.with(delay: 120)
 

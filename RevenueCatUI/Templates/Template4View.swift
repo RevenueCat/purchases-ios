@@ -12,15 +12,16 @@ import SwiftUI
 struct Template4View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
-    private var localization: [Package: ProcessedLocalizedConfiguration]
 
     @State
-    private var selectedPackage: Package
+    private var selectedPackage: TemplateViewConfiguration.Package
 
     @State
     private var packageContentHeight: CGFloat = 10
     @State
     private var containerWidth: CGFloat = 600
+    @State
+    private var displayingAllPlans: Bool
 
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
@@ -31,10 +32,10 @@ struct Template4View: TemplateViewType {
     private var purchaseHandler: PurchaseHandler
 
     init(_ configuration: TemplateViewConfiguration) {
-        self._selectedPackage = .init(initialValue: configuration.packages.default.content)
-
         self.configuration = configuration
-        self.localization = configuration.packages.localizationPerPackage()
+
+        self._selectedPackage = .init(initialValue: configuration.packages.default)
+        self._displayingAllPlans = .init(initialValue: configuration.mode.displayAllPlansByDefault)
     }
 
     var body: some View {
@@ -56,24 +57,26 @@ struct Template4View: TemplateViewType {
     @ViewBuilder
     var cardContent: some View {
         VStack(spacing: 20) {
-            Text(.init(self.selectedLocalization.title))
-                .foregroundColor(self.configuration.colors.text1Color)
-                .font(self.font(for: .title).bold())
-                .padding([.top, .bottom, .horizontal])
-                .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+            if self.configuration.mode.shouldDisplayText {
+                Text(.init(self.selectedPackage.localization.title))
+                    .foregroundColor(self.configuration.colors.text1Color)
+                    .font(self.font(for: .title).bold())
+                    .padding([.top, .bottom, .horizontal])
+                    .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+            }
 
-            self.packages
-                .frame(height: self.packageContentHeight)
-                .scrollableIfNecessary(.horizontal)
-                .frame(maxWidth: .infinity)
-                .onSizeChange(.horizontal) {
-                    self.containerWidth = $0
-                }
+            if self.configuration.mode.shouldDisplayPackages {
+                self.packagesScrollView
+            } else {
+                self.packagesScrollView
+                    .padding(.vertical)
+                    .hideCardContent(!self.displayingAllPlans, self.packageContentHeight)
+            }
 
             IntroEligibilityStateView(
-                textWithNoIntroOffer: self.selectedLocalization.offerDetails,
-                textWithIntroOffer: self.selectedLocalization.offerDetailsWithIntroOffer,
-                introEligibility: self.introEligibility[self.selectedPackage],
+                textWithNoIntroOffer: self.selectedPackage.localization.offerDetails,
+                textWithIntroOffer: self.selectedPackage.localization.offerDetailsWithIntroOffer,
+                introEligibility: self.introEligibility[self.selectedPackage.content],
                 foregroundColor: self.configuration.colors.text1Color
             )
             .font(self.font(for: .body).weight(.light))
@@ -84,7 +87,8 @@ struct Template4View: TemplateViewType {
 
             FooterView(configuration: self.configuration,
                        bold: false,
-                       purchaseHandler: self.purchaseHandler)
+                       purchaseHandler: self.purchaseHandler,
+                       displayingAllPlans: self.$displayingAllPlans)
             .frame(maxWidth: .infinity)
         }
         .animation(Constants.fastAnimation, value: self.selectedPackage)
@@ -94,17 +98,26 @@ struct Template4View: TemplateViewType {
         }
     }
 
+    private var packagesScrollView: some View {
+        self.packages
+            .frame(height: self.packageContentHeight)
+            .scrollableIfNecessary(.horizontal)
+            .frame(maxWidth: .infinity)
+            .onSizeChange(.horizontal) {
+                self.containerWidth = $0
+            }
+    }
+
     private var packages: some View {
         HStack(spacing: self.packageHorizontalSpacing) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
-                let isSelected = self.selectedPackage === package.content
+                let isSelected = self.selectedPackage.content === package.content
 
                 Button {
-                    self.selectedPackage = package.content
+                    self.selectedPackage = package
                 } label: {
                     PackageButton(configuration: self.configuration,
                                   package: package,
-                                  localization: self.localization(for: package.content),
                                   selected: isSelected,
                                   packageWidth: self.packageWidth,
                                   desiredHeight: self.packageContentHeight)
@@ -119,9 +132,8 @@ struct Template4View: TemplateViewType {
     private var subscribeButton: some View {
         PurchaseButton(
             package: self.selectedPackage,
-            localization: self.selectedLocalization,
             configuration: self.configuration,
-            introEligibility: self.introEligibility[self.selectedPackage],
+            introEligibility: self.introEligibility[self.selectedPackage.content],
             purchaseHandler: self.purchaseHandler
         )
     }
@@ -132,7 +144,6 @@ struct Template4View: TemplateViewType {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
                 PackageButton(configuration: self.configuration,
                               package: package,
-                              localization: self.localization(for: package.content),
                               selected: false,
                               packageWidth: self.packageWidth,
                               desiredHeight: nil)
@@ -160,7 +171,7 @@ struct Template4View: TemplateViewType {
         return self.introEligibilityViewModel.allEligibility
     }
 
-    fileprivate static let cornerRadius: CGFloat = 16
+    fileprivate static let cornerRadius = Constants.defaultCornerRadius
     fileprivate static let verticalPadding: CGFloat = 10
 
     @ScaledMetric(relativeTo: .title2)
@@ -190,7 +201,6 @@ private struct PackageButton: View {
 
     var configuration: TemplateViewConfiguration
     var package: TemplateViewConfiguration.Package
-    var localization: ProcessedLocalizedConfiguration
     var selected: Bool
     var packageWidth: CGFloat
     var desiredHeight: CGFloat?
@@ -256,7 +266,7 @@ private struct PackageButton: View {
     @ViewBuilder
     private var offerName: some View {
         Group {
-            if let offerName = self.localization.offerName {
+            if let offerName = self.package.localization.offerName {
                 let components = offerName.split(separator: " ", maxSplits: 2)
                 if components.count == 2 {
                     VStack {
@@ -320,15 +330,13 @@ private struct PackageButton: View {
 // MARK: - Extensions
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension Template4View {
+private extension PaywallViewMode {
 
-    func localization(for package: Package) -> ProcessedLocalizedConfiguration {
-        // Because of how packages are constructed this is known to exist
-        return self.localization[package]!
-    }
-
-    var selectedLocalization: ProcessedLocalizedConfiguration {
-        return self.localization(for: self.selectedPackage)
+    var shouldDisplayPackages: Bool {
+        switch self {
+        case .fullScreen: return true
+        case .card, .condensedCard: return false
+        }
     }
 
 }
