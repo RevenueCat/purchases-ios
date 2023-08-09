@@ -63,14 +63,14 @@ struct SamplePaywallsList: View {
                         Button {
                             self.display = .template(template, mode)
                         } label: {
-                            TemplateLabel(name: mode.name)
+                            TemplateLabel(name: mode.name, icon: mode.icon)
                         }
                     }
 
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: "Custom font")
+                        TemplateLabel(name: "Custom font", icon: "textformat")
                             .italic()
                     }
                 }
@@ -80,19 +80,21 @@ struct SamplePaywallsList: View {
                 Button {
                     self.display = .customPaywall(.card)
                 } label: {
-                    TemplateLabel(name: "Custom Paywall with card")
+                    TemplateLabel(name: "Custom + card",
+                                  icon: PaywallViewMode.card.icon)
                 }
 
                 Button {
                     self.display = .customPaywall(.condensedCard)
                 } label: {
-                    TemplateLabel(name: "Custom Paywall with condensed card")
+                    TemplateLabel(name: "Custom + condensed card",
+                                  icon: PaywallViewMode.condensedCard.icon)
                 }
 
                 Button {
                     self.display = .defaultTemplate
                 } label: {
-                    TemplateLabel(name: "Default template")
+                    TemplateLabel(name: "Default template", icon: "exclamationmark.triangle")
                 }
             }
         }
@@ -120,9 +122,10 @@ struct SamplePaywallsList: View {
 private struct TemplateLabel: View {
 
     var name: String
+    var icon: String
 
     var body: some View {
-        Text(self.name)
+        Label(self.name, systemImage: self.icon)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
     }
@@ -182,6 +185,14 @@ extension PaywallTemplate {
 }
 
 private extension PaywallViewMode {
+
+    var icon: String {
+        switch self {
+        case .fullScreen: return "iphone"
+        case .card: return "lanyardcard"
+        case .condensedCard: return "ruler"
+        }
+    }
 
     var name: String {
         switch self {
