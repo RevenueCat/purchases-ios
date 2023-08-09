@@ -39,7 +39,8 @@ class PresentIfNeededTests: TestCase {
             .addToHierarchy()
 
         Task {
-            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+            _ = try await Self.purchaseHandler.purchase(package: Self.package,
+                                                        with: .fullScreen)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
