@@ -41,6 +41,7 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
+    // TODO: create Delay type for higher delay
     func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () -> Void) {
         if withRandomDelay {
             let delay = Double.random(in: 0..<self.maxJitterInSeconds)
