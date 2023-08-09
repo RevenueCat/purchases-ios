@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -15,6 +15,14 @@ var dependencies: [Package.Dependency] = [
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
+
+let swiftSettings: [SwiftSetting]
+
+#if swift(>=5.9)
+swiftSettings = [ .define("VISION_OS", .when(platforms: [.custom("visionOS")])) ]
+#else
+swiftSettings = []
+#endif
 
 let package = Package(
     name: "RevenueCat",
@@ -39,7 +47,8 @@ let package = Package(
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
-                ]),
+                ],
+                swiftSettings: swiftSettings),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
