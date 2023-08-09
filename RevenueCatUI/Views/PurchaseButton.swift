@@ -67,7 +67,8 @@ struct PurchaseButton: View {
 
     private var button: some View {
         AsyncButton {
-            let cancelled = try await self.purchaseHandler.purchase(package: self.package).userCancelled
+            let cancelled = try await self.purchaseHandler.purchase(package: self.package,
+                                                                    with: self.mode).userCancelled
 
             if !cancelled, case .fullScreen = self.mode {
                 self.dismiss()
