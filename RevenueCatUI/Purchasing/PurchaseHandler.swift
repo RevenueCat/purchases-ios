@@ -12,7 +12,7 @@ import SwiftUI
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class PurchaseHandler: ObservableObject {
 
-    typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
+    typealias PurchaseBlock = @Sendable (Package, PaywallViewMode) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
 
     private let purchaseBlock: PurchaseBlock
@@ -35,7 +35,8 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restored: Bool = false
 
     convenience init(purchases: Purchases = .shared) {
-        self.init { package in
+        self.init { package, mode in
+            purchases.cachePresentedPaywallMode(mode)
             return try await purchases.purchase(package: package)
         } restorePurchases: {
             return try await purchases.restorePurchases()
@@ -60,13 +61,13 @@ final class PurchaseHandler: ObservableObject {
 extension PurchaseHandler {
 
     @MainActor
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(package: Package, with mode: PaywallViewMode) async throws -> PurchaseResultData {
         withAnimation(Constants.fastAnimation) {
             self.actionInProgress = true
         }
         defer { self.actionInProgress = false }
 
-        let result = try await self.purchaseBlock(package)
+        let result = try await self.purchaseBlock(package, mode)
 
         if !result.userCancelled {
             withAnimation(Constants.defaultAnimation) {

@@ -43,6 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
+    private let presentedPaywallMode: Atomic<PaywallViewMode?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -546,6 +547,10 @@ final class PurchasesOrchestrator {
         self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
     }
 
+    func cachePresentedPaywallMode(_ mode: PaywallViewMode) {
+        self.presentedPaywallMode.value = mode
+    }
+
 #if os(iOS) || os(macOS) || VISION_OS
 
     @available(watchOS, unavailable)
@@ -873,6 +878,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
                 data: .init(
                     appUserID: self.appUserID,
                     presentedOfferingID: nil,
+                    presentedPaywallMode: nil,
                     unsyncedAttributes: subscriberAttributes,
                     aadAttributionToken: adServicesToken,
                     storefront: storefront,
@@ -978,6 +984,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable:next function_body_length
     func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource,
@@ -1029,6 +1036,7 @@ private extension PurchasesOrchestrator {
                                       transactionData: .init(
                                         appUserID: currentAppUserID,
                                         presentedOfferingID: nil,
+                                        presentedPaywallMode: nil,
                                         unsyncedAttributes: unsyncedAttributes,
                                         storefront: productRequestData?.storefront,
                                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
@@ -1077,6 +1085,7 @@ private extension PurchasesOrchestrator {
                                     storefront: StorefrontType?,
                                     restored: Bool) {
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
+        let paywallMode = self.getAndRemovePresentedPaywallMode()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
@@ -1085,6 +1094,7 @@ private extension PurchasesOrchestrator {
             data: .init(
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringID,
+                presentedPaywallMode: paywallMode,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,
@@ -1141,6 +1151,10 @@ private extension PurchasesOrchestrator {
 
     func getAndRemovePresentedOfferingIdentifier(for transaction: StoreTransaction) -> String? {
         return self.getAndRemovePresentedOfferingIdentifier(for: transaction.productIdentifier)
+    }
+
+    func getAndRemovePresentedPaywallMode() -> PaywallViewMode? {
+        return self.presentedPaywallMode.getAndSet(nil)
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -1207,6 +1221,7 @@ extension PurchasesOrchestrator {
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: transaction)
+        let paywallMode = self.getAndRemovePresentedPaywallMode()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
@@ -1215,6 +1230,7 @@ extension PurchasesOrchestrator {
             data: .init(
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringID,
+                presentedPaywallMode: paywallMode,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,
