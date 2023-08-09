@@ -83,7 +83,6 @@ struct Template4View: TemplateViewType {
                 .padding(.horizontal)
 
             FooterView(configuration: self.configuration,
-                       color: self.configuration.colors.callToActionBackgroundColor,
                        bold: false,
                        purchaseHandler: self.purchaseHandler)
             .frame(maxWidth: .infinity)
