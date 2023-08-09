@@ -19,19 +19,18 @@ struct FooterView: View {
 
     init(
         configuration: TemplateViewConfiguration,
-        color: Color,
         bold: Bool = true,
         purchaseHandler: PurchaseHandler
     ) {
         self.init(
             configuration: configuration.configuration,
             fonts: configuration.fonts,
-            color: color,
+            color: configuration.colors.text1Color,
             purchaseHandler: purchaseHandler
         )
     }
 
-    init(
+    fileprivate init(
         configuration: PaywallData.Configuration,
         fonts: PaywallFontProvider,
         color: Color,
