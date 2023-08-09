@@ -55,7 +55,7 @@ private extension LoadingPaywallView {
         )
     })
     static let purchaseHandler: PurchaseHandler = .init(
-        purchase: { _ in
+        purchase: { _, _ in
             fatalError("Should not be able to purchase")
         },
         restorePurchases: {
