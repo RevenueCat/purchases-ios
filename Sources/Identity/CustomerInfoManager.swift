@@ -329,6 +329,7 @@ private extension CustomerInfoManager {
                     let transactionData = PurchasedTransactionData(
                         appUserID: appUserID,
                         presentedOfferingID: nil,
+                        presentedPaywallMode: nil,
                         unsyncedAttributes: [:],
                         storefront: await Storefront.currentStorefront,
                         source: Self.sourceForUnfinishedTransaction
