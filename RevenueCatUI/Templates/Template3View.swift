@@ -73,7 +73,6 @@ struct Template3View: TemplateViewType {
             .padding(.bottom)
 
             FooterView(configuration: self.configuration,
-                       color: self.configuration.colors.text2Color,
                        purchaseHandler: self.purchaseHandler)
         }
         .padding(.horizontal)
