@@ -12,10 +12,9 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct PurchaseButton: View {
 
-    let package: Package
+    let package: TemplateViewConfiguration.Package
     let colors: PaywallData.Configuration.Colors
     let fonts: PaywallFontProvider
-    let localization: ProcessedLocalizedConfiguration
     let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
 
@@ -23,8 +22,7 @@ struct PurchaseButton: View {
     var purchaseHandler: PurchaseHandler
 
     init(
-        package: Package,
-        localization: ProcessedLocalizedConfiguration,
+        package: TemplateViewConfiguration.Package,
         configuration: TemplateViewConfiguration,
         introEligibility: IntroEligibilityStatus?,
         purchaseHandler: PurchaseHandler
@@ -33,7 +31,6 @@ struct PurchaseButton: View {
             package: package,
             colors: configuration.colors,
             fonts: configuration.fonts,
-            localization: localization,
             introEligibility: introEligibility,
             mode: configuration.mode,
             purchaseHandler: purchaseHandler
@@ -41,10 +38,9 @@ struct PurchaseButton: View {
     }
 
     init(
-        package: Package,
+        package: TemplateViewConfiguration.Package,
         colors: PaywallData.Configuration.Colors,
         fonts: PaywallFontProvider,
-        localization: ProcessedLocalizedConfiguration,
         introEligibility: IntroEligibilityStatus?,
         mode: PaywallViewMode,
         purchaseHandler: PurchaseHandler
@@ -52,7 +48,6 @@ struct PurchaseButton: View {
         self.package = package
         self.colors = colors
         self.fonts = fonts
-        self.localization = localization
         self.introEligibility = introEligibility
         self.mode = mode
         self.purchaseHandler = purchaseHandler
@@ -69,7 +64,7 @@ struct PurchaseButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            let cancelled = try await self.purchaseHandler.purchase(package: self.package,
+            let cancelled = try await self.purchaseHandler.purchase(package: self.package.content,
                                                                     with: self.mode).userCancelled
 
             if !cancelled, case .fullScreen = self.mode {
@@ -77,8 +72,8 @@ struct PurchaseButton: View {
             }
         } label: {
             IntroEligibilityStateView(
-                textWithNoIntroOffer: self.localization.callToAction,
-                textWithIntroOffer: self.localization.callToActionWithIntroOffer,
+                textWithNoIntroOffer: self.package.localization.callToAction,
+                textWithIntroOffer: self.package.localization.callToActionWithIntroOffer,
                 introEligibility: self.introEligibility,
                 foregroundColor: self.colors.callToActionForegroundColor
             )
@@ -104,37 +99,31 @@ private extension PaywallViewMode {
 
     var buttonFont: Font.TextStyle {
         switch self {
-        case .fullScreen, .card: return .title3
-        case .banner: return .footnote
+        case .fullScreen, .card, .condensedCard: return .title3
         }
     }
 
     var fullWidthButton: Bool {
         switch self {
-        case .fullScreen, .card: return true
-        case .banner: return false
+        case .fullScreen, .card, .condensedCard: return true
         }
     }
 
     @available(tvOS, unavailable)
     var buttonSize: ControlSize {
         switch self {
-        case .fullScreen: return .large
-        case .card: return .regular
-        case .banner: return .small
+        case .fullScreen, .card, .condensedCard: return .large
         }
     }
 
     var buttonBorderShape: ButtonBorderShape {
         switch self {
-        case .fullScreen:
+        case .fullScreen, .card, .condensedCard:
             #if os(macOS) || os(tvOS)
             return .roundedRectangle
             #else
             return .capsule
             #endif
-        case .card, .banner:
-            return .roundedRectangle
         }
     }
 
@@ -161,30 +150,29 @@ struct PurchaseButton_Previews: PreviewProvider {
                 package: Self.package,
                 colors: TestData.colors,
                 fonts: DefaultPaywallFontProvider(),
-                localization: TestData.localization1.processVariables(with: Self.package, locale: .current),
                 introEligibility: self.eligibility,
                 mode: self.mode,
                 purchaseHandler: PreviewHelpers.purchaseHandler
             )
             .task {
-                self.eligibility = await PreviewHelpers.introEligibilityChecker.eligibility(for: Self.package)
+                self.eligibility = await PreviewHelpers.introEligibilityChecker.eligibility(for: Self.package.content)
             }
         }
 
-        private static let package: Package = TestData.packageWithIntroOffer
-
+        private static let package: TemplateViewConfiguration.Package = .init(
+            content: TestData.packageWithIntroOffer,
+            localization: TestData.localization1.processVariables(with: TestData.packageWithIntroOffer,
+                                                                  locale: .current),
+            discountRelativeToMostExpensivePerMonth: nil
+        )
     }
 
     static var previews: some View {
-        ForEach(Self.modes, id: \.self) { mode in
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             Preview(mode: mode)
                 .previewLayout(.sizeThatFits)
         }
     }
-
-    private static let modes: [PaywallViewMode] = [
-        .fullScreen
-    ]
 
 }
 
