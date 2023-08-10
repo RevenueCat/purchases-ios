@@ -262,7 +262,7 @@
 		4F8452682A5756CC00084550 /* HTTPRequestBody+Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */; };
 		4F87610F2A5C9E490006FA14 /* PaywallData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F87610E2A5C9E490006FA14 /* PaywallData.swift */; };
 		4F87612C2A5CAB980006FA14 /* PaywallTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F87612B2A5CAB980006FA14 /* PaywallTemplate.swift */; };
-		4F8929192A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */; };
+		4F8929192A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8929182A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift */; };
 		4F89A55D2A6ABADF008A411E /* PaywallViewMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F89A55C2A6ABADF008A411E /* PaywallViewMode.swift */; };
 		4F8A58172A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
 		4F8A58182A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */; };
@@ -966,6 +966,7 @@
 		37E35FDA0A44EA03EA12DAA2 /* DateFormatter+ExtensionsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DateFormatter+ExtensionsTests.swift"; sourceTree = "<group>"; };
 		4F0201C32A13C85500091612 /* Assertions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Assertions.swift; sourceTree = "<group>"; };
 		4F05876E2A5DE03F00E9A834 /* PaywallDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallDataTests.swift; sourceTree = "<group>"; };
+		4F062D312A85A11600A8A613 /* PaywallData+Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallData+Localization.swift"; sourceTree = "<group>"; };
 		4F0BBA802A1D0524000E75AB /* DefaultDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultDecodable.swift; sourceTree = "<group>"; };
 		4F0BBAAB2A1D253D000E75AB /* OfflineCustomerInfoCreatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCustomerInfoCreatorTests.swift; sourceTree = "<group>"; };
 		4F0CE2BC2A215CE600561895 /* TransactionPosterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionPosterTests.swift; sourceTree = "<group>"; };
@@ -1001,7 +1002,7 @@
 		4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPRequestBody+Signing.swift"; sourceTree = "<group>"; };
 		4F87610E2A5C9E490006FA14 /* PaywallData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallData.swift; sourceTree = "<group>"; };
 		4F87612B2A5CAB980006FA14 /* PaywallTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTemplate.swift; sourceTree = "<group>"; };
-		4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnsureNonEmptyArrayDecodable.swift; sourceTree = "<group>"; };
+		4F8929182A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnsureNonEmptyCollectionDecodable.swift; sourceTree = "<group>"; };
 		4F89A55C2A6ABADF008A411E /* PaywallViewMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewMode.swift; sourceTree = "<group>"; };
 		4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockOfflineCustomerInfoCreator.swift; sourceTree = "<group>"; };
 		4F90AFCA2A3915340047E63F /* TestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestMessage.swift; sourceTree = "<group>"; };
@@ -2518,7 +2519,7 @@
 				57EAE52C274468900060EB74 /* RawDataContainer.swift */,
 				4F0BBA802A1D0524000E75AB /* DefaultDecodable.swift */,
 				4FBBC5672A61E42F0077281F /* NonEmptyStringDecodable.swift */,
-				4F8929182A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift */,
+				4F8929182A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift */,
 			);
 			path = Codable;
 			sourceTree = "<group>";
@@ -3424,7 +3425,7 @@
 				2D9C7BB326D838FC006838BE /* UIApplication+RCExtensions.swift in Sources */,
 				F56E2E7727622B5E009FED5B /* TransactionsManager.swift in Sources */,
 				B34605CC279A6E380031CA74 /* LogInOperation.swift in Sources */,
-				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyArrayDecodable.swift in Sources */,
+				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				A55D08302722368600D919E0 /* SK2BeginRefundRequestHelper.swift in Sources */,
 				35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */,
