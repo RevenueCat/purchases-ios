@@ -14,7 +14,7 @@ enum Strings {
 
     case package_not_subscription(Package)
     case found_multiple_packages_of_same_identifier(String)
-    case could_not_find_content_for_variable(variableName: String)
+    case unrecognized_variable_name(variableName: String)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -33,8 +33,9 @@ extension Strings: CustomStringConvertible {
         case let .found_multiple_packages_of_same_identifier(identifier):
             return "Found multiple packages with same identifier '\(identifier)'. Will use the first one."
 
-        case let .could_not_find_content_for_variable(variableName):
-            return "Couldn't find content for variable '\(variableName)'"
+        case let .unrecognized_variable_name(variableName):
+            return "Found an unrecognized variable '\(variableName)'. It will be replaced with an empty string.\n" +
+            "See the docs for more information: https://www.revenuecat.com/docs/paywalls#variables"
 
         case .determining_whether_to_display_paywall:
             return "Determining whether to display paywall"
