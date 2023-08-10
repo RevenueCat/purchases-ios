@@ -24,28 +24,21 @@ class Template1ViewTests: BaseSnapshotTest {
         .snapshot(size: Self.fullScreenSize)
     }
 
-    // Disabled until we bring modes back.
-    /*
     func testCardPaywall() {
-        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
-                               mode: .card,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-            .background(.white) // Non-fullscreen views have no background
-
-        view.snapshot(size: Self.cardSize)
+        PaywallView(offering: Self.offeringWithNoIntroOffer,
+                    mode: .card,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.cardSize)
     }
 
-    func testBannerPaywall() {
-        let view = PaywallView(offering: Self.offeringWithNoIntroOffer,
-                               mode: .banner,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-            .background(.white) // Non-fullscreen views have no background
-
-        view.snapshot(size: Self.bannerSize)
+    func testCondensedCardPaywall() {
+        PaywallView(offering: Self.offeringWithNoIntroOffer,
+                    mode: .condensedCard,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.cardSize)
     }
-    */
 
     func testSamplePaywallWithIntroOffer() {
         let view = PaywallView(offering: Self.offeringWithIntroOffer,

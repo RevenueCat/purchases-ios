@@ -243,7 +243,7 @@ private extension SamplePaywallLoader {
             localization: .init(
                 title: "Call to action for better conversion.",
                 subtitle: "Lorem ipsum is simply dummy text of the printing and typesetting industry.",
-                callToAction: "Subscribe for {{ sub_price_per_month }}/mo",
+                callToAction: "Subscribe for {{ price_per_period }}",
                 offerDetails: "{{ total_price_and_per_month }}",
                 offerDetailsWithIntroOffer: "{{ total_price_and_per_month }} after {{ sub_offer_duration }} trial",
                 offerName: "{{ sub_period }}"
