@@ -91,24 +91,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
 }
 
-// MARK: - Helpers
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-extension TemplateViewConfiguration.PackageConfiguration {
-
-    /// - Returns: a dictionary for all localizations keyed by each package.
-    func localizationPerPackage() -> [Package: ProcessedLocalizedConfiguration] {
-        return .init(
-            self.all
-                .lazy
-                .map { ($0.content, $0.localization) },
-            // Ignore duplicates
-            uniquingKeysWith: { first, _ in first }
-        )
-    }
-
-}
-
 // MARK: - Creation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

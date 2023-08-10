@@ -33,8 +33,18 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     func testLoadingPaywallView() {
-        let view = LoadingPaywallView()
-        view.snapshot(size: Self.fullScreenSize)
+        LoadingPaywallView(mode: .fullScreen)
+            .snapshot(size: Self.fullScreenSize)
+    }
+
+    func testLoadingCardPaywallView() {
+        LoadingPaywallView(mode: .card)
+            .snapshot(size: Self.cardSize)
+    }
+
+    func testLoadingCondensedCardPaywallView() {
+        LoadingPaywallView(mode: .condensedCard)
+            .snapshot(size: Self.cardSize)
     }
 
     private static let offeringWithNoPaywall = Offering(
