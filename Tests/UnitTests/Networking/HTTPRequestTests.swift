@@ -66,7 +66,7 @@ class HTTPRequestTests: TestCase {
 
     func testPathsDontHaveLeadingSlash() {
         for path in Self.paths {
-            expect(path.relativePath).toNot(beginWith("/"))
+            expect(path.pathComponent).toNot(beginWith("/"))
         }
     }
 
@@ -186,7 +186,7 @@ class HTTPRequestTests: TestCase {
         let encodedUserID = "userid%20with%20spaces"
         let expectedPath = "subscribers/\(encodedUserID)"
 
-        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).relativePath) == expectedPath
+        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).pathComponent) == expectedPath
     }
 
     func testURLWithNoProxy() {

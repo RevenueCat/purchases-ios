@@ -60,8 +60,8 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
         verifyPurchasesError(error,
                              expectedCode: .networkError,
-                             userInfoKeys: ["request_url"],
-                             localizedDescription: "Could not create request to \(path)")
+                             userInfoKeys: ["request_path"],
+                             localizedDescription: "Could not create request to \(path.relativePath)")
     }
 
     func testUnexpectedResponse() {
