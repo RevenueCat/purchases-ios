@@ -202,7 +202,8 @@ platform :ios do
     xcodebuild(
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCat',
-      destination: 'generic/platform=visionOS'
+      destination: 'generic/platform=visionOS',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     )
   end
 
