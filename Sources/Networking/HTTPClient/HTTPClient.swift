@@ -418,7 +418,10 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        var urlRequest = URLRequest(url: request.httpRequest.path.url(proxyURL: SystemInfo.proxyURL))
+        guard let requestURL = request.httpRequest.path.url(proxyURL: SystemInfo.proxyURL) else {
+            return nil
+        }
+        var urlRequest = URLRequest(url: requestURL)
         urlRequest.httpMethod = request.method.httpMethod
         urlRequest.allHTTPHeaderFields = self.headers(for: request, urlRequest: urlRequest)
 

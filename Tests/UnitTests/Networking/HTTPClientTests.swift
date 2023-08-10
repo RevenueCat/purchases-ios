@@ -1432,7 +1432,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
                 data: .init(),
                 statusCode: .temporaryRedirect,
                 headers: [
-                    HTTPClient.ResponseHeader.location.rawValue: pathB.url.absoluteString
+                    HTTPClient.ResponseHeader.location.rawValue: pathB.url!.absoluteString
                 ]
             )
         }
@@ -1452,7 +1452,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(response?.value?.body) == responseData
 
         self.logger.verifyMessageWasLogged(
-            "Performing redirect from '\(pathA.url.absoluteString)' to '\(pathB.url.absoluteString)'",
+            "Performing redirect from '\(pathA.url!.absoluteString)' to '\(pathB.url!.absoluteString)'",
             level: .debug
         )
     }

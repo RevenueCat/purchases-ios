@@ -811,8 +811,8 @@ private extension ETagManagerTests {
                      verificationResult: verificationResult)
     }
 
-    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url
-    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url
+    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!
+    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url!
 
     static let testETag = "etag_1"
 

@@ -42,11 +42,10 @@ extension HTTPRequestPath {
         return "/v1/\(self.pathComponent)"
     }
 
-    var url: URL { return self.url(proxyURL: nil) }
+    var url: URL? { return self.url(proxyURL: nil) }
 
-    func url(proxyURL: URL? = nil) -> URL {
-        return (proxyURL ?? Self.serverHostURL)
-            .appendingPathComponent(self.relativePath)
+    func url(proxyURL: URL? = nil) -> URL? {
+        return URL(string: self.relativePath, relativeTo: proxyURL ?? Self.serverHostURL)
     }
 
 }

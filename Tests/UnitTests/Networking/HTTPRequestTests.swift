@@ -189,15 +189,24 @@ class HTTPRequestTests: TestCase {
         expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).pathComponent) == expectedPath
     }
 
+    func testUserIDEscapingOnURL() {
+        let encodeableUserID = "userid with spaces"
+        let encodedUserID = "userid%20with%20spaces"
+        let expectedURL = "https://api.revenuecat.com/v1/subscribers/\(encodedUserID)"
+        let result = HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).url
+
+        expect(result?.absoluteString) == expectedURL
+    }
+
     func testURLWithNoProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url) == URL(string: "https://api.revenuecat.com/v1/health")
-        expect(path.url(proxyURL: nil)) == URL(string: "https://api.revenuecat.com/v1/health")
+        expect(path.url?.absoluteString) == "https://api.revenuecat.com/v1/health"
+        expect(path.url(proxyURL: nil)?.absoluteString) == "https://api.revenuecat.com/v1/health"
     }
 
     func testURLWithProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url(proxyURL: URL(string: "https://test_url"))) == URL(string: "https://test_url/v1/health")
+        expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

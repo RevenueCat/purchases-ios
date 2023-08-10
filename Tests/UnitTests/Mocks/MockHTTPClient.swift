@@ -95,7 +95,7 @@ class MockHTTPClient: HTTPClient {
                            file: self.sourceTestFile,
                            testName: CurrentTestCaseTracker.osVersionAndTestName)
 
-            let mock = self.mocks[request.path.url] ?? .init(statusCode: .success)
+            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
                 let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
@@ -116,7 +116,7 @@ class MockHTTPClient: HTTPClient {
     }
 
     private func mock(path: HTTPRequestPath, response: Response) {
-        self.mocks[path.url] = response
+        self.mocks[path.url!] = response
     }
 
 }
