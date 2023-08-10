@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
-  codecov: codecov/codecov@3.2.4
+  codecov: codecov/codecov@3.2.5
 
 version: 2.1
 
