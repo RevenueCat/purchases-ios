@@ -90,7 +90,7 @@ public struct PaywallView: View {
                                      purchaseHandler: purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    LoadingPaywallView()
+                    LoadingPaywallView(mode: self.mode)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -202,38 +202,15 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .preference(key: PurchasedCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.purchasedCustomerInfo)
-            .hidden(if: self.shouldHidePaywall)
             .disabled(self.purchaseHandler.actionInProgress)
 
-        if let aspectRatio = self.mode.aspectRatio {
-            view.aspectRatio(aspectRatio, contentMode: .fit)
-        } else {
-            view
-        }
-    }
-
-    private var shouldHidePaywall: Bool {
         switch self.mode {
         case .fullScreen:
-            return false
+            view
 
-        case .card, .banner:
-            return self.purchaseHandler.purchased
-        }
-    }
-
-}
-
-// MARK: - Extensions
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension PaywallViewMode {
-
-    var aspectRatio: CGFloat? {
-        switch self {
-        case .fullScreen: return nil
-        case .card: return 1
-        case .banner: return 8
+        case .card, .condensedCard:
+            view
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -288,7 +265,7 @@ private extension PaywallViewMode {
     var layout: PreviewLayout {
         switch self {
         case .fullScreen: return .device
-        case .card, .banner: return .sizeThatFits
+        case .card, .condensedCard: return .sizeThatFits
         }
     }
 

@@ -18,8 +18,10 @@ struct OfferingsList: View {
     private var selectedOffering: Offering?
 
     var body: some View {
-        self.content
-            .navigationTitle("Offerings")
+        NavigationView {
+            self.content
+                .navigationTitle("Live Paywalls")
+        }
             .task {
                 do {
                     self.offerings = .success(

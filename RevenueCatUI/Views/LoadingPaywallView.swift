@@ -15,6 +15,8 @@ import SwiftUI
 @MainActor
 struct LoadingPaywallView: View {
 
+    var mode: PaywallViewMode
+
     var body: some View {
         LoadedOfferingPaywallView(
             offering: .init(
@@ -25,7 +27,7 @@ struct LoadingPaywallView: View {
                 availablePackages: Self.packages
             ),
             paywall: Self.defaultPaywall,
-            mode: .fullScreen,
+            mode: self.mode,
             fonts: DefaultPaywallFontProvider(),
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
@@ -126,7 +128,10 @@ private extension LoadingPaywallView {
 struct LoadingPaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
-        LoadingPaywallView()
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+            LoadingPaywallView(mode: mode)
+                .previewDisplayName("\(mode)")
+        }
     }
 
 }

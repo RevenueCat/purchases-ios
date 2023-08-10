@@ -216,7 +216,6 @@ internal enum TestData {
                     )
                 ),
                 blurredBackgroundImage: true,
-                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
                 privacyURL: URL(string: "https://revenuecat.com/tos")!
             ),
             localization: Self.localization2,
@@ -253,7 +252,7 @@ internal enum TestData {
                 callToAction: "Start",
                 callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free",
                 offerDetails: "Only {{ price }} per {{ sub_period }}",
-                offerDetailsWithIntroOffer: "First {{ sub_offer_duration }} free,\n" +
+                offerDetailsWithIntroOffer: "First {{ sub_offer_duration }} free, " +
                 "then {{ total_price_and_per_month }}",
                 features: [
                     .init(title: "Today",
