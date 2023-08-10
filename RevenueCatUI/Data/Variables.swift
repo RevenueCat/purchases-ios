@@ -75,7 +75,7 @@ private extension VariableDataProvider {
         case "sub_offer_price": return self.localizedIntroductoryOfferPrice ?? ""
 
         default:
-            Logger.warning(Strings.could_not_find_content_for_variable(variableName: variableName))
+            Logger.warning(Strings.unrecognized_variable_name(variableName: variableName))
             return ""
         }
     }
