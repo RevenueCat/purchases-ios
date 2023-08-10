@@ -51,18 +51,33 @@ extension PaywallData {
                 .task(id: offering) {
                     await introEligibility.computeEligibility(for: configuration.packages)
                 }
-                .background(
-                    Rectangle()
-                        .foregroundColor(
-                            mode.shouldDisplayBackground
-                            ? configuration.colors.backgroundColor
-                            : .clear
-                        )
-                        .edgesIgnoringSafeArea(.all)
-                )
+                .background(self.background(configuration: configuration))
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)
+        }
+    }
+
+    @ViewBuilder
+    private func background(
+        configuration: TemplateViewConfiguration
+    ) -> some View {
+        let view = Rectangle()
+            .foregroundStyle(configuration.colors.backgroundColor)
+            .edgesIgnoringSafeArea(.all)
+
+        switch configuration.mode {
+        case .fullScreen:
+            view
+        case .card, .condensedCard:
+            view
+            #if canImport(UIKit)
+                .roundedCorner(
+                    Constants.defaultCornerRadius,
+                    corners: [.topLeft, .topRight],
+                    edgesIgnoringSafeArea: .all
+                )
+            #endif
         }
     }
 
@@ -101,17 +116,6 @@ extension PaywallData {
             Template3View(configuration)
         case .template4:
             Template4View(configuration)
-        }
-    }
-
-}
-
-private extension PaywallViewMode {
-
-    var shouldDisplayBackground: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .card, .banner: return false
         }
     }
 

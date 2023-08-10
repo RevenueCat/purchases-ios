@@ -17,19 +17,34 @@ struct SamplePaywallsList: View {
     private var display: Display?
 
     var body: some View {
-        self.list(with: Self.loader)
+        NavigationView {
+            self.list(with: Self.loader)
+                .navigationTitle("Test Paywalls")
+        }
             .sheet(item: self.$display) { display in
                 switch display {
-                case let .template(template):
-                    PaywallView(offering: Self.loader.offering(for: template),
-                                introEligibility: Self.introEligibility,
-                                purchaseHandler: .default())
+                case let .template(template, mode):
+                    switch mode {
+                    case .fullScreen:
+                        PaywallView(offering: Self.loader.offering(for: template),
+                                    introEligibility: Self.introEligibility,
+                                    purchaseHandler: .default())
+
+                    case .card, .condensedCard:
+                        CustomPaywall(offering: Self.loader.offering(for: template),
+                                      mode: mode,
+                                      introEligibility: Self.introEligibility,
+                                      purchaseHandler: .default())
+                    }
 
                 case let .customFont(template):
                     PaywallView(offering: Self.loader.offering(for: template),
                                 fonts: Self.customFontProvider,
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
+
+                case let .customPaywall(mode):
+                    CustomPaywall(mode: mode)
 
                 case .defaultTemplate:
                     PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
@@ -42,31 +57,44 @@ struct SamplePaywallsList: View {
 
     private func list(with loader: SamplePaywallLoader) -> some View {
         List {
-            Section("Templates") {
-                ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
-                    Button {
-                        self.display = .template(template)
-                    } label: {
-                        TemplateLabel(name: template.name)
+            ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
+                Section(template.name) {
+                    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                        Button {
+                            self.display = .template(template, mode)
+                        } label: {
+                            TemplateLabel(name: mode.name, icon: mode.icon)
+                        }
                     }
-                }
-            }
 
-            Section("Custom Font") {
-                ForEach(PaywallTemplate.allCases, id: \.rawValue) { template in
                     Button {
                         self.display = .customFont(template)
                     } label: {
-                        TemplateLabel(name: template.name)
+                        TemplateLabel(name: "Custom font", icon: "textformat")
+                            .italic()
                     }
                 }
             }
 
             Section("Other") {
                 Button {
+                    self.display = .customPaywall(.card)
+                } label: {
+                    TemplateLabel(name: "Custom + card",
+                                  icon: PaywallViewMode.card.icon)
+                }
+
+                Button {
+                    self.display = .customPaywall(.condensedCard)
+                } label: {
+                    TemplateLabel(name: "Custom + condensed card",
+                                  icon: PaywallViewMode.condensedCard.icon)
+                }
+
+                Button {
                     self.display = .defaultTemplate
                 } label: {
-                    TemplateLabel(name: "Default template")
+                    TemplateLabel(name: "Default template", icon: "exclamationmark.triangle")
                 }
             }
         }
@@ -94,9 +122,10 @@ struct SamplePaywallsList: View {
 private struct TemplateLabel: View {
 
     var name: String
+    var icon: String
 
     var body: some View {
-        Text(self.name)
+        Label(self.name, systemImage: self.icon)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
     }
@@ -109,8 +138,9 @@ private extension SamplePaywallsList {
 
     enum Display {
 
-        case template(PaywallTemplate)
+        case template(PaywallTemplate, PaywallViewMode)
         case customFont(PaywallTemplate)
+        case customPaywall(PaywallViewMode)
         case defaultTemplate
 
     }
@@ -121,11 +151,14 @@ extension SamplePaywallsList.Display: Identifiable {
 
     public var id: String {
         switch self {
-        case let .template(template):
-            return "template-" + template.rawValue
+        case let .template(template, mode):
+            return "template-\(template.rawValue)-\(mode)"
 
         case let .customFont(template):
             return "custom-font-" + template.rawValue
+
+        case .customPaywall:
+            return "custom-paywall"
 
         case .defaultTemplate:
             return "default"
@@ -139,13 +172,36 @@ extension PaywallTemplate {
     var name: String {
         switch self {
         case .template1:
-            return "Minimalist"
+            return "#1: Minimalist"
         case .template2:
-            return "Bold packages"
+            return "#2: Bold packages"
         case .template3:
-            return "Feature list"
+            return "#3: Feature list"
         case .template4:
-            return "Horizontal packages"
+            return "#4: Horizontal packages"
+        }
+    }
+
+}
+
+private extension PaywallViewMode {
+
+    var icon: String {
+        switch self {
+        case .fullScreen: return "iphone"
+        case .card: return "lanyardcard"
+        case .condensedCard: return "ruler"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .fullScreen:
+            return "Fullscreen"
+        case .card:
+            return "Card"
+        case .condensedCard:
+            return "Condensed Card"
         }
     }
 

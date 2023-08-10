@@ -26,30 +26,28 @@ struct Template3View: TemplateViewType {
     }
 
     var body: some View {
-        ZStack {
-            self.background
-
-            self.content
-        }
-    }
-
-    private var content: some View {
         VStack {
-            if let url = self.configuration.iconImageURL {
-                RemoteImage(url: url, aspectRatio: 1)
-                    .frame(width: self.iconSize, height: self.iconSize)
-                    .cornerRadius(8)
+            if self.configuration.mode.shouldDisplayIcon {
+                if let url = self.configuration.iconImageURL {
+                    RemoteImage(url: url, aspectRatio: 1)
+                        .frame(width: self.iconSize, height: self.iconSize)
+                        .cornerRadius(8)
+                }
             }
 
-            Text(.init(self.localization.title))
-                .font(self.font(for: .title))
-                .foregroundStyle(self.configuration.colors.text1Color)
-                .multilineTextAlignment(.center)
+            if self.configuration.mode.shouldDisplayText {
+                Text(.init(self.localization.title))
+                    .font(self.font(for: .title))
+                    .foregroundStyle(self.configuration.colors.text1Color)
+                    .multilineTextAlignment(.center)
 
-            Spacer()
+                Spacer()
+            }
 
-            self.features
-                .scrollableIfNecessary()
+            if self.configuration.mode.shouldDisplayFeatures {
+                self.features
+                    .scrollableIfNecessary()
+            }
 
             Spacer()
 
@@ -64,8 +62,7 @@ struct Template3View: TemplateViewType {
             .padding(.bottom)
 
             PurchaseButton(
-                package: self.configuration.packages.single.content,
-                localization: self.localization,
+                package: self.configuration.packages.single,
                 configuration: self.configuration,
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
@@ -89,13 +86,6 @@ struct Template3View: TemplateViewType {
             }
         }
         .padding(.horizontal)
-    }
-
-    private var background: some View {
-        Rectangle()
-            .foregroundStyle(self.configuration.colors.backgroundColor)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .edgesIgnoringSafeArea(.all)
     }
 
     private var introEligibility: IntroEligibilityStatus? {
