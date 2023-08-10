@@ -51,7 +51,7 @@ class MockHTTPClient: HTTPClient {
 
     }
 
-    var mocks: [HTTPRequest.Path: Response] = [:]
+    var mocks: [URL: Response] = [:]
     var calls: [Call] = []
 
     init(apiKey: String,
@@ -95,7 +95,7 @@ class MockHTTPClient: HTTPClient {
                            file: self.sourceTestFile,
                            testName: CurrentTestCaseTracker.osVersionAndTestName)
 
-            let mock = self.mocks[request.path] ?? .init(statusCode: .success)
+            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
                 let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
@@ -112,7 +112,11 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.Path, response: Response) {
-        self.mocks[requestPath] = response
+        self.mock(path: requestPath, response: response)
+    }
+
+    private func mock(path: HTTPRequestPath, response: Response) {
+        self.mocks[path.url!] = response
     }
 
 }

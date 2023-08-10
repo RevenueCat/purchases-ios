@@ -170,7 +170,7 @@ private extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { self.httpRequest.path.description }
+        var path: String { self.httpRequest.path.relativePath }
 
         func adding(defaultHeaders: HTTPClient.RequestHeaders) -> Self {
             var copy = self
@@ -418,10 +418,9 @@ private extension HTTPClient {
     }
 
     func convert(request: Request) -> URLRequest? {
-        guard let requestURL = request.httpRequest.path.url else {
+        guard let requestURL = request.httpRequest.path.url(proxyURL: SystemInfo.proxyURL) else {
             return nil
         }
-
         var urlRequest = URLRequest(url: requestURL)
         urlRequest.httpMethod = request.method.httpMethod
         urlRequest.allHTTPHeaderFields = self.headers(for: request, urlRequest: urlRequest)
@@ -505,19 +504,11 @@ extension HTTPRequest {
         return result
     }
 
-}
-
-extension HTTPRequest.Path {
-
-    var url: URL? {
-        return URL(string: self.relativePath, relativeTo: SystemInfo.serverHostURL)
+    /// Add a nonce to the request
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    private mutating func addRandomNonce() {
+        self.nonce = Data.randomNonce()
     }
-
-    var relativePath: String {
-        return "\(Self.pathPrefix)/\(self.description)"
-    }
-
-    private static let pathPrefix: String = "/v1"
 
 }
 

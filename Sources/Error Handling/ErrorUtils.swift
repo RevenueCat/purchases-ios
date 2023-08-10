@@ -63,15 +63,15 @@ enum ErrorUtils {
      * Constructs an NSError with the ``ErrorCode/signatureVerificationFailed`` code.
      */
     static func signatureVerificationFailedError(
-        path: HTTPRequest.Path,
+        path: String,
         code: HTTPStatusCode,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return error(
             with: .signatureVerificationFailed,
-            message: "Request to \(path.relativePath) failed verification",
+            message: "Request to '\(path)' failed verification",
             extraUserInfo: [
-                "request_path": path.relativePath,
+                "request_path": path,
                 "status_code": code.rawValue
             ],
             fileName: fileName, functionName: functionName, line: line

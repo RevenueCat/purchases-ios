@@ -86,7 +86,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testHandledByProductionServer() async throws {
         try await self.purchases.healthRequest(signatureVerification: false)
 
-        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
+        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.health))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

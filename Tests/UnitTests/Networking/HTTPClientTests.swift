@@ -78,7 +78,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     func testUsesTheCorrectHost() throws {
         let hostCorrect: Atomic<Bool> = false
 
-        let host = try XCTUnwrap(SystemInfo.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host)) { _ in
             hostCorrect.value = true
             return .emptySuccessResponse()
@@ -1052,7 +1052,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         let error = try XCTUnwrap(response?.error)
-        expect(error) == .unableToCreateRequest(.mockPath)
+        expect(error) == .unableToCreateRequest(HTTPRequest.Path.mockPath)
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
@@ -1502,7 +1502,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
 }
 
-func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
+func isPath(_ path: HTTPRequestPath) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
 }
 

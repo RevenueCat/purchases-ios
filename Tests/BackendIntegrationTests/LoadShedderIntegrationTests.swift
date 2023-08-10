@@ -49,7 +49,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testOfferingsComeFromLoadShedder() async throws {
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
-                .getOfferings(appUserID: try self.purchases.appUserID)
+                HTTPRequest.Path.getOfferings(appUserID: try self.purchases.appUserID)
             ),
             level: .debug
         )
@@ -59,7 +59,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.purchaseMonthlyOffering()
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
             level: .debug
         )
     }
@@ -78,7 +78,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.network.request_handled_by_load_shedder(.getProductEntitlementMapping).description,
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.getProductEntitlementMapping).description,
             level: .debug,
             timeout: .seconds(5),
             pollInterval: .milliseconds(100)

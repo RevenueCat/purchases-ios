@@ -483,11 +483,11 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let callOrder: Atomic<(initialGet: Bool,
                                postResponse: Bool,
                                updatedGet: Bool)> = .init((false, false, false))
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
+        self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
             originalSubscriberInfo.value = result.value
             callOrder.value.initialGet = true
 
-            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath)
+            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url!)
         }
 
         backend.post(receiptData: Self.receiptData,
@@ -517,7 +517,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
-        expect(self.httpClient.calls.map { $0.request.path }) == [
+        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [
             getCustomerInfoPath,
             .postReceiptData
         ]

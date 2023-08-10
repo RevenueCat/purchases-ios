@@ -35,7 +35,7 @@ final class Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        var path: HTTPRequest.Path
+        var path: HTTPRequestPath
         var message: Data?
         var requestBody: HTTPRequestBody?
         var nonce: Data?
@@ -242,6 +242,22 @@ extension Signing {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Signing.SignatureParameters {
+
+    init(
+        path: HTTPRequest.Path,
+        message: Data? = nil,
+        requestBody: HTTPRequestBody? = nil,
+        nonce: Data? = nil,
+        etag: String? = nil,
+        requestDate: UInt64
+    ) {
+        self.path = path
+        self.message = message
+        self.requestBody = requestBody
+        self.nonce = nonce
+        self.etag = etag
+        self.requestDate = requestDate
+    }
 
     func signature(salt: Data, apiKey: String) -> Data {
         let apiKey = self.path.authenticated ? apiKey : ""

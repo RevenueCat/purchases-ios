@@ -88,7 +88,8 @@ class PurchasesDiagnosticsTests: TestCase {
         self.purchases.mockedResponseVerificationMode = .disabled
 
         self.purchases.mockedHealthRequestWithSignatureVerificationResponse = .failure(
-            ErrorUtils.signatureVerificationFailedError(path: .health, code: .success).asPublicError
+            ErrorUtils.signatureVerificationFailedError(path: HTTPRequest.Path.health.relativePath,
+                                                        code: .success).asPublicError
         )
 
         try await self.diagnostics.testSDKHealth()
@@ -97,7 +98,8 @@ class PurchasesDiagnosticsTests: TestCase {
     func testFailingSignatureVerification() async throws {
         self.purchases.mockedResponseVerificationMode = Signing.verificationMode(with: .informational)
 
-        let expectedError = ErrorUtils.signatureVerificationFailedError(path: .health, code: .success)
+        let expectedError = ErrorUtils.signatureVerificationFailedError(path: HTTPRequest.Path.health.relativePath,
+                                                                        code: .success)
         self.purchases.mockedHealthRequestWithSignatureVerificationResponse = .failure(expectedError.asPublicError)
 
         do {
