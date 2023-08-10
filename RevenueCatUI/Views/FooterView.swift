@@ -12,40 +12,56 @@ import SwiftUI
 struct FooterView: View {
 
     var configuration: PaywallData.Configuration
+    var mode: PaywallViewMode
     var fonts: PaywallFontProvider
     var color: Color
     var bold: Bool
     var purchaseHandler: PurchaseHandler
+    var displayingAllPlans: Binding<Bool>?
 
     init(
         configuration: TemplateViewConfiguration,
         bold: Bool = true,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        displayingAllPlans: Binding<Bool>? = nil
     ) {
         self.init(
             configuration: configuration.configuration,
+            mode: configuration.mode,
             fonts: configuration.fonts,
             color: configuration.colors.text1Color,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            displayingAllPlans: displayingAllPlans
         )
     }
 
     fileprivate init(
         configuration: PaywallData.Configuration,
+        mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         color: Color,
         bold: Bool = true,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        displayingAllPlans: Binding<Bool>?
     ) {
         self.configuration = configuration
+        self.mode = mode
         self.fonts = fonts
         self.color = color
         self.bold = bold
         self.purchaseHandler = purchaseHandler
+        self.displayingAllPlans = displayingAllPlans
     }
 
     var body: some View {
         HStack {
+            if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
+                Self.allPlansButton(binding)
+
+                self.separator
+                    .hidden(if: !self.configuration.displayRestorePurchases && !self.hasTOS && !self.hasPrivacy)
+            }
+
             if self.configuration.displayRestorePurchases {
                 RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
 
@@ -72,9 +88,20 @@ struct FooterView: View {
         }
         .foregroundColor(self.color)
         .font(self.fonts.font(for: Self.font).weight(self.fontWeight))
+        .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .padding(.bottom, 5)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+    }
+
+    private static func allPlansButton(_ binding: Binding<Bool>) -> some View {
+        Button {
+            withAnimation(Constants.displayAllPlansAnimation) {
+                binding.wrappedValue.toggle()
+            }
+        } label: {
+            Text("All plans", bundle: .module)
+        }
     }
 
     private var separator: some View {
@@ -178,6 +205,8 @@ private struct LinkButton: View {
 
 }
 
+// MARK: - Previews
+
 #if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
@@ -240,10 +269,12 @@ struct Footer_Previews: PreviewProvider {
                 termsOfServiceURL: termsOfServiceURL,
                 privacyURL: privacyURL
             ),
+            mode: .fullScreen,
             fonts: DefaultPaywallFontProvider(),
             color: TestData.colors.text1Color,
             bold: bold,
-            purchaseHandler: PreviewHelpers.purchaseHandler
+            purchaseHandler: PreviewHelpers.purchaseHandler,
+            displayingAllPlans: .constant(false)
         )
     }
 
