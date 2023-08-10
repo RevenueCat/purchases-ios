@@ -114,6 +114,14 @@ build tvOS, watchOS, macOS
 
 macOS build
 
+### ios build_visionos
+
+```sh
+[bundle exec] fastlane ios build_visionos
+```
+
+visionOS build
+
 ### ios carthage_archive
 
 ```sh
