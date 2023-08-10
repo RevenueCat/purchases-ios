@@ -19,13 +19,13 @@ public enum PaywallViewMode {
     /// Paywall is displayed full-screen, with as much information as available.
     case fullScreen
 
-    /// Paywall is displayed with a square aspect ratio. It can be embedded inside any other SwiftUI view.
-    @available(*, unavailable, message: "Other modes coming soon.")
+    /// Paywall can be displayed as an overlay on top of your own content.
+    /// Multi-package templates will display the package selection.
     case card
 
-    /// Paywall is displayed in a condensed format. It can be embedded inside any other SwiftUI view.
-    @available(*, unavailable, message: "Other modes coming soon.")
-    case banner
+    /// Paywall can be displayed as an overlay on top of your own content.
+    /// Multi-package templates will include a button to make the package selection visible.
+    case condensedCard
 
     /// The default ``PaywallViewMode``: ``PaywallViewMode/fullScreen``.
     public static let `default`: Self = .fullScreen
@@ -38,7 +38,7 @@ extension PaywallViewMode {
     public var isFullScreen: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .banner: return false
+        case .card, .condensedCard: return false
         }
     }
 
@@ -50,7 +50,7 @@ extension PaywallViewMode {
         switch self {
         case .fullScreen: return "full_screen"
         case .card: return "card"
-        case .banner: return "banner"
+        case .condensedCard: return "condensed_card"
         }
     }
 
@@ -58,18 +58,7 @@ extension PaywallViewMode {
 
 // MARK: - Extensions
 
-extension PaywallViewMode: CaseIterable {
-
-    // Note: this manual implementation can be deleted when all modes are available.
-    // swiftlint:disable:next missing_docs
-    public static var allCases: [PaywallViewMode] {
-        return [
-            .fullScreen
-        ]
-    }
-
-}
-
+extension PaywallViewMode: CaseIterable {}
 extension PaywallViewMode: Sendable {}
 extension PaywallViewMode: Hashable {}
 
