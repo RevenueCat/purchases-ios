@@ -17,20 +17,10 @@ import XCTest
 
 class PaywallDataTests: BaseHTTPResponseTest {
 
-    override func setUp() {
-        super.setUp()
-
-        expect(Locale.current.identifier).to(
-            equal(Self.defaultLocale),
-            description: "Tests require this"
-        )
-    }
-
     func testSample1() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
         expect(paywall.template) == .template1
-        expect(paywall.defaultLocale) == Locale(identifier: Self.defaultLocale)
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage) == "$rc_annual"
@@ -111,10 +101,8 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config(for: Locale(identifier: "fr"))).to(beNil())
     }
 
-    func testMissingCurrentLocaleLoadsDefault() throws {
+    func testMissingCurrentLocaleLoadsAvailableLocale() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
-
-        expect(paywall.defaultLocale.identifier) == "es_ES"
 
         let localization = paywall.localizedConfiguration
         expect(localization.callToAction) == "Comprar"
@@ -128,14 +116,10 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     #if !os(watchOS)
-    func testMissingCurrentAndDefaultFails() throws {
-        let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_and_default_locale")
-
-        expect(paywall.defaultLocale.identifier) == "es_ES"
-
+    func testMissingLocalizationFails() throws {
         expect {
-            let _: PaywallData.LocalizedConfiguration = paywall.localizedConfiguration
-        }.to(throwAssertion())
+            let _: PaywallData = try self.decodeFixture("PaywallData-missing_localization")
+        }.to(throwError())
     }
     #endif
 
