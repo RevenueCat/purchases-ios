@@ -165,7 +165,7 @@ func checkPaywallViewMode(_ mode: PaywallViewMode) {
         break
     case .card:
         break
-    case .banner:
+    case .condensedCard:
         break
     @unknown default:
         break

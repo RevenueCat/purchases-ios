@@ -53,12 +53,13 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
     init(
         offering: Offering,
+        mode: PaywallViewMode = .default,
         presentInSheet: Bool = false,
         creator: @escaping Creator
     ) {
         self.configuration = offering.paywall!.configuration(
             for: offering,
-            mode: .fullScreen,
+            mode: mode,
             fonts: DefaultPaywallFontProvider(),
             locale: .current
         )
@@ -90,10 +91,25 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
                         for: configuration.packages
                     )
                 }
+                .previewDisplayName("\(configuration.mode)")
+                .previewLayout(configuration.mode.layout)
 
         case let .failure(error):
             DebugErrorView("Invalid configuration: \(error)",
                            releaseBehavior: .fatalError)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension PaywallViewMode {
+
+    var layout: PreviewLayout {
+        switch self {
+        case .fullScreen: return .device
+        case .card: return .fixed(width: 400, height: 280)
+        case .condensedCard: return .fixed(width: 400, height: 150)
         }
     }
 

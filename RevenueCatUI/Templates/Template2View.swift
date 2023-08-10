@@ -6,10 +6,15 @@ import SwiftUI
 struct Template2View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
-    private var localization: [Package: ProcessedLocalizedConfiguration]
 
     @State
-    private var selectedPackage: Package
+    private var selectedPackage: TemplateViewConfiguration.Package
+
+    @State
+    private var displayingAllPlans: Bool
+
+    @State
+    private var containerHeight: CGFloat = 10
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
@@ -17,10 +22,9 @@ struct Template2View: TemplateViewType {
     private var purchaseHandler: PurchaseHandler
 
     init(_ configuration: TemplateViewConfiguration) {
-        self._selectedPackage = .init(initialValue: configuration.packages.default.content)
-
+        self._selectedPackage = .init(initialValue: configuration.packages.default)
         self.configuration = configuration
-        self.localization = configuration.packages.localizationPerPackage()
+        self._displayingAllPlans = .init(initialValue: configuration.mode.displayAllPlansByDefault)
     }
 
     var body: some View {
@@ -37,13 +41,17 @@ struct Template2View: TemplateViewType {
             self.scrollableContent
                 .scrollableIfNecessary()
 
+            if self.configuration.mode.shouldDisplayInlineOfferDetails,
+                !self.displayingAllPlans {
+                self.offerDetails(package: self.selectedPackage, selected: false)
+            }
+
             self.subscribeButton
                 .padding(.horizontal)
 
-            if case .fullScreen = self.configuration.mode {
-                FooterView(configuration: self.configuration,
-                           purchaseHandler: self.purchaseHandler)
-            }
+            FooterView(configuration: self.configuration,
+                       purchaseHandler: self.purchaseHandler,
+                       displayingAllPlans: self.$displayingAllPlans)
         }
         .animation(Constants.fastAnimation, value: self.selectedPackage)
         .multilineTextAlignment(.center)
@@ -52,27 +60,35 @@ struct Template2View: TemplateViewType {
 
     private var scrollableContent: some View {
         VStack {
-            Spacer()
+            if self.configuration.mode.shouldDisplayIcon {
+                Spacer()
+                self.iconImage
+                Spacer()
+            }
 
-            self.iconImage
+            if self.configuration.mode.shouldDisplayText {
+                Text(.init(self.selectedLocalization.title))
+                    .foregroundColor(self.configuration.colors.text1Color)
+                    .font(self.font(for: .largeTitle).bold())
 
-            Spacer()
+                Spacer()
 
-            Text(.init(self.selectedLocalization.title))
-                .foregroundColor(self.configuration.colors.text1Color)
-                .font(self.font(for: .largeTitle).bold())
+                Text(.init(self.selectedLocalization.subtitle ?? ""))
+                    .foregroundColor(self.configuration.colors.text1Color)
+                    .font(self.font(for: .title3))
 
-            Spacer()
+                Spacer()
+            }
 
-            Text(.init(self.selectedLocalization.subtitle ?? ""))
-                .foregroundColor(self.configuration.colors.text1Color)
-                .font(self.font(for: .title3))
-
-            Spacer()
-
-            self.packages
-
-            Spacer()
+            if self.configuration.mode.shouldDisplayPackages {
+                self.packages
+                Spacer()
+            } else {
+                self.packages
+                    .padding(.vertical)
+                    .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
+                    .hideCardContent(!self.displayingAllPlans, self.containerHeight)
+            }
         }
         .padding(.horizontal)
         .frame(maxHeight: .infinity)
@@ -81,10 +97,10 @@ struct Template2View: TemplateViewType {
     private var packages: some View {
         VStack(spacing: 8) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
-                let isSelected = self.selectedPackage === package.content
+                let isSelected = self.selectedPackage.content === package.content
 
                 Button {
-                    self.selectedPackage = package.content
+                    self.selectedPackage = package
                 } label: {
                     self.packageButton(package, selected: isSelected)
                         .contentShape(Rectangle())
@@ -99,15 +115,7 @@ struct Template2View: TemplateViewType {
         VStack(alignment: Self.packageButtonAlignment.horizontal, spacing: 5) {
             self.packageButtonTitle(package, selected: selected)
 
-            IntroEligibilityStateView(
-                textWithNoIntroOffer: package.localization.offerDetails,
-                textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
-                introEligibility: self.introEligibility[package.content],
-                foregroundColor: self.textColor(selected),
-                alignment: Self.packageButtonAlignment
-            )
-            .fixedSize(horizontal: false, vertical: true)
-            .font(self.font(for: .body))
+            self.offerDetails(package: package, selected: selected)
         }
         .font(self.font(for: .body).weight(.medium))
         .padding()
@@ -122,11 +130,13 @@ struct Template2View: TemplateViewType {
             }
         }
         .background {
+            let view = RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+
             if selected {
-                RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                view
                     .foregroundColor(self.selectedBackgroundColor)
             } else {
-                RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+                view
                     .foregroundStyle(.thinMaterial)
             }
         }
@@ -148,9 +158,21 @@ struct Template2View: TemplateViewType {
                     }
                 }
 
-            Text(self.localization(for: package.content).offerName ?? package.content.productName)
+            Text(package.localization.offerName ?? package.content.productName)
         }
         .foregroundColor(self.textColor(selected))
+    }
+
+    private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
+        IntroEligibilityStateView(
+            textWithNoIntroOffer: package.localization.offerDetails,
+            textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
+            introEligibility: self.introEligibility[package.content],
+            foregroundColor: self.textColor(selected),
+            alignment: Self.packageButtonAlignment
+        )
+        .fixedSize(horizontal: false, vertical: true)
+        .font(self.font(for: .body))
     }
 
     private func textColor(_ selected: Bool) -> Color {
@@ -162,9 +184,8 @@ struct Template2View: TemplateViewType {
     private var subscribeButton: some View {
         PurchaseButton(
             package: self.selectedPackage,
-            localization: self.selectedLocalization,
             configuration: self.configuration,
-            introEligibility: self.introEligibility[self.selectedPackage],
+            introEligibility: self.introEligibility[self.selectedPackage.content],
             purchaseHandler: self.purchaseHandler
         )
     }
@@ -227,13 +248,27 @@ struct Template2View: TemplateViewType {
 @available(tvOS, unavailable)
 private extension Template2View {
 
-    func localization(for package: Package) -> ProcessedLocalizedConfiguration {
-        // Because of how packages are constructed this is known to exist
-        return self.localization[package]!
+    var selectedLocalization: ProcessedLocalizedConfiguration {
+        return self.selectedPackage.localization
     }
 
-    var selectedLocalization: ProcessedLocalizedConfiguration {
-        return self.localization(for: self.selectedPackage)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension PaywallViewMode {
+
+    var shouldDisplayPackages: Bool {
+        switch self {
+        case .fullScreen: return true
+        case .card, .condensedCard: return false
+        }
+    }
+
+    var shouldDisplayInlineOfferDetails: Bool {
+        switch self {
+        case .fullScreen: return false
+        case .card, .condensedCard: return true
+        }
     }
 
 }
@@ -266,8 +301,13 @@ private extension Bundle {
 struct Template2View_Previews: PreviewProvider {
 
     static var previews: some View {
-        PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
-            Template2View($0)
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+            PreviewableTemplate(
+                offering: TestData.offeringWithMultiPackagePaywall,
+                mode: mode
+            ) {
+                Template2View($0)
+            }
         }
     }
 
