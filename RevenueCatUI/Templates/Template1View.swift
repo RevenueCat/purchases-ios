@@ -36,6 +36,7 @@ struct Template1View: TemplateViewType {
             )
             .font(self.font(for: self.configuration.mode.offerDetailsFont))
             .multilineTextAlignment(.center)
+            .padding(.horizontal)
 
             self.button
                 .padding(.horizontal)
