@@ -67,6 +67,8 @@ struct PurchaseButton: View {
 
     private var button: some View {
         AsyncButton {
+            guard !self.purchaseHandler.actionInProgress else { return }
+
             let cancelled = try await self.purchaseHandler.purchase(package: self.package,
                                                                     with: self.mode).userCancelled
 
