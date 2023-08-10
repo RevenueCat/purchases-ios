@@ -35,9 +35,12 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            ZStack {
-                self.background
-                self.content
+            NavigationView {
+                ZStack {
+                    self.background
+                    self.content
+                }
+                .navigationTitle("Paywall Tester")
             }
             .tabItem {
                 Label("App", systemImage: "iphone")
@@ -99,6 +102,14 @@ struct AppContentView: View {
                 self.customerInfo = info
             }
         }
+        #if DEBUG
+        .overlay {
+            if #available(iOS 16.0, macOS 13.0, *) {
+                DebugView()
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+            }
+        }
+        #endif
     }
 }
 
