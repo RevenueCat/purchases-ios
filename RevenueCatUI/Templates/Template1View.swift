@@ -19,14 +19,12 @@ struct Template1View: TemplateViewType {
     }
 
     var body: some View {
-        VStack(spacing: self.configuration.mode.verticalSpacing) {
+        VStack {
             self.scrollableContent
                 .scrollableIfNecessary()
                 .scrollBounceBehaviorBasedOnSize()
 
-            if case .fullScreen = self.configuration.mode {
-                Spacer()
-            }
+            Spacer()
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.localization.offerDetails,
@@ -34,47 +32,45 @@ struct Template1View: TemplateViewType {
                 introEligibility: self.introEligibility,
                 foregroundColor: self.configuration.colors.text1Color
             )
-            .font(self.font(for: self.configuration.mode.offerDetailsFont))
+            .font(self.font(for: .callout))
             .multilineTextAlignment(.center)
             .padding(.horizontal)
 
             self.button
                 .padding(.horizontal)
 
-            if case .fullScreen = self.configuration.mode {
-                FooterView(configuration: self.configuration,
-                           purchaseHandler: self.purchaseHandler)
-            }
+            FooterView(configuration: self.configuration,
+                       purchaseHandler: self.purchaseHandler)
         }
     }
 
     @ViewBuilder
     private var scrollableContent: some View {
-        VStack(spacing: self.configuration.mode.verticalSpacing) {
-            self.headerImage
-
-            Group {
-                Text(.init(self.localization.title))
-                    .font(self.font(for: self.configuration.mode.titleFont))
-                    .fontWeight(.heavy)
-                    .padding(
-                        self.configuration.mode.displaySubtitle
-                            ? .bottom
-                            : []
-                    )
-
-                if self.configuration.mode.displaySubtitle, let subtitle = self.localization.subtitle {
-                    Text(.init(subtitle))
-                        .font(self.font(for: self.configuration.mode.subtitleFont))
-                }
+        VStack {
+            if self.configuration.mode.shouldDisplayIcon {
+                self.headerImage
             }
-            .padding(.horizontal, 20)
 
-            Spacer()
+            if self.configuration.mode.shouldDisplayText {
+                Group {
+                    Text(.init(self.localization.title))
+                        .font(self.font(for: .largeTitle))
+                        .fontWeight(.heavy)
+                        .padding(.bottom)
+
+                    if let subtitle = self.localization.subtitle {
+                        Text(.init(subtitle))
+                            .font(self.font(for: .subheadline))
+                    }
+                }
+                .padding(.horizontal, 20)
+
+                Spacer()
+            }
         }
         .foregroundColor(self.configuration.colors.text1Color)
         .multilineTextAlignment(.center)
-        .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
+        .edgesIgnoringSafeArea(.top)
     }
 
     @ViewBuilder
@@ -88,31 +84,16 @@ struct Template1View: TemplateViewType {
 
     @ViewBuilder
     private var headerImage: some View {
-        switch self.configuration.mode {
-        case .fullScreen:
-            self.asyncImage
-                .modifier(CircleMaskModifier())
+        self.asyncImage
+            .modifier(CircleMaskModifier())
 
-            Spacer()
-
-        case .card:
-            self.asyncImage
-                .clipShape(
-                    RoundedRectangle(cornerRadius: 5, style: .continuous)
-                )
-
-            Spacer()
-
-        case .banner:
-            EmptyView()
-        }
+        Spacer()
     }
 
     @ViewBuilder
     private var button: some View {
         PurchaseButton(
-            package: self.configuration.packages.single.content,
-            localization: self.localization,
+            package: self.configuration.packages.single,
             configuration: self.configuration,
             introEligibility: self.introEligibility,
             purchaseHandler: self.purchaseHandler
@@ -130,47 +111,6 @@ struct Template1View: TemplateViewType {
 }
 
 // MARK: - Extensions
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension PaywallViewMode {
-
-    var verticalSpacing: CGFloat? {
-        switch self {
-        case .fullScreen, .card: return nil // Default value
-        case .banner: return 4
-        }
-    }
-
-    var titleFont: Font.TextStyle {
-        switch self {
-        case .fullScreen: return .largeTitle
-        case .card: return .title
-        case .banner: return .headline
-        }
-    }
-
-    var subtitleFont: Font.TextStyle {
-        switch self {
-        case .fullScreen: return .subheadline
-        case .card, .banner: return .callout
-        }
-    }
-
-    var displaySubtitle: Bool {
-        switch self {
-        case .fullScreen, .card: return true
-        case .banner: return false
-        }
-    }
-
-    var offerDetailsFont: Font.TextStyle {
-        switch self {
-        case .fullScreen: return .callout
-        case .card, .banner: return .caption
-        }
-    }
-
-}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct CircleMaskModifier: ViewModifier {
