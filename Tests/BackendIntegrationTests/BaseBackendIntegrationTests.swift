@@ -46,6 +46,8 @@ class BaseBackendIntegrationTests: TestCase {
 
     private var mainThreadMonitor: MainThreadMonitor!
 
+    fileprivate var serverIsDown: Bool = false
+
     // MARK: - Overridable configuration
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
@@ -214,8 +216,11 @@ private extension BaseBackendIntegrationTests {
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
     var enableReceiptFetchRetry: Bool { return true }
-    var forceServerErrors: Bool { return false }
+    var forceServerErrors: Bool { return self.serverIsDown }
     var forceSignatureFailures: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
+
+    final func serverDown() { self.serverIsDown = true }
+    final func serverUp() { self.serverIsDown = false }
 
 }

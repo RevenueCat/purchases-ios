@@ -147,6 +147,21 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         _ = try await self.purchases.productEntitlementMapping()
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPostingReceiptInLieuOfCustomerInfoReturnsVerificationResult() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.serverDown()
+        try await self.purchaseMonthlyOffering()
+
+        self.serverUp()
+        self.invalidSignature = true
+
+        let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(customerInfo.entitlements.verification) == .failed
+        try await self.verifyEntitlementWentThrough(customerInfo)
+    }
+
 }
 
 class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIntegrationTests {
