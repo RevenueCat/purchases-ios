@@ -20,11 +20,8 @@ import XCTest
 
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
-    fileprivate var serverIsDown: Bool = false
-    override var forceServerErrors: Bool { return self.serverIsDown }
-
     override func setUp() async throws {
-        self.serverIsDown = false
+        self.serverUp()
         try await super.setUp()
 
         await self.waitForPendingCustomerInfoRequests()
@@ -353,9 +350,6 @@ class OfflineWithNoMappingStoreKitIntegrationTests: BaseOfflineStoreKitIntegrati
 // MARK: -
 
 private extension BaseOfflineStoreKitIntegrationTests {
-
-    final func serverDown() { self.serverIsDown = true }
-    final func serverUp() { self.serverIsDown = false }
 
     func waitForPendingCustomerInfoRequests() async {
         _ = try? await self.purchases.customerInfo()
