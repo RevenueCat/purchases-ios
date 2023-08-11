@@ -127,13 +127,12 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 3. Ensure delegate is notified of subscription
         try await asyncWait(
-            until: { [delegate = self.purchasesDelegate] in
-                delegate?.customerInfo?.activeSubscriptions.isEmpty == false
-            },
+            description: "Subscription never became active",
             timeout: .seconds(5),
-            pollInterval: .milliseconds(200),
-            description: "Subscription never became active"
-        )
+            pollInterval: .milliseconds(200)
+        ) { [delegate = self.purchasesDelegate] in
+            delegate?.customerInfo?.activeSubscriptions.isEmpty == false
+        }
 
         // 4. Ensure transaction is eventually finished
         try await self.logger.verifyMessageIsEventuallyLogged(
@@ -244,6 +243,40 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptOnlyOnce() async throws {
+        // This test requires the "production" behavior to make sure
+        // we don't refresh the receipt a second time when posting the second transaction.
+        self.enableReceiptFetchRetry = false
+
+        self.serverDown()
+
+        try await self.purchaseMonthlyProduct()
+        try self.testSession.forceRenewalOfSubscription(
+            productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
+        )
+
+        try await asyncWait(description: "Expected 2 unfinished transactions") {
+            await Transaction.unfinished.extractValues().count == 2
+        }
+
+        self.serverUp()
+
+        let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        try await self.verifyEntitlementWentThrough(customerInfo)
+
+        self.logger.verifyMessageWasLogged(
+            "Found 2 unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
+            level: .debug,
+            expectedCount: 1
+        )
+
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Network operation 'PostReceiptDataOperation' found with the same cache key",
+            level: .debug
+        )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingConsumableInvalidatesOfflineMode() async throws {
         self.serverDown()
 
@@ -318,7 +351,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
+        try await self.logger.verifyMessageIsEventuallyLogged("Finishing transaction",
+                                                              level: .info,
+                                                              expectedCount: 2)
     }
 
 }

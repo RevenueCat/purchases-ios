@@ -82,9 +82,10 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(parameters.data.source.initiationSource) == .queue
     }
 
-    func testPostsAllTransactions() async throws {
+    func testPostsFirstTransaction() async throws {
+        let transactionToPost = Self.createTransaction()
         let transactions = [
-            Self.createTransaction(),
+            transactionToPost,
             Self.createTransaction(),
             Self.createTransaction()
         ]
@@ -96,21 +97,25 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
                                                                          isAppBackgrounded: false)
         expect(self.mockBackend.invokedGetSubscriberData) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
-        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
-        expect(
-            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
-                .map(\.transaction)
-                .compactMap { $0 as? StoreTransaction }
-        )
-            == transactions
+        // The first transaction is posted synchronously.
+        // The rest are posted in the background.
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) >= 1
+
+        expect(self.mockTransactionPoster.allHandledTransactions).to(contain(transactionToPost))
 
         self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
             level: .debug
         )
+
+        try await asyncWait(
+            description: "The rest of transactions should be posted asynchronously"
+        ) { [poster = self.mockTransactionPoster!] in
+            poster.allHandledTransactions == Set(transactions)
+        }
     }
 
-    func testPostingAllTransactionsReturnsLastKnownSuccess() async throws {
+    func testPostingAllTransactionsReturnsFirstResult() async throws {
         let otherMockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2024-12-21T02:40:36Z",
             "subscriber": [
@@ -135,22 +140,21 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
             .failure(.networkError(.serverDown()))
         ]
 
-        _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
-                                                                         isAppBackgrounded: false)
+        let result = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                                  isAppBackgrounded: false)
+        expect(result) === otherMockCustomerInfo
+
         expect(self.mockBackend.invokedGetSubscriberData) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
-        expect(self.mockTransactionPoster.invokedHandlePurchasedTransactionCount.value) == transactions.count
-        expect(
-            self.mockTransactionPoster.invokedHandlePurchasedTransactionParameterList.value
-                .map(\.transaction)
-                .compactMap { $0 as? StoreTransaction }
-        )
-            == transactions
 
         self.logger.verifyMessageWasLogged(
             Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions),
             level: .debug
         )
+
+        try await asyncWait { [poster = self.mockTransactionPoster!] in
+            poster.allHandledTransactions == Set(transactions)
+        }
     }
 
 }

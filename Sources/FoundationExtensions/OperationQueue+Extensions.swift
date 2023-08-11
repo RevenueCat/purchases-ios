@@ -22,6 +22,10 @@ extension OperationQueue {
         switch cacheStatus {
         case .firstCallbackAddedToList:
             self.addOperation(factory.create())
+
+            Logger.verbose(Strings.network.enqueing_operation(factory.operationType,
+                                                              cacheKey: factory.cacheKey))
+
         case .addedToExistingInFlightList:
             Logger.debug(
                 Strings.network.reusing_existing_request_for_operation(

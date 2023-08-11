@@ -321,35 +321,33 @@ private extension CustomerInfoManager {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
-                if !transactions.isEmpty {
-                    var results: [Result<CustomerInfo, BackendError>] = []
-                    let storefront = await Storefront.currentStorefront
-
+                if let transactionToPost = transactions.first {
                     Logger.debug(
                         Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
                     )
 
-                    for transaction in transactions {
-                        results.append(
-                            await self.transactionPoster.handlePurchasedTransaction(
-                                transaction,
-                                data: .init(appUserID: appUserID,
-                                            presentedOfferingID: nil,
-                                            unsyncedAttributes: [:],
-                                            storefront: storefront,
-                                            source: Self.sourceForUnfinishedTransaction)
-                            )
-                        )
+                    let transactionData = PurchasedTransactionData(
+                        appUserID: appUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: [:],
+                        storefront: await Storefront.currentStorefront,
+                        source: Self.sourceForUnfinishedTransaction
+                    )
+
+                    // Post everything but the first transaction in the background
+                    // in parallel so they can be de-duped
+                    let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
+                    Task.detached(priority: .background) {
+                        await self.postTransactions(otherTransactionsToPostInParalel, transactionData)
                     }
 
-                    // Any of the POST receipt operations will have posted the same receipt contents
-                    // so the resulting `CustomerInfo` will be equivalent.
-                    // For that reason, we can return the last known success if available,
-                    // and otherwise the last result (an error).
-                    let lastSuccess = results.last { $0.value != nil }
-                    let result = lastSuccess ?? results.last!
-
-                    completion(result)
+                    // Return the result of posting the first transaction.
+                    // The posted receipt will include the content of every other transaction
+                    // so we don't need to wait for those.
+                    completion(await self.transactionPoster.handlePurchasedTransaction(
+                        transactionToPost,
+                        data: transactionData
+                    ))
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,
@@ -374,6 +372,24 @@ private extension CustomerInfoManager {
                                      withRandomDelay: isAppBackgrounded,
                                      allowComputingOffline: allowComputingOffline,
                                      completion: completion)
+    }
+
+    /// Posts all `transactions` in parallel.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func postTransactions(
+        _ transactions: [StoreTransaction],
+        _ data: PurchasedTransactionData
+    ) async {
+        await withTaskGroup(of: Void.self) { group in
+            for transaction in transactions {
+                group.addTask {
+                    _ = await self.transactionPoster.handlePurchasedTransaction(
+                        transaction,
+                        data: data
+                    )
+                }
+            }
+        }
     }
 
     // Note: this is just a best guess.
