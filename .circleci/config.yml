@@ -1,7 +1,6 @@
 orbs:
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
-  codecov: codecov/codecov@3.2.4
 
 version: 2.1
 
@@ -16,7 +15,7 @@ parameters:
 
 aliases:
   base-job: &base-job
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     macos:
       xcode: << parameters.xcode_version >>
     parameters:
@@ -351,8 +350,6 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14 (16.4)
-      - codecov/upload:
-          xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult"
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
