@@ -293,7 +293,7 @@ class DecoderExtensionsNonEmptyStringTests: TestCase {
 class DecoderExtensionsNonEmptyArrayTests: TestCase {
 
     private struct Data: Codable, Equatable {
-        @EnsureNonEmptyArrayDecodable var value: [String]
+        @EnsureNonEmptyCollectionDecodable var value: [String]
 
         init(value: [String]) {
             self.value = value
@@ -317,7 +317,35 @@ class DecoderExtensionsNonEmptyArrayTests: TestCase {
     func testThrowsWhenDecodingEmptyArray() throws {
         expect {
             try Data.decode("{\"value\": []}")
-        }.to(throwError(EnsureNonEmptyArrayDecodable<String>.Error()))
+        }.to(throwError(EnsureNonEmptyCollectionDecodable<[String]>.Error()))
+    }
+
+}
+
+class DecoderExtensionsNonEmptyDictionaryTests: TestCase {
+
+    private struct Data: Codable, Equatable {
+        @EnsureNonEmptyCollectionDecodable var value: [String: Int]
+    }
+
+    func testDecodesOneValues() throws {
+        let data = Data(value: ["1": 1])
+        expect(try data.encodeAndDecode()) == data
+    }
+
+    func testDecodesMultipleValues() throws {
+        let data = Data(value: ["1": 1, "2": 2])
+        expect(try data.encodeAndDecode()) == data
+    }
+
+    func testEncodesEmptyValues() throws {
+        expect(try Data(value: [:]).encodedJSON) == "{\"value\":{}}"
+    }
+
+    func testThrowsWhenDecodingEmptyDictionary() throws {
+        expect {
+            try Data.decode("{\"value\": {}}")
+        }.to(throwError(EnsureNonEmptyCollectionDecodable<[String: Int]>.Error()))
     }
 
 }
