@@ -270,10 +270,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             expectedCount: 1
         )
 
-        self.logger.verifyMessageWasLogged(
-            "API request completed: POST /v1/receipts",
-            level: .debug,
-            expectedCount: 1
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            "Network operation 'PostReceiptDataOperation' found with the same cache key",
+            level: .debug
         )
     }
 
