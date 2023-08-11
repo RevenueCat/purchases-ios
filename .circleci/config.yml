@@ -313,6 +313,15 @@ jobs:
           name: SPM Receipt Parser
           command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
+  
+  spm-xcode-14-1:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
 
   run-test-ios-17:
     <<: *base-job
@@ -884,6 +893,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-release-build:
           xcode_version: '14.3.0'
+      - spm-xcode-14-1:
+          xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
