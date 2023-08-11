@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -22,8 +22,7 @@ let package = Package(
         .macOS(.v10_13),
         .watchOS("6.2"),
         .tvOS(.v11),
-        .iOS(.v11),
-        .visionOS(.v1)
+        .iOS(.v11)
     ],
     products: [
         .library(name: "RevenueCat",
@@ -40,16 +39,14 @@ let package = Package(
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
-                ],
-                swiftSettings: [.define("VISION_OS", .when(platforms: [.visionOS]))]),
+                ]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
                     .copy("PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
-                                .define("VISION_OS", .when(platforms: [.visionOS]))]),
+                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")]),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
