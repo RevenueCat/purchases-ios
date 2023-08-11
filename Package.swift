@@ -16,6 +16,10 @@ if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
+// See https://github.com/RevenueCat/purchases-ios/pull/2989
+// #if os(xrOS) can't really be used in Xcode 13, so we use this instead.
+let visionOSSetting: SwiftSetting = .define("VISION_OS", .when(platforms: [.visionOS]))
+
 let package = Package(
     name: "RevenueCat",
     platforms: [
@@ -41,15 +45,17 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [.define("VISION_OS", .when(platforms: [.visionOS]))]),
+                swiftSettings: [visionOSSetting]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
                     .copy("PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
-                                .define("VISION_OS", .when(platforms: [.visionOS]))]),
+                swiftSettings: [
+                    .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
+                    visionOSSetting
+                ]),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
