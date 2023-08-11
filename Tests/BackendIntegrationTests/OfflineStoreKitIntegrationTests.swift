@@ -351,7 +351,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info, expectedCount: 2)
+        try await self.logger.verifyMessageIsEventuallyLogged("Finishing transaction",
+                                                              level: .info,
+                                                              expectedCount: 2)
     }
 
 }

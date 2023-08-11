@@ -86,6 +86,8 @@ extension TestLogHandler: Sendable {}
 
 extension TestLogHandler {
 
+    private typealias EntryCondition = @Sendable (MessageData) -> Bool
+
     /// Useful if you want to ignore messages logged so far.
     func clearMessages() {
         self.loggedMessages.value.removeAll(keepingCapacity: false)
@@ -116,7 +118,7 @@ extension TestLogHandler {
             expect(
                 file: file,
                 line: line,
-                self.messages.lazy.filter(condition).count
+                self.messagesMatching(condition)
             )
             .to(
                 equal(expectedCount),
@@ -129,6 +131,7 @@ extension TestLogHandler {
     func verifyMessageIsEventuallyLogged(
         _ message: String,
         level: LogLevel? = nil,
+        expectedCount: Int? = nil,
         timeout: DispatchTimeInterval = AsyncDefaults.timeout,
         pollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval,
         file: FileString = #file,
@@ -144,6 +147,18 @@ extension TestLogHandler {
             line: line
         ) {
             self.messages.contains(where: condition)
+        }
+
+        if let expectedCount = expectedCount {
+            try await asyncWait(
+                description: "Message '\(message)' expected \(expectedCount) times",
+                timeout: timeout,
+                pollInterval: pollInterval,
+                file: file,
+                line: line
+            ) {
+                self.messagesMatching(condition) == expectedCount
+            }
         }
     }
 
@@ -180,9 +195,17 @@ extension TestLogHandler {
         )
     }
 
+    private func messagesMatching(_ condition: EntryCondition) -> Int {
+        return self
+            .messages
+            .lazy
+            .filter(condition)
+            .count
+    }
+
     private static func entryCondition(
         message: CustomStringConvertible, level: LogLevel?
-    ) -> @Sendable (MessageData) -> Bool {
+    ) -> EntryCondition {
         return { entry in
             guard entry.message.contains(message.description) else {
                 return false
