@@ -55,7 +55,7 @@ let package = Package(
                 resources: [
                     .copy("PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")]),
+                swiftSettings: [.define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION")] + swiftSettings),
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
