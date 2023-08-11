@@ -1,3 +1,5 @@
+_This release is compatible with Xcode 15 beta 6 and visionOS beta 3_
+
 ### Bugfixes
 * `Xcode 15`: fix non-`visionOS` build by replacing `.custom` platform (#3005) via NachoSoto (@NachoSoto)
 ### Other Changes
