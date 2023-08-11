@@ -30,6 +30,15 @@ final class MockTransactionPoster: TransactionPosterType {
     let invokedHandlePurchasedTransactionParameterList: Atomic<[(transaction: StoreTransactionType,
                                                                  data: PurchasedTransactionData)]> = .init([])
 
+    var allHandledTransactions: Set<StoreTransaction> {
+        return Set(
+            self
+                .invokedHandlePurchasedTransactionParameterList.value
+                .map(\.transaction)
+                .compactMap { $0 as? StoreTransaction }
+        )
+    }
+
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,

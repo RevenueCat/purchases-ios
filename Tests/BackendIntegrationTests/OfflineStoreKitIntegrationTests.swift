@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-// swiftlint:disable type_name file_length
+// swiftlint:disable type_name
 
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
