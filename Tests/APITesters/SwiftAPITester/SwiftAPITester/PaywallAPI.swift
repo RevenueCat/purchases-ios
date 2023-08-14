@@ -15,8 +15,7 @@ import SwiftUI
 func checkPaywallData(_ data: PaywallData) {
     let template: PaywallTemplate = data.template
     let config: PaywallData.Configuration = data.config
-    let locale: Locale = data.defaultLocale
-    let _: PaywallData.LocalizedConfiguration? = data.config(for: locale)
+    let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
     let localization: PaywallData.LocalizedConfiguration = data.localizedConfiguration
     let assetBaseURL: URL = data.assetBaseURL
 

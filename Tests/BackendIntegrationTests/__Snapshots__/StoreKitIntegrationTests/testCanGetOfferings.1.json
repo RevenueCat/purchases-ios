@@ -56,7 +56,6 @@
           "privacy_url" : "https://revenuecat.com/privacy",
           "tos_url" : "https://revenuecat.com/tos"
         },
-        "default_locale" : "en_US",
         "localized_strings" : {
           "en_US" : {
             "call_to_action" : "Purchase for {{ sub_price_per_month }} per month",
