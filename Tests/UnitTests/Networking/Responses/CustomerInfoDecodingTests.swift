@@ -59,6 +59,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(transaction.purchaseDate) == dateFormatter.date(from: "2022-02-11T00:03:28Z")
         expect(transaction.originalPurchaseDate) == dateFormatter.date(from: "2022-03-10T00:04:28Z")
         expect(transaction.transactionIdentifier) == "17459f5ff7"
+        expect(transaction.storeTransactionIdentifier) == "340001090153249"
         expect(transaction.store) == .appStore
         expect(transaction.isSandbox) == false
     }

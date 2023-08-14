@@ -23,7 +23,8 @@
           "is_sandbox" : false,
           "original_purchase_date" : 668563468,
           "purchase_date" : 666230608,
-          "store" : "app_store"
+          "store" : "app_store",
+          "store_transaction_id" : "340001090153249"
         }
       ]
     },

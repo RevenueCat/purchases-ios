@@ -69,6 +69,7 @@ extension CustomerInfoResponse {
         var purchaseDate: Date?
         var originalPurchaseDate: Date?
         var transactionIdentifier: String?
+        var storeTransactionIdentifier: String?
         @IgnoreDecodeErrors<Store>
         var store: Store
         var isSandbox: Bool
@@ -118,6 +119,7 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
         case purchaseDate
         case originalPurchaseDate
         case transactionIdentifier = "id"
+        case storeTransactionIdentifier = "storeTransactionId"
         case store
         case isSandbox
 
@@ -174,12 +176,14 @@ extension CustomerInfoResponse.Transaction {
         purchaseDate: Date?,
         originalPurchaseDate: Date?,
         transactionIdentifier: String?,
+        storeTransactionIdentifier: String?,
         store: Store,
         isSandbox: Bool
     ) {
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
         self.transactionIdentifier = transactionIdentifier
+        self.storeTransactionIdentifier = storeTransactionIdentifier
         self.store = store
         self.isSandbox = isSandbox
     }
@@ -221,6 +225,7 @@ extension CustomerInfoResponse.Subscription {
         return .init(purchaseDate: self.purchaseDate,
                      originalPurchaseDate: self.originalPurchaseDate,
                      transactionIdentifier: nil,
+                     storeTransactionIdentifier: nil,
                      store: self.store,
                      isSandbox: self.isSandbox)
     }
