@@ -82,6 +82,8 @@ extension SwiftUI.View {
 
 private let timeout: DispatchTimeInterval = .seconds(5)
 private let pollInterval: DispatchTimeInterval = .milliseconds(100)
+
+// Generate snapthots with scale 1, which drastially reduces the file size.
 private let traits: UITraitCollection = .init(displayScale: 1)
 
 // MARK: - Private
