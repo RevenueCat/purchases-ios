@@ -39,24 +39,30 @@ struct Template4View: TemplateViewType {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            TemplateBackgroundImageView(configuration: self.configuration)
+        switch self.configuration.mode {
+        case .fullScreen:
+            ZStack(alignment: .bottom) {
+                TemplateBackgroundImageView(configuration: self.configuration)
 
+                self.cardContent
+                    .edgesIgnoringSafeArea(.bottom)
+                    .frame(maxWidth: .infinity, alignment: .bottom)
+                    .background(self.configuration.colors.backgroundColor)
+                    #if canImport(UIKit)
+                    .roundedCorner(Self.cornerRadius,
+                                   corners: [.topLeft, .topRight],
+                                   edgesIgnoringSafeArea: .bottom)
+                    #endif
+            }
+
+        case .card, .condensedCard:
             self.cardContent
-                .edgesIgnoringSafeArea(.bottom)
-                .frame(maxWidth: .infinity, alignment: .bottom)
-                .background(self.configuration.colors.backgroundColor)
-            #if canImport(UIKit)
-                .roundedCorner(Self.cornerRadius,
-                               corners: [.topLeft, .topRight],
-                               edgesIgnoringSafeArea: .bottom)
-            #endif
         }
     }
 
     @ViewBuilder
     var cardContent: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: Self.verticalPadding) {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedPackage.localization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
@@ -69,8 +75,9 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
-                    .padding(.vertical)
-                    .hideCardContent(!self.displayingAllPlans, self.packageContentHeight)
+                    .hideCardContent(self.configuration,
+                                     hide: !self.displayingAllPlans,
+                                     offset: self.packageContentHeight)
             }
 
             IntroEligibilityStateView(
@@ -172,7 +179,7 @@ struct Template4View: TemplateViewType {
     }
 
     fileprivate static let cornerRadius = Constants.defaultCornerRadius
-    fileprivate static let verticalPadding: CGFloat = 10
+    fileprivate static let verticalPadding: CGFloat = 20
 
     @ScaledMetric(relativeTo: .title2)
     private var packageHorizontalSpacing: CGFloat = 8
@@ -318,7 +325,7 @@ private struct PackageButton: View {
     private static let borderWidth: CGFloat = 2
 
     private var discountOverlayHeight: CGFloat {
-        return self.discountLabelHeight + Template4View.verticalPadding
+        return self.discountLabelHeight + Template4View.verticalPadding / 2.0
     }
 
     private func font(for textStyle: Font.TextStyle) -> Font {

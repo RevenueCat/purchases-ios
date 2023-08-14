@@ -41,8 +41,7 @@ struct Template2View: TemplateViewType {
             self.scrollableContent
                 .scrollableIfNecessary()
 
-            if self.configuration.mode.shouldDisplayInlineOfferDetails,
-                !self.displayingAllPlans {
+            if self.configuration.mode.shouldDisplayInlineOfferDetails {
                 self.offerDetails(package: self.selectedPackage, selected: false)
             }
 
@@ -70,12 +69,14 @@ struct Template2View: TemplateViewType {
                 Text(.init(self.selectedLocalization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .largeTitle).bold())
+                    .padding(.horizontal)
 
                 Spacer()
 
                 Text(.init(self.selectedLocalization.subtitle ?? ""))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .title3))
+                    .padding(.horizontal)
 
                 Spacer()
             }
@@ -85,12 +86,12 @@ struct Template2View: TemplateViewType {
                 Spacer()
             } else {
                 self.packages
-                    .padding(.vertical)
                     .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
-                    .hideCardContent(!self.displayingAllPlans, self.containerHeight)
+                    .hideCardContent(self.configuration,
+                                     hide: !self.displayingAllPlans,
+                                     offset: self.containerHeight)
             }
         }
-        .padding(.horizontal)
         .frame(maxHeight: .infinity)
     }
 
@@ -108,6 +109,7 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
+        .padding(.horizontal)
     }
 
     @ViewBuilder
