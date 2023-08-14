@@ -31,8 +31,8 @@ public struct PaywallData {
     /// The base remote URL where assets for this paywall are stored.
     public var assetBaseURL: URL
 
-    fileprivate var defaultLocaleIdentifier: String
-    fileprivate var localization: [String: LocalizedConfiguration]
+    @EnsureNonEmptyCollectionDecodable
+    internal var localization: [String: LocalizedConfiguration]
 
 }
 
@@ -128,30 +128,6 @@ extension PaywallData {
         self.localization.first { locale, _ in
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
         }?.value
-    }
-
-    /// The default `Locale` used if `Locale.current` is not configured for this paywall.
-    public var defaultLocale: Locale {
-        return .init(identifier: self.defaultLocaleIdentifier)
-    }
-
-    /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct`` associated to the current `Locale`
-    /// or the configuration associated to ``defaultLocale``.
-    public var localizedConfiguration: LocalizedConfiguration {
-        return self.config(for: Locale.current) ?? self.defaultLocalizedConfiguration
-    }
-
-    private var defaultLocalizedConfiguration: LocalizedConfiguration {
-        let defaultLocale = self.defaultLocale
-
-        guard let result = self.config(for: defaultLocale) else {
-            fatalError(
-                "Corrupted data. Expected to find locale \(defaultLocale.identifier) " +
-                "in locales: \(Set(self.localization.keys))"
-            )
-        }
-
-        return result
     }
 
 }
@@ -353,13 +329,11 @@ extension PaywallData {
     init(
         template: PaywallTemplate,
         config: Configuration,
-        defaultLocale: String,
         localization: [String: LocalizedConfiguration],
         assetBaseURL: URL
     ) {
         self.template = template
         self.config = config
-        self.defaultLocaleIdentifier = defaultLocale
         self.localization = localization
         self.assetBaseURL = assetBaseURL
     }
@@ -376,7 +350,6 @@ extension PaywallData {
         self.init(
             template: template,
             config: config,
-            defaultLocale: locale,
             localization: [locale: localization],
             assetBaseURL: assetBaseURL
         )
@@ -435,7 +408,6 @@ extension PaywallData: Codable {
     // Note: these are camel case but converted by the decoder
     private enum CodingKeys: String, CodingKey {
         case template = "templateName"
-        case defaultLocaleIdentifier = "defaultLocale"
         case config
         case localization = "localizedStrings"
         case assetBaseURL = "assetBaseUrl"

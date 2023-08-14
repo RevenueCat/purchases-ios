@@ -1,16 +1,6 @@
 {
     "template_name": "1",
-    "localized_strings": {
-        "it_IT": {
-            "title": "Paywall",
-            "subtitle": "Description",
-            "call_to_action": "Purchase now",
-            "call_to_action_with_intro_offer": "Purchase now",
-            "offer_details": "{{ sub_price_per_month }} per month",
-            "offer_details_with_intro_offer": "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
-        }
-    },
-    "default_locale": "es_ES",
+    "localized_strings": {},
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
         "images": {},
