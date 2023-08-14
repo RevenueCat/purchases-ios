@@ -93,10 +93,12 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testProductEntitlementMapping() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let result = try await self.purchases.productEntitlementMapping()
-        expect(result.entitlementsByProduct).to(haveCount(15))
-        expect(result.entitlementsByProduct["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
-        expect(result.entitlementsByProduct["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
+        let result = try await self.purchases.productEntitlementMapping().entitlementsByProduct
+        expect(result).to(haveCount(17))
+        expect(result["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
+        expect(result["lifetime"]) == ["premium"]
+        expect(result["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
+        expect(result["consumable.10_coins"]).to(beEmpty())
     }
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
