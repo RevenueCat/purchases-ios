@@ -60,6 +60,10 @@ aliases:
         only: /^release\/.*\.0$/
 
 commands:
+  checkout:
+    steps:
+      - run: git clone --depth 1 "$CIRCLE_REPOSITORY_URL" -b "$CIRCLE_BRANCH"
+
   install-and-create-sim:
     parameters:
       install-name:
