@@ -66,6 +66,17 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
+    func testGetCustomerInfoCaching() async throws {
+        _ = try await self.purchases.customerInfo()
+
+        self.logger.clearMessages()
+
+        _ = try await self.purchases.customerInfo()
+
+        self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
+        self.logger.verifyMessageWasNotLogged("API request started")
+    }
+
     func testGetOfferingsMultipleTimesInParallel() async throws {
         let requestCount = 3
 
