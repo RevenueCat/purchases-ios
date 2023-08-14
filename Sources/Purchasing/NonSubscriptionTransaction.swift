@@ -14,6 +14,11 @@
 import Foundation
 
 /// Information that represents a non-subscription purchase made by a user.
+/// 
+/// This can be one of these types of product:
+/// - Consumables
+/// - Non-consumables
+/// - Non-renewing subscriptions
 @objc(RCNonSubscriptionTransaction)
 public final class NonSubscriptionTransaction: NSObject {
 

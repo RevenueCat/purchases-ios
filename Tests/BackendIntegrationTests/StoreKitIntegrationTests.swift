@@ -134,6 +134,30 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         verifyPurchase(info2)
     }
 
+    func testCanPurchaseNonConsumable() async throws {
+        let result = try await self.purchaseNonConsumablePackage()
+        let transaction = try XCTUnwrap(result.transaction)
+        let info = result.customerInfo
+        let nonSubscription = try XCTUnwrap(info.nonSubscriptions.onlyElement)
+
+        expect(info.allPurchasedProductIdentifiers).to(contain(Self.nonConsumableLifetime))
+        expect(nonSubscription.productIdentifier) == transaction.productIdentifier
+
+        try await self.verifyEntitlementWentThrough(info)
+    }
+
+    func testCanPurchaseNonRenewingSubscription() async throws {
+        let result = try await self.purchaseNonRenewingSubscriptionPackage()
+        let transaction = try XCTUnwrap(result.transaction)
+        let info = result.customerInfo
+        let nonSubscription = try XCTUnwrap(info.nonSubscriptions.onlyElement)
+
+        expect(info.allPurchasedProductIdentifiers).to(contain(transaction.productIdentifier))
+        expect(nonSubscription.productIdentifier) == transaction.productIdentifier
+
+        try await self.verifyEntitlementWentThrough(info)
+    }
+
     func testCanPurchaseMultipleSubscriptions() async throws {
         let product1 = try await self.monthlyPackage.storeProduct
         let product2 = try await self.annualPackage.storeProduct
