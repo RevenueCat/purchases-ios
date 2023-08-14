@@ -12,6 +12,7 @@
                     "purchase_date": "2022-02-11T00:03:28Z",
                     "original_purchase_date": "2022-03-10T00:04:28Z",
                     "id": "17459f5ff7",
+                    "store_transaction_id": "340001090153249",
                     "store": "app_store",
                     "is_sandbox": false
                 }

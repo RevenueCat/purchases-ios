@@ -16,20 +16,22 @@ class TransactionsFactoryTests: TestCase {
         let nonSubscriptionTransactions = try TransactionsFactory.nonSubscriptionTransactions(
             withSubscriptionsData: Self.sampleTransactions
         )
-        expect(nonSubscriptionTransactions.count) == 5
+        expect(nonSubscriptionTransactions).to(haveCount(5))
 
-        try Self.sampleTransactions.forEach { productId, transactionsData in
+        for (productId, transactionsData) in Self.sampleTransactions {
             let filteredTransactions = nonSubscriptionTransactions
                 .filter { $0.productIdentifier == productId }
 
-            expect(filteredTransactions.count) == transactionsData.count
+            expect(filteredTransactions).to(haveCount(transactionsData.count))
 
-            try transactionsData.forEach { dictionary in
-                let transactionId = try XCTUnwrap(dictionary["id"] as? String)
-                let containsTransaction = filteredTransactions
-                    .contains { $0.transactionIdentifier == transactionId }
+            for dictionary in transactionsData {
+                let revenueCatTransactionID = try XCTUnwrap(dictionary["id"] as? String)
+                let storeTransactionID = try XCTUnwrap(dictionary["store_transaction_id"] as? String)
 
-                expect(containsTransaction) == true
+                expect(filteredTransactions).to(containElementSatisfying {
+                    $0.transactionIdentifier == revenueCatTransactionID &&
+                    $0.storeTransactionIdentifier == storeTransactionID
+                })
             }
         }
 
@@ -48,6 +50,7 @@ private extension TransactionsFactoryTests {
         "100_coins": [
             [
                 "id": "72c26cc69c",
+                "store_transaction_id": "1",
                 "is_sandbox": true,
                 "original_purchase_date": "1990-08-30T02:40:36Z",
                 "purchase_date": "2019-07-11T18:36:20Z",
@@ -55,6 +58,7 @@ private extension TransactionsFactoryTests {
             ],
             [
                 "id": "6229b0bef1",
+                "store_transaction_id": "2",
                 "is_sandbox": true,
                 "original_purchase_date": "2019-11-06T03:26:15Z",
                 "purchase_date": "2019-11-06T03:26:15Z",
@@ -64,6 +68,7 @@ private extension TransactionsFactoryTests {
         "500_coins": [
             [
                 "id": "d6c007ba74",
+                "store_transaction_id": "3",
                 "is_sandbox": true,
                 "original_purchase_date": "2019-07-11T18:36:20Z",
                 "purchase_date": "2019-07-11T18:36:20Z",
@@ -71,6 +76,7 @@ private extension TransactionsFactoryTests {
             ],
             [
                 "id": "5b9ba226bc",
+                "store_transaction_id": "4",
                 "is_sandbox": true,
                 "original_purchase_date": "2019-07-26T22:10:27Z",
                 "purchase_date": "2019-07-26T22:10:27Z",
@@ -80,6 +86,7 @@ private extension TransactionsFactoryTests {
         "lifetime_access": [
             [
                 "id": "d6c097ba74",
+                "store_transaction_id": "5",
                 "is_sandbox": true,
                 "original_purchase_date": "2018-07-11T18:36:20Z",
                 "purchase_date": "2018-07-11T18:36:20Z",

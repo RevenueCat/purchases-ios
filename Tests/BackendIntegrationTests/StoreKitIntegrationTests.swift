@@ -99,8 +99,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchaseConsumable() async throws {
-        let info = try await self.purchaseConsumablePackage().customerInfo
+        let result = try await self.purchaseConsumablePackage()
+        let info = result.customerInfo
+        let transaction = try XCTUnwrap(result.transaction)
+        let nonSubscription = try XCTUnwrap(info.nonSubscriptions.onlyElement)
 
+        expect(nonSubscription.productIdentifier) == Self.consumable10Coins
+        expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
     }
 

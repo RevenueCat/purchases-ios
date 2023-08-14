@@ -41,6 +41,7 @@ class BasicCustomerInfoTests: TestCase {
                 "onetime_purchase": [
                     [
                         "id": "d6c007ba74",
+                        "store_transaction_id": "340001090153249",
                         "is_sandbox": true,
                         "original_purchase_date": "1990-08-30T02:40:36Z",
                         "purchase_date": "1990-08-30T02:40:36Z",
@@ -153,6 +154,7 @@ class BasicCustomerInfoTests: TestCase {
         expect(transaction.productIdentifier) == "onetime_purchase"
         expect(transaction.purchaseDate) == ISO8601DateFormatter.default.date(from: "1990-08-30T02:40:36Z")
         expect(transaction.transactionIdentifier) == "d6c007ba74"
+        expect(transaction.storeTransactionIdentifier) == "340001090153249"
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
