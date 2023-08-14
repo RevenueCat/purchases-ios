@@ -7,36 +7,37 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  EnsureNonEmptyArrayDecodable.swift
+//  EnsureNonEmptyCollectionDecodable.swift
 //
 //  Created by Nacho Soto on 7/17/23.
 
 import Foundation
 
-/// A property wrapper that ensures decoded arrays aren't empty.
+/// A property wrapper that ensures decoded collections aren't empty.
 /// - Example:
 /// ```
 /// struct Data {
-///     @EnsureNonEmptyArrayDecodable var values: [String] // fails to decode if array is empty
+///     @EnsureNonEmptyCollectionDecodable var values: [String] // fails to decode if array is empty
+///     @EnsureNonEmptyCollectionDecodable var dictionary: [String: String] // fails to decode if dictionary is empty
 /// }
 /// ```
 @propertyWrapper
-struct EnsureNonEmptyArrayDecodable<Value: Codable> {
+struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable {
 
     struct Error: Swift.Error {}
 
-    var wrappedValue: [Value]
+    var wrappedValue: Value
 
 }
 
-extension EnsureNonEmptyArrayDecodable: Equatable where Value: Equatable {}
-extension EnsureNonEmptyArrayDecodable: Hashable where Value: Hashable {}
+extension EnsureNonEmptyCollectionDecodable: Equatable where Value: Equatable {}
+extension EnsureNonEmptyCollectionDecodable: Hashable where Value: Hashable {}
 
-extension EnsureNonEmptyArrayDecodable: Decodable {
+extension EnsureNonEmptyCollectionDecodable: Decodable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let array = try container.decode([Value].self)
+        let array = try container.decode(Value.self)
 
         if array.isEmpty {
             throw Error()
@@ -47,7 +48,7 @@ extension EnsureNonEmptyArrayDecodable: Decodable {
 
 }
 
-extension EnsureNonEmptyArrayDecodable: Encodable {
+extension EnsureNonEmptyCollectionDecodable: Encodable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
@@ -59,11 +60,11 @@ extension EnsureNonEmptyArrayDecodable: Encodable {
 extension KeyedDecodingContainer {
 
     func decode<T>(
-        _ type: EnsureNonEmptyArrayDecodable<T>.Type,
+        _ type: EnsureNonEmptyCollectionDecodable<T>.Type,
         forKey key: Key
-    ) throws -> EnsureNonEmptyArrayDecodable<T> {
+    ) throws -> EnsureNonEmptyCollectionDecodable<T> {
         return try self.decodeIfPresent(type, forKey: key)
-            .orThrow(EnsureNonEmptyArrayDecodable<T>.Error())
+            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error())
     }
 
 }
