@@ -16,34 +16,50 @@ class MockCustomerInfoManager: CustomerInfoManager {
 
     var invokedFetchAndCacheCustomerInfo = false
     var invokedFetchAndCacheCustomerInfoCount = 0
-    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String, isAppBackgrounded: Bool, completion: CustomerInfoCompletion?)?
+    var invokedFetchAndCacheCustomerInfoParameters: (appUserID: String,
+                                                     isAppBackgrounded: Bool,
+                                                     postTransactionsIfNeeded: Bool,
+                                                     completion: CustomerInfoCompletion?)?
     var invokedFetchAndCacheCustomerInfoParametersList = [(appUserID: String,
                                                            isAppBackgrounded: Bool,
+                                                           postTransactionsIfNeeded: Bool,
                                                            completion: CustomerInfoCompletion?)]()
 
     override func fetchAndCacheCustomerInfo(appUserID: String,
                                             isAppBackgrounded: Bool,
+                                            postTransactionsIfNeeded: Bool = true,
                                             completion: CustomerInfoCompletion?) {
-        invokedFetchAndCacheCustomerInfo = true
-        invokedFetchAndCacheCustomerInfoCount += 1
-        invokedFetchAndCacheCustomerInfoParameters = (appUserID, isAppBackgrounded, completion)
-        invokedFetchAndCacheCustomerInfoParametersList.append((appUserID, isAppBackgrounded, completion))
+        self.invokedFetchAndCacheCustomerInfo = true
+        self.invokedFetchAndCacheCustomerInfoCount += 1
+        self.invokedFetchAndCacheCustomerInfoParameters = (appUserID, isAppBackgrounded, postTransactionsIfNeeded, completion)
+        self.invokedFetchAndCacheCustomerInfoParametersList.append((appUserID,
+                                                                    isAppBackgrounded,
+                                                                    postTransactionsIfNeeded,
+                                                                    completion))
     }
 
     var invokedFetchAndCacheCustomerInfoIfStale = false
     var invokedFetchAndCacheCustomerInfoIfStaleCount = 0
-    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String, isAppBackgrounded: Bool, completion: CustomerInfoCompletion?)?
+    var invokedFetchAndCacheCustomerInfoIfStaleParameters: (appUserID: String,
+                                                            isAppBackgrounded: Bool,
+                                                            postTransactionsIfNeeded: Bool,
+                                                            completion: CustomerInfoCompletion?)?
     var invokedFetchAndCacheCustomerInfoIfStaleParametersList = [(appUserID: String,
                                                                   isAppBackgrounded: Bool,
+                                                                  postTransactionsIfNeeded: Bool,
                                                                   completion: CustomerInfoCompletion?)]()
 
     override func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                                    isAppBackgrounded: Bool,
+                                                   postTransactionsIfNeeded: Bool = true,
                                                    completion: CustomerInfoCompletion?) {
         self.invokedFetchAndCacheCustomerInfoIfStale = true
         self.invokedFetchAndCacheCustomerInfoIfStaleCount += 1
-        self.invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID, isAppBackgrounded, completion)
-        self.invokedFetchAndCacheCustomerInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, completion))
+        self.invokedFetchAndCacheCustomerInfoIfStaleParameters = (appUserID,
+                                                                  isAppBackgrounded,
+                                                                  postTransactionsIfNeeded,
+                                                                  completion)
+        self.invokedFetchAndCacheCustomerInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, postTransactionsIfNeeded, completion))
     }
 
     var invokedSendCachedCustomerInfoIfAvailable = false
@@ -62,20 +78,23 @@ class MockCustomerInfoManager: CustomerInfoManager {
     var invokedCustomerInfoCount = 0
     var invokedCustomerInfoParameters: (appUserID: String,
                                         fetchPolicy: CacheFetchPolicy,
+                                        postTransactionsIfNeeded: Bool,
                                         completion: CustomerInfoCompletion?)?
     var invokedCustomerInfoParametersList: [(appUserID: String,
                                              fetchPolicy: CacheFetchPolicy,
+                                             postTransactionsIfNeeded: Bool,
                                              completion: CustomerInfoCompletion?)] = []
 
     var stubbedCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func customerInfo(appUserID: String,
                                fetchPolicy: CacheFetchPolicy,
+                               postTransactionsIfNeeded: Bool = true,
                                completion: CustomerInfoCompletion?) {
         self.invokedCustomerInfo = true
         self.invokedCustomerInfoCount += 1
-        self.invokedCustomerInfoParameters = (appUserID, fetchPolicy, completion)
-        self.invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, completion))
+        self.invokedCustomerInfoParameters = (appUserID, fetchPolicy, postTransactionsIfNeeded, completion)
+        self.invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, postTransactionsIfNeeded, completion))
 
         OperationDispatcher.dispatchOnMainActor {
             completion?(self.stubbedCustomerInfoResult)

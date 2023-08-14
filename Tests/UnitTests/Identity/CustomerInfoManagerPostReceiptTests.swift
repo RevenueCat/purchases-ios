@@ -39,6 +39,20 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
     }
 
+    func testDoesNotTryToPostUnfinishedTransactionsIfDisabled() async throws {
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let result = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                                  isAppBackgrounded: false,
+                                                                                  postTransactionsIfNeeded: false)
+        expect(result) === self.mockCustomerInfo
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == false
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
+    }
+
     func testReturnsFailureIfPostingReceiptFails() async throws {
         self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(

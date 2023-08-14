@@ -51,9 +51,11 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String,
                                    isAppBackgrounded: Bool,
+                                   postTransactionsIfNeeded: Bool = true,
                                    completion: CustomerInfoCompletion?) {
-        self.getCustomerInfo(appUserID: appUserID,
-                             isAppBackgrounded: isAppBackgrounded) { result in
+        self.getCustomerInfoOrPostTransactions(appUserID: appUserID,
+                                               isAppBackgrounded: isAppBackgrounded,
+                                               postTransactionsIfNeeded: postTransactionsIfNeeded) { result in
             switch result {
             case let .failure(error):
                 self.withData { $0.deviceCache.clearCustomerInfoCacheTimestamp(appUserID: appUserID) }
@@ -78,6 +80,7 @@ class CustomerInfoManager {
 
     func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                           isAppBackgrounded: Bool,
+                                          postTransactionsIfNeeded: Bool = true,
                                           completion: CustomerInfoCompletion?) {
         let isCacheStale = self.withData {
             $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
@@ -89,6 +92,7 @@ class CustomerInfoManager {
                             : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
             self.fetchAndCacheCustomerInfo(appUserID: appUserID,
                                            isAppBackgrounded: isAppBackgrounded,
+                                           postTransactionsIfNeeded: postTransactionsIfNeeded,
                                            completion: completion)
             return
         }
@@ -101,17 +105,16 @@ class CustomerInfoManager {
     }
 
     func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        guard let info = self.cachedCustomerInfo(appUserID: appUserID) else {
-            return
+        if let info = self.cachedCustomerInfo(appUserID: appUserID) {
+            self.sendUpdateIfChanged(customerInfo: info)
         }
-
-        self.sendUpdateIfChanged(customerInfo: info)
     }
 
     // swiftlint:disable:next function_body_length
     func customerInfo(
         appUserID: String,
         fetchPolicy: CacheFetchPolicy,
+        postTransactionsIfNeeded: Bool = true,
         completion: CustomerInfoCompletion?
     ) {
         switch fetchPolicy {
@@ -126,6 +129,7 @@ class CustomerInfoManager {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.fetchAndCacheCustomerInfo(appUserID: appUserID,
                                                isAppBackgrounded: isAppBackgrounded,
+                                               postTransactionsIfNeeded: postTransactionsIfNeeded,
                                                completion: completion)
             }
 
@@ -149,6 +153,7 @@ class CustomerInfoManager {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoIfStale(appUserID: appUserID,
                                                       isAppBackgrounded: isAppBackgrounded,
+                                                      postTransactionsIfNeeded: postTransactionsIfNeeded,
                                                       completion: completionIfNotCalledAlready)
             }
 
@@ -170,6 +175,7 @@ class CustomerInfoManager {
                 } else {
                     self.fetchAndCacheCustomerInfo(appUserID: appUserID,
                                                    isAppBackgrounded: isAppBackgrounded,
+                                                   postTransactionsIfNeeded: postTransactionsIfNeeded,
                                                    completion: completion)
                 }
             }
@@ -289,10 +295,15 @@ class CustomerInfoManager {
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension CustomerInfoManager {
 
-    func fetchAndCacheCustomerInfo(appUserID: String, isAppBackgrounded: Bool) async throws -> CustomerInfo {
+    func fetchAndCacheCustomerInfo(
+        appUserID: String,
+        isAppBackgrounded: Bool,
+        postTransactionsIfNeeded: Bool = true
+    ) async throws -> CustomerInfo {
         return try await Async.call { completion in
             return self.fetchAndCacheCustomerInfo(appUserID: appUserID,
                                                   isAppBackgrounded: isAppBackgrounded,
+                                                  postTransactionsIfNeeded: postTransactionsIfNeeded,
                                                   completion: completion)
         }
     }
@@ -314,10 +325,12 @@ extension CustomerInfoManager {
 
 private extension CustomerInfoManager {
 
-    func getCustomerInfo(appUserID: String,
-                         isAppBackgrounded: Bool,
-                         completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+    func getCustomerInfoOrPostTransactions(appUserID: String,
+                                           isAppBackgrounded: Bool,
+                                           postTransactionsIfNeeded: Bool = true,
+                                           completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+           postTransactionsIfNeeded {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
