@@ -314,15 +314,3 @@ private extension TimingUtil {
     }
 
 }
-
-private extension ClockType {
-
-    func durationSince(_ startTime: DispatchTime) -> TimingUtil.Duration {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return startTime.distance(to: self.currentTime).seconds
-        } else {
-            return TimingUtil.Duration(self.currentTime.uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000_000
-        }
-    }
-
-}

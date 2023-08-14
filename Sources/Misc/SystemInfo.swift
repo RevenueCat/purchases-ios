@@ -34,6 +34,7 @@ class SystemInfo {
     let platformFlavorVersion: String?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
+    let clock: ClockType
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -107,7 +108,8 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storeKit2Setting: StoreKit2Setting = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
-         dangerousSettings: DangerousSettings? = nil) {
+         dangerousSettings: DangerousSettings? = nil,
+         clock: ClockType = Clock.default) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -118,6 +120,7 @@ class SystemInfo {
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
+        self.clock = clock
     }
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
