@@ -153,7 +153,9 @@ private extension Localization {
     static let unitAbbreviationLengthPriorities = [ 2, 3 ]
 
     /// For falling back in case language isn't localized.
-    static let defaultLocale: Locale = .init(identifier: "en_US")
+    static let defaultLocale: Locale = .init(identifier: Self.defaultLocaleIdentifier)
+
+    private static let defaultLocaleIdentifier: String = Locale.preferredLanguages.first ?? "en_US"
 
 }
 
