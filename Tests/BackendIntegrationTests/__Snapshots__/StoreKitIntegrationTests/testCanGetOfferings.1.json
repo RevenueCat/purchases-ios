@@ -19,6 +19,14 @@
         {
           "identifier" : "$rc_weekly",
           "platform_product_identifier" : "com.revenuecat.weekly_1.99.3_day_intro"
+        },
+        {
+          "identifier" : "$rc_lifetime",
+          "platform_product_identifier" : "lifetime"
+        },
+        {
+          "identifier" : "non_renewing",
+          "platform_product_identifier" : "non_renewing_subscription"
         }
       ]
     },

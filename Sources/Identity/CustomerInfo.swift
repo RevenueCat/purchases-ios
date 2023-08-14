@@ -42,6 +42,11 @@ import Foundation
     /**
      * Returns all the non-subscription purchases a user has made.
      * The purchases are ordered by purchase date in ascending order.
+     * 
+     * This includes:
+     * - Consumables
+     * - Non-consumables
+     * - Non-renewing subscriptions
      */
     @objc public let nonSubscriptions: [NonSubscriptionTransaction]
 

@@ -84,6 +84,8 @@ extension BaseStoreKitIntegrationTests {
 
     static let entitlementIdentifier = "premium"
     static let consumable10Coins = "consumable.10_coins"
+    static let nonConsumableLifetime = "lifetime"
+    static let nonRenewingPackage = "non_renewing"
     static let monthlyNoIntroProductID = "com.revenuecat.monthly_4.99.no_intro"
     static let group3MonthlyTrialProductID = "com.revenuecat.monthly.1.99.1_free_week"
     static let group3MonthlyNoTrialProductID = "com.revenuecat.monthly.1.99.no_intro"
@@ -160,6 +162,24 @@ extension BaseStoreKitIntegrationTests {
             file: file, line: line
         )
 
+        return try await self.purchases.purchase(package: package)
+    }
+
+    @discardableResult
+    func purchaseNonConsumablePackage(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let package = try await XCTAsyncUnwrap(try await self.currentOffering.lifetime)
+        return try await self.purchases.purchase(package: package)
+    }
+
+    @discardableResult
+    func purchaseNonRenewingSubscriptionPackage(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let package = try await XCTAsyncUnwrap(try await self.currentOffering[Self.nonRenewingPackage])
         return try await self.purchases.purchase(package: package)
     }
 

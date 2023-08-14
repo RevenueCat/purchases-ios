@@ -1,7 +1,21 @@
 {
   "identifier" : "B495CDA2",
   "nonRenewingSubscriptions" : [
-
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "A13FD1E6",
+      "localizations" : [
+        {
+          "description" : "",
+          "displayName" : "",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "non_renewing_subscription",
+      "referenceName" : "Non-renewing subscription",
+      "type" : "NonRenewingSubscription"
+    }
   ],
   "products" : [
     {
