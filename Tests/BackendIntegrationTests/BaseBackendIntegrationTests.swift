@@ -170,6 +170,7 @@ private extension BaseBackendIntegrationTests {
     func createPurchases() async {
         self.purchasesDelegate = TestPurchaseDelegate()
         self.configurePurchases()
+        self.simulateForegroundingApp()
 
         Purchases.shared.delegate = self.purchasesDelegate
         Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
@@ -205,6 +206,11 @@ private extension BaseBackendIntegrationTests {
         // However, it still serves the purpose of waiting for the anonymous user.
         // If there is something broken when loading offerings, there is a dedicated test that would fail instead.
         _ = try? await Purchases.shared.offerings()
+    }
+
+    func simulateForegroundingApp() {
+        // This notification is posted automatically on app launch
+        NotificationCenter.default.post(name: SystemInfo.applicationWillEnterForegroundNotification, object: nil)
     }
 
     private var dangerousSettings: DangerousSettings {

@@ -110,6 +110,40 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
+    func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
+        // 1. Make sure any existing customer info requests finish
+        _ = try await purchases.customerInfo()
+
+        // 2. Verify only one CustomerInfo request was done
+        try self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_started(
+                .init(
+                    method: .get,
+                    path: .getCustomerInfo(appUserID: self.purchases.appUserID)
+                )
+            ),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    func testOfferingsAreOnlyFetchedOnceOnAppLaunch() async throws {
+        // 1. Make sure any existing offerings requests finish
+        _ = try await purchases.offerings()
+
+        // 2. Verify only one Offerings request was done
+        try self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_started(
+                .init(
+                    method: .get,
+                    path: .getOfferings(appUserID: self.purchases.appUserID)
+                )
+            ),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
     func testGetCustomerInfoReturnsNotModified() async throws {
         // 1. Fetch user once
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
