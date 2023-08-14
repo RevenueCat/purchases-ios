@@ -31,8 +31,7 @@ class DebugViewSwiftUITests: TestCase {
     }
 
     func testLoadingState() {
-        expect(self.view(with: .init(), width: 300, height: 400))
-            .to(haveValidSnapshot(as: .image))
+        self.snapshot(.init(), width: 300, height: 400)
     }
 
     func testDebugView() throws {
@@ -55,8 +54,7 @@ class DebugViewSwiftUITests: TestCase {
             response: .mockResponse
         ))
 
-        expect(self.view(with: model, width: 450, height: 900))
-            .to(haveValidSnapshot(as: .image))
+        self.snapshot(model, width: 450, height: 900)
     }
 
 }
@@ -64,15 +62,16 @@ class DebugViewSwiftUITests: TestCase {
 @available(iOS 16.0, *)
 private extension DebugViewSwiftUITests {
 
-    func view(
-        with model: DebugViewModel,
+    func snapshot(
+        _ model: DebugViewModel,
         width: CGFloat,
         height: CGFloat
-    ) -> some View {
+    ) {
         NavigationView {
             DebugSummaryView(model: model)
         }
             .frame(width: width, height: height)
+            .snapshot(size: CGSize(width: width, height: height))
     }
 
     static var mockCustomerInfo: CustomerInfo {
