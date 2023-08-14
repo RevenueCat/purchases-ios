@@ -19,26 +19,31 @@ struct CustomPaywall: View {
     var body: some View {
         NavigationView {
             self.content
-                .overlay(alignment: .bottom) {
-                    PaywallView(offering: self.offering,
-                                mode: self.mode,
-                                fonts: DefaultPaywallFontProvider(),
-                                introEligibility: self.introEligibility ?? .default(),
-                                purchaseHandler: self.purchaseHandler ?? .default()
-                    )
-                }
                 .navigationTitle("Custom paywall")
         }
     }
 
     private var content: some View {
         VStack {
-            BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
-                .frame(maxWidth: .infinity)
-            BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
-                .frame(maxWidth: .infinity)
-            BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
-                .frame(maxWidth: .infinity)
+            VStack {
+                ForEach(Self.colors, id: \.self) { color in
+                    BarChartView(
+                        data: (0..<10).map { _ in Double.random(in: 0..<100)},
+                        color: color
+                    )
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .scrollableIfNecessary(.vertical)
+
+            Spacer()
+
+            PaywallView(offering: self.offering,
+                        mode: self.mode,
+                        fonts: DefaultPaywallFontProvider(),
+                        introEligibility: self.introEligibility ?? .default(),
+                        purchaseHandler: self.purchaseHandler ?? .default()
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
@@ -46,6 +51,15 @@ struct CustomPaywall: View {
                 .edgesIgnoringSafeArea(.all)
         )
     }
+
+    private static let colors: [Color] = [
+        .red,
+        .green,
+        .blue,
+        .indigo,
+        .mint,
+        .teal
+    ].shuffled()
 
 }
 
@@ -55,6 +69,16 @@ struct CustomPaywall: View {
 struct CustomPaywall_Previews: PreviewProvider {
     
     static var previews: some View {
+        ForEach(Self.modes, id: \.self) { mode in
+            CustomPaywall(
+                offering: TestData.offeringWithMultiPackagePaywall,
+                mode: mode,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: .mock()
+            )
+            .previewDisplayName("\(mode)")
+        }
+
         ForEach(Self.modes, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackageHorizontalPaywall,
