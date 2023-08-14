@@ -126,7 +126,7 @@ private struct FeatureView: View {
                         .padding(self.iconPadding)
                 }
             }
-            .foregroundColor(.black)
+            .foregroundColor(self.colors.accent2Color)
             .frame(width: self.iconSize, height: self.iconSize)
     }
 
