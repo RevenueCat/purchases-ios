@@ -379,6 +379,7 @@ extension CustomerInfo {
         var storefront: Storefront? { return nil }
 
         var hasKnownPurchaseDate: Bool { true }
+        var hasKnownTransactionIdentifier: Bool { return true }
 
         init(with transaction: NonSubscriptionTransaction) {
             self.productIdentifier = transaction.productIdentifier

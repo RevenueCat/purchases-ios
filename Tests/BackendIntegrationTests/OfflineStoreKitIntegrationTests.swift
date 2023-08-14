@@ -109,7 +109,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
 
         self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
-        self.logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.verifyNoTransactionsWereFinished()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -118,7 +118,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
-        self.logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.verifyNoTransactionsWereFinished()
 
         // 2. "Re-open" the app after the server is back
         self.serverUp()
@@ -135,12 +135,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Finishing transaction",
-            level: .info,
-            timeout: .seconds(5),
-            pollInterval: .milliseconds(100)
-        )
+        try await self.verifyTransactionIsEventuallyFinished()
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()
@@ -303,7 +298,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
-        self.logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.verifyNoTransactionsWereFinished()
 
         // 2. Server is back
         self.serverUp()
@@ -313,7 +308,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info1)
 
         // 4. Ensure transaction is finished
-        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+        self.verifyTransactionWasFinished()
 
         // 5. Restart app
         try self.purchases.invalidateCustomerInfoCache()
@@ -335,7 +330,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             fail("Consumable purchases should fail while offline")
         } catch {}
 
-        self.logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.verifyNoTransactionsWereFinished()
 
         // 2. Server is back
         self.serverUp()
@@ -351,9 +346,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
 
         // 6. Ensure transactions are finished
-        try await self.logger.verifyMessageIsEventuallyLogged("Finishing transaction",
-                                                              level: .info,
-                                                              expectedCount: 2)
+        try await self.verifyTransactionIsEventuallyFinished(count: 2)
     }
 
 }

@@ -44,6 +44,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let storefront: Storefront?
 
     var hasKnownPurchaseDate: Bool { return true }
+    var hasKnownTransactionIdentifier: Bool { return true }
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         Async.call(with: completion) {

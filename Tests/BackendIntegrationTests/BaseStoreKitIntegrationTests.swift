@@ -259,6 +259,41 @@ extension BaseStoreKitIntegrationTests {
         )
     }
 
+    func verifyTransactionWasFinished(
+        count: Int = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        self.logger.verifyMessageWasLogged(Self.finishingTransactionLog,
+                                           level: .info,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
+    func verifyNoTransactionsWereFinished(
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        self.logger.verifyMessageWasNotLogged(Self.finishingTransactionLog, file: file, line: line)
+    }
+
+    func verifyTransactionIsEventuallyFinished(
+        count: Int? = nil,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Self.finishingTransactionLog,
+            level: .info,
+            expectedCount: count,
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(100),
+            file: file,
+            line: line
+        )
+    }
+
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
         guard let expirationDate = entitlement.expirationDate else { return }
 
@@ -310,6 +345,8 @@ extension BaseStoreKitIntegrationTests {
         expect(transactions).to(haveCount(1))
         return try XCTUnwrap(transactions.first)
     }
+
+    static let finishingTransactionLog = "Finishing transaction"
 
 }
 

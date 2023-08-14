@@ -107,6 +107,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(nonSubscription.productIdentifier) == Self.consumable10Coins
         expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
+
+        self.verifyTransactionWasFinished()
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
@@ -120,6 +122,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(info.nonSubscriptions).to(haveCount(count))
         expect(info.nonSubscriptions.map(\.productIdentifier)) == Array(repeating: Self.consumable10Coins,
                                                                         count: count)
+
+        self.verifyTransactionWasFinished(count: count)
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {
@@ -137,6 +141,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let info2 = try await self.purchaseConsumablePackage().customerInfo
         verifyPurchase(info2)
+
+        self.verifyTransactionWasFinished(count: 2)
     }
 
     func testCanPurchaseNonConsumable() async throws {
@@ -147,8 +153,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.nonConsumableLifetime))
         expect(nonSubscription.productIdentifier) == transaction.productIdentifier
+        expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
 
         try await self.verifyEntitlementWentThrough(info)
+
+        self.verifyTransactionWasFinished()
     }
 
     func testCanPurchaseNonRenewingSubscription() async throws {
@@ -159,8 +168,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(info.allPurchasedProductIdentifiers).to(contain(transaction.productIdentifier))
         expect(nonSubscription.productIdentifier) == transaction.productIdentifier
+        expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
 
         try await self.verifyEntitlementWentThrough(info)
+
+        self.verifyTransactionWasFinished()
     }
 
     func testCanPurchaseMultipleSubscriptions() async throws {

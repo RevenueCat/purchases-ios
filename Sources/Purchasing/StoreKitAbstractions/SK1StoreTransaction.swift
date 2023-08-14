@@ -44,6 +44,10 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         wrapper.finishTransaction(self.underlyingSK1Transaction, completion: completion)
     }
 
+    var hasKnownTransactionIdentifier: Bool {
+        return self.underlyingSK1Transaction.transactionIdentifier != nil
+    }
+
 }
 
 extension SKPaymentTransaction {

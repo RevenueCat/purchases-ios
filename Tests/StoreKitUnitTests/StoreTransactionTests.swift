@@ -39,6 +39,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.quantity) == payment.quantity
         expect(transaction.storefront).to(beNil())
         expect(transaction.hasKnownPurchaseDate) == true
+        expect(transaction.hasKnownTransactionIdentifier) == true
     }
 
     func testSK1TransactionWithMissingDate() async throws {
@@ -61,6 +62,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.quantity) == payment.quantity
         expect(transaction.storefront).to(beNil())
         expect(transaction.hasKnownPurchaseDate) == false
+        expect(transaction.hasKnownTransactionIdentifier) == true
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -79,6 +81,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.transactionIdentifier) == String(sk2Transaction.id)
         expect(transaction.quantity) == sk2Transaction.purchasedQuantity
         expect(transaction.hasKnownPurchaseDate) == true
+        expect(transaction.hasKnownTransactionIdentifier) == true
 
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             let expected = await Storefront.currentStorefront
@@ -107,6 +110,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
 
         let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
         expect(transaction.transactionIdentifier).toNot(beEmpty())
+        expect(transaction.hasKnownTransactionIdentifier) == false
     }
 
     func testSk1TransactionQuantityBecomes1IfNoPayment() {
