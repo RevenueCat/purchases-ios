@@ -137,6 +137,8 @@ final class TransactionPoster: TransactionPosterType {
 
         switch product.productCategory {
         case .subscription:
+            // Note: this includes non-renewing subscriptions. Those are included in `.nonSubscriptions`,
+            // but we can't tell them apart using `product.productType` because that's unknown for SK1 products.
             return true
 
         case .nonSubscription:
