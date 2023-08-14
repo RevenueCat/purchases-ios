@@ -2,6 +2,7 @@ orbs:
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
   codecov: codecov/codecov@3.2.4
+  advanced-checkout: vsco/advanced-checkout@1.1.0
 
 version: 2.1
 
@@ -62,7 +63,12 @@ aliases:
 commands:
   checkout:
     steps:
-      - run: git clone --depth 1 "$CIRCLE_REPOSITORY_URL" -b "$CIRCLE_BRANCH"
+      - advanced-checkout/shallow-checkout:
+          fetch_lfs: false
+          fetch_submodules: false
+          fetch_depth: 1
+          depth: 1
+
 
   install-and-create-sim:
     parameters:
