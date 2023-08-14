@@ -19,6 +19,8 @@ opt_in_rules:
 disabled_rules:
   - orphaned_doc_comment
   - blanket_disable_command
+  # Broken: https://github.com/realm/SwiftLint/issues/5153
+  - unneeded_synthesized_initializer
 
 custom_rules:
   xctestcase_superclass:
