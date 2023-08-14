@@ -211,6 +211,7 @@ struct LoadedOfferingPaywallView: View {
         case .card, .condensedCard:
             view
                 .fixedSize(horizontal: false, vertical: true)
+                .edgesIgnoringSafeArea(.bottom)
         }
     }
 

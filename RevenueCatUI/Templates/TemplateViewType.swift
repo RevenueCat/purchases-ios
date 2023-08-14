@@ -51,33 +51,10 @@ extension PaywallData {
                 .task(id: offering) {
                     await introEligibility.computeEligibility(for: configuration.packages)
                 }
-                .background(self.background(configuration: configuration))
+                .background(configuration.backgroundView)
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)
-        }
-    }
-
-    @ViewBuilder
-    private func background(
-        configuration: TemplateViewConfiguration
-    ) -> some View {
-        let view = Rectangle()
-            .foregroundStyle(configuration.colors.backgroundColor)
-            .edgesIgnoringSafeArea(.all)
-
-        switch configuration.mode {
-        case .fullScreen:
-            view
-        case .card, .condensedCard:
-            view
-            #if canImport(UIKit)
-                .roundedCorner(
-                    Constants.defaultCornerRadius,
-                    corners: [.topLeft, .topRight],
-                    edgesIgnoringSafeArea: .all
-                )
-            #endif
         }
     }
 
@@ -116,6 +93,40 @@ extension PaywallData {
             Template3View(configuration)
         case .template4:
             Template4View(configuration)
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension TemplateViewConfiguration {
+
+    @ViewBuilder
+    var backgroundView: some View {
+        switch self.mode {
+        case .fullScreen:
+            self.backgroundContent
+        case .card, .condensedCard:
+            self.backgroundContent
+            #if canImport(UIKit)
+                .roundedCorner(
+                    Constants.defaultCornerRadius,
+                    corners: [.topLeft, .topRight],
+                    edgesIgnoringSafeArea: .all
+                )
+            #endif
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundContent: some View {
+        let view = Rectangle()
+            .edgesIgnoringSafeArea(.all)
+
+        if self.configuration.blurredBackgroundImage {
+            view.foregroundStyle(.thinMaterial)
+        } else {
+            view.foregroundStyle(self.colors.backgroundColor)
         }
     }
 
