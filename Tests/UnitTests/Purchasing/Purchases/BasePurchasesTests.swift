@@ -69,6 +69,7 @@ class BasePurchasesTests: TestCase {
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
         self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
+        self.postedTransactionCache = .init()
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -136,6 +137,7 @@ class BasePurchasesTests: TestCase {
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
     var backend: MockBackend!
+    var postedTransactionCache: MockPostedTransactionCache!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
     var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
     var notificationCenter: MockNotificationCenter!
@@ -182,6 +184,7 @@ class BasePurchasesTests: TestCase {
             productsManager: self.mockProductsManager,
             receiptFetcher: self.receiptFetcher,
             backend: self.backend,
+            cache: self.postedTransactionCache,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
             operationDispatcher: self.mockOperationDispatcher
@@ -483,6 +486,7 @@ private extension BasePurchasesTests {
         self.mockIntroEligibilityCalculator = nil
         self.mockTransactionsManager = nil
         self.backend = nil
+        self.postedTransactionCache = nil
         self.attributionFetcher = nil
         self.purchasesDelegate.makeDeferredPurchase = nil
         self.purchasesDelegate = nil

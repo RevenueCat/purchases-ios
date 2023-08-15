@@ -50,6 +50,9 @@ final class MockStoreTransaction: StoreTransactionType {
     private let _finishInvoked: Atomic<Bool> = false
     var finishInvoked: Bool { return self._finishInvoked.value }
 
+    private let _finishInvokedCount: Atomic<Int> = .init(0)
+    var finishInvokedCount: Int { return self._finishInvokedCount.value }
+
     private let _onFinishInvoked: Atomic<(() -> Void)?> = nil
     var onFinishInvoked: (() -> Void)? {
         get { return self._onFinishInvoked.value }
@@ -58,6 +61,7 @@ final class MockStoreTransaction: StoreTransactionType {
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self._finishInvoked.value = true
+        self._finishInvokedCount.modify { $0 += 1 }
         self.onFinishInvoked?()
 
         completion()

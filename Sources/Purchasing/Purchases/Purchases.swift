@@ -322,6 +322,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
             backend: backend,
+            cache: PostedTransactionCache(deviceCache: deviceCache, clock: systemInfo.clock),
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,
             operationDispatcher: operationDispatcher

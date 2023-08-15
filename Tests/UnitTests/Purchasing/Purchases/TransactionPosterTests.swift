@@ -21,6 +21,7 @@ class TransactionPosterTests: TestCase {
     private var productsManager: MockProductsManager!
     private var receiptFetcher: MockReceiptFetcher!
     private var backend: MockBackend!
+    private var cache: MockPostedTransactionCache!
     private var paymentQueueWrapper: MockPaymentQueueWrapper!
     private var systemInfo: MockSystemInfo!
     private var operationDispatcher: MockOperationDispatcher!
@@ -48,8 +49,27 @@ class TransactionPosterTests: TestCase {
                 source: .init(isRestore: false, initiationSource: .queue)
             )
         )
-        expect(result).to(beFailure())
         expect(result.error) == BackendError.missingReceiptFile(self.receiptFetcher.mockReceiptURL)
+        expect(result.error?.finishable) == false
+
+        expect(self.cache.postedTransactions).to(beEmpty())
+    }
+
+    func testHandlePurchasedTransactionWithFinishableErrorSavesPostedTransaction() throws {
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.backend.stubbedPostReceiptResult = .failure(
+            .networkError(.errorResponse(.defaultResponse, .invalidRequest))
+        )
+
+        let result = try self.handleTransaction(
+            .init(
+                appUserID: "user",
+                source: .init(isRestore: false, initiationSource: .queue)
+            )
+        )
+        expect(result.error?.finishable) == true
+
+        self.verifyTransactionWasCached()
     }
 
     func testHandlePurchasedTransaction() throws {
@@ -64,13 +84,57 @@ class TransactionPosterTests: TestCase {
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
         let result = try self.handleTransaction(transactionData)
-        expect(result).to(beSuccess())
-        expect(result.value) === Self.mockCustomerInfo
+        expect(result.customerInfo) === Self.mockCustomerInfo
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(self.mockTransaction.finishInvoked) == true
+
+        self.verifyTransactionWasCached()
+    }
+
+    func testHandlePurchasedTransactionDoesNotPostItTwice() throws {
+        self.cache.savePostedTransaction(self.mockTransaction)
+
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result.wasAlreadyPosted) == true
+
+        expect(self.backend.invokedPostReceiptData) == false
+        expect(self.mockTransaction.finishInvoked) == true
+
+        self.logger.verifyMessageWasLogged(
+            Strings.purchase.transaction_poster_skipping_duplicate(
+                productID: self.mockTransaction.productIdentifier,
+                transactionID: self.mockTransaction.transactionIdentifier
+            ),
+            level: .debug,
+            expectedCount: 1
+        )
+    }
+
+    func testHandlePurchasedTransactionMultipleTimesPostsItOnce() throws {
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+        let count = 10
+
+        self.backend.stubbedPostReceiptResult = .success(self.createCustomerInfo(nonSubscriptionProductID: nil))
+
+        for _ in 0..<count {
+            _ = try self.handleTransaction(transactionData)
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.mockTransaction.finishInvokedCount) == count
+
+        expect(self.cache.postedTransactions) == [self.mockTransaction.transactionIdentifier]
     }
 
     func testHandlePurchasedTransactionDoesNotFinishNonProcessedConsumables() throws {
@@ -86,13 +150,14 @@ class TransactionPosterTests: TestCase {
         self.backend.stubbedPostReceiptResult = .success(customerInfo)
 
         let result = try self.handleTransaction(transactionData)
-        expect(result).to(beSuccess())
-        expect(result.value) === customerInfo
+        expect(result.customerInfo) === customerInfo
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(self.mockTransaction.finishInvoked) == false
+
+        self.verifyTransactionWasCached()
 
         self.logger.verifyMessageWasLogged(
             Strings.purchase.finish_transaction_skipped_because_its_missing_in_non_subscriptions(
@@ -117,13 +182,14 @@ class TransactionPosterTests: TestCase {
         self.backend.stubbedPostReceiptResult = .success(customerInfo)
 
         let result = try self.handleTransaction(transactionData)
-        expect(result).to(beSuccess())
-        expect(result.value) === customerInfo
+        expect(result.customerInfo) === customerInfo
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(self.mockTransaction.finishInvoked) == true
+
+        self.verifyTransactionWasCached()
     }
 
     func testHandlePurchasedTransactionDoesNotFinishTransactionInObserverMode() throws {
@@ -140,13 +206,16 @@ class TransactionPosterTests: TestCase {
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
         let result = try self.handleTransaction(transactionData)
-        expect(result).to(beSuccess())
-        expect(result.value) === Self.mockCustomerInfo
+        expect(result.customerInfo) === Self.mockCustomerInfo
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == true
         expect(self.mockTransaction.finishInvoked) == false
+
+        self.verifyTransactionWasCached()
     }
+
+    // MARK: - finishTransactionIfNeeded
 
     func testFinishTransactionInObserverMode() throws {
         waitUntil { completed in
@@ -266,19 +335,21 @@ private extension TransactionPosterTests {
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
         self.backend = .init()
+        self.cache = .init()
         self.paymentQueueWrapper = .init()
 
         self.poster = .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
             backend: self.backend,
+            cache: self.cache,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,
             operationDispatcher: self.operationDispatcher
         )
     }
 
-    func handleTransaction(_ data: PurchasedTransactionData) throws -> Result<CustomerInfo, BackendError> {
+    func handleTransaction(_ data: PurchasedTransactionData) throws -> TransactionPosterResult {
         let result = waitUntilValue { completion in
             self.poster.handlePurchasedTransaction(self.mockTransaction, data: data) {
                 completion($0)
@@ -333,6 +404,16 @@ private extension TransactionPosterTests {
                             sandboxEnvironmentDetector: self.systemInfo)
     }
 
+    func verifyTransactionWasCached(file: FileString = #file, line: UInt = #line) {
+        expect(
+            file: file, line: line,
+            self.cache.postedTransactions
+        ).to(
+            contain(self.mockTransaction.transactionIdentifier),
+            description: "Transaction should be marked as posted"
+        )
+    }
+
 }
 
 private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<PurchasedTransactionData> {
@@ -345,4 +426,15 @@ private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<Purchas
 
         return .init(bool: matches, message: .fail("PurchasedTransactionData do not match"))
     }
+}
+
+private extension TransactionPosterResult {
+
+    var wasAlreadyPosted: Bool {
+        switch self {
+        case .alreadyPosted: return true
+        case .success, .failure: return false
+        }
+    }
+
 }

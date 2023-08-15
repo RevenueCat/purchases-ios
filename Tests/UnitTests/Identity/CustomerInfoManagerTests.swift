@@ -5,6 +5,7 @@ import XCTest
 
 @MainActor
 class BaseCustomerInfoManagerTests: TestCase {
+
     static let appUserID = "app_user_id"
 
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!

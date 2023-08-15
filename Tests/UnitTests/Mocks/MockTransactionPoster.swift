@@ -18,10 +18,12 @@ final class MockTransactionPoster: TransactionPosterType {
 
     private let operationDispatcher = OperationDispatcher()
 
-    let stubbedHandlePurchasedTransactionResult: Atomic<Result<CustomerInfo, BackendError>> = .init(
+    let transactionCache = MockPostedTransactionCache()
+
+    let stubbedHandlePurchasedTransactionResult: Atomic<TransactionPosterResult> = .init(
         .failure(.missingCachedCustomerInfo())
     )
-    let stubbedHandlePurchasedTransactionResults: Atomic<[Result<CustomerInfo, BackendError>]> = .init([])
+    let stubbedHandlePurchasedTransactionResults: Atomic<[TransactionPosterResult]> = .init([])
 
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
@@ -42,11 +44,11 @@ final class MockTransactionPoster: TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+        completion: @escaping (TransactionPosterResult) -> Void
     ) {
         // Returns either the first of `stubbedHandlePurchasedTransactionResults`
         // or `stubbedHandlePurchasedTransactionResult`
-        func result() -> Result<CustomerInfo, BackendError> {
+        func result() -> TransactionPosterResult {
             return self.stubbedHandlePurchasedTransactionResults.value.popFirst()
             ?? self.stubbedHandlePurchasedTransactionResult.value
         }
@@ -62,6 +64,14 @@ final class MockTransactionPoster: TransactionPosterType {
             completion(result)
         }
     }
+
+    // MARK: -
+
+    func unpostedTransactions<T: StoreTransactionType>(in transactions: [T]) -> [T] {
+        return self.transactionCache.unpostedTransactions(in: transactions)
+    }
+
+    // MARK: -
 
     let invokedFinishTransactionIfNeeded: Atomic<Bool> = false
     let invokedFinishTransactionIfNeededCount: Atomic<Int> = .init(0)

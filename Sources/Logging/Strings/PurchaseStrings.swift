@@ -83,6 +83,8 @@ enum PurchaseStrings {
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
     case transaction_poster_handling_transaction(productID: String, offeringID: String?)
+    case transaction_poster_skipping_duplicate(productID: String, transactionID: String)
+    case transaction_poster_storing_posted_transaction(productID: String, transactionID: String)
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
@@ -315,6 +317,12 @@ extension PurchaseStrings: LogMessage {
             } else {
                 return prefix
             }
+
+        case let .transaction_poster_skipping_duplicate(productID, transactionID):
+            return "TransactionPoster: skipping already posted transaction for product '\(productID)': \(transactionID)"
+
+        case let .transaction_poster_storing_posted_transaction(productID, transactionID):
+            return "TransactionPoster: caching posted transaction for product '\(productID)': \(transactionID)"
 
         case let .caching_presented_offering_identifier(offeringID, productID):
             return "Caching presented offering identifier '\(offeringID)' for product '\(productID)'"

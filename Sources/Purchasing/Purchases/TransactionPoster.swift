@@ -13,6 +13,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /// Determines what triggered a purchase and whether it comes from a restore.
 struct PurchaseSource: Equatable {
 
@@ -33,6 +35,48 @@ struct PurchasedTransactionData {
 
 }
 
+/// The possible results when posting a transaction.
+enum TransactionPosterResult {
+
+    /// Transaction was handled and backend returned a `CustomerInfo`
+    /// or it was computed offline.
+    case success(CustomerInfo)
+
+    /// Transaction had already been posted.
+    case alreadyPosted
+
+    /// Error posting transaction.
+    case failure(BackendError)
+
+    init(_ result: Swift.Result<CustomerInfo, BackendError>) {
+        switch result {
+        case let .success(customerInfo):
+            self = .success(customerInfo)
+        case let .failure(error):
+            self = .failure(error)
+        }
+    }
+
+    var customerInfo: CustomerInfo? {
+        switch self {
+        case let .success(customerInfo):
+            return customerInfo
+        case .alreadyPosted, .failure:
+            return nil
+        }
+    }
+
+    var error: BackendError? {
+        switch self {
+        case let .failure(error):
+            return error
+        case .success, .alreadyPosted:
+            return nil
+        }
+    }
+
+}
+
 /// A type that can post receipts as a result of a purchased transaction.
 protocol TransactionPosterType: AnyObject, Sendable {
 
@@ -40,8 +84,11 @@ protocol TransactionPosterType: AnyObject, Sendable {
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        completion: @escaping CustomerAPI.CustomerInfoResponseHandler
+        completion: @escaping (TransactionPosterResult) -> Void
     )
+
+    /// - Returns: the subset of `transactions` that have not been posted.
+    func unpostedTransactions<T: StoreTransactionType>(in transactions: [T]) -> [T]
 
     /// Finishes the transaction if not in observer mode.
     /// - Note: `handlePurchasedTransaction` calls this automatically,
@@ -58,6 +105,7 @@ final class TransactionPoster: TransactionPosterType {
     private let productsManager: ProductsManagerType
     private let receiptFetcher: ReceiptFetcher
     private let backend: Backend
+    private let cache: PostedTransactionCacheType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
     private let operationDispatcher: OperationDispatcher
@@ -66,6 +114,7 @@ final class TransactionPoster: TransactionPosterType {
         productsManager: ProductsManagerType,
         receiptFetcher: ReceiptFetcher,
         backend: Backend,
+        cache: PostedTransactionCacheType,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher
@@ -73,6 +122,7 @@ final class TransactionPoster: TransactionPosterType {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
         self.backend = backend
+        self.cache = cache
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
         self.operationDispatcher = operationDispatcher
@@ -80,11 +130,24 @@ final class TransactionPoster: TransactionPosterType {
 
     func handlePurchasedTransaction(_ transaction: StoreTransactionType,
                                     data: PurchasedTransactionData,
-                                    completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+                                    completion: @escaping (TransactionPosterResult) -> Void) {
         Logger.debug(Strings.purchase.transaction_poster_handling_transaction(
             productID: transaction.productIdentifier,
             offeringID: data.presentedOfferingID
         ))
+
+        guard !self.cache.hasPostedTransaction(transaction) else {
+            Logger.debug(Strings.purchase.transaction_poster_skipping_duplicate(
+                productID: transaction.productIdentifier,
+                transactionID: transaction.transactionIdentifier
+            ))
+
+            self.finishTransactionIfNeeded(transaction) {
+                completion(.alreadyPosted)
+            }
+
+            return
+        }
 
         self.receiptFetcher.receiptData(
             refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
@@ -93,16 +156,22 @@ final class TransactionPoster: TransactionPosterType {
                 self.fetchProductsAndPostReceipt(
                     transaction: transaction,
                     data: data,
-                    receiptData: receiptData,
-                    completion: completion
-                )
+                    receiptData: receiptData
+                ) {
+                    completion(.init($0))
+                }
             } else {
                 self.handleReceiptPost(withTransaction: transaction,
                                        result: .failure(.missingReceiptFile(receiptURL)),
-                                       subscriberAttributes: nil,
-                                       completion: completion)
+                                       subscriberAttributes: nil) {
+                    completion(.init($0))
+                }
             }
         }
+    }
+
+    func unpostedTransactions<T: StoreTransactionType>(in transactions: [T]) -> [T] {
+        return self.cache.unpostedTransactions(in: transactions)
     }
 
     func finishTransactionIfNeeded(
@@ -162,7 +231,34 @@ final class TransactionPoster: TransactionPosterType {
 
 }
 
-/// Async extension
+// MARK: - Extensions
+
+extension TransactionPosterResult {
+
+    typealias CustomerInfoFetcher = (@escaping @Sendable (Result<CustomerInfo, BackendError>) -> Void) -> Void
+
+    /// Converts the `TransactionPosterResult` into `Result<CustomerInfo, BackendError>`
+    /// by using `customerInfoFetcher` if the result is `.alreadyPosted`.
+    func toResult(
+        completion: @escaping @Sendable (Result<CustomerInfo, BackendError>) -> Void,
+        customerInfoFetcher: CustomerInfoFetcher
+    ) {
+        switch self {
+        case let .success(customerInfo):
+            completion(.success(customerInfo))
+        case .alreadyPosted:
+            customerInfoFetcher { result in
+                completion(result)
+            }
+        case let .failure(error):
+            completion(.failure(error))
+        }
+    }
+
+}
+
+// MARK: - Async extensions
+
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TransactionPosterType {
 
@@ -170,7 +266,7 @@ extension TransactionPosterType {
     func handlePurchasedTransaction(
         _ transaction: StoreTransaction,
         data: PurchasedTransactionData
-    ) async -> Result<CustomerInfo, BackendError> {
+    ) async -> TransactionPosterResult {
         await Async.call { completion in
             self.handlePurchasedTransaction(transaction, data: data, completion: completion)
         }
@@ -208,32 +304,39 @@ private extension TransactionPoster {
                            result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let customerInfoResult = result.map(\.info)
+        let complete: @Sendable () -> Void = {
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(result.map(\.info))
+            }
+        }
 
-        self.operationDispatcher.dispatchOnMainActor {
-            switch result {
-            case let .success((customerInfo, product)):
-                if Self.shouldFinish(
-                    transaction: transaction,
-                    for: product,
-                    customerInfo: customerInfo
-                ) {
-                    self.finishTransactionIfNeeded(transaction) {
-                        completion(customerInfoResult)
-                    }
-                } else {
-                    completion(customerInfoResult)
+        switch result {
+        case let .success((customerInfo, product)):
+            self.cache.savePostedTransaction(transaction)
 
+            if Self.shouldFinish(
+                transaction: transaction,
+                for: product,
+                customerInfo: customerInfo
+            ) {
+                self.finishTransactionIfNeeded(transaction) {
+                    Logger.debug(Strings.purchase.transaction_poster_storing_posted_transaction(
+                        productID: transaction.productIdentifier,
+                        transactionID: transaction.transactionIdentifier
+                    ))
+
+                    complete()
                 }
+            } else {
+                complete()
+            }
 
-            case let .failure(error):
-                if error.finishable {
-                    self.finishTransactionIfNeeded(transaction) {
-                        completion(customerInfoResult)
-                    }
-                } else {
-                    completion(customerInfoResult)
-                }
+        case let .failure(error):
+            if error.finishable {
+                self.cache.savePostedTransaction(transaction)
+                self.finishTransactionIfNeeded(transaction, completion: complete)
+            } else {
+                complete()
             }
         }
     }

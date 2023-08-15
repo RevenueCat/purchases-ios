@@ -29,7 +29,8 @@ enum CustomerInfoStrings {
     case customerinfo_updated_from_network
     case customerinfo_updated_from_network_error(BackendError)
     case customerinfo_updated_offline
-    case posting_transactions_in_lieu_of_fetching_customerinfo([StoreTransaction])
+    case posting_transactions_in_lieu_of_fetching_customerinfo(allTransactions: [StoreTransaction],
+                                                               unpostedTransactions: [StoreTransaction])
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
@@ -73,9 +74,9 @@ extension CustomerInfoStrings: LogMessage {
         case .customerinfo_updated_offline:
             return "There was an error communicating with RevenueCat servers. " +
             "CustomerInfo was temporarily computed offline, and it will be posted again as soon as possible."
-        case let .posting_transactions_in_lieu_of_fetching_customerinfo(transactions):
-            return "Found \(transactions.count) unfinished transactions, will post receipt in lieu " +
-            "of fetching CustomerInfo:\n\(transactions)"
+        case let .posting_transactions_in_lieu_of_fetching_customerinfo(allTransactions, unpostedTransactions):
+            return "Found \(allTransactions.count) unfinished transactions ( \(unpostedTransactions.count) unposted)," +
+            " will post receipt in lieu of fetching CustomerInfo:\n\(allTransactions)"
         case let .updating_request_date(info, newRequestDate):
             return "Updating CustomerInfo '\(info.originalAppUserId)' request date: \(newRequestDate)"
         case .sending_latest_customerinfo_to_delegate:

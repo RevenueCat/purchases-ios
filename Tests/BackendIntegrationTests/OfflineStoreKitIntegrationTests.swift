@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-// swiftlint:disable type_name
+// swiftlint:disable type_name file_length
 
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
@@ -214,11 +214,27 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         ]
     }
 
+    func testFetchingCustomerInfoWithPendingTransactionAndNoCachedCustomerInfo() async throws {
+        self.serverDown()
+
+        // 1. Purchase
+        try await self.purchaseMonthlyProduct()
+
+        // 2. Remove cache
+        try self.purchases.invalidateCustomerInfoCache()
+
+        self.serverUp()
+
+        // 3. Fetch customer info
+        let customerInfo = try await self.purchases.customerInfo()
+        try await self.verifyEntitlementWentThrough(customerInfo)
+    }
+
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSimultanousCallsToGetCustomerInfoWithPendingTransactionPostsReceiptOnlyOnce() async throws {
         self.serverDown()
 
-        _ = try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct()
 
         self.serverUp()
 

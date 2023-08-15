@@ -320,10 +320,14 @@ private extension CustomerInfoManager {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
+                let unpostedTransactions = self.transactionPoster.unpostedTransactions(in: transactions)
 
-                if let transactionToPost = transactions.first {
+                if let transactionToPost = unpostedTransactions.first {
                     Logger.debug(
-                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
+                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(
+                            allTransactions: transactions,
+                            unpostedTransactions: unpostedTransactions
+                        )
                     )
 
                     let transactionData = PurchasedTransactionData(
@@ -336,7 +340,7 @@ private extension CustomerInfoManager {
 
                     // Post everything but the first transaction in the background
                     // in parallel so they can be de-duped
-                    let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
+                    let otherTransactionsToPostInParalel = Array(unpostedTransactions.dropFirst())
                     Task.detached(priority: .background) {
                         await self.postTransactions(otherTransactionsToPostInParalel, transactionData)
                     }
@@ -344,10 +348,19 @@ private extension CustomerInfoManager {
                     // Return the result of posting the first transaction.
                     // The posted receipt will include the content of every other transaction
                     // so we don't need to wait for those.
-                    completion(await self.transactionPoster.handlePurchasedTransaction(
+                    let result = await self.transactionPoster.handlePurchasedTransaction(
                         transactionToPost,
                         data: transactionData
-                    ))
+                    )
+
+                    result.toResult(completion: completion) {
+                        // There is a chance due to race-conditions that even though it was initially determined that
+                        // `transactionToPost` had not been posted,
+                        // `handlePurchasedTransaction` returns `.alreadyPosted`. This falls back to
+                        self.requestCustomerInfo(appUserID: appUserID,
+                                                 isAppBackgrounded: isAppBackgrounded,
+                                                 completion: $0)
+                    }
                 } else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded,
@@ -358,6 +371,21 @@ private extension CustomerInfoManager {
             return self.requestCustomerInfo(appUserID: appUserID,
                                             isAppBackgrounded: isAppBackgrounded,
                                             completion: completion)
+        }
+    }
+
+    private func cachedOrRequestCustomerInfoFetcher(
+        appUserID: String,
+        isAppBackgrounded: Bool
+    ) -> TransactionPosterResult.CustomerInfoFetcher {
+        return { completion in
+            if let cachedCustomerInfo = self.cachedCustomerInfo(appUserID: appUserID) {
+                completion(.success(cachedCustomerInfo))
+            } else {
+                self.requestCustomerInfo(appUserID: appUserID,
+                                         isAppBackgrounded: isAppBackgrounded,
+                                         completion: completion)
+            }
         }
     }
 

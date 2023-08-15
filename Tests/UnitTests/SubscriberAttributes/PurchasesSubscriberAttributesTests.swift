@@ -122,6 +122,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             productsManager: self.mockProductsManager,
             receiptFetcher: self.mockReceiptFetcher,
             backend: self.mockBackend,
+            cache: MockPostedTransactionCache(),
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
             operationDispatcher: self.mockOperationDispatcher

@@ -276,6 +276,8 @@
 		4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */; };
 		4FC0832B2A4A361700A97089 /* IntegerExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */; };
 		4FC6F8892A73E445002139B2 /* PostedTransactionCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */; };
+		4FC6F88B2A73FBD9002139B2 /* MockPostedTransactionCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6F88A2A73FBD9002139B2 /* MockPostedTransactionCache.swift */; };
+		4FC6F88C2A73FBD9002139B2 /* MockPostedTransactionCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6F88A2A73FBD9002139B2 /* MockPostedTransactionCache.swift */; };
 		4FC8EE522A8D34D70010EDFF /* ClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC8EE512A8D34D70010EDFF /* ClockTests.swift */; };
 		4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
@@ -1002,6 +1004,7 @@
 		4FC083282A4A35FB00A97089 /* Integer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Integer+Extensions.swift"; sourceTree = "<group>"; };
 		4FC0832A2A4A361700A97089 /* IntegerExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegerExtensionsTests.swift; sourceTree = "<group>"; };
 		4FC6F8882A73E445002139B2 /* PostedTransactionCacheTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PostedTransactionCacheTests.swift; sourceTree = "<group>"; };
+		4FC6F88A2A73FBD9002139B2 /* MockPostedTransactionCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPostedTransactionCache.swift; sourceTree = "<group>"; };
 		4FC8EE512A8D34D70010EDFF /* ClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTests.swift; sourceTree = "<group>"; };
 		4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CachingProductsManagerTests.swift; sourceTree = "<group>"; };
 		4FCBA8522A1539D0004134BD /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
@@ -1851,6 +1854,7 @@
 				5791FBD1299184EF00F1FEDA /* MockAsyncSequence.swift */,
 				57CB2A7B29CCC91800C91439 /* MockProductEntitlementMappingFetcher.swift */,
 				4F8A58162A16EE3500EF97AD /* MockOfflineCustomerInfoCreator.swift */,
+				4FC6F88A2A73FBD9002139B2 /* MockPostedTransactionCache.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -3182,6 +3186,7 @@
 				571E7AD4279F2D0C003B3606 /* StoreKitTestHelpers.swift in Sources */,
 				2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */,
 				5738F489278CC2500096D623 /* MockTransaction.swift in Sources */,
+				4FC6F88C2A73FBD9002139B2 /* MockPostedTransactionCache.swift in Sources */,
 				576C8ABC27D2997C0058FA6E /* SnapshotTesting+Extensions.swift in Sources */,
 				F5355164286B7125009CA47A /* MockOfferingsFactory.swift in Sources */,
 				57CB2B6029CDF63200C91439 /* PurchasedProductsFetcherTests.swift in Sources */,
@@ -3504,6 +3509,7 @@
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
 				57E415F12846997B00EA5460 /* PurchasesAttributionDataTests.swift in Sources */,
+				4FC6F88B2A73FBD9002139B2 /* MockPostedTransactionCache.swift in Sources */,
 				2DDF41CF24F6F4C3005BC22D /* ReceiptParsing+TestsWithRealReceipts.swift in Sources */,
 				57488C2329CB89CC0000EE7E /* OfflineEntitlementsManagerTests.swift in Sources */,
 				57FDAA962846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift in Sources */,

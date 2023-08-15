@@ -20,11 +20,32 @@ import XCTest
 class PurchasesTransactionHandlingTests: BasePurchasesTests {
 
     private var product: MockSK1Product!
+    private var customerInfoBeforePurchase: CustomerInfo!
+    private var customerInfoAfterPurchase: CustomerInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         self.product = MockSK1Product(mockProductIdentifier: "product")
+
+        self.customerInfoBeforePurchase = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [:] as [String: Any]
+            ] as [String: Any]
+        ])
+        self.customerInfoAfterPurchase = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "app_user_id",
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [self.product.mockProductIdentifier: [] as [Any]]
+            ] as [String: Any]
+        ])
 
         self.setupPurchases()
     }
@@ -41,26 +62,8 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
 
         let payment = SKPayment(product: self.product)
 
-        let customerInfoBeforePurchase = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "non_subscriptions": [:] as [String: Any]
-            ] as [String: Any]
-        ])
-        let customerInfoAfterPurchase = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "non_subscriptions": [self.product.mockProductIdentifier: [] as [Any]]
-            ] as [String: Any]
-        ])
-        self.backend.overrideCustomerInfoResult = .success(customerInfoBeforePurchase)
-        self.backend.postReceiptResult = .success(customerInfoAfterPurchase)
+        self.backend.overrideCustomerInfoResult = .success(self.customerInfoBeforePurchase)
+        self.backend.postReceiptResult = .success(self.customerInfoAfterPurchase)
 
         let transaction = MockTransaction()
 
@@ -78,7 +81,6 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
 
     func testDelegateIsOnlyCalledOnceIfCustomerInfoTheSame() throws {
         let customerInfo1: CustomerInfo = .emptyInfo
-
         let customerInfo2 = customerInfo1
 
         let payment = SKPayment(product: self.product)
@@ -102,27 +104,35 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
     }
 
     func testDelegateIsCalledTwiceIfCustomerInfoTheDifferent() throws {
-        let customerInfo1 = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "other_purchases": [:] as [String: Any],
-                "original_application_version": "1.0"
-            ] as [String: Any]
-        ])
+        let delegateReceivedCount = self.purchasesDelegate.customerInfoReceivedCount
 
-        let customerInfo2 = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "other_purchases": [:] as [String: Any],
-                "original_application_version": "2.0"
-            ] as [String: Any]
-        ])
+        let payment = SKPayment(product: self.product)
+
+        let transaction1 = MockTransaction()
+        transaction1.mockPayment = payment
+        transaction1.mockState = .purchasing
+
+        let transaction2 = MockTransaction()
+        transaction2.mockPayment = payment
+        transaction2.mockState = .purchasing
+
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction1)
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction2)
+
+        self.backend.postReceiptResult = .success(self.customerInfoBeforePurchase)
+        transaction1.mockState = .purchased
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction1)
+
+        self.backend.postReceiptResult = .success(self.customerInfoAfterPurchase)
+        transaction2.mockState = .purchased
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction2)
+
+        expect(self.backend.postReceiptDataCalled) == true
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(delegateReceivedCount + 2))
+    }
+
+    func testDelegateIsCalledOnceIfTransactionWasAlreadyPosted() throws {
+        let delegateReceivedCount = self.purchasesDelegate.customerInfoReceivedCount
 
         let payment = SKPayment(product: self.product)
 
@@ -132,16 +142,16 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
 
         try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(customerInfo1)
+        self.backend.postReceiptResult = .success(self.customerInfoBeforePurchase)
         transaction.mockState = .purchased
         try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
-        self.backend.postReceiptResult = .success(customerInfo2)
+        self.backend.postReceiptResult = .success(self.customerInfoAfterPurchase)
         transaction.mockState = .purchased
         try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(3))
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(delegateReceivedCount + 1))
     }
 
     func testDoesntIgnorePurchasesThatDoNotHaveApplicationUserNames() throws {
@@ -162,26 +172,8 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
     func testProductIsRemovedButPresentInTheQueuedTransaction() throws {
         self.mockProductsManager.stubbedProductsCompletionResult = .success([])
 
-        let customerInfoBeforePurchase = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "non_subscriptions": [:] as [String: Any]
-            ] as [String: Any]
-        ])
-        let customerInfoAfterPurchase = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "first_seen": "2019-07-17T00:05:54Z",
-                "original_app_user_id": "app_user_id",
-                "subscriptions": [:] as [String: Any],
-                "non_subscriptions": [self.product.mockProductIdentifier: [] as [Any]]
-            ] as [String: Any]
-        ])
-        self.backend.overrideCustomerInfoResult = .success(customerInfoBeforePurchase)
-        self.backend.postReceiptResult = .success(customerInfoAfterPurchase)
+        self.backend.overrideCustomerInfoResult = .success(self.customerInfoBeforePurchase)
+        self.backend.postReceiptResult = .success(self.customerInfoAfterPurchase)
 
         let payment = SKPayment(product: self.product)
 
