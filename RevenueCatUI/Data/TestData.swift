@@ -323,6 +323,14 @@ internal enum TestData {
                             TestData.annualPackage]
     )
 
+    static let offeringWithNoPaywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: nil,
+        availablePackages: Self.packages
+    )
+
     static let lightColors: PaywallData.Configuration.Colors = .init(
         background: "#FFFFFF",
         text1: "#000000",

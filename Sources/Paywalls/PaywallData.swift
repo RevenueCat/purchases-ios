@@ -32,7 +32,7 @@ public struct PaywallData {
     public var assetBaseURL: URL
 
     @EnsureNonEmptyCollectionDecodable
-    internal var localization: [String: LocalizedConfiguration]
+    internal private(set) var localization: [String: LocalizedConfiguration]
 
 }
 
