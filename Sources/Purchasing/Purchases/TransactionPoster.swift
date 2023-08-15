@@ -312,13 +312,13 @@ private extension TransactionPoster {
 
         switch result {
         case let .success((customerInfo, product)):
-            self.cache.savePostedTransaction(transaction)
-
             if Self.shouldFinish(
                 transaction: transaction,
                 for: product,
                 customerInfo: customerInfo
             ) {
+                self.cache.savePostedTransaction(transaction)
+
                 self.finishTransactionIfNeeded(transaction) {
                     Logger.debug(Strings.purchase.transaction_poster_storing_posted_transaction(
                         productID: transaction.productIdentifier,

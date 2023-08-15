@@ -60,6 +60,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 offeringID: package.offeringIdentifier
             )
         )
+        self.verifyTransactionWasFinished(count: 1)
+        self.verifyTransactionWasStored(count: 1)
     }
 
     func testCanPurchaseProduct() async throws {

@@ -72,6 +72,24 @@ class TransactionPosterTests: TestCase {
         self.verifyTransactionWasCached()
     }
 
+    func testHandlePurchasedTransactionWithOfflineCustomerInfo() throws {
+        let offlineCustomerInfo = self.createCustomerInfo(nonSubscriptionProductID: nil)
+            .copy(with: .verifiedOnDevice)
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.backend.stubbedPostReceiptResult = .success(offlineCustomerInfo)
+
+        let result = try self.handleTransaction(
+            .init(
+                appUserID: "user",
+                source: .init(isRestore: false, initiationSource: .queue)
+            )
+        )
+        expect(result.customerInfo) === offlineCustomerInfo
+        expect(self.cache.postedTransactions).to(beEmpty())
+        expect(self.mockTransaction.finishInvoked) == false
+    }
+
     func testHandlePurchasedTransaction() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
@@ -157,7 +175,7 @@ class TransactionPosterTests: TestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(self.mockTransaction.finishInvoked) == false
 
-        self.verifyTransactionWasCached()
+        expect(self.cache.postedTransactions).to(beEmpty())
 
         self.logger.verifyMessageWasLogged(
             Strings.purchase.finish_transaction_skipped_because_its_missing_in_non_subscriptions(

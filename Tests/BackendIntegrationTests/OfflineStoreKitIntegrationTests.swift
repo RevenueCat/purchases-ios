@@ -104,12 +104,13 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseWhileServerIsDownSucceedsButDoesNotFinishTransaction() async throws {
+    func testPurchaseWhileServerIsDownSucceedsButDoesNotFinishOrStoreTransaction() async throws {
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
         self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
         self.verifyNoTransactionsWereFinished()
+        self.verifyNoTransactionsWereStored()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

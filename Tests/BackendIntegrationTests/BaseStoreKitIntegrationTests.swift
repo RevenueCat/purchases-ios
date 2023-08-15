@@ -23,6 +23,8 @@ import XCTest
 @testable import RevenueCat
 #endif
 
+// swiftlint:disable file_length
+
 @MainActor
 class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 
@@ -271,11 +273,30 @@ extension BaseStoreKitIntegrationTests {
                                            line: line)
     }
 
+    func verifyTransactionWasStored(
+        count: Int = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        self.logger.verifyMessageWasLogged(Self.storingTransactionLog,
+                                           level: .debug,
+                                           expectedCount: count,
+                                           file: file,
+                                           line: line)
+    }
+
     func verifyNoTransactionsWereFinished(
         file: FileString = #file,
         line: UInt = #line
     ) {
         self.logger.verifyMessageWasNotLogged(Self.finishingTransactionLog, file: file, line: line)
+    }
+
+    func verifyNoTransactionsWereStored(
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        self.logger.verifyMessageWasNotLogged(Self.storingTransactionLog, file: file, line: line)
     }
 
     func verifyTransactionIsEventuallyFinished(
@@ -347,6 +368,7 @@ extension BaseStoreKitIntegrationTests {
     }
 
     static let finishingTransactionLog = "Finishing transaction"
+    static let storingTransactionLog = "Storing transaction"
 
 }
 
