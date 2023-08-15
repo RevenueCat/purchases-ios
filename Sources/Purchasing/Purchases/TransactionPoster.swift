@@ -124,6 +124,42 @@ final class TransactionPoster: TransactionPosterType {
         transaction.finish(self.paymentQueueWrapper.paymentQueueWrapperType, completion: complete)
     }
 
+    static func shouldFinish(
+        transaction: StoreTransactionType,
+        for product: StoreProductType?,
+        customerInfo: CustomerInfo
+    ) -> Bool {
+        // Don't finish transactions if CustomerInfo was computed offline
+        guard !customerInfo.isComputedOffline else { return false }
+
+        // If we couldn't find the product, we can't determine if it's a consumable
+        guard let product = product else { return true }
+
+        switch product.productCategory {
+        case .subscription:
+            // Note: this includes non-renewing subscriptions. Those are included in `.nonSubscriptions`,
+            // but we can't tell them apart using `product.productType` because that's unknown for SK1 products.
+            return true
+
+        case .nonSubscription:
+            // Only finish consumables if the server actually processed it.
+            let shouldFinish = (
+                !transaction.hasKnownTransactionIdentifier ||
+                customerInfo.nonSubscriptions.contains {
+                    $0.storeTransactionIdentifier == transaction.transactionIdentifier
+                }
+            )
+            if !shouldFinish {
+                Logger.warn(Strings.purchase.finish_transaction_skipped_because_its_missing_in_non_subscriptions(
+                    transaction,
+                    customerInfo.nonSubscriptions
+                ))
+            }
+
+            return shouldFinish
+        }
+    }
+
 }
 
 /// Async extension
@@ -153,11 +189,11 @@ private extension TransactionPoster {
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
-            self.product(with: productIdentifier) { products in
+            self.product(with: productIdentifier) { product in
                 self.postReceipt(transaction: transaction,
                                  purchasedTransactionData: data,
                                  receiptData: receiptData,
-                                 product: products,
+                                 product: product,
                                  completion: completion)
             }
         } else {
@@ -169,27 +205,34 @@ private extension TransactionPoster {
     }
 
     func handleReceiptPost(withTransaction transaction: StoreTransactionType,
-                           result: Result<CustomerInfo, BackendError>,
+                           result: Result<(info: CustomerInfo, product: StoreProduct?), BackendError>,
                            subscriberAttributes: SubscriberAttribute.Dictionary?,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        let customerInfoResult = result.map(\.info)
+
         self.operationDispatcher.dispatchOnMainActor {
             switch result {
-            case let .success(customerInfo):
-                if customerInfo.isComputedOffline {
-                    completion(result)
-                } else {
+            case let .success((customerInfo, product)):
+                if Self.shouldFinish(
+                    transaction: transaction,
+                    for: product,
+                    customerInfo: customerInfo
+                ) {
                     self.finishTransactionIfNeeded(transaction) {
-                        completion(result)
+                        completion(customerInfoResult)
                     }
+                } else {
+                    completion(customerInfoResult)
+
                 }
 
             case let .failure(error):
                 if error.finishable {
                     self.finishTransactionIfNeeded(transaction) {
-                        completion(result)
+                        completion(customerInfoResult)
                     }
                 } else {
-                    completion(result)
+                    completion(customerInfoResult)
                 }
             }
         }
@@ -207,7 +250,7 @@ private extension TransactionPoster {
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode) { result in
             self.handleReceiptPost(withTransaction: transaction,
-                                   result: result,
+                                   result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
                                    completion: completion)
         }

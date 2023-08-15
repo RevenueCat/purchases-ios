@@ -23,4 +23,6 @@
 
 typealias RCRefundRequestStatus = RefundRequestStatus
 typealias RCErrorCode = ErrorCode
+typealias RCStorefront = Storefront
+
 let RCDefaultLogHandler = defaultLogHandler

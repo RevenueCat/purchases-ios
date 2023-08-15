@@ -11,7 +11,12 @@
 //
 //  Created by Nacho Soto on 11/14/22.
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
 @testable import RevenueCat
+#endif
+
 import StoreKit
 
 final class MockStoreTransaction: StoreTransactionType {
@@ -20,7 +25,7 @@ final class MockStoreTransaction: StoreTransactionType {
     let purchaseDate: Date
     let transactionIdentifier: String
     let quantity: Int
-    let storefront: RevenueCat.Storefront?
+    let storefront: RCStorefront?
 
     init() {
         self.productIdentifier = UUID().uuidString
@@ -34,6 +39,12 @@ final class MockStoreTransaction: StoreTransactionType {
     var hasKnownPurchaseDate: Bool {
         get { return self._hasKnownPurchaseDate.value }
         set { self._hasKnownPurchaseDate.value = newValue }
+    }
+
+    private let _hasKnownTransactionIdentifier: Atomic<Bool> = true
+    var hasKnownTransactionIdentifier: Bool {
+        get { return self._hasKnownTransactionIdentifier.value }
+        set { self._hasKnownTransactionIdentifier.value = newValue }
     }
 
     private let _finishInvoked: Atomic<Bool> = false

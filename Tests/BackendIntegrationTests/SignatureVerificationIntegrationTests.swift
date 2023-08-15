@@ -240,7 +240,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
             try await self.purchaseMonthlyProduct()
         }
 
-        self.logger.verifyMessageWasNotLogged("Finishing transaction")
+        self.verifyNoTransactionsWereFinished()
     }
 
     func testTransactionIsFinishedAfterSuccessfulyPostingPurchase() async throws {
@@ -260,7 +260,7 @@ class EnforcedSignatureVerificationIntegrationTests: BaseSignatureVerificationIn
         try await self.verifyEntitlementWentThrough(info)
 
         // 4. Verify transaction was finished
-        self.logger.verifyMessageWasLogged("Finishing transaction", level: .info)
+        self.verifyTransactionWasFinished()
     }
 
 }

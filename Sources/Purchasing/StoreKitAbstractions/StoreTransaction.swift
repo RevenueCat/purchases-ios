@@ -43,9 +43,8 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
 
-    var hasKnownPurchaseDate: Bool {
-        return self.transaction.hasKnownPurchaseDate
-    }
+    var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
+    var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
 
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         self.transaction.finish(wrapper, completion: completion)
@@ -100,6 +99,10 @@ internal protocol StoreTransactionType: Sendable {
 
     /// The unique identifier for the transaction.
     var transactionIdentifier: String { get }
+
+    /// Whether the underlying transaction has a known transaction identifier.
+    /// See `SKPaymentTransaction.transactionID`.
+    var hasKnownTransactionIdentifier: Bool { get }
 
     /// The number of consumable products purchased.
     /// - Note: multi-quantity purchases aren't currently supported.

@@ -31,6 +31,8 @@ enum PurchaseStrings {
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case entitlement_expired_outside_grace_period(expiration: Date, reference: Date)
     case finishing_transaction(StoreTransactionType)
+    case finish_transaction_skipped_because_its_missing_in_non_subscriptions(StoreTransactionType,
+                                                                             [NonSubscriptionTransaction])
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
     case paymentqueue_revoked_entitlements_for_product_identifiers(productIdentifiers: [String])
     case paymentqueue_adding_payment(SKPaymentQueue, SKPayment)
@@ -129,6 +131,10 @@ extension PurchaseStrings: LogMessage {
         case let .finishing_transaction(transaction):
             return "Finishing transaction '\(transaction.transactionIdentifier)' " +
             "for product '\(transaction.productIdentifier)'"
+
+        case let .finish_transaction_skipped_because_its_missing_in_non_subscriptions(transaction, nonSubscriptions):
+            return "Transaction '\(transaction.transactionIdentifier)' will not be finished: " +
+            "it's a non-subscription and it's missing in CustomerInfo list: \(nonSubscriptions)"
 
         case .purchasing_with_observer_mode_and_finish_transactions_false_warning:
             return "Observer mode is active (finishTransactions is set to false) and " +
