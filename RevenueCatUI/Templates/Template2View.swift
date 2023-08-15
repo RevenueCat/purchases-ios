@@ -128,7 +128,7 @@ struct Template2View: TemplateViewType {
                 EmptyView()
             } else {
                 RoundedRectangle(cornerRadius: Self.cornerRadius)
-                    .stroke(self.configuration.colors.text1Color, lineWidth: 2)
+                    .stroke(self.configuration.colors.text1Color.opacity(Self.fadedColorOpacity), lineWidth: 2)
             }
         }
         .background {
@@ -156,7 +156,7 @@ struct Template2View: TemplateViewType {
                         EmptyView()
                     } else {
                         Circle()
-                            .foregroundColor(self.selectedBackgroundColor.opacity(0.5))
+                            .foregroundColor(self.selectedBackgroundColor.opacity(Self.fadedColorOpacity))
                     }
                 }
 
@@ -239,6 +239,8 @@ struct Template2View: TemplateViewType {
     private var appIconSize: CGFloat = 100
     @ScaledMetric(relativeTo: .largeTitle)
     private var iconSize: CGFloat = 140
+
+    private static let fadedColorOpacity: CGFloat = 0.3
     private static let cornerRadius: CGFloat = 15
     private static let packageButtonAlignment: Alignment = .leading
 
