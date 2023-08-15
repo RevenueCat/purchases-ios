@@ -128,7 +128,7 @@ extension NetworkStrings: LogMessage {
 private extension HTTPRequest {
 
     var description: String {
-        return "\(self.method.httpMethod) \(self.path.relativePath)"
+        return "\(self.method.httpMethod) '\(self.path.relativePath)'"
     }
 
 }

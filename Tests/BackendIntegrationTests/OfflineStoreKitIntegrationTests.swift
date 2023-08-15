@@ -236,7 +236,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(info2)
 
         self.logger.verifyMessageWasLogged(
-            "API request completed: POST /v1/receipts",
+            "API request completed: POST '/v1/receipts'",
             level: .debug,
             expectedCount: 1
         )
