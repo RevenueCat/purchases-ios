@@ -172,7 +172,10 @@ class TransactionPosterTests: TestCase {
 
     // MARK: - shouldFinishTransaction
 
-    func testShouldNotFinishWithOfflineCustomerInfo() {
+    func testShouldNotFinishWithOfflineCustomerInfo() throws {
+        // Offline CustomerInfo isn't available on iOS 12
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice)
 
         expect(
