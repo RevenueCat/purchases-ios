@@ -237,12 +237,22 @@ internal enum TestData {
                 images: Self.images,
                 colors: .init(
                     light: .init(
+                        background: "#FAFAFA",
+                        text1: "#000000",
+                        text2: "#2A2A2A",
+                        callToActionBackground: "#222222",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#F4E971",
+                        accent2: "#121212"
+                    ),
+                    dark: .init(
                         background: "#272727",
                         text1: "#FFFFFF",
                         text2: "#B7B7B7",
                         callToActionBackground: "#FFFFFF",
                         callToActionForeground: "#000000",
-                        accent1: "#F4E971"
+                        accent1: "#F4E971",
+                        accent2: "#4A4A4A"
                     )
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
