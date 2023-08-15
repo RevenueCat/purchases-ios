@@ -75,7 +75,7 @@ extension CustomerInfoStrings: LogMessage {
             return "There was an error communicating with RevenueCat servers. " +
             "CustomerInfo was temporarily computed offline, and it will be posted again as soon as possible."
         case let .posting_transactions_in_lieu_of_fetching_customerinfo(allTransactions, unpostedTransactions):
-            return "Found \(allTransactions.count) unfinished transactions ( \(unpostedTransactions.count) unposted)," +
+            return "Found \(allTransactions.count) unfinished transactions (\(unpostedTransactions.count) unposted)," +
             " will post receipt in lieu of fetching CustomerInfo:\n\(allTransactions)"
         case let .updating_request_date(info, newRequestDate):
             return "Updating CustomerInfo '\(info.originalAppUserId)' request date: \(newRequestDate)"

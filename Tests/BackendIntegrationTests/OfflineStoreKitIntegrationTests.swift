@@ -277,7 +277,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
 
         self.logger.verifyMessageWasLogged(
-            "Found 2 unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
+            "Found 2 unfinished transactions (2 unposted), will post receipt in lieu of fetching CustomerInfo",
             level: .debug,
             expectedCount: 1
         )
