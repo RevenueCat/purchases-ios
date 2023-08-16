@@ -44,5 +44,5 @@ _Please fill in_
  
 4. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
 
-**Additional context**
+5. **Additional context**
 Add any other context about the problem here.
