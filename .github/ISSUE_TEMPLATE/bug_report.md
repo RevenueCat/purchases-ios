@@ -22,27 +22,27 @@ A clear and concise description of what the bug is. The more detail you can prov
    3. StoreKit version:
       - [x] StoreKit 1
       - [ ] StoreKit 2 (_enabled with `usesStoreKit2IfAvailable(true)`_)
-   5. OS version:
-   6. Xcode version:
-   7. Device and/or simulator:
+   4. OS version:
+   5. Xcode version:
+   6. Device and/or simulator:
       - [ ] Device
       - [ ] Simulator
-   8. Environment:
+   7. Environment:
       - [ ] Sandbox
       - [ ] TestFight
       - [ ] Production
-   10. How widespread is the issue. Percentage of devices affected.
+   8. How widespread is the issue. Percentage of devices affected.
 2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. **Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.**
 
 ```
 Logs here
 ```
 
-4. Steps to reproduce, with a description of expected vs. actual behavior
+3. Steps to reproduce, with a description of expected vs. actual behavior
 
 _Please fill in_
  
-5. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
+4. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
 
 **Additional context**
 Add any other context about the problem here.
