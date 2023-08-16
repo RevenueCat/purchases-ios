@@ -63,7 +63,39 @@ commands:
   checkout:
     steps:
       - trust-github-key
-      - run: git clone --depth 1 "$CIRCLE_REPOSITORY_URL" -b "$CIRCLE_BRANCH"
+      - run: 
+          name: "Clone repo"
+          # Inspired from https://github.com/vsco/advanced-checkout-orb/blob/main/src/commands/shallow-checkout.yml
+          command: |
+            CHECKOUT_PATH="${HOME}/project"
+            mkdir -p "${CHECKOUT_PATH}"
+            cd "${CHECKOUT_PATH}"
+            # Clone repo
+            git clone --depth 1 "$CIRCLE_REPOSITORY_URL" -b "$CIRCLE_BRANCH"
+            
+            # Fetch tags
+            if [ -n "$CIRCLE_TAG" ]
+            then
+              git fetch -t --depth 1 --no-recurse-submodules --force origin "refs/tags/${CIRCLE_TAG}"
+            elif [[ $(echo $CIRCLE_BRANCH | grep -e ^pull\/*) ]]
+            then
+              git fetch --depth=1 --no-recurse-submodules --force origin "${CIRCLE_BRANCH}/head:remotes/origin/${CIRCLE_BRANCH}"
+            else
+              git fetch --depth=1 --no-recurse-submodules --force origin "$CIRCLE_BRANCH:remotes/origin/$CIRCLE_BRANCH"
+            fi
+
+            # Checkout hash
+            if [ -n "$CIRCLE_TAG" ]
+            then
+              git reset --hard "$CIRCLE_SHA1"
+              git checkout -q "$CIRCLE_TAG"
+            elif [ -n "$CIRCLE_BRANCH" ] && [ "$CIRCLE_BRANCH" != 'HEAD' ]
+            then
+              git reset --hard "$CIRCLE_SHA1"
+              git checkout -q -B "$CIRCLE_BRANCH"
+            fi
+
+            git reset --hard "$CIRCLE_SHA1"
 
   install-and-create-sim:
     parameters:
