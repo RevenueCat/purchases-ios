@@ -27,6 +27,7 @@ struct LoadingPaywallView: View {
                 availablePackages: Self.packages
             ),
             paywall: Self.defaultPaywall,
+            template: Self.template,
             mode: self.mode,
             fonts: DefaultPaywallFontProvider(),
             introEligibility: Self.introEligibility,
@@ -36,6 +37,7 @@ struct LoadingPaywallView: View {
         .redacted(reason: .placeholder)
     }
 
+    private static let template: PaywallTemplate = PaywallData.defaultTemplate
     private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages)
 
     private static let packages: [Package] = [

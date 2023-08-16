@@ -46,6 +46,36 @@ enum VariableHandler {
         }
     }
 
+    fileprivate static func unrecognizedVariables(in set: Set<String>) -> Set<String> {
+        return Set(
+            set
+                .lazy
+                .filter { VariableHandler.provider(for: $0) == nil }
+        )
+    }
+
+    fileprivate typealias ValueProvider = (VariableDataProvider, Locale) -> String?
+
+    // swiftlint:disable:next cyclomatic_complexity
+    fileprivate static func provider(for variableName: String) -> ValueProvider? {
+        switch variableName {
+        case "app_name": return { (provider, _) in provider.applicationName }
+        case "price": return { (provider, _) in provider.localizedPrice }
+        case "price_per_period": return { $0.localizedPricePerPeriod($1) }
+        case "total_price_and_per_month": return { $0.localizedPriceAndPerMonth($1) }
+        case "product_name": return { (provider, _) in provider.productName }
+        case "sub_period": return { $0.periodName($1) }
+        case "sub_price_per_month": return { (provider, _) in provider.localizedPricePerMonth }
+        case "sub_duration": return { $0.subscriptionDuration($1) }
+        case "sub_offer_duration": return { $0.introductoryOfferDuration($1) }
+        case "sub_offer_price": return { (provider, _) in provider.localizedIntroductoryOfferPrice }
+
+        default:
+            Logger.warning(Strings.unrecognized_variable_name(variableName: variableName))
+            return nil
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -55,29 +85,21 @@ extension String {
         return VariableHandler.processVariables(in: self, with: provider, locale: locale)
     }
 
+    func unrecognizedVariables() -> Set<String> {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+            return VariableHandlerIOS16.unrecognizedVariables(in: self)
+        } else {
+            return VariableHandlerIOS15.unrecognizedVariables(in: self)
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension VariableDataProvider {
 
-    // swiftlint:disable:next cyclomatic_complexity
     func value(for variableName: String, locale: Locale) -> String {
-        switch variableName {
-        case "app_name": return self.applicationName
-        case "price": return self.localizedPrice
-        case "price_per_period": return self.localizedPricePerPeriod(locale)
-        case "total_price_and_per_month": return self.localizedPriceAndPerMonth(locale)
-        case "product_name": return self.productName
-        case "sub_period": return self.periodName(locale)
-        case "sub_price_per_month": return self.localizedPricePerMonth
-        case "sub_duration": return self.subscriptionDuration(locale) ?? ""
-        case "sub_offer_duration": return self.introductoryOfferDuration(locale) ?? ""
-        case "sub_offer_price": return self.localizedIntroductoryOfferPrice ?? ""
-
-        default:
-            Logger.warning(Strings.unrecognized_variable_name(variableName: variableName))
-            return ""
-        }
+        VariableHandler.provider(for: variableName)?(self, locale) ?? ""
     }
 
 }
@@ -101,6 +123,12 @@ private enum VariableHandlerIOS16 {
         }
 
         return replacedString
+    }
+
+    static func unrecognizedVariables(in string: String) -> Set<String> {
+        return VariableHandler.unrecognizedVariables(
+            in: Set(Self.extractVariables(from: string).map(\.variable))
+        )
     }
 
     private static func extractVariables(from expression: String) -> [VariableMatch] {
@@ -140,8 +168,7 @@ private enum VariableHandlerIOS15 {
         locale: Locale = .current
     ) -> String {
         var replacedString = string
-        let range = NSRange(string.startIndex..., in: string)
-        let matches = Self.regex.matches(in: string, options: [], range: range)
+        let matches = Self.regex.matches(in: string, options: [], range: string.range)
 
         for match in matches.reversed() {
             let variableNameRange = match.range(at: 1)
@@ -162,10 +189,29 @@ private enum VariableHandlerIOS15 {
         return replacedString
     }
 
+    static func unrecognizedVariables(in string: String) -> Set<String> {
+        let matches = Self.regex.matches(in: string, options: [], range: string.range)
+
+        var variables: Set<String> = []
+        for match in matches {
+            if let variableNameRange = Range(match.range(at: 1), in: string) {
+                variables.insert(String(string[variableNameRange]))
+            }
+        }
+
+        return VariableHandler.unrecognizedVariables(in: variables)
+    }
+
     private static let pattern = "{{  }}"
     // Fix-me: this can be implemented using the new Regex from Swift.
     // This regex is known at compile time and tested:
     // swiftlint:disable:next force_try
     private static let regex = try! NSRegularExpression(pattern: "\\{\\{ (\\w+) \\}\\}", options: [])
+
+}
+
+private extension String {
+
+    var range: NSRange { .init(self.startIndex..., in: self) }
 
 }
