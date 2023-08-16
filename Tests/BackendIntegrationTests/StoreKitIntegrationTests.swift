@@ -186,6 +186,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.purchase(product: product1)
         let info = try await self.purchases.purchase(product: product2).customerInfo
 
+        try await self.verifyEntitlementWentThrough(info)
+
         expect(info.allPurchasedProductIdentifiers) == [
             product1.productIdentifier,
             product2.productIdentifier
