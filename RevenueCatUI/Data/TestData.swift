@@ -150,7 +150,7 @@ internal enum TestData {
     ]
 
     static let paywallWithIntroOffer = PaywallData(
-        template: .template1,
+        templateName: PaywallTemplate.template1.rawValue,
         config: .init(
             packages: [PackageType.monthly.identifier],
             images: Self.images,
@@ -162,7 +162,7 @@ internal enum TestData {
         assetBaseURL: Self.paywallAssetBaseURL
     )
     static let paywallWithNoIntroOffer = PaywallData(
-        template: .template1,
+        templateName: PaywallTemplate.template1.rawValue,
         config: .init(
             packages: [PackageType.annual.identifier],
             images: Self.images,
@@ -193,7 +193,7 @@ internal enum TestData {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .template2,
+            templateName: PaywallTemplate.template2.rawValue,
             config: .init(
                 packages: [PackageType.annual.identifier, PackageType.monthly.identifier],
                 images: Self.images,
@@ -231,7 +231,7 @@ internal enum TestData {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .template3,
+            templateName: PaywallTemplate.template3.rawValue,
             config: .init(
                 packages: [PackageType.annual.identifier],
                 images: Self.images,
@@ -288,7 +288,7 @@ internal enum TestData {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            template: .template4,
+            templateName: PaywallTemplate.template4.rawValue,
             config: .init(
                 packages: [PackageType.monthly.identifier,
                            PackageType.sixMonth.identifier,
@@ -321,6 +321,14 @@ internal enum TestData {
         availablePackages: [TestData.monthlyPackage,
                             TestData.sixMonthPackage,
                             TestData.annualPackage]
+    )
+
+    static let offeringWithNoPaywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: nil,
+        availablePackages: Self.packages
     )
 
     static let lightColors: PaywallData.Configuration.Colors = .init(
