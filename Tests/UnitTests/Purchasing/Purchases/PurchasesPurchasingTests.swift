@@ -80,7 +80,11 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
-    func testPurchaseCallbackIsNotInvokedWhenProcessingQueueTransactionForSameProduct() {
+    func testPurchaseCallbackIsInvokedWhenProcessingQueueTransactionForSameProduct() {
+        // This documents a race condition that we can't detect in the implementation
+        // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
+        // us a transaction from the queue, and sending us a transaction as a result of adding an `SKPayment`.
+
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
         let mockPayment = MockPayment()
@@ -104,16 +108,20 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.backend.postedInitiationSource) == .queue
+        expect(self.backend.postedInitiationSource) == .purchase
 
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
 
         // Avoid false positives because the callback hasn't been invoked yet
         expect(self.mockOperationDispatcher.pendingMainActorDispatches.value).toEventually(equal(0))
-        expect(callbackInvoked) == false
+        expect(callbackInvoked) == true
     }
 
-    func testHandlesTransactionFromPurchaseIndependentlyFromQueueUpdateForSameProductIdentifier() throws {
+    func testHandlesTransactionFromPurchaseAfterReviewingQueueUpdateForSameProductIdentifier() throws {
+        // This documents a race condition that we can't detect in the implementation
+        // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
+        // us a transaction from the queue, and sending us a transaction as a result of adding an `SKPayment`.
+
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
         let mockPayment = MockPayment()
@@ -135,7 +143,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: queueTransaction)
 
         expect(self.backend.postReceiptDataCalled) == true
-        expect(self.backend.postedInitiationSource) == .queue
+        expect(self.backend.postedInitiationSource) == .purchase
         expect(callbackInvoked) == false
 
         let purchaseTransaction = MockTransaction()
