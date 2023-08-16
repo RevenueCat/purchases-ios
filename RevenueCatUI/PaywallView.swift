@@ -121,34 +121,28 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
-        if let paywall = offering.paywall {
-            LoadedOfferingPaywallView(
-                offering: offering,
-                paywall: paywall,
-                mode: self.mode,
-                fonts: fonts,
-                introEligibility: checker,
-                purchaseHandler: purchaseHandler
-            )
-        } else {
+        let (paywall, template, error) = offering.validatedPaywall()
+
+        let paywallView = LoadedOfferingPaywallView(
+            offering: offering,
+            paywall: paywall,
+            template: template,
+            mode: self.mode,
+            fonts: fonts,
+            introEligibility: checker,
+            purchaseHandler: purchaseHandler
+        )
+
+        if let error {
             DebugErrorView(
-                "Offering '\(offering.identifier)' has no configured paywall, or it has invalid data.\n" +
+                "\(error.description)\n" +
                 "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
                 "The displayed paywall contains default configuration.\n" +
                 "This error will be hidden in production.",
-                releaseBehavior: .replacement(
-                    AnyView(
-                        LoadedOfferingPaywallView(
-                            offering: offering,
-                            paywall: .createDefault(with: offering.availablePackages),
-                            mode: self.mode,
-                            fonts: fonts,
-                            introEligibility: checker,
-                            purchaseHandler: purchaseHandler
-                        )
-                    )
-                )
+                releaseBehavior: .replacement(AnyView(paywallView))
             )
+        } else {
+            paywallView
         }
     }
 
@@ -162,6 +156,7 @@ struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
     private let paywall: PaywallData
+    private let template: PaywallTemplate
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
@@ -176,6 +171,7 @@ struct LoadedOfferingPaywallView: View {
     init(
         offering: Offering,
         paywall: PaywallData,
+        template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         introEligibility: TrialOrIntroEligibilityChecker,
@@ -183,6 +179,7 @@ struct LoadedOfferingPaywallView: View {
     ) {
         self.offering = offering
         self.paywall = paywall
+        self.template = template
         self.mode = mode
         self.fonts = fonts
         self._introEligibility = .init(
@@ -194,6 +191,7 @@ struct LoadedOfferingPaywallView: View {
     var body: some View {
         let view = self.paywall
             .createView(for: self.offering,
+                        template: self.template,
                         mode: self.mode,
                         fonts: self.fonts,
                         introEligibility: self.introEligibility,
@@ -238,7 +236,7 @@ struct PaywallView_Previews: PreviewProvider {
                     purchaseHandler: PreviewHelpers.purchaseHandler
                 )
                 .previewLayout(mode.layout)
-                .previewDisplayName("\(offering.paywall?.template.name ?? "")-\(mode)")
+                .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")
             }
         }
     }
