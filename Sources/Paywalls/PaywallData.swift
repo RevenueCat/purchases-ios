@@ -23,7 +23,7 @@ import Foundation
 public struct PaywallData {
 
     /// The type of template used to display this paywall.
-    public var template: PaywallTemplate
+    public var templateName: String
 
     /// Generic configuration for any paywall.
     public var config: Configuration
@@ -327,12 +327,12 @@ extension PaywallData.Configuration {
 extension PaywallData {
 
     init(
-        template: PaywallTemplate,
+        templateName: String,
         config: Configuration,
         localization: [String: LocalizedConfiguration],
         assetBaseURL: URL
     ) {
-        self.template = template
+        self.templateName = templateName
         self.config = config
         self.localization = localization
         self.assetBaseURL = assetBaseURL
@@ -340,7 +340,7 @@ extension PaywallData {
 
     /// Creates a test ``PaywallData`` with one localization
     public init(
-        template: PaywallTemplate,
+        templateName: String,
         config: Configuration,
         localization: LocalizedConfiguration,
         assetBaseURL: URL
@@ -348,7 +348,7 @@ extension PaywallData {
         let locale = Locale.current.identifier
 
         self.init(
-            template: template,
+            templateName: templateName,
             config: config,
             localization: [locale: localization],
             assetBaseURL: assetBaseURL
@@ -407,7 +407,7 @@ extension PaywallData: Codable {
 
     // Note: these are camel case but converted by the decoder
     private enum CodingKeys: String, CodingKey {
-        case template = "templateName"
+        case templateName
         case config
         case localization = "localizedStrings"
         case assetBaseURL = "assetBaseUrl"

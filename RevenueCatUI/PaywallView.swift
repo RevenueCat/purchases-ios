@@ -121,11 +121,12 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
-        let (paywall, error) = offering.validatedPaywall()
+        let (paywall, template, error) = offering.validatedPaywall()
 
         let paywallView = LoadedOfferingPaywallView(
             offering: offering,
             paywall: paywall,
+            template: template,
             mode: self.mode,
             fonts: fonts,
             introEligibility: checker,
@@ -155,6 +156,7 @@ struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
     private let paywall: PaywallData
+    private let template: PaywallTemplate
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
@@ -169,6 +171,7 @@ struct LoadedOfferingPaywallView: View {
     init(
         offering: Offering,
         paywall: PaywallData,
+        template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         introEligibility: TrialOrIntroEligibilityChecker,
@@ -176,6 +179,7 @@ struct LoadedOfferingPaywallView: View {
     ) {
         self.offering = offering
         self.paywall = paywall
+        self.template = template
         self.mode = mode
         self.fonts = fonts
         self._introEligibility = .init(
@@ -187,6 +191,7 @@ struct LoadedOfferingPaywallView: View {
     var body: some View {
         let view = self.paywall
             .createView(for: self.offering,
+                        template: self.template,
                         mode: self.mode,
                         fonts: self.fonts,
                         introEligibility: self.introEligibility,
@@ -231,7 +236,7 @@ struct PaywallView_Previews: PreviewProvider {
                     purchaseHandler: PreviewHelpers.purchaseHandler
                 )
                 .previewLayout(mode.layout)
-                .previewDisplayName("\(offering.paywall?.template.name ?? "")-\(mode)")
+                .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")
             }
         }
     }

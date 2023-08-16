@@ -32,17 +32,30 @@ class PaywallDataValidationTests: TestCase {
         expect(result.error).to(beNil())
     }
 
+    func testUnrecognizedTemplateNameGeneratesDefaultPaywall() {
+        let templateName = "unrecognized_template"
+
+        let originalOffering = TestData.offeringWithMultiPackagePaywall
+        let offering = originalOffering.with(templateName: templateName)
+        let result = offering.validatedPaywall()
+
+        Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
+        Self.snapshot(result.displayablePaywall)
+
+        expect(result.error) == .invalidTemplate(templateName)
+    }
+
     func testUnrecognizedVariableGeneratesDefaultPaywall() {
-        let offering = TestData.offeringWithMultiPackagePaywall
-        let paywall = offering
+        let originalOffering = TestData.offeringWithMultiPackagePaywall
+        let offering = originalOffering
             .with(localization: .init(
                 title: "Title with {{ unrecognized_variable }}",
                 callToAction: "{{ future_variable }}",
                 offerDetails: nil
             ))
-        let result = paywall.validatedPaywall()
+        let result = offering.validatedPaywall()
 
-        Self.verifyPackages(in: result.displayablePaywall, match: offering.paywall)
+        Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
         Self.snapshot(result.displayablePaywall)
 
         expect(result.error) == .invalidVariables(["unrecognized_variable", "future_variable"])

@@ -22,6 +22,11 @@ extension Offering {
         return self.map { $0?.with(localization: localization) }
     }
 
+    /// Creates a copy of the offering's paywall with a new template name
+    func with(templateName: String) -> Self {
+        return self.map { $0?.with(templateName: templateName) }
+    }
+
     private func map(_ modifier: (PaywallData?) -> PaywallData?) -> Self {
         return .init(
             identifier: self.identifier,
@@ -57,9 +62,17 @@ extension PaywallData {
 
     /// Creates a copy of the paywall with a single localization
     func with(localization: LocalizedConfiguration) -> Self {
-        return .init(template: self.template,
+        return .init(templateName: self.templateName,
                      config: self.config,
                      localization: localization,
+                     assetBaseURL: self.assetBaseURL)
+    }
+
+    /// Creates a copy of the paywall with a new template name
+    func with(templateName: String) -> Self {
+        return .init(templateName: templateName,
+                     config: self.config,
+                     localization: self.localizedConfiguration,
                      assetBaseURL: self.assetBaseURL)
     }
 

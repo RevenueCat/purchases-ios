@@ -12,11 +12,14 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension Offering {
 
-    typealias ValidationResult = (displayablePaywall: PaywallData, error: Offering.PaywallValidationError?)
+    typealias ValidationResult = (displayablePaywall: PaywallData,
+                                  template: PaywallTemplate,
+                                  error: Offering.PaywallValidationError?)
 
-    enum PaywallValidationError: Equatable {
+    enum PaywallValidationError: Swift.Error, Equatable {
 
         case missingPaywall
+        case invalidTemplate(String)
         case invalidVariables(Set<String>)
 
     }
@@ -31,17 +34,21 @@ extension Offering {
     /// - Returns: a validated paywall suitable to be displayed, and any associated error.
     func validatedPaywall() -> ValidationResult {
         if let paywall = self.paywall {
-            if let error = paywall.validate() {
+            switch paywall.validate() {
+            case let .success(template):
+                return (paywall, template, nil)
+
+            case let .failure(error):
                 // If there are any errors, create a default paywall
                 // with only the configured packages.
-                return (.createDefault(with: paywall.config.packages), error)
-            } else {
-                // Use the original paywall.
-                return (paywall, nil)
+                return (.createDefault(with: paywall.config.packages),
+                        PaywallData.defaultTemplate,
+                        error)
             }
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
             return (displayablePaywall: .createDefault(with: self.availablePackages),
+                    PaywallData.defaultTemplate,
                     error: .missingPaywall)
         }
     }
@@ -56,12 +63,16 @@ private extension PaywallData {
     typealias Error = Offering.PaywallValidationError
 
     /// - Returns: `nil` if there are no validation errors.
-    func validate() -> Error? {
+    func validate() -> Result<PaywallTemplate, Error> {
         if let error = Self.validateLocalization(self.localizedConfiguration) {
-            return error
+            return .failure(error)
         }
 
-        return nil
+        guard let template = PaywallTemplate(rawValue: self.templateName) else {
+            return .failure(.invalidTemplate(self.templateName))
+        }
+
+        return .success(template)
     }
 
     /// Validates that all strings inside of `LocalizedConfiguration` contain no unrecognized variables.
@@ -89,10 +100,13 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
     var description: String {
         switch self {
         case .missingPaywall:
-            return "Offering has no configured paywall"
+            return "Offering has no configured paywall."
+
+        case let .invalidTemplate(name):
+            return "Template not recognized: \(name)."
 
         case let .invalidVariables(names):
-            return "Found unrecognized variables: \(names.joined(separator: ", "))"
+            return "Found unrecognized variables: \(names.joined(separator: ", "))."
         }
     }
 
