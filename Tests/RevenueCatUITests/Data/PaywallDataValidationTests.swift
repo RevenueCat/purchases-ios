@@ -66,7 +66,7 @@ class PaywallDataValidationTests: TestCase {
         var localization = try XCTUnwrap(originalOffering.paywall?.localizedConfiguration)
         localization.features = [
             .init(title: "{{ future_variable }}", content: "{{ new_variable }}"),
-            .init(title: "{{ another_one }}"),
+            .init(title: "{{ another_one }}")
         ]
 
         let offering = originalOffering.with(localization: localization)
@@ -77,6 +77,24 @@ class PaywallDataValidationTests: TestCase {
 
         expect(result.error) == .invalidVariables(["future_variable", "new_variable", "another_one"])
     }
+
+    func testUnrecognizedIconsGeneratesDefaultPaywall() throws {
+        let originalOffering = TestData.offeringWithMultiPackagePaywall
+        var localization = try XCTUnwrap(originalOffering.paywall?.localizedConfiguration)
+        localization.features = [
+            .init(title: "Title 1", content: "Content 1", iconID: "unrecognized_icon_1"),
+            .init(title: "Title 2", content: "Content 2", iconID: "unrecognized_icon_2")
+        ]
+
+        let offering = originalOffering.with(localization: localization)
+        let result = offering.validatedPaywall()
+
+        Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
+        Self.snapshot(result.displayablePaywall)
+
+        expect(result.error) == .invalidIcons(["unrecognized_icon_1", "unrecognized_icon_2"])
+    }
+
 }
 
 // MARK: -

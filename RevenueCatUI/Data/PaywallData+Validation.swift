@@ -21,6 +21,7 @@ extension Offering {
         case missingPaywall
         case invalidTemplate(String)
         case invalidVariables(Set<String>)
+        case invalidIcons(Set<String>)
 
     }
 
@@ -72,6 +73,11 @@ private extension PaywallData {
             return .failure(.invalidTemplate(self.templateName))
         }
 
+        let invalidIcons = self.localizedConfiguration.validateIcons()
+        guard invalidIcons.isEmpty else {
+            return .failure(.invalidIcons(invalidIcons))
+        }
+
         return .success(template)
     }
 
@@ -92,6 +98,28 @@ private extension PaywallData {
 
 }
 
+private extension PaywallData.LocalizedConfiguration {
+
+    /// - Returns: the set of invalid icons
+    func validateIcons() -> Set<String> {
+        return Set(self.features.compactMap { $0.validateIcon() })
+    }
+
+}
+
+private extension PaywallData.LocalizedConfiguration.Feature {
+
+    /// - Returns: the icon ID if it's not recognized
+    func validateIcon() -> String? {
+        guard let iconID = self.iconID else { return nil }
+
+        return PaywallIcon(rawValue: iconID) == nil
+            ? iconID
+            : nil
+    }
+
+}
+
 // MARK: - Errors
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -107,6 +135,9 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
 
         case let .invalidVariables(names):
             return "Found unrecognized variables: \(names.joined(separator: ", "))."
+
+        case let .invalidIcons(names):
+            return "Found unrecognized icons: \(names.joined(separator: ", "))."
         }
     }
 
