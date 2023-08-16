@@ -67,7 +67,7 @@ private extension Package {
     }
 
     var isMonthly: Bool {
-        return self.packageType == .monthly
+        return self.storeProduct.subscriptionPeriod == SubscriptionPeriod(value: 1, unit: .month)
     }
 
     var pricePerMonth: NSDecimalNumber {
