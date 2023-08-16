@@ -108,6 +108,10 @@ private extension View {
             .onInAppPurchaseStart { product in
                 guard Purchases.isConfigured else { return }
 
+                if !Purchases.shared.storeKit2Setting.isEnabledAndAvailable {
+                    Logger.appleWarning(Strings.configure.sk2_required_for_swiftui_paywalls)
+                }
+
                 Purchases.shared.cachePresentedOfferingIdentifier(
                     offering.identifier,
                     productIdentifier: product.id

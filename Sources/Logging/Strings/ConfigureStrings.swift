@@ -71,6 +71,8 @@ enum ConfigureStrings {
 
     case timeout_lower_than_minimum(timeout: TimeInterval, minimum: TimeInterval)
 
+    case sk2_required_for_swiftui_paywalls
+
 }
 
 extension ConfigureStrings: LogMessage {
@@ -176,6 +178,11 @@ extension ConfigureStrings: LogMessage {
                     Timeout value: \(timeout) is lower than the minimum, setting it
                     to the mimimum: (\(minimum))
                     """
+
+        case .sk2_required_for_swiftui_paywalls:
+            return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
+            "transactions coming from SwiftUI paywalls. You must use `.with(usesStoreKit2IfAvailable: true)` " +
+            "when configuring the SDK."
         }
     }
 

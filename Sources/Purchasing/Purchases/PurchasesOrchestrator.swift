@@ -134,7 +134,9 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
-            await storeKit2TransactionListener.listenForTransactions()
+            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+                await storeKit2TransactionListener.listenForTransactions()
+            }
         }
     }
 
