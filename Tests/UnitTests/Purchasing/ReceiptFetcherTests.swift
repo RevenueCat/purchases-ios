@@ -32,16 +32,17 @@ class BaseReceiptFetcherTests: TestCase {
         self.mockBundle = MockBundle()
         self.mockRequestFetcher = MockRequestFetcher()
         self.mockReceiptParser = MockReceiptParser()
+        self.clock = TestClock()
+
         self.mockSystemInfo = MockSystemInfo(platformInfo: nil,
                                              finishTransactions: false,
-                                             bundle: self.mockBundle)
-        self.clock = TestClock()
+                                             bundle: self.mockBundle,
+                                             clock: self.clock)
 
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.mockRequestFetcher,
                                              systemInfo: self.mockSystemInfo,
                                              receiptParser: self.mockReceiptParser,
-                                             fileReader: self.createFileReader(),
-                                             clock: self.clock)
+                                             fileReader: self.createFileReader())
     }
 
     func createFileReader() -> FileReader {

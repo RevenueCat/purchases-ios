@@ -19,7 +19,6 @@ class ReceiptFetcher {
     private let requestFetcher: StoreKitRequestFetcher
     private let receiptParser: PurchasesReceiptParser
     private let fileReader: FileReader
-    private let clock: ClockType
 
     private let lastReceiptRefreshRequest: Atomic<Date?> = nil
 
@@ -29,14 +28,12 @@ class ReceiptFetcher {
         requestFetcher: StoreKitRequestFetcher,
         systemInfo: SystemInfo,
         receiptParser: PurchasesReceiptParser = .default,
-        fileReader: FileReader = DefaultFileReader(),
-        clock: ClockType = Clock.default
+        fileReader: FileReader = DefaultFileReader()
     ) {
         self.requestFetcher = requestFetcher
         self.systemInfo = systemInfo
         self.receiptParser = receiptParser
         self.fileReader = fileReader
-        self.clock = clock
     }
 
     func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?, URL?) -> Void) {
@@ -97,7 +94,7 @@ class ReceiptFetcher {
             return false
         }
 
-        let timeSinceLastRequest = DispatchTimeInterval(self.clock.now.timeIntervalSince(lastRefresh))
+        let timeSinceLastRequest = DispatchTimeInterval(self.systemInfo.clock.now.timeIntervalSince(lastRefresh))
         return timeSinceLastRequest < ReceiptRefreshPolicy.alwaysRefreshThrottleDuration
     }
 
@@ -155,7 +152,7 @@ private extension ReceiptFetcher {
     }
 
     func refreshReceipt(_ completion: @escaping (Data, URL?) -> Void) {
-        self.lastReceiptRefreshRequest.value = self.clock.now
+        self.lastReceiptRefreshRequest.value = self.systemInfo.clock.now
 
         self.requestFetcher.fetchReceiptData {
             completion(self.receiptData() ?? Data(), self.receiptURL)

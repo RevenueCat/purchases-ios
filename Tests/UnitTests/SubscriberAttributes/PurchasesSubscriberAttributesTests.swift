@@ -33,7 +33,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
-    let systemInfo: SystemInfo = MockSystemInfo(finishTransactions: true)
+    var systemInfo: MockSystemInfo!
+    var clock: TestClock!
     var mockReceiptParser: MockReceiptParser!
     var mockAttributionFetcher: MockAttributionFetcher!
     var mockAttributionPoster: AttributionPoster!
@@ -67,7 +68,10 @@ class PurchasesSubscriberAttributesTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.userDefaults = UserDefaults(suiteName: "TestDefaults")
+        self.clock = TestClock()
+        self.systemInfo = MockSystemInfo(finishTransactions: true, clock: self.clock)
+
         self.mockDeviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                                userDefaults: self.userDefaults)
 
