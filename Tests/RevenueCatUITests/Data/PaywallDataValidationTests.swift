@@ -61,6 +61,22 @@ class PaywallDataValidationTests: TestCase {
         expect(result.error) == .invalidVariables(["unrecognized_variable", "future_variable"])
     }
 
+    func testUnrecognizedVariableInFeaturesGeneratesDefaultPaywall() throws {
+        let originalOffering = TestData.offeringWithMultiPackagePaywall
+        var localization = try XCTUnwrap(originalOffering.paywall?.localizedConfiguration)
+        localization.features = [
+            .init(title: "{{ future_variable }}", content: "{{ new_variable }}"),
+            .init(title: "{{ another_one }}"),
+        ]
+
+        let offering = originalOffering.with(localization: localization)
+        let result = offering.validatedPaywall()
+
+        Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
+        Self.snapshot(result.displayablePaywall)
+
+        expect(result.error) == .invalidVariables(["future_variable", "new_variable", "another_one"])
+    }
 }
 
 // MARK: -

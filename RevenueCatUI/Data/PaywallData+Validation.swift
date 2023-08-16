@@ -133,6 +133,9 @@ private extension PaywallLocalizedConfiguration {
         return Self
             .allProperties
             .compactMap { self[keyPath: $0] }
+        + self.features.flatMap {
+            [$0.title, $0.content].compactMap { $0 }
+        }
     }
 
 }

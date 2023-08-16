@@ -55,6 +55,8 @@ public protocol PaywallLocalizedConfiguration {
     var offerDetailsWithIntroOffer: String? { get }
     /// The name representing each of the packages, most commonly a variable.
     var offerName: String? { get }
+    /// An optional list of features that describe this paywall.
+    var features: [PaywallData.LocalizedConfiguration.Feature] { get }
 
 }
 
