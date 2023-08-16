@@ -28,6 +28,8 @@ extension Dictionary {
 
 }
 
+// MARK: - Merging
+
 extension Dictionary {
 
     /// Merge strategy to use for any duplicate keys.
@@ -100,6 +102,8 @@ extension Dictionary {
 
 }
 
+// MARK: - Mapping
+
 extension Dictionary {
 
     func mapKeys<NewKey: Hashable>(_ transformer: (Key) -> NewKey) -> [NewKey: Value] {
@@ -120,6 +124,8 @@ extension Dictionary {
 
 }
 
+// MARK: - Creation
+
 extension Sequence {
 
     /// Creates a `Dictionary` with the values in the receiver sequence, and the keys provided by `key`.
@@ -134,6 +140,26 @@ extension Sequence {
             self.lazy.map { (key($0), $0) },
             uniquingKeysWith: { (_, last) in last }
         )
+    }
+
+}
+
+// MARK: - Removing
+
+extension Dictionary {
+
+    /// - Returns: the number of removed keys
+    @discardableResult
+    mutating func removeAll(where shouldRemove: (Value) -> Bool) -> Int {
+        let keysToRemove = self
+            .filter { _, value in shouldRemove(value) }
+            .map(\.key)
+
+        for key in keysToRemove {
+            self.removeValue(forKey: key)
+        }
+
+        return keysToRemove.count
     }
 
 }

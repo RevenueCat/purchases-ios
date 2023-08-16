@@ -13,6 +13,8 @@
 
 import Foundation
 
+// MARK: - Assertions
+
 /// Equivalent to `assert`, but will only evaluate condition during RC tests.
 /// - Note: this is a no-op in release builds.
 @inline(__always)
@@ -29,6 +31,24 @@ func RCTestAssert(
     #endif
 }
 
+/// Equivalent to `assert`, but will only evaluate condition during RC integration tests.
+/// - Note: this is a no-op in release builds.
+@inline(__always)
+func RCIntegrationTestAssert(
+    _ condition: @autoclosure () -> Bool,
+    _ message: @autoclosure () -> String,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    #if DEBUG
+    guard ProcessInfo.isRunningIntegrationTests else { return }
+
+    precondition(condition(), message(), file: file, line: line)
+    #endif
+}
+
+// MARK: - Main Thread checks
+
 @inline(__always)
 func RCTestAssertNotMainThread(
     function: StaticString = #function,
@@ -37,6 +57,22 @@ func RCTestAssertNotMainThread(
 ) {
     #if DEBUG
     RCTestAssert(
+        !Thread.isMainThread,
+        "\(function) should not be called from the main thread",
+        file: file,
+        line: line
+    )
+    #endif
+}
+
+@inline(__always)
+func RCIntegrationTestAssertNotMainThread(
+    function: StaticString = #function,
+    file: StaticString = #file,
+    line: UInt = #line
+) {
+    #if DEBUG
+    RCIntegrationTestAssert(
         !Thread.isMainThread,
         "\(function) should not be called from the main thread",
         file: file,

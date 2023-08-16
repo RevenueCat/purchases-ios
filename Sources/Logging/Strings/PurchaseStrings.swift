@@ -31,6 +31,8 @@ enum PurchaseStrings {
     case entitlements_revoked_syncing_purchases(productIdentifiers: [String])
     case entitlement_expired_outside_grace_period(expiration: Date, reference: Date)
     case finishing_transaction(StoreTransactionType)
+    case saving_posted_transaction(StoreTransactionType)
+    case pruned_old_posted_transactions_from_cache(count: Int)
     case finish_transaction_skipped_because_its_missing_in_non_subscriptions(StoreTransactionType,
                                                                              [NonSubscriptionTransaction])
     case purchasing_with_observer_mode_and_finish_transactions_false_warning
@@ -131,6 +133,13 @@ extension PurchaseStrings: LogMessage {
         case let .finishing_transaction(transaction):
             return "Finishing transaction '\(transaction.transactionIdentifier)' " +
             "for product '\(transaction.productIdentifier)'"
+
+        case let .saving_posted_transaction(transaction):
+            return "Storing transaction '\(transaction.transactionIdentifier)' " +
+                   "for product '\(transaction.productIdentifier)' in cache"
+
+        case let .pruned_old_posted_transactions_from_cache(count):
+            return "Removed \(count) transactions from cache"
 
         case let .finish_transaction_skipped_because_its_missing_in_non_subscriptions(transaction, nonSubscriptions):
             return "Transaction '\(transaction.transactionIdentifier)' will not be finished: " +

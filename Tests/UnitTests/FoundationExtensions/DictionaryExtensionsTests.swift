@@ -259,3 +259,57 @@ class DictionaryExtensionsMapKeysTests: TestCase {
     }
 
 }
+
+class DictionaryExtensionsRemoveTests: TestCase {
+
+    private typealias Dict = [String: Int]
+
+    func testRemoveNothingFromEmptyDictionary() {
+        var dict = Dict()
+        let count = dict.removeAll { _ in false }
+
+        expect(dict).to(beEmpty())
+        expect(count) == 0
+    }
+
+    func testRemoveAllFromEmptyDictionary() {
+        var dict = Dict()
+        let count = dict.removeAll { _ in true }
+
+        expect(dict).to(beEmpty())
+        expect(count) == 0
+    }
+
+    func testKeepOneElement() {
+        var dict = ["1": 1]
+        let count = dict.removeAll { _ in false }
+
+        expect(dict) == ["1": 1]
+        expect(count) == 0
+    }
+
+    func testRemoveOneElement() {
+        var dict = ["1": 1]
+        let count = dict.removeAll { _ in true }
+
+        expect(dict).to(beEmpty())
+        expect(count) == 1
+    }
+
+    func testRemoveSomeElements() {
+        var dict = ["1": 1, "2": 2, "3": 3]
+        let count = dict.removeAll { $0.isMultiple(of: 2) }
+
+        expect(dict) == ["1": 1, "3": 3]
+        expect(count) == 1
+    }
+
+    func testRemoveAllElements() {
+        var dict = ["1": 1, "2": 2, "3": 3]
+        let count = dict.removeAll { _ in true }
+
+        expect(dict).to(beEmpty())
+        expect(count) == 3
+    }
+
+}
