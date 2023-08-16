@@ -65,7 +65,7 @@ struct OfferingsList: View {
                     } label: {
                         VStack(alignment: .leading) {
                             Text(offering.serverDescription)
-                            Text(verbatim: "Template: \(paywall.template.name)")
+                            Text(verbatim: "Template: \(paywall.templateName)")
                         }
                     }
                     .buttonStyle(.plain)

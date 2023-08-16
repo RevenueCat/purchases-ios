@@ -46,8 +46,13 @@ struct SamplePaywallsList: View {
                 case let .customPaywall(mode):
                     CustomPaywall(mode: mode)
 
-                case .defaultTemplate:
+                case .missingPaywall:
                     PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
+                                introEligibility: Self.introEligibility,
+                                purchaseHandler: .default())
+
+                case .unrecognizedPaywall:
+                    PaywallView(offering: Self.loader.offeringWithUnrecognizedPaywall(),
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
                 }
@@ -92,9 +97,15 @@ struct SamplePaywallsList: View {
                 }
 
                 Button {
-                    self.display = .defaultTemplate
+                    self.display = .missingPaywall
                 } label: {
-                    TemplateLabel(name: "Default template", icon: "exclamationmark.triangle")
+                    TemplateLabel(name: "Offering with no paywall", icon: "exclamationmark.triangle")
+                }
+
+                Button {
+                    self.display = .unrecognizedPaywall
+                } label: {
+                    TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
             }
         }
@@ -141,7 +152,8 @@ private extension SamplePaywallsList {
         case template(PaywallTemplate, PaywallViewMode)
         case customFont(PaywallTemplate)
         case customPaywall(PaywallViewMode)
-        case defaultTemplate
+        case missingPaywall
+        case unrecognizedPaywall
 
     }
 
@@ -160,8 +172,11 @@ extension SamplePaywallsList.Display: Identifiable {
         case .customPaywall:
             return "custom-paywall"
 
-        case .defaultTemplate:
-            return "default"
+        case .missingPaywall:
+            return "missing"
+
+        case .unrecognizedPaywall:
+            return "unrecognized"
         }
     }
 

@@ -169,6 +169,25 @@ class VariablesTests: TestCase {
         expect(result) == "$53.99 ($4.49/mo)"
     }
 
+    // MARK: - validation
+
+    func testNoUnrecognizedVariables() {
+        let allVariables = "{{ app_name }} {{ price }} {{ price_per_period }} " +
+        "{{ total_price_and_per_month }} {{ product_name }} {{ sub_period }} " +
+        "{{ sub_price_per_month }} {{ sub_duration }} {{ sub_offer_duration }} " +
+        "{{ sub_offer_price }}"
+
+        expect("".unrecognizedVariables()).to(beEmpty())
+        expect(allVariables.unrecognizedVariables()).to(beEmpty())
+    }
+
+    func testUnrecognizedVariable() {
+        expect("This contains {{ multiple }} unrecognized {{ variables }}".unrecognizedVariables()) == [
+            "multiple",
+            "variables"
+        ]
+    }
+
 }
 
 // MARK: - Private
