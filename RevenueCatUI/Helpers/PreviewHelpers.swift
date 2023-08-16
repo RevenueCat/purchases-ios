@@ -57,8 +57,11 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
         presentInSheet: Bool = false,
         creator: @escaping Creator
     ) {
-        self.configuration = offering.paywall!.configuration(
+        let paywall = offering.paywall!
+
+        self.configuration = paywall.configuration(
             for: offering,
+            template: PaywallTemplate(rawValue: paywall.templateName)!,
             mode: mode,
             fonts: DefaultPaywallFontProvider(),
             locale: .current
