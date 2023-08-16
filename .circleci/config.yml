@@ -68,7 +68,6 @@ commands:
           fetch_submodules: false
           fetch_depth: 1
           depth: 1
-          debug: true
 
 
   install-and-create-sim:
