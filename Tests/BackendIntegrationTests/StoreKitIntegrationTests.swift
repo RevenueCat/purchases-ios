@@ -52,11 +52,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testCanPurchasePackage() async throws {
         let package = try await self.monthlyPackage
-        try await self.purchaseMonthlyOffering()
+        let transaction = try await XCTAsyncUnwrap(try await self.purchaseMonthlyOffering().transaction)
 
         self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
+                transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
+                transactionDate: transaction.purchaseDate,
                 offeringID: package.offeringIdentifier
             )
         )
@@ -88,11 +90,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             productIdentifier: package.storeProduct.productIdentifier
         )
 
-        try await self.purchaseMonthlyProduct()
+        let transaction = try await XCTAsyncUnwrap(try await self.purchaseMonthlyProduct().transaction)
 
         self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
+                transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
+                transactionDate: transaction.purchaseDate,
                 offeringID: package.offeringIdentifier
             )
         )
