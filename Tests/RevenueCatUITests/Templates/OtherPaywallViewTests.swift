@@ -16,7 +16,7 @@ import SnapshotTesting
 class OtherPaywallViewTests: BaseSnapshotTest {
 
     func testDefaultPaywall() {
-        let view = PaywallView(offering: Self.offeringWithNoPaywall,
+        let view = PaywallView(offering: TestData.offeringWithNoPaywall,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
 
@@ -24,7 +24,7 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     func testDefaultDarkModePaywall() {
-        let view = PaywallView(offering: Self.offeringWithNoPaywall,
+        let view = PaywallView(offering: TestData.offeringWithNoPaywall,
                                introEligibility: Self.eligibleChecker,
                                purchaseHandler: Self.purchaseHandler)
             .environment(\.colorScheme, .dark)
@@ -46,14 +46,6 @@ class OtherPaywallViewTests: BaseSnapshotTest {
         LoadingPaywallView(mode: .condensedCard)
             .snapshot(size: Self.cardSize)
     }
-
-    private static let offeringWithNoPaywall = Offering(
-        identifier: "offering",
-        serverDescription: "Main offering",
-        metadata: [:],
-        paywall: nil,
-        availablePackages: TestData.packages
-    )
 
 }
 

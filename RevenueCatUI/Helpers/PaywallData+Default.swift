@@ -22,7 +22,7 @@ extension PaywallData {
 
     static func createDefault(with packageIdentifiers: [String]) -> Self {
         return .init(
-            template: .template2,
+            templateName: Self.defaultTemplate.rawValue,
             config: .init(
                 packages: packageIdentifiers,
                 images: .init(
@@ -37,6 +37,8 @@ extension PaywallData {
             assetBaseURL: Self.defaultTemplateBaseURL
         )
     }
+
+    static let defaultTemplate: PaywallTemplate = .template2
 
     static let appIconPlaceholder = "revenuecatui_default_paywall_app_icon"
 
