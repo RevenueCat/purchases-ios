@@ -13,13 +13,13 @@ import SwiftUI
 #endif
 
 func checkPaywallData(_ data: PaywallData) {
-    let template: PaywallTemplate = data.template
+    let templateName: String = data.templateName
     let config: PaywallData.Configuration = data.config
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
     let localization: PaywallData.LocalizedConfiguration = data.localizedConfiguration
     let assetBaseURL: URL = data.assetBaseURL
 
-    let _: PaywallData = .init(template: template,
+    let _: PaywallData = .init(templateName: templateName,
                                config: config,
                                localization: localization,
                                assetBaseURL: assetBaseURL)
@@ -141,21 +141,6 @@ func checkPaywallColor(_ color: PaywallColor) throws {
         let _: Color = color.underlyingColor
     }
     #endif
-}
-
-func checkPaywallTemplate(_ template: PaywallTemplate) {
-    switch template {
-    case .template1:
-        break
-    case .template2:
-        break
-    case .template3:
-        break
-    case .template4:
-        break
-    @unknown default:
-        break
-    }
 }
 
 func checkPaywallViewMode(_ mode: PaywallViewMode) {
