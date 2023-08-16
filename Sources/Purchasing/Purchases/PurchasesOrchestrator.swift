@@ -1116,40 +1116,42 @@ private extension PurchasesOrchestrator {
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
-        self.transactionPoster.handlePurchasedTransaction(
-            purchasedTransaction,
-            data: .init(
-                appUserID: self.appUserID,
-                presentedOfferingID: offeringID,
-                unsyncedAttributes: unsyncedAttributes,
-                aadAttributionToken: adServicesToken,
-                storefront: storefront,
-                source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                            transaction: purchasedTransaction,
-                                            restored: restored)
-            )
-        ) { result in
-            let completion: (@Sendable(Result<CustomerInfo, PurchasesError>) -> Void)? =
-            self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction)
-                .map { completion in
-                    return { @Sendable result in
-                        self.operationDispatcher.dispatchOnMainActor {
-                            completion(
-                                purchasedTransaction,
-                                result.value,
-                                result.error?.asPublicError,
-                                result.error?.isCancelledError ?? false
-                            )
+        self.operationDispatcher.dispatchOnWorkerThread {
+            self.transactionPoster.handlePurchasedTransaction(
+                purchasedTransaction,
+                data: .init(
+                    appUserID: self.appUserID,
+                    presentedOfferingID: offeringID,
+                    unsyncedAttributes: unsyncedAttributes,
+                    aadAttributionToken: adServicesToken,
+                    storefront: storefront,
+                    source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
+                                                transaction: purchasedTransaction,
+                                                restored: restored)
+                )
+            ) { result in
+                let completion: (@Sendable(Result<CustomerInfo, PurchasesError>) -> Void)? =
+                self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction)
+                    .map { completion in
+                        return { @Sendable result in
+                            self.operationDispatcher.dispatchOnMainActor {
+                                completion(
+                                    purchasedTransaction,
+                                    result.value,
+                                    result.error?.asPublicError,
+                                    result.error?.isCancelledError ?? false
+                                )
+                            }
                         }
                     }
-                }
 
-            self.handleReceiptPost(
-                result: result,
-                subscriberAttributes: unsyncedAttributes,
-                adServicesToken: adServicesToken,
-                completion: completion
-            )
+                self.handleReceiptPost(
+                    result: result,
+                    subscriberAttributes: unsyncedAttributes,
+                    adServicesToken: adServicesToken,
+                    completion: completion
+                )
+            }
         }
     }
 
