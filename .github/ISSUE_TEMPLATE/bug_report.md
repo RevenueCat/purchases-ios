@@ -22,8 +22,10 @@ A clear and concise description of what the bug is. The more detail you can prov
    3. StoreKit 2 (_disabled with `useStoreKit2IfEnabled(false)`_) (Y/N):
    4. OS version:
    5. Xcode version:
-   6. How widespread is the issue. Percentage of devices affected.
-2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue
+   6. Simulator or device:
+   7. Environment (Sandbox / TestFight / Production):
+   8. How widespread is the issue. Percentage of devices affected.
+2. [Debug logs](https://docs.revenuecat.com/docs/debugging) that reproduce the issue. Complete logs with `Purchases.logLevel = .verbose` will help us debug this issue.
 3. Steps to reproduce, with a description of expected vs. actual behavior
 4. **Other information** (e.g. stacktraces, related issues, suggestions how to fix, links for us to have context, eg. stackoverflow, etc.)
 
