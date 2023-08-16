@@ -62,6 +62,7 @@ aliases:
 commands:
   checkout:
     steps:
+      - trust-github-key
       - run: git clone --depth 1 "$CIRCLE_REPOSITORY_URL" -b "$CIRCLE_BRANCH"
 
   install-and-create-sim:
@@ -576,7 +577,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       # Bundler
       - restore_cache:
           keys:
@@ -614,7 +614,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       - update-spm-installation-commit
       - run:
           name: Deploy new version
@@ -626,7 +625,6 @@ jobs:
     steps:
       - checkout
       - install-bundle-dependencies
-      - trust-github-key
       - run:
           name: Deploy new version
           command: bundle exec fastlane push_pods
@@ -637,7 +635,6 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      - trust-github-key
       - run:
           name: Prepare next version
           command: bundle exec fastlane prepare_next_version
@@ -661,7 +658,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
@@ -672,7 +668,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
@@ -683,7 +678,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
@@ -694,7 +688,6 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - trust-github-key
       - update-carthage-installation-commit
       # Carthage
       - run:
@@ -759,7 +752,6 @@ jobs:
     steps:
       - checkout
       - setup-git-credentials
-      - trust-github-key
       - install-rubydocker-dependencies
       - run:
           name: Tag branch
@@ -770,7 +762,6 @@ jobs:
     steps:
       - checkout
       - setup-git-credentials
-      - trust-github-key
       - install-dependencies
       - run:
           name: Create automatic PR
@@ -781,7 +772,6 @@ jobs:
     steps:
       - checkout
       - setup-git-credentials
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -810,7 +800,6 @@ jobs:
     steps:
       - checkout
       - setup-git-credentials
-      - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
       - run:
