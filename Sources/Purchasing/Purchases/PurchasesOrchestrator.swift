@@ -43,7 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
-    private let purchaseCompleteCallbacksByProductID: Atomic<[String: CallbackData]> = .init([:])
+    private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
     private var unsyncedAttributes: SubscriberAttribute.Dictionary {
@@ -825,28 +825,19 @@ private extension PurchasesOrchestrator {
     /// - Parameter restored: whether the transaction state was `.restored` instead of `.purchased`.
     private func purchaseSource(
         for productIdentifier: String,
-        transaction: StoreTransaction,
         restored: Bool
     ) -> PurchaseSource {
         let initiationSource: ProductRequestData.InitiationSource = {
             // Having a purchase completed callback implies that the transation comes from an explicit call
             // to `purchase()` instead of a StoreKit transaction notification.
-            // As long as the transaction date is _after_ the completion block was added.
-            let completionBlockDate = self.purchaseCompleteCallbacksByProductID.value[productIdentifier]?
-                .creationDate
+            let hasPurchaseCallback = self.purchaseCompleteCallbacksByProductID.value.keys.contains(productIdentifier)
 
-            switch (completionBlockDate, restored) {
-            case let (.some(completionBlockDate), false):
-                if transaction.purchaseDate > completionBlockDate {
-                    return .purchase
-                } else {
-                    return .queue
-                }
-
+            switch (hasPurchaseCallback, restored) {
+            case (true, false): return .purchase
                 // Note that restores initiated through the SDK with `restorePurchases`
                 // won't use this method since those set the initiation source explicitly.
-            case (.some, true): return .restore
-            case (.none, _): return .queue
+            case (true, true): return .restore
+            case (false, _): return .queue
             }
         }()
 
@@ -916,18 +907,6 @@ extension PurchasesOrchestrator: StoreKit2StorefrontListenerDelegate {
 
 private extension PurchasesOrchestrator {
 
-    struct CallbackData {
-
-        var completion: PurchaseCompletedBlock
-        var creationDate: Date
-
-        init(_ completion: @escaping PurchaseCompletedBlock, _ creationDate: Date = Date()) {
-            self.completion = completion
-            self.creationDate = creationDate
-        }
-
-    }
-
     /// - Returns: whether the callback was added
     @discardableResult
     func addPurchaseCompletedCallback(
@@ -956,7 +935,7 @@ private extension PurchasesOrchestrator {
                 return false
             }
 
-            callbacks[productIdentifier] = .init(completion)
+            callbacks[productIdentifier] = completion
             return true
         }
     }
@@ -964,22 +943,8 @@ private extension PurchasesOrchestrator {
     func getAndRemovePurchaseCompletedCallback(
         forTransaction transaction: StoreTransaction
     ) -> PurchaseCompletedBlock? {
-        return self.purchaseCompleteCallbacksByProductID.modify { callbacks -> PurchaseCompletedBlock? in
-            guard let value = callbacks[transaction.productIdentifier] else { return nil }
-
-            if !transaction.hasKnownPurchaseDate || value.creationDate <= transaction.purchaseDate {
-                callbacks.removeValue(forKey: transaction.productIdentifier)
-                return value.completion
-            } else {
-                // This callback was added to handle a purchase _after_ the transaction was created,
-                // therefore it should not be notified.
-                Logger.verbose(Strings.purchase.paymentqueue_ignoring_callback_for_older_transaction(
-                    self,
-                    transaction,
-                    value.creationDate
-                ))
-                return nil
-            }
+        return self.purchaseCompleteCallbacksByProductID.modify {
+            return $0.removeValue(forKey: transaction.productIdentifier)
         }
     }
 
@@ -1115,7 +1080,6 @@ private extension PurchasesOrchestrator {
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,
                 source: self.purchaseSource(for: purchasedTransaction.productIdentifier,
-                                            transaction: purchasedTransaction,
                                             restored: restored)
             )
         ) { result in
