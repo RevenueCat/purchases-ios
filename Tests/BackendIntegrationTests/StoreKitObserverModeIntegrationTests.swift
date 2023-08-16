@@ -111,28 +111,6 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testSK2RenewalsPostReceiptOnlyOnceWhenSK1IsEnabled() async throws {
-        try XCTSkipIf(Self.storeKit2Setting.isEnabledAndAvailable, "Test only for SK1")
-
-        // `StoreKit2TransactionListener` is always enabled even in SK1 mode.
-        // This test ensures that we don't end up posting receipts multiple times when renewals come through.
-
-        self.testSession.timeRate = .realTime
-
-        let productID = Self.monthlyNoIntroProductID
-
-        try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
-
-        try? self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
-
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Network operation 'PostReceiptDataOperation' found with the same cache key",
-            timeout: .seconds(4),
-            pollInterval: .milliseconds(100)
-        )
-    }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

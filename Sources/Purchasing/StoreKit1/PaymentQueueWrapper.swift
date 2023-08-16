@@ -129,7 +129,7 @@ extension PaymentQueueWrapper: SKPaymentQueueDelegate {
 extension PaymentQueueWrapper: SKPaymentTransactionObserver {
 
     func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
-        // Ignored. Either `StoreKit1Wrapper` or `StoreKit2TransactionListener` will handle this.
+        // Ignored. Either `StoreKit1Wrapper` will handle this, or `StoreKit2TransactionListener` if `SK2` is enabled.
     }
 
     #if !os(watchOS)
