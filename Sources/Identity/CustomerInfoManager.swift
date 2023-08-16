@@ -374,21 +374,6 @@ private extension CustomerInfoManager {
         }
     }
 
-    private func cachedOrRequestCustomerInfoFetcher(
-        appUserID: String,
-        isAppBackgrounded: Bool
-    ) -> TransactionPosterResult.CustomerInfoFetcher {
-        return { completion in
-            if let cachedCustomerInfo = self.cachedCustomerInfo(appUserID: appUserID) {
-                completion(.success(cachedCustomerInfo))
-            } else {
-                self.requestCustomerInfo(appUserID: appUserID,
-                                         isAppBackgrounded: isAppBackgrounded,
-                                         completion: completion)
-            }
-        }
-    }
-
     private func requestCustomerInfo(appUserID: String,
                                      isAppBackgrounded: Bool,
                                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
