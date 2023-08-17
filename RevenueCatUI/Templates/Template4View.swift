@@ -107,8 +107,8 @@ struct Template4View: TemplateViewType {
 
     private var packagesScrollView: some View {
         self.packages
-            .frame(height: self.packageContentHeight)
             .scrollableIfNecessary(.horizontal)
+            .frame(height: self.packageContentHeight)
             .frame(maxWidth: .infinity)
             .onSizeChange(.horizontal) {
                 self.containerWidth = $0
