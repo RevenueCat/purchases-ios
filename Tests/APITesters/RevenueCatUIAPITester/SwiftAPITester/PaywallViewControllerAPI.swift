@@ -9,7 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     let controller = PaywallViewController()
     controller.delegate = delegate
@@ -17,7 +17,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     let _: UIViewController = PaywallViewController(offering: offering)
 }
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewController(_ controller: PaywallViewController,
