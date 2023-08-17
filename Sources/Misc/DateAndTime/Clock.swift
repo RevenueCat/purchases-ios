@@ -41,4 +41,12 @@ extension ClockType {
         }
     }
 
+    func durationSince(_ date: Date) -> TimeInterval {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+            return date.distance(to: self.now)
+        } else {
+            return date.timeIntervalSince(self.now)
+        }
+    }
+
 }
