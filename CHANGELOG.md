@@ -1,3 +1,7 @@
+## 4.25.6
+### Bugfixes
+* `Xcode 15`: fixed release build (#3034) via NachoSoto (@NachoSoto)
+
 ## 4.25.5
 ### Bugfixes
 * `PurchasesOrchestrator`: fixed callback not invoked regression during downgrades (#3028) via NachoSoto (@NachoSoto)

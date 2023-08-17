@@ -54,7 +54,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "4.25.5"
+        return "4.25.6"
     }
 
     static var systemVersion: String {
