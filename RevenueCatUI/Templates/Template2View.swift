@@ -38,6 +38,8 @@ struct Template2View: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: 10) {
+            Spacer()
+
             self.scrollableContent
                 .scrollableIfNecessary()
 
