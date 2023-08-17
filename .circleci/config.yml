@@ -283,7 +283,16 @@ commands:
               bundle exec fastlane update_carthage_commit
 
 jobs:
-  spm-release-build:
+  spm-release-build-xcode-14:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-release-build-xcode-15:
     <<: *base-job
     steps:
       - checkout
@@ -891,8 +900,10 @@ workflows:
     jobs:
       - lint:
           xcode_version: '14.3.0'
-      - spm-release-build:
+      - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
+      - spm-release-build-xcode-15:
+          xcode_version: '15.0.0'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
