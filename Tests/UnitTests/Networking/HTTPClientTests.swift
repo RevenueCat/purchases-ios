@@ -434,6 +434,39 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(self.signing.requests).to(beEmpty())
     }
 
+    func testServerSide500sWithCharsetContentType() throws {
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let errorCode = 500 + Int.random(in: 0..<50)
+
+        stub(condition: isPath(request.path)) { _ in
+            let json = "{\"code\": 5000,\"message\": \"something is broken up in the cloud\"}"
+            return HTTPStubsResponse(
+                data: json.asData,
+                statusCode: Int32(errorCode),
+                headers: [
+                    HTTPClient.ResponseHeader.contentType.rawValue: "application/json;charset=utf8"
+                ]
+            )
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: DataResponse) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+        let error = try XCTUnwrap(result?.error)
+
+        expect(error) == .errorResponse(
+            .init(code: .unknownBackendError,
+                  originalCode: 5000,
+                  message: "something is broken up in the cloud"),
+            HTTPStatusCode(rawValue: errorCode)
+        )
+        expect(error.isServerDown) == true
+    }
+
     func testServerSide500sWithUnknownBody() throws {
         let request = HTTPRequest(method: .get, path: .mockPath)
         let errorCode = 500 + Int.random(in: 0..<50)
