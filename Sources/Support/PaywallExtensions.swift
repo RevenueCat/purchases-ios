@@ -24,7 +24,10 @@ extension StoreView {
     /// Creates a view to load a collection of products from the App Store, and merchandise them using an
     /// icon and custom placeholder icon.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
-    /// the result automatically. All you need to do is to dismiss the paywall
+    /// the result automatically. All you need to do is to dismiss the paywall.
+    ///
+    /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
+    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
     public static func forOffering(
         _ offering: Offering,
         prefersPromotionalIcon: Bool = false,
@@ -48,7 +51,10 @@ extension StoreView where Icon == EmptyView, PlaceholderIcon == EmptyView {
 
     /// Creates a view to load a collection of products from the App Store, and merchandise them.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
-    /// the result automatically. All you need to do is to dismiss the paywall
+    /// the result automatically. All you need to do is to dismiss the paywall.
+    ///
+    /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
+    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
     public static func forOffering(
         _ offering: Offering,
         prefersPromotionalIcon: Bool = false
@@ -70,7 +76,10 @@ extension SubscriptionStoreView {
     /// Creates a ``SubscriptionStoreView`` from an ``Offering``
     /// with custom marketing content.
     /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
-    /// the result automatically. All you need to do is to dismiss the paywall
+    /// the result automatically. All you need to do is to dismiss the paywall.
+    ///
+    /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
+    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
     public static func forOffering(
         _ offering: Offering,
         @ViewBuilder marketingContent: () -> (Content)
@@ -90,6 +99,9 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
 
     /// Creates a ``SubscriptionStoreView`` from an ``Offering``
     /// that doesn't take a custom view to use for marketing content.
+    ///
+    /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
+    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
     public static func forOffering(_ offering: Offering) -> some View {
         return self
             .init(productIDs: offering.subscriptionProductIdentifiers)
