@@ -723,7 +723,6 @@ SWIFT_CLASS_NAMED("Configuration")
 
 
 
-
 @interface RCConfiguration (SWIFT_EXTENSION(RevenueCat))
 @end
 
@@ -761,6 +760,7 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCEntitlementVerificationMode, "EntitlementV
 };
 
 
+
 @class RCEntitlementInfos;
 @class NSDate;
 @class RCNonSubscriptionTransaction;
@@ -780,6 +780,18 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 @property (nonatomic, readonly, copy) NSDate * _Nullable latestExpirationDate;
 /// Returns all the non-subscription purchases a user has made.
 /// The purchases are ordered by purchase date in ascending order.
+/// This includes:
+/// <ul>
+///   <li>
+///     Consumables
+///   </li>
+///   <li>
+///     Non-consumables
+///   </li>
+///   <li>
+///     Non-renewing subscriptions
+///   </li>
+/// </ul>
 @property (nonatomic, readonly, copy) NSArray<RCNonSubscriptionTransaction *> * _Nonnull nonSubscriptions;
 /// Returns the fetch date of this CustomerInfo.
 @property (nonatomic, readonly, copy) NSDate * _Nonnull requestDate;
@@ -849,6 +861,7 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 
@@ -1265,14 +1278,29 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 
 
 /// Information that represents a non-subscription purchase made by a user.
+/// This can be one of these types of product:
+/// <ul>
+///   <li>
+///     Consumables
+///   </li>
+///   <li>
+///     Non-consumables
+///   </li>
+///   <li>
+///     Non-renewing subscriptions
+///   </li>
+/// </ul>
 SWIFT_CLASS_NAMED("NonSubscriptionTransaction")
 @interface RCNonSubscriptionTransaction : NSObject
 /// The product identifier.
 @property (nonatomic, readonly, copy) NSString * _Nonnull productIdentifier;
 /// The date that App Store charged the user’s account.
 @property (nonatomic, readonly, copy) NSDate * _Nonnull purchaseDate;
-/// The unique identifier for the transaction.
+/// The unique identifier for the transaction created by RevenueCat.
 @property (nonatomic, readonly, copy) NSString * _Nonnull transactionIdentifier;
+/// The unique identifier for the transaction created by the Store.
+@property (nonatomic, readonly, copy) NSString * _Nonnull storeTransactionIdentifier;
+@property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -2469,6 +2497,7 @@ SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, strong) RCPlatformInfo * _Nullable platformInfo;)
 + (RCPlatformInfo * _Nullable)platformInfo SWIFT_WARN_UNUSED_RESULT;
@@ -2482,7 +2511,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
-
 
 
 
@@ -2936,7 +2964,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong, getter=defau
 @end
 
 
-
 SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0)
 @interface RCPurchasesDiagnostics (SWIFT_EXTENSION(RevenueCat))
 /// Perform tests to ensure SDK is configured correctly.
@@ -2947,6 +2974,7 @@ SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13
 /// </ul>
 - (void)testSDKHealthWithCompletion:(void (^ _Nonnull)(NSError * _Nullable))completionHandler;
 @end
+
 
 
 
@@ -3151,6 +3179,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 @property (nonatomic, readonly, copy) NSLocale * _Nonnull priceLocale SWIFT_AVAILABILITY(macos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(watchos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(tvos,unavailable,message="Use localizedPriceString instead") SWIFT_AVAILABILITY(ios,unavailable,message="Use localizedPriceString instead");
 @end
 
+
+@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
+- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
+/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
+@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
+@end
+
 @class NSDecimalNumber;
 
 @interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
@@ -3183,13 +3218,6 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStoreProductType, "ProductType", open) {
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryPrice</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
-@end
-
-
-@interface RCStoreProduct (SWIFT_EXTENSION(RevenueCat))
-- (nonnull instancetype)initWithSk1Product:(SKProduct * _Nonnull)sk1Product;
-/// Returns the <code>SKProduct</code> if this <code>StoreProduct</code> represents a <code>StoreKit.SKProduct</code>.
-@property (nonatomic, readonly, strong) SKProduct * _Nullable sk1Product;
 @end
 
 enum RCPaymentMode : NSInteger;
