@@ -27,9 +27,7 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
-                AppContentView()
-            }
+            AppContentView()
         }
     }
 
