@@ -2514,7 +2514,6 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 
-
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 - (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
 - (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
@@ -2612,6 +2611,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode;
 @end
+
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
