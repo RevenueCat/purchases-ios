@@ -14,7 +14,7 @@ import UIKit
 /// A view controller for displaying `PaywallData` for an `Offering`.
 ///
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewController)
 public final class PaywallViewController: UIViewController {
 
@@ -64,7 +64,7 @@ public final class PaywallViewController: UIViewController {
 }
 
 /// Delegate for ``PaywallViewController``.
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewControllerDelegate)
 public protocol PaywallViewControllerDelegate: AnyObject {
 

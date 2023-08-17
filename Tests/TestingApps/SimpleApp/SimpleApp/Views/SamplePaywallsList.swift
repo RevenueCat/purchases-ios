@@ -76,7 +76,7 @@ struct SamplePaywallsList: View {
                         self.display = .customFont(template)
                     } label: {
                         TemplateLabel(name: "Custom font", icon: "textformat")
-                            .italic()
+                            .font(.body.italic())
                     }
                 }
             }

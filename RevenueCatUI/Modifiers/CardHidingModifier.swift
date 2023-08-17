@@ -41,9 +41,10 @@ private struct CardHidingModifier: ViewModifier {
                 .padding(.vertical)
 
         case .condensedCard:
+            // "Hidden view" so it doesn't contribute to size calculation
             Rectangle()
-                // "Hidden view" so it doesn't contribute to size calculation
-                .frame(height: 0)
+                .frame(height: VersionDetector.iOS15 ? 1 : 0) // Note: height "0" breaks iOS 15
+                .hidden()
                 .frame(maxWidth: .infinity)
                 .overlay(alignment: .bottom) {
                     // Content is displayed as an overlay so it's rendered over user's content
