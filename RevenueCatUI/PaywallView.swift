@@ -20,6 +20,8 @@ public struct PaywallView: View {
     @State
     private var offering: Offering?
     @State
+    private var customerInfo: CustomerInfo?
+    @State
     private var error: NSError?
 
     /// Create a view that loads the `Offerings.current`.
@@ -32,6 +34,7 @@ public struct PaywallView: View {
     ) {
         self.init(
             offering: nil,
+            customerInfo: nil,
             fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
@@ -48,6 +51,7 @@ public struct PaywallView: View {
     ) {
         self.init(
             offering: offering,
+            customerInfo: nil,
             fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
@@ -56,12 +60,14 @@ public struct PaywallView: View {
 
     init(
         offering: Offering?,
+        customerInfo: CustomerInfo?,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
         self._offering = .init(initialValue: offering)
+        self._customerInfo = .init(initialValue: customerInfo)
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.mode = mode
@@ -79,8 +85,9 @@ public struct PaywallView: View {
     private var content: some View {
         VStack { // Necessary to work around FB12674350 and FB12787354
             if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
-                if let offering = self.offering {
+                if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
+                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: checker,
                                      purchaseHandler: purchaseHandler)
@@ -97,8 +104,11 @@ public struct PaywallView: View {
                                 guard let offering = try await Purchases.shared.offerings().current else {
                                     throw PaywallError.noCurrentOffering
                                 }
-
                                 self.offering = offering
+
+                                if self.customerInfo == nil {
+                                    self.customerInfo = try await Purchases.shared.customerInfo()
+                                }
                             } catch let error as NSError {
                                 self.error = error
                             }
@@ -113,6 +123,7 @@ public struct PaywallView: View {
     @ViewBuilder
     private func paywallView(
         for offering: Offering,
+        activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
@@ -121,6 +132,7 @@ public struct PaywallView: View {
 
         let paywallView = LoadedOfferingPaywallView(
             offering: offering,
+            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             paywall: paywall,
             template: template,
             mode: self.mode,
@@ -151,6 +163,7 @@ public struct PaywallView: View {
 struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
+    private let activelySubscribedProductIdentifiers: Set<String>
     private let paywall: PaywallData
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
@@ -166,6 +179,7 @@ struct LoadedOfferingPaywallView: View {
 
     init(
         offering: Offering,
+        activelySubscribedProductIdentifiers: Set<String>,
         paywall: PaywallData,
         template: PaywallTemplate,
         mode: PaywallViewMode,
@@ -174,6 +188,7 @@ struct LoadedOfferingPaywallView: View {
         purchaseHandler: PurchaseHandler
     ) {
         self.offering = offering
+        self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
         self.paywall = paywall
         self.template = template
         self.mode = mode
@@ -187,6 +202,7 @@ struct LoadedOfferingPaywallView: View {
     var body: some View {
         let view = self.paywall
             .createView(for: self.offering,
+                        activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
                         template: self.template,
                         mode: self.mode,
                         fonts: self.fonts,
@@ -227,6 +243,7 @@ struct PaywallView_Previews: PreviewProvider {
             ForEach(Self.modes, id: \.self) { mode in
                 PaywallView(
                     offering: offering,
+                    customerInfo: TestData.customerInfo,
                     mode: mode,
                     introEligibility: PreviewHelpers.introEligibilityChecker,
                     purchaseHandler: PreviewHelpers.purchaseHandler

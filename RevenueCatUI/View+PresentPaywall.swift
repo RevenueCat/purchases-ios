@@ -115,14 +115,15 @@ private struct PresentingPaywallModifier: ViewModifier {
     var purchaseHandler: PurchaseHandler?
 
     @State
-    private var isDisplayed = false
+    private var state: (displayed: Bool, customerInfo: CustomerInfo?) = (false, nil)
 
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: self.$isDisplayed) {
+            .sheet(isPresented: self.$state.displayed) {
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
+                        customerInfo: nil,
                         fonts: self.fontProvider,
                         introEligibility: self.introEligibility ?? .default(),
                         purchaseHandler: self.purchaseHandler ?? .default()
@@ -135,7 +136,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                     .toolbar {
                         ToolbarItem(placement: .destructiveAction) {
                             Button {
-                                self.isDisplayed = false
+                                self.state.displayed = false
                             } label: {
                                 Image(systemName: "xmark")
                             }
@@ -151,7 +152,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 if self.shouldDisplay(info) {
                     Logger.debug(Strings.displaying_paywall)
 
-                    self.isDisplayed = true
+                    self.state = (displayed: true, customerInfo: info)
                 } else {
                     Logger.debug(Strings.not_displaying_paywall)
                 }

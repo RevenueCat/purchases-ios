@@ -25,6 +25,7 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         try PaywallView(
             offering: Self.offering.withLocalImages,
+            customerInfo: nil,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: handler
         )
@@ -48,6 +49,7 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         try PaywallView(
             offering: Self.offering.withLocalImages,
+            customerInfo: nil,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
