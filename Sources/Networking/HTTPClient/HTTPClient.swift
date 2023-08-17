@@ -604,7 +604,8 @@ private extension VerifiedHTTPResponse {
 private extension HTTPResponse where Body == Data {
 
     func parseUnsuccessfulResponse() -> NetworkError {
-        let isJSON = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType) == "application/json"
+        let contentType = self.value(forHeaderField: HTTPClient.ResponseHeader.contentType) ?? ""
+        let isJSON = contentType.starts(with: "application/json")
 
         return .errorResponse(
             isJSON
