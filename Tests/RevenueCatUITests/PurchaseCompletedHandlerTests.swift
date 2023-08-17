@@ -13,15 +13,9 @@ import XCTest
 
 #if !os(macOS)
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class PurchaseCompletedHandlerTests: TestCase {
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-    }
 
     func testOnPurchaseCompletedWithCancellation() throws {
         let handler: PurchaseHandler = .cancelling()
