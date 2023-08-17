@@ -1389,6 +1389,10 @@ internal extension Purchases {
         return self.paymentQueueWrapper.sk1Wrapper != nil
     }
 
+    var storeKit2Setting: StoreKit2Setting {
+        return self.systemInfo.storeKit2Setting
+    }
+
     #if DEBUG
 
     /// - Returns: the parsed `AppleReceipt`
@@ -1452,10 +1456,6 @@ internal extension Purchases {
 
     var offlineCustomerInfoEnabled: Bool {
         return self.backend.offlineCustomerInfoEnabled
-    }
-
-    var storeKit2Setting: StoreKit2Setting {
-        return self.systemInfo.storeKit2Setting
     }
 
     var publicKey: Signing.PublicKey? {
