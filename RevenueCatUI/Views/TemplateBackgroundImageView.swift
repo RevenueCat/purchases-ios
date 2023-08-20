@@ -41,7 +41,7 @@ private extension PaywallViewMode {
     var shouldDisplayBackground: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .overlay, .condensedOverlay: return false
         }
     }
 

@@ -133,7 +133,7 @@ extension TemplateViewConfiguration {
         switch self.mode {
         case .fullScreen:
             self.backgroundContent
-        case .card, .condensedCard:
+        case .overlay, .condensedOverlay:
             self.backgroundContent
             #if canImport(UIKit)
                 .roundedCorner(

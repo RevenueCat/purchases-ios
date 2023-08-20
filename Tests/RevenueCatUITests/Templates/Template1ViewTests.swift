@@ -26,7 +26,7 @@ class Template1ViewTests: BaseSnapshotTest {
 
     func testCardPaywall() {
         PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .card,
+                    mode: .overlay,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
         .snapshot(size: Self.cardSize)
@@ -34,7 +34,7 @@ class Template1ViewTests: BaseSnapshotTest {
 
     func testCondensedCardPaywall() {
         PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .condensedCard,
+                    mode: .condensedOverlay,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
         .snapshot(size: Self.cardSize)

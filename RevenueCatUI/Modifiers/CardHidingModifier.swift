@@ -35,12 +35,12 @@ private struct CardHidingModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         switch self.configuration.mode {
-        case .fullScreen, .card:
+        case .fullScreen, .overlay:
             // These modes don't support hiding the content
             content
                 .padding(.vertical)
 
-        case .condensedCard:
+        case .condensedOverlay:
             // "Hidden view" so it doesn't contribute to size calculation
             Rectangle()
                 .frame(height: VersionDetector.iOS15 ? 1 : 0) // Note: height "0" breaks iOS 15

@@ -55,7 +55,7 @@ struct Template4View: TemplateViewType {
                     #endif
             }
 
-        case .card, .condensedCard:
+        case .overlay, .condensedOverlay:
             self.cardContent
         }
     }
@@ -342,7 +342,7 @@ private extension PaywallViewMode {
     var shouldDisplayPackages: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .overlay, .condensedOverlay: return false
         }
     }
 

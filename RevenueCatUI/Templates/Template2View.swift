@@ -266,14 +266,14 @@ private extension PaywallViewMode {
     var shouldDisplayPackages: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .overlay, .condensedOverlay: return false
         }
     }
 
     var shouldDisplayInlineOfferDetails: Bool {
         switch self {
         case .fullScreen: return false
-        case .card, .condensedCard: return true
+        case .overlay, .condensedOverlay: return true
         }
     }
 

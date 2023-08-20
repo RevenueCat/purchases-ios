@@ -30,7 +30,7 @@ struct SamplePaywallsList: View {
                                     introEligibility: Self.introEligibility,
                                     purchaseHandler: .default())
 
-                    case .card, .condensedCard:
+                    case .overlay, .condensedOverlay:
                         CustomPaywall(offering: Self.loader.offering(for: template),
                                       mode: mode,
                                       introEligibility: Self.introEligibility,
@@ -83,17 +83,17 @@ struct SamplePaywallsList: View {
 
             Section("Other") {
                 Button {
-                    self.display = .customPaywall(.card)
+                    self.display = .customPaywall(.overlay)
                 } label: {
                     TemplateLabel(name: "Custom + card",
-                                  icon: PaywallViewMode.card.icon)
+                                  icon: PaywallViewMode.overlay.icon)
                 }
 
                 Button {
-                    self.display = .customPaywall(.condensedCard)
+                    self.display = .customPaywall(.condensedOverlay)
                 } label: {
                     TemplateLabel(name: "Custom + condensed card",
-                                  icon: PaywallViewMode.condensedCard.icon)
+                                  icon: PaywallViewMode.condensedOverlay.icon)
                 }
 
                 Button {
@@ -204,8 +204,8 @@ private extension PaywallViewMode {
     var icon: String {
         switch self {
         case .fullScreen: return "iphone"
-        case .card: return "lanyardcard"
-        case .condensedCard: return "ruler"
+        case .overlay: return "lanyardcard"
+        case .condensedOverlay: return "ruler"
         }
     }
 
@@ -213,9 +213,9 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen:
             return "Fullscreen"
-        case .card:
+        case .overlay:
             return "Card"
-        case .condensedCard:
+        case .condensedOverlay:
             return "Condensed Card"
         }
     }
