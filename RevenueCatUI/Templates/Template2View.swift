@@ -90,8 +90,8 @@ struct Template2View: TemplateViewType {
                 self.packages
                     .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
                     .hideOverlayContent(self.configuration,
-                                     hide: !self.displayingAllPlans,
-                                     offset: self.containerHeight)
+                                        hide: !self.displayingAllPlans,
+                                        offset: self.containerHeight)
             }
         }
         .frame(maxHeight: .infinity)

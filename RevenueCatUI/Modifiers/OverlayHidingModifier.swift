@@ -17,8 +17,8 @@ extension View {
         offset: CGFloat
     ) -> some View {
         return self.modifier(OverlayHidingModifier(configuration: configuration,
-                                                hide: hide,
-                                                offset: offset))
+                                                   hide: hide,
+                                                   offset: offset))
     }
 
 }
