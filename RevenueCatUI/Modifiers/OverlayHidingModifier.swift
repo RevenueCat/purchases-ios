@@ -1,5 +1,5 @@
 //
-//  CardHidingModifier.swift
+//  OverlayHidingModifier.swift
 //
 //
 //  Created by Nacho Soto on 8/9/23.
@@ -11,12 +11,12 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
 
-    func hideCardContent(
+    func hideOverlayContent(
         _ configuration: TemplateViewConfiguration,
         hide: Bool,
         offset: CGFloat
     ) -> some View {
-        return self.modifier(CardHidingModifier(configuration: configuration,
+        return self.modifier(OverlayHidingModifier(configuration: configuration,
                                                 hide: hide,
                                                 offset: offset))
     }
@@ -24,7 +24,7 @@ extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct CardHidingModifier: ViewModifier {
+private struct OverlayHidingModifier: ViewModifier {
 
     @State
     private var height: CGFloat = 10

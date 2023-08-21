@@ -49,8 +49,8 @@ extension PaywallViewMode {
     var identifier: String {
         switch self {
         case .fullScreen: return "full_screen"
-        case .overlay: return "card"
-        case .condensedOverlay: return "condensed_card"
+        case .overlay: return "overlay"
+        case .condensedOverlay: return "condensed_overlay"
         }
     }
 

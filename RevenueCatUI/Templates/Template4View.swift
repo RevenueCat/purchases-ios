@@ -44,7 +44,7 @@ struct Template4View: TemplateViewType {
             ZStack(alignment: .bottom) {
                 TemplateBackgroundImageView(configuration: self.configuration)
 
-                self.cardContent
+                self.overlayContent
                     .edgesIgnoringSafeArea(.bottom)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                     .background(self.configuration.colors.backgroundColor)
@@ -56,12 +56,12 @@ struct Template4View: TemplateViewType {
             }
 
         case .overlay, .condensedOverlay:
-            self.cardContent
+            self.overlayContent
         }
     }
 
     @ViewBuilder
-    var cardContent: some View {
+    var overlayContent: some View {
         VStack(spacing: Self.verticalPadding) {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedPackage.localization.title))
@@ -75,7 +75,7 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
-                    .hideCardContent(self.configuration,
+                    .hideOverlayContent(self.configuration,
                                      hide: !self.displayingAllPlans,
                                      offset: self.packageContentHeight)
             }

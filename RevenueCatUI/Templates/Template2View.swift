@@ -89,7 +89,7 @@ struct Template2View: TemplateViewType {
             } else {
                 self.packages
                     .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
-                    .hideCardContent(self.configuration,
+                    .hideOverlayContent(self.configuration,
                                      hide: !self.displayingAllPlans,
                                      offset: self.containerHeight)
             }
