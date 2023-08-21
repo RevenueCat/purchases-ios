@@ -259,7 +259,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
     }
 
-    var fetchToken: String { return self.receiptData.asFetchToken }
+    var fetchToken: String { return String(data: self.receiptData, encoding: .utf8) ?? "" }
 
 }
 
