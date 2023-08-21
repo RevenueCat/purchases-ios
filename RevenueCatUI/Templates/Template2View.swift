@@ -5,6 +5,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
+    
     let configuration: TemplateViewConfiguration
 
     @State
@@ -41,7 +42,10 @@ struct Template2View: TemplateViewType {
             Spacer()
 
             self.scrollableContent
-                .scrollableIfNecessary()
+                // Disabling in overlay mode here because of animation issues with ViewThatFits
+                // Scrolling is enabled in overlay mode in the packages
+                // Bonus is that CTA stays visible and doesn't scroll
+                .scrollableIfNecessary(enabled: configuration.mode == .fullScreen)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails {
                 self.offerDetails(package: self.selectedPackage, selected: false)
@@ -83,18 +87,33 @@ struct Template2View: TemplateViewType {
                 Spacer()
             }
 
-            if self.configuration.mode.shouldDisplayPackages {
-                self.packages
+            VStack {
+                self.packagesScrollHack
+                        
                 Spacer()
-            } else {
-                self.packages
-                    .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
-                    .hideFooterContent(self.configuration,
-                                       hide: !self.displayingAllPlans,
-                                       offset: self.containerHeight)
             }
+            // TODO: This is really bad but should be capped when in overlay mode so scrolls
+            .frame(maxHeight: configuration.mode == .fullScreen ? nil : 400)
+            .hideFooterContent(self.configuration,
+                             hide: !self.configuration.mode.shouldDisplayPackages && !self.displayingAllPlans)
         }
         .frame(maxHeight: .infinity)
+    }
+
+    /// Hack because scrollableIfNecessary() doesn't work on iOS 15 because of unknown reason
+    private var packagesScrollHack: some View {
+        Group {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                self.packages
+                    // Another hack because bounce animation temporarily clips top package a little bits
+                    .padding(.top, 5)
+                    .scrollableIfNecessary()
+            } else {
+                ScrollView {
+                    self.packages
+                }
+            }
+        }
     }
 
     private var packages: some View {

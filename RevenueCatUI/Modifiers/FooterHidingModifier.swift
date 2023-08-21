@@ -13,12 +13,10 @@ extension View {
 
     func hideFooterContent(
         _ configuration: TemplateViewConfiguration,
-        hide: Bool,
-        offset: CGFloat
+        hide: Bool
     ) -> some View {
         return self.modifier(FooterHidingModifier(configuration: configuration,
-                                                  hide: hide,
-                                                  offset: offset))
+                                                hide: hide))
     }
 
 }
@@ -31,7 +29,6 @@ private struct FooterHidingModifier: ViewModifier {
 
     var configuration: TemplateViewConfiguration
     var hide: Bool
-    var offset: CGFloat
 
     func body(content: Content) -> some View {
         switch self.configuration.mode {
@@ -41,27 +38,12 @@ private struct FooterHidingModifier: ViewModifier {
                 .padding(.vertical)
 
         case .condensedFooter:
-            // "Hidden view" so it doesn't contribute to size calculation
-            Rectangle()
-                .frame(height: VersionDetector.iOS15 ? 1 : 0) // Note: height "0" breaks iOS 15
-                .hidden()
-                .frame(maxWidth: .infinity)
-                .overlay(alignment: .bottom) {
-                    // Content is displayed as an overlay so it's rendered over user's content
-                    content
-                        .padding(.vertical)
-                        .padding(.bottom, Constants.defaultCornerRadius * 2.0)
-                        .background(self.configuration.backgroundView)
-                        .onSizeChange(.vertical) { self.height = $0 }
-                        .opacity(self.hide ? 0 : 1)
-                        .offset(
-                            y: self.hide
-                            ? self.offset
-                            : Constants.defaultCornerRadius * 3.0
-                        )
-                        .frame(height: self.hide ? 0 : nil)
-                        .blur(radius: self.hide ? Self.blurRadius : 0)
-                }
+            content
+                .onSizeChange(.vertical) { self.height = $0 }
+                .opacity(self.hide ? 0 : 1)
+                .frame(height: self.hide ? 0 : nil, alignment: .top)
+                .clipped()
+                .transition(.move(edge: .bottom))
 
         }
     }

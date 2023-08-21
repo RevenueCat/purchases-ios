@@ -111,7 +111,7 @@ struct PresentingPaywallOverlayModifier: ViewModifier {
                         if paywallShouldShow {
                             PaywallView(
                                 offering: actualOffering,
-                                mode: showToggleForMultiplePackages ? .condensedOverlay : .overlay,
+                                mode: showToggleForMultiplePackages ? .condensedFooter : .footer,
                                 fonts: self.fontProvider,
                                 introEligibility: self.introEligibility ?? .default(),
                                 purchaseHandler: self.purchaseHandler ?? .default()
