@@ -12,37 +12,37 @@ extension PaywallViewMode {
     var displayAllPlansByDefault: Bool {
         switch self {
         case .fullScreen: return true
-        case .card: return true
-        case .condensedCard: return false
+        case .footer: return true
+        case .condensedFooter: return false
         }
     }
 
     var displayAllPlansButton: Bool {
         switch self {
         case .fullScreen: return false
-        case .card: return false
-        case .condensedCard: return true
+        case .footer: return false
+        case .condensedFooter: return true
         }
     }
 
     var shouldDisplayIcon: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .footer, .condensedFooter: return false
         }
     }
 
     var shouldDisplayText: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .footer, .condensedFooter: return false
         }
     }
 
     var shouldDisplayFeatures: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .footer, .condensedFooter: return false
         }
     }
 
