@@ -203,6 +203,7 @@ platform :ios do
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'RevenueCat',
       destination: 'generic/platform=visionOS',
+      configuration: 'release',
       xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     )
   end
@@ -237,7 +238,8 @@ platform :ios do
     xcodebuild(
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'SwiftAPITester',
-      destination: 'generic/platform=iOS Simulator'
+      destination: 'generic/platform=iOS Simulator',
+      configuration: 'release',
     )
   end
 
@@ -246,7 +248,8 @@ platform :ios do
     xcodebuild(
       workspace: 'RevenueCat.xcworkspace',
       scheme: 'ObjCAPITester',
-      destination: 'generic/platform=iOS Simulator'
+      destination: 'generic/platform=iOS Simulator',
+      configuration: 'release',
     )
   end
 
@@ -256,7 +259,8 @@ platform :ios do
       project: 'Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj',
       scheme: 'SwiftAPITester',
       destination: 'generic/platform=iOS',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO",
+      configuration: 'release',
     )
   end
 
