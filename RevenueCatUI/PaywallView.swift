@@ -206,7 +206,7 @@ struct LoadedOfferingPaywallView: View {
         case .fullScreen:
             view
 
-        case .card, .condensedCard:
+        case .footer, .condensedFooter:
             view
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
@@ -264,7 +264,7 @@ private extension PaywallViewMode {
     var layout: PreviewLayout {
         switch self {
         case .fullScreen: return .device
-        case .card, .condensedCard: return .sizeThatFits
+        case .footer, .condensedFooter: return .sizeThatFits
         }
     }
 

@@ -44,7 +44,7 @@ struct Template4View: TemplateViewType {
             ZStack(alignment: .bottom) {
                 TemplateBackgroundImageView(configuration: self.configuration)
 
-                self.cardContent
+                self.footerContent
                     .edgesIgnoringSafeArea(.bottom)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                     .background(self.configuration.colors.backgroundColor)
@@ -55,13 +55,13 @@ struct Template4View: TemplateViewType {
                     #endif
             }
 
-        case .card, .condensedCard:
-            self.cardContent
+        case .footer, .condensedFooter:
+            self.footerContent
         }
     }
 
     @ViewBuilder
-    var cardContent: some View {
+    var footerContent: some View {
         VStack(spacing: Self.verticalPadding) {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedPackage.localization.title))
@@ -75,9 +75,9 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
-                    .hideCardContent(self.configuration,
-                                     hide: !self.displayingAllPlans,
-                                     offset: self.packageContentHeight)
+                    .hideFooterContent(self.configuration,
+                                       hide: !self.displayingAllPlans,
+                                       offset: self.packageContentHeight)
             }
 
             IntroEligibilityStateView(
@@ -342,7 +342,7 @@ private extension PaywallViewMode {
     var shouldDisplayPackages: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .footer, .condensedFooter: return false
         }
     }
 

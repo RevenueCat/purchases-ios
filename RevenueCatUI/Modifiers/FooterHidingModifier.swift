@@ -1,5 +1,5 @@
 //
-//  CardHidingModifier.swift
+//  FooterHidingModifier.swift
 //
 //
 //  Created by Nacho Soto on 8/9/23.
@@ -11,20 +11,20 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
 
-    func hideCardContent(
+    func hideFooterContent(
         _ configuration: TemplateViewConfiguration,
         hide: Bool,
         offset: CGFloat
     ) -> some View {
-        return self.modifier(CardHidingModifier(configuration: configuration,
-                                                hide: hide,
-                                                offset: offset))
+        return self.modifier(FooterHidingModifier(configuration: configuration,
+                                                  hide: hide,
+                                                  offset: offset))
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private struct CardHidingModifier: ViewModifier {
+private struct FooterHidingModifier: ViewModifier {
 
     @State
     private var height: CGFloat = 10
@@ -35,12 +35,12 @@ private struct CardHidingModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         switch self.configuration.mode {
-        case .fullScreen, .card:
+        case .fullScreen, .footer:
             // These modes don't support hiding the content
             content
                 .padding(.vertical)
 
-        case .condensedCard:
+        case .condensedFooter:
             // "Hidden view" so it doesn't contribute to size calculation
             Rectangle()
                 .frame(height: VersionDetector.iOS15 ? 1 : 0) // Note: height "0" breaks iOS 15

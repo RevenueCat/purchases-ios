@@ -147,9 +147,9 @@ func checkPaywallViewMode(_ mode: PaywallViewMode) {
     switch mode {
     case .fullScreen:
         break
-    case .card:
+    case .footer:
         break
-    case .condensedCard:
+    case .condensedFooter:
         break
     @unknown default:
         break
