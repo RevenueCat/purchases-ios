@@ -91,8 +91,8 @@ struct Template2View: TemplateViewType {
 
                 Spacer()
             }
-            // TODO: This is really bad but should be capped when in overlay mode so scrolls
-            .frame(maxHeight: configuration.mode == .fullScreen ? nil : 400)
+            // Sets a max footer height so there is enough room for paywall content above
+            .frame(maxHeight: configuration.mode == .fullScreen ? nil : Constants.maxFooterHeight)
             .hideFooterContent(self.configuration,
                                hide: !self.configuration.mode.shouldDisplayPackages && !self.displayingAllPlans)
         }

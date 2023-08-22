@@ -16,6 +16,8 @@ enum Constants {
 
     static let defaultCornerRadius: CGFloat = 20
 
+    static let maxFooterHeight: CGFloat = 400
+
     /// For UI elements that wouldn't make sense to keep scaling up forever
     static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
 
