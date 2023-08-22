@@ -52,17 +52,21 @@ extension View {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @ViewBuilder
-    func scrollableIfNecessary(_ axis: Axis = .vertical) -> some View {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            ViewThatFits(in: axis.scrollViewAxis) {
-                self
-
-                ScrollView(axis.scrollViewAxis) {
+    func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+        if enabled {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                ViewThatFits(in: axis.scrollViewAxis) {
                     self
+
+                    ScrollView(axis.scrollViewAxis) {
+                        self
+                    }
                 }
+            } else {
+                self.modifier(ScrollableIfNecessaryModifier(axis: axis))
             }
         } else {
-            self.modifier(ScrollableIfNecessaryModifier(axis: axis))
+            self
         }
     }
 }

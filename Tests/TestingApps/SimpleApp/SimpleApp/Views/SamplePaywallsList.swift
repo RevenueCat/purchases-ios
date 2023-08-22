@@ -32,7 +32,7 @@ struct SamplePaywallsList: View {
 
                     case .footer, .condensedFooter:
                         CustomPaywall(offering: Self.loader.offering(for: template),
-                                      mode: mode,
+                                      condensed: mode == .condensedFooter,
                                       introEligibility: Self.introEligibility,
                                       purchaseHandler: .default())
                     }
@@ -44,7 +44,7 @@ struct SamplePaywallsList: View {
                                 purchaseHandler: .default())
 
                 case let .customPaywall(mode):
-                    CustomPaywall(mode: mode)
+                    CustomPaywall(condensed: mode == .condensedFooter)
 
                 case .missingPaywall:
                     PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
