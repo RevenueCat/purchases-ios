@@ -20,8 +20,6 @@ extension View {
     ///      .paywallFooter()
     /// }
     /// ```
-    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
-    /// the paywall won't be displayed.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -46,8 +44,6 @@ extension View {
     ///      .paywallFooter(offering: offering)
     /// }
     /// ```
-    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
-    /// the paywall won't be displayed.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -89,29 +85,29 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-struct PresentingPaywallFooterModifier: ViewModifier {
+private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let offering: Offering?
     let condensed: Bool
 
     let purchaseCompleted: PurchaseCompletedHandler?
     let fontProvider: PaywallFontProvider
-
     let introEligibility: TrialOrIntroEligibilityChecker?
     let purchaseHandler: PurchaseHandler?
 
     func body(content: Content) -> some View {
-        content.safeAreaInset(edge: .bottom) {
-            PaywallFooterView(
-                offering: self.offering,
-                condensed: self.condensed,
-                fonts: self.fontProvider,
-                introEligibility: self.introEligibility ?? .default(),
-                purchaseHandler: self.purchaseHandler ?? .default()
-            )
-            .onPurchaseCompleted {
-                self.purchaseCompleted?($0)
-            }
+        content
+            .safeAreaInset(edge: .bottom) {
+                PaywallFooterView(
+                    offering: self.offering,
+                    condensed: self.condensed,
+                    fonts: self.fontProvider,
+                    introEligibility: self.introEligibility ?? .default(),
+                    purchaseHandler: self.purchaseHandler ?? .default()
+                )
+                .onPurchaseCompleted {
+                    self.purchaseCompleted?($0)
+                }
         }
     }
 }

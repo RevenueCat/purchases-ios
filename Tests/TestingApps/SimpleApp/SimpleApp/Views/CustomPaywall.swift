@@ -66,28 +66,28 @@ struct CustomPaywall: View {
 struct CustomPaywall_Previews: PreviewProvider {
     
     static var previews: some View {
-        ForEach(Self.modes, id: \.self) { mode in
+        ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackagePaywall,
                 condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
-            .previewDisplayName("\(mode)")
+            .previewDisplayName("Template2\(mode ? " condensed" : "")")
         }
 
-        ForEach(Self.modes, id: \.self) { mode in
+        ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackageHorizontalPaywall,
                 condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
-            .previewDisplayName("\(mode)")
+            .previewDisplayName("Template4\(mode ? " condensed" : "")")
         }
     }
 
-    private static let modes: [Bool] = [
+    private static let condensedOptions: [Bool] = [
         true,
         false
     ]

@@ -75,6 +75,7 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
+                    .padding(.vertical)
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }

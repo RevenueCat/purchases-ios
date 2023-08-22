@@ -77,9 +77,7 @@ extension PaywallData {
                 .task(id: offering) {
                     await introEligibility.computeEligibility(for: configuration.packages)
                 }
-                .background(
-                    configuration.backgroundView
-                )
+                .background(configuration.backgroundView)
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)

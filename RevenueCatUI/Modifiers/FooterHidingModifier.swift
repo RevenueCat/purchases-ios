@@ -32,19 +32,25 @@ private struct FooterHidingModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         switch self.configuration.mode {
-        case .fullScreen, .footer:
+        case .fullScreen:
             // These modes don't support hiding the content
             content
                 .padding(.vertical)
 
+        case .footer:
+            content
+
         case .condensedFooter:
             content
-                .onSizeChange(.vertical) { self.height = $0 }
+                .onSizeChange(.vertical) { if $0 > 0 { self.height = $0 } }
                 .opacity(self.hide ? 0 : 1)
-                .frame(height: self.hide ? 0 : nil, alignment: .top)
-                .clipped()
-                .transition(.move(edge: .bottom))
-
+                .offset(
+                    y: self.hide
+                    ? self.height
+                    : 0
+                )
+                .frame(height: self.hide ? 0 : nil)
+                .blur(radius: self.hide ? Self.blurRadius : 0)
         }
     }
 

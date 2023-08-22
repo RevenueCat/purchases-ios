@@ -13,9 +13,6 @@ struct Template2View: TemplateViewType {
     @State
     private var displayingAllPlans: Bool
 
-    @State
-    private var containerHeight: CGFloat = 10
-
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
@@ -41,10 +38,7 @@ struct Template2View: TemplateViewType {
             Spacer()
 
             self.scrollableContent
-                // Disabling in overlay mode here because of animation issues with ViewThatFits
-                // Scrolling is enabled in overlay mode in the packages
-                // Bonus is that CTA stays visible and doesn't scroll
-                .scrollableIfNecessary(enabled: configuration.mode == .fullScreen)
+                .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails {
                 self.offerDetails(package: self.selectedPackage, selected: false)
@@ -86,35 +80,18 @@ struct Template2View: TemplateViewType {
                 Spacer()
             }
 
-            VStack {
-                self.packagesScrollHack
-
-                Spacer()
+            if self.configuration.mode.shouldDisplayPackages {
+                self.packages
+            } else {
+                self.packages
+                    .hideFooterContent(self.configuration,
+                                       hide: !self.displayingAllPlans)
             }
-            // Sets a max footer height so there is enough room for paywall content above
-            .frame(maxHeight: configuration.mode == .fullScreen ? nil : Constants.maxFooterHeight)
-            .hideFooterContent(self.configuration,
-                               hide: !self.configuration.mode.shouldDisplayPackages && !self.displayingAllPlans)
         }
         .frame(maxHeight: .infinity)
     }
 
-    /// Hack because scrollableIfNecessary() doesn't work on iOS 15 because of unknown reason
-    private var packagesScrollHack: some View {
-        Group {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                self.packages
-                    // Another hack because bounce animation temporarily clips top package a little bits
-                    .padding(.top, 5)
-                    .scrollableIfNecessary()
-            } else {
-                ScrollView {
-                    self.packages
-                }
-            }
-        }
-    }
-
+    @ViewBuilder
     private var packages: some View {
         VStack(spacing: 8) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
@@ -130,6 +107,8 @@ struct Template2View: TemplateViewType {
             }
         }
         .padding(.horizontal)
+
+        Spacer()
     }
 
     @ViewBuilder
