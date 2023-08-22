@@ -89,9 +89,9 @@ struct Template2View: TemplateViewType {
             } else {
                 self.packages
                     .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
-                    .hideCardContent(self.configuration,
-                                     hide: !self.displayingAllPlans,
-                                     offset: self.containerHeight)
+                    .hideFooterContent(self.configuration,
+                                       hide: !self.displayingAllPlans,
+                                       offset: self.containerHeight)
             }
         }
         .frame(maxHeight: .infinity)
@@ -266,14 +266,14 @@ private extension PaywallViewMode {
     var shouldDisplayPackages: Bool {
         switch self {
         case .fullScreen: return true
-        case .card, .condensedCard: return false
+        case .footer, .condensedFooter: return false
         }
     }
 
     var shouldDisplayInlineOfferDetails: Bool {
         switch self {
         case .fullScreen: return false
-        case .card, .condensedCard: return true
+        case .footer, .condensedFooter: return true
         }
     }
 

@@ -30,7 +30,7 @@ struct SamplePaywallsList: View {
                                     introEligibility: Self.introEligibility,
                                     purchaseHandler: .default())
 
-                    case .card, .condensedCard:
+                    case .footer, .condensedFooter:
                         CustomPaywall(offering: Self.loader.offering(for: template),
                                       mode: mode,
                                       introEligibility: Self.introEligibility,
@@ -83,17 +83,17 @@ struct SamplePaywallsList: View {
 
             Section("Other") {
                 Button {
-                    self.display = .customPaywall(.card)
+                    self.display = .customPaywall(.footer)
                 } label: {
-                    TemplateLabel(name: "Custom + card",
-                                  icon: PaywallViewMode.card.icon)
+                    TemplateLabel(name: "Custom + footer",
+                                  icon: PaywallViewMode.footer.icon)
                 }
 
                 Button {
-                    self.display = .customPaywall(.condensedCard)
+                    self.display = .customPaywall(.condensedFooter)
                 } label: {
-                    TemplateLabel(name: "Custom + condensed card",
-                                  icon: PaywallViewMode.condensedCard.icon)
+                    TemplateLabel(name: "Custom + condensed footer",
+                                  icon: PaywallViewMode.condensedFooter.icon)
                 }
 
                 Button {
@@ -204,8 +204,8 @@ private extension PaywallViewMode {
     var icon: String {
         switch self {
         case .fullScreen: return "iphone"
-        case .card: return "lanyardcard"
-        case .condensedCard: return "ruler"
+        case .footer: return "lanyardcard"
+        case .condensedFooter: return "ruler"
         }
     }
 
@@ -213,10 +213,10 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen:
             return "Fullscreen"
-        case .card:
-            return "Card"
-        case .condensedCard:
-            return "Condensed Card"
+        case .footer:
+            return "Footer"
+        case .condensedFooter:
+            return "Condensed Footer"
         }
     }
 
