@@ -47,14 +47,14 @@ class PackageVariablesTests: TestCase {
 
     func testEnglishLocalizedPriceAndPerMonth() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.english)) == "$1.99 ($7.96/mo)"
-        expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.english)) == "$6.99"
+        expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.english)) == "$6.99/mo"
         expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.english)) == "$53.99 ($4.49/mo)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.english)) == "$119.49"
     }
 
     func testSpanishLocalizedPriceAndPerMonth() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$1.99 ($7.96/m.)"
-        expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$6.99"
+        expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$6.99/m."
         expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.spanish)) == "$53.99 ($4.49/m.)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.spanish)) == "$119.49"
     }
