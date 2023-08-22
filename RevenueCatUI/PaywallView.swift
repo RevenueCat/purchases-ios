@@ -208,7 +208,6 @@ struct LoadedOfferingPaywallView: View {
 
         case .footer, .condensedFooter:
             view
-                
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
         }

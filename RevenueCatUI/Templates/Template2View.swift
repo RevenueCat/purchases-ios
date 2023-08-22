@@ -5,7 +5,6 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
-    
     let configuration: TemplateViewConfiguration
 
     @State
@@ -89,13 +88,13 @@ struct Template2View: TemplateViewType {
 
             VStack {
                 self.packagesScrollHack
-                        
+
                 Spacer()
             }
             // TODO: This is really bad but should be capped when in overlay mode so scrolls
             .frame(maxHeight: configuration.mode == .fullScreen ? nil : 400)
             .hideFooterContent(self.configuration,
-                             hide: !self.configuration.mode.shouldDisplayPackages && !self.displayingAllPlans)
+                               hide: !self.configuration.mode.shouldDisplayPackages && !self.displayingAllPlans)
         }
         .frame(maxHeight: .infinity)
     }

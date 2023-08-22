@@ -13,6 +13,18 @@ import SwiftUI
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension View {
 
+    /// Presents a ``PaywallFooterView`` at the bottom of a view that loads the `Offerings.current`.
+    /// ```swift
+    /// var body: some View {
+    ///    YourPaywall()
+    ///      .paywallFooter()
+    /// }
+    /// ```
+    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
+    /// the paywall won't be displayed.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
@@ -27,6 +39,18 @@ extension View {
         )
     }
 
+    /// Presents a ``PaywallFooterView`` at the bottom of a view with the given offering.
+    /// ```swift
+    /// var body: some View {
+    ///    YourPaywall()
+    ///      .paywallFooter(offering: offering)
+    /// }
+    /// ```
+    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
+    /// the paywall won't be displayed.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func paywallFooter(
         offering: Offering,
         condensed: Bool = false,

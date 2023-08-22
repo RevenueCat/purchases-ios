@@ -76,7 +76,7 @@ struct Template4View: TemplateViewType {
             } else {
                 self.packagesScrollView
                     .hideFooterContent(self.configuration,
-                                     hide: !self.displayingAllPlans)
+                                       hide: !self.displayingAllPlans)
             }
 
             IntroEligibilityStateView(

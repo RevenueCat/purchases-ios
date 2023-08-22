@@ -16,7 +16,7 @@ extension View {
         hide: Bool
     ) -> some View {
         return self.modifier(FooterHidingModifier(configuration: configuration,
-                                                hide: hide))
+                                                  hide: hide))
     }
 
 }
