@@ -13,9 +13,6 @@ struct Template2View: TemplateViewType {
     @State
     private var displayingAllPlans: Bool
 
-    @State
-    private var containerHeight: CGFloat = 10
-
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
@@ -41,7 +38,7 @@ struct Template2View: TemplateViewType {
             Spacer()
 
             self.scrollableContent
-                .scrollableIfNecessary()
+                .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails {
                 self.offerDetails(package: self.selectedPackage, selected: false)
@@ -85,18 +82,16 @@ struct Template2View: TemplateViewType {
 
             if self.configuration.mode.shouldDisplayPackages {
                 self.packages
-                Spacer()
             } else {
                 self.packages
-                    .onSizeChange(.vertical) { if $0 > 0 { self.containerHeight = $0 } }
                     .hideFooterContent(self.configuration,
-                                       hide: !self.displayingAllPlans,
-                                       offset: self.containerHeight)
+                                       hide: !self.displayingAllPlans)
             }
         }
         .frame(maxHeight: .infinity)
     }
 
+    @ViewBuilder
     private var packages: some View {
         VStack(spacing: 8) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
@@ -112,6 +107,8 @@ struct Template2View: TemplateViewType {
             }
         }
         .padding(.horizontal)
+
+        Spacer()
     }
 
     @ViewBuilder
