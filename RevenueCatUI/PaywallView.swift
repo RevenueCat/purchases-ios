@@ -26,14 +26,12 @@ public struct PaywallView: View {
     /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
-    /// If you want to handle that, you can use ``init(offering:mode:)`` instead.
+    /// If you want to handle that, you can use ``init(offering:)`` instead.
     public init(
-        mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider()
     ) {
         self.init(
             offering: nil,
-            mode: mode,
             fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
@@ -46,12 +44,10 @@ public struct PaywallView: View {
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
         offering: Offering,
-        mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider()
     ) {
         self.init(
             offering: offering,
-            mode: mode,
             fonts: fonts,
             introEligibility: .default(),
             purchaseHandler: .default()
