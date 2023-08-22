@@ -1,0 +1,33 @@
+{
+  "configurations" : [
+    {
+      "id" : "9A1CEA19-F9E9-4C9C-9FC8-6F9A5B29F2AE",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "CIRCLECI_TESTS_GENERATE_SNAPSHOTS",
+        "value" : "1"
+      }
+    ],
+    "maximumTestExecutionTimeAllowance" : 180,
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "RevenueCatUITests",
+        "name" : "RevenueCatUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
