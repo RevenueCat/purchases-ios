@@ -177,6 +177,8 @@ platform :ios do
 
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    
     # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
     xcodebuild(
       workspace: '.',
@@ -188,7 +190,7 @@ platform :ios do
       report_formats: [:junit],
       report_path: 'fastlane/test_output/revenuecatui/tests.xml',
       test: true,
-      xcargs: "-test-iterations 3 -retry-tests-on-failure"
+      xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
     )
   end
 
