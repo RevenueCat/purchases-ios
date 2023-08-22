@@ -26,7 +26,7 @@ class Template1ViewTests: BaseSnapshotTest {
 
     func testOverlayPaywall() {
         PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .overlay,
+                    mode: .footer,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
         .snapshot(size: Self.overlaySize)
@@ -34,7 +34,7 @@ class Template1ViewTests: BaseSnapshotTest {
 
     func testCondensedOverlayPaywall() {
         PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .condensedOverlay,
+                    mode: .condensedFooter,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
         .snapshot(size: Self.overlaySize)

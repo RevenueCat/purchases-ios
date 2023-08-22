@@ -112,8 +112,8 @@ private extension PaywallViewMode {
     var layout: PreviewLayout {
         switch self {
         case .fullScreen: return .device
-        case .overlay: return .fixed(width: 400, height: 280)
-        case .condensedOverlay: return .fixed(width: 400, height: 150)
+        case .footer: return .fixed(width: 400, height: 280)
+        case .condensedFooter: return .fixed(width: 400, height: 150)
         }
     }
 

@@ -99,26 +99,26 @@ private extension PaywallViewMode {
 
     var buttonFont: Font.TextStyle {
         switch self {
-        case .fullScreen, .overlay, .condensedOverlay: return .title3
+        case .fullScreen, .footer, .condensedFooter: return .title3
         }
     }
 
     var fullWidthButton: Bool {
         switch self {
-        case .fullScreen, .overlay, .condensedOverlay: return true
+        case .fullScreen, .footer, .condensedFooter: return true
         }
     }
 
     @available(tvOS, unavailable)
     var buttonSize: ControlSize {
         switch self {
-        case .fullScreen, .overlay, .condensedOverlay: return .large
+        case .fullScreen, .footer, .condensedFooter: return .large
         }
     }
 
     var buttonBorderShape: ButtonBorderShape {
         switch self {
-        case .fullScreen, .overlay, .condensedOverlay:
+        case .fullScreen, .footer, .condensedFooter:
             #if os(macOS) || os(tvOS)
             return .roundedRectangle
             #else

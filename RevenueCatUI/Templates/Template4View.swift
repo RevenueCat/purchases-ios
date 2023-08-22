@@ -55,7 +55,7 @@ struct Template4View: TemplateViewType {
                     #endif
             }
 
-        case .overlay, .condensedOverlay:
+        case .footer, .condensedFooter:
             self.overlayContent
         }
     }
@@ -75,9 +75,9 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
-                    .hideOverlayContent(self.configuration,
-                                        hide: !self.displayingAllPlans,
-                                        offset: self.packageContentHeight)
+                    .hideFooterContent(self.configuration,
+                                       hide: !self.displayingAllPlans,
+                                       offset: self.packageContentHeight)
             }
 
             IntroEligibilityStateView(
@@ -342,7 +342,7 @@ private extension PaywallViewMode {
     var shouldDisplayPackages: Bool {
         switch self {
         case .fullScreen: return true
-        case .overlay, .condensedOverlay: return false
+        case .footer, .condensedFooter: return false
         }
     }
 

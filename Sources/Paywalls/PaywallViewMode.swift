@@ -21,11 +21,11 @@ public enum PaywallViewMode {
 
     /// Paywall can be displayed as an overlay on top of your own content.
     /// Multi-package templates will display the package selection.
-    case overlay
+    case footer
 
     /// Paywall can be displayed as an overlay on top of your own content.
     /// Multi-package templates will include a button to make the package selection visible.
-    case condensedOverlay
+    case condensedFooter
 
     /// The default ``PaywallViewMode``: ``PaywallViewMode/fullScreen``.
     public static let `default`: Self = .fullScreen
@@ -38,7 +38,7 @@ extension PaywallViewMode {
     public var isFullScreen: Bool {
         switch self {
         case .fullScreen: return true
-        case .overlay, .condensedOverlay: return false
+        case .footer, .condensedFooter: return false
         }
     }
 
@@ -49,8 +49,8 @@ extension PaywallViewMode {
     var identifier: String {
         switch self {
         case .fullScreen: return "full_screen"
-        case .overlay: return "overlay"
-        case .condensedOverlay: return "condensed_overlay"
+        case .footer: return "footer"
+        case .condensedFooter: return "condensed_footer"
         }
     }
 

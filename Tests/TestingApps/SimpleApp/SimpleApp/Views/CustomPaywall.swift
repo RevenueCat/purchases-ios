@@ -91,8 +91,8 @@ struct CustomPaywall_Previews: PreviewProvider {
     }
 
     private static let modes: [PaywallViewMode] = [
-        .overlay,
-        .condensedOverlay
+        .footer,
+        .condensedFooter
     ]
 
 }

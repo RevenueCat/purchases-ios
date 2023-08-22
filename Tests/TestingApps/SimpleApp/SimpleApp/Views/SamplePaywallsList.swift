@@ -30,7 +30,7 @@ struct SamplePaywallsList: View {
                                     introEligibility: Self.introEligibility,
                                     purchaseHandler: .default())
 
-                    case .overlay, .condensedOverlay:
+                    case .footer, .condensedFooter:
                         CustomPaywall(offering: Self.loader.offering(for: template),
                                       mode: mode,
                                       introEligibility: Self.introEligibility,
@@ -83,17 +83,17 @@ struct SamplePaywallsList: View {
 
             Section("Other") {
                 Button {
-                    self.display = .customPaywall(.overlay)
+                    self.display = .customPaywall(.footer)
                 } label: {
                     TemplateLabel(name: "Custom + overlay",
-                                  icon: PaywallViewMode.overlay.icon)
+                                  icon: PaywallViewMode.footer.icon)
                 }
 
                 Button {
-                    self.display = .customPaywall(.condensedOverlay)
+                    self.display = .customPaywall(.condensedFooter)
                 } label: {
                     TemplateLabel(name: "Custom + condensed overlay",
-                                  icon: PaywallViewMode.condensedOverlay.icon)
+                                  icon: PaywallViewMode.condensedFooter.icon)
                 }
 
                 Button {
@@ -204,8 +204,8 @@ private extension PaywallViewMode {
     var icon: String {
         switch self {
         case .fullScreen: return "iphone"
-        case .overlay: return "lanyardcard"
-        case .condensedOverlay: return "ruler"
+        case .footer: return "lanyardcard"
+        case .condensedFooter: return "ruler"
         }
     }
 
@@ -213,9 +213,9 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen:
             return "Fullscreen"
-        case .overlay:
+        case .footer:
             return "Overlay"
-        case .condensedOverlay:
+        case .condensedFooter:
             return "Condensed Overlay"
         }
     }

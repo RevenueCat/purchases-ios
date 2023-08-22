@@ -38,12 +38,12 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     func testLoadingOverlayPaywallView() {
-        LoadingPaywallView(mode: .overlay)
+        LoadingPaywallView(mode: .footer)
             .snapshot(size: Self.overlaySize)
     }
 
     func testLoadingCondensedOverlayPaywallView() {
-        LoadingPaywallView(mode: .condensedOverlay)
+        LoadingPaywallView(mode: .condensedFooter)
             .snapshot(size: Self.overlaySize)
     }
 
