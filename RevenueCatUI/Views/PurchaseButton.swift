@@ -57,7 +57,7 @@ struct PurchaseButton: View {
     private var dismiss
 
     var body: some View {
-        self.button
+        Text("TESTING SNAPSHOTS")
     }
 
     private var button: some View {
