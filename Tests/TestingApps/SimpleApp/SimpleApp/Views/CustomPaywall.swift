@@ -12,7 +12,7 @@ import SwiftUI
 struct CustomPaywall: View {
 
     var offering: Offering?
-    var mode: PaywallViewMode
+    var condensed: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
 
@@ -35,14 +35,11 @@ struct CustomPaywall: View {
             }
             .frame(maxWidth: .infinity)
             .scrollableIfNecessary(.vertical)
-
-            Spacer()
-
-            PaywallView(offering: self.offering,
-                        mode: self.mode,
-                        fonts: DefaultPaywallFontProvider(),
-                        introEligibility: self.introEligibility ?? .default(),
-                        purchaseHandler: self.purchaseHandler ?? .default()
+            .paywallFooter(offering: self.offering,
+                           condensed: self.condensed,
+                           fonts: DefaultPaywallFontProvider(),
+                           introEligibility: self.introEligibility ?? .default(),
+                           purchaseHandler: self.purchaseHandler ?? .default()
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -72,7 +69,7 @@ struct CustomPaywall_Previews: PreviewProvider {
         ForEach(Self.modes, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackagePaywall,
-                mode: mode,
+                condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
@@ -82,7 +79,7 @@ struct CustomPaywall_Previews: PreviewProvider {
         ForEach(Self.modes, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackageHorizontalPaywall,
-                mode: mode,
+                condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
@@ -90,9 +87,9 @@ struct CustomPaywall_Previews: PreviewProvider {
         }
     }
 
-    private static let modes: [PaywallViewMode] = [
-        .footer,
-        .condensedFooter
+    private static let modes: [Bool] = [
+        true,
+        false
     ]
 
 }

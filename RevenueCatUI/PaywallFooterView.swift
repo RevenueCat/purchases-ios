@@ -78,6 +78,7 @@ public struct PaywallFooterView: View {
         self.fonts = fonts
     }
 
+    // swiftlint:disable:next missing_docs
     public var body: some View {
         PaywallView(
             offering: self.offering,

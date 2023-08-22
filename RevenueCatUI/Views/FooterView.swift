@@ -96,7 +96,7 @@ struct FooterView: View {
 
     private static func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
-            withAnimation(binding.wrappedValue ? Constants.hideAllPlansAnimation : Constants.showAllPlansAnimation) {
+            withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
         } label: {
