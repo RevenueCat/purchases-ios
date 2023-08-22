@@ -25,13 +25,9 @@ struct App: View {
     @ViewBuilder
     var content: some View {
         PaywallView()
-        PaywallView(mode: .fullScreen)
         PaywallView(fonts: self.fonts)
-        PaywallView(mode: .fullScreen, fonts: self.fonts)
         PaywallView(offering: self.offering)
-        PaywallView(offering: self.offering, mode: .fullScreen)
         PaywallView(offering: self.offering, fonts: self.fonts)
-        PaywallView(offering: self.offering, mode: .fullScreen, fonts: self.fonts)
     }
 
     @ViewBuilder
