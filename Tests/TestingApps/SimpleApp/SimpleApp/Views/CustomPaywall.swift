@@ -12,7 +12,7 @@ import SwiftUI
 struct CustomPaywall: View {
 
     var offering: Offering?
-    var mode: PaywallViewMode
+    var condensed: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
 
@@ -35,14 +35,11 @@ struct CustomPaywall: View {
             }
             .frame(maxWidth: .infinity)
             .scrollableIfNecessary(.vertical)
-
-            Spacer()
-
-            PaywallView(offering: self.offering,
-                        mode: self.mode,
-                        fonts: DefaultPaywallFontProvider(),
-                        introEligibility: self.introEligibility ?? .default(),
-                        purchaseHandler: self.purchaseHandler ?? .default()
+            .paywallFooter(offering: self.offering,
+                           condensed: self.condensed,
+                           fonts: DefaultPaywallFontProvider(),
+                           introEligibility: self.introEligibility ?? .default(),
+                           purchaseHandler: self.purchaseHandler ?? .default()
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,30 +66,30 @@ struct CustomPaywall: View {
 struct CustomPaywall_Previews: PreviewProvider {
     
     static var previews: some View {
-        ForEach(Self.modes, id: \.self) { mode in
+        ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackagePaywall,
-                mode: mode,
+                condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
-            .previewDisplayName("\(mode)")
+            .previewDisplayName("Template2\(mode ? " condensed" : "")")
         }
 
-        ForEach(Self.modes, id: \.self) { mode in
+        ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackageHorizontalPaywall,
-                mode: mode,
+                condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
             )
-            .previewDisplayName("\(mode)")
+            .previewDisplayName("Template4\(mode ? " condensed" : "")")
         }
     }
 
-    private static let modes: [PaywallViewMode] = [
-        .footer,
-        .condensedFooter
+    private static let condensedOptions: [Bool] = [
+        true,
+        false
     ]
 
 }
