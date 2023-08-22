@@ -1,6 +1,26 @@
 import RevenueCat
 import SwiftUI
 
+/*
+ This file is the entry point to all templates.
+ 
+ For future developers implementing new templates, here are a few recommended principles to follow:
+ - Avoid magic numbers as much as possible. Use `@ScaledMetric` if necessary.
+ - Prefer reusable views over custom implementations:
+    - `FooterView`
+    - `PurchaseButton`
+    - `RemoteImage`
+    - `IntroEligibilityStateView`
+    - `IconView`
+ - Consider everything beyond the "basic"s:
+    - iPad
+    - VoiceOver / A11y
+    - Dynamic Type
+    - All `PaywallViewMode`s
+ - Fonts: use `PaywallFontProvider` to derive fonts
+ - Colors: avoid hardcoded colors
+*/
+
 /// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
