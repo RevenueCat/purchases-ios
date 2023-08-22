@@ -12,7 +12,7 @@ enum Constants {
 
     static let defaultAnimation: Animation = .easeInOut(duration: 0.2)
     static let fastAnimation: Animation = .easeInOut(duration: 0.1)
-    static let displayAllPlansAnimation: Animation = .easeInOut(duration: 0.2)
+    static let toggleAllPlansAnimation: Animation = .spring(response: 0.35, dampingFraction: 0.7)
 
     static let defaultCornerRadius: CGFloat = 20
 
