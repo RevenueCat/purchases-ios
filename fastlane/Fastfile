@@ -429,11 +429,7 @@ platform :ios do
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
     sh("git", "checkout", "-b", branch_name)
 
-    # Add changes in Tests
-    sh("git", "add", "../Tests")
-    # Remove any SPM commit changes
-    sh("git", "reset", "*/project.pbxproj")
-    sh("git", "reset", "*/Package.resolved")
+    sh("git", "add", "../*/__Snapshots__/*")
     file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
     if file_count == 0
