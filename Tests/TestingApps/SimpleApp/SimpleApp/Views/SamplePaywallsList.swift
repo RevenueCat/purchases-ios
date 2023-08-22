@@ -85,14 +85,14 @@ struct SamplePaywallsList: View {
                 Button {
                     self.display = .customPaywall(.footer)
                 } label: {
-                    TemplateLabel(name: "Custom + overlay",
+                    TemplateLabel(name: "Custom + footer",
                                   icon: PaywallViewMode.footer.icon)
                 }
 
                 Button {
                     self.display = .customPaywall(.condensedFooter)
                 } label: {
-                    TemplateLabel(name: "Custom + condensed overlay",
+                    TemplateLabel(name: "Custom + condensed footer",
                                   icon: PaywallViewMode.condensedFooter.icon)
                 }
 
@@ -214,9 +214,9 @@ private extension PaywallViewMode {
         case .fullScreen:
             return "Fullscreen"
         case .footer:
-            return "Overlay"
+            return "Footer"
         case .condensedFooter:
-            return "Condensed Overlay"
+            return "Condensed Footer"
         }
     }
 
