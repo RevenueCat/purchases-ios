@@ -32,7 +32,7 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 | --- | --- |
 ✅ | Server-side receipt validation
 ➡️ | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
-🖥 | iOS, tvOS, macOS and watchOS support
+🖥 | iOS, tvOS, macOS, watchOS, Mac Catalyst, and visionOS support
 🎯 | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
 📊 | Analytics - automatic calculation of metrics like conversion, mrr, and churn
 📝 | [Online documentation](https://docs.revenuecat.com/docs) and [SDK Reference](http://revenuecat.github.io/purchases-ios-docs/) up to date
@@ -58,6 +58,7 @@ Or view our iOS sample apps:
 | tvOS | 11.0+ |
 | macOS | 10.13+ |
 | watchOS | 6.2+ |
+| visionOS | 1.0+ |
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).
