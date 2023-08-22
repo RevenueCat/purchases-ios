@@ -48,7 +48,7 @@ extension Package: VariableDataProvider {
 
     func localizedPriceAndPerMonth(_ locale: Locale) -> String {
         if !self.isSubscription || self.isMonthly {
-            return self.localizedPrice
+            return self.localizedPricePerPeriod(locale)
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .month, locale: locale)
             return "\(self.localizedPrice) (\(self.localizedPricePerMonth)/\(unit))"
