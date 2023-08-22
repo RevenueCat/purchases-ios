@@ -177,7 +177,7 @@ platform :ios do
 
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
-    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
     
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
@@ -379,8 +379,21 @@ platform :ios do
     end
   end
 
-  desc "Trigger CircleCI job to generate snapshots"
-  lane :generate_snapshots do 
+  desc "Trigger CircleCI job to generate snapshots for RevenueCat"
+  lane :generate_snapshots_RC do 
+    generate_snapshots(
+      pipeline: "generate_snapshots"
+    )
+  end
+
+  desc "Trigger CircleCI job to generate snapshots for RevenueCatUI"
+  lane :generate_snapshots_RCUI do 
+    generate_snapshots(
+      pipeline: "generate_revenuecatui_snapshots"
+    )
+  end
+
+  private_lane :generate_snapshots do |options|
     require 'rest-client'
 
     # Prompt branch
@@ -394,7 +407,7 @@ platform :ios do
 
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
-    data = {parameters: {generate_snapshots: true}, branch: branch}
+    data = {parameters: {options[:pipeline] => true}, branch: branch}
     url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
 
     resp = RestClient.post url, data.to_json, headers

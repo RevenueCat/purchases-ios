@@ -12,7 +12,7 @@
     "codeCoverage" : false,
     "environmentVariableEntries" : [
       {
-        "key" : "CIRCLECI_TESTS_GENERATE_SNAPSHOTS",
+        "key" : "CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS",
         "value" : "1"
       }
     ],
