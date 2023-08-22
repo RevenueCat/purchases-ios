@@ -343,6 +343,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13,OS=15.5
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -367,6 +373,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14,OS=16.4
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -390,6 +402,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 Pro,OS=17.0
+      - when:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-17"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -958,6 +976,12 @@ workflows:
       - run-test-ios-12:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
+      - spm-revenuecat-ui-ios-15:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-16:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-17:
+          xcode_version: '15.0.0'
   build-test:
     when:
       and:
