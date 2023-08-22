@@ -96,7 +96,8 @@ final class TransactionPoster: TransactionPosterType {
         self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
           transaction.transactionIdentifier) { jwsRepresentation in
           guard let jwsRepresentation = jwsRepresentation else {
-            fatalError("Could not fetch jswRepesentation")
+            Logger.error("Could not fetch JWS token for transaction with ID \(transaction.transactionIdentifier)")
+            return
           }
           self.fetchProductsAndPostReceipt(
               transaction: transaction,
