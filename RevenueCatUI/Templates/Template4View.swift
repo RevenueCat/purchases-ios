@@ -44,7 +44,7 @@ struct Template4View: TemplateViewType {
             ZStack(alignment: .bottom) {
                 TemplateBackgroundImageView(configuration: self.configuration)
 
-                self.overlayContent
+                self.footerContent
                     .edgesIgnoringSafeArea(.bottom)
                     .frame(maxWidth: .infinity, alignment: .bottom)
                     .background(self.configuration.colors.backgroundColor)
@@ -56,12 +56,12 @@ struct Template4View: TemplateViewType {
             }
 
         case .footer, .condensedFooter:
-            self.overlayContent
+            self.footerContent
         }
     }
 
     @ViewBuilder
-    var overlayContent: some View {
+    var footerContent: some View {
         VStack(spacing: Self.verticalPadding) {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedPackage.localization.title))
