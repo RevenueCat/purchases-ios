@@ -143,6 +143,14 @@ class VariablesTests: TestCase {
         expect(result) == "$119.49"
     }
 
+    func testTotalPriceAndPerMonthForForMonthlyPackage() {
+        let result = VariableHandler.processVariables(
+            in: "{{ total_price_and_per_month }}",
+            with: TestData.monthlyPackage
+        )
+        expect(result) == "$6.99/mo"
+    }
+
     func testTotalPriceAndPerMonthForCustomMonthlyProductsReturnsPrice() {
         let result = VariableHandler.processVariables(
             in: "{{ total_price_and_per_month }}",
@@ -153,7 +161,7 @@ class VariablesTests: TestCase {
                 offeringIdentifier: ""
             )
         )
-        expect(result) == "$6.99"
+        expect(result) == "$6.99/mo"
     }
 
     func testTotalPriceAndPerMonthForCustomAnnualProductsReturnsPriceAndPerMonth() {
