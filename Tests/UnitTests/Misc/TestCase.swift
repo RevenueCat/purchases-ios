@@ -67,10 +67,7 @@ private enum SnapshotTests {
     static func updateSnapshotsIfNeeded() {
         guard !Self.environmentVariableChecked else { return }
 
-        let environment = ProcessInfo.processInfo.environment
-
-        if environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" ||
-            environment["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "1" {
+        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
             isRecording = true
         }
     }
