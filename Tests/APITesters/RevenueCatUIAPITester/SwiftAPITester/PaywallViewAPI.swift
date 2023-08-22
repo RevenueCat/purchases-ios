@@ -25,13 +25,9 @@ struct App: View {
     @ViewBuilder
     var content: some View {
         PaywallView()
-        PaywallView(mode: .fullScreen)
         PaywallView(fonts: self.fonts)
-        PaywallView(mode: .fullScreen, fonts: self.fonts)
         PaywallView(offering: self.offering)
-        PaywallView(offering: self.offering, mode: .fullScreen)
         PaywallView(offering: self.offering, fonts: self.fonts)
-        PaywallView(offering: self.offering, mode: .fullScreen, fonts: self.fonts)
     }
 
     @ViewBuilder
@@ -47,6 +43,29 @@ struct App: View {
             } purchaseCompleted: {
                 completed($0)
             }
+    }
+
+    @ViewBuilder
+    var checkPaywallFooter: some View {
+        Text("")
+            .paywallFooter()
+            .paywallFooter(fonts: self.fonts)
+            .paywallFooter(purchaseCompleted: completed)
+            .paywallFooter(fonts: self.fonts, purchaseCompleted: completed)
+            .paywallFooter(condensed: true)
+            .paywallFooter(condensed: true, fonts: self.fonts)
+            .paywallFooter(condensed: true, purchaseCompleted: completed)
+            .paywallFooter(condensed: true, fonts: self.fonts, purchaseCompleted: completed)
+
+            .paywallFooter(offering: offering)
+            .paywallFooter(offering: offering, condensed: true)
+            .paywallFooter(offering: offering, condensed: true, fonts: self.fonts)
+            .paywallFooter(offering: offering, condensed: true, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, condensed: true, fonts: self.fonts, purchaseCompleted: completed)
+            .paywallFooter(offering: offering)
+            .paywallFooter(offering: offering, fonts: self.fonts)
+            .paywallFooter(offering: offering, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, fonts: self.fonts, purchaseCompleted: completed)
     }
 
     @ViewBuilder
