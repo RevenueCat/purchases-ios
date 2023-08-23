@@ -1633,7 +1633,7 @@ private extension Purchases {
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) { [cache = self.paywallCache] offerings in
-            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offerings.value {
                 self.operationDispatcher.dispatchOnWorkerThread {
                     await cache.warmUpEligibilityCache(offerings: offerings)
