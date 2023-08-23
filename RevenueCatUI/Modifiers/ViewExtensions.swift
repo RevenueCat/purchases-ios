@@ -71,6 +71,27 @@ extension View {
     }
 }
 
+// MARK: - Padding
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    func defaultHorizontalPadding() -> some View {
+        return self.padding(.horizontal, Constants.defaultHorizontalPadding)
+    }
+
+    func defaultVerticalPadding() -> some View {
+        return self.padding(.vertical, Constants.defaultVerticalPadding)
+    }
+
+    func defaultPadding() -> some View {
+        return self
+            .defaultHorizontalPadding()
+            .defaultVerticalPadding()
+    }
+
+}
+
 // MARK: - scrollableIfNecessary
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

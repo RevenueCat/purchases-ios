@@ -55,7 +55,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String> = [],
         mode: PaywallViewMode = .default,
-        presentInSheet: Bool = false,
+        presentInSheet: Bool = VersionDetector.isIpad,
         creator: @escaping Creator
     ) {
         let paywall = offering.paywall!

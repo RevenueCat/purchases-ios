@@ -26,7 +26,7 @@ struct Template3View: TemplateViewType {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: Constants.defaultVerticalPadding) {
             if self.configuration.mode.shouldDisplayIcon {
                 if let url = self.configuration.iconImageURL {
                     RemoteImage(url: url, aspectRatio: 1)
@@ -72,7 +72,7 @@ struct Template3View: TemplateViewType {
             FooterView(configuration: self.configuration,
                        purchaseHandler: self.purchaseHandler)
         }
-        .padding(.horizontal)
+        .defaultHorizontalPadding()
         .padding(.top)
     }
 
@@ -85,7 +85,7 @@ struct Template3View: TemplateViewType {
                     .accessibilityElement(children: .combine)
             }
         }
-        .padding(.horizontal)
+        .defaultHorizontalPadding()
     }
 
     private var introEligibility: IntroEligibilityStatus? {

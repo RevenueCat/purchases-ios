@@ -80,6 +80,8 @@ extension PaywallData {
                     await introEligibility.computeEligibility(for: configuration.packages)
                 }
                 .background(configuration.backgroundView)
+            // TODO:
+//                .environment(\.userInterfaceIdiom, Constants.isIpad)
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)

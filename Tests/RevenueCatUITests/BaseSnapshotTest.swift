@@ -47,6 +47,7 @@ extension BaseSnapshotTest {
     static let fonts: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
 
     static let fullScreenSize: CGSize = .init(width: 460, height: 950)
+    static let iPadSize: CGSize = .init(width: 744, height: 1130)
     static let footerSize: CGSize = .init(width: 460, height: 460)
 
 }
