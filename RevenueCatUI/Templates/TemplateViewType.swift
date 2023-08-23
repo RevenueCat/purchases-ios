@@ -27,6 +27,7 @@ import SwiftUI
 protocol TemplateViewType: SwiftUI.View {
 
     var configuration: TemplateViewConfiguration { get }
+    var userInterfaceIdiom: UserInterfaceIdiom { get }
 
     init(_ configuration: TemplateViewConfiguration)
 
@@ -78,8 +79,6 @@ extension PaywallData {
                     await introEligibility.computeEligibility(for: configuration.packages)
                 }
                 .background(configuration.backgroundView)
-            // TODO:
-//                .environment(\.userInterfaceIdiom, Constants.isIpad)
 
         case let .failure(error):
             DebugErrorView(error, releaseBehavior: .emptyView)

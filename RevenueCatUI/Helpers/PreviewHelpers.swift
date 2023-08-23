@@ -42,6 +42,9 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
     typealias Creator = @Sendable @MainActor (TemplateViewConfiguration) -> T
 
+    @Environment(\.userInterfaceIdiom)
+    private var interfaceIdiom
+
     private let configuration: Result<TemplateViewConfiguration, Error>
     private let presentInSheet: Bool
     private let creator: Creator
@@ -54,7 +57,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
     init(
         offering: Offering,
         mode: PaywallViewMode = .default,
-        presentInSheet: Bool = VersionDetector.isIpad,
+        presentInSheet: Bool = false,
         creator: @escaping Creator
     ) {
         let paywall = offering.paywall!
@@ -71,7 +74,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
     }
 
     var body: some View {
-        if self.presentInSheet {
+        if self.presentInSheet || self.interfaceIdiom == .pad {
             Rectangle()
                 .hidden()
                 .sheet(isPresented: .constant(true)) {

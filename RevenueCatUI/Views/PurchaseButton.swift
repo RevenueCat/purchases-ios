@@ -53,6 +53,9 @@ struct PurchaseButton: View {
         self.purchaseHandler = purchaseHandler
     }
 
+    @Environment(\.userInterfaceIdiom)
+    var userInterfaceIdiom
+
     @Environment(\.dismiss)
     private var dismiss
 
@@ -82,7 +85,7 @@ struct PurchaseButton: View {
                        ? .infinity
                         : nil
                 )
-                .padding(.vertical, VersionDetector.isIpad ? 10 : 0)
+                .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
         }
         .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
         .tint(self.colors.callToActionBackgroundColor)

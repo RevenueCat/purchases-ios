@@ -19,8 +19,7 @@ class Template4ViewTests: BaseSnapshotTest {
         PaywallView(offering: Self.offering.withLocalImages,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
-        // TODO: create custom environment variable for iPad
-//        .environment(\.userInterfaceIdiom, .iPad)
+        .environment(\.userInterfaceIdiom, .pad)
         .snapshot(size: Self.iPadSize)
     }
 
