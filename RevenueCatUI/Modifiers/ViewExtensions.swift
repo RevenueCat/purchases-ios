@@ -79,21 +79,47 @@ extension View {
 
 // MARK: - Padding
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
 
     func defaultHorizontalPadding() -> some View {
-        return self.padding(.horizontal, Constants.defaultHorizontalPadding)
+        return self.modifier(DefaultHorizontalPaddingModifier())
     }
 
     func defaultVerticalPadding() -> some View {
-        return self.padding(.vertical, Constants.defaultVerticalPadding)
+        return self.modifier(DefaultVerticalPaddingModifier())
     }
 
     func defaultPadding() -> some View {
         return self
             .defaultHorizontalPadding()
             .defaultVerticalPadding()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct DefaultHorizontalPaddingModifier: ViewModifier {
+
+    @Environment(\.userInterfaceIdiom)
+    private var interfaceIdiom
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, Constants.defaultHorizontalPaddingLength(self.interfaceIdiom))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct DefaultVerticalPaddingModifier: ViewModifier {
+
+    @Environment(\.userInterfaceIdiom)
+    private var interfaceIdiom
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.vertical, Constants.defaultVerticalPaddingLength(self.interfaceIdiom))
     }
 
 }

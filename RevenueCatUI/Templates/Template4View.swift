@@ -29,6 +29,8 @@ struct Template4View: TemplateViewType {
     @State
     private var displayingAllPlans: Bool
 
+    @Environment(\.userInterfaceIdiom)
+    var userInterfaceIdiom
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
 
@@ -139,7 +141,7 @@ struct Template4View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding(.horizontal, self.packageHorizontalSpacing)
+        .padding(.horizontal, self.totalPackageHorizontalSpacing)
     }
 
     private var subscribeButton: some View {
@@ -175,7 +177,7 @@ struct Template4View: TemplateViewType {
 
     private var packageWidth: CGFloat {
         let packages = self.packagesToDisplay
-        return self.containerWidth / packages - self.packageHorizontalSpacing * (packages - 1)
+        return self.containerWidth / packages - self.totalPackageHorizontalSpacing * (packages - 1)
     }
 
     // MARK: -
@@ -189,6 +191,10 @@ struct Template4View: TemplateViewType {
 
     @ScaledMetric(relativeTo: .title2)
     private var packageHorizontalSpacing: CGFloat = 8
+
+    private var totalPackageHorizontalSpacing: CGFloat {
+        return self.packageHorizontalSpacing + (self.defaultHorizontalPaddingLength ?? 0)
+    }
 
     private var packagesToDisplay: CGFloat {
         let desiredCount = {

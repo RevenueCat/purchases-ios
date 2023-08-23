@@ -26,6 +26,9 @@ struct Template2View: TemplateViewType {
     @State
     private var displayingAllPlans: Bool
 
+    @Environment(\.userInterfaceIdiom)
+    var userInterfaceIdiom
+
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
@@ -47,7 +50,7 @@ struct Template2View: TemplateViewType {
 
     @ViewBuilder
     var content: some View {
-        VStack(spacing: Constants.defaultVerticalPadding) {
+        VStack(spacing: self.defaultVerticalPaddingLength) {
             Spacer()
 
             self.scrollableContent
@@ -70,7 +73,7 @@ struct Template2View: TemplateViewType {
     }
 
     private var scrollableContent: some View {
-        VStack(spacing: Constants.defaultVerticalPadding) {
+        VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.shouldDisplayIcon {
                 Spacer()
                 self.iconImage

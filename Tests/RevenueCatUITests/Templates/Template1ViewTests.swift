@@ -29,6 +29,7 @@ class Template1ViewTests: BaseSnapshotTest {
         PaywallView(offering: Self.offeringWithNoIntroOffer,
                     introEligibility: Self.eligibleChecker,
                     purchaseHandler: Self.purchaseHandler)
+        .environment(\.userInterfaceIdiom, .pad)
         .snapshot(size: Self.iPadSize)
     }
 
