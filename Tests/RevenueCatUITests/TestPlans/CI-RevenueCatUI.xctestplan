@@ -1,0 +1,28 @@
+{
+  "configurations" : [
+    {
+      "id" : "9A1CEA19-F9E9-4C9C-9FC8-6F9A5B29F2AE",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestRepetitions" : 3,
+    "testRepetitionMode" : "retryOnFailure",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "RevenueCatUITests",
+        "name" : "RevenueCatUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
