@@ -34,7 +34,7 @@ struct Template2View: TemplateViewType {
 
     @ViewBuilder
     var content: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Constants.defaultVerticalPadding) {
             Spacer()
 
             self.scrollableContent
@@ -45,7 +45,7 @@ struct Template2View: TemplateViewType {
             }
 
             self.subscribeButton
-                .padding(.horizontal)
+                .defaultHorizontalPadding()
 
             FooterView(configuration: self.configuration,
                        purchaseHandler: self.purchaseHandler,
@@ -57,7 +57,7 @@ struct Template2View: TemplateViewType {
     }
 
     private var scrollableContent: some View {
-        VStack {
+        VStack(spacing: Constants.defaultVerticalPadding) {
             if self.configuration.mode.shouldDisplayIcon {
                 Spacer()
                 self.iconImage
@@ -68,14 +68,14 @@ struct Template2View: TemplateViewType {
                 Text(.init(self.selectedLocalization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .largeTitle).bold())
-                    .padding(.horizontal)
+                    .defaultHorizontalPadding()
 
                 Spacer()
 
                 Text(.init(self.selectedLocalization.subtitle ?? ""))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .title3))
-                    .padding(.horizontal)
+                    .defaultHorizontalPadding()
 
                 Spacer()
             }
@@ -106,7 +106,7 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding(.horizontal)
+        .defaultHorizontalPadding()
 
         Spacer()
     }
@@ -119,7 +119,7 @@ struct Template2View: TemplateViewType {
             self.offerDetails(package: package, selected: selected)
         }
         .font(self.font(for: .body).weight(.medium))
-        .padding()
+        .defaultPadding()
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
         .overlay {

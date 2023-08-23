@@ -82,6 +82,7 @@ struct PurchaseButton: View {
                        ? .infinity
                         : nil
                 )
+                .padding(.vertical, VersionDetector.isIpad ? 10 : 0)
         }
         .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
         .tint(self.colors.callToActionBackgroundColor)

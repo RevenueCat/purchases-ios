@@ -15,6 +15,13 @@ class Template3ViewTests: BaseSnapshotTest {
         .snapshot(size: Self.fullScreenSize)
     }
 
+    func testTabletPaywall() {
+        PaywallView(offering: Self.offering.withLocalImages,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.iPadSize)
+    }
+
     func testDarkMode() {
         PaywallView(offering: Self.offering.withLocalImages,
                     introEligibility: Self.eligibleChecker,
