@@ -130,7 +130,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)
 
-                        self.state.displayed = false
+                        self.isDisplayed = false
                     }
                     .toolbar {
                         ToolbarItem(placement: .destructiveAction) {
