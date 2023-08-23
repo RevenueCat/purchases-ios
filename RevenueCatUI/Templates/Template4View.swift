@@ -118,7 +118,7 @@ struct Template4View: TemplateViewType {
     }
 
     private var packages: some View {
-        HStack(spacing: self.packageHorizontalSpacing) {
+        HStack(spacing: self.totalPackageHorizontalSpacing) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
                 let isSelected = self.selectedPackage.content === package.content
 
@@ -171,7 +171,10 @@ struct Template4View: TemplateViewType {
 
     private var packageWidth: CGFloat {
         let packages = self.packagesToDisplay
-        return self.containerWidth / packages - self.totalPackageHorizontalSpacing * (packages - 1)
+        return max(
+            0,
+            self.containerWidth / packages - self.totalPackageHorizontalSpacing * (packages - 1)
+        )
     }
 
     // MARK: -
