@@ -98,9 +98,9 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
-                PaywallFooterView(
+                PaywallView(
                     offering: self.offering,
-                    condensed: self.condensed,
+                    mode: self.condensed ? .condensedFooter : .footer,
                     fonts: self.fontProvider,
                     introEligibility: self.introEligibility ?? .default(),
                     purchaseHandler: self.purchaseHandler ?? .default()
