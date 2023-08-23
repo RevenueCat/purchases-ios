@@ -15,8 +15,8 @@ import Foundation
 
 protocol PaywallCacheWarmingType: Sendable {
 
-    func warmUpEligibilityCache(offerings: Offerings)
-    func warmUpPaywallImagesCache(offerings: Offerings)
+    func warmUpEligibilityCache(offerings: Offerings) async
+    func warmUpPaywallImagesCache(offerings: Offerings) async
 
 }
 
@@ -27,23 +27,19 @@ protocol PaywallImageFetcherType: Sendable {
 
 }
 
-final class PaywallCacheWarming: PaywallCacheWarmingType {
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let imageFetcher: PaywallImageFetcherType
 
-    convenience init(introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType) {
-        final class Fetcher: PaywallImageFetcherType {
-            @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-            func downloadImage(_ url: URL) async throws {
-                _ = try await URLSession.shared.data(from: url)
-            }
-        }
+    private var hasLoadedEligibility = false
+    private var hasLoadedImages = false
 
-        self.init(introEligibiltyChecker: introEligibiltyChecker, imageFetcher: Fetcher())
-    }
-
-    init(introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType, imageFetcher: PaywallImageFetcherType) {
+    init(
+        introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
+        imageFetcher: PaywallImageFetcherType = DefaultPaywallImageFetcher()
+    ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
 
@@ -53,6 +49,9 @@ final class PaywallCacheWarming: PaywallCacheWarmingType {
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
+        guard !self.hasLoadedEligibility else { return }
+        self.hasLoadedEligibility = true
+
         let productIdentifiers = offerings.allProductIdentifiersInPaywalls
         guard !productIdentifiers.isEmpty else { return }
 
@@ -60,23 +59,33 @@ final class PaywallCacheWarming: PaywallCacheWarmingType {
         self.introEligibiltyChecker.checkEligibility(productIdentifiers: productIdentifiers) { _ in }
     }
 
-    func warmUpPaywallImagesCache(offerings: Offerings) {
-        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
+    func warmUpPaywallImagesCache(offerings: Offerings) async {
+        guard !self.hasLoadedImages else { return }
+        self.hasLoadedImages = true
 
         let imageURLs = offerings.allImagesInPaywalls
         guard !imageURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
 
-        Task<Void, Never> {
-            for url in imageURLs {
-                do {
-                    try await self.imageFetcher.downloadImage(url)
-                } catch {
-                    Logger.error(Strings.paywalls.error_prefetching_image(url, error))
-                }
+        for url in imageURLs {
+            do {
+                try await self.imageFetcher.downloadImage(url)
+            } catch {
+                Logger.error(Strings.paywalls.error_prefetching_image(url, error))
             }
         }
+    }
+
+}
+
+// MARK: -
+
+final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func downloadImage(_ url: URL) async throws {
+        _ = try await URLSession.shared.data(from: url)
     }
 
 }
