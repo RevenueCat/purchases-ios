@@ -11,11 +11,14 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct FooterView: View {
 
+    @Environment(\.userInterfaceIdiom)
+    private var interfaceIdiom
+
     var configuration: PaywallData.Configuration
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
     var color: Color
-    var bold: Bool
+    var boldPreferred: Bool
     var purchaseHandler: PurchaseHandler
     var displayingAllPlans: Binding<Bool>?
 
@@ -48,7 +51,7 @@ struct FooterView: View {
         self.mode = mode
         self.fonts = fonts
         self.color = color
-        self.bold = bold && !VersionDetector.isIpad
+        self.boldPreferred = bold
         self.purchaseHandler = purchaseHandler
         self.displayingAllPlans = displayingAllPlans
     }
@@ -87,7 +90,7 @@ struct FooterView: View {
             }
         }
         .foregroundColor(self.color)
-        .font(self.fonts.font(for: Self.font).weight(self.fontWeight))
+        .font(self.fonts.font(for: self.font).weight(self.fontWeight))
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .padding(.bottom, 5)
@@ -108,13 +111,19 @@ struct FooterView: View {
         SeparatorView(bold: self.bold)
     }
 
+    private var bold: Bool {
+        return self.boldPreferred && self.interfaceIdiom != .pad
+    }
+
     private var hasTOS: Bool { self.configuration.termsOfServiceURL != nil }
     private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
     private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
-    fileprivate static let font: Font.TextStyle = VersionDetector.isIpad
-    ? .callout
-    : .caption
+    fileprivate var font: Font.TextStyle {
+        return self.interfaceIdiom == .pad
+        ? .callout
+        : .caption
+    }
 
 }
 
@@ -129,10 +138,10 @@ private struct SeparatorView: View {
             .accessibilityHidden(true)
     }
 
-    @ScaledMetric(relativeTo: FooterView.font)
+    @ScaledMetric(relativeTo: .caption)
     private var separatorSize: CGFloat = 4
 
-    @ScaledMetric(relativeTo: FooterView.font)
+    @ScaledMetric(relativeTo: .caption)
     private var boldSeparatorSize: CGFloat = 5
 }
 
