@@ -17,10 +17,9 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesLogInTests: BasePurchasesTests {
+class BasePurchasesLogInTests: BasePurchasesTests {}
 
-    private typealias LogInResult = Result<(customerInfo: CustomerInfo, created: Bool), PublicError>
-    private typealias LogOutResult = Result<CustomerInfo, PublicError>
+class PurchasesLogInTests: BasePurchasesLogInTests {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -238,6 +237,19 @@ class PurchasesLogInTests: BasePurchasesTests {
         self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
+}
+
+class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.deviceCache.cachedCustomerInfo[Self.appUserID] = try Self.mockLoggedOutInfo.jsonEncodedData
+        self.initializePurchasesInstance(appUserId: Self.appUserID)
+
+        expect(self.purchasesDelegate.customerInfo).toEventuallyNot(beNil())
+    }
+
     func testLogInClearsTrialEligibilityCache() {
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
 
@@ -268,7 +280,10 @@ class PurchasesLogInTests: BasePurchasesTests {
 
 // MARK: -
 
-private extension PurchasesLogInTests {
+private extension BasePurchasesLogInTests {
+
+    typealias LogInResult = Result<(customerInfo: CustomerInfo, created: Bool), PublicError>
+    typealias LogOutResult = Result<CustomerInfo, PublicError>
 
     // swiftlint:disable force_try
     static let mockLoggedInInfo = try! CustomerInfo(data: PurchasesLogInTests.loggedInCustomerInfoData)
@@ -298,7 +313,7 @@ private extension PurchasesLogInTests {
     ]
 
     /// Converts the result of `Purchases.logIn` into `LogInResult`
-    private static func logInResult(_ info: CustomerInfo?, _ created: Bool, _ error: PublicError?) -> LogInResult {
+    static func logInResult(_ info: CustomerInfo?, _ created: Bool, _ error: PublicError?) -> LogInResult {
         return .init(info.map { ($0, created) }, error)
     }
 

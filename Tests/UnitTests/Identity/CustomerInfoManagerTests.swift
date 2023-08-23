@@ -20,7 +20,7 @@ class BaseCustomerInfoManagerTests: TestCase {
     var customerInfoManager: CustomerInfoManager!
 
     fileprivate var customerInfoManagerChangesCallCount = 0
-    fileprivate var customerInfoManagerLastCustomerInfo: CustomerInfo?
+    fileprivate var customerInfoManagerLastCustomerInfoChange: (old: CustomerInfo?, new: CustomerInfo)?
 
     fileprivate var customerInfoMonitorDisposable: (() -> Void)?
 
@@ -44,7 +44,7 @@ class BaseCustomerInfoManagerTests: TestCase {
         self.mockTransactionPoster = MockTransactionPoster()
 
         self.customerInfoManagerChangesCallCount = 0
-        self.customerInfoManagerLastCustomerInfo = nil
+        self.customerInfoManagerLastCustomerInfoChange = nil
 
         self.customerInfoManager = CustomerInfoManager(
             offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -74,9 +74,9 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.customerInfoMonitorDisposable = self.customerInfoManager.monitorChanges { [weak self] customerInfo in
+        self.customerInfoMonitorDisposable = self.customerInfoManager.monitorChanges { [weak self] old, new in
             self?.customerInfoManagerChangesCallCount += 1
-            self?.customerInfoManagerLastCustomerInfo = customerInfo
+            self?.customerInfoManagerLastCustomerInfoChange = (old, new)
         }
     }
 
@@ -142,7 +142,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
         expect(self.customerInfoManagerChangesCallCount) == 1
-        expect(self.customerInfoManagerLastCustomerInfo) == self.mockCustomerInfo
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: self.mockCustomerInfo)
     }
 
     func testFetchAndCacheCustomerInfoCallsCompletionOnMainThread() throws {
@@ -196,51 +196,10 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfNeverSent() throws {
-        let info: CustomerInfo = .emptyInfo
-
-        let object = try info.jsonEncodedData
-        self.mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
-
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
-
-        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
-    }
-
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsIfDifferent() throws {
-        let oldInfo: CustomerInfo = .emptyInfo
-
-        var object = try oldInfo.jsonEncodedData
-
-        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
-
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
-
-        let newInfo = try CustomerInfo(data: [
-            "request_date": "2019-08-16T10:30:42Z",
-            "subscriber": [
-                "original_app_user_id": Self.appUserID,
-                "first_seen": "2019-06-17T16:05:33Z",
-                "subscriptions": ["product_a": ["expires_date": "2018-05-27T06:24:50Z", "period_type": "normal"]],
-                "other_purchases": [:] as [String: Any]
-            ] as [String: Any]
-        ])
-
-        object = try newInfo.jsonEncodedData
-        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
-
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
-        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
-    }
-
-    func testSendCachedCustomerInfoIfAvailableForAppUserIDSendsOnMainThread() throws {
-        let oldInfo: CustomerInfo = .emptyInfo
-
-        let object = try oldInfo.jsonEncodedData
-        mockDeviceCache.cachedCustomerInfo[Self.appUserID] = object
-
-        customerInfoManager.sendCachedCustomerInfoIfAvailable(appUserID: Self.appUserID)
-        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnMainThreadCount) == 1
+    func testSetLastSentCustomerInfo() {
+        expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+        self.customerInfoManager.setLastSentCustomerInfo(self.mockCustomerInfo)
+        expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
     }
 
     func testCustomerInfoReturnsFromCacheIfAvailable() {
@@ -448,7 +407,26 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testCacheCustomerInfoSendsToDelegateIfChanged() {
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
-        expect(self.customerInfoManagerLastCustomerInfo) == self.mockCustomerInfo
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: self.mockCustomerInfo)
+    }
+
+    func testCacheCustomerInfoSendsMultipleUpdatesIfChange() throws {
+        let newCustomerInfo = try CustomerInfo(data: [
+            "request_date": "2023-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "new user",
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ]  as [String: Any]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+        self.customerInfoManager.cache(customerInfo: newCustomerInfo, appUserID: "myUser")
+
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: self.mockCustomerInfo, new: newCustomerInfo)
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
@@ -456,7 +434,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         self.customerInfoManager.cache(customerInfo: info, appUserID: "myUser")
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
-        expect(self.customerInfoManagerLastCustomerInfo) == info
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: info)
     }
 
     func testClearCustomerInfoCacheClearsCorrectly() {
@@ -469,7 +447,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     func testClearCustomerInfoCacheResetsLastSent() {
         let appUserID = "myUser"
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
-        expect(self.customerInfoManager.lastSentCustomerInfo) == mockCustomerInfo
+        expect(self.customerInfoManager.lastSentCustomerInfo) == self.mockCustomerInfo
 
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
 
@@ -686,7 +664,7 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
     func testObserverFetchingCustomerInfoDoesNotDeadlock() throws {
         let expectation = XCTestExpectation()
 
-        let removeObservation = self.customerInfoManager.monitorChanges { [manager = self.customerInfoManager!] _ in
+        let removeObservation = self.customerInfoManager.monitorChanges { [manager = self.customerInfoManager!] _, _ in
             // Re-fetch customer info when it changes.
             // This isn't necessary since it's passed as part of the change,
             // but it should not deadlock.

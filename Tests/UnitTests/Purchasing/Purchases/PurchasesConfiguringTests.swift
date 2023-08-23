@@ -224,6 +224,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
     }
 
+    func testFirstInitializationDoesNotClearIntroEligibilityCache() {
+        self.setupPurchases()
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
+    }
+
+    func testFirstInitializationDoesNotClearPurchasedProductsCache() {
+        self.setupPurchases()
+        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
+
+        expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
+    }
+
     func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
@@ -242,7 +256,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         let info = try CustomerInfo(data: Self.emptyCustomerInfoData)
         let object = try info.jsonEncodedData
 
-        self.deviceCache.cachedCustomerInfo[identityManager.currentAppUserID] = object
+        self.deviceCache.cachedCustomerInfo[self.identityManager.currentAppUserID] = object
 
         self.setupPurchases()
 
