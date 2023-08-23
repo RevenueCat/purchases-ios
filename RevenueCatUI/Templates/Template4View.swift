@@ -96,7 +96,7 @@ struct Template4View: TemplateViewType {
             .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
 
             self.subscribeButton
-                .padding(.horizontal)
+                .defaultHorizontalPadding()
 
             FooterView(configuration: self.configuration,
                        bold: false,
@@ -272,7 +272,7 @@ private struct PackageButton: View {
                 .minimumScaleFactor(0.7)
         }
         .padding(.vertical, Self.labelVerticalSeparation * 2.0)
-        .padding(.horizontal)
+        .defaultHorizontalPadding()
         .foregroundColor(self.configuration.colors.text1Color)
     }
 

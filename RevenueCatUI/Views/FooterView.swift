@@ -54,7 +54,7 @@ struct FooterView: View {
         self.mode = mode
         self.fonts = fonts
         self.color = color
-        self.bold = bold
+        self.bold = bold && !VersionDetector.isIpad
         self.purchaseHandler = purchaseHandler
         self.displayingAllPlans = displayingAllPlans
     }
@@ -118,7 +118,9 @@ struct FooterView: View {
     private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
     private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
-    private static let font: Font.TextStyle = .caption
+    fileprivate static let font: Font.TextStyle = VersionDetector.isIpad
+    ? .callout
+    : .caption
 
 }
 
@@ -133,10 +135,10 @@ private struct SeparatorView: View {
             .accessibilityHidden(true)
     }
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: FooterView.font)
     private var separatorSize: CGFloat = 4
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: FooterView.font)
     private var boldSeparatorSize: CGFloat = 5
 }
 

@@ -32,7 +32,7 @@ struct Template1View: TemplateViewType {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: Constants.defaultVerticalPadding) {
             self.scrollableContent
                 .scrollableIfNecessary()
                 .scrollBounceBehaviorBasedOnSize()
@@ -47,10 +47,10 @@ struct Template1View: TemplateViewType {
             )
             .font(self.font(for: .callout))
             .multilineTextAlignment(.center)
-            .padding(.horizontal)
+            .defaultHorizontalPadding()
 
             self.button
-                .padding(.horizontal)
+                .defaultHorizontalPadding()
 
             FooterView(configuration: self.configuration,
                        purchaseHandler: self.purchaseHandler)
@@ -59,9 +59,10 @@ struct Template1View: TemplateViewType {
 
     @ViewBuilder
     private var scrollableContent: some View {
-        VStack {
+        VStack(spacing: Constants.defaultVerticalPadding) {
             if self.configuration.mode.shouldDisplayIcon {
                 self.headerImage
+                // TODO: max height for landscape ipad?
             }
 
             if self.configuration.mode.shouldDisplayText {

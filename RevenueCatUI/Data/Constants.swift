@@ -25,4 +25,7 @@ enum Constants {
     /// For UI elements that wouldn't make sense to keep scaling up forever
     static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
 
+    static let defaultHorizontalPadding: CGFloat? = VersionDetector.isIpad ? 24 : nil
+    static let defaultVerticalPadding: CGFloat? = VersionDetector.isIpad ? 16 : nil
+
 }

@@ -25,6 +25,13 @@ class Template1ViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
+    func testTabletPaywall() {
+        PaywallView(offering: Self.offeringWithNoIntroOffer,
+                    introEligibility: Self.eligibleChecker,
+                    purchaseHandler: Self.purchaseHandler)
+        .snapshot(size: Self.iPadSize)
+    }
+
     func testCustomFont() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            fonts: Self.fonts)
