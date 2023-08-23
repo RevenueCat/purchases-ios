@@ -13,6 +13,9 @@ parameters:
   generate_snapshots:
     default: false
     type: boolean
+  generate_revenuecatui_snapshots:
+    default: false
+    type: boolean
 
 aliases:
   base-job: &base-job
@@ -23,7 +26,8 @@ aliases:
       xcode_version:
         type: string
     environment:
-      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >> 
+      CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
+      CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   release-branches: &release-branches
@@ -343,6 +347,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13,OS=15.5
+      - when:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -367,6 +377,12 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14,OS=16.4
+      - when:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -390,6 +406,12 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 Pro,OS=17.0
+      - when:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: Run create_snapshot_pr 
+                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-17"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -958,12 +980,24 @@ workflows:
       - run-test-ios-12:
           # Simulator fails to install on Xcode 14
           xcode_version: '13.4.1'
+
+  generate_revenuecatui_snapshots:
+    when: << pipeline.parameters.generate_revenuecatui_snapshots >>
+    jobs:
+      - spm-revenuecat-ui-ios-15:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-16:
+          xcode_version: '14.3.0'
+      - spm-revenuecat-ui-ios-17:
+          xcode_version: '15.0.0'
+  
   build-test:
     when:
       and:
         - not:
             equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - not: << pipeline.parameters.generate_snapshots >>
+        - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint:
           xcode_version: '14.3.0'
