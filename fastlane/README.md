@@ -226,13 +226,21 @@ Release to CocoaPods
 
 Tag current branch with current version number
 
-### ios generate_snapshots
+### ios generate_snapshots_RC
 
 ```sh
-[bundle exec] fastlane ios generate_snapshots
+[bundle exec] fastlane ios generate_snapshots_RC
 ```
 
-Trigger CircleCI job to generate snapshots
+Trigger CircleCI job to generate snapshots for RevenueCat
+
+### ios generate_snapshots_RCUI
+
+```sh
+[bundle exec] fastlane ios generate_snapshots_RCUI
+```
+
+Trigger CircleCI job to generate snapshots for RevenueCatUI
 
 ### ios create_snapshot_pr
 
