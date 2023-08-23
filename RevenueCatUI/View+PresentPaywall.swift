@@ -123,7 +123,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
-                        customerInfo: nil,
+                        customerInfo: self.state.customerInfo,
                         fonts: self.fontProvider,
                         introEligibility: self.introEligibility ?? .default(),
                         purchaseHandler: self.purchaseHandler ?? .default()

@@ -101,10 +101,12 @@ public struct PaywallView: View {
                                     throw PaywallError.purchasesNotConfigured
                                 }
 
-                                guard let offering = try await Purchases.shared.offerings().current else {
-                                    throw PaywallError.noCurrentOffering
+                                if self.offering == nil {
+                                    guard let offering = try await Purchases.shared.offerings().current else {
+                                        throw PaywallError.noCurrentOffering
+                                    }
+                                    self.offering = offering
                                 }
-                                self.offering = offering
 
                                 if self.customerInfo == nil {
                                     self.customerInfo = try await Purchases.shared.customerInfo()
