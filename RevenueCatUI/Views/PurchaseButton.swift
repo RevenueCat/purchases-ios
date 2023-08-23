@@ -83,6 +83,7 @@ struct PurchaseButton: View {
         .buttonStyle(.borderedProminent)
         .frame(maxWidth: .infinity)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+        .disabled(self.package.currentlySubscribed)
     }
 
 }
