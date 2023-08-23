@@ -31,4 +31,50 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validate(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
+    func testNoObserverModeWithStoreKit1() {
+        let configuration = Configuration.Builder(withAPIKey: "test").build()
+
+        expect(configuration.observerMode) == false
+        expect(configuration.storeKit2Setting) == .enabledOnlyForOptimizations
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
+    }
+
+    @available(*, deprecated)
+    func testNoObserverModeWithStoreKit2() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(usesStoreKit2IfAvailable: true)
+            .build()
+
+        expect(configuration.observerMode) == false
+        expect(configuration.storeKit2Setting) == .enabledForCompatibleDevices
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
+    }
+
+    func testObserverModeWithStoreKit1() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(observerMode: true)
+            .build()
+
+        expect(configuration.observerMode) == true
+        expect(configuration.storeKit2Setting) == .enabledOnlyForOptimizations
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
+    }
+
+    @available(*, deprecated)
+    func testObserverModeWithStoreKit2() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(observerMode: true)
+            .with(usesStoreKit2IfAvailable: true)
+            .build()
+
+        expect(configuration.observerMode) == true
+        expect(configuration.storeKit2Setting) == .enabledForCompatibleDevices
+
+        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
+                                           level: .warn)
+    }
+
 }

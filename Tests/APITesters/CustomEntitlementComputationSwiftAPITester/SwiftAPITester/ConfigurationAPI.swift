@@ -21,9 +21,14 @@ func checkConfigurationAPI() {
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
-        // Trusted Entitlements: internal until ready to be made public.
         // .with(entitlementVerificationMode: .informational)
         .build()
 
     print(configuration)
+}
+
+@available(*, deprecated)
+func checkDeprecatedConfiguration(_ builder: Configuration.Builder) {
+    _ = builder
+        .with(usesStoreKit2IfAvailable: true)
 }

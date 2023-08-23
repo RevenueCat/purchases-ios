@@ -400,7 +400,7 @@ extension CustomerInfo {
 
 public extension Configuration.Builder {
 
-    /// Set `usesStoreKit2IfAvailable`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
+    /// Set `storeKit2Setting`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
     /// - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it.
     /// Defaults to  `false`.
     /// - Important: This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
