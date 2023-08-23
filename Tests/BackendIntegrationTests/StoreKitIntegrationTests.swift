@@ -347,12 +347,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     // MARK: - Trial or Intro Eligibility tests
 
+    func testTrialEligibilityMakesNoNetworkRequests() async throws {
+        try await self.verifyReceiptIsPresentBeforeEligibilityChecking()
+
+        let product = try await self.monthlyPackage.storeProduct
+
+        self.logger.clearMessages()
+
+        _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
+
+        self.logger.verifyMessageWasNotLogged("API request started")
+    }
+
     func testEligibleForIntroBeforePurchase() async throws {
-        if Self.storeKit2Setting == .disabled {
-            // SK1 implementation relies on the receipt being loaded already.
-            // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
-            _ = try await self.purchases.restorePurchases()
-        }
+        try await self.verifyReceiptIsPresentBeforeEligibilityChecking()
 
         let product = try await self.monthlyPackage.storeProduct
 
@@ -608,6 +616,18 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
         expect(transaction.offerID) == offer.discount.offerIdentifier
         expect(transaction.offerType) == .promotional
+    }
+
+}
+
+private extension BaseStoreKitIntegrationTests {
+
+    func verifyReceiptIsPresentBeforeEligibilityChecking() async throws {
+        if Self.storeKit2Setting == .disabled {
+            // SK1 implementation relies on the receipt being loaded already.
+            // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
+            _ = try await self.purchases.restorePurchases()
+        }
     }
 
 }
