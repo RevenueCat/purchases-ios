@@ -44,7 +44,24 @@ extension XCTestCase {
         }
 
         expect(file: file, line: line, verified.id) == identifier
+    }
 
+    func waitUntilUnfinishedTransactions(
+        _ expectedCount: Int,
+        file: FileString = #fileID,
+        line: UInt = #line
+    ) async throws {
+        try await asyncWait(
+            description: "Expected \(expectedCount) unfinished transactions",
+            file: file,
+            line: line
+        ) {
+            await Transaction.unfinished.extractValues().count == expectedCount
+        }
+    }
+
+    func waitUntilUntilNoUnfinishedTransactions(file: FileString = #fileID, line: UInt = #line) async throws {
+        try await self.waitUntilUnfinishedTransactions(0)
     }
 
     func deleteAllTransactions(session: SKTestSession) async {
