@@ -46,4 +46,11 @@ extension PaywallViewMode {
         }
     }
 
+    var shouldDisplayBackground: Bool {
+        switch self {
+        case .fullScreen: return true
+        case .footer, .condensedFooter: return false
+        }
+    }
+
 }
