@@ -513,12 +513,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 5. Re-open app
         await self.resetSingleton()
-        self.logger.clearMessages()
 
-        // 6. Purchase again
+        // 6. Wait for pending transactions to be posted
+        try await self.waitUntilNoUnfinishedTransactions()
+
+        // 7. Purchase again
+        self.logger.clearMessages()
         try await self.purchaseMonthlyProduct()
 
-        // 7. Verify transaction is posted as a purchase.
+        // 8. Verify transaction is posted as a purchase.
         self.logger.verifyMessageWasLogged("Posting receipt (source: 'purchase')")
     }
 
