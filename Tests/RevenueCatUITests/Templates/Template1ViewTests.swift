@@ -26,11 +26,9 @@ class Template1ViewTests: BaseSnapshotTest {
     }
 
     func testTabletPaywall() {
-        PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .environment(\.userInterfaceIdiom, .pad)
-        .snapshot(size: Self.iPadSize)
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer)
+            .environment(\.userInterfaceIdiom, .pad)
+            .snapshot(size: Self.iPadSize)
     }
 
     func testCustomFont() {
