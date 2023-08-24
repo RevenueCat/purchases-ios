@@ -9,49 +9,37 @@ import SnapshotTesting
 class Template4ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offering.withLocalImages)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testCustomFont() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    fonts: Self.fonts,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           fonts: Self.fonts)
         .snapshot(size: Self.fullScreenSize)
     }
 
     func testLargeDynamicType() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .environment(\.dynamicTypeSize, .xxLarge)
-        .snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offering.withLocalImages)
+            .environment(\.dynamicTypeSize, .xxLarge)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testLargerDynamicType() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .environment(\.dynamicTypeSize, .accessibility2)
-        .snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offering.withLocalImages)
+            .environment(\.dynamicTypeSize, .accessibility2)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testFooterPaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    mode: .footer,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           mode: .footer)
         .snapshot(size: Self.footerSize)
     }
 
     func testCondensedFooterPaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    mode: .condensedFooter,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           mode: .condensedFooter)
         .snapshot(size: Self.footerSize)
     }
 
