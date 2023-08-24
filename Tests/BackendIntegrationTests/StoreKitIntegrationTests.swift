@@ -515,7 +515,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await self.resetSingleton()
 
         // 6. Wait for pending transactions to be posted
-        try await self.waitUntilUntilNoUnfinishedTransactions()
+        try await self.waitUntilNoUnfinishedTransactions()
 
         // 7. Purchase again
         self.logger.clearMessages()

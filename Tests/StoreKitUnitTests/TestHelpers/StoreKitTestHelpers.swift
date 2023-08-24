@@ -60,7 +60,7 @@ extension XCTestCase {
         }
     }
 
-    func waitUntilUntilNoUnfinishedTransactions(file: FileString = #fileID, line: UInt = #line) async throws {
+    func waitUntilNoUnfinishedTransactions(file: FileString = #fileID, line: UInt = #line) async throws {
         try await self.waitUntilUnfinishedTransactions(0)
     }
 
