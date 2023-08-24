@@ -9,42 +9,33 @@ import SnapshotTesting
 class Template2ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offering.withLocalImages)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testCustomFont() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    fonts: Self.fonts,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           fonts: Self.fonts)
         .snapshot(size: Self.fullScreenSize)
     }
 
     func testFooterPaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    mode: .footer,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           mode: .footer)
         .snapshot(size: Self.footerSize)
     }
 
     func testCondensedFooterPaywall() {
-        PaywallView(offering: Self.offering.withLocalImages,
-                    mode: .condensedFooter,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           mode: .condensedFooter)
         .snapshot(size: Self.footerSize)
     }
 
     func testPurchasingState() {
         let handler = Self.purchaseHandler.with(delay: 120)
 
-        let view = PaywallView(offering: Self.offering.withLocalImages,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: handler)
+        let view = Self.createPaywall(offering: Self.offering.withLocalImages,
+                                      purchaseHandler: handler)
             .task {
                 _ = try? await handler.purchase(package: TestData.annualPackage,
                                                 with: .fullScreen)
@@ -54,11 +45,8 @@ class Template2ViewTests: BaseSnapshotTest {
     }
 
     func testDarkMode() {
-        let view = PaywallView(offering: Self.offering.withLocalImages,
-                               introEligibility: Self.ineligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-
-        view
+        Self.createPaywall(offering: Self.offering.withLocalImages,
+                           introEligibility: Self.ineligibleChecker)
             .environment(\.colorScheme, .dark)
             .snapshot(size: Self.fullScreenSize)
     }
