@@ -27,11 +27,13 @@ struct SamplePaywallsList: View {
                     switch mode {
                     case .fullScreen:
                         PaywallView(offering: Self.loader.offering(for: template),
+                                    customerInfo: Self.loader.customerInfo,
                                     introEligibility: Self.introEligibility,
                                     purchaseHandler: .default())
 
                     case .footer, .condensedFooter:
                         CustomPaywall(offering: Self.loader.offering(for: template),
+                                      customerInfo: Self.loader.customerInfo,
                                       condensed: mode == .condensedFooter,
                                       introEligibility: Self.introEligibility,
                                       purchaseHandler: .default())
@@ -39,20 +41,24 @@ struct SamplePaywallsList: View {
 
                 case let .customFont(template):
                     PaywallView(offering: Self.loader.offering(for: template),
+                                customerInfo: Self.loader.customerInfo,
                                 fonts: Self.customFontProvider,
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
 
                 case let .customPaywall(mode):
-                    CustomPaywall(condensed: mode == .condensedFooter)
+                    CustomPaywall(customerInfo: Self.loader.customerInfo,
+                                  condensed: mode == .condensedFooter)
 
                 case .missingPaywall:
                     PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
+                                customerInfo: Self.loader.customerInfo,
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
 
                 case .unrecognizedPaywall:
                     PaywallView(offering: Self.loader.offeringWithUnrecognizedPaywall(),
+                                customerInfo: Self.loader.customerInfo,
                                 introEligibility: Self.introEligibility,
                                 purchaseHandler: .default())
                 }

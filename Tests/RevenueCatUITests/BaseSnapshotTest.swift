@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 7/17/23.
 //
 import Nimble
+import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
 import SwiftUI
@@ -18,6 +19,21 @@ class BaseSnapshotTest: TestCase {
         super.setUp()
 
         // isRecording = true
+    }
+
+    static func createPaywall(
+        offering: Offering,
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
+        purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler
+    ) -> some View {
+        return PaywallView(offering: offering,
+                           customerInfo: TestData.customerInfo,
+                           mode: mode,
+                           fonts: fonts,
+                           introEligibility: eligibleChecker,
+                           purchaseHandler: purchaseHandler)
     }
 
 }
