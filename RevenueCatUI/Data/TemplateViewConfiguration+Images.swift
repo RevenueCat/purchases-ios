@@ -18,6 +18,17 @@ extension TemplateViewConfiguration {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension TemplateViewConfiguration {
+
+    var backgroundImageURLToDisplay: URL? {
+        guard self.mode.shouldDisplayBackground else { return nil }
+
+        return self.backgroundImageURL
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension TemplateViewConfiguration {
 
     func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
