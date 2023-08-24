@@ -28,6 +28,7 @@ class PaywallFooterTests: TestCase {
 
         try Text("")
             .paywallFooter(offering: Self.offering,
+                           customerInfo: TestData.customerInfo,
                            introEligibility: .producing(eligibility: .eligible),
                            purchaseHandler: Self.purchaseHandler) {
                 customerInfo = $0
