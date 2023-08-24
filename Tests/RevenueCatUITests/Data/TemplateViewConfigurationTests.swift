@@ -20,6 +20,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [],
+                activelySubscribedProductIdentifiers: [],
                 filter: [PackageType.monthly.identifier],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
@@ -32,6 +33,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [TestData.monthlyPackage],
+                activelySubscribedProductIdentifiers: [],
                 filter: [],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
@@ -43,6 +45,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateSinglePackage() throws {
         let result = try Config.create(
             with: [TestData.monthlyPackage],
+            activelySubscribedProductIdentifiers: [],
             filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
@@ -52,6 +55,29 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case let .single(package):
             expect(package.content) === TestData.monthlyPackage
+            expect(package.currentlySubscribed) == false
+            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
+            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
+        case .multiple:
+            fail("Invalid result: \(result)")
+        }
+    }
+
+    func testCreateSingleSubscribedPackage() throws {
+        let result = try Config.create(
+            with: [TestData.monthlyPackage],
+            activelySubscribedProductIdentifiers: [TestData.monthlyPackage.storeProduct.productIdentifier,
+                                                  "Anotoher product"],
+            filter: [PackageType.monthly.identifier],
+            default: nil,
+            localization: Self.localization,
+            setting: .single
+        )
+
+        switch result {
+        case let .single(package):
+            expect(package.content) === TestData.monthlyPackage
+            expect(package.currentlySubscribed) == true
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
         case .multiple:
@@ -62,6 +88,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateOnlyLifetime() throws {
         let result = try Config.create(
             with: [TestData.lifetimePackage],
+            activelySubscribedProductIdentifiers: [],
             filter: [PackageType.lifetime.identifier],
             default: nil,
             localization: Self.localization,
@@ -84,6 +111,10 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                    TestData.weeklyPackage,
                    TestData.lifetimePackage,
                    Self.consumable],
+            activelySubscribedProductIdentifiers: [
+                TestData.monthlyPackage.storeProduct.productIdentifier,
+                TestData.lifetimePackage.storeProduct.productIdentifier
+            ],
             filter: [PackageType.annual.identifier,
                      PackageType.monthly.identifier,
                      PackageType.lifetime.identifier,
@@ -104,21 +135,25 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
+            expect(annual.currentlySubscribed) == false
             expect(annual.discountRelativeToMostExpensivePerMonth)
                 .to(beCloseTo(0.36, within: 0.01))
             Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
             let monthly = packages[1]
             expect(monthly.content) === TestData.monthlyPackage
+            expect(monthly.currentlySubscribed) == true
             expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
 
             let lifetime = packages[2]
             expect(lifetime.content) === TestData.lifetimePackage
+            expect(lifetime.currentlySubscribed) == true
             Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
 
             let consumable = packages[3]
             expect(consumable.content) === Self.consumable
+            expect(consumable.currentlySubscribed) == false
             Self.verifyLocalizationWasProcessed(consumable.localization, for: Self.consumable)
         }
     }
