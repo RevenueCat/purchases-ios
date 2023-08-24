@@ -53,6 +53,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
     init(
         offering: Offering,
+        activelySubscribedProductIdentifiers: Set<String> = [],
         mode: PaywallViewMode = .default,
         presentInSheet: Bool = false,
         creator: @escaping Creator
@@ -61,6 +62,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
         self.configuration = paywall.configuration(
             for: offering,
+            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             template: PaywallTemplate(rawValue: paywall.templateName)!,
             mode: mode,
             fonts: DefaultPaywallFontProvider(),

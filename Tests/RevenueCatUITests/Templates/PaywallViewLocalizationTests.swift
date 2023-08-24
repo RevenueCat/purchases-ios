@@ -30,7 +30,7 @@ private extension PaywallViewLocalizationTests {
     }
 
     private static func createView() -> some View {
-        return PaywallView(
+        return Self.createPaywall(
             offering: Self.offering.withLocalImages,
             introEligibility: .init(checker: { packages in
                 return Dictionary(
@@ -43,8 +43,7 @@ private extension PaywallViewLocalizationTests {
                             return (package, result)
                         }
                 )
-            }),
-            purchaseHandler: Self.purchaseHandler
+            })
         )
     }
 
