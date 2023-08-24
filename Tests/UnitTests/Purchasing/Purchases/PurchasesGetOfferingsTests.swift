@@ -100,6 +100,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     }
 
     func testWarmsUpPaywallsCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let bundle = Bundle(for: Self.self)
         let offeringsURL = try XCTUnwrap(bundle.url(forResource: "Offerings",
                                                     withExtension: "json",
