@@ -109,7 +109,7 @@ struct FooterView: View {
                 binding.wrappedValue.toggle()
             }
         } label: {
-            Text("All plans", bundle: .module)
+            Text("All subscriptions", bundle: .module)
         }
     }
 

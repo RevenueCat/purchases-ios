@@ -37,6 +37,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F102E262A840ECC0059EED6 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
 		4F34FF622A60AD9A00AADF11 /* AppContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContentView.swift; sourceTree = "<group>"; };
 		4F34FF642A60ADBD00AADF11 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
@@ -192,6 +194,8 @@
 				en,
 				Base,
 				es,
+				de,
+				fr,
 			);
 			mainGroup = 4F6BED912A26A64200CD9322;
 			productRefGroup = 4F6BED9B2A26A64200CD9322 /* Products */;
@@ -240,6 +244,8 @@
 			children = (
 				4F4557E32A6FFE6A00160521 /* en */,
 				4F4557E52A6FFE6D00160521 /* es */,
+				4F0B5EA02A97CD9300DB0FC9 /* de */,
+				4F0B5EA12A97CDAC00DB0FC9 /* fr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
