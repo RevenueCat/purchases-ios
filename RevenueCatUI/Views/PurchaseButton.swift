@@ -53,9 +53,6 @@ struct PurchaseButton: View {
         self.purchaseHandler = purchaseHandler
     }
 
-    @Environment(\.dismiss)
-    private var dismiss
-
     var body: some View {
         self.button
     }
@@ -64,12 +61,8 @@ struct PurchaseButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            let cancelled = try await self.purchaseHandler.purchase(package: self.package.content,
-                                                                    with: self.mode).userCancelled
-
-            if !cancelled, case .fullScreen = self.mode {
-                self.dismiss()
-            }
+            _ = try await self.purchaseHandler.purchase(package: self.package.content,
+                                                        with: self.mode)
         } label: {
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.package.localization.callToAction,
