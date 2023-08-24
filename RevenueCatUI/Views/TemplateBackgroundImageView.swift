@@ -14,8 +14,7 @@ struct TemplateBackgroundImageView: View {
     var configuration: TemplateViewConfiguration
 
     var body: some View {
-        if self.configuration.mode.shouldDisplayBackground,
-           let url = self.configuration.backgroundImageURL {
+        if let url = self.configuration.backgroundImageURLToDisplay {
             self.image(url)
                 .unredacted()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -31,17 +30,6 @@ struct TemplateBackgroundImageView: View {
                 .opacity(0.7)
         } else {
             RemoteImage(url: url)
-        }
-    }
-
-}
-
-private extension PaywallViewMode {
-
-    var shouldDisplayBackground: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
         }
     }
 
