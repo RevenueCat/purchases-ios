@@ -189,7 +189,6 @@ private struct FeatureView: View {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(macCatalyst, unavailable)
 struct Template3View_Previews: PreviewProvider {
 
     static var previews: some View {

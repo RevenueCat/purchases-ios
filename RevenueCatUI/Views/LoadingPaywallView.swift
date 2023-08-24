@@ -133,7 +133,6 @@ private extension LoadingPaywallView {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(macCatalyst, unavailable)
 struct LoadingPaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
