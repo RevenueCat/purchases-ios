@@ -26,6 +26,7 @@ struct LoadingPaywallView: View {
                 paywall: Self.defaultPaywall,
                 availablePackages: Self.packages
             ),
+            activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
             template: Self.template,
             mode: self.mode,
