@@ -59,6 +59,8 @@ class OperationDispatcher {
         }
     }
 
+    /// Prevent DDOS if a notification leads to many users opening an app at the same time,
+    /// by spreading asynchronous operations over time.
     private static func randomDelay() -> TimeInterval {
         Double.random(in: 0..<Self.maxJitterInSeconds)
     }
