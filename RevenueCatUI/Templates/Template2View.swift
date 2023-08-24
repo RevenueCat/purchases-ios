@@ -126,21 +126,29 @@ struct Template2View: TemplateViewType {
             if selected {
                 EmptyView()
             } else {
-                RoundedRectangle(cornerRadius: Self.cornerRadius)
+                self.roundedRectangle
                     .stroke(self.configuration.colors.text1Color.opacity(Self.fadedColorOpacity), lineWidth: 2)
             }
         }
         .background {
-            let view = RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
-
             if selected {
-                view
+                self.roundedRectangle
                     .foregroundColor(self.selectedBackgroundColor)
             } else {
-                view
-                    .foregroundStyle(.thinMaterial)
+                if self.configuration.backgroundImageURLToDisplay != nil {
+                    // Blur background if there is a background image.
+                    self.roundedRectangle
+                        .foregroundStyle(.thinMaterial)
+                } else {
+                    // Otherwise the text should have enough contrast with the selected background color.
+                    EmptyView()
+                }
             }
         }
+    }
+
+    private var roundedRectangle: some Shape {
+        RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
     }
 
     private func packageButtonTitle(
