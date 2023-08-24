@@ -105,6 +105,11 @@ extension View {
 @available(tvOS, unavailable)
 private struct PresentingPaywallModifier: ViewModifier {
 
+    private struct Data: Identifiable {
+        var customerInfo: CustomerInfo
+        var id: String { self.customerInfo.originalAppUserId }
+    }
+
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var purchaseCompleted: PurchaseCompletedHandler?
     var offering: Offering?
@@ -115,15 +120,15 @@ private struct PresentingPaywallModifier: ViewModifier {
     var purchaseHandler: PurchaseHandler?
 
     @State
-    private var state: (displayed: Bool, customerInfo: CustomerInfo?) = (false, nil)
+    private var data: Data?
 
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: self.$state.displayed) {
+            .sheet(item: self.$data) { data in
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
-                        customerInfo: self.state.customerInfo,
+                        customerInfo: data.customerInfo,
                         fonts: self.fontProvider,
                         introEligibility: self.introEligibility ?? .default(),
                         purchaseHandler: self.purchaseHandler ?? .default()
@@ -131,12 +136,12 @@ private struct PresentingPaywallModifier: ViewModifier {
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)
 
-                        self.isDisplayed = false
+                        self.data = nil
                     }
                     .toolbar {
                         ToolbarItem(placement: .destructiveAction) {
                             Button {
-                                self.state.displayed = false
+                                self.data = nil
                             } label: {
                                 Image(systemName: "xmark")
                             }
@@ -152,7 +157,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 if self.shouldDisplay(info) {
                     Logger.debug(Strings.displaying_paywall)
 
-                    self.state = (displayed: true, customerInfo: info)
+                    self.data = .init(customerInfo: info)
                 } else {
                     Logger.debug(Strings.not_displaying_paywall)
                 }
