@@ -10,54 +10,41 @@ import SwiftUI
 class Template1ViewTests: BaseSnapshotTest {
 
     func testSamplePaywall() {
-        PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
-        .snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testCustomFont() {
-        PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    fonts: Self.fonts,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
+                           fonts: Self.fonts)
         .snapshot(size: Self.fullScreenSize)
     }
 
     func testFooterPaywall() {
-        PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .footer,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
+                           mode: .footer)
         .snapshot(size: Self.footerSize)
     }
 
     func testCondensedFooterPaywall() {
-        PaywallView(offering: Self.offeringWithNoIntroOffer,
-                    mode: .condensedFooter,
-                    introEligibility: Self.eligibleChecker,
-                    purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
+                           mode: .condensedFooter)
         .snapshot(size: Self.footerSize)
     }
 
     func testSamplePaywallWithIntroOffer() {
-        let view = PaywallView(offering: Self.offeringWithIntroOffer,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-
-        view.snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offeringWithIntroOffer)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithIneligibleIntroOffer() {
-        let view = PaywallView(offering: Self.offeringWithIntroOffer,
-                               introEligibility: Self.ineligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-
-        view.snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: Self.offeringWithIntroOffer,
+                           introEligibility: Self.ineligibleChecker)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testSamplePaywallWithLoadingEligibility() {
-        let view = PaywallView(
+        let view = Self.createPaywall(
             offering: Self.offeringWithIntroOffer,
             introEligibility: Self.ineligibleChecker
                 .with(delay: 30),
@@ -68,11 +55,8 @@ class Template1ViewTests: BaseSnapshotTest {
     }
 
     func testDarkMode() {
-        let view = PaywallView(offering: Self.offeringWithIntroOffer,
-                               introEligibility: Self.ineligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-
-        view
+        Self.createPaywall(offering: Self.offeringWithIntroOffer,
+                           introEligibility: Self.ineligibleChecker)
             .environment(\.colorScheme, .dark)
             .snapshot(size: Self.fullScreenSize)
     }

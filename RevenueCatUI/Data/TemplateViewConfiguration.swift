@@ -31,6 +31,7 @@ extension TemplateViewConfiguration {
 
         let content: RevenueCat.Package
         let localization: ProcessedLocalizedConfiguration
+        let currentlySubscribed: Bool
         let discountRelativeToMostExpensivePerMonth: Double?
 
     }
@@ -98,8 +99,10 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
     /// Creates a `PackageConfiguration` based on `setting`.
     /// - Throws: `TemplateError`
+    // swiftlint:disable:next function_parameter_count
     static func create(
         with packages: [RevenueCat.Package],
+        activelySubscribedProductIdentifiers: Set<String>,
         filter: [String],
         default: String?,
         localization: PaywallData.LocalizedConfiguration,
@@ -117,6 +120,9 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 TemplateViewConfiguration.Package(
                     content: package,
                     localization: localization.processVariables(with: package, locale: locale),
+                    currentlySubscribed: activelySubscribedProductIdentifiers.contains(
+                        package.storeProduct.productIdentifier
+                    ),
                     discountRelativeToMostExpensivePerMonth: Self.discount(
                         from: package.storeProduct.pricePerMonth?.doubleValue,
                         relativeTo: mostExpensivePricePerMonth

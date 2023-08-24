@@ -16,20 +16,14 @@ import SnapshotTesting
 class OtherPaywallViewTests: BaseSnapshotTest {
 
     func testDefaultPaywall() {
-        let view = PaywallView(offering: TestData.offeringWithNoPaywall,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
-
-        view.snapshot(size: Self.fullScreenSize)
+        Self.createPaywall(offering: TestData.offeringWithNoPaywall)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testDefaultDarkModePaywall() {
-        let view = PaywallView(offering: TestData.offeringWithNoPaywall,
-                               introEligibility: Self.eligibleChecker,
-                               purchaseHandler: Self.purchaseHandler)
+        Self.createPaywall(offering: TestData.offeringWithNoPaywall)
             .environment(\.colorScheme, .dark)
-
-        view.snapshot(size: Self.fullScreenSize)
+            .snapshot(size: Self.fullScreenSize)
     }
 
     func testLoadingPaywallView() {
