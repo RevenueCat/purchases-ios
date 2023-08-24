@@ -57,6 +57,9 @@ struct SamplePaywallsList: View {
                                 purchaseHandler: .default())
                 }
             }
+            .onPurchaseCompleted { _ in
+                self.display = nil
+            }
             .navigationTitle("Paywalls")
     }
 
