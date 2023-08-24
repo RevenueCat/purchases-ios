@@ -16,6 +16,7 @@ class BaseCustomerInfoManagerTests: TestCase {
     var mockTransactionPoster: MockTransactionPoster!
 
     var mockCustomerInfo: CustomerInfo!
+    var mockCustomerInfo2: CustomerInfo!
 
     var customerInfoManager: CustomerInfoManager!
 
@@ -32,6 +33,16 @@ class BaseCustomerInfoManagerTests: TestCase {
             "subscriber": [
                 "original_app_user_id": Self.appUserID,
                 "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ]  as [String: Any]
+        ])
+        self.mockCustomerInfo2 = try CustomerInfo(data: [
+            "request_date": "2020-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": "another_user",
+                "first_seen": "2020-06-17T16:05:33Z",
                 "subscriptions": [:] as [String: Any],
                 "other_purchases": [:] as [String: Any],
                 "original_application_version": NSNull()
@@ -437,6 +448,17 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: info)
     }
 
+    func testCacheCustomerInfoSendsToDelegateAfterCachingComputedOnDevice() {
+        let info1 = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
+        let info2 = self.mockCustomerInfo2.copy(with: .verifiedOnDevice)
+
+        self.customerInfoManager.cache(customerInfo: info1, appUserID: info1.originalAppUserId)
+        self.customerInfoManager.cache(customerInfo: info2, appUserID: info2.originalAppUserId)
+
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: info1, new: info2)
+    }
+
     func testClearCustomerInfoCacheClearsCorrectly() {
         let appUserID = "myUser"
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
@@ -444,14 +466,14 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.invokedClearCustomerInfoCacheParameters?.appUserID) == appUserID
     }
 
-    func testClearCustomerInfoCacheResetsLastSent() {
+    func testClearCustomerInfoCacheDoesNotResetLastSent() {
         let appUserID = "myUser"
         customerInfoManager.cache(customerInfo: mockCustomerInfo, appUserID: appUserID)
         expect(self.customerInfoManager.lastSentCustomerInfo) == self.mockCustomerInfo
 
         customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
 
-        expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+        expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
     }
 
 }

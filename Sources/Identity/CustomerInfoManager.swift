@@ -19,8 +19,6 @@ class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
 
-    var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
-
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
@@ -207,7 +205,6 @@ class CustomerInfoManager {
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
         self.modifyData {
             $0.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-            $0.lastSentCustomerInfo = nil
         }
     }
 
@@ -250,6 +247,9 @@ class CustomerInfoManager {
             }
         }
     }
+
+    // Visible for tests
+    var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
 
     private func removeObserver(with identifier: Int) {
         self.modifyData {
