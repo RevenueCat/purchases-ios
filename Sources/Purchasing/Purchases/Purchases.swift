@@ -237,7 +237,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionPoster: AttributionPoster
     private let backend: Backend
     private let deviceCache: DeviceCache
-    private let paywallCache: PaywallCacheWarmingType
+    private let paywallCache: PaywallCacheWarmingType?
     private let identityManager: IdentityManager
     private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
@@ -428,7 +428,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       productsManager: productsManager)
         )
 
-        let paywallCache = PaywallCacheWarming(introEligibiltyChecker: trialOrIntroPriceChecker)
+        let paywallCache: PaywallCacheWarmingType?
+
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+            paywallCache = PaywallCacheWarming(introEligibiltyChecker: trialOrIntroPriceChecker)
+        } else {
+            paywallCache = nil
+        }
 
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
@@ -468,7 +474,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          systemInfo: SystemInfo,
          offeringsFactory: OfferingsFactory,
          deviceCache: DeviceCache,
-         paywallCache: PaywallCacheWarmingType,
+         paywallCache: PaywallCacheWarmingType?,
          identityManager: IdentityManager,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
@@ -1631,10 +1637,11 @@ private extension Purchases {
             appUserID: self.appUserID,
             isAppBackgrounded: isAppBackgrounded
         ) { [cache = self.paywallCache] offerings in
-            if let offerings = offerings.value {
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
+               let cache = cache, let offerings = offerings.value {
                 self.operationDispatcher.dispatchOnWorkerThread {
-                    cache.warmUpEligibilityCache(offerings: offerings)
-                    cache.warmUpPaywallImagesCache(offerings: offerings)
+                    await cache.warmUpEligibilityCache(offerings: offerings)
+                    await cache.warmUpPaywallImagesCache(offerings: offerings)
                 }
             }
         }
