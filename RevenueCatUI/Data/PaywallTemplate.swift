@@ -19,7 +19,9 @@ internal enum PaywallTemplate: String {
     case template1 = "1"
     case template2 = "2"
     case template3 = "3"
-    case template4 = "4"
+
+    // Temporarily disabled until it's supported in the dashboard
+    case template4 = "4_disabled"
 
 }
 
