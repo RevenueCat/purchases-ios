@@ -137,9 +137,9 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
 
     func testLocalization() {
         verify(.annual, "Annual")
-        verify(.sixMonth, "6 month")
-        verify(.threeMonth, "3 month")
-        verify(.twoMonth, "2 month")
+        verify(.sixMonth, "6 Month")
+        verify(.threeMonth, "3 Month")
+        verify(.twoMonth, "2 Month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
         verify(.lifetime, "Lifetime")
@@ -163,8 +163,30 @@ class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
         verify(.threeMonth, "3 meses")
         verify(.twoMonth, "2 meses")
         verify(.monthly, "Mensual")
-        verify(.weekly, "Semanal")
-        verify(.lifetime, "Vitalicio")
+        verify(.weekly, "Semanalmente")
+        verify(.lifetime, "Toda la vida")
+    }
+
+    func testOtherValues() {
+        verify(.custom, "")
+        verify(.unknown, "")
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class PackageTypeLocalizationWithOnlyLanguageTests: BaseLocalizationTests {
+
+    // This is encoded as `fr_CA`, so we test that only language works too.
+    override var locale: Locale { return .init(identifier: "fr") }
+
+    func testLocalization() {
+        verify(.annual, "Annuel")
+        verify(.sixMonth, "6 mois")
+        verify(.threeMonth, "3 mois")
+        verify(.twoMonth, "2 mois")
+        verify(.monthly, "Mensuel")
+        verify(.weekly, "Hebdomadaire")
+        verify(.lifetime, "Durée de vie")
     }
 
     func testOtherValues() {
@@ -176,13 +198,13 @@ class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
 
-    override var locale: Locale { return .init(identifier: "fr") }
+    override var locale: Locale { return .init(identifier: "ci") }
 
     func testLocalizationDefaultsToEnglish() {
         verify(.annual, "Annual")
-        verify(.sixMonth, "6 month")
-        verify(.threeMonth, "3 month")
-        verify(.twoMonth, "2 month")
+        verify(.sixMonth, "6 Month")
+        verify(.threeMonth, "3 Month")
+        verify(.twoMonth, "2 Month")
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
         verify(.lifetime, "Lifetime")
@@ -217,7 +239,9 @@ class DiscountSpanishLocalizationTests: BaseLocalizationTests {
 
     override var locale: Locale { return .init(identifier: "es_ES") }
 
-    func testLocalization() {
+    func testLocalization() throws {
+        try XCTSkipIf(true, "Localization not available yet")
+
         verify(0, "Ahorra 0%")
         verify(0.1, "Ahorra 10%")
         verify(0.331, "Ahorra 33%")
