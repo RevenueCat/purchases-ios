@@ -21,6 +21,9 @@ struct Template3View: TemplateViewType {
     let configuration: TemplateViewConfiguration
     private let localization: ProcessedLocalizedConfiguration
 
+    @Environment(\.userInterfaceIdiom)
+    var userInterfaceIdiom
+
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
@@ -32,7 +35,7 @@ struct Template3View: TemplateViewType {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.shouldDisplayIcon {
                 if let url = self.configuration.iconImageURL {
                     RemoteImage(url: url, aspectRatio: 1)
@@ -78,8 +81,8 @@ struct Template3View: TemplateViewType {
             FooterView(configuration: self.configuration,
                        purchaseHandler: self.purchaseHandler)
         }
-        .padding(.horizontal)
-        .padding(.top)
+        .defaultHorizontalPadding()
+        .padding(.top, self.defaultVerticalPaddingLength)
     }
 
     private var features: some View {
@@ -91,7 +94,7 @@ struct Template3View: TemplateViewType {
                     .accessibilityElement(children: .combine)
             }
         }
-        .padding(.horizontal)
+        .defaultHorizontalPadding()
     }
 
     private var introEligibility: IntroEligibilityStatus? {
