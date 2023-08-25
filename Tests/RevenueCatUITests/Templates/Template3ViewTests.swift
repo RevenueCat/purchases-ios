@@ -24,6 +24,12 @@ class Template3ViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
+    func testTabletPaywall() {
+        Self.createPaywall(offering: Self.offering.withLocalImages)
+            .environment(\.userInterfaceIdiom, .pad)
+            .snapshot(size: Self.iPadSize)
+    }
+
     func testDarkMode() {
         Self.createPaywall(offering: Self.offering.withLocalImages)
             .environment(\.colorScheme, .dark)
