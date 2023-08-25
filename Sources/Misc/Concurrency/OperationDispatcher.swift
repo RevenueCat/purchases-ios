@@ -18,7 +18,6 @@ class OperationDispatcher {
 
     private let mainQueue: DispatchQueue = .main
     private let workerQueue: DispatchQueue = .init(label: "OperationDispatcherWorkerQueue")
-    private let maxJitterInSeconds: Double = 5
 
     static let `default`: OperationDispatcher = .init()
 
@@ -43,12 +42,30 @@ class OperationDispatcher {
 
     func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () -> Void) {
         if withRandomDelay {
-            let delay = Double.random(in: 0..<self.maxJitterInSeconds)
-            self.workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
+            self.workerQueue.asyncAfter(deadline: .now() + Self.randomDelay(), execute: block)
         } else {
             self.workerQueue.async(execute: block)
         }
     }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () async -> Void) {
+        Task.detached(priority: .background) {
+            if withRandomDelay {
+                try? await Task.sleep(nanoseconds: DispatchTimeInterval(Self.randomDelay()).nanoseconds)
+            }
+
+            await block()
+        }
+    }
+
+    /// Prevent DDOS if a notification leads to many users opening an app at the same time,
+    /// by spreading asynchronous operations over time.
+    private static func randomDelay() -> TimeInterval {
+        Double.random(in: 0..<Self.maxJitterInSeconds)
+    }
+
+    private static let maxJitterInSeconds: Double = 5
 
 }
 

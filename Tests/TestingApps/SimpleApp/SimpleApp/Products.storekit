@@ -129,6 +129,31 @@
           "referenceName" : "Yearly",
           "subscriptionGroupID" : "CEEF018E",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "2BD0E5CA",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.simpleapp.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly",
+          "subscriptionGroupID" : "CEEF018E",
+          "type" : "RecurringSubscription"
         }
       ]
     }
