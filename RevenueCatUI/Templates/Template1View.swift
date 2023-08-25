@@ -165,7 +165,6 @@ private struct CircleMaskModifier: ViewModifier {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(macCatalyst, unavailable)
 struct Template1View_Previews: PreviewProvider {
 
     static var previews: some View {
