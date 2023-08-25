@@ -227,16 +227,14 @@ private extension SubscriptionPeriod {
 private extension PackageType {
 
     var localizationKey: String? {
-        let keyPrefix = "PackageType."
-
         switch self {
-        case .annual: return "\(keyPrefix)annual"
-        case .sixMonth: return "\(keyPrefix)sixMonth"
-        case .threeMonth: return "\(keyPrefix)threeMonth"
-        case .twoMonth: return "\(keyPrefix)twoMonth"
-        case .monthly: return "\(keyPrefix)monthly"
-        case .weekly: return "\(keyPrefix)weekly"
-        case .lifetime: return "\(keyPrefix)lifetime"
+        case .annual: return "Annual"
+        case .sixMonth: return "6 Month"
+        case .threeMonth: return "3 Month"
+        case .twoMonth: return "2 Month"
+        case .monthly: return "Monthly"
+        case .weekly: return "Weekly"
+        case .lifetime: return "Lifetime"
 
         case .unknown, .custom:
             return nil
