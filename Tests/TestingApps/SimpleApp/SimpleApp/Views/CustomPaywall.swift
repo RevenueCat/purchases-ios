@@ -19,21 +19,12 @@ struct CustomPaywall: View {
 
     var body: some View {
         self.content
-            .navigationTitle("Custom paywall")
     }
 
     private var content: some View {
-        VStack {
-            VStack {
-                ForEach(Self.colors, id: \.self) { color in
-                    BarChartView(
-                        data: (0..<10).map { _ in Double.random(in: 0..<100)},
-                        color: color
-                    )
-                }
-            }
-            .frame(maxWidth: .infinity)
+        CustomPaywallContent()
             .scrollableIfNecessary(.vertical)
+            .background(CustomPaywallContent.backgroundColor)
             .paywallFooter(offering: self.offering,
                            customerInfo: self.customerInfo,
                            condensed: self.condensed,
@@ -41,22 +32,7 @@ struct CustomPaywall: View {
                            introEligibility: self.introEligibility ?? .default(),
                            purchaseHandler: self.purchaseHandler ?? .default()
             )
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            Color(white: 0.8)
-                .edgesIgnoringSafeArea(.all)
-        )
     }
-
-    private static let colors: [Color] = [
-        .red,
-        .green,
-        .blue,
-        .indigo,
-        .mint,
-        .teal
-    ].shuffled()
 
 }
 
