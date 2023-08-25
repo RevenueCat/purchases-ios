@@ -40,6 +40,7 @@ import SwiftUI
 protocol TemplateViewType: SwiftUI.View {
 
     var configuration: TemplateViewConfiguration { get }
+    var userInterfaceIdiom: UserInterfaceIdiom { get }
 
     init(_ configuration: TemplateViewConfiguration)
 
