@@ -110,7 +110,6 @@ private extension PaywallData {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(macCatalyst, unavailable)
 struct DefaultPaywall_Previews: PreviewProvider {
 
     static var previews: some View {
