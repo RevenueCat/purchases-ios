@@ -51,7 +51,8 @@ struct Template2View: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            Spacer()
+            // Avoid unnecessary spacing, except for iOS 15 because SwiftuI breaks the layout.
+            Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
 
             self.scrollableContent
                 .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
@@ -122,7 +123,7 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .defaultHorizontalPadding()
+        .padding([.horizontal, .top], self.defaultHorizontalPaddingLength)
 
         Spacer()
     }
