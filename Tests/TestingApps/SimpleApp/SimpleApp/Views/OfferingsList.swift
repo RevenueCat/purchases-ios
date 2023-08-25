@@ -42,7 +42,20 @@ struct OfferingsList: View {
         case let .success(offerings):
             self.list(with: offerings)
                 .sheet(item: self.$selectedOffering) { offering in
-                    PaywallView(offering: offering)
+                    NavigationView {
+                        PaywallView(offering: offering)
+                            #if targetEnvironment(macCatalyst)
+                            .toolbar {
+                                ToolbarItem(placement: .destructiveAction) {
+                                    Button {
+                                        self.selectedOffering = nil
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                    }
+                                }
+                            }
+                            #endif
+                    }
                 }
 
         case let .failure(error):
