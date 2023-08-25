@@ -34,7 +34,6 @@ class OperationDispatcher {
 
     private let mainQueue: DispatchQueue = .main
     private let workerQueue: DispatchQueue = .init(label: "OperationDispatcherWorkerQueue")
-    private let maxJitterInSeconds: Double = 5
 
     static let `default`: OperationDispatcher = .init()
 

@@ -15,14 +15,18 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
+@MainActor
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     private var imageFetcher: MockPaywallImageFetcher!
     private var cache: PaywallCacheWarmingType!
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.eligibilityChecker = .init()
         self.imageFetcher = .init()
@@ -30,8 +34,8 @@ class PaywallCacheWarmingTests: TestCase {
                                          imageFetcher: self.imageFetcher)
     }
 
-    func testOfferingsWithNoPaywallsDoesNotCheckEligibility() throws {
-        self.cache.warmUpEligibilityCache(
+    func testOfferingsWithNoPaywallsDoesNotCheckEligibility() async throws {
+        await self.cache.warmUpEligibilityCache(
             offerings: try Self.createOfferings([
                 Self.createOffering(
                     identifier: Self.offeringIdentifier,
@@ -46,7 +50,7 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == false
     }
 
-    func testWarmsUpEligibilityCache() throws {
+    func testWarmsUpEligibilityCache() async throws {
         let paywall = try Self.loadPaywall("PaywallData-Sample1")
         let offerings = try Self.createOfferings([
             Self.createOffering(
@@ -66,7 +70,7 @@ class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
-        self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
@@ -80,14 +84,36 @@ class PaywallCacheWarmingTests: TestCase {
 
         self.logger.verifyMessageWasLogged(
             Strings.paywalls.warming_up_eligibility_cache(products: ["product_1", "product_3"]),
+            level: .debug
+        )
+    }
+
+    func testOnlyWarmsUpEligibilityCacheOnce() async throws {
+        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: paywall,
+                products: [
+                    (.monthly, "product_1")
+                ]
+            )
+        ])
+
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
+
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.warming_up_eligibility_cache(products: ["product_1"]),
             level: .debug,
             expectedCount: 1
         )
     }
 
-    func testWarmsUpImages() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
+    func testWarmsUpImages() async throws {
         let paywall = try Self.loadPaywall("PaywallData-Sample1")
         let offerings = try Self.createOfferings([
             Self.createOffering(
@@ -103,13 +129,31 @@ class PaywallCacheWarmingTests: TestCase {
             "https://rc-paywalls.s3.amazonaws.com/icon.jpg"
         ]
 
-        self.cache.warmUpPaywallImagesCache(offerings: offerings)
+        await self.cache.warmUpPaywallImagesCache(offerings: offerings)
 
-        expect(self.imageFetcher.images).toEventually(equal(expectedURLs))
+        expect(self.imageFetcher.images) == expectedURLs
+        expect(self.imageFetcher.imageDownloadRequestCount.value) == expectedURLs.count
+    }
+
+    func testOnlyWarmsUpImagesOnce() async throws {
+        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: paywall,
+                products: []
+            )
+        ])
+
+        await self.cache.warmUpPaywallImagesCache(offerings: offerings)
+        await self.cache.warmUpPaywallImagesCache(offerings: offerings)
+
+        expect(self.imageFetcher.imageDownloadRequestCount.value) == 3
     }
 
 }
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension PaywallCacheWarmingTests {
 
     static func createOffering(
@@ -162,6 +206,7 @@ private extension PaywallCacheWarmingTests {
 private final class MockPaywallImageFetcher: PaywallImageFetcherType {
 
     let downloadedImages: Atomic<Set<URL>> = .init([])
+    let imageDownloadRequestCount: Atomic<Int> = .init(0)
 
     var images: Set<String> {
         return Set(self.downloadedImages.value.map(\.absoluteString))
@@ -170,6 +215,7 @@ private final class MockPaywallImageFetcher: PaywallImageFetcherType {
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func downloadImage(_ url: URL) async throws {
         self.downloadedImages.modify { $0.insert(url) }
+        self.imageDownloadRequestCount.modify { $0 += 1 }
     }
 
 }
