@@ -72,19 +72,19 @@ extension Purchases {
         }
     }
 
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
-    func syncPurchasesAsync() async throws -> CustomerInfo {
+    func restorePurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            syncPurchases { customerInfo, error in
+            self.restorePurchases { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
             }
         }
     }
 
-    func restorePurchasesAsync() async throws -> CustomerInfo {
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+    func syncPurchasesAsync() async throws -> CustomerInfo {
         return try await withCheckedThrowingContinuation { continuation in
-            restorePurchases { customerInfo, error in
+            syncPurchases { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
             }
         }

@@ -120,6 +120,9 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.purchase(product: storeProduct) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
     purchases.purchase(package: pack) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
+    purchases.restorePurchases()
+    purchases.restorePurchases { (_: CustomerInfo?, _: PublicError?) in }
+
 #if os(iOS)
     purchases.presentCodeRedemptionSheet()
 #endif
@@ -158,6 +161,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(product: stp)
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
+
+        let _: CustomerInfo = try await purchases.restorePurchases()
 
         #if os(iOS)
         try await purchases.showManageSubscriptions()
