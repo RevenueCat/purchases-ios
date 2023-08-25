@@ -218,6 +218,9 @@ private struct LinkButton: View {
             ),
             destination: self.url
         )
+        #if targetEnvironment(macCatalyst)
+        .buttonStyle(.plain)
+        #endif
     }
 
 }
