@@ -84,9 +84,6 @@ struct AppContentView: View {
 
                 Spacer()
 
-                BarChartView(data: (0..<10).map { _ in Double.random(in: 0..<100)})
-                    .frame(maxWidth: .infinity)
-
                 if let date = info.latestExpirationDate {
                     Text(verbatim: "Your subscription expires: \(date.formatted())")
                         .font(.caption)
@@ -96,6 +93,7 @@ struct AppContentView: View {
             }
         }
         .padding(.horizontal)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
         .task {
             for await info in self.customerInfoStream {
