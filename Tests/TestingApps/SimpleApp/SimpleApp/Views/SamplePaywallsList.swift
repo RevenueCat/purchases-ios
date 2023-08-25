@@ -22,51 +22,69 @@ struct SamplePaywallsList: View {
                 .navigationTitle("Test Paywalls")
         }
             .sheet(item: self.$display) { display in
-                switch display {
-                case let .template(template, mode):
-                    switch mode {
-                    case .fullScreen:
-                        PaywallView(offering: Self.loader.offering(for: template),
-                                    customerInfo: Self.loader.customerInfo,
-                                    introEligibility: Self.introEligibility,
-                                    purchaseHandler: .default())
-
-                    case .footer, .condensedFooter:
-                        CustomPaywall(offering: Self.loader.offering(for: template),
-                                      customerInfo: Self.loader.customerInfo,
-                                      condensed: mode == .condensedFooter,
-                                      introEligibility: Self.introEligibility,
-                                      purchaseHandler: .default())
-                    }
-
-                case let .customFont(template):
-                    PaywallView(offering: Self.loader.offering(for: template),
-                                customerInfo: Self.loader.customerInfo,
-                                fonts: Self.customFontProvider,
-                                introEligibility: Self.introEligibility,
-                                purchaseHandler: .default())
-
-                case let .customPaywall(mode):
-                    CustomPaywall(customerInfo: Self.loader.customerInfo,
-                                  condensed: mode == .condensedFooter)
-
-                case .missingPaywall:
-                    PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
-                                customerInfo: Self.loader.customerInfo,
-                                introEligibility: Self.introEligibility,
-                                purchaseHandler: .default())
-
-                case .unrecognizedPaywall:
-                    PaywallView(offering: Self.loader.offeringWithUnrecognizedPaywall(),
-                                customerInfo: Self.loader.customerInfo,
-                                introEligibility: Self.introEligibility,
-                                purchaseHandler: .default())
+                NavigationView {
+                    self.view(for: display)
+                        #if targetEnvironment(macCatalyst)
+                        .toolbar {
+                            ToolbarItem(placement: .destructiveAction) {
+                                Button {
+                                    self.display = nil
+                                } label: {
+                                    Image(systemName: "xmark")
+                                }
+                            }
+                        }
+                        #endif
                 }
             }
             .onPurchaseCompleted { _ in
                 self.display = nil
             }
             .navigationTitle("Paywalls")
+    }
+
+    @ViewBuilder
+    private func view(for display: Display) -> some View {
+        switch display {
+        case let .template(template, mode):
+            switch mode {
+            case .fullScreen:
+                PaywallView(offering: Self.loader.offering(for: template),
+                            customerInfo: Self.loader.customerInfo,
+                            introEligibility: Self.introEligibility,
+                            purchaseHandler: .default())
+
+            case .footer, .condensedFooter:
+                CustomPaywall(offering: Self.loader.offering(for: template),
+                              customerInfo: Self.loader.customerInfo,
+                              condensed: mode == .condensedFooter,
+                              introEligibility: Self.introEligibility,
+                              purchaseHandler: .default())
+            }
+
+        case let .customFont(template):
+            PaywallView(offering: Self.loader.offering(for: template),
+                        customerInfo: Self.loader.customerInfo,
+                        fonts: Self.customFontProvider,
+                        introEligibility: Self.introEligibility,
+                        purchaseHandler: .default())
+
+        case let .customPaywall(mode):
+            CustomPaywall(customerInfo: Self.loader.customerInfo,
+                          condensed: mode == .condensedFooter)
+
+        case .missingPaywall:
+            PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
+                        customerInfo: Self.loader.customerInfo,
+                        introEligibility: Self.introEligibility,
+                        purchaseHandler: .default())
+
+        case .unrecognizedPaywall:
+            PaywallView(offering: Self.loader.offeringWithUnrecognizedPaywall(),
+                        customerInfo: Self.loader.customerInfo,
+                        introEligibility: Self.introEligibility,
+                        purchaseHandler: .default())
+        }
     }
 
     private func list(with loader: SamplePaywallLoader) -> some View {
