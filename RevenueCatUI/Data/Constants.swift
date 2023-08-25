@@ -21,6 +21,7 @@ enum Constants {
     static let toggleAllPlansAnimation: Animation = .spring(response: 0.35, dampingFraction: 0.7)
 
     static let defaultCornerRadius: CGFloat = 20
+    static let defaultPackageCornerRadius: CGFloat = 16
 
     /// For UI elements that wouldn't make sense to keep scaling up forever
     static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
