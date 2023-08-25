@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Template2View.swift
+//  Template5View.swift
 //
 //  Created by Nacho Soto.
 
@@ -16,7 +16,7 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-struct Template2View: TemplateViewType {
+struct Template5View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
 
@@ -28,6 +28,9 @@ struct Template2View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+
+    @Environment(\.locale)
+    var locale
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
@@ -43,19 +46,25 @@ struct Template2View: TemplateViewType {
     var body: some View {
         self.content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background {
-                TemplateBackgroundImageView(configuration: self.configuration)
-            }
     }
 
     @ViewBuilder
     var content: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            // Avoid unnecessary spacing, except for iOS 15 because SwiftuI breaks the layout.
-            Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
+            if self.configuration.mode.shouldDisplayIcon {
+                if let header = self.configuration.headerImageURL {
+                    RemoteImage(url: header,
+                                aspectRatio: Self.headerAspectRatio,
+                                maxWidth: .infinity)
+
+                    Spacer()
+                }
+            }
 
             self.scrollableContent
                 .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
+
+            Spacer(minLength: 0)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails {
                 self.offerDetails(package: self.selectedPackage, selected: false)
@@ -68,30 +77,22 @@ struct Template2View: TemplateViewType {
                        purchaseHandler: self.purchaseHandler,
                        displayingAllPlans: self.$displayingAllPlans)
         }
+        .foregroundColor(self.configuration.colors.text1Color)
+        .edgesIgnoringSafeArea(.top)
         .animation(Constants.fastAnimation, value: self.selectedPackage)
-        .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
     }
 
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayIcon {
-                Spacer()
-                self.iconImage
-                Spacer()
-            }
-
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedLocalization.title))
-                    .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .largeTitle).bold())
                     .defaultHorizontalPadding()
 
                 Spacer()
 
-                Text(.init(self.selectedLocalization.subtitle ?? ""))
-                    .foregroundColor(self.configuration.colors.text1Color)
-                    .font(self.font(for: .title3))
+                self.features
                     .defaultHorizontalPadding()
 
                 Spacer()
@@ -101,6 +102,7 @@ struct Template2View: TemplateViewType {
                 self.packages
             } else {
                 self.packages
+                    .padding(.top, self.defaultHorizontalPaddingLength)
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
@@ -109,8 +111,34 @@ struct Template2View: TemplateViewType {
     }
 
     @ViewBuilder
+    private var features: some View {
+        VStack(spacing: self.defaultVerticalPaddingLength) {
+            ForEach(self.selectedLocalization.features, id: \.title) { feature in
+                HStack {
+                    Rectangle()
+                        .foregroundStyle(.clear)
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay {
+                            if let icon = feature.icon {
+                                IconView(icon: icon, tint: self.configuration.colors.accent1Color)
+                            }
+                        }
+                        .frame(width: self.iconSize, height: self.iconSize)
+
+                    Text(.init(feature.title))
+                        .font(self.font(for: .body))
+                        .lineLimit(nil)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        }
+    }
+
+    @ViewBuilder
     private var packages: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
                 let isSelected = self.selectedPackage.content === package.content
 
@@ -122,7 +150,7 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding([.horizontal, .top], self.defaultHorizontalPaddingLength)
+        .defaultHorizontalPadding()
 
         Spacer()
     }
@@ -139,27 +167,31 @@ struct Template2View: TemplateViewType {
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
         .overlay {
-            if selected {
-                EmptyView()
-            } else {
-                self.roundedRectangle
-                    .stroke(self.configuration.colors.text1Color.opacity(Self.fadedColorOpacity), lineWidth: 2)
-            }
+            self.roundedRectangle
+                .stroke(
+                    selected
+                    ? self.configuration.colors.accent1Color
+                    : self.configuration.colors.accent2Color,
+                    lineWidth: 2
+                )
         }
-        .background {
-            if selected {
-                self.roundedRectangle
-                    .foregroundColor(self.selectedBackgroundColor)
-            } else {
-                if self.configuration.backgroundImageURLToDisplay != nil {
-                    // Blur background if there is a background image.
-                    self.roundedRectangle
-                        .foregroundStyle(.thinMaterial)
-                } else {
-                    // Otherwise the text should have enough contrast with the selected background color.
-                    EmptyView()
-                }
-            }
+        .overlay(alignment: .topTrailing) {
+            self.packageDiscountLabel(package)
+                .padding(8)
+        }
+    }
+
+    @ViewBuilder
+    private func packageDiscountLabel(_ package: TemplateViewConfiguration.Package) -> some View {
+        if let discount = package.discountRelativeToMostExpensivePerMonth {
+            Text(Localization.localized(discount: discount, locale: self.locale))
+                .textCase(.uppercase)
+                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+                .background(self.roundedRectangle.foregroundColor(self.configuration.colors.accent1Color))
+                .foregroundColor(self.configuration.colors.callToActionForegroundColor)
+                .font(self.font(for: .caption))
+                .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         }
     }
 
@@ -179,13 +211,13 @@ struct Template2View: TemplateViewType {
                         EmptyView()
                     } else {
                         Circle()
-                            .foregroundColor(self.selectedBackgroundColor.opacity(Self.fadedColorOpacity))
+                            .foregroundColor(self.selectedBackgroundColor)
                     }
                 }
+                .foregroundColor(self.configuration.colors.accent1Color)
 
             Text(package.localization.offerName ?? package.content.productName)
         }
-        .foregroundColor(self.textColor(selected))
     }
 
     private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
@@ -193,17 +225,11 @@ struct Template2View: TemplateViewType {
             textWithNoIntroOffer: package.localization.offerDetails,
             textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
             introEligibility: self.introEligibility[package.content],
-            foregroundColor: self.textColor(selected),
+            foregroundColor: self.configuration.colors.text1Color,
             alignment: Self.packageButtonAlignment
         )
         .fixedSize(horizontal: false, vertical: true)
         .font(self.font(for: .body))
-    }
-
-    private func textColor(_ selected: Bool) -> Color {
-        return selected
-        ? self.configuration.colors.accent1Color
-        : self.configuration.colors.text1Color
     }
 
     private var subscribeButton: some View {
@@ -215,41 +241,6 @@ struct Template2View: TemplateViewType {
         )
     }
 
-    @ViewBuilder
-    private var iconImage: some View {
-        Group {
-            #if canImport(UIKit)
-            if let url = self.configuration.iconImageURL {
-                Group {
-                    if url.pathComponents.contains(PaywallData.appIconPlaceholder) {
-                        if let appIcon = Bundle.main.appIcon {
-                            Image(uiImage: appIcon)
-                                .resizable()
-                                .frame(width: self.appIconSize, height: self.appIconSize)
-                        } else {
-                            self.placeholderIconImage
-                        }
-                    } else {
-                        RemoteImage(url: url, aspectRatio: 1, maxWidth: self.iconSize)
-                    }
-                }
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            } else {
-                self.placeholderIconImage
-            }
-            #else
-            self.placeholderIconImage
-            #endif
-        }
-        .padding(.top)
-    }
-
-    private var placeholderIconImage: some View {
-        // Placeholder to be able to add a consistent padding
-        Text(verbatim: "")
-            .hidden()
-    }
-
     // MARK: -
 
     private var introEligibility: [Package: IntroEligibilityStatus] {
@@ -258,14 +249,13 @@ struct Template2View: TemplateViewType {
 
     private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
-    @ScaledMetric(relativeTo: .largeTitle)
-    private var appIconSize: CGFloat = 100
-    @ScaledMetric(relativeTo: .largeTitle)
-    private var iconSize: CGFloat = 140
+    @ScaledMetric(relativeTo: .body)
+    private var iconSize = 25
 
-    private static let fadedColorOpacity: CGFloat = 0.3
     private static let cornerRadius: CGFloat = Constants.defaultPackageCornerRadius
     private static let packageButtonAlignment: Alignment = .leading
+
+    private static let headerAspectRatio: CGFloat = 2
 
 }
 
@@ -273,7 +263,7 @@ struct Template2View: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
-private extension Template2View {
+private extension Template5View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.selectedPackage.localization
@@ -300,22 +290,6 @@ private extension PaywallViewMode {
 
 }
 
-#if canImport(UIKit)
-private extension Bundle {
-
-    var appIcon: UIImage? {
-        if let icons = infoDictionary?["CFBundleIcons"] as? [String: Any],
-           let primaryIcon = icons["CFBundlePrimaryIcon"] as? [String: Any],
-           let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
-           let lastIcon = iconFiles.last {
-            return .init(named: lastIcon)
-        }
-        return nil
-    }
-
-}
-#endif
-
 // MARK: -
 
 #if DEBUG
@@ -324,15 +298,15 @@ private extension Bundle {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-struct Template2View_Previews: PreviewProvider {
+struct Template5View_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             PreviewableTemplate(
-                offering: TestData.offeringWithMultiPackagePaywall,
+                offering: TestData.offeringWithTemplate5Paywall,
                 mode: mode
             ) {
-                Template2View($0)
+                Template5View($0)
             }
         }
     }
