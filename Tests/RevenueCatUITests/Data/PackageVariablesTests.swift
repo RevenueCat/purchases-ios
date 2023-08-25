@@ -80,10 +80,10 @@ class PackageVariablesTests: TestCase {
     }
 
     func testSpanishPeriodName() {
-        expect(TestData.weeklyPackage.periodName(Self.spanish)) == "Semanal"
+        expect(TestData.weeklyPackage.periodName(Self.spanish)) == "Semanalmente"
         expect(TestData.monthlyPackage.periodName(Self.spanish)) == "Mensual"
         expect(TestData.annualPackage.periodName(Self.spanish)) == "Anual"
-        expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Vitalicio"
+        expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Toda la vida"
     }
 
     func testEnglishIntroductoryOfferDuration() {
