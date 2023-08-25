@@ -18,10 +18,8 @@ struct CustomPaywall: View {
     var purchaseHandler: PurchaseHandler?
 
     var body: some View {
-        NavigationView {
-            self.content
-                .navigationTitle("Custom paywall")
-        }
+        self.content
+            .navigationTitle("Custom paywall")
     }
 
     private var content: some View {

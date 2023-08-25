@@ -101,6 +101,9 @@ struct FooterView: View {
         .padding(.horizontal)
         .padding(.bottom, 5)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+        #if targetEnvironment(macCatalyst)
+        .buttonStyle(.plain)
+        #endif
     }
 
     private static func allPlansButton(_ binding: Binding<Bool>) -> some View {
@@ -229,7 +232,6 @@ private struct LinkButton: View {
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
-@available(macCatalyst, unavailable)
 struct Footer_Previews: PreviewProvider {
 
     static var previews: some View {

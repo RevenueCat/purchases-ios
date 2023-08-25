@@ -22,7 +22,6 @@ import SwiftUI
 @available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
-@available(macCatalyst, unavailable, message: "RevenueCatUI does not support Catalyst yet")
 public struct PaywallView: View {
 
     private let mode: PaywallViewMode
@@ -250,7 +249,6 @@ struct LoadedOfferingPaywallView: View {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-@available(macCatalyst, unavailable)
 struct PaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
