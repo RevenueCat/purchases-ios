@@ -25,6 +25,12 @@ class Template1ViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
+    func testTabletPaywall() {
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer)
+            .environment(\.userInterfaceIdiom, .pad)
+            .snapshot(size: Self.iPadSize)
+    }
+
     func testCustomFont() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            fonts: Self.fonts)
