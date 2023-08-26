@@ -49,6 +49,7 @@ aliases:
       branches:
         only:
           - main
+          - paywalls
           - /^release\/.*/
   only-main-branch: &only-main-branch
     filters:
