@@ -92,14 +92,14 @@ extension PaywallColor {
 
 private extension PaywallColor {
 
-    #if canImport(SwiftUI) && swift(>=5.7)
+    #if canImport(SwiftUI)
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-    init(stringRepresentation: String, color: Color) {
-        self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
-    }
-
-    #endif
+        #if swift(>=5.7)
+        @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+        init(stringRepresentation: String, color: Color) {
+            self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
+        }
+        #endif
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     static func parseColor(_ input: String) throws -> Color {
@@ -136,6 +136,8 @@ private extension PaywallColor {
             throw Error.invalidColor(input)
         }
     }
+
+    #endif
 
     /// "Designated" initializer
     private init(stringRepresentation: String, underlyingColor: (any Sendable)?) {
