@@ -223,6 +223,7 @@
 		4F54DF402A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F54DF3E2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift */; };
 		4F54DF422A1D8D0700FD72BF /* MockTransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */; };
 		4F54DF432A1D8D0700FD72BF /* MockTransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */; };
+		4F5A62AC2A9AD18E0096067E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F5A62AB2A9AD18E0096067E /* SwiftUI.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		4F5C05BD2A43A21A00651C7D /* Locale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C05BC2A43A21A00651C7D /* Locale+Extensions.swift */; };
 		4F5C05BF2A43A2C500651C7D /* LocaleExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C05BE2A43A2C500651C7D /* LocaleExtensionsTests.swift */; };
 		4F5D52D92A5713A800E1C758 /* DebugViewSwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */; };
@@ -984,6 +985,7 @@
 		4F4FF3E02A3B731A0028018C /* ETagStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagStrings.swift; sourceTree = "<group>"; };
 		4F54DF3E2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
 		4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionPoster.swift; sourceTree = "<group>"; };
+		4F5A62AB2A9AD18E0096067E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/iOSSupport/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 		4F5C05BC2A43A21A00651C7D /* Locale+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+Extensions.swift"; sourceTree = "<group>"; };
 		4F5C05BE2A43A2C500651C7D /* LocaleExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleExtensionsTests.swift; sourceTree = "<group>"; };
 		4F69EB082A14406E00ED6D4B /* Matchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matchers.swift; sourceTree = "<group>"; };
@@ -1390,6 +1392,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F5A62AC2A9AD18E0096067E /* SwiftUI.framework in Frameworks */,
 				A5B6CDD8280F3843007629D5 /* AdServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1990,6 +1993,7 @@
 				357C9BC022725CFA006BC624 /* iAd.framework */,
 				350A1B84226E3E8700CCA10F /* AppKit.framework */,
 				3530C18822653E8F00D6DF52 /* AdSupport.framework */,
+				4F5A62AB2A9AD18E0096067E /* SwiftUI.framework */,
 				33FFC8744F2BAE7BD8889A4C /* Pods_RevenueCat.framework */,
 				84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */,
 			);
