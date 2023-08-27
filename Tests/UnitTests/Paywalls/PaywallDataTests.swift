@@ -109,7 +109,10 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(localization.title) == "Tienda"
     }
 
-    func testEncodePaywallViewMode() {
+    func testEncodePaywallViewMode() throws {
+        // iOS 12 does not allow decoding fragments (top-level objects)
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
         for mode in PaywallViewMode.allCases {
             expect(try mode.encodeAndDecode()) == mode
         }

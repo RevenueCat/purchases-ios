@@ -14,7 +14,10 @@
 import Foundation
 import Nimble
 import SnapshotTesting
+
+#if swift(>=5.8) && canImport(SwiftUI)
 import SwiftUI
+#endif
 
 @testable import RevenueCat
 
