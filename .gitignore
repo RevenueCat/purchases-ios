@@ -39,6 +39,11 @@ scan_derived_data/
 generated_docs/
 
 # SPM
+
+# This is the "SPM" scheme, which is duplicated with the scheme in the project
+# and that breaks Carthage because it appears twice in `xcodebuild -list`
+.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat.xcscheme
+
 Examples/**/Package.resolved
 
 Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
