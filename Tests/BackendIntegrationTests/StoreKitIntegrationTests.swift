@@ -496,6 +496,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+        func waitForNewPurchaseDate() async {
+            // The backend uses the transaction purchase date as a way to disambiguate transactions.
+            // Therefor we need to sleep to force these to have unique dates.
+            try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(2).nanoseconds)
+        }
+
         // 1. Subscribe
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
@@ -505,8 +511,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Force several renewals while app is closed.
         for _ in 0..<3 {
+            await waitForNewPurchaseDate()
             try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
         }
+
+        await waitForNewPurchaseDate()
 
         // 4. Expire subscription
         try await self.expireSubscription(entitlement)
