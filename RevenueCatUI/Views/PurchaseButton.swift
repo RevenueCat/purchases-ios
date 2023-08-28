@@ -70,8 +70,7 @@ struct PurchaseButton: View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
 
-            _ = try await self.purchaseHandler.purchase(package: self.package.content,
-                                                        with: self.mode)
+            _ = try await self.purchaseHandler.purchase(package: self.package.content)
         } label: {
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.package.localization.callToAction,
