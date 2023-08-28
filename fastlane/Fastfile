@@ -431,6 +431,7 @@ platform :ios do
     push_snapshot_pr(
       version: options[:version],
       repo: "revenuecat/purchases-ios",
+      base_branch: ENV["CIRCLE_BRANCH"],
       files_to_add: "../*/__Snapshots__/*"
      )
   end
@@ -441,6 +442,7 @@ platform :ios do
      push_snapshot_pr(
       version: options[:version],
       repo: "revenuecat/purchases-ios-snapshots",
+      base_branch: "main", 
       files_to_add: "."
      )
     }
@@ -448,7 +450,7 @@ platform :ios do
 
   private_lane :push_snapshot_pr do |options|
     version = options[:version]
-    base_branch = ENV["CIRCLE_BRANCH"]
+    base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"] 
 
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
