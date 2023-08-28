@@ -59,8 +59,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
-                paywallMode: nil
+                offeringID: package.offeringIdentifier
             )
         )
     }
@@ -98,26 +97,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
-                paywallMode: nil
-            )
-        )
-    }
-
-    func testPurchasingPackageWithPaywallViewMode() async throws {
-        Purchases.shared.cachePresentedPaywallMode(.fullScreen)
-
-        let transaction = try await XCTAsyncUnwrap(try await self.purchaseMonthlyOffering().transaction)
-
-        let package = try await self.monthlyPackage
-
-        self.logger.verifyMessageWasLogged(
-            Strings.purchase.transaction_poster_handling_transaction(
-                transactionID: transaction.transactionIdentifier,
-                productID: package.storeProduct.productIdentifier,
-                transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
-                paywallMode: .fullScreen
+                offeringID: package.offeringIdentifier
             )
         )
     }
