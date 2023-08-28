@@ -49,7 +49,9 @@ extension ProcessInfo {
     }
 
     static var mockAdServicesToken: String? {
-        return self[.RCMockAdServicesToken]?.notEmptyOrWhitespaces
+        guard let token = self[.RCMockAdServicesToken], !token.isEmpty else { return nil }
+
+        return token
     }
 
 }
