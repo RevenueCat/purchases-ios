@@ -163,6 +163,11 @@ commands:
           paths:
             - vendor/bundle
 
+  update-submodules:
+    steps:
+      - run: git submodule sync
+      - run: git submodule update --init
+
   compress_result_bundle:
     parameters:
       directory:
@@ -341,6 +346,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - update-submodules
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -367,6 +373,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - update-submodules
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -400,6 +407,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - update-submodules
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
