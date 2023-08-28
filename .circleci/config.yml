@@ -651,7 +651,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+            SCAN_DEVICE: iPhone 14 (17.0.1)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -880,7 +880,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+            SCAN_DEVICE: iPhone 14 (17.0.1)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -1031,7 +1031,7 @@ workflows:
           # See https://discuss.circleci.com/t/xcode-15-rc-released-important-notice-for-visionos-sdk-users/49278
           xcode_version: '15.0.8'
       - backend-integration-tests:
-          xcode_version: '14.3.0'
+          xcode_version: '15.0.0'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
