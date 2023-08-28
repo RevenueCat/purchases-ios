@@ -11,18 +11,18 @@
 //
 //  Created by Nacho Soto on 6/12/23.
 
+#if swift(>=5.8)
+
 import Foundation
 import Nimble
 import SnapshotTesting
 import SwiftUI
 
-#if swift(>=5.8)
-
 /// - Parameter separateOSVersions: pass `true` if you want to generate separate snapshots for each version.
 func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,
     named name: String? = nil,
-    separateOSVersions: Bool = false,
+    separateOSVersions: Bool = true,
     record recording: Bool = false,
     timeout: TimeInterval = 5,
     file: StaticString = #file,

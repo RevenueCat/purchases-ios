@@ -10,7 +10,8 @@ let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
 var dependencies: [Package.Dependency] = [
-    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0")
+    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", from: "1.11.0")
 ]
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
@@ -22,6 +23,7 @@ let visionOSSetting: SwiftSetting = .define("VISION_OS", .when(platforms: [.visi
 
 let package = Package(
     name: "RevenueCat",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v10_13),
         .watchOS("6.2"),
@@ -35,7 +37,9 @@ let package = Package(
         .library(name: "RevenueCat_CustomEntitlementComputation",
                  targets: ["RevenueCat_CustomEntitlementComputation"]),
         .library(name: "ReceiptParser",
-                 targets: ["ReceiptParser"])
+                 targets: ["ReceiptParser"]),
+        .library(name: "RevenueCatUI",
+                 targets: ["RevenueCatUI"])
     ],
     dependencies: dependencies,
     targets: [
@@ -56,10 +60,27 @@ let package = Package(
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
                 ]),
+        // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
         .testTarget(name: "ReceiptParserTests",
                     dependencies: ["ReceiptParser", "Nimble"],
-                    exclude: ["ReceiptParserTests-Info.plist"])
+                    exclude: ["ReceiptParserTests-Info.plist"]),
+        // RevenueCatUI
+        .target(name: "RevenueCatUI",
+                dependencies: ["RevenueCat"],
+                path: "RevenueCatUI",
+                resources: [
+                    .copy("Resources/background.jpg"),
+                    .process("Resources/icons.xcassets")
+                ]),
+        .testTarget(name: "RevenueCatUITests",
+                    dependencies: [
+                        "RevenueCatUI",
+                        "Nimble",
+                        .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+                    ],
+                    exclude: ["Templates/__Snapshots__"],
+                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )

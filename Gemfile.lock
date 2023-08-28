@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: b2108fb8a2cb357b05f8c5ccaa6cfb02e6050d64
+  revision: a2972052c775d43e8af4de19b191936694b44281
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
 
@@ -9,7 +9,7 @@ GEM
   specs:
     CFPropertyList (3.0.6)
       rexml
-    activesupport (7.0.4.3)
+    activesupport (7.0.7.2)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
@@ -232,7 +232,7 @@ GEM
     http-cookie (1.0.5)
       domain_name (~> 0.5)
     httpclient (2.8.3)
-    i18n (1.12.0)
+    i18n (1.14.1)
       concurrent-ruby (~> 1.0)
     jmespath (1.6.2)
     json (2.6.3)
@@ -247,7 +247,7 @@ GEM
     mime-types-data (3.2023.0218.1)
     mini_magick (4.12.0)
     mini_mime (1.1.2)
-    minitest (5.18.0)
+    minitest (5.19.0)
     molinillo (0.8.0)
     multi_json (1.15.0)
     multipart-post (2.3.0)

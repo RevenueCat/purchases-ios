@@ -12,7 +12,12 @@
 //  Created by Nacho Soto on 3/4/22.
 
 import Foundation
+import Nimble
 import SnapshotTesting
+
+#if swift(>=5.8) && canImport(SwiftUI)
+import SwiftUI
+#endif
 
 @testable import RevenueCat
 
@@ -40,6 +45,53 @@ extension Snapshotting where Value == Encodable, Format == String {
     }
 
 }
+
+// MARK: - Image Snapshoting
+
+#if !os(watchOS) && !os(macOS) && swift(>=5.8)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
+extension SwiftUI.View {
+
+    func snapshot(
+        size: CGSize,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        UIView.setAnimationsEnabled(false)
+
+        // The tested view is `controller.view` instead of `self` to keep it in memory
+        // while rendering happens
+        let controller = UIHostingController(rootView: self
+                .frame(width: size.width, height: size.height)
+        )
+
+        expect(
+            file: file, line: line,
+            controller
+        ).toEventually(
+            haveValidSnapshot(
+                as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
+                named: "1", // Force each retry to end in `.1.png`
+                file: file,
+                line: line
+            ),
+            timeout: timeout,
+            pollInterval: pollInterval
+        )
+    }
+
+}
+
+// Generate snapshots with scale 1, which drastically reduces the file size.
+private let traits: UITraitCollection = .init(displayScale: 1)
+
+#endif
+
+private let perceptualPrecision: Float = 0.97
+private let timeout: DispatchTimeInterval = .seconds(5)
+private let pollInterval: DispatchTimeInterval = .milliseconds(100)
+
+// MARK: - Private
 
 private extension Encodable {
 

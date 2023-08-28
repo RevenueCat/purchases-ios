@@ -46,6 +46,11 @@ import Foundation
     @objc public var metadata: [String: Any] { self._metadata.data }
 
     /**
+    Paywall configuration defined in RevenueCat dashboard.
+     */
+    public let paywall: PaywallData?
+
+    /**
      Array of ``Package`` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
@@ -87,11 +92,19 @@ import Foundation
 
     public override var description: String {
         return """
-        <Offering {\n\tidentifier=\(identifier)\n\tserverDescription=\(serverDescription)\n"
-        \tavailablePackages=\(valueOrEmpty(availablePackages))\n\tlifetime=\(valueOrEmpty(lifetime))\n
-        \tannual=\(valueOrEmpty(annual))\n\tsixMonth=\(valueOrEmpty(sixMonth))\n
-        \tthreeMonth=\(valueOrEmpty(threeMonth))\n\ttwoMonth=\(valueOrEmpty(twoMonth))\n
-        \tmonthly=\(valueOrEmpty(monthly))\n\tweekly=\(valueOrEmpty(weekly))\n}>
+        <Offering {
+            identifier=\(self.identifier)
+            serverDescription=\(self.serverDescription)"
+            availablePackages=\(valueOrEmpty(self.availablePackages))
+            lifetime=\(valueOrEmpty(self.lifetime))
+            annual=\(valueOrEmpty(self.annual))
+            sixMonth=\(valueOrEmpty(self.sixMonth))
+            threeMonth=\(valueOrEmpty(self.threeMonth))
+            twoMonth=\(valueOrEmpty(self.twoMonth))
+            monthly=\(valueOrEmpty(self.monthly))
+            weekly=\(valueOrEmpty(self.weekly))
+            paywall=\(self.paywall.map { "\($0)" } ?? "nil")
+        }>
         """
     }
 
@@ -119,16 +132,34 @@ import Foundation
     // swiftlint:disable cyclomatic_complexity
 
     /// Initialize an ``Offering`` given a list of ``Package``s.
+    @objc
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        availablePackages: [Package]
+    ) {
+        self.init(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: nil,
+            availablePackages: availablePackages
+        )
+    }
+    /// Initialize an ``Offering`` given a list of ``Package``s.
     public init(
         identifier: String,
         serverDescription: String,
-        metadata: [String: Any],
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
         availablePackages: [Package]
     ) {
         self.identifier = identifier
         self.serverDescription = serverDescription
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
+        self.paywall = paywall
 
         var foundPackages: [PackageType: Package] = [:]
 

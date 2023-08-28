@@ -250,9 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        try await asyncWait(description: "Expected 2 unfinished transactions") {
-            await Transaction.unfinished.extractValues().count == 2
-        }
+        try await self.waitUntilUnfinishedTransactions(2)
 
         self.serverUp()
 

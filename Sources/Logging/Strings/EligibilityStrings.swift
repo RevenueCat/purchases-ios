@@ -24,6 +24,7 @@ enum EligibilityStrings {
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
     case sk2_intro_eligibility_too_slow
+
 }
 
 extension EligibilityStrings: LogMessage {

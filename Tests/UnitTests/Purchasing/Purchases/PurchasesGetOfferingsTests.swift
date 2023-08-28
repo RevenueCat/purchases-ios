@@ -99,4 +99,42 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
+    func testWarmsUpPaywallsCache() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let bundle = Bundle(for: Self.self)
+        let offeringsURL = try XCTUnwrap(bundle.url(forResource: "Offerings",
+                                                    withExtension: "json",
+                                                    subdirectory: "Fixtures"))
+        let offeringsResponse = try OfferingsResponse.create(with: XCTUnwrap(Data(contentsOf: offeringsURL)))
+
+        let offering = Offering(
+            identifier: "offering",
+            serverDescription: "",
+            paywall: nil,
+            availablePackages: []
+        )
+        let offerings = Offerings(
+            offerings: [
+                offering.identifier: offering
+            ],
+            currentOfferingID: offering.identifier,
+            response: offeringsResponse
+        )
+
+        self.systemInfo.stubbedIsApplicationBackgrounded = false
+        self.mockOfferingsManager.stubbedUpdateOfferingsCompletionResult = .success(offerings)
+
+        self.setupPurchases()
+
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+        expect(self.mockOfferingsManager.invokedUpdateOfferingsCacheCount).toEventually(equal(1))
+
+        expect(self.paywallCache.invokedWarmUpEligibilityCache) == true
+        expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) == offerings
+
+        expect(self.paywallCache.invokedWarmUpPaywallImagesCache) == true
+        expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
+    }
+
 }

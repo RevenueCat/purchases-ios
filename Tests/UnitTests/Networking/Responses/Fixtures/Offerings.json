@@ -22,8 +22,70 @@
                 {
                     "identifier": "$rc_lifetime",
                     "platform_product_identifier": "com.revenuecat.other_product"
+                },
+                {
+                    "identifier": "custom_package",
+                    "platform_product_identifier": "com.revenuecat.other_product_2"
                 }
             ]
+        },
+        {
+            "description": "Offering with paywall",
+            "identifier": "paywall",
+            "packages": [
+                {
+                    "identifier": "$rc_monthly",
+                    "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+                },
+                {
+                    "identifier": "$rc_annual",
+                    "platform_product_identifier": "com.revenuecat.yearly_10.99.2_week_intro"
+                }
+            ],
+            "paywall": {
+                "template_name": "1",
+                "localized_strings": {
+                    "en_US": {
+                        "title": "Paywall",
+                        "subtitle": "Description",
+                        "call_to_action": "Purchase now",
+                        "call_to_action_with_intro_offer": "Purchase now",
+                        "offer_details": "{{ sub_price_per_month }} per month",
+                        "offer_details_with_intro_offer": "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
+                        "features": [
+                            {
+                                "title": "Feature 1",
+                                "content": "Content",
+                                "icon_id": "lock"
+                            }
+                        ]
+                    },
+                    "es_ES": {
+                        "title": "Tienda",
+                        "call_to_action": "Comprar",
+                        "call_to_action_with_intro_offer": "Comprar",
+                        "offer_details": "{{ sub_price_per_month }} cada mes",
+                        "offer_details_with_intro_offer": "Comienza tu prueba de {{ sub_offer_duration }}, y después {{ sub_price_per_month }} cada mes"
+                    }
+                },
+                "config": {
+                    "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
+                    "images": {
+                        "header": "header.jpg"
+                    },
+                    "colors": {
+                        "light": {
+                            "background": "#FF00AA",
+                            "text_1": "#FF00AA22",
+                            "call_to_action_background": "#FF00AACC",
+                            "call_to_action_foreground": "#FF00AA",
+                            "accent_1": "#FF0000"
+                        },
+                        "dark": null
+                    }
+                },
+                "asset_base_url": "https://rc-paywalls.s3.amazonaws.com"
+            }
         },
         {
             "description": "offering with metadata",
@@ -55,6 +117,19 @@
                     "platform_product_identifier": "com.revenuecat.other_product"
                 }
             ]
+        },
+        {
+            "description": "offering with invalid paywall",
+            "identifier": "invalid_paywall",
+            "packages": [
+                {
+                    "identifier": "$rc_lifetime",
+                    "platform_product_identifier": "com.revenuecat.other_product"
+                }
+            ],
+            "paywall": {
+                "Missing": "data"
+            }
         }
     ]
 }

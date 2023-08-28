@@ -8,8 +8,8 @@
   ],
   "settings" : {
     "_failTransactionsEnabled" : false,
-    "_locale" : "en_US",
-    "_storefront" : "USA",
+    "_locale" : "es_ES",
+    "_storefront" : "ESP",
     "_storeKitErrors" : [
       {
         "current" : null,
@@ -77,12 +77,21 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "5BAE0332",
-          "introductoryOffer" : null,
+          "introductoryOffer" : {
+            "internalID" : "F823513B",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
           "localizations" : [
             {
               "description" : "Monthly Subscription",
               "displayName" : "Monthly Subscription",
               "locale" : "en_US"
+            },
+            {
+              "description" : "",
+              "displayName" : "Subscripción Mensual",
+              "locale" : "es_ES"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.monthly",
@@ -108,11 +117,41 @@
               "description" : "Annual Subscription",
               "displayName" : "Annual Subscription",
               "locale" : "en_US"
+            },
+            {
+              "description" : "",
+              "displayName" : "Subscripción Anual",
+              "locale" : "es_ES"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Yearly",
+          "subscriptionGroupID" : "CEEF018E",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "0.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "2BD0E5CA",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.simpleapp.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly",
           "subscriptionGroupID" : "CEEF018E",
           "type" : "RecurringSubscription"
         }
