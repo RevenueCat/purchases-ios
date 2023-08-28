@@ -26,7 +26,6 @@ struct PurchasedTransactionData {
 
     var appUserID: String
     var presentedOfferingID: String?
-    var presentedPaywallMode: PaywallViewMode?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var aadAttributionToken: String?
     var storefront: StorefrontType?
@@ -86,8 +85,7 @@ final class TransactionPoster: TransactionPosterType {
             transactionID: transaction.transactionIdentifier,
             productID: transaction.productIdentifier,
             transactionDate: transaction.purchaseDate,
-            offeringID: data.presentedOfferingID,
-            paywallMode: data.presentedPaywallMode
+            offeringID: data.presentedOfferingID
         ))
 
         self.receiptFetcher.receiptData(
