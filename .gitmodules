@@ -1,0 +1,3 @@
+[submodule "purchases-ios-snapshots"]
+	path = purchases-ios-snapshots
+	url = git@github.com:RevenueCat/purchases-ios-snapshots.git
