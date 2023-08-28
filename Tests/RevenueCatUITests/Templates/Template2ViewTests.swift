@@ -54,8 +54,7 @@ class Template2ViewTests: BaseSnapshotTest {
         let view = Self.createPaywall(offering: Self.offering.withLocalImages,
                                       purchaseHandler: handler)
             .task {
-                _ = try? await handler.purchase(package: TestData.annualPackage,
-                                                with: .fullScreen)
+                _ = try? await handler.purchase(package: TestData.annualPackage)
             }
 
         view.snapshot(size: Self.fullScreenSize)
