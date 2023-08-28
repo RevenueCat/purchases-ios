@@ -1027,12 +1027,6 @@ public extension Purchases {
 
 #endif
 
-    /// Used by the `RevenueCatUI` framework to keep track of what ``PaywallViewMode``
-    /// was used during a purchase.
-    func cachePresentedPaywallMode(_ mode: PaywallViewMode) {
-        self.purchasesOrchestrator.cachePresentedPaywallMode(mode)
-    }
-
 }
 
 // swiftlint:enable missing_docs
