@@ -42,8 +42,7 @@ class PaywallFooterTests: TestCase {
             .addToHierarchy()
 
         Task {
-            _ = try await Self.purchaseHandler.purchase(package: Self.package,
-                                                        with: .fullScreen)
+            _ = try await Self.purchaseHandler.purchase(package: Self.package)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
