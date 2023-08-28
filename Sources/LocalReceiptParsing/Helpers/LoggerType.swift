@@ -177,8 +177,17 @@ private extension LogLevel {
 
     var logType: OSLogType {
         switch self {
-        case .verbose: return .debug
-        case .debug: return .debug
+        case .verbose, .debug:
+            #if DEBUG
+            if ProcessInfo.isRunningIntegrationTests {
+                return .info
+            } else {
+                return .debug
+            }
+            #else
+            return .debug
+            #endif
+
         case .info: return .info
         case .warn: return .error
         case .error: return .error
