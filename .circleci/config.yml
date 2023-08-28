@@ -28,6 +28,8 @@ aliases:
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
+      # See https://www.develer.com/en/blog/avoiding-git-lfs-bandwidth-waste-with-github-and-circleci/
+      GIT_LFS_SKIP_SMUDGE: 1
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
   release-branches: &release-branches
@@ -162,6 +164,21 @@ commands:
           key: v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
+
+  # See https://www.develer.com/en/blog/avoiding-git-lfs-bandwidth-waste-with-github-and-circleci/
+  fetch-lfs:
+    steps:
+      - run:
+          command: |
+            git lfs ls-files -l | cut -d' ' -f1 | sort > .assets-id
+      - restore_cache:
+          key: v1-lfs-cache-{{ checksum ".assets-id" }}
+      - run:
+          command: git lfs pull
+      - save_cache:
+          key: v1-lfs-cache-{{ checksum ".assets-id" }}
+          paths:
+            - .git/lfs
 
   compress_result_bundle:
     parameters:
@@ -341,6 +358,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - fetch-lfs
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -367,6 +385,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - fetch-lfs
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -400,6 +419,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - fetch-lfs
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
