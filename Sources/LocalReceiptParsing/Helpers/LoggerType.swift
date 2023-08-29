@@ -200,6 +200,9 @@ private extension LogLevel {
         }
     }
 
-    private static let logTypes: [Self: OSLogType] = Set(Self.allCases).dictionaryWithValues { $0.calculateLogType() }
+    private static let logTypes: [Self: OSLogType] =
+        .init(uniqueKeysWithValues: Self.allCases.lazy.map {
+            ($0, $0.calculateLogType())
+        })
 
 }
