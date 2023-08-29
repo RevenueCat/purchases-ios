@@ -184,6 +184,8 @@ private extension LogLevel {
         case .verbose, .debug:
             #if DEBUG
             if ProcessInfo.isRunningIntegrationTests {
+                // See https://github.com/RevenueCat/purchases-ios/pull/3108
+                // With `.debug` we'd lose these logs when running integration tests on CI.
                 return .info
             } else {
                 return .debug
