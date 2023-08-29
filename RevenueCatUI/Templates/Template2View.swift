@@ -143,7 +143,8 @@ struct Template2View: TemplateViewType {
                 EmptyView()
             } else {
                 self.roundedRectangle
-                    .stroke(self.configuration.colors.text1Color.opacity(Self.fadedColorOpacity), lineWidth: 2)
+                    .stroke(self.configuration.colors.text1Color.opacity(Self.fadedColorOpacity),
+                            lineWidth: Constants.defaultPackageBorderWidth)
             }
         }
         .background {
@@ -172,7 +173,7 @@ struct Template2View: TemplateViewType {
         selected: Bool
     ) -> some View {
         HStack {
-            Image(systemName: "checkmark.circle.fill")
+            Constants.checkmarkImage
                 .hidden(if: !selected)
                 .overlay {
                     if selected {

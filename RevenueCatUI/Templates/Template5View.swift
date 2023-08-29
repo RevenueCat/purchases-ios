@@ -54,8 +54,9 @@ struct Template5View: TemplateViewType {
             if self.configuration.mode.shouldDisplayIcon {
                 if let header = self.configuration.headerImageURL {
                     RemoteImage(url: header,
-                                aspectRatio: Self.headerAspectRatio,
+                                aspectRatio: self.headerAspectRatio,
                                 maxWidth: .infinity)
+                    .clipped()
 
                     Spacer()
                 }
@@ -88,6 +89,7 @@ struct Template5View: TemplateViewType {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedLocalization.title))
                     .font(self.font(for: .largeTitle).bold())
+                    .frame(maxWidth: .infinity)
                     .defaultHorizontalPadding()
 
                 Spacer()
@@ -172,7 +174,7 @@ struct Template5View: TemplateViewType {
                     selected
                     ? self.configuration.colors.accent1Color
                     : self.configuration.colors.accent2Color,
-                    lineWidth: 2
+                    lineWidth: Constants.defaultPackageBorderWidth
                 )
         }
         .overlay(alignment: .topTrailing) {
@@ -204,7 +206,7 @@ struct Template5View: TemplateViewType {
         selected: Bool
     ) -> some View {
         HStack {
-            Image(systemName: "checkmark.circle.fill")
+            Constants.checkmarkImage
                 .hidden(if: !selected)
                 .overlay {
                     if selected {
@@ -255,7 +257,12 @@ struct Template5View: TemplateViewType {
     private static let cornerRadius: CGFloat = Constants.defaultPackageCornerRadius
     private static let packageButtonAlignment: Alignment = .leading
 
-    private static let headerAspectRatio: CGFloat = 2
+    private var headerAspectRatio: CGFloat {
+        switch self.userInterfaceIdiom {
+        case .pad: return 3
+        default: return 2
+        }
+    }
 
 }
 

@@ -22,6 +22,7 @@ enum Constants {
 
     static let defaultCornerRadius: CGFloat = 20
     static let defaultPackageCornerRadius: CGFloat = 16
+    static let defaultPackageBorderWidth: CGFloat = 2
 
     /// For UI elements that wouldn't make sense to keep scaling up forever
     static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
@@ -40,6 +41,15 @@ enum Constants {
         } else {
             return nil
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension Constants {
+
+    static var checkmarkImage: some View {
+        Image(systemName: "checkmark.circle.fill")
     }
 
 }
