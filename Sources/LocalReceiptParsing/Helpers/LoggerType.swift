@@ -176,6 +176,10 @@ extension LoggerType {
 private extension LogLevel {
 
     var logType: OSLogType {
+        return Self.logTypes[self]!
+    }
+
+    private func calculateLogType() -> OSLogType {
         switch self {
         case .verbose, .debug:
             #if DEBUG
@@ -193,5 +197,7 @@ private extension LogLevel {
         case .error: return .error
         }
     }
+
+    private static let logTypes: [Self: OSLogType] = Set(Self.allCases).dictionaryWithValues { $0.calculateLogType() }
 
 }
