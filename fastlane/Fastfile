@@ -134,6 +134,7 @@ platform :ios do
       result_bundle: true,
       testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
       configuration: 'Debug',
+      use_system_scm: true,
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
       fail_build: !generate_snapshots
@@ -153,6 +154,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
+      use_system_scm: true,
       output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
@@ -171,6 +173,7 @@ platform :ios do
       # Host app isn't available on watchOS
       testplan: "CI-RevenueCat",
       configuration: 'Debug',
+      use_system_scm: true,
       output_directory: "fastlane/test_output/xctest/watchos"
     )
   end
