@@ -176,13 +176,33 @@ extension LoggerType {
 private extension LogLevel {
 
     var logType: OSLogType {
+        return Self.logTypes[self]!
+    }
+
+    private func calculateLogType() -> OSLogType {
         switch self {
-        case .verbose: return .debug
-        case .debug: return .debug
+        case .verbose, .debug:
+            #if DEBUG
+            if ProcessInfo.isRunningIntegrationTests {
+                // See https://github.com/RevenueCat/purchases-ios/pull/3108
+                // With `.debug` we'd lose these logs when running integration tests on CI.
+                return .info
+            } else {
+                return .debug
+            }
+            #else
+            return .debug
+            #endif
+
         case .info: return .info
         case .warn: return .error
         case .error: return .error
         }
     }
+
+    private static let logTypes: [Self: OSLogType] =
+        .init(uniqueKeysWithValues: Self.allCases.lazy.map {
+            ($0, $0.calculateLogType())
+        })
 
 }
