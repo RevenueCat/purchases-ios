@@ -415,13 +415,13 @@ platform :ios do
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
     data = {parameters: {options[:pipeline] => true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
@@ -430,7 +430,7 @@ platform :ios do
   lane :create_snapshot_pr do |options|
     push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/purchases-ios",
+      repo: "revenuecat/#{repo_name}",
       base_branch: ENV["CIRCLE_BRANCH"],
       files_to_add: "../*/__Snapshots__/*"
      )
@@ -438,10 +438,10 @@ platform :ios do
 
   desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
   lane :create_snapshot_submodule_pr do |options|
-    Dir.chdir("../purchases-ios-snapshots") { |dir|
+    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
      push_snapshot_pr(
       version: options[:version],
-      repo: "revenuecat/purchases-ios-snapshots",
+      repo: "revenuecat/#{snapshots_repo_name}",
       base_branch: "main", 
       files_to_add: "."
      )
