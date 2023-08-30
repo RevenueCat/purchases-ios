@@ -165,7 +165,7 @@ private extension PaywallColor {
 #if canImport(UIKit) && !os(watchOS)
 private extension UIColor {
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    @available(iOS 13.0, tvOS 13.0, macCatalyst 13.1, macOS 10.15, watchOS 6.2, *)
     convenience init(light: UIColor, dark: UIColor) {
         self.init { trait in
             switch trait.userInterfaceStyle {
