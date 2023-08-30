@@ -226,7 +226,7 @@ final class PurchasesOrchestrator {
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: StoreProductType,
-                          completion: @escaping (Result<PromotionalOffer, PurchasesError>) -> Void) {
+                          completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
             return
@@ -249,31 +249,33 @@ final class PurchasesOrchestrator {
                 return
             }
 
-            if !self.receiptParser.receiptHasTransactions(receiptData: receiptData) {
-              // Promotional offers require existing purchases.
-              // Fail early if receipt has no transactions.
-              completion(.failure(ErrorUtils.ineligibleError()))
-              return
-            }
+            self.operationDispatcher.dispatchOnWorkerThread {
+                if !self.receiptParser.receiptHasTransactions(receiptData: receiptData) {
+                  // Promotional offers require existing purchases.
+                  // Fail early if receipt has no transactions.
+                  completion(.failure(ErrorUtils.ineligibleError()))
+                  return
+                }
 
-            self.backend.offerings.post(offerIdForSigning: discountIdentifier,
-                                        productIdentifier: product.productIdentifier,
-                                        subscriptionGroup: subscriptionGroupIdentifier,
-                                        receiptData: receiptData,
-                                        appUserID: self.appUserID) { result in
-                let result: Result<PromotionalOffer, PurchasesError> = result
-                    .map { data in
-                        let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
-                                                                     keyIdentifier: data.keyIdentifier,
-                                                                     nonce: data.nonce,
-                                                                     signature: data.signature,
-                                                                     timestamp: data.timestamp)
+                self.backend.offerings.post(offerIdForSigning: discountIdentifier,
+                                            productIdentifier: product.productIdentifier,
+                                            subscriptionGroup: subscriptionGroupIdentifier,
+                                            receiptData: receiptData,
+                                            appUserID: self.appUserID) { result in
+                    let result: Result<PromotionalOffer, PurchasesError> = result
+                        .map { data in
+                            let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
+                                                                         keyIdentifier: data.keyIdentifier,
+                                                                         nonce: data.nonce,
+                                                                         signature: data.signature,
+                                                                         timestamp: data.timestamp)
 
-                        return .init(discount: productDiscount, signedData: signedData)
-                    }
-                    .mapError { $0.asPurchasesError }
+                            return .init(discount: productDiscount, signedData: signedData)
+                        }
+                        .mapError { $0.asPurchasesError }
 
-                completion(result)
+                    completion(result)
+                }
             }
         }
     }
