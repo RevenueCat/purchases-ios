@@ -560,9 +560,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
         #endif
 
-        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] customerInfo in
+        self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
             guard let self = self else { return }
-            self.handleCustomerInfoChanged(customerInfo)
+            self.handleCustomerInfoChanged(from: old, to: new)
         }
     }
 
@@ -1503,10 +1503,13 @@ internal extension Purchases {
 
 private extension Purchases {
 
-    func handleCustomerInfoChanged(_ customerInfo: CustomerInfo) {
-        self.trialOrIntroPriceEligibilityChecker.clearCache()
-        self.purchasedProductsFetcher?.clearCache()
-        self.delegate?.purchases?(self, receivedUpdated: customerInfo)
+    func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
+        if old != nil {
+            self.trialOrIntroPriceEligibilityChecker.clearCache()
+            self.purchasedProductsFetcher?.clearCache()
+        }
+
+        self.delegate?.purchases?(self, receivedUpdated: new)
     }
 
     @objc func applicationWillEnterForeground() {
@@ -1620,6 +1623,7 @@ private extension Purchases {
         }
 
         self.delegate?.purchases?(self, receivedUpdated: info)
+        self.customerInfoManager.setLastSentCustomerInfo(info)
     }
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {

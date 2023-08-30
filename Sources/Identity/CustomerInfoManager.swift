@@ -19,8 +19,6 @@ class CustomerInfoManager {
 
     typealias CustomerInfoCompletion = @MainActor @Sendable (Result<CustomerInfo, BackendError>) -> Void
 
-    var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
-
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
@@ -98,14 +96,6 @@ class CustomerInfoManager {
                 completion(.success(customerInfo))
             }
         }
-    }
-
-    func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        guard let info = self.cachedCustomerInfo(appUserID: appUserID) else {
-            return
-        }
-
-        self.sendUpdateIfChanged(customerInfo: info)
     }
 
     // swiftlint:disable:next function_body_length
@@ -215,7 +205,12 @@ class CustomerInfoManager {
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
         self.modifyData {
             $0.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
-            $0.lastSentCustomerInfo = nil
+        }
+    }
+
+    func setLastSentCustomerInfo(_ info: CustomerInfo) {
+        self.modifyData {
+            $0.lastSentCustomerInfo = info
         }
     }
 
@@ -226,15 +221,17 @@ class CustomerInfoManager {
                 continuation.yield(lastSentCustomerInfo)
             }
 
-            let disposable = self.monitorChanges { continuation.yield($0) }
+            let disposable = self.monitorChanges { _, new in continuation.yield(new) }
 
             continuation.onTermination = { @Sendable _ in disposable() }
         }
     }
 
+    typealias CustomerInfoChangeClosure = (_ old: CustomerInfo?, _ new: CustomerInfo) -> Void
+
     /// Allows monitoring changes to the active `CustomerInfo`.
     /// - Returns: closure that removes the created observation.
-    func monitorChanges(_ changes: @escaping (CustomerInfo) -> Void) -> () -> Void {
+    func monitorChanges(_ changes: @escaping CustomerInfoChangeClosure) -> () -> Void {
         self.modifyData {
             let lastIdentifier = $0.customerInfoObserversByIdentifier.keys
                 .sorted()
@@ -251,6 +248,9 @@ class CustomerInfoManager {
         }
     }
 
+    // Visible for tests
+    var lastSentCustomerInfo: CustomerInfo? { return self.data.value.lastSentCustomerInfo }
+
     private func removeObserver(with identifier: Int) {
         self.modifyData {
             $0.customerInfoObserversByIdentifier.removeValue(forKey: identifier)
@@ -258,11 +258,12 @@ class CustomerInfoManager {
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
-        self.modifyData {
-            guard !$0.customerInfoObserversByIdentifier.isEmpty,
-                  $0.lastSentCustomerInfo != customerInfo else {
-                      return
-                  }
+        return self.modifyData {
+            let lastSentCustomerInfo = $0.lastSentCustomerInfo
+
+            guard !$0.customerInfoObserversByIdentifier.isEmpty, lastSentCustomerInfo != customerInfo else {
+                return
+            }
 
             if $0.lastSentCustomerInfo != nil {
                 Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
@@ -276,7 +277,7 @@ class CustomerInfoManager {
             // this class' data. By making it async, the closure is invoked outside of the lock.
             self.operationDispatcher.dispatchAsyncOnMainThread { [observers = $0.customerInfoObserversByIdentifier] in
                 for closure in observers.values {
-                    closure(customerInfo)
+                    closure(lastSentCustomerInfo, customerInfo)
                 }
             }
         }
@@ -419,7 +420,7 @@ private extension CustomerInfoManager {
         /// This allows cancelling observations by deleting them from this dictionary.
         /// These observers are used both for ``Purchases/customerInfoStream`` and
         /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
-        var customerInfoObserversByIdentifier: [Int: (CustomerInfo) -> Void]
+        var customerInfoObserversByIdentifier: [Int: CustomerInfoManager.CustomerInfoChangeClosure]
 
         init(deviceCache: DeviceCache) {
             self.deviceCache = deviceCache
