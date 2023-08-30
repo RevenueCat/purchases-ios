@@ -543,6 +543,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         } catch {
             expect(error).to(matchError(ErrorCode.ineligibleError))
         }
+        self.logger.verifyMessageWasNotLogged("API request started")
     }
 
     func testUserHasNoEligibleOffersByDefault() async throws {

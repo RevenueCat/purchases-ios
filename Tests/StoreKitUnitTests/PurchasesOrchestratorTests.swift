@@ -428,30 +428,57 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testGetPromotionalOfferFailsWithIneligibleIfReceiptHasNoTransactions() async throws {
-      self.receiptParser.stubbedReceiptHasTransactionsResult = false
+        self.receiptParser.stubbedReceiptHasTransactionsResult = false
 
-      let product = try await self.fetchSk1Product()
-      let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
-                                                          currencyCode: product.priceLocale.currencyCode,
-                                                          price: 11.1,
-                                                          localizedPriceString: "$11.10",
-                                                          paymentMode: .payAsYouGo,
-                                                          subscriptionPeriod: .init(value: 1, unit: .month),
-                                                          numberOfPeriods: 2,
-                                                          type: .promotional)
+        let product = try await self.fetchSk1Product()
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceLocale.currencyCode,
+                                                            price: 11.1,
+                                                            localizedPriceString: "$11.10",
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
+                                                            type: .promotional)
 
-      do {
-          _ = try await Async.call { completion in
-              self.orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
-                                                 product: StoreProduct(sk1Product: product),
-                                                 completion: completion)
-          }
-      } catch {
-          expect(error).to(matchError(ErrorCode.ineligibleError))
-      }
+        do {
+            _ = try await Async.call { completion in
+                self.orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                                   product: StoreProduct(sk1Product: product),
+                                                   completion: completion)
+            }
+        } catch {
+            expect(error).to(matchError(ErrorCode.ineligibleError))
+        }
 
-      expect(self.offerings.invokedPostOffer) == false
-  }
+        expect(self.offerings.invokedPostOffer) == false
+    }
+
+    func testGetPromotionalOfferWorksWhenReceiptHasTransactions() async throws {
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
+        self.receiptParser.stubbedReceiptHasTransactionsResult = true
+
+        let product = try await self.fetchSk1Product()
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceLocale.currencyCode,
+                                                            price: 11.1,
+                                                            localizedPriceString: "$11.10",
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
+                                                            type: .promotional)
+
+        let result = try await Async.call { completion in
+            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                          product: StoreProduct(sk1Product: product),
+                                          completion: completion)
+        }
+
+        expect(result.signedData.identifier) == storeProductDiscount.offerIdentifier
+
+        expect(self.offerings.invokedPostOfferCount) == 1
+        expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+    }
 
     func testGetSK1PromotionalOfferFailsWithIneligibleDiscount() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
