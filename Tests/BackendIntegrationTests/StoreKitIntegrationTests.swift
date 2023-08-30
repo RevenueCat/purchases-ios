@@ -537,6 +537,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
         let product = try await self.monthlyPackage.storeProduct
         let discount = try XCTUnwrap(product.discounts.onlyElement)
+        self.logger.clearMessages()
 
         do {
             _ = try await self.purchases.promotionalOffer(forProductDiscount: discount, product: product)
