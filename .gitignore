@@ -38,6 +38,9 @@ IntegrationTests/CarthageInstallation/Cartfile.resolved
 scan_derived_data/
 generated_docs/
 
+# Local clone of `purchases-ios-snapshots` repo to be available for tests.
+Tests/purchases-ios-snapshots
+
 # SPM
 
 # This is the "SPM" scheme, which is duplicated with the scheme in the project
