@@ -212,12 +212,14 @@ platform :ios do
   desc "build tvOS, watchOS, macOS"
   lane :build_tv_watch_mac do |options|
     check_pods
+    load_spm_dependencies
     carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
   end
 
   desc "macOS build"
   lane :build_mac do |options|
     check_pods
+    load_spm_dependencies
     carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
   end
 
@@ -854,6 +856,8 @@ def check_no_github_release_exists(version_number)
 end
 
 def carthage_archive
+  load_spm_dependencies
+
   Dir.chdir("..") do
     # As of Carthage 0.38.0, we still can't archive xcframeworks directly.
     # there are also some issues which prevent us from archiving frameworks directly, since
@@ -873,6 +877,17 @@ lane :check_pods do
     platforms:"ios,osx,tvos",
     fail_fast: true
   )
+end
+
+lane :load_spm_dependencies do
+  # Carthage has a hardcoded timeout of 60 seconds when listing schemes.
+  # Because of CircleCI's network issues, that can sometimes fail.
+  # This preemptively runs this command to make sure the SPM dependencies are fetched
+  # without a timeout.
+
+  Dir.chdir("..") do
+    sh("xcodebuild", "-list")
+  end
 end
 
 def current_version_number
