@@ -314,6 +314,22 @@ Generate docs
 
 Build and deploy PurchaseTesterSwiftUI
 
+### ios fetch_snapshots
+
+```sh
+[bundle exec] fastlane ios fetch_snapshots
+```
+
+Clones or updates snapshots repo
+
+### ios update_snapshots_repo
+
+```sh
+[bundle exec] fastlane ios update_snapshots_repo
+```
+
+Updates purchases-ios-snapshots-commit to point to latest commit on main
+
 ### ios sandbox_testers
 
 ```sh
