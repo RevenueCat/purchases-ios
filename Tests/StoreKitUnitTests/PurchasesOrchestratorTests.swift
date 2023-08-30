@@ -376,6 +376,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     func testGetSK1PromotionalOffer() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
+        self.receiptParser.stubbedReceiptHasTransactionsResult = true
 
         let product = try await fetchSk1Product()
 
@@ -425,6 +426,32 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.offerings.invokedPostOffer) == false
     }
+
+    func testGetPromotionalOfferFailsWithIneligibleIfReceiptHasNoTransactions() async throws {
+      self.receiptParser.stubbedReceiptHasTransactionsResult = false
+
+      let product = try await self.fetchSk1Product()
+      let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                          currencyCode: product.priceLocale.currencyCode,
+                                                          price: 11.1,
+                                                          localizedPriceString: "$11.10",
+                                                          paymentMode: .payAsYouGo,
+                                                          subscriptionPeriod: .init(value: 1, unit: .month),
+                                                          numberOfPeriods: 2,
+                                                          type: .promotional)
+
+      do {
+          _ = try await Async.call { completion in
+              self.orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                                 product: StoreProduct(sk1Product: product),
+                                                 completion: completion)
+          }
+      } catch {
+          expect(error).to(matchError(ErrorCode.ineligibleError))
+      }
+
+      expect(self.offerings.invokedPostOffer) == false
+  }
 
     func testGetSK1PromotionalOfferFailsWithIneligibleDiscount() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
@@ -1023,6 +1050,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
+        self.receiptParser.stubbedReceiptHasTransactionsResult = true
 
         let storeProduct = try await self.fetchSk2StoreProduct()
 

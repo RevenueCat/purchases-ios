@@ -249,6 +249,13 @@ final class PurchasesOrchestrator {
                 return
             }
 
+            if !self.receiptParser.receiptHasTransactions(receiptData: receiptData) {
+              // Promotional offers require existing purchases.
+              // Fail early if receipt has no transactions.
+              completion(.failure(ErrorUtils.ineligibleError()))
+              return
+            }
+
             self.backend.offerings.post(offerIdForSigning: discountIdentifier,
                                         productIdentifier: product.productIdentifier,
                                         subscriptionGroup: subscriptionGroupIdentifier,
