@@ -46,16 +46,16 @@ class MockCustomerInfoManager: CustomerInfoManager {
         self.invokedFetchAndCacheCustomerInfoIfStaleParametersList.append((appUserID, isAppBackgrounded, completion))
     }
 
-    var invokedSendCachedCustomerInfoIfAvailable = false
-    var invokedSendCachedCustomerInfoIfAvailableCount = 0
-    var invokedSendCachedCustomerInfoIfAvailableParameters: (appUserID: String, Void)?
-    var invokedSendCachedCustomerInfoIfAvailableParametersList = [(appUserID: String, Void)]()
+    var invokedSetLastSentCustomerInfo = false
+    var invokedSetLastSentCustomerInfoCount = 0
+    var invokedSetLastSentCustomerInfoParameters: (info: CustomerInfo, Void)?
+    var invokedSetLastSentCustomerInfoParametersList = [(info: CustomerInfo, Void)]()
 
-    override func sendCachedCustomerInfoIfAvailable(appUserID: String) {
-        self.invokedSendCachedCustomerInfoIfAvailable = true
-        self.invokedSendCachedCustomerInfoIfAvailableCount += 1
-        self.invokedSendCachedCustomerInfoIfAvailableParameters = (appUserID, ())
-        self.invokedSendCachedCustomerInfoIfAvailableParametersList.append((appUserID, ()))
+    override func setLastSentCustomerInfo(_ info: CustomerInfo) {
+        self.invokedSetLastSentCustomerInfo = true
+        self.invokedSetLastSentCustomerInfoCount += 1
+        self.invokedSetLastSentCustomerInfoParameters = (info, ())
+        self.invokedSetLastSentCustomerInfoParametersList.append((info, ()))
     }
 
     var invokedCustomerInfo = false
