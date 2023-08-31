@@ -129,8 +129,7 @@ private struct FeatureView: View {
     private var icon: some View {
         Circle()
             .overlay {
-                if let iconName = self.feature.iconID,
-                   let icon = PaywallIcon(rawValue: iconName) {
+                if let icon = self.feature.icon {
                     IconView(icon: icon, tint: self.colors.accent1Color)
                         .padding(self.iconPadding)
                 }
