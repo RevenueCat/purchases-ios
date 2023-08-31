@@ -221,6 +221,8 @@ extension PaywallTemplate {
             return "#3: Feature list"
         case .template4:
             return "#4: Horizontal packages"
+        case .template5:
+            return "#5: Minimalist with Small Banner"
         }
     }
 
