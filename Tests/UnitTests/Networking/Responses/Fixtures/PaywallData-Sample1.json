@@ -56,7 +56,8 @@
                 "call_to_action_background": "#FF00AACC",
                 "call_to_action_foreground": "#FF00AA",
                 "accent_1": "#FF0000",
-                "accent_2": "#00FF00"
+                "accent_2": "#00FF00",
+                "call_to_action_secondary_background": "#FF00BB",
             },
             "dark": {
                 "background": "#FF0000",
