@@ -83,16 +83,35 @@ struct PurchaseButton: View {
                        ? .infinity
                         : nil
                 )
+                .padding()
                 .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
         }
         .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
-        .tint(self.colors.callToActionBackgroundColor)
-        .buttonBorderShape(self.mode.buttonBorderShape)
-        .controlSize(self.mode.buttonSize)
-        .buttonStyle(.borderedProminent)
+        .background(self.backgroundView)
+        .tint(.clear)
         .frame(maxWidth: .infinity)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         .disabled(self.package.currentlySubscribed)
+    }
+
+    @ViewBuilder
+    private var backgroundView: some View {
+        Capsule(style: .continuous)
+            .foregroundStyle(self.backgroundColor)
+    }
+
+    private var backgroundColor: some ShapeStyle {
+        let primary = self.colors.callToActionBackgroundColor
+
+        if let secondary = self.colors.callToActionSecondaryBackgroundColor {
+            return AnyShapeStyle(
+                LinearGradient(colors: [primary, secondary],
+                               startPoint: .top,
+                               endPoint: .bottom)
+            )
+        } else {
+            return AnyShapeStyle(primary)
+        }
     }
 
 }
@@ -109,24 +128,6 @@ private extension PaywallViewMode {
     var fullWidthButton: Bool {
         switch self {
         case .fullScreen, .footer, .condensedFooter: return true
-        }
-    }
-
-    @available(tvOS, unavailable)
-    var buttonSize: ControlSize {
-        switch self {
-        case .fullScreen, .footer, .condensedFooter: return .large
-        }
-    }
-
-    var buttonBorderShape: ButtonBorderShape {
-        switch self {
-        case .fullScreen, .footer, .condensedFooter:
-            #if os(macOS) || os(tvOS)
-            return .roundedRectangle
-            #else
-            return .capsule
-            #endif
         }
     }
 
