@@ -134,6 +134,7 @@ platform :ios do
       result_bundle: true,
       testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
       configuration: 'Debug',
+      disable_package_automatic_updates: true,
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
       fail_build: !generate_snapshots
@@ -153,6 +154,7 @@ platform :ios do
       result_bundle: true,
       testplan: "CI-AllTests",
       configuration: 'Debug',
+      disable_package_automatic_updates: true,
       output_directory: "fastlane/test_output/xctest/tvos"
     )
   end
@@ -171,6 +173,7 @@ platform :ios do
       # Host app isn't available on watchOS
       testplan: "CI-RevenueCat",
       configuration: 'Debug',
+      disable_package_automatic_updates: true,
       output_directory: "fastlane/test_output/xctest/watchos"
     )
   end
@@ -206,7 +209,7 @@ platform :ios do
       scheme: 'RevenueCat',
       destination: 'generic/platform=visionOS',
       configuration: 'release',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO -disableAutomaticPackageResolution"
     )
   end
 
@@ -242,6 +245,7 @@ platform :ios do
       scheme: 'SwiftAPITester',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
+      xcargs: "-disableAutomaticPackageResolution"
     )
   end
 
@@ -252,6 +256,7 @@ platform :ios do
       scheme: 'ObjCAPITester',
       destination: 'generic/platform=iOS Simulator',
       configuration: 'release',
+      xcargs: "-disableAutomaticPackageResolution"
     )
   end
 
