@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 7/25/23.
 
+import RevenueCat
 import SwiftUI
 
 /// A view that renders an icon by name, tinted with a color.
@@ -26,6 +27,7 @@ struct IconView<S: ShapeStyle>: View {
             .resizable()
             .scaledToFit()
             .foregroundStyle(self.tint)
+            .accessibilityHidden(true)
     }
 
 }
@@ -79,6 +81,14 @@ enum PaywallIcon: String, CaseIterable {
     case twoWayArrows = "two_way_arrows"
     case key
     case warning
+
+}
+
+extension PaywallData.LocalizedConfiguration.Feature {
+
+    var icon: PaywallIcon? {
+        return self.iconID.flatMap(PaywallIcon.init(rawValue:))
+    }
 
 }
 
