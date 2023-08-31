@@ -39,6 +39,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.light.text2?.stringRepresentation) == "#FF00AA11"
         expect(paywall.config.colors.light.callToActionBackground.stringRepresentation) == "#FF00AACC"
         expect(paywall.config.colors.light.callToActionForeground.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.callToActionSecondaryBackground?.stringRepresentation) == "#FF00BB"
         expect(paywall.config.colors.light.accent1?.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.light.accent2?.stringRepresentation) == "#00FF00"
 
