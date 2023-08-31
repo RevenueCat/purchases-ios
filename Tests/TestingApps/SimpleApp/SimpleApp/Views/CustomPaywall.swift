@@ -63,6 +63,17 @@ struct CustomPaywall_Previews: PreviewProvider {
             )
             .previewDisplayName("Template4\(mode ? " condensed" : "")")
         }
+
+        ForEach(Self.condensedOptions, id: \.self) { mode in
+            CustomPaywall(
+                offering: TestData.offeringWithTemplate5Paywall,
+                customerInfo: TestData.customerInfo,
+                condensed: mode,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: .mock()
+            )
+            .previewDisplayName("Template5\(mode ? " condensed" : "")")
+        }
     }
 
     private static let condensedOptions: [Bool] = [

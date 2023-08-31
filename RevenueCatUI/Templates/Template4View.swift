@@ -136,7 +136,6 @@ struct Template4View: TemplateViewType {
                                   selected: isSelected,
                                   packageWidth: self.packageWidth,
                                   desiredHeight: self.packageContentHeight)
-                    .contentShape(Rectangle())
                 }
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }

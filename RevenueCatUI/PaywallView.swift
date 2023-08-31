@@ -305,6 +305,7 @@ private extension PaywallTemplate {
         case .template2: return "Bold Packages"
         case .template3: return "Feature List"
         case .template4: return "Horizontal"
+        case .template5: return "Small Banner"
         }
     }
 

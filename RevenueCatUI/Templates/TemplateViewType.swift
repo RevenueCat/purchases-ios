@@ -64,6 +64,7 @@ private extension PaywallTemplate {
         case .template2: return .multiple
         case .template3: return .single
         case .template4: return .multiple
+        case .template5: return .multiple
         }
     }
 
@@ -139,6 +140,8 @@ extension PaywallData {
             Template3View(configuration)
         case .template4:
             Template4View(configuration)
+        case .template5:
+            Template5View(configuration)
         }
     }
 
