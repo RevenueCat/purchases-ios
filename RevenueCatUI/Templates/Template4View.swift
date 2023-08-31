@@ -401,7 +401,6 @@ private extension PaywallViewMode {
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable)
-@available(macOS, unavailable)
 struct Template4View_Previews: PreviewProvider {
 
     static var previews: some View {

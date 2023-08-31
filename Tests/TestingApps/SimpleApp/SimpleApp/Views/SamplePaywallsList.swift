@@ -62,12 +62,14 @@ struct SamplePaywallsList: View {
                               purchaseHandler: .default())
             }
 
+        #if canImport(UIKit)
         case let .customFont(template):
             PaywallView(offering: Self.loader.offering(for: template),
                         customerInfo: Self.loader.customerInfo,
                         fonts: Self.customFontProvider,
                         introEligibility: Self.introEligibility,
                         purchaseHandler: .default())
+        #endif
 
         case let .customPaywall(mode):
             CustomPaywall(customerInfo: Self.loader.customerInfo,
@@ -99,12 +101,14 @@ struct SamplePaywallsList: View {
                         }
                     }
 
+                    #if canImport(UIKit)
                     Button {
                         self.display = .customFont(template)
                     } label: {
                         TemplateLabel(name: "Custom font", icon: "textformat")
                             .font(.body.italic())
                     }
+                    #endif
                 }
             }
 
@@ -140,7 +144,10 @@ struct SamplePaywallsList: View {
         .buttonStyle(.plain)
     }
 
+    #if canImport(UIKit)
     private static let customFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    #endif
+
     private static let loader: SamplePaywallLoader = .init()
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
@@ -177,7 +184,9 @@ private extension SamplePaywallsList {
     enum Display {
 
         case template(PaywallTemplate, PaywallViewMode)
+        #if canImport(UIKit)
         case customFont(PaywallTemplate)
+        #endif
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall
@@ -193,8 +202,10 @@ extension SamplePaywallsList.Display: Identifiable {
         case let .template(template, mode):
             return "template-\(template.rawValue)-\(mode)"
 
+        #if canImport(UIKit)
         case let .customFont(template):
             return "custom-font-" + template.rawValue
+        #endif
 
         case .customPaywall:
             return "custom-paywall"

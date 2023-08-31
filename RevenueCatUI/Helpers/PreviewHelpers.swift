@@ -18,7 +18,6 @@ import SwiftUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
 @available(watchOS, unavailable)
-@available(macOS, unavailable)
 @MainActor
 enum PreviewHelpers {
 
@@ -41,7 +40,6 @@ enum PreviewHelpers {
 /// }
 /// ```
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct PreviewableTemplate<T: TemplateViewType>: View {
 

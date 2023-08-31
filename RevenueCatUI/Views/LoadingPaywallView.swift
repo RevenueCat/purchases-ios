@@ -16,7 +16,6 @@ import SwiftUI
 
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 @MainActor
 struct LoadingPaywallView: View {
@@ -56,7 +55,6 @@ struct LoadingPaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension LoadingPaywallView {
 
@@ -141,7 +139,6 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(watchOS, unavailable)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct LoadingPaywallView_Previews: PreviewProvider {
 

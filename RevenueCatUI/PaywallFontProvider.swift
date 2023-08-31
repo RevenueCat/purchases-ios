@@ -67,7 +67,7 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
         self.fontName = fontName
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, tvOS 15.0, *)
     // swiftlint:disable:next missing_docs
     open func font(for textStyle: Font.TextStyle) -> Font {
         return Font.custom(self.fontName,
