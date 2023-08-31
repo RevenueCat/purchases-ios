@@ -92,6 +92,11 @@
               "description" : "",
               "displayName" : "Subscripción Mensual",
               "locale" : "es_ES"
+            },
+            {
+              "description" : "اشتراك شهري",
+              "displayName" : "اشتراك شهري",
+              "locale" : "ar"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.monthly",
@@ -122,6 +127,11 @@
               "description" : "",
               "displayName" : "Subscripción Anual",
               "locale" : "es_ES"
+            },
+            {
+              "description" : "اشتراك سنوي",
+              "displayName" : "اشتراك سنوي",
+              "locale" : "ar"
             }
           ],
           "productID" : "com.revenuecat.simpleapp.yearly",
