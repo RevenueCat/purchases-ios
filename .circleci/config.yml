@@ -359,7 +359,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-15"
+                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -390,7 +390,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-16"
+                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -420,7 +420,7 @@ jobs:
           steps:
             - run:
                 name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"revenuecatui-17"
+                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-17"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui

@@ -323,6 +323,60 @@ internal enum TestData {
                             TestData.annualPackage]
     )
 
+    static let offeringWithTemplate5Paywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            templateName: PaywallTemplate.template5.rawValue,
+            config: .init(
+                packages: [PackageType.annual.identifier,
+                           PackageType.monthly.identifier],
+                defaultPackage: PackageType.annual.identifier,
+                images: .init(
+                    header: "954459_1692992845.png"
+                ),
+                colors: .init(
+                    light: .init(
+                        background: "#FFFFFF",
+                        text1: "#000000",
+                        callToActionBackground: "#008575",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#008575",
+                        accent2: "#DFDFDF"
+                    ),
+                    dark: .init(
+                        background: "#000000",
+                        text1: "#FFFFFF",
+                        callToActionBackground: "#41E194",
+                        callToActionForeground: "#000000",
+                        accent1: "#41E194",
+                        accent2: "#DFDFDF"
+                    )
+                ),
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localization: .init(
+                title: "Spice Up Your Kitchen - Go Pro for Exclusive Benefits!",
+                callToAction: "Continue",
+                callToActionWithIntroOffer: "Start your Free Trial",
+                offerDetails: "{{ total_price_and_per_month }}",
+                offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+                offerName: "{{ sub_period }}",
+                features: [
+                    .init(title: "Unique gourmet recipes", iconID: "tick"),
+                    .init(title: "Advanced nutritional recipes", iconID: "tick"),
+                    .init(title: "Personalized support from our Chef", iconID: "tick"),
+                    .init(title: "Unlimited receipt collections", iconID: "tick")
+                ]
+            ),
+            assetBaseURL: Self.paywallAssetBaseURL
+        ),
+        availablePackages: [TestData.monthlyPackage,
+                            TestData.sixMonthPackage,
+                            TestData.annualPackage]
+    )
+
     static let offeringWithNoPaywall = Offering(
         identifier: Self.offeringIdentifier,
         serverDescription: "Offering",

@@ -28,6 +28,7 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
 repo_name = 'purchases-ios'
+snapshots_repo_name = 'purchases-ios-snapshots'
 changelog_latest_path = './CHANGELOG.latest.md'
 changelog_path = './CHANGELOG.md'
 
@@ -179,6 +180,8 @@ platform :ios do
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
     
+    fetch_snapshots
+
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       xcodebuild(
@@ -414,42 +417,63 @@ platform :ios do
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
     data = {parameters: {options[:pipeline] => true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
 
   desc "Creates a new PR after new snapshot files were generated"
   lane :create_snapshot_pr do |options|
-    version = options[:version]
-    base_branch = ENV["CIRCLE_BRANCH"]
+    push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{repo_name}",
+      base_branch: ENV["CIRCLE_BRANCH"],
+      files_to_add: "../*/__Snapshots__/*"
+     )
+  end
 
+  desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
+  lane :create_snapshots_repo_pr do |options|
+    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
+     push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{snapshots_repo_name}",
+      base_branch: "main", 
+      files_to_add: "."
+     )
+    }
+  end
+
+  private_lane :push_snapshot_pr do |options|
+    version = options[:version]
+    base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"] 
 
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
-    sh("git", "checkout", "-b", branch_name)
 
-    sh("git", "add", "../*/__Snapshots__/*")
+    sh("git", "checkout", "-b", branch_name)
+    sh("git", "add", options[:files_to_add])
+    
     file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
     if file_count == 0
       UI.important("No files to be committed")
     else
       sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
-      push_to_git_remote
+      sh("git", "push", "origin", branch_name) 
 
       circle_user = ENV["CIRCLE_USERNAME"]
       branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
       body = "Requested by @#{circle_user} for [#{base_branch}](#{branch_link})"
 
       create_pull_request(
-        repo: "revenuecat/purchases-ios",
+        repo: options[:repo],
         title: "Generating new test snapshots for `#{base_branch}` - #{version}",
         body: body,
         base: base_branch,
@@ -759,6 +783,38 @@ platform :ios do
     macos_build(changelog)
   end
 
+  desc "Clones or updates snapshots repo"
+  lane :fetch_snapshots do
+    Dir.chdir("../Tests") do
+      if !File.directory?(snapshots_repo_name)
+        UI.important("Cloning snapshots repo")
+
+        sh "git", "clone", "git@github.com:RevenueCat/#{snapshots_repo_name}.git"
+      end
+
+      commit = current_snapshots_commit
+      UI.message("Updating snapshots repo to #{commit}")
+      Dir.chdir(snapshots_repo_name) do
+        sh "git", "fetch", "origin"
+        sh "git", "checkout", commit
+      end
+    end
+  end
+
+  desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
+  lane :update_snapshots_repo do
+    new_hash = ""
+
+    Dir.chdir("../Tests/#{snapshots_repo_name}") do
+      sh "git", "checkout", "main"
+      sh "git", "pull", "--rebase", "origin"
+      new_hash = sh("git", "rev-parse", "HEAD")
+    end
+
+    UI.important("Updating snapshot commit to #{new_hash}")
+    update_snapshots_commit(new_hash)
+  end
+
   desc "Create or delete sandbox testers"
   lane :sandbox_testers do
     Spaceship::ConnectAPI.login(use_portal: false)
@@ -893,3 +949,17 @@ end
 def current_version_number
   File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
+
+# Snapshots
+
+def snapshots_commit_file
+  "#{File.dirname(__FILE__)}/../Tests/purchases-ios-snapshots-commit"
+end
+
+def current_snapshots_commit
+  File.read(snapshots_commit_file).strip
+end
+def update_snapshots_commit(hash)
+  File.write(snapshots_commit_file, hash)
+end
+ 

@@ -297,6 +297,8 @@ extension PaywallData.Configuration {
         public var callToActionBackground: PaywallColor
         /// Foreground color of the main call to action button.
         public var callToActionForeground: PaywallColor
+        /// If present, the CTA will create a vertical gradient from ``callToActionBackground`` to this color.
+        public var callToActionSecondaryBackground: PaywallColor?
         /// Primary accent color.
         public var accent1: PaywallColor?
         /// Secondary accent color
@@ -309,6 +311,7 @@ extension PaywallData.Configuration {
             text2: PaywallColor? = nil,
             callToActionBackground: PaywallColor,
             callToActionForeground: PaywallColor,
+            callToActionSecondaryBackground: PaywallColor? = nil,
             accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil
         ) {
@@ -317,6 +320,7 @@ extension PaywallData.Configuration {
             self.text2 = text2
             self.callToActionBackground = callToActionBackground
             self.callToActionForeground = callToActionForeground
+            self.callToActionSecondaryBackground = callToActionSecondaryBackground
             self.accent1 = accent1
             self.accent2 = accent2
         }
