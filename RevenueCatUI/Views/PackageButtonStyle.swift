@@ -28,6 +28,7 @@ struct PackageButtonStyle: ButtonStyle {
     func makeBody(configuration: ButtonStyleConfiguration) -> some View {
         configuration
             .label
+            .contentShape(Rectangle())
             .hidden(if: self.purchaseHandler.actionInProgress)
             .overlay {
                 if self.isSelected, self.purchaseHandler.actionInProgress {
