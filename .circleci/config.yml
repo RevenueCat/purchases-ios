@@ -363,6 +363,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -391,6 +392,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -453,6 +455,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -479,6 +482,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - install-and-create-sim:
           install-name: iOS 13.7 Simulator
           sim-device-type: iPhone-8
@@ -510,6 +514,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - update-spm-installation-commit
       - install-and-create-sim:
           install-name: iOS 12.4 Simulator
           sim-device-type: iPhone-6
