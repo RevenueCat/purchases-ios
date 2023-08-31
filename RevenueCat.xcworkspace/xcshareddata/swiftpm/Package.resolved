@@ -42,7 +42,7 @@
       "location" : "https://github.com/RevenueCat/purchases-ios",
       "state" : {
         "branch" : "main",
-        "revision" : "e65912c9020cd27cbc14a80d2054b06a4f8b6331"
+        "revision" : "59034d03d51ba6a99b2e874b638a5cf77fd31d40"
       }
     },
     {
@@ -50,8 +50,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
-        "revision" : "dc46eeb3928a75390651fac6c1ef7f93ad59a73b",
-        "version" : "1.11.1"
+        "revision" : "26ed3a2b4a2df47917ca9b790a57f91285b923fb",
+        "version" : "1.12.0"
       }
     }
   ],
