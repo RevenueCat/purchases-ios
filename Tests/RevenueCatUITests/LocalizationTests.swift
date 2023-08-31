@@ -265,8 +265,6 @@ class DiscountSpanishLocalizationTests: BaseLocalizationTests {
     override var locale: Locale { return .init(identifier: "es_ES") }
 
     func testLocalization() throws {
-        try XCTSkipIf(true, "Localization not available yet")
-
         verify(0, "Ahorra 0%")
         verify(0.1, "Ahorra 10%")
         verify(0.331, "Ahorra 33%")
