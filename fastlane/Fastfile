@@ -427,42 +427,63 @@ platform :ios do
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
     data = {parameters: {options[:pipeline] => true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
 
   desc "Creates a new PR after new snapshot files were generated"
   lane :create_snapshot_pr do |options|
-    version = options[:version]
-    base_branch = ENV["CIRCLE_BRANCH"]
+    push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{repo_name}",
+      base_branch: ENV["CIRCLE_BRANCH"],
+      files_to_add: "../*/__Snapshots__/*"
+     )
+  end
 
+  desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
+  lane :create_snapshots_repo_pr do |options|
+    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
+     push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{snapshots_repo_name}",
+      base_branch: "main", 
+      files_to_add: "."
+     )
+    }
+  end
+
+  private_lane :push_snapshot_pr do |options|
+    version = options[:version]
+    base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"] 
 
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
-    sh("git", "checkout", "-b", branch_name)
 
-    sh("git", "add", "../*/__Snapshots__/*")
+    sh("git", "checkout", "-b", branch_name)
+    sh("git", "add", options[:files_to_add])
+    
     file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
     if file_count == 0
       UI.important("No files to be committed")
     else
       sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
-      push_to_git_remote
+      sh("git", "push", "origin", branch_name) 
 
       circle_user = ENV["CIRCLE_USERNAME"]
       branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
       body = "Requested by @#{circle_user} for [#{base_branch}](#{branch_link})"
 
       create_pull_request(
-        repo: "revenuecat/purchases-ios",
+        repo: options[:repo],
         title: "Generating new test snapshots for `#{base_branch}` - #{version}",
         body: body,
         base: base_branch,
