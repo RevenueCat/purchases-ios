@@ -157,6 +157,16 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.localizedIntroductoryOfferPrice).to(beNil())
     }
 
+    func testEnglishRelativeDiscount() {
+        expect(TestData.weeklyPackage.localizedRelativeDiscount(nil, Self.english)).to(beNil())
+        expect(TestData.weeklyPackage.localizedRelativeDiscount(0.372, Self.english)) == "37% off"
+    }
+
+    func testSpanishRelativeDiscount() {
+        expect(TestData.weeklyPackage.localizedRelativeDiscount(nil, Self.spanish)).to(beNil())
+        expect(TestData.weeklyPackage.localizedRelativeDiscount(0.372, Self.english)) == "ahorra 37%"
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
