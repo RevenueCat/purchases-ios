@@ -437,7 +437,7 @@ platform :ios do
   end
 
   desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
-  lane :create_snapshot_submodule_pr do |options|
+  lane :create_snapshots_repo_pr do |options|
     Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
      push_snapshot_pr(
       version: options[:version],
@@ -464,8 +464,6 @@ platform :ios do
       UI.important("No files to be committed")
     else
       sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
-      # Can't use `push_to_git_remote` because the format branch:branch
-      # does not work when pushing from a submodule.
       sh("git", "push", "origin", branch_name) 
 
       circle_user = ENV["CIRCLE_USERNAME"]

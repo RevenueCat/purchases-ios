@@ -242,10 +242,10 @@ Trigger CircleCI job to generate snapshots for RevenueCatUI
 
 Creates a new PR after new snapshot files were generated
 
-### ios create_snapshot_submodule_pr
+### ios create_snapshots_repo_pr
 
 ```sh
-[bundle exec] fastlane ios create_snapshot_submodule_pr
+[bundle exec] fastlane ios create_snapshots_repo_pr
 ```
 
 Creates a new PR on purchases-ios-snapshots after new snapshot files were generated
