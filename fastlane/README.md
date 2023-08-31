@@ -21,6 +21,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### load_spm_dependencies
+
+```sh
+[bundle exec] fastlane load_spm_dependencies
+```
+
+
+
 ----
 
 
