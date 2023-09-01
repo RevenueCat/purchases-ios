@@ -63,7 +63,7 @@ extension Package: VariableDataProvider {
         } else {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
-            return "\(self.localizedPrice) (\(self.localizedPricePerMonth)/\(unit))"
+            return "\(self.localizedPricePerPeriod(locale)) (\(self.localizedPricePerMonth)/\(unit))"
         }
     }
 
