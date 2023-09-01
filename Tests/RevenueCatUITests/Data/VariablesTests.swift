@@ -58,7 +58,7 @@ class VariablesTests: TestCase {
     }
 
     func testTotalPriceAndPerMonth() {
-        self.provider.localizedPriceAndPerMonth = "$49.99 ($4.16/mth)"
+        self.provider.localizedPriceAndPerMonth = "$49.99/yr ($4.16/mo.)"
         expect(self.process("{{ total_price_and_per_month }}")) == self.provider.localizedPriceAndPerMonth
     }
 
@@ -185,7 +185,7 @@ class VariablesTests: TestCase {
                 offeringIdentifier: ""
             )
         )
-        expect(result) == "$53.99 ($4.49/mo)"
+        expect(result) == "$53.99/yr ($4.49/mo)"
     }
 
     // MARK: - validation
