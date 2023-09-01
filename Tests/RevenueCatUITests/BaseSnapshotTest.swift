@@ -18,6 +18,15 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
+/// Base class for Snapshot tests
+///
+/// ### Automation:
+/// - To first run them locally you need:
+/// `bundle exec fastlane fetch_snapshots`
+/// - If your PR requires updating snapshots, you can generate them on CI:
+/// `bundle exec fastlane generate_snapshots_RCUI`
+/// - Once those PRs are merged in `purchases-ios-snapshots`, you can update the commit:
+/// `bundle exec fastlane update_snapshots_repo`
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class BaseSnapshotTest: TestCase {
