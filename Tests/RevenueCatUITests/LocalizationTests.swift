@@ -43,6 +43,14 @@ class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
         verify(.month, "mo")
     }
 
+    func testThreeMonths() {
+        verify(.init(3, .month), "3mo")
+    }
+
+    func testSixMonths() {
+        verify(.init(6, .month), "6mo")
+    }
+
     func testYear() {
         verify(.year, "yr")
     }
@@ -64,6 +72,14 @@ class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
 
     func testMonth() {
         verify(.month, "m.")
+    }
+
+    func testThreeMonths() {
+        verify(.init(3, .month), "3m")
+    }
+
+    func testSixMonths() {
+        verify(.init(6, .month), "6m")
     }
 
     func testYear() {
@@ -92,6 +108,7 @@ class SubscriptionPeriodEnglishLocalizationTests: BaseLocalizationTests {
     func testMonthPeriod() {
         verify(1, .month, "1 month")
         verify(3, .month, "3 months")
+        verify(6, .month, "6 months")
     }
 
     func testYearPeriod() {
@@ -265,6 +282,14 @@ class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
 
 // MARK: - Private
 
+private extension SubscriptionPeriod {
+
+    convenience init(_ value: Int, _ unit: Unit) {
+        self.init(value: value, unit: unit)
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension BaseLocalizationTests {
 
@@ -286,7 +311,16 @@ private extension BaseLocalizationTests {
         file: StaticString = #file,
         line: UInt = #line
     ) {
-        let result = Localization.abbreviatedUnitLocalizedString(for: unit,
+        self.verify(.init(1, unit), expected, file: file, line: line)
+    }
+
+    func verify(
+        _ period: SubscriptionPeriod,
+        _ expected: String,
+        file: StaticString = #file,
+        line: UInt = #line
+    ) {
+        let result = Localization.abbreviatedUnitLocalizedString(for: period,
                                                                  locale: self.locale)
         expect(file: file, line: line, result) == expected
     }
