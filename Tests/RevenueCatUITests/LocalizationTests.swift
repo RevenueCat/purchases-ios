@@ -43,6 +43,10 @@ class AbbreviatedUnitEnglishLocalizationTests: BaseLocalizationTests {
         verify(.month, "mo")
     }
 
+    func testTwoMonths() {
+        verify(.init(2, .month), "2mo")
+    }
+
     func testThreeMonths() {
         verify(.init(3, .month), "3mo")
     }
@@ -72,6 +76,10 @@ class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
 
     func testMonth() {
         verify(.month, "m.")
+    }
+
+    func testTwoMonths() {
+        verify(.init(2, .month), "2m")
     }
 
     func testThreeMonths() {
