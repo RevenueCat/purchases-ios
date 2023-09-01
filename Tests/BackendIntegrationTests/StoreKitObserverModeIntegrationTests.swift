@@ -76,11 +76,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
-            timeout: .seconds(3),
-            pollInterval: .milliseconds(100)
-        )
+        try await self.verifyReceiptIsEventuallyPosted()
     }
 
 }

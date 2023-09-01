@@ -332,6 +332,56 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoPurchases(currentCustomerInfo)
     }
 
+    func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
+        let prefix = UUID().uuidString
+        let userID1 = "\(prefix)-user-1"
+        let userID2 = "\(prefix)-user-2"
+
+        let anonymousUser = try self.purchases.appUserID
+        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+
+        // 1. Purchase with user 1
+        let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
+        try await self.purchaseMonthlyOffering()
+
+        // 2. Change to user 2
+        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
+        self.assertNoPurchases(identifiedCustomerInfo)
+
+        // 3. Renew subscription
+        self.logger.clearMessages()
+
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+        try await self.verifyReceiptIsEventuallyPosted()
+
+        // 4. Verify new user does not have entitlement
+        let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(currentCustomerInfo.originalAppUserId) == userID2
+        self.assertNoPurchases(currentCustomerInfo)
+    }
+
+    func testPurchaseAfterSigningIntoNewUser() async throws {
+        let prefix = UUID().uuidString
+        let userID1 = "\(prefix)-user-1"
+        let userID2 = "\(prefix)-user-2"
+
+        let anonymousUser = try self.purchases.appUserID
+
+        // 1. Purchase with user 1
+        let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
+        try await self.purchaseMonthlyOffering()
+
+        // 2. Change to user 2
+        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
+        self.assertNoPurchases(identifiedCustomerInfo)
+
+        // 3. Purchase again and verify user gets entitlement
+        let newCustomerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        expect(newCustomerInfo.originalAppUserId) == userID2
+    }
+
     func testLogOutRemovesEntitlements() async throws {
         let anonUserID = try self.purchases.appUserID
         let identifiedUserID = "identified_\(anonUserID)".replacingOccurrences(of: "RCAnonymous", with: "")
