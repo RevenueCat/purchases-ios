@@ -96,15 +96,15 @@ class PackageVariablesTests: TestCase {
         let arabicPrice = "٣.٩٩ درهم"
 
         expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-        == "٣.٩٩ درهم (‏7.96 ‏د.إ.‏/شهر)"
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏7.96 ‏د.إ.‏/شهر)"))
         expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-        == "٣.٩٩ درهم/شهر"
+            .to(equalIgnoringRTL("٣.٩٩ درهم/شهر"))
         expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-        == "٣.٩٩ درهم (‏1.66 ‏د.إ.‏/شهر)"
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏1.66 ‏د.إ.‏/شهر)"))
         expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-        == "٣.٩٩ درهم (‏1.33 ‏د.إ.‏/شهر)"
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏1.33 ‏د.إ.‏/شهر)"))
         expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
-        == "٣.٩٩ درهم (‏4.49 ‏د.إ.‏/شهر)"
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏4.49 ‏د.إ.‏/شهر)"))
         expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
         == arabicPrice
     }
@@ -217,4 +217,20 @@ private extension StoreProduct {
         )
     }
 
+}
+
+/// iOS 16 and 17 differ slightly in how Arabic strings are encoded, iOS 16 having an additional RTL marker (U+200F)
+/// This allows comparing strings ignoring those markers.
+private func equalIgnoringRTL(_ expectedValue: String?) -> Nimble.Predicate<String> {
+    return Predicate.define("equal to <\(stringify(expectedValue))> ignoring RTL marks") { actualExpression, msg in
+        if let actual = try actualExpression.evaluate(), let expected = expectedValue {
+            let options: String.CompareOptions = [.diacriticInsensitive, .widthInsensitive]
+            let areEqual = actual.compare(expected, options: options) == .orderedSame
+            return PredicateResult(
+                bool: areEqual,
+                message: msg.appended(message: " (ignoring RTL marks)")
+            )
+        }
+        return PredicateResult(status: .fail, message: msg)
+    }
 }
