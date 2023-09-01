@@ -58,6 +58,7 @@
 		4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
 		4FDF11212A72714C004F3680 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
+		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -196,6 +197,7 @@
 				es,
 				de,
 				fr,
+				ar,
 			);
 			mainGroup = 4F6BED912A26A64200CD9322;
 			productRefGroup = 4F6BED9B2A26A64200CD9322 /* Products */;
@@ -246,6 +248,7 @@
 				4F4557E52A6FFE6D00160521 /* es */,
 				4F0B5EA02A97CD9300DB0FC9 /* de */,
 				4F0B5EA12A97CDAC00DB0FC9 /* fr */,
+				4FFD2A602AA154B4001F4B0C /* ar */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
