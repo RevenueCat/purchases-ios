@@ -710,12 +710,8 @@ jobs:
       - run:
           name: Carthage Update
           working_directory: Tests/InstallationTests/CarthageInstallation/
-          # install without building, then remove the tests and build, so that carthage
-          # doesn't try to build the other installation tests
           command: |
-              carthage update --no-build
-              rm -rf Carthage/Checkouts/purchases-root/Tests/InstallationTests/
-              carthage build --use-xcframeworks --verbose
+              bundle exec fastlane installation_tests
 
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/

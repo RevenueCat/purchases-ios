@@ -7,3 +7,15 @@ desc "Update carthage commit"
   backup_extension = '.bck'
   sh("sed", '-i', backup_extension, sed_regex, '../Cartfile')
 end
+
+lane :installation_tests do
+  load_spm_dependencies
+  
+  Dir.chdir("..") do
+    # install without building, then remove the tests and build, so that carthage
+    # doesn't try to build the other installation tests
+    sh "carthage", "update", "--no-build"
+    sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
+    sh "carthage", "build", "--use-xcframeworks", "--verbose"
+  end
+end

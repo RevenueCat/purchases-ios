@@ -837,7 +837,7 @@ lane :load_spm_dependencies do
   # This preemptively runs this command to make sure the SPM dependencies are fetched
   # without a timeout.
 
-  Dir.chdir("..") do
+  Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
 end
