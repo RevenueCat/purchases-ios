@@ -33,6 +33,8 @@ class PackageVariablesTests: TestCase {
     func testLocalizedPricePerMonth() {
         expect(TestData.weeklyPackage.localizedPricePerMonth) == "$7.96"
         expect(TestData.monthlyPackage.localizedPricePerMonth) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth) == "$1.66"
+        expect(TestData.sixMonthPackage.localizedPricePerMonth) == "$1.33"
         expect(TestData.annualPackage.localizedPricePerMonth) == "$4.49"
         expect(TestData.lifetimePackage.localizedPricePerMonth) == "$119.49"
     }
@@ -40,6 +42,8 @@ class PackageVariablesTests: TestCase {
     func testEnglishLocalizedPricePerPeriod() {
         expect(TestData.weeklyPackage.localizedPricePerPeriod(Self.english)) == "$1.99/wk"
         expect(TestData.monthlyPackage.localizedPricePerPeriod(Self.english)) == "$6.99/mo"
+        expect(TestData.threeMonthPackage.localizedPricePerPeriod(Self.english)) == "$4.99/3mo"
+        expect(TestData.sixMonthPackage.localizedPricePerPeriod(Self.english)) == "$7.99/6mo"
         expect(TestData.annualPackage.localizedPricePerPeriod(Self.english)) == "$53.99/yr"
         expect(TestData.lifetimePackage.localizedPricePerPeriod(Self.english)) == "$119.49"
     }
@@ -47,13 +51,34 @@ class PackageVariablesTests: TestCase {
     func testSpanishLocalizedPricePerPeriod() {
         expect(TestData.weeklyPackage.localizedPricePerPeriod(Self.spanish)) == "$1.99/sem"
         expect(TestData.monthlyPackage.localizedPricePerPeriod(Self.spanish)) == "$6.99/m."
+        expect(TestData.threeMonthPackage.localizedPricePerPeriod(Self.spanish)) == "$4.99/3m"
+        expect(TestData.sixMonthPackage.localizedPricePerPeriod(Self.spanish)) == "$7.99/6m"
         expect(TestData.annualPackage.localizedPricePerPeriod(Self.spanish)) == "$53.99/año"
         expect(TestData.lifetimePackage.localizedPricePerPeriod(Self.spanish)) == "$119.49"
+    }
+
+    func testArabicLocalizedPricePerPeriod() {
+        let arabicPrice = "٣.٩٩ درهم"
+
+        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم/أسبوع"
+        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم/شهر"
+        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم/3شهر"
+        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم/6شهر"
+        expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم/سنة"
+        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPricePerPeriod(Self.arabic))
+        == "٣.٩٩ درهم"
     }
 
     func testEnglishLocalizedPriceAndPerMonth() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.english)) == "$1.99 ($7.96/mo)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.english)) == "$6.99/mo"
+        expect(TestData.threeMonthPackage.localizedPriceAndPerMonth(Self.english)) == "$4.99 ($1.66/mo)"
+        expect(TestData.sixMonthPackage.localizedPriceAndPerMonth(Self.english)) == "$7.99 ($1.33/mo)"
         expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.english)) == "$53.99 ($4.49/mo)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.english)) == "$119.49"
     }
@@ -61,13 +86,34 @@ class PackageVariablesTests: TestCase {
     func testSpanishLocalizedPriceAndPerMonth() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$1.99 ($7.96/m.)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.spanish)) == "$6.99/m."
+        expect(TestData.threeMonthPackage.localizedPriceAndPerMonth(Self.spanish)) == "$4.99 ($1.66/m.)"
+        expect(TestData.sixMonthPackage.localizedPriceAndPerMonth(Self.spanish)) == "$7.99 ($1.33/m.)"
         expect(TestData.annualPackage.localizedPriceAndPerMonth(Self.spanish)) == "$53.99 ($4.49/m.)"
         expect(TestData.lifetimePackage.localizedPriceAndPerMonth(Self.spanish)) == "$119.49"
+    }
+
+    func testArabicLocalizedPriceAndPerMonth() {
+        let arabicPrice = "٣.٩٩ درهم"
+
+        expect(TestData.weeklyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏7.96 ‏د.إ.‏/شهر)"))
+        expect(TestData.monthlyPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+            .to(equalIgnoringRTL("٣.٩٩ درهم/شهر"))
+        expect(TestData.threeMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏1.66 ‏د.إ.‏/شهر)"))
+        expect(TestData.sixMonthPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏1.33 ‏د.إ.‏/شهر)"))
+        expect(TestData.annualPackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+            .to(equalIgnoringRTL("٣.٩٩ درهم (‏4.49 ‏د.إ.‏/شهر)"))
+        expect(TestData.lifetimePackage.with(arabicPrice, Self.arabic).localizedPriceAndPerMonth(Self.arabic))
+        == arabicPrice
     }
 
     func testProductName() {
         expect(TestData.weeklyPackage.productName) == "Weekly"
         expect(TestData.monthlyPackage.productName) == "Monthly"
+        expect(TestData.threeMonthPackage.productName) == "3 months"
+        expect(TestData.sixMonthPackage.productName) == "6 months"
         expect(TestData.annualPackage.productName) == "Annual"
         expect(TestData.lifetimePackage.productName) == "Lifetime"
     }
@@ -75,6 +121,8 @@ class PackageVariablesTests: TestCase {
     func testEnglishPeriodName() {
         expect(TestData.weeklyPackage.periodName(Self.english)) == "Weekly"
         expect(TestData.monthlyPackage.periodName(Self.english)) == "Monthly"
+        expect(TestData.threeMonthPackage.periodName(Self.english)) == "3 Month"
+        expect(TestData.sixMonthPackage.periodName(Self.english)) == "6 Month"
         expect(TestData.annualPackage.periodName(Self.english)) == "Annual"
         expect(TestData.lifetimePackage.periodName(Self.english)) == "Lifetime"
     }
@@ -82,6 +130,8 @@ class PackageVariablesTests: TestCase {
     func testSpanishPeriodName() {
         expect(TestData.weeklyPackage.periodName(Self.spanish)) == "Semanalmente"
         expect(TestData.monthlyPackage.periodName(Self.spanish)) == "Mensual"
+        expect(TestData.threeMonthPackage.periodName(Self.spanish)) == "3 meses"
+        expect(TestData.sixMonthPackage.periodName(Self.spanish)) == "6 meses"
         expect(TestData.annualPackage.periodName(Self.spanish)) == "Anual"
         expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Toda la vida"
     }
@@ -114,5 +164,57 @@ private extension PackageVariablesTests {
 
     static let english: Locale = .init(identifier: "en_US")
     static let spanish: Locale = .init(identifier: "es_ES")
+    static let arabic: Locale = .init(identifier: "ar_AE")
+
+}
+
+// MARK: -
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension Package {
+
+    func with(_ newLocalizedPrice: String, _ locale: Locale) -> Package {
+        return .init(
+            identifier: self.identifier,
+            packageType: self.packageType,
+            storeProduct: self.storeProduct
+                .toTestProduct()
+                .with(newLocalizedPrice, locale)
+                .toStoreProduct(),
+            offeringIdentifier: self.offeringIdentifier
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension TestStoreProduct {
+
+    func with(_ newLocalizedPrice: String, _ locale: Locale) -> Self {
+        var copy = self
+        copy.localizedPriceString = newLocalizedPrice
+        copy.locale = locale
+
+        return copy
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension StoreProduct {
+
+    func toTestProduct() -> TestStoreProduct {
+        return .init(
+            localizedTitle: self.localizedTitle,
+            price: self.price,
+            localizedPriceString: self.localizedPriceString,
+            productIdentifier: self.productIdentifier,
+            productType: self.productType,
+            localizedDescription: self.localizedDescription,
+            subscriptionGroupIdentifier: self.subscriptionGroupIdentifier,
+            subscriptionPeriod: self.subscriptionPeriod,
+            isFamilyShareable: self.isFamilyShareable
+        )
+    }
 
 }
