@@ -16,7 +16,7 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-// swiftlint:disable type_name
+// swiftlint:disable type_name file_length
 
 class BaseLocalizationTests: TestCase {
 
@@ -288,6 +288,24 @@ class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
 
 }
 
+// MARK: - Helpers
+
+/// iOS 16 and 17 differ slightly in how Arabic strings are encoded, iOS 16 having an additional RTL marker (U+200F)
+/// This allows comparing strings ignoring those markers.
+func equalIgnoringRTL(_ expectedValue: String?) -> Nimble.Predicate<String> {
+    let escapedValue = stringify(expectedValue?.escapedUnicode)
+    return Predicate.define("equal to <\(escapedValue)> ignoring RTL marks") { actualExpression, msg in
+        if let actual = try actualExpression.evaluate(), let expected = expectedValue {
+            return PredicateResult(
+                bool: actual.removingRTLMarkers == expected.removingRTLMarkers,
+                message: msg.appended(details: "Escaped: <\(actual.escapedUnicode)>")
+            )
+        }
+
+        return PredicateResult(status: .fail, message: msg)
+    }
+}
+
 // MARK: - Private
 
 private extension SubscriptionPeriod {
@@ -354,5 +372,34 @@ private extension BaseLocalizationTests {
                                             locale: self.locale)
         expect(file: file, line: line, result) == expected
     }
+
+}
+
+private extension String {
+
+    var escapedUnicode: String {
+        var escapedString = ""
+        escapedString.reserveCapacity(self.unicodeScalars.count)
+
+        for scalar in self.unicodeScalars {
+            if scalar.isASCII {
+                escapedString.append(String(scalar))
+            } else {
+                escapedString.append("\\u{\(String(scalar.value, radix: 16))}")
+            }
+        }
+
+        return escapedString
+    }
+
+    var removingRTLMarkers: Self {
+        return self.removeCharacters(from: Self.rtlMarker)
+    }
+
+    private func removeCharacters(from set: CharacterSet) -> String {
+        return String(self.unicodeScalars.filter { !set.contains($0) })
+    }
+
+    private static let rtlMarker: CharacterSet = .init(charactersIn: "\u{200f}")
 
 }
