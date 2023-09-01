@@ -33,6 +33,8 @@ class PackageVariablesTests: TestCase {
     func testLocalizedPricePerMonth() {
         expect(TestData.weeklyPackage.localizedPricePerMonth) == "$7.96"
         expect(TestData.monthlyPackage.localizedPricePerMonth) == "$6.99"
+        expect(TestData.threeMonthPackage.localizedPricePerMonth) == "$6.99"
+        expect(TestData.sixMonthPackage.localizedPricePerMonth) == "$6.99"
         expect(TestData.annualPackage.localizedPricePerMonth) == "$4.49"
         expect(TestData.lifetimePackage.localizedPricePerMonth) == "$119.49"
     }
@@ -76,6 +78,8 @@ class PackageVariablesTests: TestCase {
     func testProductName() {
         expect(TestData.weeklyPackage.productName) == "Weekly"
         expect(TestData.monthlyPackage.productName) == "Monthly"
+        expect(TestData.threeMonthPackage.productName) == "3 months"
+        expect(TestData.sixMonthPackage.productName) == "6 months"
         expect(TestData.annualPackage.productName) == "Annual"
         expect(TestData.lifetimePackage.productName) == "Lifetime"
     }
@@ -83,6 +87,8 @@ class PackageVariablesTests: TestCase {
     func testEnglishPeriodName() {
         expect(TestData.weeklyPackage.periodName(Self.english)) == "Weekly"
         expect(TestData.monthlyPackage.periodName(Self.english)) == "Monthly"
+        expect(TestData.threeMonthPackage.periodName(Self.english)) == "3 Month"
+        expect(TestData.sixMonthPackage.periodName(Self.english)) == "6 Month"
         expect(TestData.annualPackage.periodName(Self.english)) == "Annual"
         expect(TestData.lifetimePackage.periodName(Self.english)) == "Lifetime"
     }
@@ -90,6 +96,8 @@ class PackageVariablesTests: TestCase {
     func testSpanishPeriodName() {
         expect(TestData.weeklyPackage.periodName(Self.spanish)) == "Semanalmente"
         expect(TestData.monthlyPackage.periodName(Self.spanish)) == "Mensual"
+        expect(TestData.threeMonthPackage.periodName(Self.spanish)) == "3 meses"
+        expect(TestData.sixMonthPackage.periodName(Self.spanish)) == "6 meses"
         expect(TestData.annualPackage.periodName(Self.spanish)) == "Anual"
         expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Toda la vida"
     }
