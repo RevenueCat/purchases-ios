@@ -24,6 +24,7 @@ func checkTestStoreProductAPI() {
     let isFamilyShareable: Bool = testProduct.isFamilyShareable
     let introductoryDiscount: StoreProductDiscount? = testProduct.introductoryDiscount
     let discounts: [StoreProductDiscount] = testProduct.discounts
+    let locale: Locale = testProduct.locale
 
     // Setters
     testProduct.localizedTitle = localizedTitle
@@ -37,6 +38,7 @@ func checkTestStoreProductAPI() {
     testProduct.isFamilyShareable = isFamilyShareable
     testProduct.introductoryDiscount = introductoryDiscount
     testProduct.discounts = discounts
+    testProduct.locale = locale
 
     let _: StoreProduct = testProduct.toStoreProduct()
 }
@@ -62,6 +64,7 @@ private func checkStoreProductCreation(discount: TestStoreProductDiscount) {
         subscriptionPeriod: Optional<SubscriptionPeriod>.some(.init(value: 1, unit: .day)),
         isFamilyShareable: true,
         introductoryDiscount: Optional<TestStoreProductDiscount>.some(discount),
-        discounts: [discount]
+        discounts: [discount],
+        locale: Locale.current
     )
 }
