@@ -36,10 +36,21 @@ internal enum TestData {
         subscriptionPeriod: .init(value: 1, unit: .month),
         introductoryDiscount: Self.intro(7, .day)
     )
+    static let threeMonthProduct = TestStoreProduct(
+        localizedTitle: "3 months",
+        price: 4.99,
+        localizedPriceString: "$4.99",
+        productIdentifier: "com.revenuecat.product_5",
+        productType: .autoRenewableSubscription,
+        localizedDescription: "PRO monthly",
+        subscriptionGroupIdentifier: "group",
+        subscriptionPeriod: .init(value: 3, unit: .month),
+        introductoryDiscount: Self.intro(7, .day)
+    )
     static let sixMonthProduct = TestStoreProduct(
-        localizedTitle: "Monthly",
-        price: 34.99,
-        localizedPriceString: "$34.99",
+        localizedTitle: "6 months",
+        price: 7.99,
+        localizedPriceString: "$7.99",
         productIdentifier: "com.revenuecat.product_5",
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO monthly",
@@ -110,6 +121,12 @@ internal enum TestData {
         identifier: PackageType.monthly.identifier,
         packageType: .monthly,
         storeProduct: Self.monthlyProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
+    static let threeMonthPackage = Package(
+        identifier: PackageType.threeMonth.identifier,
+        packageType: .threeMonth,
+        storeProduct: Self.threeMonthProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
     static let sixMonthPackage = Package(

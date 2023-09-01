@@ -18,10 +18,10 @@ enum Localization {
 
     /// - Returns: an appropriately short abbreviation for the given `unit`.
     static func abbreviatedUnitLocalizedString(
-        for unit: SubscriptionPeriod.Unit,
+        for period: SubscriptionPeriod,
         locale: Locale = .current
     ) -> String {
-        let (full, brief, abbreviated) = self.unitLocalizedString(for: unit.calendarUnit, locale: locale)
+        let (full, brief, abbreviated) = self.unitLocalizedString(for: period, locale: locale)
 
         let options = [
             full,
@@ -123,15 +123,16 @@ enum Localization {
 private extension Localization {
 
     static func unitLocalizedString(
-        for unit: NSCalendar.Unit,
+        for period: SubscriptionPeriod,
         locale: Locale = .current
     ) -> (full: String, brief: String, abbreviated: String) {
         var calendar: Calendar = .current
         calendar.locale = locale
 
         let date = Date()
-        let value = 1
+        let unit = period.unit.calendarUnit
         let component = unit.component
+        let value = period.value
 
         guard let sinceUnits = calendar.date(byAdding: component,
                                              value: value,
@@ -145,9 +146,14 @@ private extension Localization {
             formatter.unitsStyle = style
             guard let string = formatter.string(from: date, to: sinceUnits) else { return "" }
 
-            return string
-                .replacingOccurrences(of: String(value), with: "")
-                .trimmingCharacters(in: .whitespaces)
+            if value == 1 {
+                return string
+                    .replacingOccurrences(of: String(value), with: "")
+                    .trimmingCharacters(in: .whitespaces)
+            } else {
+                return string
+                    .replacingOccurrences(of: " ", with: "")
+            }
         }
 
         return (full: result(for: .full),
