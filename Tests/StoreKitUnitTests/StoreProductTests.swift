@@ -355,6 +355,7 @@ class StoreProductTests: StoreKitConfigTestCase {
         let subscriptionGroup = "group"
         let period: SubscriptionPeriod = .init(value: 1, unit: .month)
         let isFamilyShareable = Bool.random()
+        let expectedLocale: Locale = .current
 
         let product = TestStoreProduct(
             localizedTitle: title,
@@ -381,9 +382,28 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedDescription) == description
         expect(storeProduct.subscriptionGroupIdentifier) == subscriptionGroup
         expect(storeProduct.subscriptionPeriod) == period
-        expect(storeProduct.currencyCode) == Locale.current.rc_currencyCode
-        expect(storeProduct.priceFormatter).toNot(beNil())
+        expect(storeProduct.currencyCode) == expectedLocale.rc_currencyCode
+        expect(storeProduct.priceFormatter?.locale) == expectedLocale
+        expect(storeProduct.priceFormatter?.currencyCode) == expectedLocale.rc_currencyCode
         expect(storeProduct.isFamilyShareable) == isFamilyShareable
+    }
+
+    func testTestProductWithCustomLocale() {
+        let locale: Locale = .init(identifier: "es_ES")
+        let product = TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            localizedPriceString: "$3.99",
+            productIdentifier: "identifier",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            locale: locale
+        )
+        let storeProduct = product.toStoreProduct()
+
+        expect(storeProduct.currencyCode) == "EUR"
+        expect(storeProduct.priceFormatter?.locale) == locale
+        expect(storeProduct.priceFormatter?.currencyCode) == "EUR"
     }
 
     func testWarningLogWhenGettingSK1ProductType() {
