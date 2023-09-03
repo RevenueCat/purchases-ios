@@ -10,7 +10,7 @@ let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
 var dependencies: [Package.Dependency] = [
-    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0")
+    .package(url: "https://github.com/Quick/Nimble.git", from: "10.0.0")
 ]
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
