@@ -39,6 +39,9 @@ struct DebugSwiftUIRootView: View {
                     case let .offering(offering):
                         DebugOfferingView(offering: offering)
 
+                    case let .offeringMetadata(offering):
+                        DebugOfferingMetadataView(offering: offering)
+
                     case let .package(package):
                         DebugPackageView(package: package)
 
@@ -75,6 +78,7 @@ struct DebugSwiftUIRootView: View {
 private enum DebugViewPath: Hashable {
 
     case offering(Offering)
+    case offeringMetadata(Offering)
     case package(Package)
     case paywall(PaywallData)
 
@@ -147,7 +151,7 @@ internal struct DebugSummaryView: View {
                         }
                         #endif
 
-                    ShareLink(item: config, preview: .init("Configuration")) {
+                    ShareLink(item: AnyEncodable(config), preview: .init("Configuration")) {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 }
@@ -236,20 +240,28 @@ private struct DebugOfferingView: View {
             Section("Data") {
                 LabeledContent("Identifier", value: self.offering.id)
                 LabeledContent("Description", value: self.offering.serverDescription)
+
+                if !self.offering.metadata.isEmpty {
+                    NavigationLink(value: DebugViewPath.offeringMetadata(self.offering)) {
+                        Text("Metadata")
+                    }
+                } else {
+                    LabeledContent("Metadata", value: "{}")
+                }
+
+                if let paywall = self.offering.paywall {
+                    NavigationLink(value: DebugViewPath.paywall(paywall)) {
+                        Text("RevenueCatUI paywall")
+                    }
+                } else {
+                    LabeledContent("RevenueCatUI", value: "No paywall")
+                }
             }
 
             Section("Packages") {
                 ForEach(self.offering.availablePackages) { package in
                     NavigationLink(value: DebugViewPath.package(package)) {
                         Text(package.identifier)
-                    }
-                }
-            }
-
-            if let paywall = self.offering.paywall {
-                Section("RevenueCatUI paywall") {
-                    NavigationLink(value: DebugViewPath.paywall(paywall)) {
-                        Text("View data")
                     }
                 }
             }
@@ -318,6 +330,18 @@ private struct DebugOfferingView: View {
         .subscriptionStorePickerItemBackground(.thickMaterial)
     }
     #endif
+
+}
+
+@available(iOS 16.0, macOS 13.0, *)
+private struct DebugOfferingMetadataView: View {
+
+    var offering: Offering
+
+    var body: some View {
+        DebugJSONView(value: AnyEncodable(self.offering.metadata))
+            .navigationTitle("Offering Metadata")
+    }
 
 }
 
@@ -393,18 +417,30 @@ private struct DebugPaywallJSONView: View {
     let paywall: PaywallData
 
     var body: some View {
+        DebugJSONView(value: AnyEncodable(self.paywall))
+            .navigationTitle("RevenueCatUI Paywall")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, *)
+private struct DebugJSONView<Value: Encodable & Transferable>: View {
+
+    let value: Value
+
+    var body: some View {
         ScrollView(.vertical) {
             Text(self.json)
                 .multilineTextAlignment(.leading)
                 .font(.caption)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .navigationTitle("RevenueCatUI Paywall")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: self.paywall, preview: .init("Paywall")) {
+                ShareLink(item: self.value, preview: .init("JSON")) {
                     Label("Export", systemImage: "square.and.arrow.up")
                 }
             }
@@ -412,7 +448,7 @@ private struct DebugPaywallJSONView: View {
     }
 
     private var json: String {
-        return (try? self.paywall.prettyPrintedJSON) ?? ""
+        return (try? self.value.prettyPrintedJSON) ?? "{}"
     }
 
 }
@@ -420,26 +456,11 @@ private struct DebugPaywallJSONView: View {
 // MARK: - Transferable
 
 @available(iOS 16.0, macOS 13.0, *)
-extension DebugViewModel.Configuration: Transferable {
+extension AnyEncodable: Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
         return CodableRepresentation(
-            for: DebugViewModel.Configuration.self,
-            contentType: .plainText,
-            encoder: JSONEncoder.prettyPrinted,
-            decoder: JSONDecoder.default
-        )
-    }
-
-}
-
-@available(iOS 16.0, macOS 13.0, *)
-extension PaywallData: Transferable {
-
-    // swiftlint:disable:next missing_docs
-    public static var transferRepresentation: some TransferRepresentation {
-        return CodableRepresentation(
-            for: PaywallData.self,
+            for: Self.self,
             contentType: .plainText,
             encoder: JSONEncoder.prettyPrinted,
             decoder: JSONDecoder.default
