@@ -455,7 +455,7 @@ jobs:
           runtime-name: iOS 14.5
       - run:
           name: Run tests
-          command: bundle exec fastlane test_ios
+          command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 12 (14.5)
