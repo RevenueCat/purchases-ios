@@ -875,11 +875,11 @@ workflows:
       - run-test-ios-15:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
       - run-test-ios-12:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
   build-test:
     when:
       and:
@@ -911,12 +911,12 @@ workflows:
       - run-test-tvos:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - run-test-ios-12:
-          xcode_version: '14.3.0'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
@@ -946,7 +946,7 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-receipt-parser:
-          xcode_version: '14.1.0'
+          xcode_version: '14.2.0'
           <<: *release-branches
       - installation-tests-carthage:
           xcode_version: '14.3.0'
