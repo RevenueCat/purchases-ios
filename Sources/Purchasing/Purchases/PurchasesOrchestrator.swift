@@ -224,9 +224,10 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
-    func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
-                          product: StoreProductType,
-                          completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+    func promotionalOffers(forProductDiscounts productDiscounts: [StoreProductDiscountType],
+                           product: StoreProductType,
+                           completion: @escaping @Sendable (Result<[PromotionalOffer], PurchasesError>) -> Void) {
+        // TODO: move this to inside the post
         guard let discountIdentifier = productDiscount.offerIdentifier else {
             completion(.failure(ErrorUtils.productDiscountMissingIdentifierError()))
             return

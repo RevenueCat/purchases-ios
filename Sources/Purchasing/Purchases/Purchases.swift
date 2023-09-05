@@ -932,21 +932,47 @@ public extension Purchases {
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
                              completion: @escaping (PromotionalOffer?, PublicError?) -> Void) {
-        self.purchasesOrchestrator.promotionalOffer(forProductDiscount: discount,
-                                                    product: product) { result in
-            completion(result.value, result.error?.asPublicError)
+        self.getPromotionalOffer(
+            forProductDiscounts: [discount],
+            product: product
+        ) { offers, error in
+            if let error = error {
+                completion(nil, error)
+            } else if let offer = offers.first {
+                completion(offer, nil)
+            } else {
+                // TODO: create error here
+                completion(nil, nil)
+            }
+        }
+    }
+
+    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
+    @objc(getPromotionalOffersForProductDiscounts:withProduct:withCompletion:)
+    func getPromotionalOffer(forProductDiscounts discounts: [StoreProductDiscount],
+                             product: StoreProduct,
+                             completion: @escaping ([PromotionalOffer], PublicError?) -> Void) {
+        self.purchasesOrchestrator.promotionalOffers(forProductDiscounts: discounts,
+                                                     product: product) { result in
+            completion(result.value ?? [], result.error?.asPublicError)
         }
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer {
-        return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
+        return try await self.promotionalOffer(forProductDiscounts: [discount], product: product)
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func promotionalOffer(forProductDiscounts discounts: [StoreProductDiscount],
+                          product: StoreProduct) async throws -> PromotionalOffer {
+        return try await self.promotionalOfferAsync(forProductDiscounts: discounts, product: product)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
-        return await eligiblePromotionalOffersAsync(forProduct: product)
+        return await self.eligiblePromotionalOffersAsync(forProduct: product)
     }
 
     #endif
