@@ -910,6 +910,8 @@ workflows:
           xcode_version: '14.3.0'
       - run-test-tvos:
           xcode_version: '14.3.0'
+      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
           xcode_version: '14.2.0'
       - run-test-ios-13:
@@ -975,6 +977,7 @@ workflows:
       - push-pods:
           # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
           # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
+          # TODO: fix this
           xcode_version: '13.4.1'
           requires:
             - make-release
