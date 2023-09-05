@@ -924,10 +924,8 @@ workflows:
           xcode_version: '14.2.0'
       - run-test-ios-13:
           xcode_version: '14.2.0'
-          <<: *release-branches-and-main
       - run-test-ios-12:
           xcode_version: '14.2.0'
-          <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
       - build-visionos:
