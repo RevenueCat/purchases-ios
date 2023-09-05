@@ -46,8 +46,17 @@ final class DebugViewModel: ObservableObject {
     var currentAppUserID: String?
     #endif
 
+    // We can't directly store instances of `NavigationPath`, since that causes runtime crashes when
+    // loading this type in iOS <= 15, even with @available checks correctly in place.
+    // See https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
     @Published
-    var navigationPath = NavigationPath()
+    private var _navigationPath: Any = NavigationPath()
+
+    var navigationPath: NavigationPath {
+        // swiftlint:disable:next force_cast
+        get { return self._navigationPath as! NavigationPath }
+        set { self._navigationPath = newValue }
+    }
 
     func load() async {
         self.configuration = .loaded(.create())
