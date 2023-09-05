@@ -975,10 +975,8 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-tags
       - push-pods:
-          # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
           # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
-          # TODO: fix this
-          xcode_version: '13.4.1'
+          xcode_version: '14.3.0'
           requires:
             - make-release
           <<: *release-tags
