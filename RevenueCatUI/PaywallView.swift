@@ -161,7 +161,7 @@ public struct PaywallView: View {
                 "You can fix this by editing the paywall in the RevenueCat dashboard.\n" +
                 "The displayed paywall contains default configuration.\n" +
                 "This error will be hidden in production.",
-                releaseBehavior: .replacement(AnyView(paywallView))
+                replacement: paywallView
             )
         } else {
             paywallView

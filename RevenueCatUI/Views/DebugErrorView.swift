@@ -16,7 +16,7 @@ import SwiftUI
 
 /// A view that displays an error in debug builds
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-struct DebugErrorView: View {
+struct DebugErrorView<Content: View>: View {
 
     private let description: String
     private let releaseBehavior: ReleaseBehavior
@@ -25,20 +25,20 @@ struct DebugErrorView: View {
 
         case emptyView
         case fatalError
-        case replacement(AnyView)
+        case replacement(Content)
 
     }
 
-    init(_ error: Error, releaseBehavior: ReleaseBehavior) {
+    init(_ error: Error, replacement content: Content) {
         self.init(
             (error as NSError).localizedDescription,
-            releaseBehavior: releaseBehavior
+            replacement: content
         )
     }
 
-    init(_ description: String, releaseBehavior: ReleaseBehavior) {
+    init(_ description: String, replacement content: Content) {
         self.description = description
-        self.releaseBehavior = releaseBehavior
+        self.releaseBehavior = .replacement(content)
     }
 
     var body: some View {
@@ -55,10 +55,14 @@ struct DebugErrorView: View {
                 #endif
 
             case let .replacement(view):
+                #if DEBUG
                 VStack {
                     self.errorView
                     view
                 }
+                #else
+                view
+                #endif
 
             case .fatalError:
                 #if DEBUG
@@ -87,6 +91,23 @@ struct DebugErrorView: View {
             .minimumScaleFactor(0.5)
             .cornerRadius(8)
             .shadow(radius: 8)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension DebugErrorView where Content == AnyView {
+
+    init(_ error: Error, releaseBehavior: ReleaseBehavior) {
+        self.init(
+            (error as NSError).localizedDescription,
+            releaseBehavior: releaseBehavior
+        )
+    }
+
+    init(_ description: String, releaseBehavior: ReleaseBehavior) {
+        self.description = description
+        self.releaseBehavior = releaseBehavior
     }
 
 }
