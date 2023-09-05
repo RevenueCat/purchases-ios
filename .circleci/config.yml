@@ -871,6 +871,7 @@ jobs:
                 ]
               }
 
+# See Xcode versions matrix: https://circleci.com/docs/using-macos/#supported-xcode-versions
 workflows:
   version: 2
   generate-snapshot:
@@ -884,14 +885,11 @@ workflows:
       - run-test-ios-15:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
   build-test:
     when:
       and:
@@ -923,15 +921,12 @@ workflows:
       - run-test-tvos:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
@@ -990,6 +985,7 @@ workflows:
       - push-pods:
           # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
           # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
+          # TODO: Fix this
           xcode_version: '13.4.1'
           requires:
             - make-release
