@@ -29,9 +29,3 @@ internal struct SK2Storefront: StorefrontType {
     let countryCode: String
 
 }
-
-#if swift(<5.7)
-// `SKStorefront` isn't `Sendable` until iOS 16.0 / Swift 5.7
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension SK2Storefront: @unchecked Sendable {}
-#endif

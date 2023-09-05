@@ -61,12 +61,6 @@ internal struct SK1StoreProductDiscount: StoreProductDiscountType {
 
 }
 
-#if swift(<5.7)
-// `SK1ProductDiscount` isn't `Sendable` until iOS 16.0 / Swift 5.7
-@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
-extension SK1StoreProductDiscount: @unchecked Sendable {}
-#endif
-
 // MARK: - Private
 
 private extension StoreProductDiscount.PaymentMode {

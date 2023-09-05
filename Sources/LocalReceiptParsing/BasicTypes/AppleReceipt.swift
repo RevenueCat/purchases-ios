@@ -64,13 +64,7 @@ public struct AppleReceipt: Equatable {
 
 }
 
-#if swift(>=5.7)
 extension AppleReceipt: Sendable {}
-#else
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-extension AppleReceipt: @unchecked Sendable {}
-#endif
 
 // MARK: - Extensions
 

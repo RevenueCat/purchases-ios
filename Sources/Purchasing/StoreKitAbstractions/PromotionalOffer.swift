@@ -92,13 +92,7 @@ extension PromotionalOffer: Sendable {}
 
 }
 
-#if swift(>=5.7)
 extension PromotionalOffer.SignedData: Sendable {}
-#else
-// `@unchecked` because:
-// - `UUID` is not `Sendable` until Swift 5.7
-extension PromotionalOffer.SignedData: @unchecked Sendable {}
-#endif
 
 extension PromotionalOffer.SignedData {
 

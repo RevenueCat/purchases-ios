@@ -340,10 +340,4 @@ private extension EntitlementInfo {
 
 }
 
-#if swift(>=5.7)
 extension EntitlementInfo.Contents: Sendable {}
-#else
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-extension EntitlementInfo.Contents: @unchecked Sendable {}
-#endif

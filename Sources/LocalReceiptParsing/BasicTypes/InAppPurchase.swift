@@ -193,13 +193,7 @@ extension AppleReceipt.InAppPurchase {
 
 extension AppleReceipt.InAppPurchase.ProductType: Sendable {}
 
-#if swift(>=5.7)
 extension AppleReceipt.InAppPurchase: Sendable {}
-#else
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-extension AppleReceipt.InAppPurchase: @unchecked Sendable {}
-#endif
 
 extension AppleReceipt.InAppPurchase.ProductType: Codable {}
 extension AppleReceipt.InAppPurchase: Codable {}

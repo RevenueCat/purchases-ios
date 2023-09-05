@@ -96,8 +96,3 @@ extension SK1StoreProduct: Hashable {
     }
 
 }
-
-#if swift(<5.7)
-// `SK1Product` isn't `Sendable` until iOS 16.0 / Swift 5.7
-extension SK1StoreProduct: @unchecked Sendable {}
-#endif
