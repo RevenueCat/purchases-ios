@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable variable_name
+// swiftlint:disable identifier_name
 
 enum Strings {
 
