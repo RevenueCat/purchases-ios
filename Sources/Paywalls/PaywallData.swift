@@ -31,6 +31,9 @@ public struct PaywallData {
     /// The base remote URL where assets for this paywall are stored.
     public var assetBaseURL: URL
 
+    /// The revision identifier for this paywall.
+    public var revision: Int
+
     @EnsureNonEmptyCollectionDecodable
     internal private(set) var localization: [String: LocalizedConfiguration]
 
@@ -336,12 +339,14 @@ extension PaywallData {
         templateName: String,
         config: Configuration,
         localization: [String: LocalizedConfiguration],
-        assetBaseURL: URL
+        assetBaseURL: URL,
+        revision: Int = 0
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.assetBaseURL = assetBaseURL
+        self.revision = revision
     }
 
     /// Creates a test ``PaywallData`` with one localization
@@ -349,7 +354,8 @@ extension PaywallData {
         templateName: String,
         config: Configuration,
         localization: LocalizedConfiguration,
-        assetBaseURL: URL
+        assetBaseURL: URL,
+        revision: Int = 0
     ) {
         let locale = Locale.current.identifier
 
@@ -357,7 +363,8 @@ extension PaywallData {
             templateName: templateName,
             config: config,
             localization: [locale: localization],
-            assetBaseURL: assetBaseURL
+            assetBaseURL: assetBaseURL,
+            revision: revision
         )
     }
 
@@ -417,6 +424,7 @@ extension PaywallData: Codable {
         case config
         case localization = "localizedStrings"
         case assetBaseURL = "assetBaseUrl"
+        case revision
     }
 
 }

@@ -34,7 +34,8 @@
                     "icon_id": "lock"
                 }
             ]
-        }
+        },
+        "revision": 7
     },
     "config": {
         "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
