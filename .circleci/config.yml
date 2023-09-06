@@ -945,7 +945,7 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-receipt-parser:
-          xcode_version: '14.2.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-carthage:
           xcode_version: '14.3.0'
