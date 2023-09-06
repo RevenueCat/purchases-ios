@@ -18,6 +18,7 @@ func checkConfigurationAPI() {
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
+        .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true, usesStoreKit2JWS: true))
         .with(networkTimeout: 1)
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
