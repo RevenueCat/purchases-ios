@@ -62,10 +62,4 @@ public final class NonSubscriptionTransaction: NSObject {
 
 }
 
-#if swift(>=5.7)
 extension NonSubscriptionTransaction: Sendable {}
-#else
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-extension NonSubscriptionTransaction: @unchecked Sendable {}
-#endif

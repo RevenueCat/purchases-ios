@@ -53,11 +53,3 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     }
 
 }
-
-#if swift(<5.7)
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-// - `SK2Transaction` is not `Sendable` until Swift 5.7
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension SK2StoreTransaction: @unchecked Sendable {}
-#endif

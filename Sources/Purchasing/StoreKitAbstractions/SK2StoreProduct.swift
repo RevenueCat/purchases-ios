@@ -128,9 +128,3 @@ extension SK2StoreProduct: Hashable {
     }
 
 }
-
-#if swift(<5.7)
-// `SK2Product` isn't `Sendable` until iOS 16.0 / Swift 5.7
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension SK2StoreProduct: @unchecked Sendable {}
-#endif

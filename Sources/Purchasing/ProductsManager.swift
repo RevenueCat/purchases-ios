@@ -52,11 +52,7 @@ class ProductsManager: NSObject, ProductsManagerType {
     private let productsFetcherSK1: ProductsFetcherSK1
     private let systemInfo: SystemInfo
 
-#if swift(>=5.7)
     private let _productsFetcherSK2: (any Sendable)?
-#else
-    private let _productsFetcherSK2: Any?
-#endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {

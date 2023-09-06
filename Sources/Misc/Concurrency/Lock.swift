@@ -26,12 +26,7 @@ internal final class Lock {
 
     }
 
-    #if swift(>=5.7)
     private typealias UnderlyingType = NSLocking & Sendable
-    #else
-    // `NSRecursiveLock` and `NSLock` aren't `Sendable` until iOS 16.0 / Swift 5.7
-    private typealias UnderlyingType = NSLocking
-    #endif
 
     private let lock: UnderlyingType
     private init(_ lock: UnderlyingType) { self.lock = lock }
@@ -51,12 +46,7 @@ internal final class Lock {
 
 }
 
-#if swift(>=5.7)
 extension Lock: Sendable {}
-#else
-// `Lock.UnderlyingType` isn't `Sendable` until Swift 5.7
-extension Lock: @unchecked Sendable {}
-#endif
 
 private extension Lock.LockType {
 
