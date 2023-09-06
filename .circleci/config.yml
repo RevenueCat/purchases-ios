@@ -70,9 +70,6 @@ commands:
           command: | # Print all available simulators and install required one
               xcodes runtimes
               sudo xcodes runtimes install "<< parameters.runtime-name >>"
-      - run:
-          name: List simulators
-          command: xcrun simctl list
 
   install-bundle-dependencies:
     parameters:
