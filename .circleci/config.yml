@@ -60,28 +60,16 @@ aliases:
         only: /^release\/.*\.0$/
 
 commands:
-  install-and-create-sim:
+  install-runtime:
     parameters:
-      install-name:
-        type: string
-      sim-device-type:
-        type: string
-      sim-device-runtime:
-        type: string
-      sim-name:
+      runtime-name:
         type: string
     steps:
       - run:
-          name: Install xcode-install
-          command: gem install xcode-install
-      - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
-              xcversion simulators
-              xcversion simulators --install="<< parameters.install-name >>"
-      - run:
-          name: Create simulator
-          command: xcrun simctl create '<< parameters.sim-name >>' com.apple.CoreSimulator.SimDeviceType.<< parameters.sim-device-type >> com.apple.CoreSimulator.SimRuntime.<< parameters.sim-device-runtime >>
+              xcodes runtimes
+              sudo xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -119,11 +107,15 @@ commands:
           dependency_name: 'xcbeautify'
       - install-brew-dependency:
           dependency_name: 'swiftlint'
+      - run: brew tap robotsandpencils/made
+      - install-brew-dependency:
+          dependency_name: 'xcodes'
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
+            - /usr/local/Caskroom/xcodes/
             - /Users/$USER/Library/Caches/Homebrew/
   
   install-brew-dependency:
@@ -456,12 +448,14 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 14.5
       - run:
           name: Run tests
-          command: bundle exec fastlane test_ios
+          command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 8 (14.5)
+            SCAN_DEVICE: iPhone 12 (14.5)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -483,17 +477,14 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
-      - install-and-create-sim:
-          install-name: iOS 13.7 Simulator
-          sim-device-type: iPhone-8
-          sim-device-runtime: iOS-13-7
-          sim-name: iPhone 8 (13.7)
+      - install-runtime:
+          runtime-name: iOS 13.7
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 8 (13.7)
+            SCAN_DEVICE: iPhone 11 (13.7)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -515,11 +506,8 @@ jobs:
       - checkout
       - install-dependencies
       - update-spm-installation-commit
-      - install-and-create-sim:
-          install-name: iOS 12.4 Simulator
-          sim-device-type: iPhone-6
-          sim-device-runtime: iOS-12-4
-          sim-name: iPhone 6 (12.4)
+      - install-runtime:
+          runtime-name: iOS 12.4
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -884,14 +872,11 @@ workflows:
       - run-test-ios-15:
           xcode_version: '14.3.0'
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
   build-test:
     when:
       and:
@@ -922,16 +907,15 @@ workflows:
           xcode_version: '14.3.0'
       - run-test-tvos:
           xcode_version: '14.3.0'
+      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
+      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
       - run-test-ios-13:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - run-test-ios-12:
-          # Simulator fails to install on Xcode 14
-          xcode_version: '13.4.1'
+          xcode_version: '14.2.0'
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
@@ -961,7 +945,7 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-receipt-parser:
-          xcode_version: '14.1.0'
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-carthage:
           xcode_version: '14.3.0'
@@ -988,9 +972,8 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-tags
       - push-pods:
-          # Xcode 14 not supported until https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
           # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
-          xcode_version: '13.4.1'
+          xcode_version: '14.3.0'
           requires:
             - make-release
           <<: *release-tags

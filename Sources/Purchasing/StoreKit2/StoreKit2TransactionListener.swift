@@ -12,7 +12,13 @@
 //  Created by Andrés Boedo on 31/8/21.
 
 import Foundation
+
+#if swift(<5.8)
+// `Product.PurchaseResult` is not `Sendable` in Xcode 14.2
+@preconcurrency import StoreKit
+#else
 import StoreKit
+#endif
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {

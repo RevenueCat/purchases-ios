@@ -123,6 +123,16 @@ platform :ios do
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    
+    if options[:skip_sk_tests]
+      # For platforms that fail to run StoreKit tests.
+      # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
+      test_plan = "CI-RevenueCat"
+    elsif generate_snapshots
+      test_plan = "CI-Snapshots"
+    else
+      test_plan = "CI-AllTests"
+    end
 
     scan(
       step_name: "scan - iPhone",
@@ -132,7 +142,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
-      testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
+      testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
@@ -825,8 +835,7 @@ lane :check_pods do
   pod_lib_lint(
     verbose: true,
     podspec:'RevenueCat.podspec', 
-    # TODO: re-add watchOS when https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
-    platforms:"ios,osx,tvos",
+    platforms:"ios,osx,tvos,watchos",
     fail_fast: true
   )
 end
