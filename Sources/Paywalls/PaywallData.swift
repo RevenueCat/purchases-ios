@@ -71,18 +71,25 @@ extension PaywallData {
         // swiftlint:disable missing_docs
 
         public var title: String
-        public var subtitle: String?
         public var callToAction: String
-        public var offerName: String?
+
+        @NonEmptyStringDecodable
+        var _subtitle: String?
         @NonEmptyStringDecodable
         var _callToActionWithIntroOffer: String?
         @NonEmptyStringDecodable
         var _offerDetails: String?
         @NonEmptyStringDecodable
         var _offerDetailsWithIntroOffer: String?
+        @NonEmptyStringDecodable
+        var _offerName: String?
         @DefaultDecodable.EmptyArray
         var _features: [Feature]
 
+        public var subtitle: String? {
+            get { return self._subtitle }
+            set { self._subtitle = newValue }
+        }
         public var callToActionWithIntroOffer: String? {
             get { return self._callToActionWithIntroOffer }
             set { self._callToActionWithIntroOffer = newValue }
@@ -94,6 +101,10 @@ extension PaywallData {
         public var offerDetailsWithIntroOffer: String? {
             get { return self._offerDetailsWithIntroOffer }
             set { self._offerDetailsWithIntroOffer = newValue }
+        }
+        public var offerName: String? {
+            get { return self._offerName }
+            set { self._offerName = newValue }
         }
         public var features: [Feature] {
             get { return self._features }
@@ -111,12 +122,12 @@ extension PaywallData {
             features: [Feature] = []
         ) {
             self.title = title
-            self.subtitle = subtitle
+            self._subtitle = subtitle
             self.callToAction = callToAction
             self._callToActionWithIntroOffer = callToActionWithIntroOffer
             self._offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
-            self.offerName = offerName
+            self._offerName = offerName
             self.features = features
         }
 
@@ -379,12 +390,12 @@ extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case title
-        case subtitle
+        case _subtitle = "subtitle"
         case callToAction
         case _callToActionWithIntroOffer = "callToActionWithIntroOffer"
         case _offerDetails = "offerDetails"
         case _offerDetailsWithIntroOffer = "offerDetailsWithIntroOffer"
-        case offerName
+        case _offerName = "offerName"
         case _features = "features"
     }
 
