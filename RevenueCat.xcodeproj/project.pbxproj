@@ -294,6 +294,7 @@
 		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
 		4FCEEA5E2A379B80002C2112 /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */; };
 		4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */; };
+		4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */; };
 		4FDA13842A33D9BD00C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */; };
 		4FDF10E72A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
 		4FDF10E82A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
@@ -1029,6 +1030,7 @@
 		4FCEEA602A379CF9002C2112 /* DebugViewSwiftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewSwiftUITests.swift; sourceTree = "<group>"; };
 		4FCEEA622A37A2E9002C2112 /* ImageSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSnapshot.swift; sourceTree = "<group>"; };
 		4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionFetcherTests.swift; sourceTree = "<group>"; };
+		4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEvent.swift; sourceTree = "<group>"; };
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesManager.swift; sourceTree = "<group>"; };
 		4FDF10E92A726269004F3680 /* ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
@@ -2262,6 +2264,7 @@
 		4F87610D2A5C9E330006FA14 /* Paywalls */ = {
 			isa = PBXGroup;
 			children = (
+				4FD368B22AA7CFDD00F63354 /* Events */,
 				4FBBD4E52A620573001CBA21 /* PaywallColor.swift */,
 				4F87610E2A5C9E490006FA14 /* PaywallData.swift */,
 				4F062D312A85A11600A8A613 /* PaywallData+Localization.swift */,
@@ -2311,6 +2314,14 @@
 				4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */,
 			);
 			path = StoreKit2;
+			sourceTree = "<group>";
+		};
+		4FD368B22AA7CFDD00F63354 /* Events */ = {
+			isa = PBXGroup;
+			children = (
+				4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */,
+			);
+			path = Events;
 			sourceTree = "<group>";
 		};
 		570896B627596E6E00296F1C /* APITesters */ = {
@@ -3278,6 +3289,7 @@
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
 				2DD58DD827F240EB000FDFE3 /* EmptyFile.swift in Sources */,
 				2CD72942268A823900BFC976 /* Data+Extensions.swift in Sources */,
+				4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */,
 				5766AA3E283C750300FA6091 /* Operators+Extensions.swift in Sources */,
 				4F6BEDE22A26B69500CD9322 /* DebugContentViews.swift in Sources */,
 				B3B5FBBC269D121B00104A0C /* Offerings.swift in Sources */,
