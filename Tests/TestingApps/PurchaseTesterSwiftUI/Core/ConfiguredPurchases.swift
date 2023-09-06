@@ -44,6 +44,7 @@ public final class ConfiguredPurchases {
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
+                .with(dangerousSettings: DangerousSettings.init(autoSyncPurchases: true, usesStoreKit2JWS: true))
                 .build()
         )
 
