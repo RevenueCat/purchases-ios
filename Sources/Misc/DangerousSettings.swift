@@ -66,6 +66,12 @@ import Foundation
      */
     @objc public let customEntitlementComputation: Bool
 
+    /**
+     * Controls whether StoreKit 2 JWS tokens are sent to RevenueCat instead of StoreKit 1 receipts.
+     * Must be used in conjunction with the `usesStoreKit2IfAvailable configuration` option.
+     */
+    @objc public let usesStoreKit2JWS: Bool
+
     internal let internalSettings: InternalDangerousSettingsType
 
     @objc public override convenience init() {
@@ -78,18 +84,24 @@ import Foundation
      * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
+     * - Parameter usesStoreKit2JWS: Disable or enable sending StoreKit 2 JWS tokens to RevenueCat
+     * instead of StoreKit 1 receipts.
      */
-    @objc public convenience init(autoSyncPurchases: Bool = true) {
+    @objc public convenience init(autoSyncPurchases: Bool = true, usesStoreKit2JWS: Bool = false) {
         self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false)
+                  customEntitlementComputation: false,
+                  usesStoreKit2JWS: usesStoreKit2JWS)
 
     }
 
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
     /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
-    @objc internal convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool) {
+    @objc internal convenience init(autoSyncPurchases: Bool = true,
+                                    customEntitlementComputation: Bool,
+                                    usesStoreKit2JWS: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
+                  usesStoreKit2JWS: usesStoreKit2JWS,
                   internalSettings: Internal.default)
 
     }
@@ -97,9 +109,11 @@ import Foundation
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
+                  usesStoreKit2JWS: Bool = false,
                   internalSettings: InternalDangerousSettingsType) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
+        self.usesStoreKit2JWS = usesStoreKit2JWS
         self.customEntitlementComputation = customEntitlementComputation
     }
 
