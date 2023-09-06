@@ -127,7 +127,7 @@ private extension PostOfferForSigningOperation {
 
         init(appUserID: String, data: PostOfferForSigningData) {
             self.appUserID = appUserID
-            self.fetchToken = data.receiptData.asFetchToken
+            self.fetchToken = String(data: data.receiptData, encoding: .utf8) ?? "" 
             self.generateOffers = [
                 .init(
                     offerID: data.offerIdentifier,
