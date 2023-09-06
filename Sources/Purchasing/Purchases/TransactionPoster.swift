@@ -93,18 +93,38 @@ final class TransactionPoster: TransactionPosterType {
             paywallSessionID: data.presentedPaywall?.sessionIdentifier
         ))
 
-        self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
-          transaction.transactionIdentifier) { jwsRepresentation in
-          guard let jwsRepresentation = jwsRepresentation else {
-            Logger.error("Could not fetch JWS token for transaction with ID \(transaction.transactionIdentifier)")
-            return
-          }
-          self.fetchProductsAndPostReceipt(
-              transaction: transaction,
-              data: data,
-              receiptData: jwsRepresentation.asData,
-              completion: completion
-          )
+        if systemInfo.dangerousSettings.usesStoreKit2JWS {
+            self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
+              transaction.transactionIdentifier) { jwsRepresentation in
+              guard let jwsRepresentation = jwsRepresentation else {
+                Logger.error("Could not fetch JWS token for transaction with ID \(transaction.transactionIdentifier)")
+                return
+              }
+              self.fetchProductsAndPostReceipt(
+                  transaction: transaction,
+                  data: data,
+                  receiptData: jwsRepresentation.asData,
+                  completion: completion
+              )
+            }
+        } else {
+            self.receiptFetcher.receiptData(
+                 refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+            ) { receiptData, receiptURL in
+                if let receiptData = receiptData, !receiptData.isEmpty {
+                    self.fetchProductsAndPostReceipt(
+                        transaction: transaction,
+                        data: data,
+                        receiptData: receiptData,
+                        completion: completion
+                    )
+                } else {
+                    self.handleReceiptPost(withTransaction: transaction,
+                                           result: .failure(.missingReceiptFile(receiptURL)),
+                                           subscriberAttributes: nil,
+                                           completion: completion)
+                }
+            }
         }
     }
 
