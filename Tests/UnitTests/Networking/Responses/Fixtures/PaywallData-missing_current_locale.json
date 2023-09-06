@@ -24,5 +24,6 @@
             "dark": null
         }
     },
-    "asset_base_url": "https://rc-paywalls.s3.amazonaws.com"
+    "asset_base_url": "https://rc-paywalls.s3.amazonaws.com",
+    "revision": 1
 }

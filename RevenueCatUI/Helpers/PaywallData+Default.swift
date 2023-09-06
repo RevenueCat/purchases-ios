@@ -40,13 +40,15 @@ extension PaywallData {
                 displayRestorePurchases: true
             ),
             localization: Self.localization,
-            assetBaseURL: Self.defaultTemplateBaseURL
+            assetBaseURL: Self.defaultTemplateBaseURL,
+            revision: Self.revisionID
         )
     }
 
     static let defaultTemplate: PaywallTemplate = .template2
 
     static let appIconPlaceholder = "revenuecatui_default_paywall_app_icon"
+    static let revisionID: Int = -1
 
 }
 
