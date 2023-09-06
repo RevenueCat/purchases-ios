@@ -43,6 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
+    private let presentedPaywall: Atomic<PaywallEvent.Data?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -544,6 +545,17 @@ final class PurchasesOrchestrator {
 
     func cachePresentedOfferingIdentifier(_ identifier: String, productIdentifier: String) {
         self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
+    }
+
+    func cachePresentedPaywall(_ paywall: PaywallEvent.Data) {
+        // TODO: verbose log
+
+        self.presentedPaywall.value = paywall
+    }
+
+    func clearPresentedPaywall() {
+        // TODO: verbose log
+        self.presentedPaywall.value = nil
     }
 
 #if os(iOS) || os(macOS) || VISION_OS
@@ -1077,6 +1089,7 @@ private extension PurchasesOrchestrator {
                                     storefront: StorefrontType?,
                                     restored: Bool) {
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
+        let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
@@ -1085,6 +1098,7 @@ private extension PurchasesOrchestrator {
             data: .init(
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringID,
+                presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,
@@ -1141,6 +1155,10 @@ private extension PurchasesOrchestrator {
 
     func getAndRemovePresentedOfferingIdentifier(for transaction: StoreTransaction) -> String? {
         return self.getAndRemovePresentedOfferingIdentifier(for: transaction.productIdentifier)
+    }
+
+    func getAndRemovePresentedPaywall() -> PaywallEvent.Data? {
+        return self.presentedPaywall.getAndSet(nil)
     }
 
     /// Computes a `ProductRequestData` for an active subscription found in the receipt,
@@ -1207,6 +1225,7 @@ extension PurchasesOrchestrator {
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
         let offeringID = self.getAndRemovePresentedOfferingIdentifier(for: transaction)
+        let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = self.attribution.unsyncedAdServicesToken
 
@@ -1215,6 +1234,7 @@ extension PurchasesOrchestrator {
             data: .init(
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringID,
+                presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
                 storefront: storefront,

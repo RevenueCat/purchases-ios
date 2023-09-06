@@ -13,29 +13,45 @@
 
 import Foundation
 
-final class InternalAPI {
+class InternalAPI {
 
     typealias ResponseHandler = (BackendError?) -> Void
 
     private let backendConfig: BackendConfiguration
-    private let callbackCache: CallbackCache<HealthOperation.Callback>
+    private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
 
     init(backendConfig: BackendConfiguration) {
         self.backendConfig = backendConfig
-        self.callbackCache = .init()
+        self.healthCallbackCache = .init()
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
         let factory = HealthOperation.createFactory(httpClient: self.backendConfig.httpClient,
-                                                    callbackCache: self.callbackCache,
+                                                    callbackCache: self.healthCallbackCache,
                                                     signatureVerification: signatureVerification)
 
         let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
-        let cacheStatus = self.callbackCache.add(callback)
+        let cacheStatus = self.healthCallbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(with: factory,
                                                  withRandomDelay: false,
                                                  cacheStatus: cacheStatus)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func postPaywallEvents(events: [PaywallStoredEvent], completion: @escaping ResponseHandler) {
+        guard !events.isEmpty else {
+            self.backendConfig.operationDispatcher.dispatchOnMainThread {
+                completion(nil)
+            }
+            return
+        }
+
+        let operation = PostPaywallEventsOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
+                                                   request: .init(events: events),
+                                                   responseHandler: completion)
+
+        self.backendConfig.operationQueue.addOperation(operation)
     }
 
 }

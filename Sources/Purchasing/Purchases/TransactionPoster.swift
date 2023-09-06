@@ -26,6 +26,7 @@ struct PurchasedTransactionData {
 
     var appUserID: String
     var presentedOfferingID: String?
+    var presentedPaywall: PaywallEvent.Data?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var aadAttributionToken: String?
     var storefront: StorefrontType?

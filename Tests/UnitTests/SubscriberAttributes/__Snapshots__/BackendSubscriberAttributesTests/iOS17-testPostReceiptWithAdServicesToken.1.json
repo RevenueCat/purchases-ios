@@ -15,7 +15,15 @@
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "restore",
       "is_restore" : false,
-      "observer_mode" : false
+      "observer_mode" : false,
+      "paywall": {
+          "session_id": "EFWEf-WEFWEF-WEFEWF_WEFWEF",
+          "revision": 1,
+          "display_mode": "fullscreen",
+          "dark_mode": false,
+          "locale_displayed": "en_US",
+          "locale_requested": "fr_FR"
+      }
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

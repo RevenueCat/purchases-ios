@@ -9,11 +9,9 @@ import Foundation
 
 enum Configuration {
 
-    #warning("This needs to be configured.")
-
     // Note: you can leave this empty to use the production server, or point to your own instance.
     static let proxyURL = ""
-    static let apiKey = ""
+    static let apiKey = "appl_TFIZqBlauHeMhnqfNlWWFBjZwkf"
 
     static let entitlement = "pro"
 

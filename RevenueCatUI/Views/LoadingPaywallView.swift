@@ -71,6 +71,9 @@ private extension LoadingPaywallView {
         },
         restorePurchases: {
             fatalError("Should not be able to purchase")
+        },
+        trackEvent: { _ in
+            fatalError("Should not track events from a loading paywall")
         }
     )
 

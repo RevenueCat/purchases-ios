@@ -183,6 +183,9 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
+    @State
+    private var sessionID: PaywallEvent.SessionID = .init()
+
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
@@ -190,6 +193,9 @@ struct LoadedOfferingPaywallView: View {
 
     @Environment(\.locale)
     private var locale
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     init(
         offering: Offering,
@@ -227,6 +233,13 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.purchasedCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
+            .task(id: self.paywall) {
+                // Each paywall creates its own session
+                self.sessionID = .init()
+            }
+            .onChange(of: self.sessionID) { _ in self.purchaseHandler.eventData = self.eventData }
+            .onAppear { self.purchaseHandler.trackPaywallView() }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
 
         switch self.mode {
         case .fullScreen:
@@ -237,6 +250,17 @@ struct LoadedOfferingPaywallView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
         }
+    }
+
+    private var eventData: PaywallEvent.Data {
+        return .init(
+            offering: self.offering,
+            paywall: self.paywall,
+            sessionID: self.sessionID,
+            displayMode: self.mode,
+            locale: .current,
+            darkMode: self.colorScheme == .dark
+        )
     }
 
 }

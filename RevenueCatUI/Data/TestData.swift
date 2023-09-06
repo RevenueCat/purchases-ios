@@ -547,6 +547,8 @@ extension PurchaseHandler {
             )
         } restorePurchases: {
             return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
         }
     }
 
@@ -559,6 +561,8 @@ extension PurchaseHandler {
             )
         } restorePurchases: {
             return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
         }
     }
 
@@ -577,6 +581,8 @@ extension PurchaseHandler {
         }
     }
 }
+
+// MARK: -
 
 extension PaywallColor: ExpressibleByStringLiteral {
 

@@ -566,6 +566,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func recordPaywallEvent(_ event: PaywallEvent) {}
+
     deinit {
         Logger.verbose(Strings.configure.purchases_deinit(self))
 
@@ -1030,6 +1033,29 @@ public extension Purchases {
 }
 
 // swiftlint:enable missing_docs
+
+// MARK: - Paywalls
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+public extension Purchases {
+
+    /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
+    func track(paywallEvent: PaywallEvent) async {
+        switch paywallEvent {
+        case let .view(data):
+            self.purchasesOrchestrator.cachePresentedPaywall(data)
+
+        case .close:
+            self.purchasesOrchestrator.clearPresentedPaywall()
+
+        case .cancel: break
+        }
+
+        // TODO: store event! (And flush at some point?)
+//        self.backend.internalAPI.postPaywallEvents(events: <#T##[PaywallStoredEvent]#>, completion: <#T##InternalAPI.ResponseHandler##InternalAPI.ResponseHandler##(BackendError?) -> Void#>)
+    }
+
+}
 
 // MARK: Configuring Purchases
 
