@@ -58,6 +58,7 @@ final class PurchasesOrchestrator {
     private let operationDispatcher: OperationDispatcher
     private let receiptFetcher: ReceiptFetcher
     private let receiptParser: PurchasesReceiptParser
+    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let transactionPoster: TransactionPosterType
@@ -95,6 +96,7 @@ final class PurchasesOrchestrator {
                      operationDispatcher: OperationDispatcher,
                      receiptFetcher: ReceiptFetcher,
                      receiptParser: PurchasesReceiptParser,
+                     purchasedProductsFetcher: PurchasedProductsFetcherType?,
                      customerInfoManager: CustomerInfoManager,
                      backend: Backend,
                      transactionPoster: TransactionPoster,
@@ -116,6 +118,7 @@ final class PurchasesOrchestrator {
             operationDispatcher: operationDispatcher,
             receiptFetcher: receiptFetcher,
             receiptParser: receiptParser,
+            purchasedProductsFetcher: purchasedProductsFetcher,
             customerInfoManager: customerInfoManager,
             backend: backend,
             transactionPoster: transactionPoster,
@@ -163,6 +166,7 @@ final class PurchasesOrchestrator {
          operationDispatcher: OperationDispatcher,
          receiptFetcher: ReceiptFetcher,
          receiptParser: PurchasesReceiptParser,
+         purchasedProductsFetcher: PurchasedProductsFetcherType?,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          transactionPoster: TransactionPoster,
@@ -181,6 +185,7 @@ final class PurchasesOrchestrator {
         self.operationDispatcher = operationDispatcher
         self.receiptFetcher = receiptFetcher
         self.receiptParser = receiptParser
+        self.purchasedProductsFetcher = purchasedProductsFetcher
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.transactionPoster = transactionPoster
@@ -256,46 +261,22 @@ final class PurchasesOrchestrator {
             return
         }
 
-        self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
-            guard let receiptData = receiptData, !receiptData.isEmpty else {
-                let underlyingError = ErrorUtils.missingReceiptFileError(receiptURL)
-
-                // Promotional offers require existing purchases.
-                // If no receipt is found, this is most likely in sandbox with no purchases,
-                // so producing an "ineligible" error is better.
-                completion(.failure(ErrorUtils.ineligibleError(error: underlyingError)))
-
-                return
+        if self.systemInfo.dangerousSettings.usesStoreKit2JWS {
+            self.sk2PromotionalOffer(forProductDiscount: productDiscount,
+                                     discountIdentifier: discountIdentifier,
+                                     product: product,
+                                     subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
+                completion(result)
             }
 
-            self.operationDispatcher.dispatchOnWorkerThread {
-                if !self.receiptParser.receiptHasTransactions(receiptData: receiptData) {
-                  // Promotional offers require existing purchases.
-                  // Fail early if receipt has no transactions.
-                  completion(.failure(ErrorUtils.ineligibleError()))
-                  return
-                }
-
-                self.backend.offerings.post(offerIdForSigning: discountIdentifier,
-                                            productIdentifier: product.productIdentifier,
-                                            subscriptionGroup: subscriptionGroupIdentifier,
-                                            receiptData: receiptData,
-                                            appUserID: self.appUserID) { result in
-                    let result: Result<PromotionalOffer, PurchasesError> = result
-                        .map { data in
-                            let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
-                                                                         keyIdentifier: data.keyIdentifier,
-                                                                         nonce: data.nonce,
-                                                                         signature: data.signature,
-                                                                         timestamp: data.timestamp)
-
-                            return .init(discount: productDiscount, signedData: signedData)
-                        }
-                        .mapError { $0.asPurchasesError }
-
+        } else {
+                self.sk1PromotionalOffer(forProductDiscount: productDiscount,
+                                         discountIdentifier: discountIdentifier,
+                                         product: product,
+                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
                     completion(result)
                 }
-            }
+
         }
     }
 
@@ -1242,6 +1223,92 @@ private extension PurchasesOrchestrator {
                 ErrorUtils.productNotAvailableForPurchaseError().asPublicError,
                 false
             )
+        }
+    }
+
+    func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
+                             discountIdentifier: String,
+                             product: StoreProductType,
+                             subscriptionGroupIdentifier: String,
+                             completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+        self.purchasedProductsFetcher?.fetchLastVerifiedTransaction { jwsRepresentation in
+            guard let jwsRepresentation = jwsRepresentation else {
+                // Promotional offers require existing purchases.
+                // Fail early if there are no transactions
+                completion(.failure(ErrorUtils.ineligibleError()))
+                return
+            }
+
+            self.handlePromotionalOffer(forProductDiscount: productDiscount,
+                                        discountIdentifier: discountIdentifier,
+                                        product: product,
+                                        subscriptionGroupIdentifier: subscriptionGroupIdentifier,
+                                        receiptData: jwsRepresentation.asData) { result in
+                completion(result)
+            }
+        }
+    }
+
+    func sk1PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
+                             discountIdentifier: String,
+                             product: StoreProductType,
+                             subscriptionGroupIdentifier: String,
+                             completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+        self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
+            guard let receiptData = receiptData, !receiptData.isEmpty else {
+                let underlyingError = ErrorUtils.missingReceiptFileError(receiptURL)
+
+                // Promotional offers require existing purchases.
+                // If no receipt is found, this is most likely in sandbox with no purchases,
+                // so producing an "ineligible" error is better.
+                completion(.failure(ErrorUtils.ineligibleError(error: underlyingError)))
+
+                return
+            }
+
+            self.operationDispatcher.dispatchOnWorkerThread {
+                if !self.receiptParser.receiptHasTransactions(receiptData: receiptData) {
+                    // Promotional offers require existing purchases.
+                    // Fail early if receipt has no transactions.
+                    completion(.failure(ErrorUtils.ineligibleError()))
+                    return
+                }
+                self.handlePromotionalOffer(forProductDiscount: productDiscount,
+                                            discountIdentifier: discountIdentifier,
+                                            product: product,
+                                            subscriptionGroupIdentifier: subscriptionGroupIdentifier,
+                                            receiptData: receiptData) { result in
+                    completion(result)
+                }
+            }
+        }
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func handlePromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
+                                discountIdentifier: String,
+                                product: StoreProductType,
+                                subscriptionGroupIdentifier: String,
+                                receiptData: Data,
+                                completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+        self.backend.offerings.post(offerIdForSigning: discountIdentifier,
+                                    productIdentifier: product.productIdentifier,
+                                    subscriptionGroup: subscriptionGroupIdentifier,
+                                    receiptData: receiptData,
+                                    appUserID: self.appUserID) { result in
+            let result: Result<PromotionalOffer, PurchasesError> = result
+                .map { data in
+                    let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
+                                                                 keyIdentifier: data.keyIdentifier,
+                                                                 nonce: data.nonce,
+                                                                 signature: data.signature,
+                                                                 timestamp: data.timestamp)
+
+                    return .init(discount: productDiscount, signedData: signedData)
+                }
+                .mapError { $0.asPurchasesError }
+
+            completion(result)
         }
     }
 

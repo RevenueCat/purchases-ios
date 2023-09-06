@@ -21,6 +21,8 @@ protocol PurchasedProductsFetcherType: Sendable {
 
     func fetchPurchasedProductForTransaction(_ transactionId: String, completion: @escaping (String?) -> Void)
 
+    func fetchLastVerifiedTransaction(completion: @escaping (String?) -> Void)
+
     func clearCache()
 
 }
@@ -82,6 +84,24 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
           return
         }
         Logger.error("Could not find transaction with ID \(transactionId)")
+        completion(nil)
+      }
+    }
+
+    func fetchLastVerifiedTransaction(completion: @escaping (String?) -> Void) {
+      Task<Void, Never> {
+        for await transaction in StoreKit.Transaction.all {
+          switch transaction {
+          case let .unverified(transaction, verificationError):
+            Logger.appleWarning(
+                Strings.offlineEntitlements.found_unverified_transactions_in_sk2(transactionID: transaction.id,
+                                                                                 verificationError)
+            )
+          case .verified:
+            completion(transaction.jwsRepresentation)
+              return
+          }
+        }
         completion(nil)
       }
     }
