@@ -319,6 +319,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        self.logger.clearMessages()
+
         // 1. Purchase while server is down
         self.serverDown()
 
