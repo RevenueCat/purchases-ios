@@ -94,6 +94,21 @@ extension OperationDispatcher {
 
 }
 
+// MARK: -
+
+/// Visible for testing
+extension Delay {
+
+    var hasDelay: Bool {
+        return self.maximum > 0
+    }
+
+    var range: Range<TimeInterval> {
+        return self.minimum..<self.maximum
+    }
+
+}
+
 private extension Delay {
 
     var minimum: TimeInterval {
@@ -112,12 +127,8 @@ private extension Delay {
         }
     }
 
-    var hasDelay: Bool {
-        return self.maximum > 0
-    }
-
     func random() -> TimeInterval {
-        Double.random(in: self.minimum..<self.maximum)
+        Double.random(in: self.range)
     }
 
     private static let maxJitter: TimeInterval = 5

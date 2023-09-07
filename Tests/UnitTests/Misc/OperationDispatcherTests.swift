@@ -26,4 +26,19 @@ class OperationDispatcherTests: TestCase {
         expect(Delay.default(forBackgroundedApp: false)) == Delay.none
     }
 
+    func testNoDelay() {
+        expect(Delay.none.hasDelay) == false
+        expect(Delay.none.range) == 0..<0
+    }
+
+    func testDefaultDelay() {
+        expect(Delay.default.hasDelay) == true
+        expect(Delay.default.range) == 0..<5
+    }
+
+    func testLongDelay() {
+        expect(Delay.long.hasDelay) == true
+        expect(Delay.long.range) == 5..<10
+    }
+
 }
