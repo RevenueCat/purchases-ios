@@ -120,8 +120,3 @@ extension TestStoreProduct {
     }
 
 }
-
-#if swift(<5.7)
-// `Locale` isn't `Sendable` in Xcode 13
-extension TestStoreProduct: @unchecked Sendable {}
-#endif
