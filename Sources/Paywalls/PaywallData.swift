@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/10/23.
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length identifier_name
 
 import Foundation
 
@@ -32,7 +32,13 @@ public struct PaywallData {
     public var assetBaseURL: URL
 
     /// The revision identifier for this paywall.
-    public var revision: Int
+    var revision: Int {
+        get { return self._revision }
+        set { self._revision = newValue }
+    }
+
+    @DefaultDecodable.Zero
+    internal private(set) var _revision: Int = 0
 
     @EnsureNonEmptyCollectionDecodable
     internal private(set) var localization: [String: LocalizedConfiguration]
@@ -62,8 +68,6 @@ public protocol PaywallLocalizedConfiguration {
     var features: [PaywallData.LocalizedConfiguration.Feature] { get }
 
 }
-
-// swiftlint:disable identifier_name
 
 extension PaywallData {
 
@@ -435,7 +439,7 @@ extension PaywallData: Codable {
         case config
         case localization = "localizedStrings"
         case assetBaseURL = "assetBaseUrl"
-        case revision
+        case _revision = "revision"
     }
 
 }
