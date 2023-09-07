@@ -526,8 +526,7 @@ platform :ios do
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
       './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
-      './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      './RevenueCat.xcodeproj/project.pbxproj'
+      './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"

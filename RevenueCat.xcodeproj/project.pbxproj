@@ -702,20 +702,6 @@
 			remoteGlobalIDString = 2DC5621524EC63420031F69B;
 			remoteInfo = RevenueCat;
 		};
-		2D9E3CBE29D4D60600DB4730 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D9E3C8529D4D60400DB4730;
-			remoteInfo = v3LoadShedderIntegration;
-		};
-		2D9E3CC029D4D60600DB4730 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D9E3C9B29D4D60500DB4730;
-			remoteInfo = v3LoadShedderIntegrationTests;
-		};
 		2DAC5F7626F13C9800C5258F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
@@ -816,7 +802,6 @@
 		2D991AC9268BA56900085481 /* StoreKitRequestFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcher.swift; sourceTree = "<group>"; };
 		2D9C5EC926F2805C0057FC45 /* ProductsManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductsManagerTests.swift; sourceTree = "<group>"; };
 		2D9C7BB226D838FC006838BE /* UIApplication+RCExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIApplication+RCExtensions.swift"; sourceTree = "<group>"; };
-		2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = v3LoadShedderIntegration.xcodeproj; path = v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj; sourceTree = "<group>"; };
 		2D9F4A5426C30CA800B07B43 /* PurchasesOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestrator.swift; sourceTree = "<group>"; };
 		2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StoreKitUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2DC19194255F36D10039389A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -1014,6 +999,7 @@
 		4FDF10EF2A7262D8004F3680 /* SK2ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2ProductFetcher.swift; sourceTree = "<group>"; };
 		4FE0685E2A5F54C500B8F56C /* PackageTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageTypeTests.swift; sourceTree = "<group>"; };
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
+		4FED3AD62AAA7DD4001D4D5E /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ..; sourceTree = "<group>"; };
 		4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsStrings.swift; sourceTree = "<group>"; };
 		4FFD88BE2A4B56E2008E98AC /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57032ABE28C13CE4004FF47A /* StoreKit2SettingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2SettingTests.swift; sourceTree = "<group>"; };
@@ -1582,15 +1568,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		2D9E3CB929D4D60500DB4730 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				2D9E3CBF29D4D60600DB4730 /* v3LoadShedderIntegration.app */,
-				2D9E3CC129D4D60600DB4730 /* v3LoadShedderIntegrationTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		2DAC5F7326F13C9800C5258F /* StoreKitUnitTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1737,7 +1714,6 @@
 		2DDE870027E5238500D8B390 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */,
 				570896B627596E6E00296F1C /* APITesters */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
 				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
@@ -1745,6 +1721,7 @@
 				57B425A3275800B60075BDC4 /* Test Plans */,
 				2DC5622224EC63430031F69B /* UnitTests */,
 				2DEAC2DB26EFE46E006914ED /* UnitTestsHostApp */,
+				4FED3AD62AAA7DD4001D4D5E /* purchases-ios */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -2951,7 +2928,6 @@
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
 				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
-				4F6BEDFF2A27ACF400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -2967,10 +2943,6 @@
 				{
 					ProductGroup = 2D2CF15927EE0DA700673CE1 /* Products */;
 					ProjectRef = 570896B727596E8800296F1C /* SwiftAPITester.xcodeproj */;
-				},
-				{
-					ProductGroup = 2D9E3CB929D4D60500DB4730 /* Products */;
-					ProjectRef = 2D9E3CB829D4D60500DB4730 /* v3LoadShedderIntegration.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -3001,20 +2973,6 @@
 			fileType = wrapper.application;
 			path = SwiftAPITester.app;
 			remoteRef = 2D2CF15C27EE0DA700673CE1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2D9E3CBF29D4D60600DB4730 /* v3LoadShedderIntegration.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = v3LoadShedderIntegration.app;
-			remoteRef = 2D9E3CBE29D4D60600DB4730 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		2D9E3CC129D4D60600DB4730 /* v3LoadShedderIntegrationTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = v3LoadShedderIntegrationTests.xctest;
-			remoteRef = 2D9E3CC029D4D60600DB4730 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		578BB35F2936BA9400E8AA8A /* ReceiptParserAPITester.app */ = {
@@ -4651,14 +4609,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 9.0.0;
-			};
-		};
-		4F6BEDFF2A27ACF400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				branch = main;
-				kind = branch;
 			};
 		};
 		4F6BEE0A2A27B02400CD9322 /* XCRemoteSwiftPackageReference "nimble" */ = {
