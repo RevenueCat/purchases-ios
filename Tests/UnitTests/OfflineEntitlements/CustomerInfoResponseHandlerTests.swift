@@ -204,7 +204,8 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
         self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
         self.logger.verifyMessageWasLogged(
-            Strings.offlineEntitlements.computed_offline_customer_info(Self.offlineCustomerInfo.entitlements),
+            Strings.offlineEntitlements.computed_offline_customer_info([Self.purchasedProduct],
+                                                                       Self.offlineCustomerInfo.entitlements),
             level: .info
         )
     }

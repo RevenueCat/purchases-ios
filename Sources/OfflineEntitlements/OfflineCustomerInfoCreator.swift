@@ -80,7 +80,12 @@ class OfflineCustomerInfoCreator {
 
         let offlineCustomerInfo = creator(products, mapping, userID)
 
-        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(offlineCustomerInfo.entitlements))
+        Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
+            products, offlineCustomerInfo.entitlements
+        ))
+        Logger.debug(Strings.offlineEntitlements.computed_offline_customer_info_details(
+            products, offlineCustomerInfo.entitlements
+        ))
 
         return offlineCustomerInfo
     }
