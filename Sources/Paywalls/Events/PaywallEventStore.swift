@@ -62,6 +62,8 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         }
     }
 
+    // - Note: If removing these `count` events fails, it will attempt to
+    // remove the entire file. This ensures that the same events again aren't sent again.
     func clear(_ count: Int) async {
         assert(count > 0, "Invalid count: \(count)")
 
@@ -70,8 +72,6 @@ internal actor PaywallEventStore: PaywallEventStoreType {
         } catch {
             Logger.error(PaywallEventStoreStrings.error_removing_first_lines(count: count, error))
 
-            // If removing these `count` events fails, try removing the entire file.
-            // This ensures that we don't try to send the same events again.
             do {
                 try await self.handler.emptyFile()
             } catch {
