@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/10/23.
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length identifier_name
 
 import Foundation
 
@@ -30,6 +30,15 @@ public struct PaywallData {
 
     /// The base remote URL where assets for this paywall are stored.
     public var assetBaseURL: URL
+
+    /// The revision identifier for this paywall.
+    var revision: Int {
+        get { return self._revision }
+        set { self._revision = newValue }
+    }
+
+    @DefaultDecodable.Zero
+    internal private(set) var _revision: Int = 0
 
     @EnsureNonEmptyCollectionDecodable
     internal private(set) var localization: [String: LocalizedConfiguration]
@@ -59,8 +68,6 @@ public protocol PaywallLocalizedConfiguration {
     var features: [PaywallData.LocalizedConfiguration.Feature] { get }
 
 }
-
-// swiftlint:disable identifier_name
 
 extension PaywallData {
 
@@ -347,12 +354,14 @@ extension PaywallData {
         templateName: String,
         config: Configuration,
         localization: [String: LocalizedConfiguration],
-        assetBaseURL: URL
+        assetBaseURL: URL,
+        revision: Int = 0
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.assetBaseURL = assetBaseURL
+        self.revision = revision
     }
 
     /// Creates a test ``PaywallData`` with one localization
@@ -360,7 +369,8 @@ extension PaywallData {
         templateName: String,
         config: Configuration,
         localization: LocalizedConfiguration,
-        assetBaseURL: URL
+        assetBaseURL: URL,
+        revision: Int = 0
     ) {
         let locale = Locale.current.identifier
 
@@ -368,7 +378,8 @@ extension PaywallData {
             templateName: templateName,
             config: config,
             localization: [locale: localization],
-            assetBaseURL: assetBaseURL
+            assetBaseURL: assetBaseURL,
+            revision: revision
         )
     }
 
@@ -428,6 +439,7 @@ extension PaywallData: Codable {
         case config
         case localization = "localizedStrings"
         case assetBaseURL = "assetBaseUrl"
+        case _revision = "revision"
     }
 
 }
