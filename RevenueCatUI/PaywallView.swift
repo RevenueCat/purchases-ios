@@ -187,6 +187,9 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
+    @State
+    private var session: (lastPaywall: DisplayedPaywall, id: PaywallEvent.SessionID)
+
     @ObservedObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
@@ -194,6 +197,9 @@ struct LoadedOfferingPaywallView: View {
 
     @Environment(\.locale)
     private var locale
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     init(
         offering: Offering,
@@ -215,6 +221,10 @@ struct LoadedOfferingPaywallView: View {
             initialValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
+        self._session = .init(initialValue: (
+            lastPaywall: .init(offering: offering, paywall: paywall),
+            id: .init()
+        ))
     }
 
     var body: some View {
@@ -231,6 +241,8 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.purchasedCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
+            .onAppear { self.purchaseHandler.trackPaywallView(self.eventData) }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
 
         switch self.mode {
         case .fullScreen:
@@ -240,6 +252,44 @@ struct LoadedOfferingPaywallView: View {
             view
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
+        }
+    }
+
+    private var eventData: PaywallEvent.Data {
+        self.updateSessionIfNeeded()
+
+        return .init(
+            offering: self.offering,
+            paywall: self.paywall,
+            sessionID: self.session.id,
+            displayMode: self.mode,
+            locale: .current,
+            darkMode: self.colorScheme == .dark
+        )
+    }
+
+    private func updateSessionIfNeeded() {
+        let newPaywall: DisplayedPaywall = .init(offering: self.offering, paywall: self.paywall)
+        guard self.session.lastPaywall != newPaywall else { return }
+
+        self.session.lastPaywall = newPaywall
+        self.session.id = .init()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension LoadedOfferingPaywallView {
+
+    struct DisplayedPaywall: Equatable {
+        var offeringIdentifier: String
+        var paywallTemplate: String
+        var revision: Int
+
+        init(offering: Offering, paywall: PaywallData) {
+            self.offeringIdentifier = offering.identifier
+            self.paywallTemplate = paywall.templateName
+            self.revision = paywall.revision
         }
     }
 

@@ -186,7 +186,8 @@ internal enum TestData {
             colors: .init(light: Self.lightColors, dark: Self.darkColors)
         ),
         localization: Self.localization1,
-        assetBaseURL: Self.paywallAssetBaseURL
+        assetBaseURL: Self.paywallAssetBaseURL,
+        revision: 5
     )
 
     static let offeringWithIntroOffer = Offering(
@@ -547,19 +548,19 @@ extension PurchaseHandler {
             )
         } restorePurchases: {
             return TestData.customerInfo
+        } trackEvent: { event in
+            Logger.debug("Tracking event: \(event)")
         }
     }
 
     static func cancelling() -> Self {
-        return self.init { _ in
-            return (
-                transaction: nil,
-                customerInfo: TestData.customerInfo,
-                userCancelled: true
-            )
-        } restorePurchases: {
-            return TestData.customerInfo
-        }
+        return .mock()
+            .map { block in {
+                    var result = try await block($0)
+                    result.userCancelled = true
+                    return result
+                }
+            } restore: { $0 }
     }
 
     /// Creates a copy of this `PurchaseHandler` with a delay.
@@ -576,7 +577,10 @@ extension PurchaseHandler {
         }
         }
     }
+
 }
+
+// MARK: -
 
 extension PaywallColor: ExpressibleByStringLiteral {
 

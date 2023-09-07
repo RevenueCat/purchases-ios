@@ -26,6 +26,8 @@ enum Strings {
     case displaying_paywall
     case not_displaying_paywall
 
+    case attempted_to_track_event_with_missing_data
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -51,6 +53,9 @@ extension Strings: CustomStringConvertible {
 
         case .not_displaying_paywall:
             return "Condition not met: will not display paywall"
+
+        case .attempted_to_track_event_with_missing_data:
+            return "Attempted to track event with missing data"
         }
     }
 
