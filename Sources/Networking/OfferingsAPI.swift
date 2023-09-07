@@ -48,7 +48,7 @@ class OfferingsAPI {
 
         self.backendConfig.addCacheableOperation(
             with: factory,
-            withRandomDelay: isAppBackgrounded,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
         )
     }

@@ -483,7 +483,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let callOrder: Atomic<(initialGet: Bool,
                                postResponse: Bool,
                                updatedGet: Bool)> = .init((false, false, false))
-        self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { result in
             originalSubscriberInfo.value = result.value
             callOrder.value.initialGet = true
 
@@ -505,7 +505,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             postSubscriberInfo.value = result.value
         }
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { result in
+        backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { result in
             expect(callOrder.value) == (true, true, false)
             updatedSubscriberInfo.value = result.value
             callOrder.value.updatedGet = true

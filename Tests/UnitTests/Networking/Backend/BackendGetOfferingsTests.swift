@@ -35,7 +35,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == false
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == Delay.none
     }
 
     func testGetOfferingsCallsHTTPMethodWithRandomDelay() {
@@ -50,7 +50,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == true
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .default
     }
 
     func testGetOfferingsCachesForSameUserID() {

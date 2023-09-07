@@ -24,7 +24,7 @@ class BackendOfflineEntitlementsTests: BaseBackendTests {
     }
 
     func testGetProductEntitlementMapping() {
-        let randomDelay: Bool = .random()
+        let isAppBackgrounded: Bool = .random()
 
         self.httpClient.mock(
             requestPath: .getProductEntitlementMapping,
@@ -32,11 +32,14 @@ class BackendOfflineEntitlementsTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: randomDelay, completion: completed)
+            self.offlineEntitlements.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded,
+                                                                  completion: completed)
         }
 
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadRandomDelayParam) == randomDelay
+        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .default(
+            forBackgroundedApp: isAppBackgrounded
+        )
 
         expect(result).to(beSuccess())
         expect(result?.value?.products).to(haveCount(2))
@@ -52,8 +55,8 @@ class BackendOfflineEntitlementsTests: BaseBackendTests {
 
         let responses: Atomic<Int> = .init(0)
 
-        self.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: false) { _ in responses.value += 1 }
-        self.offlineEntitlements.getProductEntitlementMapping(withRandomDelay: false) { _ in responses.value += 1 }
+        self.offlineEntitlements.getProductEntitlementMapping(isAppBackgrounded: false) { _ in responses.value += 1 }
+        self.offlineEntitlements.getProductEntitlementMapping(isAppBackgrounded: false) { _ in responses.value += 1 }
 
         expect(responses.value).toEventually(equal(2))
         expect(self.httpClient.calls).to(haveCount(1))

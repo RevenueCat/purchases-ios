@@ -34,7 +34,7 @@ final class InternalAPI {
         let cacheStatus = self.callbackCache.add(callback)
 
         self.backendConfig.addCacheableOperation(with: factory,
-                                                 withRandomDelay: false,
+                                                 delay: .none,
                                                  cacheStatus: cacheStatus)
     }
 

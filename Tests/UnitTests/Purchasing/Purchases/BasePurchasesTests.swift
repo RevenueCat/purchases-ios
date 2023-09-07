@@ -390,7 +390,7 @@ extension BasePurchasesTests {
         )
 
         override func getCustomerInfo(appUserID: String,
-                                      withRandomDelay randomDelay: Bool,
+                                      isAppBackgrounded: Bool,
                                       allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getCustomerInfoCallCount += 1

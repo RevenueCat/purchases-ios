@@ -370,7 +370,7 @@ private extension CustomerInfoManager {
         )
 
         self.backend.getCustomerInfo(appUserID: appUserID,
-                                     withRandomDelay: isAppBackgrounded,
+                                     isAppBackgrounded: isAppBackgrounded,
                                      allowComputingOffline: allowComputingOffline,
                                      completion: completion)
     }

@@ -119,14 +119,14 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         try self.fetchAndCacheCustomerInfo(isAppBackground: true)
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == true
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.isAppBackgrounded) == true
     }
 
     func testFetchAndCacheCustomerInfoCallsBackendWithoutRandomDelayIfAppForegrounded() throws {
         try self.fetchAndCacheCustomerInfo(isAppBackground: false)
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == false
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.isAppBackgrounded) == false
     }
 
     func testFetchAndCacheCustomerInfoPassesBackendErrors() throws {
