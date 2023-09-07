@@ -159,3 +159,45 @@ func checkPaywallViewMode(_ mode: PaywallViewMode) {
         break
     }
 }
+
+func checkPaywallEvent(_ event: PaywallEvent) {
+    let _: PaywallEvent.SessionID = UUID()
+
+    switch event {
+    case let .view(data): checkPaywallEventData(data)
+    case let .cancel(data): checkPaywallEventData(data)
+    case let .close(data): checkPaywallEventData(data)
+    @unknown default: break
+    }
+
+    let _: PaywallEvent.Data = event.data
+}
+
+func checkPaywallEventData(_ data: PaywallEvent.Data) {
+    let _: String = data.offeringIdentifier
+    let _: Int = data.paywallRevision
+    let _: PaywallEvent.SessionID = data.sessionIdentifier
+    let _: PaywallViewMode = data.displayMode
+    let _: String = data.localeIdentifier
+    let _: Bool = data.darkMode
+    let _: Date = data.date
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func create(
+        offering: Offering,
+        paywall: PaywallData,
+        sessionID: PaywallEvent.SessionID,
+        displayMode: PaywallViewMode,
+        locale: Locale,
+        darkMode: Bool
+    ) {
+        _ = PaywallEvent.Data.init(
+            offering: offering,
+            paywall: paywall,
+            sessionID: sessionID,
+            displayMode: displayMode,
+            locale: locale,
+            darkMode: darkMode
+        )
+    }
+}
