@@ -112,6 +112,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
         let paywall = try XCTUnwrap(offering.paywall)
         expect(paywall.templateName) == "1"
         try expect(paywall.assetBaseURL) == XCTUnwrap(URL(string: "https://rc-paywalls.s3.amazonaws.com"))
+        expect(paywall.revision) == 5
 
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage).to(beNil())
