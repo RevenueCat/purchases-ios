@@ -250,7 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        try await self.waitUntilUnfinishedTransactions(2)
+        try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
         self.serverUp()
 
