@@ -44,6 +44,7 @@ class BasePurchasesTests: TestCase {
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
+        self.paywallEventsManager = .init()
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -144,6 +145,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var paywallCache: MockPaywallCacheWarming!
+    var paywallEventsManager: MockPaywallEventsManager!
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -261,6 +263,7 @@ class BasePurchasesTests: TestCase {
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
+                                   paywallEventsManager: self.paywallEventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -508,6 +511,7 @@ private extension BasePurchasesTests {
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
         self.paywallCache = nil
+        self.paywallEventsManager = nil
         self.purchases = nil
     }
 

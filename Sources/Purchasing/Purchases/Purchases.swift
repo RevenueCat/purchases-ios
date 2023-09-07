@@ -246,6 +246,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
+    private let paywallEventsManager: PaywallEventsManagerType?
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
     private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
@@ -339,6 +340,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       transactionFetcher: StoreKit2TransactionFetcher(),
                                                       transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
+
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
                                                                       deviceCache: deviceCache,
@@ -350,6 +352,23 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID)
+
+        let paywallEventsManager: PaywallEventsManagerType?
+        do {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                paywallEventsManager = PaywallEventsManager(
+                    internalAPI: backend.internalAPI,
+                    userProvider: identityManager,
+                    store: try PaywallEventStore.createDefault()
+                )
+            } else {
+                Logger.verbose(Strings.paywalls.event_manager_not_initialized_not_available)
+                paywallEventsManager = nil
+            }
+        } catch {
+            Logger.verbose(Strings.paywalls.event_manager_failed_to_initialize(error))
+            paywallEventsManager = nil
+        }
 
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
@@ -453,6 +472,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   subscriberAttributes: subscriberAttributes,
                   operationDispatcher: operationDispatcher,
                   customerInfoManager: customerInfoManager,
+                  paywallEventsManager: paywallEventsManager,
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -479,6 +499,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
+         paywallEventsManager: PaywallEventsManagerType?,
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -526,6 +547,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attribution = subscriberAttributes
         self.operationDispatcher = operationDispatcher
         self.customerInfoManager = customerInfoManager
+        self.paywallEventsManager = paywallEventsManager
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1030,6 +1052,30 @@ public extension Purchases {
 }
 
 // swiftlint:enable missing_docs
+
+// MARK: - Paywalls
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+public extension Purchases {
+
+    /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
+    func track(paywallEvent: PaywallEvent) async {
+        switch paywallEvent {
+        case let .view(data):
+            self.purchasesOrchestrator.cachePresentedPaywall(data)
+
+        case .close:
+            self.purchasesOrchestrator.clearPresentedPaywall()
+
+        case .cancel:
+            // No special handling, simply track the event below.
+            break
+        }
+
+        await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
+    }
+
+}
 
 // MARK: Configuring Purchases
 

@@ -15,22 +15,6 @@ import Foundation
 
 final class PostReceiptDataOperation: CacheableNetworkOperation {
 
-    struct PostData {
-
-        let appUserID: String
-        let receiptData: Data
-        let isRestore: Bool
-        let productData: ProductRequestData?
-        let presentedOfferingIdentifier: String?
-        let observerMode: Bool
-        let initiationSource: ProductRequestData.InitiationSource
-        let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
-        let aadAttributionToken: String?
-        /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
-        let testReceiptIdentifier: String?
-
-    }
-
     private let postData: PostData
     private let configuration: AppUserConfiguration
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
@@ -131,6 +115,37 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
 
 }
 
+extension PostReceiptDataOperation {
+
+    struct PostData {
+
+        let appUserID: String
+        let receiptData: Data
+        let isRestore: Bool
+        let productData: ProductRequestData?
+        let presentedOfferingIdentifier: String?
+        let paywall: Paywall?
+        let observerMode: Bool
+        let initiationSource: ProductRequestData.InitiationSource
+        let subscriberAttributesByKey: SubscriberAttribute.Dictionary?
+        let aadAttributionToken: String?
+        /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
+        let testReceiptIdentifier: String?
+
+    }
+
+    struct Paywall {
+
+        var sessionID: String
+        var revision: Int
+        var displayMode: PaywallViewMode
+        var darkMode: Bool
+        var localeIdentifier: String
+
+    }
+
+}
+
 extension PostReceiptDataOperation.PostData {
 
     init(
@@ -146,12 +161,27 @@ extension PostReceiptDataOperation.PostData {
             isRestore: data.source.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingID,
+            paywall: data.paywall,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
             testReceiptIdentifier: testReceiptIdentifier
         )
+    }
+
+}
+
+private extension PurchasedTransactionData {
+
+    var paywall: PostReceiptDataOperation.Paywall? {
+        guard let paywall = self.presentedPaywall else { return nil }
+
+        return .init(sessionID: paywall.sessionIdentifier.uuidString,
+                     revision: paywall.paywallRevision,
+                     displayMode: paywall.displayMode,
+                     darkMode: paywall.darkMode,
+                     localeIdentifier: paywall.localeIdentifier)
     }
 
 }
@@ -183,7 +213,7 @@ private extension PostReceiptDataOperation {
 
 }
 
-// MARK: - Request Data
+// MARK: - Codable
 
 extension PostReceiptDataOperation.PostData: Encodable {
 
@@ -197,6 +227,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
+        case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
 
     }
@@ -214,8 +245,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
             try productData.encode(to: encoder)
         }
 
-        try container.encodeIfPresent(self.presentedOfferingIdentifier,
-                                      forKey: .presentedOfferingIdentifier)
+        try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
+        try container.encodeIfPresent(self.paywall, forKey: .paywall)
 
         try container.encodeIfPresent(
             self.subscriberAttributesByKey
@@ -231,6 +262,22 @@ extension PostReceiptDataOperation.PostData: Encodable {
     var fetchToken: String { return self.receiptData.asFetchToken }
 
 }
+
+extension PostReceiptDataOperation.Paywall: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case sessionID = "sessionId"
+        case revision
+        case displayMode
+        case darkMode
+        case localeIdentifier
+
+    }
+
+}
+
+// MARK: - HTTPRequestBody
 
 extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
