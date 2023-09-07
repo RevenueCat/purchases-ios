@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-#if canImport(SwiftUI) && swift(>=5.7)
+#if canImport(SwiftUI)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PaywallData {
