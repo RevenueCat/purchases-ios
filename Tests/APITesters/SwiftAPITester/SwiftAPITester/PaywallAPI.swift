@@ -167,6 +167,8 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     case let .close(data): checkPaywallEventData(data)
     @unknown default: break
     }
+
+    let _: PaywallEvent.Data = event.data
 }
 
 func checkPaywallEventData(_ data: PaywallEvent.Data) {

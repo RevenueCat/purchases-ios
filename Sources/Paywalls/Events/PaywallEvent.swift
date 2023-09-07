@@ -87,10 +87,10 @@ extension PaywallEvent {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallEvent {
 
-    var data: Data {
+    /// - Returns: the underlying ``PaywallEvent/Data-swift.struct`` for this event.
+    public var data: Data {
         switch self {
         case let .view(data): return data
         case let .cancel(data): return data
