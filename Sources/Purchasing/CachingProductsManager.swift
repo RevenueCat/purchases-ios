@@ -91,13 +91,7 @@ extension CachingProductsManager: ProductsManagerType {
 
 }
 
-#if swift(>=5.7)
 extension CachingProductsManager: Sendable {}
-#else
-// @unchecked because:
-// - It contains `any`
-extension CachingProductsManager: @unchecked Sendable {}
-#endif
 
 // MARK: - Private
 
