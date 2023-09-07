@@ -22,6 +22,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
 
         expect(paywall.templateName) == "1"
         expect(paywall.assetBaseURL) == URL(string: "https://rc-paywalls.s3.amazonaws.com")!
+        expect(paywall.revision) == 7
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage) == "$rc_annual"
         expect(paywall.config.images) == .init(

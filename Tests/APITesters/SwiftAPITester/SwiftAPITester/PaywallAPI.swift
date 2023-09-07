@@ -18,11 +18,13 @@ func checkPaywallData(_ data: PaywallData) {
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
     let localization: PaywallData.LocalizedConfiguration = data.localizedConfiguration
     let assetBaseURL: URL = data.assetBaseURL
+    let revision: Int = data.revision
 
     let _: PaywallData = .init(templateName: templateName,
                                config: config,
                                localization: localization,
-                               assetBaseURL: assetBaseURL)
+                               assetBaseURL: assetBaseURL,
+                               revision: revision)
 }
 
 func checkPaywallConfiguration(_ config: PaywallData.Configuration,

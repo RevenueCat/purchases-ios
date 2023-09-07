@@ -38,5 +38,6 @@
       "title" : "{{ app_name }}"
     }
   },
+  "revision" : -1,
   "template_name" : "2"
 }
