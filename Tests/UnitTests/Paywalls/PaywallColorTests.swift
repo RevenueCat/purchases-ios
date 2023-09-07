@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 7/14/23.
 
-#if canImport(UIKit) && canImport(SwiftUI) && swift(>=5.7)
+#if canImport(UIKit) && canImport(SwiftUI)
 
 import Nimble
 @testable import RevenueCat
