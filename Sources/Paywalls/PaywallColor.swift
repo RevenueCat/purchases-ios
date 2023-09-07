@@ -34,8 +34,7 @@ public struct PaywallColor {
     /// The original Hex representation for this color.
     public var stringRepresentation: String
 
-    // `Color` is not `Sendable` in Xcode 13.
-    #if canImport(SwiftUI) && swift(>=5.7)
+    #if canImport(SwiftUI)
     /// The underlying SwiftUI `Color`.
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     public var underlyingColor: Color {
@@ -53,7 +52,7 @@ public struct PaywallColor {
 
 extension PaywallColor {
 
-    #if canImport(SwiftUI) && swift(>=5.7)
+    #if canImport(SwiftUI)
 
     /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
     public init(stringRepresentation: String) throws {
@@ -77,13 +76,6 @@ extension PaywallColor {
 
         #endif
 
-    #else
-
-    /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
-    public init(stringRepresentation: String) throws {
-        self.init(stringRepresentation: stringRepresentation, underlyingColor: nil)
-    }
-
     #endif
 
 }
@@ -94,12 +86,10 @@ private extension PaywallColor {
 
     #if canImport(SwiftUI)
 
-        #if swift(>=5.7)
-        @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-        init(stringRepresentation: String, color: Color) {
-            self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
-        }
-        #endif
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    init(stringRepresentation: String, color: Color) {
+        self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
+    }
 
     @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     static func parseColor(_ input: String) throws -> Color {
@@ -201,16 +191,12 @@ public extension Color {
         self.init(light: UIColor(light), dark: UIColor(dark))
     }
 
-    #if swift(>=5.7)
-
     /// Converts a `Color` into a `PaywallColor`.
     /// - Warning: This `PaywallColor` won't be able to be encoded,
     /// its ``PaywallColor/stringRepresentation`` will be undefined.
     var asPaywallColor: PaywallColor {
         return .init(stringRepresentation: "#FFFFFF", color: self)
     }
-
-    #endif
 
 }
 #endif

@@ -451,28 +451,18 @@ extension PaywallData.Configuration.Colors: Sendable {}
 extension PaywallData.Configuration.Images: Sendable {}
 extension PaywallData.Configuration: Sendable {}
 
-#if swift(>=5.7)
 extension PaywallData: Sendable {}
-#else
-// `@unchecked` because:
-// - `URL` is not `Sendable` until Swift 5.7
-extension PaywallData: @unchecked Sendable {}
-#endif
 
 // MARK: - Extensions
 
 private extension Locale {
 
     func sharesLanguageCode(with other: Locale) -> Bool {
-        #if swift(>=5.7)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return self.language.languageCode == other.language.languageCode
         } else {
-            return false
+            return self.languageCode == other.languageCode
         }
-        #else
-        return false
-        #endif
     }
 
 }
