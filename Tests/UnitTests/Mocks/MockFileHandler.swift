@@ -21,10 +21,6 @@ actor MockFileHandler: FileHandlerType {
 
     private var file: String = ""
 
-    func readFile() throws -> Data {
-        return self.file.asData
-    }
-
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func readLines() throws -> AsyncLineSequence<FileHandle.AsyncBytes> {
         let pipe = Pipe()

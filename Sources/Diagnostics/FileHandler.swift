@@ -17,10 +17,6 @@ import Foundation
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 protocol FileHandlerType: Sendable {
 
-    /// - Note: this loads the entire file in memory
-    /// For newer versions, consider using `readLines` instead.
-    func readFile() async throws -> Data
-
     /// Returns an async sequence for every line in the file
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func readLines() async throws -> AsyncLineSequence<FileHandle.AsyncBytes>
