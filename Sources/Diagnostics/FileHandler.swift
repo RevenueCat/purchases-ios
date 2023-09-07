@@ -56,6 +56,8 @@ actor FileHandler: FileHandlerType {
     /// - Note: this loads the entire file in memory
     /// For newer versions, consider using `readLines` instead.
     func readFile() throws -> Data {
+        RCTestAssertNotMainThread()
+
         try self.moveToBeginningOfFile()
 
         return self.fileHandle.availableData
@@ -64,6 +66,8 @@ actor FileHandler: FileHandlerType {
     /// Returns an async sequence for every line in the file
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func readLines() throws -> AsyncLineSequence<FileHandle.AsyncBytes> {
+        RCTestAssertNotMainThread()
+
         try self.moveToBeginningOfFile()
 
         return self.fileHandle.bytes.lines
@@ -71,6 +75,8 @@ actor FileHandler: FileHandlerType {
 
     /// Adds a line at the end of the file
     func append(line: String) {
+        RCTestAssertNotMainThread()
+
         self.fileHandle.seekToEndOfFile()
         self.fileHandle.write(line.asData)
         self.fileHandle.write(Self.lineBreakData)
