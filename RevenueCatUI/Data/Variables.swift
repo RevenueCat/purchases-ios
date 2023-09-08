@@ -100,7 +100,9 @@ enum VariableHandler {
         case "sub_period": return { (provider, _, locale) in provider.periodName(locale) }
         case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
         case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }
-        case "sub_duration_in_months": return { (provider, _, locale) in provider.normalizedSubscriptionDuration(locale) }
+        case "sub_duration_in_months": return { (provider, _, locale) in
+            provider.normalizedSubscriptionDuration(locale)
+        }
         case "sub_offer_duration": return { (provider, _, locale) in provider.introductoryOfferDuration(locale) }
         case "sub_offer_price": return { (provider, _, _) in provider.localizedIntroductoryOfferPrice }
         case "sub_relative_discount": return { $0.localizedRelativeDiscount($1.discountRelativeToMostExpensivePerMonth,
