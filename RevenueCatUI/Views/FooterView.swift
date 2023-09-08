@@ -135,7 +135,7 @@ struct FooterView: View {
     fileprivate var font: Font.TextStyle {
         return self.interfaceIdiom == .pad
         ? .callout
-        : .caption
+        : .footnote
     }
 
 }
@@ -151,10 +151,10 @@ private struct SeparatorView: View {
             .accessibilityHidden(true)
     }
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: .footnote)
     private var separatorSize: CGFloat = 4
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: .footnote)
     private var boldSeparatorSize: CGFloat = 5
 }
 
