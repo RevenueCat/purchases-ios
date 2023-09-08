@@ -51,4 +51,5 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
             return "events"
         }
     }
+
 }
