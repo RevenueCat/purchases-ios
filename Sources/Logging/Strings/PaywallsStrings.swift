@@ -26,6 +26,7 @@ enum PaywallsStrings {
 
     // MARK: - Events
 
+    case event_manager_initialized
     case event_manager_not_initialized_not_available
     case event_manager_failed_to_initialize(Error)
 
@@ -56,6 +57,9 @@ extension PaywallsStrings: LogMessage {
             return "PurchasesOrchestrator: clearing presented paywall"
 
         // MARK: - Events
+
+        case .event_manager_initialized:
+            return "PaywallEventsManager initialized"
 
         case .event_manager_not_initialized_not_available:
             return "Won't initialize PaywallEventsManager: not available on current device."
