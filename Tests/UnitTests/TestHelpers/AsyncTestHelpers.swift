@@ -58,12 +58,8 @@ func waitUntilValue<Value>(
     return result.value
 }
 
-/// Verifies that the given `async` condition becomes true after `timeout`,
-/// checking every `pollInterval`.
-// Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
-// but it doesn't seem to play well with async-await.
-// Also `toEventually` (Quick nor Nimble) don't support `async`.
-// Fix-me: remove once we can use Quick v6.x:
+private struct ConditionFailedError: Error {}
+
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait(
     description: String? = nil,
@@ -73,7 +69,35 @@ func asyncWait(
     line: UInt = #line,
     until condition: @Sendable () async -> Bool
 ) async throws {
+    try await asyncWait(
+        description: { _ in description },
+        timeout: timeout,
+        pollInterval: pollInterval,
+        file: file,
+        line: line,
+        until: { () },
+        condition: { _ in await condition() }
+    )
+}
+
+/// Verifies that the given `async` condition becomes true after `timeout`,
+/// checking every `pollInterval`.
+// Note: a better approach would be using `XCTestExpectation` and `self.wait(for:timeout:)`
+// but it doesn't seem to play well with async-await.
+// Also `toEventually` (Quick nor Nimble) don't support `async`.
+// Fix-me: remove once we can use Quick v6.x:
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+func asyncWait<T>(
+    description: (T?) -> String?,
+    timeout: DispatchTimeInterval = defaultTimeout,
+    pollInterval: DispatchTimeInterval = defaultPollInterval,
+    file: FileString = #fileID,
+    line: UInt = #line,
+    until value: @Sendable () async -> T,
+    condition: @Sendable (T) async -> Bool
+) async throws {
     let start = Date()
+    var lastValue: T?
     var foundCorrectValue = false
 
     func timedOut() -> Bool {
@@ -81,7 +105,11 @@ func asyncWait(
     }
 
     repeat {
-        foundCorrectValue = await condition()
+        let currentValue = await value()
+
+        lastValue = currentValue
+        foundCorrectValue = await condition(currentValue)
+
         if !foundCorrectValue {
             try? await Task.sleep(nanoseconds: UInt64(pollInterval.nanoseconds))
         }
@@ -91,11 +119,9 @@ func asyncWait(
         file: file,
         line: line,
         foundCorrectValue
-    ).to(beTrue(), description: description)
+    ).to(beTrue(), description: description(lastValue))
 
     if !foundCorrectValue {
-        struct ConditionFailedError: Error {}
-
         // Because this method is `async`, for some reason Swift is continuing execution of the test
         // despite the expectation failing, so we throw to ensure this doesn't happen
         // leading to an inconsistent state.

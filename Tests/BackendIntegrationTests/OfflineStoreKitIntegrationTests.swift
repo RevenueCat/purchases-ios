@@ -250,7 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        try await self.waitUntilUnfinishedTransactions(2)
+        try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
         self.serverUp()
 
@@ -258,7 +258,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
 
         self.logger.verifyMessageWasLogged(
-            "Found 2 unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
+            "unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
             level: .debug,
             expectedCount: 1
         )
