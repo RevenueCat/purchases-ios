@@ -64,9 +64,16 @@ class HTTPClient {
         #if DEBUG
         guard !self.systemInfo.dangerousSettings.internalSettings.forceServerErrors else {
             Logger.warn(Strings.network.api_request_forcing_server_error(request))
-            completionHandler?(
-                .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
-            )
+
+            // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+            // might be empty if called immediately after `Product.purchase()`.
+            // This introduces a delay to simulate a real API request, and avoid that race condition.
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+                completionHandler?(
+                    .failure(.errorResponse(Self.serverErrorResponse, .internalServerError))
+                )
+            }
+
             return
         }
         #endif

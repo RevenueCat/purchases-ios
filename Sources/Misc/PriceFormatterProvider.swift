@@ -41,17 +41,20 @@ final class PriceFormatterProvider: Sendable {
 
     private let cachedPriceFormatterForSK2: Atomic<NumberFormatter?> = nil
 
-    func priceFormatterForSK2(withCurrencyCode currencyCode: String) -> NumberFormatter {
+    func priceFormatterForSK2(
+        withCurrencyCode currencyCode: String,
+        locale: Locale = .autoupdatingCurrent
+    ) -> NumberFormatter {
         func makePriceFormatterForSK2(with currencyCode: String) -> NumberFormatter {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            formatter.locale = .autoupdatingCurrent
+            formatter.locale = locale
             formatter.currencyCode = currencyCode
             return formatter
         }
 
         return self.cachedPriceFormatterForSK2.modify { formatter in
-            guard let formatter = formatter, formatter.currencyCode == currencyCode else {
+            guard let formatter = formatter, formatter.currencyCode == currencyCode, formatter.locale == locale else {
                 let newFormatter = makePriceFormatterForSK2(with: currencyCode)
                 formatter = newFormatter
 

@@ -39,8 +39,14 @@ struct DebugSwiftUIRootView: View {
                     case let .offering(offering):
                         DebugOfferingView(offering: offering)
 
+                    case let .offeringMetadata(offering):
+                        DebugOfferingMetadataView(offering: offering)
+
                     case let .package(package):
                         DebugPackageView(package: package)
+
+                    case let .paywall(paywall):
+                        DebugPaywallJSONView(paywall: paywall)
                     }
                 }
                 .background(
@@ -72,7 +78,9 @@ struct DebugSwiftUIRootView: View {
 private enum DebugViewPath: Hashable {
 
     case offering(Offering)
+    case offeringMetadata(Offering)
     case package(Package)
+    case paywall(PaywallData)
 
 }
 
@@ -143,7 +151,7 @@ internal struct DebugSummaryView: View {
                         }
                         #endif
 
-                    ShareLink(item: config, preview: .init("Configuration")) {
+                    ShareLink(item: AnyEncodable(config), preview: .init("Configuration")) {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 }
@@ -232,6 +240,22 @@ private struct DebugOfferingView: View {
             Section("Data") {
                 LabeledContent("Identifier", value: self.offering.id)
                 LabeledContent("Description", value: self.offering.serverDescription)
+
+                if !self.offering.metadata.isEmpty {
+                    NavigationLink(value: DebugViewPath.offeringMetadata(self.offering)) {
+                        Text("Metadata")
+                    }
+                } else {
+                    LabeledContent("Metadata", value: "{}")
+                }
+
+                if let paywall = self.offering.paywall {
+                    NavigationLink(value: DebugViewPath.paywall(paywall)) {
+                        Text("RevenueCatUI paywall")
+                    }
+                } else {
+                    LabeledContent("RevenueCatUI", value: "No paywall")
+                }
             }
 
             Section("Packages") {
@@ -310,6 +334,18 @@ private struct DebugOfferingView: View {
 }
 
 @available(iOS 16.0, macOS 13.0, *)
+private struct DebugOfferingMetadataView: View {
+
+    var offering: Offering
+
+    var body: some View {
+        DebugJSONView(value: AnyEncodable(self.offering.metadata))
+            .navigationTitle("Offering Metadata")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, *)
 private struct DebugPackageView: View {
 
     var package: Package
@@ -376,11 +412,55 @@ private struct DebugPackageView: View {
 }
 
 @available(iOS 16.0, macOS 13.0, *)
-extension DebugViewModel.Configuration: Transferable {
+private struct DebugPaywallJSONView: View {
+
+    let paywall: PaywallData
+
+    var body: some View {
+        DebugJSONView(value: AnyEncodable(self.paywall))
+            .navigationTitle("RevenueCatUI Paywall")
+    }
+
+}
+
+@available(iOS 16.0, macOS 13.0, *)
+private struct DebugJSONView<Value: Encodable & Transferable>: View {
+
+    let value: Value
+
+    var body: some View {
+        ScrollView(.vertical) {
+            Text(self.json)
+                .multilineTextAlignment(.leading)
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .padding()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                ShareLink(item: self.value, preview: .init("JSON")) {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
+            }
+        }
+    }
+
+    private var json: String {
+        return (try? self.value.prettyPrintedJSON) ?? "{}"
+    }
+
+}
+
+// MARK: - Transferable
+
+@available(iOS 16.0, macOS 13.0, *)
+extension AnyEncodable: Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
         return CodableRepresentation(
-            for: DebugViewModel.Configuration.self,
+            for: Self.self,
             contentType: .plainText,
             encoder: JSONEncoder.prettyPrinted,
             decoder: JSONDecoder.default

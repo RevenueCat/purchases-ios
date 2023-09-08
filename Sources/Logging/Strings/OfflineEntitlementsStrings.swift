@@ -30,7 +30,8 @@ enum OfflineEntitlementsStrings {
     case computing_offline_customer_info_for_consumable_product
     case computing_offline_customer_info
     case computing_offline_customer_info_failed(Error)
-    case computed_offline_customer_info(EntitlementInfos)
+    case computed_offline_customer_info([PurchasedSK2Product], EntitlementInfos)
+    case computed_offline_customer_info_details([PurchasedSK2Product], EntitlementInfos)
 
     case purchased_products_fetching
     case purchased_products_fetching_too_slow
@@ -79,8 +80,23 @@ extension OfflineEntitlementsStrings: LogMessage {
             return "Error computing offline CustomerInfo. Will return original error.\n" +
             "Creation error: \(error.localizedDescription)"
 
-        case let .computed_offline_customer_info(entitlements):
-            return "Computed offline CustomerInfo with \(entitlements.active.count) active entitlements."
+        case let .computed_offline_customer_info(products, entitlements):
+            return "Computed offline CustomerInfo from \(products.count) products " +
+            "with \(entitlements.active.count) active entitlements."
+
+        case let .computed_offline_customer_info_details(products, entitlements):
+            let productIDs = products
+                .lazy
+                .map(\.productIdentifier)
+                .joined(separator: ", ")
+            let entitlements = entitlements
+                .active
+                .values
+                .lazy
+                .map(\.identifier)
+                .joined(separator: ", ")
+
+            return "Purchased products: [\(productIDs)]. Active entitlements: [\(entitlements)]."
 
         case .purchased_products_fetching:
             return "PurchasedProductsFetcher: fetching products from StoreKit"

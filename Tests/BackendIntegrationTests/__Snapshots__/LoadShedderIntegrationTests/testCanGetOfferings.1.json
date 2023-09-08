@@ -13,7 +13,52 @@
           "identifier" : "$rc_monthly",
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
         }
-      ]
+      ],
+      "paywall" : {
+        "asset_base_url" : "https://assets.pawwalls.com",
+        "config" : {
+          "blurred_background_image" : false,
+          "colors" : {
+            "dark" : {
+              "background" : "#000000",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#ffffff"
+            },
+            "light" : {
+              "background" : "#ffffff",
+              "call_to_action_background" : "#45c186",
+              "call_to_action_foreground" : "#ffffff",
+              "text1" : "#000000"
+            }
+          },
+          "display_restore_purchases" : true,
+          "images" : {
+            "header" : "903907_1693958145.jpg"
+          },
+          "packages" : [
+            "$rc_monthly"
+          ],
+          "privacy_url" : "https://revenuecat.com/privacy",
+          "tos_url" : "https://revenuecat.com/tos"
+        },
+        "localized_strings" : {
+          "en_US" : {
+            "call_to_action" : "Continue",
+            "call_to_action_with_intro_offer" : "Continue",
+            "features" : [
+
+            ],
+            "offer_details" : "{{ total_price_and_per_month }}",
+            "offer_details_with_intro_offer" : "Try {{ sub_offer_duration }} for free, then {{ total_price_and_per_month }}",
+            "offer_name" : null,
+            "subtitle" : "Get access to all content",
+            "title" : "Ignite your child's curiosity"
+          }
+        },
+        "revision" : 1,
+        "template_name" : "1"
+      }
     },
     {
       "description" : "an alternative offering",
@@ -26,7 +71,8 @@
           "identifier" : "$rc_monthly",
           "platform_product_identifier" : "com.revenuecat.loadShedder.monthly"
         }
-      ]
+      ],
+      "paywall" : null
     }
   ]
 }

@@ -294,14 +294,14 @@ extension PurchaseStrings: LogMessage {
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
 
         case let .transaction_poster_handling_transaction(transactionID, productID, date, offeringID):
-            let prefix = "TransactionPoster: handling transaction '\(transactionID)' " +
+            var message = "TransactionPoster: handling transaction '\(transactionID)' " +
             "for product '\(productID)' (date: \(date))"
 
             if let offeringIdentifier = offeringID {
-                return prefix + " in Offering '\(offeringIdentifier)'"
-            } else {
-                return prefix
+                message += " in Offering '\(offeringIdentifier)'"
             }
+
+            return message
 
         case let .caching_presented_offering_identifier(offeringID, productID):
             return "Caching presented offering identifier '\(offeringID)' for product '\(productID)'"

@@ -22,13 +22,8 @@ final class CachingProductsManager {
     private let productCache: Atomic<[String: StoreProduct]> = .init([:])
     private let requestCache: Atomic<[Set<String>: [Completion]]> = .init([:])
 
-    #if swift(>=5.7)
     private let _sk2ProductCache: (any Sendable)?
     private let _sk2RequestCache: (any Sendable)?
-    #else
-    private let _sk2ProductCache: Any?
-    private let _sk2RequestCache: Any?
-    #endif
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var sk2ProductCache: Atomic<[String: SK2StoreProduct]> {
@@ -96,13 +91,7 @@ extension CachingProductsManager: ProductsManagerType {
 
 }
 
-#if swift(>=5.7)
 extension CachingProductsManager: Sendable {}
-#else
-// @unchecked because:
-// - It contains `any`
-extension CachingProductsManager: @unchecked Sendable {}
-#endif
 
 // MARK: - Private
 

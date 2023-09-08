@@ -269,9 +269,6 @@ private extension SystemInfo {
             return Bundle.main.infoDictionary?.keys.contains("WKApplication") == true
         }
 
-        // In Xcode 14 and later, you can produce watchOS apps with a single watchOS app target.
-        // These single-target watchOS apps can run on watchOS 7 and later.
-        #if swift(>=5.7)
         if #available(watchOS 7.0, *), self.isOperatingSystemAtLeast(.init(majorVersion: 9,
                                                                            minorVersion: 0,
                                                                            patchVersion: 0)) {
@@ -288,15 +285,6 @@ private extension SystemInfo {
                 return WKExtension.shared().applicationState == .background
             }
         }
-        #else
-        // In Xcode 13 and earlier the system divides a watchOS app into two sections
-        // (single-target apps are not supported):
-        // - WatchKit app
-        // - WatchKit extension
-
-        // Before Xcode 14, single-target extensions aren't supported (and `WKApplication` isn't available)
-        return WKExtension.shared().applicationState == .background
-        #endif
     }
 
     #endif

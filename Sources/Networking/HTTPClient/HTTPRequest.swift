@@ -27,6 +27,10 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce)
     }
 
+    init(method: Method, path: HTTPRequest.PaywallPath, nonce: Data? = nil) {
+        self.init(method: method, requestPath: path, nonce: nonce)
+    }
+
     private init(method: Method, requestPath: HTTPRequestPath, nonce: Data? = nil) {
         assert(nonce == nil || nonce?.count == Data.nonceLength,
                "Invalid nonce: \(nonce?.description ?? "")")

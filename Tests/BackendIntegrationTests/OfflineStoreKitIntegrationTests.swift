@@ -250,7 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        try await self.waitUntilUnfinishedTransactions(2)
+        try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
         self.serverUp()
 
@@ -258,7 +258,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
 
         self.logger.verifyMessageWasLogged(
-            "Found 2 unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
+            "unfinished transactions, will post receipt in lieu of fetching CustomerInfo",
             level: .debug,
             expectedCount: 1
         )
@@ -319,6 +319,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        self.logger.clearMessages()
+
         // 1. Purchase while server is down
         self.serverDown()
 

@@ -1,0 +1,19 @@
+{
+    "template_name": "1",
+    "localized_strings": {},
+    "config": {
+        "packages": ["$rc_monthly", "$rc_annual"],
+        "images": {},
+        "colors": {
+            "light": {
+                "background": "#FFFFFF",
+                "text_1": "#FFFFFF",
+                "call_to_action_background": "#FFFFFF",
+                "call_to_action_foreground": "#FFFFFF",
+                "accent_1": "#FFFFFF"
+            },
+            "dark": null
+        }
+    },
+    "asset_base_url": "https://rc-paywalls.s3.amazonaws.com"
+}

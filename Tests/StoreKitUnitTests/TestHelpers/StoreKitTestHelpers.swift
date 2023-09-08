@@ -47,21 +47,21 @@ extension XCTestCase {
     }
 
     func waitUntilUnfinishedTransactions(
-        _ expectedCount: Int,
+        condition: @Sendable @escaping (Int) -> Bool,
         file: FileString = #fileID,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
-            description: "Expected \(expectedCount) unfinished transactions",
+            description: { "Transaction expectation never met: \($0 ?? [])" },
             file: file,
-            line: line
-        ) {
-            await Transaction.unfinished.extractValues().count == expectedCount
-        }
+            line: line,
+            until: { await Transaction.unfinished.extractValues() },
+            condition: { condition($0.count) }
+        )
     }
 
     func waitUntilNoUnfinishedTransactions(file: FileString = #fileID, line: UInt = #line) async throws {
-        try await self.waitUntilUnfinishedTransactions(0)
+        try await self.waitUntilUnfinishedTransactions { $0 == 0 }
     }
 
     func deleteAllTransactions(session: SKTestSession) async {

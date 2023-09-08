@@ -35,7 +35,7 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(result) === self.mockCustomerInfo
 
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
-        expect(self.mockBackend.invokedGetSubscriberDataParameters?.randomDelay) == false
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.isAppBackgrounded) == false
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
     }
 

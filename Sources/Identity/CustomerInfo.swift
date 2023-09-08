@@ -272,14 +272,7 @@ extension CustomerInfo: RawDataContainer {
 
 }
 
-#if swift(>=5.7)
 extension CustomerInfo: Sendable {}
-#else
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-// - `URL` is not `Sendable` until Swift 5.7
-extension CustomerInfo: @unchecked Sendable {}
-#endif
 
 /// `CustomerInfo`'s `Codable` implementation relies on `Data`
 extension CustomerInfo: Codable {

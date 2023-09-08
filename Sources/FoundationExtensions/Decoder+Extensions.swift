@@ -125,7 +125,7 @@ extension ErrorUtils {
 
     static func logDecodingError(_ error: Error, type: Any.Type, data: Data? = nil) {
         if let data = data {
-            Logger.debug(Strings.codable.invalid_data_when_decoding(data))
+            Logger.debug(Strings.codable.invalid_data_when_decoding(data, type))
         }
 
         guard let decodingError = error as? DecodingError else {
