@@ -14,9 +14,21 @@
 import Foundation
 @testable import RevenueCat
 
-final class MockPaywallEventsManager: PaywallEventsManagerType {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+actor MockPaywallEventsManager: PaywallEventsManagerType {
 
-    func track(paywallEvent: PaywallEvent) async {}
-    func flushEvents(count: Int) async {}
+    var trackedEvents: [PaywallEvent] = []
+
+    func track(paywallEvent: PaywallEvent) async {
+        self.trackedEvents.append(paywallEvent)
+    }
+
+    var invokedFlushEvents = false
+    var invokedFlushEventsCount = 0
+
+    func flushEvents(count: Int) async {
+        self.invokedFlushEvents = true
+        self.invokedFlushEventsCount += 1
+    }
 
 }

@@ -24,7 +24,7 @@ protocol PaywallEventsManagerType {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-final class PaywallEventsManager: PaywallEventsManagerType {
+actor PaywallEventsManager: PaywallEventsManagerType {
 
     private let internalAPI: InternalAPI
     private let userProvider: CurrentUserProvider
