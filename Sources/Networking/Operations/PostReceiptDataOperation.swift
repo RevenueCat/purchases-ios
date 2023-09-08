@@ -271,7 +271,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case revision
         case displayMode
         case darkMode
-        case localeIdentifier
+        case localeIdentifier = "locale"
 
     }
 
