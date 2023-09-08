@@ -29,8 +29,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
@@ -41,8 +41,8 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: Self.userID), response: response)
         httpClient.mock(requestPath: .getCustomerInfo(appUserID: userID2), response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
-        backend.getCustomerInfo(appUserID: userID2, withRandomDelay: false) { _ in }
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+        self.backend.getCustomerInfo(appUserID: userID2, isAppBackgrounded: false) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
@@ -53,7 +53,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         self.httpClient.mock(requestPath: path, response: response)
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) { _ in }
+        backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
@@ -64,7 +64,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let customerInfo = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(customerInfo).to(beSuccess())
@@ -83,7 +83,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(result).to(beFailure())
@@ -97,7 +97,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         guard case .failure(.networkError(.decoding)) = result else {
@@ -122,11 +122,11 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         let firstResult: Atomic<Result<CustomerInfo, BackendError>?> = nil
         let secondResult: Atomic<Result<CustomerInfo, BackendError>?> = nil
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
+        backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) {
             firstResult.value = $0
         }
 
-        backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false) {
+        backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) {
             secondResult.value = $0
         }
 
@@ -147,7 +147,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let customerInfo = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(customerInfo).to(beSuccess())
@@ -166,7 +166,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let customerInfo = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(customerInfo).to(beSuccess())
@@ -188,7 +188,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         )
 
         let response = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
 
         expect(response).to(beSuccess())
@@ -221,7 +221,7 @@ class BackendGetCustomerInfoSignatureTests: BaseBackendTests {
         )
 
         let result = waitUntilValue { completed in
-            self.backend.getCustomerInfo(appUserID: Self.userID, withRandomDelay: false, completion: completed)
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false, completion: completed)
         }
         let request = self.httpClient.calls.onlyElement
 

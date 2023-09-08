@@ -25,7 +25,7 @@ class OfflineEntitlementsAPI {
         self.productEntitlementMappingCallbacksCache = .init()
     }
 
-    func getProductEntitlementMapping(withRandomDelay randomDelay: Bool,
+    func getProductEntitlementMapping(isAppBackgrounded: Bool,
                                       completion: @escaping ProductEntitlementMappingResponseHandler) {
         let factory = GetProductEntitlementMappingOperation.createFactory(
             configuration: self.backendConfig,
@@ -37,7 +37,7 @@ class OfflineEntitlementsAPI {
 
         self.backendConfig.addCacheableOperation(
             with: factory,
-            withRandomDelay: randomDelay,
+            delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
         )
     }
