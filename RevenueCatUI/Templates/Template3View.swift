@@ -76,7 +76,6 @@ struct Template3View: TemplateViewType {
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
             )
-            .padding(.bottom)
 
             FooterView(configuration: self.configuration,
                        purchaseHandler: self.purchaseHandler)
