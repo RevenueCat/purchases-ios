@@ -48,7 +48,7 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
     var pathComponent: String {
         switch self {
         case .postEvents:
-            return "paywall_events"
+            return "events"
         }
     }
 }
