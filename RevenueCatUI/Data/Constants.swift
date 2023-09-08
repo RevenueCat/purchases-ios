@@ -26,7 +26,7 @@ enum Constants {
 
     /// For UI elements that wouldn't make sense to keep scaling up forever
     static let maximumDynamicTypeSize: DynamicTypeSize = .accessibility3
-    
+
     /// See https://developer.apple.com/design/human-interface-guidelines/buttons#Best-practices
     #if swift(>=5.9) && os(visionOS)
     static let minimumButtonHeight: CGFloat = 60

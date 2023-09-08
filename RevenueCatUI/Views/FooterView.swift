@@ -228,6 +228,7 @@ private struct LinkButton: View {
         )
         .frame(minHeight: Constants.minimumButtonHeight)
     }
+
 }
 
 // MARK: - Previews
