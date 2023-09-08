@@ -206,7 +206,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
-                              paywallEventsManager: MockPaywallEventsManager(),
+                              paywallEventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,

@@ -44,7 +44,11 @@ class BasePurchasesTests: TestCase {
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
-        self.paywallEventsManager = .init()
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.paywallEventsManager = MockPaywallEventsManager()
+        } else {
+            self.paywallEventsManager = nil
+        }
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -145,7 +149,7 @@ class BasePurchasesTests: TestCase {
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
     var paywallCache: MockPaywallCacheWarming!
-    var paywallEventsManager: MockPaywallEventsManager!
+    private var paywallEventsManager: PaywallEventsManagerType?
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -190,6 +194,13 @@ class BasePurchasesTests: TestCase {
             systemInfo: self.systemInfo,
             operationDispatcher: self.mockOperationDispatcher
         )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockPaywallEventsManager: MockPaywallEventsManager {
+        get throws {
+            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+        }
     }
 
     func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
