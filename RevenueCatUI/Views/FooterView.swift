@@ -67,15 +67,17 @@ struct FooterView: View {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
                 Self.allPlansButton(binding)
 
-                self.separator
-                    .hidden(if: !self.configuration.displayRestorePurchases && !self.hasTOS && !self.hasPrivacy)
+                if self.configuration.displayRestorePurchases || self.hasTOS || self.hasPrivacy {
+                    self.separator
+                }
             }
 
             if self.configuration.displayRestorePurchases {
                 RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
 
-                self.separator
-                    .hidden(if: !self.hasTOS && !self.hasPrivacy)
+                if self.hasTOS || self.hasPrivacy {
+                    self.separator
+                }
             }
 
             if let url = self.configuration.termsOfServiceURL {
@@ -84,8 +86,9 @@ struct FooterView: View {
                     titles: "Terms and conditions", "Terms"
                 )
 
-                self.separator
-                    .hidden(if: !self.hasPrivacy)
+                if self.hasPrivacy {
+                    self.separator
+                }
             }
 
             if let url = self.configuration.privacyURL {
