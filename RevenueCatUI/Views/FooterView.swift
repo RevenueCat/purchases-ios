@@ -30,7 +30,7 @@ struct FooterView: View {
 
     init(
         configuration: TemplateViewConfiguration,
-        bold: Bool = true,
+        bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>? = nil
     ) {
@@ -49,7 +49,7 @@ struct FooterView: View {
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         color: Color,
-        bold: Bool = true,
+        bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>?
     ) {
