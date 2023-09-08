@@ -87,11 +87,9 @@ internal struct SK2StoreProduct: StoreProductType {
 private extension SK2StoreProduct {
 
     var _currencyCode: String? {
-        #if swift(>=5.7)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return self.currencyCodeFromPriceFormat
         }
-        #endif
 
         // note: if we ever need more information from the jsonRepresentation object, we
         // should use Codable or another decoding method to clean up this code.
@@ -107,12 +105,10 @@ private extension SK2StoreProduct {
 
     // This is marked as `@_backDeploy`, but it's only visible when compiling with Xcode 14.x
     // and for some reason only returning a non-empty string on iOS 16+.
-    #if swift(>=5.7)
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     private var currencyCodeFromPriceFormat: String {
         return self.underlyingSK2Product.priceFormatStyle.currencyCode
     }
-    #endif
 
 }
 
