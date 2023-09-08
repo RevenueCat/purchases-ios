@@ -51,6 +51,7 @@ struct Template1View: TemplateViewType {
             .font(self.font(for: .callout))
             .multilineTextAlignment(.center)
             .defaultHorizontalPadding()
+            .padding(.top, self.defaultVerticalPaddingLength)
 
             self.button
                 .defaultHorizontalPadding()
