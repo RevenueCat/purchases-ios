@@ -70,6 +70,12 @@ extension HTTPRequest {
 
     }
 
+    enum PaywallPath: Hashable {
+
+        case postEvents
+
+    }
+
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
