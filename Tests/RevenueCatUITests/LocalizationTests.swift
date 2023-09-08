@@ -265,14 +265,12 @@ class DiscountSpanishLocalizationTests: BaseLocalizationTests {
     override var locale: Locale { return .init(identifier: "es_ES") }
 
     func testLocalization() throws {
-        try XCTSkipIf(true, "Localization not available yet")
-
-        verify(0, "Ahorra 0%")
-        verify(0.1, "Ahorra 10%")
-        verify(0.331, "Ahorra 33%")
-        verify(0.5, "Ahorra 50%")
-        verify(1, "Ahorra 100%")
-        verify(1.1, "Ahorra 110%")
+        verify(0, "0% de descuento")
+        verify(0.1, "10% de descuento")
+        verify(0.331, "33% de descuento")
+        verify(0.5, "50% de descuento")
+        verify(1, "100% de descuento")
+        verify(1.1, "110% de descuento")
     }
 
 }
@@ -280,7 +278,7 @@ class DiscountSpanishLocalizationTests: BaseLocalizationTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class DiscountOtherLanguageLocalizationTests: BaseLocalizationTests {
 
-    override var locale: Locale { return .init(identifier: "fr") }
+    override var locale: Locale { return .init(identifier: "ci") }
 
     func testLocalizationDefaultsToEnglish() {
         verify(1, "100% off")
