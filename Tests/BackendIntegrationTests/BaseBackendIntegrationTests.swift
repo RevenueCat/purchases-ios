@@ -39,6 +39,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 class BaseBackendIntegrationTests: TestCase {
 
     private var userDefaults: UserDefaults!
+    private var documentsDirectory: URL!
     private var testUUID: UUID!
 
     // swiftlint:disable:next weak_delegate
@@ -96,6 +97,10 @@ class BaseBackendIntegrationTests: TestCase {
         self.mainThreadMonitor.run()
 
         self.createUserDefaults()
+
+        self.documentsDirectory = URL
+            .cachesDirectory
+            .appendingPathComponent(UUID().uuidString, conformingTo: .directory)
 
         // We use a different identifier for each test to ensure the backend
         // doesn't produce conflicts when producing similar receipts across
@@ -218,12 +223,6 @@ private extension BaseBackendIntegrationTests {
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
                      internalSettings: self)
-    }
-
-    var documentsDirectory: URL {
-        return URL
-            .cachesDirectory
-            .appendingPathComponent(UUID().uuidString, conformingTo: .directory)
     }
 
 }

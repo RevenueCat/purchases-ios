@@ -72,4 +72,26 @@ class MockOperationDispatcher: OperationDispatcher {
         }
     }
 
+    var invokedDispatchAsyncOnWorkerThread = false
+    var invokedDispatchAsyncOnWorkerThreadCount = 0
+    var invokedDispatchAsyncOnWorkerThreadDelayParam: Delay?
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    override func dispatchOnWorkerThread(
+        delay: Delay = .none,
+        block: @escaping @Sendable () async -> Void
+    ) {
+        self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
+        self.invokedDispatchAsyncOnWorkerThread = true
+        self.invokedDispatchAsyncOnWorkerThreadCount += 1
+
+        if self.forwardToOriginalDispatchOnWorkerThread {
+            super.dispatchOnWorkerThread(delay: delay, block: block)
+        } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
+            Task<Void, Never> {
+                await block()
+            }
+        }
+    }
+
 }

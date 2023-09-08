@@ -83,4 +83,6 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         }
     }
 
+    static let defaultEventFlushCount = 50
+
 }

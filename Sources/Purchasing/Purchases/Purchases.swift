@@ -1576,6 +1576,8 @@ private extension Purchases {
         }
         #endif
 
+        self.postPaywallEventsIfNeeded()
+
         #endif
     }
 
@@ -1684,6 +1686,15 @@ private extension Purchases {
                     await cache.warmUpPaywallImagesCache(offerings: offerings)
                 }
             }
+        }
+    }
+
+    private func postPaywallEventsIfNeeded() {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let manager = self.paywallEventsManager else { return }
+
+        self.operationDispatcher.dispatchOnWorkerThread(delay: .long) {
+            _ = try? await manager.flushEvents(count: PaywallEventsManager.defaultEventFlushCount)
         }
     }
 
