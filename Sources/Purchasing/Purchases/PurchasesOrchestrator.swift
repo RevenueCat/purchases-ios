@@ -547,14 +547,17 @@ final class PurchasesOrchestrator {
         self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = identifier }
     }
 
-    func cachePresentedPaywall(_ paywall: PaywallEvent.Data) {
-        Logger.verbose(Strings.paywalls.caching_presented_paywall)
-        self.presentedPaywall.value = paywall
-    }
+    func track(paywallEvent: PaywallEvent) {
+        switch paywallEvent {
+        case let .view(data):
+            self.cachePresentedPaywall(data)
 
-    func clearPresentedPaywall() {
-        Logger.verbose(Strings.paywalls.clearing_presented_paywall)
-        self.presentedPaywall.value = nil
+        case .close:
+            self.clearPresentedPaywall()
+
+        case .cancel:
+            break
+        }
     }
 
 #if os(iOS) || os(macOS) || VISION_OS
@@ -1144,6 +1147,16 @@ private extension PurchasesOrchestrator {
         if let package = package {
             self.cachePresentedOfferingIdentifier(package.offeringIdentifier, productIdentifier: productIdentifier)
         }
+    }
+
+    func cachePresentedPaywall(_ paywall: PaywallEvent.Data) {
+        Logger.verbose(Strings.paywalls.caching_presented_paywall)
+        self.presentedPaywall.value = paywall
+    }
+
+    func clearPresentedPaywall() {
+        Logger.verbose(Strings.paywalls.clearing_presented_paywall)
+        self.presentedPaywall.value = nil
     }
 
     func getAndRemovePresentedOfferingIdentifier(for productIdentifier: String) -> String? {

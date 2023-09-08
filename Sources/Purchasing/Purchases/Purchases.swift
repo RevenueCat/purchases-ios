@@ -1061,18 +1061,7 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``PaywallEvent``s.
     func track(paywallEvent: PaywallEvent) async {
-        switch paywallEvent {
-        case let .view(data):
-            self.purchasesOrchestrator.cachePresentedPaywall(data)
-
-        case .close:
-            self.purchasesOrchestrator.clearPresentedPaywall()
-
-        case .cancel:
-            // No special handling, simply track the event below.
-            break
-        }
-
+        self.purchasesOrchestrator.track(paywallEvent: paywallEvent)
         await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
     }
 
