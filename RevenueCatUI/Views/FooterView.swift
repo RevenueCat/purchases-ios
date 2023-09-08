@@ -30,7 +30,7 @@ struct FooterView: View {
 
     init(
         configuration: TemplateViewConfiguration,
-        bold: Bool = true,
+        bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>? = nil
     ) {
@@ -49,7 +49,7 @@ struct FooterView: View {
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
         color: Color,
-        bold: Bool = true,
+        bold: Bool = false,
         purchaseHandler: PurchaseHandler,
         displayingAllPlans: Binding<Bool>?
     ) {
@@ -117,6 +117,7 @@ struct FooterView: View {
         } label: {
             Text("All subscriptions", bundle: .module)
         }
+        .frame(minHeight: Constants.minimumButtonHeight)
     }
 
     private var separator: some View {
@@ -134,7 +135,7 @@ struct FooterView: View {
     fileprivate var font: Font.TextStyle {
         return self.interfaceIdiom == .pad
         ? .callout
-        : .caption
+        : .footnote
     }
 
 }
@@ -150,10 +151,10 @@ private struct SeparatorView: View {
             .accessibilityHidden(true)
     }
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: .footnote)
     private var separatorSize: CGFloat = 4
 
-    @ScaledMetric(relativeTo: .caption)
+    @ScaledMetric(relativeTo: .footnote)
     private var boldSeparatorSize: CGFloat = 5
 }
 
@@ -179,6 +180,7 @@ private struct RestorePurchasesButton: View {
                 Text("Restore purchases", bundle: .module)
             }
         }
+        .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
         .alert(isPresented: self.$displayRestoredAlert) {
             Alert(title: Text("Purchases restored successfully!", bundle: .module))
@@ -224,6 +226,7 @@ private struct LinkButton: View {
             ),
             destination: self.url
         )
+        .frame(minHeight: Constants.minimumButtonHeight)
     }
 
 }
