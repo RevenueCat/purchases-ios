@@ -104,6 +104,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case let .single(package):
             expect(package.content) === TestData.lifetimePackage
+            expect(package.currentlySubscribed) == false
+            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.lifetimePackage)
         case .multiple:
             fail("Invalid result: \(result)")

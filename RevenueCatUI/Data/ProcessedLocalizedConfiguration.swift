@@ -30,21 +30,24 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
         _ dataProvider: VariableDataProvider,
+        _ context: VariableHandler.Context,
         _ locale: Locale
     ) {
         self.init(
-            title: configuration.title.processed(with: dataProvider, locale: locale),
-            subtitle: configuration.subtitle?.processed(with: dataProvider, locale: locale),
-            callToAction: configuration.callToAction.processed(with: dataProvider, locale: locale),
+            title: configuration.title.processed(with: dataProvider, context: context, locale: locale),
+            subtitle: configuration.subtitle?.processed(with: dataProvider, context: context, locale: locale),
+            callToAction: configuration.callToAction.processed(with: dataProvider, context: context, locale: locale),
             callToActionWithIntroOffer: configuration.callToActionWithIntroOffer?.processed(with: dataProvider,
+                                                                                            context: context,
                                                                                             locale: locale),
-            offerDetails: configuration.offerDetails?.processed(with: dataProvider, locale: locale),
+            offerDetails: configuration.offerDetails?.processed(with: dataProvider, context: context, locale: locale),
             offerDetailsWithIntroOffer: configuration.offerDetailsWithIntroOffer?.processed(with: dataProvider,
+                                                                                            context: context,
                                                                                             locale: locale),
-            offerName: configuration.offerName?.processed(with: dataProvider, locale: locale),
+            offerName: configuration.offerName?.processed(with: dataProvider, context: context, locale: locale),
             features: configuration.features.map {
-                .init(title: $0.title.processed(with: dataProvider, locale: locale),
-                      content: $0.content?.processed(with: dataProvider, locale: locale),
+                .init(title: $0.title.processed(with: dataProvider, context: context, locale: locale),
+                      content: $0.content?.processed(with: dataProvider, context: context, locale: locale),
                       iconID: $0.iconID)
             }
         )

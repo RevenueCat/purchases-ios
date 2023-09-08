@@ -16,8 +16,12 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PaywallData.LocalizedConfiguration {
 
-    func processVariables(with package: Package, locale: Locale = .current) -> ProcessedLocalizedConfiguration {
-        return .init(self, package, locale)
+    func processVariables(
+        with package: Package,
+        context: VariableHandler.Context,
+        locale: Locale = .current
+    ) -> ProcessedLocalizedConfiguration {
+        return .init(self, package, context, locale)
     }
 
 }
@@ -38,6 +42,7 @@ protocol VariableDataProvider {
 
     func localizedPricePerPeriod(_ locale: Locale) -> String
     func localizedPriceAndPerMonth(_ locale: Locale) -> String
+    func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
 
 }
 
@@ -45,15 +50,29 @@ protocol VariableDataProvider {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 enum VariableHandler {
 
+    /// Information necessary for computing variables
+    struct Context {
+
+        var discountRelativeToMostExpensivePerMonth: Double?
+
+    }
+
     static func processVariables(
         in string: String,
         with provider: VariableDataProvider,
+        context: Context,
         locale: Locale = .current
     ) -> String {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
-            return VariableHandlerIOS16.processVariables(in: string, with: provider, locale: locale)
+            return VariableHandlerIOS16.processVariables(in: string,
+                                                         with: provider,
+                                                         context: context,
+                                                         locale: locale)
         } else {
-            return VariableHandlerIOS15.processVariables(in: string, with: provider, locale: locale)
+            return VariableHandlerIOS15.processVariables(in: string,
+                                                         with: provider,
+                                                         context: context,
+                                                         locale: locale)
         }
     }
 
@@ -65,21 +84,25 @@ enum VariableHandler {
         )
     }
 
-    fileprivate typealias ValueProvider = (VariableDataProvider, Locale) -> String?
+    fileprivate typealias ValueProvider = (VariableDataProvider,
+                                           VariableHandler.Context,
+                                           Locale) -> String?
 
     // swiftlint:disable:next cyclomatic_complexity
     fileprivate static func provider(for variableName: String) -> ValueProvider? {
         switch variableName {
-        case "app_name": return { (provider, _) in provider.applicationName }
-        case "price": return { (provider, _) in provider.localizedPrice }
-        case "price_per_period": return { $0.localizedPricePerPeriod($1) }
-        case "total_price_and_per_month": return { $0.localizedPriceAndPerMonth($1) }
-        case "product_name": return { (provider, _) in provider.productName }
-        case "sub_period": return { $0.periodName($1) }
-        case "sub_price_per_month": return { (provider, _) in provider.localizedPricePerMonth }
-        case "sub_duration": return { $0.subscriptionDuration($1) }
-        case "sub_offer_duration": return { $0.introductoryOfferDuration($1) }
-        case "sub_offer_price": return { (provider, _) in provider.localizedIntroductoryOfferPrice }
+        case "app_name": return { (provider, _, _) in provider.applicationName }
+        case "price": return { (provider, _, _) in provider.localizedPrice }
+        case "price_per_period": return { (provider, _, locale) in provider.localizedPricePerPeriod(locale) }
+        case "total_price_and_per_month": return { (provider, _, locale) in provider.localizedPriceAndPerMonth(locale) }
+        case "product_name": return { (provider, _, _) in provider.productName }
+        case "sub_period": return { (provider, _, locale) in provider.periodName(locale) }
+        case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
+        case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }
+        case "sub_offer_duration": return { (provider, _, locale) in provider.introductoryOfferDuration(locale) }
+        case "sub_offer_price": return { (provider, _, _) in provider.localizedIntroductoryOfferPrice }
+        case "sub_relative_discount": return { $0.localizedRelativeDiscount($1.discountRelativeToMostExpensivePerMonth,
+                                                                            $2) }
 
         default:
             Logger.warning(Strings.unrecognized_variable_name(variableName: variableName))
@@ -92,8 +115,12 @@ enum VariableHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension String {
 
-    func processed(with provider: VariableDataProvider, locale: Locale) -> Self {
-        return VariableHandler.processVariables(in: self, with: provider, locale: locale)
+    func processed(
+        with provider: VariableDataProvider,
+        context: VariableHandler.Context,
+        locale: Locale
+    ) -> Self {
+        return VariableHandler.processVariables(in: self, with: provider, context: context, locale: locale)
     }
 
     func unrecognizedVariables() -> Set<String> {
@@ -109,8 +136,12 @@ extension String {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension VariableDataProvider {
 
-    func value(for variableName: String, locale: Locale) -> String {
-        VariableHandler.provider(for: variableName)?(self, locale) ?? ""
+    func value(
+        for variableName: String,
+        context: VariableHandler.Context,
+        locale: Locale
+    ) -> String {
+        VariableHandler.provider(for: variableName)?(self, context, locale) ?? ""
     }
 
 }
@@ -123,13 +154,16 @@ private enum VariableHandlerIOS16 {
     static func processVariables(
         in string: String,
         with provider: VariableDataProvider,
+        context: VariableHandler.Context,
         locale: Locale = .current
     ) -> String {
         let matches = Self.extractVariables(from: string)
         var replacedString = string
 
         for variableMatch in matches.reversed() {
-            let replacementValue = provider.value(for: variableMatch.variable, locale: locale)
+            let replacementValue = provider.value(for: variableMatch.variable,
+                                                  context: context,
+                                                  locale: locale)
             replacedString = replacedString.replacingCharacters(in: variableMatch.range, with: replacementValue)
         }
 
@@ -176,6 +210,7 @@ private enum VariableHandlerIOS15 {
     static func processVariables(
         in string: String,
         with provider: VariableDataProvider,
+        context: VariableHandler.Context,
         locale: Locale = .current
     ) -> String {
         var replacedString = string
@@ -185,7 +220,9 @@ private enum VariableHandlerIOS15 {
             let variableNameRange = match.range(at: 1)
             if let variableNameRange = Range(variableNameRange, in: string) {
                 let variableName = String(string[variableNameRange])
-                let replacementValue = provider.value(for: variableName, locale: locale)
+                let replacementValue = provider.value(for: variableName,
+                                                      context: context,
+                                                      locale: locale)
 
                 let adjustedRange = NSRange(
                     location: variableNameRange.lowerBound.utf16Offset(in: string) - Self.pattern.count / 2,

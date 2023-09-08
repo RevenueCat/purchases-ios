@@ -18,11 +18,13 @@ import XCTest
 class VariablesTests: TestCase {
 
     private var provider: MockVariableProvider!
+    private var context: VariableHandler.Context!
 
     override func setUp() {
         super.setUp()
 
         self.provider = .init()
+        self.context = .init(discountRelativeToMostExpensivePerMonth: nil)
     }
 
     func testEmptyString() {
@@ -87,6 +89,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{ sub_offer_price }}")) == self.provider.localizedIntroductoryOfferPrice
     }
 
+    func testRelativeDiscount() {
+        self.provider.relativeDiscount = "30% off"
+        expect(self.process("{{ sub_relative_discount }}")) == "30% off"
+    }
+
     func testMultipleVariables() {
         self.provider.productName = "Pro"
         self.provider.localizedPricePerMonth = "$1.99"
@@ -113,11 +120,14 @@ class VariablesTests: TestCase {
                       content: "Trial lasts {{ sub_offer_duration }}",
                       iconID: nil),
                 .init(title: "Only {{ price }}",
-                      content: "{{ sub_period }} subscription",
+                      content: "{{ sub_period }} subscription, {{ sub_relative_discount }}",
                       iconID: nil)
             ]
         )
-        let processed = configuration.processVariables(with: TestData.packageWithIntroOffer)
+        let processed = configuration.processVariables(
+            with: TestData.packageWithIntroOffer,
+            context: .init(discountRelativeToMostExpensivePerMonth: 0.3)
+        )
 
         expect(processed.title) == "Buy PRO monthly for xctest"
         expect(processed.subtitle) == "Price: $3.99"
@@ -131,7 +141,7 @@ class VariablesTests: TestCase {
                   content: "Trial lasts 1 week",
                   iconID: nil),
             .init(title: "Only $3.99",
-                  content: "Monthly subscription",
+                  content: "Monthly subscription, 30% off",
                   iconID: nil)
         ]
     }
@@ -139,32 +149,32 @@ class VariablesTests: TestCase {
     // Note: this isn't perfect, but a warning is logged
     // and it's better than crashing.
     func testPricePerMonthForLifetimeProductsReturnsPrice() {
-        let result = VariableHandler.processVariables(
-            in: "{{ sub_price_per_month }}",
+        let result = self.process(
+            "{{ sub_price_per_month }}",
             with: TestData.lifetimePackage
         )
         expect(result) == "$119.49"
     }
 
     func testTotalPriceAndPerMonthForLifetimeProductsReturnsPrice() {
-        let result = VariableHandler.processVariables(
-            in: "{{ total_price_and_per_month }}",
+        let result = self.process(
+            "{{ total_price_and_per_month }}",
             with: TestData.lifetimePackage
         )
         expect(result) == "$119.49"
     }
 
     func testTotalPriceAndPerMonthForForMonthlyPackage() {
-        let result = VariableHandler.processVariables(
-            in: "{{ total_price_and_per_month }}",
+        let result = self.process(
+            "{{ total_price_and_per_month }}",
             with: TestData.monthlyPackage
         )
         expect(result) == "$6.99/mo"
     }
 
     func testTotalPriceAndPerMonthForCustomMonthlyProductsReturnsPrice() {
-        let result = VariableHandler.processVariables(
-            in: "{{ total_price_and_per_month }}",
+        let result = self.process(
+            "{{ total_price_and_per_month }}",
             with: Package(
                 identifier: "custom",
                 packageType: .custom,
@@ -176,8 +186,8 @@ class VariablesTests: TestCase {
     }
 
     func testTotalPriceAndPerMonthForCustomAnnualProductsReturnsPriceAndPerMonth() {
-        let result = VariableHandler.processVariables(
-            in: "{{ total_price_and_per_month }}",
+        let result = self.process(
+            "{{ total_price_and_per_month }}",
             with: Package(
                 identifier: "custom",
                 packageType: .custom,
@@ -188,13 +198,27 @@ class VariablesTests: TestCase {
         expect(result) == "$53.99/yr ($4.49/mo)"
     }
 
-    // MARK: - validation
+    func testRelativeDiscountWithNoDiscount() {
+        self.context.discountRelativeToMostExpensivePerMonth = nil
+        let result = self.process("{{ sub_relative_discount }}", with: TestData.monthlyPackage)
+
+        expect(result) == ""
+    }
+
+    func testRelativeDiscountWithDiscount() {
+        self.context.discountRelativeToMostExpensivePerMonth = 0.3
+        let result = self.process("{{ sub_relative_discount }}", with: TestData.monthlyPackage)
+
+        expect(result) == "30% off"
+    }
+
+    // MARK: - Validation
 
     func testNoUnrecognizedVariables() {
         let allVariables = "{{ app_name }} {{ price }} {{ price_per_period }} " +
         "{{ total_price_and_per_month }} {{ product_name }} {{ sub_period }} " +
         "{{ sub_price_per_month }} {{ sub_duration }} {{ sub_offer_duration }} " +
-        "{{ sub_offer_price }}"
+        "{{ sub_offer_price }} {{ sub_relative_discount }}"
 
         expect("".unrecognizedVariables()).to(beEmpty())
         expect(allVariables.unrecognizedVariables()).to(beEmpty())
@@ -214,8 +238,17 @@ class VariablesTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension VariablesTests {
 
-    func process(_ string: String, locale: Locale = .current) -> String {
-        return VariableHandler.processVariables(in: string, with: self.provider, locale: locale)
+    func process(
+        _ string: String,
+        with provider: VariableDataProvider? = nil,
+        locale: Locale = .current
+    ) -> String {
+        return VariableHandler.processVariables(
+            in: string,
+            with: provider ?? self.provider,
+            context: self.context,
+            locale: locale
+        )
     }
 
 }
@@ -232,6 +265,7 @@ private struct MockVariableProvider: VariableDataProvider {
     var subscriptionDuration: String?
     var introductoryOfferDuration: String?
     var introductoryOfferPrice: String = ""
+    var relativeDiscount: String?
 
     func periodName(_ locale: Locale) -> String {
         return self.periodName
@@ -255,6 +289,10 @@ private struct MockVariableProvider: VariableDataProvider {
 
     var localizedIntroductoryOfferPrice: String? {
         return self.introductoryOfferPrice
+    }
+
+    func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String? {
+        return self.relativeDiscount
     }
 
 }
