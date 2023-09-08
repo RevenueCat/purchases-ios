@@ -1207,6 +1207,11 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 
 
 
+SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
+@interface HealthOperation : CacheableNetworkOperation
+@end
+
+
 
 
 enum RCIntroEligibilityStatus : NSInteger;
@@ -1218,14 +1223,17 @@ SWIFT_CLASS_NAMED("IntroEligibility")
 @property (nonatomic, readonly) enum RCIntroEligibilityStatus status;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
 @end
+
 
 
 
 @interface RCIntroEligibility (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
-
 
 /// Enum of different possible states for intro price eligibility status.
 /// <ul>
@@ -1354,9 +1362,12 @@ SWIFT_CLASS_NAMED("Offering")
 /// <code>offering["custom_package_id"]</code>.
 - (RCPackage * _Nullable)packageWithIdentifier:(NSString * _Nullable)identifier SWIFT_WARN_UNUSED_RESULT;
 - (RCPackage * _Nullable)objectForKeyedSubscript:(NSString * _Nonnull)key SWIFT_WARN_UNUSED_RESULT;
+/// Initialize an <code>Offering</code> given a list of <code>Package</code>s.
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier serverDescription:(NSString * _Nonnull)serverDescription metadata:(NSDictionary<NSString *, id> * _Nonnull)metadata availablePackages:(NSArray<RCPackage *> * _Nonnull)availablePackages;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
+
 
 
 
@@ -1404,6 +1415,7 @@ SWIFT_CLASS_NAMED("Offerings")
 @end
 
 
+
 enum RCPackageType : NSInteger;
 @class RCStoreProduct;
 
@@ -1438,6 +1450,8 @@ SWIFT_CLASS_NAMED("Package")
 /// returns:
 /// <code>nil</code> if there is no <code>introductoryDiscount</code>.
 @property (nonatomic, readonly, copy) NSString * _Nullable localizedIntroductoryPriceString;
+/// Initialize a <code>Package</code>.
+- (nonnull instancetype)initWithIdentifier:(NSString * _Nonnull)identifier packageType:(enum RCPackageType)packageType storeProduct:(RCStoreProduct * _Nonnull)storeProduct offeringIdentifier:(NSString * _Nonnull)offeringIdentifier OBJC_DESIGNATED_INITIALIZER;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1563,6 +1577,12 @@ SWIFT_CLASS("_TtC10RevenueCat28PostOfferForSigningOperation")
 @interface PostOfferForSigningOperation : NetworkOperation
 @end
 
+
+
+/// A <code>NetworkOperation</code> for posting <code>PaywallEvent</code>s.
+SWIFT_CLASS("_TtC10RevenueCat26PostPaywallEventsOperation")
+@interface PostPaywallEventsOperation : NetworkOperation
+@end
 
 
 SWIFT_CLASS("_TtC10RevenueCat24PostReceiptDataOperation")
