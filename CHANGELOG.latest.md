@@ -1,12 +1,27 @@
-### Bugfixes
-* `DebugViewModel`: fixed runtime crash on iOS < 16 (#3139) via NachoSoto (@NachoSoto)
-### Performance Improvements
-* `PurchasesOrchestrator`: return early if receipt has no transactions when checking for promo offers (#3123) via Mark Villacampa (@MarkVillacampa)
-* `Purchases`: don't clear intro eligibility / purchased products cache on first launch (#3067) via NachoSoto (@NachoSoto)
-### Dependency Updates
-* `SPM`: update `Package.resolved` (#3130) via NachoSoto (@NachoSoto)
-### Other Changes
-* `ReceiptParser`: fixed SPM build (#3144) via NachoSoto (@NachoSoto)
-* `carthage_installation_tests`: optimize SPM package loading (#3129) via NachoSoto (@NachoSoto)
-* `CI`: add workaround for `Carthage` timing out (#3119) via NachoSoto (@NachoSoto)
-* `Integration Tests`: workaround to not lose debug logs (#3108) via NachoSoto (@NachoSoto)
+### New Features
+#### ✨ Introducing RevenueCatUI 📱 (beta):
+
+RevenueCat's Paywalls allow you to to remotely configure your entire paywall view without any code changes or app updates.
+Our paywall templates use native code to deliver smooth, intuitive experiences to your customers when you’re ready to deliver them an Offering; and you can use our Dashboard to pick the right template and configuration to meet your needs.
+
+To use RevenueCat Paywalls on iOS, simply:
+
+1. Create a Paywall on the Dashboard for the `Offering` you intend to serve to your customers
+2. Add the `RevenueCatUI` SPM dependency to your project
+3. `import RevenueCatUI` at the point in the user experience when you want to display a paywall:
+
+```swift
+import RevenueCatUI
+import SwiftUI
+
+struct YourApp: View {
+
+    var body: some View {
+        YourContent()
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro") { customerInfo in
+                print("Purchase completed: \(customerInfo)")
+            }
+    }
+
+}
+```
