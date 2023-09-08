@@ -27,7 +27,6 @@ struct FooterView: View {
     var boldPreferred: Bool
     var purchaseHandler: PurchaseHandler
     var displayingAllPlans: Binding<Bool>?
-    static let buttonMinHeight: CGFloat = 44
 
     init(
         configuration: TemplateViewConfiguration,
@@ -118,7 +117,7 @@ struct FooterView: View {
         } label: {
             Text("All subscriptions", bundle: .module)
         }
-        .frame(minHeight: FooterView.buttonMinHeight)
+        .frame(minHeight: Constants.minimumButtonHeight)
     }
 
     private var separator: some View {
@@ -181,7 +180,7 @@ private struct RestorePurchasesButton: View {
                 Text("Restore purchases", bundle: .module)
             }
         }
-        .frame(minHeight: FooterView.buttonMinHeight)
+        .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
         .alert(isPresented: self.$displayRestoredAlert) {
             Alert(title: Text("Purchases restored successfully!", bundle: .module))
@@ -227,7 +226,7 @@ private struct LinkButton: View {
             ),
             destination: self.url
         )
-        .frame(minHeight: FooterView.buttonMinHeight)
+        .frame(minHeight: Constants.minimumButtonHeight)
     }
 }
 
