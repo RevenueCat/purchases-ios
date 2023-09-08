@@ -15,7 +15,6 @@ import Foundation
 
 extension HTTPRequest.PaywallPath: HTTPRequestPath {
 
-    // TODO: TBD
     static let serverHostURL = URL(string: "https://api-paywalls.revenuecat.com")!
 
     var authenticated: Bool {
