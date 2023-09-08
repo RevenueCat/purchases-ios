@@ -71,6 +71,7 @@ struct Template2View: TemplateViewType {
         .animation(Constants.fastAnimation, value: self.selectedPackage)
         .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
+        .padding(.top, self.defaultVerticalPaddingLength)
     }
 
     private var scrollableContent: some View {
@@ -122,7 +123,7 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding([.horizontal, .top], self.defaultHorizontalPaddingLength)
+        .padding(.horizontal, self.defaultHorizontalPaddingLength)
 
         Spacer()
     }
