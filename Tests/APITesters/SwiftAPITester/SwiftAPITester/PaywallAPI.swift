@@ -101,6 +101,7 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
     let background: PaywallColor = config.background
     let text1: PaywallColor = config.text1
     let text2: PaywallColor? = config.text2
+    let text3: PaywallColor? = config.text3
     let callToActionBackground: PaywallColor = config.callToActionBackground
     let callToActionForeground: PaywallColor = config.callToActionForeground
     let callToActionSecondaryBackground: PaywallColor? = config.callToActionSecondaryBackground
@@ -111,6 +112,7 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
         background: background,
         text1: text1,
         text2: text2,
+        text3: text3,
         callToActionBackground: callToActionBackground,
         callToActionForeground: callToActionForeground,
         callToActionSecondaryBackground: callToActionSecondaryBackground,

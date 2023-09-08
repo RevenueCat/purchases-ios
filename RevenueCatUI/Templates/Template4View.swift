@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+// swiftlint:disable file_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct Template4View: TemplateViewType {
 
@@ -161,7 +163,6 @@ struct Template4View: TemplateViewType {
                               selected: false,
                               packageWidth: self.packageWidth,
                               desiredHeight: nil)
-                .background(.red)
                 .offset(x: CGFloat(Int.random(in: -200...200)))
                 .onSizeChange(.vertical) {
                     if $0 > self.packageContentHeight {
@@ -262,6 +263,15 @@ private struct PackageButton: View {
                         .hidden()
                 }
             }
+            .overlay(alignment: .topTrailing) { // Checkmark
+                if self.selected {
+                    Constants.checkmarkImage
+                        .font(self.font(for: .headline))
+                        .foregroundStyle(self.configuration.colors.accent1Color)
+                        .background(self.configuration.colors.backgroundColor)
+                        .padding(8)
+                }
+            }
             .padding(.top, self.discountOverlayHeight)
             .frame(height: self.desiredHeight)
             .multilineTextAlignment(.center)
@@ -279,32 +289,46 @@ private struct PackageButton: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-        .padding(.vertical, Self.labelVerticalSeparation * 2.0)
+        .padding(.vertical, Self.labelVerticalSeparation * 4.0)
         .defaultHorizontalPadding()
         .foregroundColor(self.configuration.colors.text1Color)
     }
 
     @ViewBuilder
     private var offerName: some View {
-        Group {
+        // Placeholder to make sure consistent layout
+        self.offerText(firstRow: "12",
+                       secondRow: Localization.localized(packageType: .monthly,
+                                                         locale: self.locale))
+        .hidden()
+        .overlay {
             if let offerName = self.package.localization.offerName {
                 let components = offerName.split(separator: " ", maxSplits: 2)
                 if components.count == 2 {
-                    VStack {
-                        Text(components[0])
-                            .font(self.font(for: .title).bold())
-
-                        Text(components[1])
-                            .font(self.font(for: .title3))
-                    }
+                    self.offerText(firstRow: String(components[0]),
+                                   secondRow: String(components[1]))
                 } else {
-                    Text(offerName)
+                    self.offerText(firstRow: nil,
+                                   secondRow: offerName)
                 }
             } else {
-                Text(self.package.content.productName)
+                self.offerText(firstRow: nil,
+                               secondRow: self.package.content.productName)
             }
         }
-            .font(self.font(for: .title3).weight(.regular))
+    }
+
+    @ViewBuilder
+    private func offerText(firstRow: String?, secondRow: String) -> some View {
+        VStack {
+            if let firstRow {
+                Text(firstRow)
+                    .font(self.font(for: .title).bold())
+            }
+
+            Text(secondRow)
+                .font(self.font(for: .title3).weight(.regular))
+        }
     }
 
     private func discountOverlay(_ discount: Double) -> some View {
@@ -318,7 +342,11 @@ private struct PackageButton: View {
 
             Text(Localization.localized(discount: discount, locale: self.locale))
                 .textCase(.uppercase)
-                .foregroundColor(self.configuration.colors.text1Color)
+                .foregroundColor(
+                    self.selected
+                    ? self.configuration.colors.text2Color
+                    : self.configuration.colors.text3Color
+                )
                 .font(self.font(for: .caption).weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
