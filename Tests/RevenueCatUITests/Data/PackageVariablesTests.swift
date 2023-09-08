@@ -164,7 +164,7 @@ class PackageVariablesTests: TestCase {
 
     func testSpanishRelativeDiscount() {
         expect(TestData.weeklyPackage.localizedRelativeDiscount(nil, Self.spanish)).to(beNil())
-        expect(TestData.weeklyPackage.localizedRelativeDiscount(0.372, Self.english)) == "ahorra 37%"
+        expect(TestData.weeklyPackage.localizedRelativeDiscount(0.372, Self.spanish)) == "37% de descuento"
     }
 
 }
