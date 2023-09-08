@@ -27,7 +27,6 @@ struct FooterView: View {
     var boldPreferred: Bool
     var purchaseHandler: PurchaseHandler
     var displayingAllPlans: Binding<Bool>?
-    
     static let buttonMinHeight: CGFloat = 44
 
     init(
@@ -230,7 +229,6 @@ private struct LinkButton: View {
         )
         .frame(minHeight: FooterView.buttonMinHeight)
     }
-
 }
 
 // MARK: - Previews
