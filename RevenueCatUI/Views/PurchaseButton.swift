@@ -165,8 +165,11 @@ struct PurchaseButton_Previews: PreviewProvider {
 
         private static let package: TemplateViewConfiguration.Package = .init(
             content: TestData.packageWithIntroOffer,
-            localization: TestData.localization1.processVariables(with: TestData.packageWithIntroOffer,
-                                                                  locale: .current),
+            localization: TestData.localization1.processVariables(
+                with: TestData.packageWithIntroOffer,
+                context: .init(discountRelativeToMostExpensivePerMonth: nil),
+                locale: .current
+            ),
             currentlySubscribed: Bool.random(),
             discountRelativeToMostExpensivePerMonth: nil
         )
