@@ -121,18 +121,24 @@ extension TemplateViewConfiguration.PackageConfiguration {
         let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
         let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
 
-        let filteredPackages = filtered
+        let filteredPackages: [TemplateViewConfiguration.Package] = filtered
             .map { package in
-                TemplateViewConfiguration.Package(
+                let discount = Self.discount(
+                    from: package.storeProduct.pricePerMonth?.doubleValue,
+                    relativeTo: mostExpensivePricePerMonth
+                )
+
+                return .init(
                     content: package,
-                    localization: localization.processVariables(with: package, locale: locale),
+                    localization: localization.processVariables(
+                        with: package,
+                        context: .init(discountRelativeToMostExpensivePerMonth: discount),
+                        locale: locale
+                    ),
                     currentlySubscribed: activelySubscribedProductIdentifiers.contains(
                         package.storeProduct.productIdentifier
                     ),
-                    discountRelativeToMostExpensivePerMonth: Self.discount(
-                        from: package.storeProduct.pricePerMonth?.doubleValue,
-                        relativeTo: mostExpensivePricePerMonth
-                    )
+                    discountRelativeToMostExpensivePerMonth: discount
                 )
             }
 
