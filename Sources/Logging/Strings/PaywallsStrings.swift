@@ -21,6 +21,16 @@ enum PaywallsStrings {
     case warming_up_images(imageURLs: Set<URL>)
     case error_prefetching_image(URL, Error)
 
+    // MARK: - Events
+
+    case event_manager_not_initialized_not_available
+    case event_manager_failed_to_initialize(Error)
+
+    case event_flush_already_in_progress
+    case event_flush_with_empty_store
+    case event_flush_starting(count: Int)
+    case event_flush_failed(BackendError)
+
 }
 
 extension PaywallsStrings: LogMessage {
@@ -35,6 +45,27 @@ extension PaywallsStrings: LogMessage {
 
         case let .error_prefetching_image(url, error):
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
+
+        // MARK: - Events
+
+        case .event_manager_not_initialized_not_available:
+            return "Won't initialize PaywallEventsManager: not available on current device."
+
+        case let .event_manager_failed_to_initialize(error):
+            return "PaywallEventsManager won't be initialized, event store failed to create " +
+            "with error: \((error as NSError).localizedDescription)"
+
+        case .event_flush_already_in_progress:
+            return "Paywall event flushing already in progress. Skipping."
+
+        case .event_flush_with_empty_store:
+            return "Paywall event flushing requested with empty store."
+
+        case let .event_flush_starting(count):
+            return "Paywall event flush: posting \(count) events."
+
+        case let .event_flush_failed(error):
+            return "Paywall event flushing failed, will retry. Error: \(error.localizedDescription)"
         }
     }
 
