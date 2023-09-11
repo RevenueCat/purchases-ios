@@ -32,16 +32,6 @@ extension PaywallData.Configuration.ColorInformation {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-extension TemplateViewConfiguration {
-
-    /// Whether  dark mode colors have been configured in this paywall.
-    var hasDarkMode: Bool {
-        return self.configuration.colors.dark != nil
-    }
-
-}
-
 extension PaywallData.Configuration.Colors {
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -86,6 +76,16 @@ extension PaywallData.Configuration.ColorInformation {
 }
 
 #endif
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension TemplateViewConfiguration {
+
+    /// Whether dark mode colors have been configured in this paywall.
+    var hasDarkMode: Bool {
+        return self.configuration.colors.dark != nil
+    }
+
+}
 
 #if canImport(SwiftUI)
 
