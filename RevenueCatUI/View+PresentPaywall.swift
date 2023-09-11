@@ -142,12 +142,12 @@ private struct PresentingPaywallModifier: ViewModifier {
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)
 
-                        self.data = nil
+                        self.close()
                     }
                     .toolbar {
                         ToolbarItem(placement: .destructiveAction) {
                             Button {
-                                self.data = nil
+                                self.close()
                             } label: {
                                 Image(systemName: "xmark")
                             }
@@ -168,6 +168,10 @@ private struct PresentingPaywallModifier: ViewModifier {
                     Logger.debug(Strings.not_displaying_paywall)
                 }
             }
+    }
+
+    private func close() {
+        self.data = nil
     }
 
 }

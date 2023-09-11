@@ -19,6 +19,9 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
 
     typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
 
+    /// `false` if this `TrialOrIntroEligibilityChecker` is not backend by a configured `Purchases`instance.
+    let isConfigured: Bool
+
     let checker: Checker
 
     convenience init(purchases: Purchases = .shared) {
@@ -29,12 +32,19 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
     }
 
     /// Creates an instance with a custom checker, useful for testing or previews.
-    init(checker: @escaping Checker) {
+    init(isConfigured: Bool = true, checker: @escaping Checker) {
+        self.isConfigured = isConfigured
         self.checker = checker
     }
 
-    static func `default`() -> Self? {
-        return Purchases.isConfigured ? .init() : nil
+    static func `default`() -> Self {
+        return Purchases.isConfigured ? .init() : .notConfigured()
+    }
+
+    private static func notConfigured() -> Self {
+        return .init(isConfigured: false) { _ in
+            return [:]
+        }
     }
 
 }
