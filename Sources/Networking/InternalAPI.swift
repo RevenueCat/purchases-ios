@@ -41,9 +41,7 @@ class InternalAPI {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func postPaywallEvents(events: [PaywallStoredEvent], completion: @escaping ResponseHandler) {
         guard !events.isEmpty else {
-            self.backendConfig.operationDispatcher.dispatchOnMainThread {
-                completion(nil)
-            }
+            completion(nil)
             return
         }
 
