@@ -318,10 +318,22 @@ internal enum TestData {
                     light: .init(
                         background: "#FFFFFF",
                         text1: "#111111",
+                        text2: "#333333",
+                        text3: "#999999",
                         callToActionBackground: "#06357D",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#D4B5FC",
                         accent2: "#DFDFDF"
+                    ),
+                    dark: .init(
+                        background: "#000000",
+                        text1: "#EEEEEE",
+                        text2: "#DDDDDD",
+                        text3: "#AAAAAA",
+                        callToActionBackground: "#06957D",
+                        callToActionForeground: "#FFFFFF",
+                        accent1: "#06357D",
+                        accent2: "#343434"
                     )
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
@@ -329,7 +341,7 @@ internal enum TestData {
             localization: .init(
                 title: "Get _unlimited_ access",
                 callToAction: "Continue",
-                offerDetails: "",
+                offerDetails: "Cancel anytime",
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
                 offerName: "{{ sub_duration_in_months }}"
             ),
@@ -337,7 +349,8 @@ internal enum TestData {
         ),
         availablePackages: [TestData.monthlyPackage,
                             TestData.sixMonthPackage,
-                            TestData.annualPackage]
+                            TestData.annualPackage,
+                            TestData.lifetimePackage]
     )
 
     static let offeringWithTemplate5Paywall = Offering(

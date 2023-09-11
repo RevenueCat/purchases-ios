@@ -339,7 +339,7 @@ private extension SamplePaywallLoader {
             localization: .init(
                 title: "Get _unlimited_ access",
                 callToAction: "Continue",
-                offerDetails: nil,
+                offerDetails: "Cancel anytime",
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
                 offerName: "{{ sub_duration_in_months }}"
             ),
@@ -361,6 +361,8 @@ private extension SamplePaywallLoader {
                     light: .init(
                         background: "#FFFFFF",
                         text1: "#000000",
+                        text2: "#333333",
+                        text3: "#999999",
                         callToActionBackground: "#008575",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#008575",
