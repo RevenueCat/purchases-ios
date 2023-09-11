@@ -230,6 +230,8 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.purchaseHandler)
             .preference(key: PurchasedCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.purchasedCustomerInfo)
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
 
         switch self.mode {

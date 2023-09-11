@@ -32,7 +32,8 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        purchaseCompleted: PurchaseCompletedHandler? = nil
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -40,7 +41,8 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
-            purchaseCompleted: purchaseCompleted
+            purchaseCompleted: purchaseCompleted,
+            restoreCompleted: restoreCompleted
         )
     }
 
@@ -58,7 +60,8 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        purchaseCompleted: PurchaseCompletedHandler? = nil
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
@@ -66,7 +69,8 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
-            purchaseCompleted: purchaseCompleted
+            purchaseCompleted: purchaseCompleted,
+            restoreCompleted: restoreCompleted
         )
     }
 
@@ -77,7 +81,8 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        purchaseCompleted: PurchaseCompletedHandler? = nil
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self
             .modifier(PresentingPaywallFooterModifier(
@@ -85,6 +90,7 @@ extension View {
                 customerInfo: customerInfo,
                 condensed: condensed,
                 purchaseCompleted: purchaseCompleted,
+                restoreCompleted: restoreCompleted,
                 fontProvider: fonts,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
@@ -101,7 +107,8 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
     let customerInfo: CustomerInfo?
     let condensed: Bool
 
-    let purchaseCompleted: PurchaseCompletedHandler?
+    let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
+    let restoreCompleted: PurchaseOrRestoreCompletedHandler?
     let fontProvider: PaywallFontProvider
     let introEligibility: TrialOrIntroEligibilityChecker?
     let purchaseHandler: PurchaseHandler?
@@ -119,6 +126,9 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
                 )
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)
+                }
+                .onRestoreCompleted {
+                    self.restoreCompleted?($0)
                 }
         }
     }

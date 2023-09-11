@@ -25,6 +25,7 @@ enum Strings {
     case determining_whether_to_display_paywall
     case displaying_paywall
     case not_displaying_paywall
+    case dismissing_paywall
 
 }
 
@@ -51,6 +52,9 @@ extension Strings: CustomStringConvertible {
 
         case .not_displaying_paywall:
             return "Condition not met: will not display paywall"
+
+        case .dismissing_paywall:
+            return "Dismissing PaywallView"
         }
     }
 

@@ -43,6 +43,10 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var restored: Bool = false
 
+    /// When `restored` becomes `true`, this will include the `CustomerInfo` associated to it.
+    @Published
+    fileprivate(set) var restoredCustomerInfo: CustomerInfo?
+
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true) { package in
             return try await purchases.purchase(package: package)
@@ -102,11 +106,14 @@ extension PurchaseHandler {
         self.actionInProgress = true
         defer { self.actionInProgress = false }
 
-        let result = try await self.restoreBlock()
+        let customerInfo = try await self.restoreBlock()
 
-        self.restored = true
+        withAnimation(Constants.defaultAnimation) {
+            self.restored = true
+            self.restoredCustomerInfo = customerInfo
+        }
 
-        return result
+        return customerInfo
     }
 
     /// Creates a copy of this `PurchaseHandler` wrapping the purchase and restore blocks.
@@ -120,10 +127,21 @@ extension PurchaseHandler {
 
 }
 
-// MARK: - Preference Key
+// MARK: - Preference Keys
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
+
+    static var defaultValue: CustomerInfo?
+
+    static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 
     static var defaultValue: CustomerInfo?
 

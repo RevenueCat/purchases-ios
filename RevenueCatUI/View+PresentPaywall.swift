@@ -37,7 +37,8 @@ extension View {
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        purchaseCompleted: PurchaseCompletedHandler? = nil
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             shouldDisplay: { info in
@@ -46,7 +47,8 @@ extension View {
                     .keys
                     .contains(requiredEntitlementIdentifier)
             },
-            purchaseCompleted: purchaseCompleted
+            purchaseCompleted: purchaseCompleted,
+            restoreCompleted: restoreCompleted
         )
     }
 
@@ -59,6 +61,9 @@ extension View {
     ///         !$0.entitlements.active.keys.contains("entitlement_identifier")
     ///     } purchaseCompleted: { customerInfo in
     ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
+    ///     } restoreCompleted: { customerInfo in
+    ///         // If `entitlement_identifier` is active, paywall will dismiss automatically.
+    ///         print("Purchases restored")
     ///     }
     /// }
     /// ```
@@ -67,11 +72,13 @@ extension View {
     public func presentPaywallIfNeeded(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        purchaseCompleted: PurchaseCompletedHandler? = nil
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             shouldDisplay: shouldDisplay,
             purchaseCompleted: purchaseCompleted,
+            restoreCompleted: restoreCompleted,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
                     throw PaywallError.purchasesNotConfigured
@@ -89,13 +96,15 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        purchaseCompleted: PurchaseCompletedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
                 purchaseCompleted: purchaseCompleted,
+                restoreCompleted: restoreCompleted,
                 offering: offering,
                 fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
@@ -117,7 +126,8 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
-    var purchaseCompleted: PurchaseCompletedHandler?
+    var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
+    var restoreCompleted: PurchaseOrRestoreCompletedHandler?
     var offering: Offering?
     var fontProvider: PaywallFontProvider
 
@@ -143,6 +153,13 @@ private struct PresentingPaywallModifier: ViewModifier {
                         self.purchaseCompleted?($0)
 
                         self.close()
+                    }
+                    .onPurchaseCompleted { customerInfo in
+                        self.restoreCompleted?(customerInfo)
+
+                        if !self.shouldDisplay(customerInfo) {
+                            self.close()
+                        }
                     }
                     .toolbar {
                         ToolbarItem(placement: .destructiveAction) {
@@ -172,6 +189,8 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private func close() {
         self.data = nil
+
+        Logger.debug(Strings.dismissing_paywall)
     }
 
 }
