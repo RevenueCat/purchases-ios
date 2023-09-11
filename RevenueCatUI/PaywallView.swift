@@ -26,8 +26,12 @@ public struct PaywallView: View {
 
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
-    private let introEligibility: TrialOrIntroEligibilityChecker?
-    private let purchaseHandler: PurchaseHandler?
+
+    @StateObject
+    private var purchaseHandler: PurchaseHandler
+
+    @StateObject
+    private var introEligibility: TrialOrIntroEligibilityChecker
 
     @State
     private var offering: Offering?
@@ -75,13 +79,13 @@ public struct PaywallView: View {
         customerInfo: CustomerInfo?,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        introEligibility: TrialOrIntroEligibilityChecker?,
-        purchaseHandler: PurchaseHandler?
+        introEligibility: TrialOrIntroEligibilityChecker,
+        purchaseHandler: PurchaseHandler
     ) {
         self._offering = .init(initialValue: offering)
         self._customerInfo = .init(initialValue: customerInfo)
-        self.introEligibility = introEligibility
-        self.purchaseHandler = purchaseHandler
+        self._introEligibility = .init(wrappedValue: introEligibility)
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler)
         self.mode = mode
         self.fonts = fonts
     }
@@ -96,13 +100,13 @@ public struct PaywallView: View {
     @ViewBuilder
     private var content: some View {
         VStack { // Necessary to work around FB12674350 and FB12787354
-            if let checker = self.introEligibility, let purchaseHandler = self.purchaseHandler {
+            if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
-                                     checker: checker,
-                                     purchaseHandler: purchaseHandler)
+                                     checker: self.introEligibility,
+                                     purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
                     LoadingPaywallView(mode: self.mode)
@@ -183,7 +187,7 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
-    @StateObject
+    @ObservedObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
@@ -208,7 +212,7 @@ struct LoadedOfferingPaywallView: View {
         self.mode = mode
         self.fonts = fonts
         self._introEligibility = .init(
-            wrappedValue: .init(introEligibilityChecker: introEligibility)
+            initialValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
     }
