@@ -311,6 +311,8 @@ extension PaywallData.Configuration {
         public var text1: PaywallColor
         /// Color for secondary text element.
         public var text2: PaywallColor?
+        /// Color for tertiary text element.
+        public var text3: PaywallColor?
         /// Background color of the main call to action button.
         public var callToActionBackground: PaywallColor
         /// Foreground color of the main call to action button.
@@ -327,6 +329,7 @@ extension PaywallData.Configuration {
             background: PaywallColor,
             text1: PaywallColor,
             text2: PaywallColor? = nil,
+            text3: PaywallColor? = nil,
             callToActionBackground: PaywallColor,
             callToActionForeground: PaywallColor,
             callToActionSecondaryBackground: PaywallColor? = nil,
@@ -336,6 +339,7 @@ extension PaywallData.Configuration {
             self.background = background
             self.text1 = text1
             self.text2 = text2
+            self.text3 = text3
             self.callToActionBackground = callToActionBackground
             self.callToActionForeground = callToActionForeground
             self.callToActionSecondaryBackground = callToActionSecondaryBackground

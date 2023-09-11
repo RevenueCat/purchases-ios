@@ -38,6 +38,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.light.background.stringRepresentation) == "#FF00AA"
         expect(paywall.config.colors.light.text1.stringRepresentation) == "#FF00AA22"
         expect(paywall.config.colors.light.text2?.stringRepresentation) == "#FF00AA11"
+        expect(paywall.config.colors.light.text3?.stringRepresentation) == "#FF00AA33"
         expect(paywall.config.colors.light.callToActionBackground.stringRepresentation) == "#FF00AACC"
         expect(paywall.config.colors.light.callToActionForeground.stringRepresentation) == "#FF00AA"
         expect(paywall.config.colors.light.callToActionSecondaryBackground?.stringRepresentation) == "#FF00BB"
@@ -47,6 +48,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.dark?.background.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.dark?.text1.stringRepresentation) == "#FF0011"
         expect(paywall.config.colors.dark?.text2).to(beNil())
+        expect(paywall.config.colors.dark?.text3).to(beNil())
         expect(paywall.config.colors.dark?.callToActionBackground.stringRepresentation) == "#112233AA"
         expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
         expect(paywall.config.colors.dark?.accent1?.stringRepresentation) == "#00FFFF"
