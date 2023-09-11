@@ -21,8 +21,12 @@ enum PaywallsStrings {
     case warming_up_images(imageURLs: Set<URL>)
     case error_prefetching_image(URL, Error)
 
+    case caching_presented_paywall
+    case clearing_presented_paywall
+
     // MARK: - Events
 
+    case event_manager_initialized
     case event_manager_not_initialized_not_available
     case event_manager_failed_to_initialize(Error)
 
@@ -46,7 +50,16 @@ extension PaywallsStrings: LogMessage {
         case let .error_prefetching_image(url, error):
             return "Error pre-fetching paywall image '\(url)': \((error as NSError).description)"
 
+        case .caching_presented_paywall:
+            return "PurchasesOrchestrator: caching presented paywall"
+
+        case .clearing_presented_paywall:
+            return "PurchasesOrchestrator: clearing presented paywall"
+
         // MARK: - Events
+
+        case .event_manager_initialized:
+            return "PaywallEventsManager initialized"
 
         case .event_manager_not_initialized_not_available:
             return "Won't initialize PaywallEventsManager: not available on current device."

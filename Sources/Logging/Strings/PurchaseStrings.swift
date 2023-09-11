@@ -80,7 +80,8 @@ enum PurchaseStrings {
     case transaction_poster_handling_transaction(transactionID: String,
                                                  productID: String,
                                                  transactionDate: Date,
-                                                 offeringID: String?)
+                                                 offeringID: String?,
+                                                 paywallSessionID: UUID?)
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
@@ -293,12 +294,16 @@ extension PurchaseStrings: LogMessage {
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
 
-        case let .transaction_poster_handling_transaction(transactionID, productID, date, offeringID):
+        case let .transaction_poster_handling_transaction(transactionID, productID, date, offeringID, paywallSessionID):
             var message = "TransactionPoster: handling transaction '\(transactionID)' " +
             "for product '\(productID)' (date: \(date))"
 
             if let offeringIdentifier = offeringID {
                 message += " in Offering '\(offeringIdentifier)'"
+            }
+
+            if let paywallSessionID {
+                message += " with paywall session '\(paywallSessionID)'"
             }
 
             return message
