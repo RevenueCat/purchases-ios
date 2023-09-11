@@ -102,7 +102,6 @@ struct FooterView: View {
         .font(self.fonts.font(for: self.font).weight(self.fontWeight))
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
-        .padding(.bottom, 5)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         #if targetEnvironment(macCatalyst)
         .buttonStyle(.plain)

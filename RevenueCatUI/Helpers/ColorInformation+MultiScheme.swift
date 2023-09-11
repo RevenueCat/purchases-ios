@@ -40,6 +40,7 @@ extension PaywallData.Configuration.Colors {
             background: .init(light: light.background, dark: dark.background),
             text1: .init(light: light.text1, dark: dark.text1),
             text2: .init(light: light.text2, dark: dark.text2),
+            text3: .init(light: light.text3, dark: dark.text3),
             callToActionBackground: .init(light: light.callToActionBackground, dark: dark.callToActionBackground),
             callToActionForeground: .init(light: light.callToActionForeground, dark: dark.callToActionForeground),
             callToActionSecondaryBackground: .init(light: light.callToActionSecondaryBackground,
@@ -98,6 +99,7 @@ extension PaywallData.Configuration.Colors {
     var backgroundColor: Color { self.background.underlyingColor }
     var text1Color: Color { self.text1.underlyingColor }
     var text2Color: Color { self.text2?.underlyingColor ?? self.text1.underlyingColor }
+    var text3Color: Color { self.text3?.underlyingColor ?? self.text2Color }
     var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
     var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
     var callToActionSecondaryBackgroundColor: Color? { self.callToActionSecondaryBackground?.underlyingColor }
