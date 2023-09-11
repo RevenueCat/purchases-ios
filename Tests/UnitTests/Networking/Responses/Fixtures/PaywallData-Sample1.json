@@ -44,7 +44,7 @@
             "background": "background.jpg",
             "icon": "icon.jpg"
         },
-        "blurredBackgroundImage": true,
+        "blurred_background_image": true,
         "display_restore_purchases": false,
         "tos_url": "https://revenuecat.com/tos",
         "privacy_url": "https://revenuecat.com/privacy",
