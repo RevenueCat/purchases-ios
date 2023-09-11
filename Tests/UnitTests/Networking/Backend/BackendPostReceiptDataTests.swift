@@ -384,6 +384,55 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithPresentedPaywall() throws {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let productIdentifier = "a_great_product"
+        let offeringIdentifier = "a_offering"
+        let price: Decimal = 10.98
+        let group = "sub_group"
+
+        let currencyCode = "BFD"
+
+        let paywallEventData: PaywallEvent.Data = .init(
+            offeringIdentifier: offeringIdentifier,
+            paywallRevision: 5,
+            sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
+            displayMode: .condensedFooter,
+            localeIdentifier: "en_US",
+            darkMode: true,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: nil,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group)
+
+        waitUntil { completed in
+            self.backend.post(receiptData: Self.receiptData,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: offeringIdentifier,
+                                 presentedPaywall: paywallEventData,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
+                              observerMode: false,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testIndividualParamsCanBeNil() {
         httpClient.mock(
             requestPath: .postReceiptData,

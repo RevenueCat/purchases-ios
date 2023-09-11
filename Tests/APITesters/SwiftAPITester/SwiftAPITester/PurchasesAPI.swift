@@ -283,6 +283,13 @@ private func checkConfigure() -> Purchases! {
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        await purchases.track(paywallEvent: event)
+    }
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 @available(*, deprecated) // Ignore deprecation warnings
 private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StoreProduct) async throws {
     let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)
