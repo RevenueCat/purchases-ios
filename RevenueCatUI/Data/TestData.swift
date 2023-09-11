@@ -371,6 +371,7 @@ internal enum TestData {
                     light: .init(
                         background: "#FFFFFF",
                         text1: "#000000",
+                        text2: "#FFFFFF",
                         callToActionBackground: "#008575",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#008575",
@@ -379,6 +380,7 @@ internal enum TestData {
                     dark: .init(
                         background: "#000000",
                         text1: "#FFFFFF",
+                        text2: "#000000",
                         callToActionBackground: "#41E194",
                         callToActionForeground: "#000000",
                         accent1: "#41E194",

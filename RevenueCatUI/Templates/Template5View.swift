@@ -191,8 +191,8 @@ struct Template5View: TemplateViewType {
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
                 .background(self.roundedRectangle.foregroundColor(self.configuration.colors.accent1Color))
-                .foregroundColor(self.configuration.colors.callToActionForegroundColor)
-                .font(self.font(for: .caption))
+                .foregroundColor(self.configuration.colors.text2Color)
+                .font(self.font(for: .caption).weight(.bold))
                 .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         }
     }
@@ -213,7 +213,7 @@ struct Template5View: TemplateViewType {
                         EmptyView()
                     } else {
                         Circle()
-                            .foregroundColor(self.selectedBackgroundColor)
+                            .foregroundColor(self.configuration.colors.accent2Color)
                     }
                 }
                 .foregroundColor(self.configuration.colors.accent1Color)
@@ -248,8 +248,6 @@ struct Template5View: TemplateViewType {
     private var introEligibility: [Package: IntroEligibilityStatus] {
         return self.introEligibilityViewModel.allEligibility
     }
-
-    private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
 
     @ScaledMetric(relativeTo: .body)
     private var iconSize = 25
