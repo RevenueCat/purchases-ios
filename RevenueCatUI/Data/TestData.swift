@@ -331,7 +331,7 @@ internal enum TestData {
                 callToAction: "Continue",
                 offerDetails: "",
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
-                offerName: "{{ sub_duration }}"
+                offerName: "{{ sub_duration_in_months }}"
             ),
             assetBaseURL: Bundle.module.resourceURL ?? Bundle.module.bundleURL
         ),

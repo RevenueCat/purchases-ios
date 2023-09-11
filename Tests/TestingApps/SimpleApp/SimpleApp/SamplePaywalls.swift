@@ -341,7 +341,7 @@ private extension SamplePaywallLoader {
                 callToAction: "Continue",
                 offerDetails: nil,
                 offerDetailsWithIntroOffer: "Includes {{ sub_offer_duration }} **free** trial",
-                offerName: "{{ sub_duration }}"
+                offerName: "{{ sub_duration_in_months }}"
             ),
             assetBaseURL: Self.paywallAssetBaseURL
         )
