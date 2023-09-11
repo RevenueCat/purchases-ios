@@ -121,15 +121,20 @@ extension PurchaseHandler {
 
     func trackPaywallView(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
-        self.trackEvent(PaywallEvent.view)
+        self.track(.view(eventData))
     }
 
-    func trackPaywallClose() {
-        self.trackEvent(PaywallEvent.close)
+    func trackPaywallClose(_ eventData: PaywallEvent.Data) {
+        self.track(.close(eventData))
     }
 
     fileprivate func trackCancelledPurchase() {
-        self.trackEvent(PaywallEvent.cancel)
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return
+        }
+
+        self.track(.cancel(data))
     }
 
 }
@@ -164,14 +169,7 @@ extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PurchaseHandler {
 
-    func trackEvent(_ eventCreator: (PaywallEvent.Data) -> PaywallEvent) {
-        guard let data = self.eventData else {
-            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return
-        }
-
-        let event = eventCreator(data)
-
+    func track(_ event: PaywallEvent) {
         Task.detached(priority: .background) { [block = self.trackEventBlock] in
             await block(event)
         }
