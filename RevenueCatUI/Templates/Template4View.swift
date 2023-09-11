@@ -190,7 +190,7 @@ struct Template4View: TemplateViewType {
     }
 
     fileprivate static let cornerRadius = Constants.defaultCornerRadius
-    fileprivate static let verticalPadding: CGFloat = 20
+    fileprivate static let verticalPadding: CGFloat = 10
 
     @ScaledMetric(relativeTo: .title2)
     private var packageHorizontalSpacing: CGFloat = 8
@@ -347,7 +347,7 @@ private struct PackageButton: View {
                     ? self.configuration.colors.text2Color
                     : self.configuration.colors.text3Color
                 )
-                .font(self.font(for: .caption).weight(.semibold))
+                .font(self.font(for: .caption).weight(.bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .padding(.horizontal, 2)
