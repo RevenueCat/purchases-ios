@@ -221,6 +221,9 @@ struct LoadedOfferingPaywallView: View {
             initialValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
+
+        // Each `PaywallView` impression gets its own session.
+        // See also `updateSessionIfNeeded`.
         self._session = .init(initialValue: (
             lastPaywall: .init(offering: offering, paywall: paywall),
             id: .init()
