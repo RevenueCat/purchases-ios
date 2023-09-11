@@ -51,7 +51,7 @@ struct Template2View: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            // Avoid unnecessary spacing, except for iOS 15 because SwiftuI breaks the layout.
+            // Avoid unnecessary spacing, except for iOS 15 because SwiftUI breaks the layout.
             Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
 
             self.scrollableContent
@@ -71,7 +71,13 @@ struct Template2View: TemplateViewType {
         .animation(Constants.fastAnimation, value: self.selectedPackage)
         .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
-        .padding(.top, self.defaultVerticalPaddingLength)
+        .padding(
+            .top,
+            self.displayingAllPlans
+            ? self.defaultVerticalPaddingLength
+            // Compensate for additional padding on condensed mode + iPad
+            : self.defaultVerticalPaddingLength.map { $0 * -1 }
+        )
     }
 
     private var scrollableContent: some View {
