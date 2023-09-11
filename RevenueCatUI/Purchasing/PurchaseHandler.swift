@@ -141,7 +141,7 @@ extension PurchaseHandler {
             return
         }
 
-        self.track(.cancel(data))
+        self.track(.cancel(data.withCurrentDate()))
     }
 
 }
@@ -204,6 +204,20 @@ struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
         value = nextValue()
+    }
+
+}
+
+// MARK: -
+
+private extension PaywallEvent.Data {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func withCurrentDate() -> Self {
+        var copy = self
+        copy.date = .now
+
+        return copy
     }
 
 }
