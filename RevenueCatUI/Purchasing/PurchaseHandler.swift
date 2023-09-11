@@ -82,7 +82,7 @@ final class PurchaseHandler: ObservableObject {
             throw ErrorCode.configurationError
         } restorePurchases: {
             throw ErrorCode.configurationError
-        }
+        } trackEvent: { _ in }
     }
 
 }
