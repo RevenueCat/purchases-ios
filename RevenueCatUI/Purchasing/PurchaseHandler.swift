@@ -21,6 +21,9 @@ final class PurchaseHandler: ObservableObject {
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
 
+    /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
+    let isConfigured: Bool
+
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
 
@@ -41,7 +44,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var restored: Bool = false
 
     convenience init(purchases: Purchases = .shared) {
-        self.init { package in
+        self.init(isConfigured: true) { package in
             return try await purchases.purchase(package: package)
         } restorePurchases: {
             return try await purchases.restorePurchases()
@@ -49,15 +52,25 @@ final class PurchaseHandler: ObservableObject {
     }
 
     init(
+        isConfigured: Bool = true,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock
     ) {
+        self.isConfigured = isConfigured
         self.purchaseBlock = purchase
         self.restoreBlock = restorePurchases
     }
 
-    static func `default`() -> Self? {
-        return Purchases.isConfigured ? .init() : nil
+    static func `default`() -> Self {
+        return Purchases.isConfigured ? .init() : .notConfigured()
+    }
+
+    private static func notConfigured() -> Self {
+        return .init(isConfigured: false) { _ in
+            throw ErrorCode.configurationError
+        } restorePurchases: {
+            throw ErrorCode.configurationError
+        }
     }
 
 }
