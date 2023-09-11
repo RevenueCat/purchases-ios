@@ -244,7 +244,7 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallView(self.eventData) }
-            .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onDisappear { self.purchaseHandler.trackPaywallClose(self.eventData) }
 
         switch self.mode {
         case .fullScreen:
