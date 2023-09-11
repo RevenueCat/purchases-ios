@@ -41,7 +41,19 @@ extension Package: VariableDataProvider {
     }
 
     func subscriptionDuration(_ locale: Locale) -> String? {
-        return self.periodDuration(locale)
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return self.periodName(locale)
+        }
+
+        return Localization.localizedDuration(for: period, locale: locale)
+    }
+
+    func normalizedSubscriptionDuration(_ locale: Locale) -> String? {
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return self.periodName(locale)
+        }
+
+        return Localization.localizedDuration(for: period.normalized, locale: locale)
     }
 
     func introductoryOfferDuration(_ locale: Locale) -> String? {
@@ -103,12 +115,6 @@ private extension Package {
         return self.storeProduct.priceFormatter ?? .init()
     }
 
-    func periodDuration(_ locale: Locale) -> String? {
-        guard let period = self.storeProduct.subscriptionPeriod else { return nil }
-
-        return Localization.localizedDuration(for: period, locale: locale)
-    }
-
     func introDuration(_ locale: Locale) -> String? {
         guard let discount = self.storeProduct.introductoryDiscount else { return nil }
 
@@ -123,6 +129,21 @@ private extension Bundle {
         return self.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
         ?? self.object(forInfoDictionaryKey: "CFBundleName") as? String
         ?? ""
+    }
+
+}
+
+private extension SubscriptionPeriod {
+
+    var normalized: Self {
+        switch self.unit {
+        case .year:
+            return .init(value: self.value * 12, unit: .month)
+
+        default:
+            // No other normalization is needed
+            return self
+        }
     }
 
 }

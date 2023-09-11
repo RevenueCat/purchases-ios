@@ -167,6 +167,42 @@ class PackageVariablesTests: TestCase {
         expect(TestData.weeklyPackage.localizedRelativeDiscount(0.372, Self.spanish)) == "37% de descuento"
     }
 
+    func testEnglishSubscriptionDuration() {
+        expect(TestData.weeklyPackage.subscriptionDuration(Self.english)) == "1 week"
+        expect(TestData.monthlyPackage.subscriptionDuration(Self.english)) == "1 month"
+        expect(TestData.threeMonthPackage.subscriptionDuration(Self.english)) == "3 months"
+        expect(TestData.sixMonthPackage.subscriptionDuration(Self.english)) == "6 months"
+        expect(TestData.annualPackage.subscriptionDuration(Self.english)) == "1 year"
+        expect(TestData.lifetimePackage.subscriptionDuration(Self.english)) == "Lifetime"
+    }
+
+    func testSpanishSubscriptionDuration() {
+        expect(TestData.weeklyPackage.subscriptionDuration(Self.spanish)) == "1 semana"
+        expect(TestData.monthlyPackage.subscriptionDuration(Self.spanish)) == "1 mes"
+        expect(TestData.threeMonthPackage.subscriptionDuration(Self.spanish)) == "3 meses"
+        expect(TestData.sixMonthPackage.subscriptionDuration(Self.spanish)) == "6 meses"
+        expect(TestData.annualPackage.subscriptionDuration(Self.spanish)) == "1 año"
+        expect(TestData.lifetimePackage.subscriptionDuration(Self.spanish)) == "Toda la vida"
+    }
+
+    func testEnglishNormalizedSubscriptionDuration() {
+        expect(TestData.weeklyPackage.normalizedSubscriptionDuration(Self.english)) == "1 week"
+        expect(TestData.monthlyPackage.normalizedSubscriptionDuration(Self.english)) == "1 month"
+        expect(TestData.threeMonthPackage.normalizedSubscriptionDuration(Self.english)) == "3 months"
+        expect(TestData.sixMonthPackage.normalizedSubscriptionDuration(Self.english)) == "6 months"
+        expect(TestData.annualPackage.normalizedSubscriptionDuration(Self.english)) == "12 months"
+        expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.english)) == "Lifetime"
+    }
+
+    func testSpanishNormalizedSubscriptionDuration() {
+        expect(TestData.weeklyPackage.normalizedSubscriptionDuration(Self.spanish)) == "1 semana"
+        expect(TestData.monthlyPackage.normalizedSubscriptionDuration(Self.spanish)) == "1 mes"
+        expect(TestData.threeMonthPackage.normalizedSubscriptionDuration(Self.spanish)) == "3 meses"
+        expect(TestData.sixMonthPackage.normalizedSubscriptionDuration(Self.spanish)) == "6 meses"
+        expect(TestData.annualPackage.normalizedSubscriptionDuration(Self.spanish)) == "12 meses"
+        expect(TestData.lifetimePackage.normalizedSubscriptionDuration(Self.spanish)) == "Toda la vida"
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
