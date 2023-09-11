@@ -77,7 +77,8 @@ struct Template4View: TemplateViewType {
                 Text(.init(self.selectedPackage.localization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .title).bold())
-                    .padding([.top, .bottom, .horizontal])
+                    .padding([.horizontal])
+                    .padding(.top, Self.verticalPadding)
                     .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
             }
 
@@ -85,7 +86,7 @@ struct Template4View: TemplateViewType {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
-                    .padding(.vertical)
+                    .defaultVerticalPadding()
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
@@ -163,7 +164,6 @@ struct Template4View: TemplateViewType {
                               selected: false,
                               packageWidth: self.packageWidth,
                               desiredHeight: nil)
-                .offset(x: CGFloat(Int.random(in: -200...200)))
                 .onSizeChange(.vertical) {
                     if $0 > self.packageContentHeight {
                         self.packageContentHeight = $0
@@ -172,6 +172,7 @@ struct Template4View: TemplateViewType {
             }
         }
         .onChange(of: self.dynamicTypeSize) { _ in self.packageContentHeight = 0 }
+        .onChange(of: self.packageWidth) { _ in self.packageContentHeight = 0 }
         .hidden()
     }
 
@@ -190,7 +191,7 @@ struct Template4View: TemplateViewType {
     }
 
     fileprivate static let cornerRadius = Constants.defaultCornerRadius
-    fileprivate static let verticalPadding: CGFloat = 10
+    fileprivate static let verticalPadding: CGFloat = 20
 
     @ScaledMetric(relativeTo: .title2)
     private var packageHorizontalSpacing: CGFloat = 8
