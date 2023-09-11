@@ -79,6 +79,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{ sub_duration }}")) == "1 month"
     }
 
+    func testSubscriptionDurationInMonths() {
+        self.provider.normalizedSubscriptionDuration = "12 months"
+        expect(self.process("{{ sub_duration_in_months }}")) == "12 months"
+    }
+
     func testIntroDurationName() {
         self.provider.introductoryOfferDuration = "1 week"
         expect(self.process("Start {{ sub_offer_duration }} trial")) == "Start 1 week trial"
@@ -119,7 +124,7 @@ class VariablesTests: TestCase {
                 .init(title: "Purchase {{ product_name }}",
                       content: "Trial lasts {{ sub_offer_duration }}",
                       iconID: nil),
-                .init(title: "Only {{ price }}",
+                .init(title: "Only {{ price }} for {{ sub_duration_in_months }}",
                       content: "{{ sub_period }} subscription, {{ sub_relative_discount }}",
                       iconID: nil)
             ]
@@ -140,7 +145,7 @@ class VariablesTests: TestCase {
             .init(title: "Purchase PRO monthly",
                   content: "Trial lasts 1 week",
                   iconID: nil),
-            .init(title: "Only $3.99",
+            .init(title: "Only $3.99 for 1 month",
                   content: "Monthly subscription, 30% off",
                   iconID: nil)
         ]
@@ -218,7 +223,7 @@ class VariablesTests: TestCase {
         let allVariables = "{{ app_name }} {{ price }} {{ price_per_period }} " +
         "{{ total_price_and_per_month }} {{ product_name }} {{ sub_period }} " +
         "{{ sub_price_per_month }} {{ sub_duration }} {{ sub_offer_duration }} " +
-        "{{ sub_offer_price }} {{ sub_relative_discount }}"
+        "{{ sub_offer_price }} {{ sub_relative_discount }} {{ sub_duration_in_months }}"
 
         expect("".unrecognizedVariables()).to(beEmpty())
         expect(allVariables.unrecognizedVariables()).to(beEmpty())
@@ -263,6 +268,7 @@ private struct MockVariableProvider: VariableDataProvider {
     var productName: String = ""
     var periodName: String = ""
     var subscriptionDuration: String?
+    var normalizedSubscriptionDuration: String?
     var introductoryOfferDuration: String?
     var introductoryOfferPrice: String = ""
     var relativeDiscount: String?
@@ -273,6 +279,10 @@ private struct MockVariableProvider: VariableDataProvider {
 
     func subscriptionDuration(_ locale: Locale) -> String? {
         return self.subscriptionDuration
+    }
+
+    func normalizedSubscriptionDuration(_ locale: Locale) -> String? {
+        return self.normalizedSubscriptionDuration
     }
 
     func introductoryOfferDuration(_ locale: Locale) -> String? {
