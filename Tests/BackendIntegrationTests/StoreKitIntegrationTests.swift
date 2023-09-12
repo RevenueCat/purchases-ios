@@ -395,11 +395,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 5. Make purchase with user 2
         self.logger.clearMessages()
-        try await self.purchaseMonthlyOffering()
+        currentCustomerInfo = try await self.purchaseMonthlyOffering().customerInfo
         try await self.verifyReceiptIsEventuallyPosted()
 
         // 6. Verify user 2 has purchases
-        currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(currentCustomerInfo.originalAppUserId) == userID2
         expect(currentCustomerInfo.entitlements.all).toNot(beEmpty())
 
