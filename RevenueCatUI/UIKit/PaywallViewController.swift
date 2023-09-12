@@ -47,7 +47,11 @@ public final class PaywallViewController: UIViewController {
         let view = paywallView
             .onPurchaseCompleted { [weak self] customerInfo in
                 guard let self = self else { return }
-                self.delegate?.paywallViewController(self, didFinishPurchasingWith: customerInfo)
+                self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
+            }
+            .onRestoreCompleted { [weak self] customerInfo in
+                guard let self = self else { return }
+                self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
 
         return .init(rootView: AnyView(view))
@@ -76,8 +80,17 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 
     /// Notifies that a purchase has completed in a ``PaywallViewController``.
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
-    func paywallViewController(_ controller: PaywallViewController,
-                               didFinishPurchasingWith customerInfo: CustomerInfo)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didFinishPurchasingWith customerInfo: CustomerInfo)
+
+    /// Notifies that the restore operation has completed in a ``PaywallViewController``.
+    ///
+    /// - Warning: Receiving a ``CustomerInfo``does not imply that the user has any entitlements,
+    /// simply that the process was successful. You must verify the ``CustomerInfo/entitlements``
+    /// to confirm that they are active.
+    @objc(paywallViewController:didFinishRestoringWithCustomerInfo:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didFinishRestoringWith customerInfo: CustomerInfo)
 
 }
 
