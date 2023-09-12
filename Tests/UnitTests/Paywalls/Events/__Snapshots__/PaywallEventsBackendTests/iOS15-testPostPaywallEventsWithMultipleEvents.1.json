@@ -9,24 +9,24 @@
           "app_user_id" : "user",
           "dark_mode" : true,
           "display_mode" : "condensed_footer",
-          "locale_identifier" : "es_ES",
+          "locale" : "es_ES",
           "offering_id" : "offering_1",
           "paywall_revision" : 5,
           "session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
           "timestamp" : 715722128,
-          "type" : "view",
+          "type" : "paywall_impression",
           "version" : 1
         },
         {
           "app_user_id" : "user",
           "dark_mode" : false,
           "display_mode" : "full_screen",
-          "locale_identifier" : "en_US",
+          "locale" : "en_US",
           "offering_id" : "offering_2",
           "paywall_revision" : 3,
           "session_id" : "10CC0F1D-7665-4093-9624-1D7308FFF4DB",
           "timestamp" : 715715121,
-          "type" : "close",
+          "type" : "paywall_close",
           "version" : 1
         }
       ]

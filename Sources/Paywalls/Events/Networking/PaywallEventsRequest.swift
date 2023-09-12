@@ -33,9 +33,9 @@ extension PaywallEventsRequest {
 
     enum EventType: String {
 
-        case view
-        case cancel
-        case close
+        case impression = "paywall_impression"
+        case cancel = "paywall_cancel"
+        case close = "paywall_close"
 
     }
 
@@ -85,7 +85,7 @@ private extension PaywallEvent {
 
     var eventType: PaywallEventsRequest.EventType {
         switch self {
-        case .view: return .view
+        case .view: return .impression
         case .cancel: return .cancel
         case .close: return .close
         }
@@ -111,7 +111,7 @@ extension PaywallEventsRequest.Event: Encodable {
         case timestamp
         case displayMode
         case darkMode
-        case localeIdentifier
+        case localeIdentifier = "locale"
 
     }
 
