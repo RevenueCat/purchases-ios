@@ -14,7 +14,7 @@ struct App: View {
 
     private var offering: Offering
     private var fonts: PaywallFontProvider
-    private var completed: PurchaseCompletedHandler = { (_: CustomerInfo) in }
+    private var completed: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
 
     var body: some View {
         self.content
@@ -36,11 +36,22 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", purchaseCompleted: completed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", restoreCompleted: completed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts, purchaseCompleted: completed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts, restoreCompleted: completed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts, purchaseCompleted: completed,
+                                    restoreCompleted: completed)
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
                 false
             } purchaseCompleted: {
+                completed($0)
+            }
+            .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                completed($0)
+            } restoreCompleted: {
                 completed($0)
             }
     }
@@ -56,22 +67,31 @@ struct App: View {
             .paywallFooter(condensed: true, fonts: self.fonts)
             .paywallFooter(condensed: true, purchaseCompleted: completed)
             .paywallFooter(condensed: true, fonts: self.fonts, purchaseCompleted: completed)
+            .paywallFooter(condensed: true, fonts: self.fonts,
+                           purchaseCompleted: completed, restoreCompleted: completed)
 
             .paywallFooter(offering: offering)
             .paywallFooter(offering: offering, condensed: true)
             .paywallFooter(offering: offering, condensed: true, fonts: self.fonts)
             .paywallFooter(offering: offering, condensed: true, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, condensed: true, restoreCompleted: completed)
             .paywallFooter(offering: offering, condensed: true, fonts: self.fonts, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, condensed: true, fonts: self.fonts,
+                           purchaseCompleted: completed, restoreCompleted: completed)
             .paywallFooter(offering: offering)
             .paywallFooter(offering: offering, fonts: self.fonts)
             .paywallFooter(offering: offering, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, restoreCompleted: completed)
             .paywallFooter(offering: offering, fonts: self.fonts, purchaseCompleted: completed)
+            .paywallFooter(offering: offering, fonts: self.fonts,
+                           purchaseCompleted: completed, restoreCompleted: completed)
     }
 
     @ViewBuilder
-    var checkOnPurchaseCompleted: some View {
+    var checkOnPurchaseAndRestoreCompleted: some View {
         Text("")
             .onPurchaseCompleted(self.completed)
+            .onRestoreCompleted(self.completed)
     }
 
     private func fontProviders() {

@@ -33,16 +33,37 @@ class PaywallFooterTests: TestCase {
         var customerInfo: CustomerInfo?
 
         try Text("")
-            .paywallFooter(offering: Self.offering,
-                           customerInfo: TestData.customerInfo,
-                           introEligibility: .producing(eligibility: .eligible),
-                           purchaseHandler: Self.purchaseHandler) {
-                customerInfo = $0
-            }
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: Self.purchaseHandler,
+                purchaseCompleted: { customerInfo = $0 }
+            )
             .addToHierarchy()
 
         Task {
             _ = try await Self.purchaseHandler.purchase(package: Self.package)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    func testPresentWithRestoreHandler() throws {
+        var customerInfo: CustomerInfo?
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: Self.purchaseHandler,
+                restoreCompleted: { customerInfo = $0 }
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.restorePurchases()
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
