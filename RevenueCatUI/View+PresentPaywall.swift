@@ -154,7 +154,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
                         self.close()
                     }
-                    .onPurchaseCompleted { customerInfo in
+                    .onRestoreCompleted { customerInfo in
                         self.restoreCompleted?(customerInfo)
 
                         if !self.shouldDisplay(customerInfo) {
