@@ -34,7 +34,14 @@ class BaseSnapshotTest: TestCase {
     override class func setUp() {
         super.setUp()
 
+        // Uncomment this line to manually record snapshots:
         // isRecording = true
+    }
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try Self.skipTestIfNeeded()
     }
 
     static func createPaywall(
@@ -50,6 +57,13 @@ class BaseSnapshotTest: TestCase {
                            fonts: fonts,
                            introEligibility: eligibleChecker,
                            purchaseHandler: purchaseHandler)
+    }
+
+    private static func skipTestIfNeeded() throws {
+        try XCTSkipIf(
+            ProcessInfo.processInfo.environment["RC_SKIP_SNAPSHOT_TESTS"] == "1",
+            "Skipping snapshot test"
+        )
     }
 
 }
