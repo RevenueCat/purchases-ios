@@ -363,6 +363,51 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoPurchases(currentCustomerInfo)
     }
 
+    func testUserCanMakePurchaseAfterTransferBlocked() async throws {
+        let prefix = UUID().uuidString
+        let userID1 = "\(prefix)-user-1"
+        let userID2 = "\(prefix)-user-2"
+
+        let anonymousUser = try self.purchases.appUserID
+        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+
+        // 1. Purchase with user 1
+        var user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+        self.assertNoPurchases(user1CustomerInfo)
+        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
+        try await self.purchaseMonthlyOffering()
+
+        // 2. Change to user 2
+        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
+        self.assertNoPurchases(identifiedCustomerInfo)
+
+        // 3. Renew subscription
+        self.logger.clearMessages()
+
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+
+        try await self.verifyReceiptIsEventuallyPosted()
+
+        // 4. Verify new user does not have entitlement
+        var currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(currentCustomerInfo.originalAppUserId) == userID2
+        self.assertNoPurchases(currentCustomerInfo)
+
+        // 5. Make purchase with user 2
+        self.logger.clearMessages()
+        try await self.purchaseMonthlyOffering()
+        try await self.verifyReceiptIsEventuallyPosted()
+
+        // 6. Verify user 2 has purchases
+        currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        expect(currentCustomerInfo.originalAppUserId) == userID2
+        expect(currentCustomerInfo.entitlements.all).toNot(beEmpty())
+
+        // 7. Verify that user 1 does not have purchases because they were transferred to user 2
+        user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+        self.assertNoPurchases(user1CustomerInfo)
+    }
+
     func testPurchaseAfterSigningIntoNewUser() async throws {
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
