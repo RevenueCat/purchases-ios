@@ -47,7 +47,7 @@ extension PaywallEventsRequest {
         var sessionID: String
         var offeringID: String
         var paywallRevision: Int
-        var timestamp: Date
+        var timestamp: UInt64
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
@@ -69,7 +69,7 @@ extension PaywallEventsRequest.Event {
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
             paywallRevision: data.paywallRevision,
-            timestamp: data.date,
+            timestamp: data.date.millisecondsSince1970,
             displayMode: data.displayMode,
             darkMode: data.darkMode,
             localeIdentifier: data.localeIdentifier
