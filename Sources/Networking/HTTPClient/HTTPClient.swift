@@ -214,7 +214,6 @@ private extension HTTPClient {
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             "X-Is-Sandbox": "\(self.systemInfo.isSandbox)",
-            "X-RC-Canary": "w-transfer"
         ]
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {

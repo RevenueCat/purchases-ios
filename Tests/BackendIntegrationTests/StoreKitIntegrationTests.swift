@@ -342,6 +342,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 1. Purchase with user 1
         let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+        self.assertNoPurchases(user1CustomerInfo)
         expect(user1CustomerInfo.originalAppUserId) == anonymousUser
         try await self.purchaseMonthlyOffering()
 
@@ -353,9 +354,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.logger.clearMessages()
 
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+
         try await self.verifyReceiptIsEventuallyPosted()
 
-        // 4. Verify new user does not have entitlement
         let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(currentCustomerInfo.originalAppUserId) == userID2
         self.assertNoPurchases(currentCustomerInfo)
