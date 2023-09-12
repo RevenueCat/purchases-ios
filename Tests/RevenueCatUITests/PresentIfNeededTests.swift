@@ -51,6 +51,28 @@ class PresentIfNeededTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testPresentWithRestoreHandler() throws {
+        var customerInfo: CustomerInfo?
+
+        try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: Self.purchaseHandler) { _ in
+                return true
+            } restoreCompleted: {
+                customerInfo = $0
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.restorePurchases()
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
