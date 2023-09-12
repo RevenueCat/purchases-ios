@@ -114,8 +114,8 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
                     customerInfo: self.customerInfo,
                     mode: self.condensed ? .condensedFooter : .footer,
                     fonts: self.fontProvider,
-                    introEligibility: self.introEligibility ?? .default(),
-                    purchaseHandler: self.purchaseHandler ?? .default()
+                    introEligibility: self.introEligibility,
+                    purchaseHandler: self.purchaseHandler
                 )
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)
