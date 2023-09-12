@@ -262,13 +262,29 @@ extension PaywallData.Configuration {
     public struct Images {
 
         /// Image displayed as a header in a template.
-        public var header: String?
+        public var header: String? {
+            get { self._header }
+            set { self._header = newValue }
+        }
 
         /// Image displayed as a background in a template.
-        public var background: String?
+        public var background: String? {
+            get { self._background }
+            set { self._background = newValue }
+        }
 
         /// Image displayed as an app icon in a template.
-        public var icon: String?
+        public var icon: String? {
+            get { self._icon }
+            set { self._icon = newValue }
+        }
+
+        @NonEmptyStringDecodable
+        var _header: String?
+        @NonEmptyStringDecodable
+        var _background: String?
+        @NonEmptyStringDecodable
+        var _icon: String?
 
         // swiftlint:disable:next missing_docs
         public init(header: String? = nil, background: String? = nil, icon: String? = nil) {
@@ -418,7 +434,16 @@ extension PaywallData.LocalizedConfiguration: Codable {
 
 extension PaywallData.Configuration.ColorInformation: Codable {}
 extension PaywallData.Configuration.Colors: Codable {}
-extension PaywallData.Configuration.Images: Codable {}
+
+extension PaywallData.Configuration.Images: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case _header = "header"
+        case _background = "background"
+        case _icon = "icon"
+    }
+
+}
 
 extension PaywallData.Configuration: Codable {
 
