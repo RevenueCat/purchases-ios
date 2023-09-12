@@ -13,7 +13,7 @@
           "offering_id" : "offering_1",
           "paywall_revision" : 5,
           "session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
-          "timestamp" : 715722128,
+          "timestamp" : 1694029328000,
           "type" : "view",
           "version" : 1
         },
@@ -25,7 +25,7 @@
           "offering_id" : "offering_2",
           "paywall_revision" : 3,
           "session_id" : "10CC0F1D-7665-4093-9624-1D7308FFF4DB",
-          "timestamp" : 715715121,
+          "timestamp" : 1694022321000,
           "type" : "close",
           "version" : 1
         }
