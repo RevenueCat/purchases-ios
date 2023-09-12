@@ -136,8 +136,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                         offering: self.offering,
                         customerInfo: data.customerInfo,
                         fonts: self.fontProvider,
-                        introEligibility: self.introEligibility ?? .default(),
-                        purchaseHandler: self.purchaseHandler ?? .default()
+                        introEligibility: self.introEligibility,
+                        purchaseHandler: self.purchaseHandler
                     )
                     .onPurchaseCompleted {
                         self.purchaseCompleted?($0)

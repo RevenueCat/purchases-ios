@@ -52,8 +52,8 @@ public struct PaywallView: View {
             offering: nil,
             customerInfo: nil,
             fonts: fonts,
-            introEligibility: .default(),
-            purchaseHandler: .default()
+            introEligibility: nil,
+            purchaseHandler: nil
         )
     }
 
@@ -69,8 +69,8 @@ public struct PaywallView: View {
             offering: offering,
             customerInfo: nil,
             fonts: fonts,
-            introEligibility: .default(),
-            purchaseHandler: .default()
+            introEligibility: nil,
+            purchaseHandler: nil
         )
     }
 
@@ -79,13 +79,13 @@ public struct PaywallView: View {
         customerInfo: CustomerInfo?,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        introEligibility: TrialOrIntroEligibilityChecker,
-        purchaseHandler: PurchaseHandler
+        introEligibility: TrialOrIntroEligibilityChecker?,
+        purchaseHandler: PurchaseHandler?
     ) {
         self._offering = .init(initialValue: offering)
         self._customerInfo = .init(initialValue: customerInfo)
-        self._introEligibility = .init(wrappedValue: introEligibility)
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler)
+        self._introEligibility = .init(wrappedValue: introEligibility ?? .default())
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
         self.mode = mode
         self.fonts = fonts
     }
@@ -187,7 +187,7 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
-    @ObservedObject
+    @StateObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
     private var purchaseHandler: PurchaseHandler
@@ -212,7 +212,7 @@ struct LoadedOfferingPaywallView: View {
         self.mode = mode
         self.fonts = fonts
         self._introEligibility = .init(
-            initialValue: .init(introEligibilityChecker: introEligibility)
+            wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
     }
