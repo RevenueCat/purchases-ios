@@ -357,6 +357,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyReceiptIsEventuallyPosted()
 
+        // 4. Verify new user does not have entitlement
         let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         expect(currentCustomerInfo.originalAppUserId) == userID2
         self.assertNoPurchases(currentCustomerInfo)
