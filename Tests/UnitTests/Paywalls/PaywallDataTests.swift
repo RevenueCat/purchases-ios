@@ -109,6 +109,15 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(localization.title) == "Tienda"
     }
 
+    func testEmptyImageNamesAreParsedAsNil() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-empty_images")
+
+        let images = paywall.config.images
+        expect(images.header).to(beNil())
+        expect(images.background).to(beNil())
+        expect(images.icon).to(beNil())
+    }
+
     func testEncodePaywallViewMode() throws {
         // iOS 12 does not allow decoding fragments (top-level objects)
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()

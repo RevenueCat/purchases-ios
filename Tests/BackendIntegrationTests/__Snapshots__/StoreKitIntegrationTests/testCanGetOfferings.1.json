@@ -47,6 +47,7 @@
           "display_restore_purchases" : true,
           "images" : {
             "background" : "300883_1691437592.jpg",
+            "header" : null,
             "icon" : "300883_1691437591.jpg"
           },
           "packages" : [
