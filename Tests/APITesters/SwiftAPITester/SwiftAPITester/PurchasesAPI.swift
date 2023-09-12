@@ -219,6 +219,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: [String]()
         )
+        let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
+            packages: [Package]()
+        )
         let _: PromotionalOffer = try await purchases.promotionalOffer(
             forProductDiscount: discount,
             product: stp
@@ -277,6 +280,13 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
 
     return nil
+}
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        await purchases.track(paywallEvent: event)
+    }
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)

@@ -6,29 +6,29 @@
 //
 
 import RevenueCat
+import RevenueCatUI
 import SwiftUI
-
-#warning("This needs to be configured.")
-private let apiKey = ""
-// Note: you can leave this empty to use the production server, or point to your own instance.
-private let proxyURL = ""
 
 @main
 struct SimpleApp: App {
+
     init() {
         Purchases.logLevel = .verbose
-        Purchases.proxyURL = proxyURL.isEmpty
+        Purchases.proxyURL = Configuration.proxyURL.isEmpty
             ? nil
-            : URL(string: proxyURL)!
+            : URL(string: Configuration.proxyURL)!
 
         Purchases.configure(
-            with: .init(withAPIKey: apiKey)
+            with: .init(withAPIKey: Configuration.effectiveApiKey)
+                .with(entitlementVerificationMode: .informational)
+                .with(usesStoreKit2IfAvailable: true)
         )
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            AppContentView()
         }
     }
+
 }

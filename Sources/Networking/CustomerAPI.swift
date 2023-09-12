@@ -29,7 +29,7 @@ final class CustomerAPI {
     }
 
     func getCustomerInfo(appUserID: String,
-                         withRandomDelay randomDelay: Bool,
+                         isAppBackgrounded: Bool,
                          allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
@@ -48,7 +48,7 @@ final class CustomerAPI {
                                             completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
         self.backendConfig.addCacheableOperation(with: factory,
-                                                 withRandomDelay: randomDelay,
+                                                 delay: .default(forBackgroundedApp: isAppBackgrounded),
                                                  cacheStatus: cacheStatus)
     }
 

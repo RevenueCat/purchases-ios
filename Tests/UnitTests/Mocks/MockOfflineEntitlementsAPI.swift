@@ -27,12 +27,12 @@ class MockOfflineEntitlementsAPI: OfflineEntitlementsAPI {
     var stubbedGetProductEntitlementMappingResult: Result<ProductEntitlementMappingResponse, BackendError>?
 
     override func getProductEntitlementMapping(
-        withRandomDelay randomDelay: Bool,
+        isAppBackgrounded: Bool,
         completion: @escaping ProductEntitlementMappingResponseHandler
     ) {
         self.invokedGetProductEntitlementMapping = true
         self.invokedGetProductEntitlementMappingCount += 1
-        self.invokedGetProductEntitlementMappingParameter = randomDelay
+        self.invokedGetProductEntitlementMappingParameter = isAppBackgrounded
 
         completion(self.stubbedGetProductEntitlementMappingResult ?? .failure(.missingAppUserID()))
     }

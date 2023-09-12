@@ -50,7 +50,7 @@ class OfflineEntitlementsManager {
 
         Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_stale_updating)
 
-        self.api.getProductEntitlementMapping(withRandomDelay: isAppBackgrounded) { result in
+        self.api.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
                 self.handleProductEntitlementMappingBackendResult(with: response)

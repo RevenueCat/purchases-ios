@@ -37,15 +37,6 @@
       }
     },
     {
-      "identity" : "purchases-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/RevenueCat/purchases-ios",
-      "state" : {
-        "branch" : "main",
-        "revision" : "59034d03d51ba6a99b2e874b638a5cf77fd31d40"
-      }
-    },
-    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-snapshot-testing",

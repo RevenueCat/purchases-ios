@@ -100,11 +100,11 @@ class Backend {
     }
 
     func getCustomerInfo(appUserID: String,
-                         withRandomDelay randomDelay: Bool,
+                         isAppBackgrounded: Bool,
                          allowComputingOffline: Bool = true,
                          completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.getCustomerInfo(appUserID: appUserID,
-                                      withRandomDelay: randomDelay,
+                                      isAppBackgrounded: isAppBackgrounded,
                                       allowComputingOffline: allowComputingOffline,
                                       completion: completion)
     }

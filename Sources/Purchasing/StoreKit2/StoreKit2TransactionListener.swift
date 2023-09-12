@@ -12,7 +12,13 @@
 //  Created by Andrés Boedo on 31/8/21.
 
 import Foundation
+
+#if swift(<5.8)
+// `Product.PurchaseResult` is not `Sendable` in Xcode 14.2
+@preconcurrency import StoreKit
+#else
 import StoreKit
+#endif
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol StoreKit2TransactionListenerDelegate: AnyObject, Sendable {
@@ -54,18 +60,9 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     private weak var delegate: StoreKit2TransactionListenerDelegate?
     private let updates: AsyncStream<TransactionResult>
 
-    #if swift(<5.7)
-    // Note that these 2 constructors are duplicated because
-    // not having convinience here is an error in Xcode 13
-    // But having it is an error in Xcode 14.
-    convenience init(delegate: StoreKit2TransactionListenerDelegate? = nil) {
-        self.init(delegate: delegate, updates: StoreKit.Transaction.updates)
-    }
-    #else
     init(delegate: StoreKit2TransactionListenerDelegate? = nil) {
         self.init(delegate: delegate, updates: StoreKit.Transaction.updates)
     }
-    #endif
 
     /// Creates a listener with an `AsyncSequence` of `VerificationResult<Transaction>`s
     /// By default `StoreKit.Transaction.updates` is used, but a custom one can be passed for testing.

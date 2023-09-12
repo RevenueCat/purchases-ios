@@ -46,12 +46,6 @@ internal struct SK2StoreProductDiscount: StoreProductDiscountType {
     var localizedPriceString: String { underlyingSK2Discount.displayPrice }
 }
 
-#if swift(<5.7)
-// `SK2ProductDiscount` isn't `Sendable` until iOS 16.0 / Swift 5.7
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension SK2StoreProductDiscount: @unchecked Sendable {}
-#endif
-
 // MARK: - Private
 
 private extension StoreProductDiscount.PaymentMode {

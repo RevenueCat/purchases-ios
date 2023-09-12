@@ -43,6 +43,12 @@ class BasePurchasesTests: TestCase {
                                          clock: self.clock)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
+        self.paywallCache = .init()
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.paywallEventsManager = MockPaywallEventsManager()
+        } else {
+            self.paywallEventsManager = nil
+        }
         self.requestFetcher = MockRequestFetcher()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
@@ -142,6 +148,8 @@ class BasePurchasesTests: TestCase {
     var userDefaults: UserDefaults! = nil
     let offeringsFactory = MockOfferingsFactory()
     var deviceCache: MockDeviceCache!
+    var paywallCache: MockPaywallCacheWarming!
+    private var paywallEventsManager: PaywallEventsManagerType?
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
@@ -188,6 +196,13 @@ class BasePurchasesTests: TestCase {
         )
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var mockPaywallEventsManager: MockPaywallEventsManager {
+        get throws {
+            return try XCTUnwrap(self.paywallEventsManager as? MockPaywallEventsManager)
+        }
+    }
+
     func setupPurchases(automaticCollection: Bool = false, withDelegate: Bool = true) {
         Purchases.deprecated.automaticAppleSearchAdsAttributionCollection = automaticCollection
         self.identityManager.mockIsAnonymous = false
@@ -213,7 +228,6 @@ class BasePurchasesTests: TestCase {
     }
 
     func initializePurchasesInstance(appUserId: String?, withDelegate: Bool = true) {
-
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
             paymentQueueWrapper: self.paymentQueueWrapper,
@@ -255,10 +269,12 @@ class BasePurchasesTests: TestCase {
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
+                                   paywallCache: self.paywallCache,
                                    identityManager: self.identityManager,
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
+                                   paywallEventsManager: self.paywallEventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -390,7 +406,7 @@ extension BasePurchasesTests {
         )
 
         override func getCustomerInfo(appUserID: String,
-                                      withRandomDelay randomDelay: Bool,
+                                      isAppBackgrounded: Bool,
                                       allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.getCustomerInfoCallCount += 1
@@ -505,6 +521,8 @@ private extension BasePurchasesTests {
         self.mockBeginRefundRequestHelper = nil
         self.purchasesOrchestrator = nil
         self.deviceCache = nil
+        self.paywallCache = nil
+        self.paywallEventsManager = nil
         self.purchases = nil
     }
 

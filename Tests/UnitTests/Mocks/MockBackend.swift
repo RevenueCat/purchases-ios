@@ -67,24 +67,24 @@ class MockBackend: Backend {
     var invokedGetSubscriberData = false
     var invokedGetSubscriberDataCount = 0
     var invokedGetSubscriberDataParameters: (appUserID: String?,
-                                             randomDelay: Bool,
+                                             isAppBackgrounded: Bool,
                                              allowComputingOffline: Bool,
                                              completion: CustomerAPI.CustomerInfoResponseHandler?)?
     var invokedGetSubscriberDataParametersList = [(appUserID: String?,
-                                                   randomDelay: Bool,
+                                                   isAppBackgrounded: Bool,
                                                    allowComputingOffline: Bool,
                                                    completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
 
     override func getCustomerInfo(appUserID: String,
-                                  withRandomDelay randomDelay: Bool,
+                                  isAppBackgrounded: Bool,
                                   allowComputingOffline: Bool,
                                   completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedGetSubscriberData = true
         invokedGetSubscriberDataCount += 1
-        invokedGetSubscriberDataParameters = (appUserID, randomDelay, allowComputingOffline, completion)
-        invokedGetSubscriberDataParametersList.append((appUserID, randomDelay, allowComputingOffline, completion))
+        invokedGetSubscriberDataParameters = (appUserID, isAppBackgrounded, allowComputingOffline, completion)
+        invokedGetSubscriberDataParametersList.append((appUserID, isAppBackgrounded, allowComputingOffline, completion))
 
         completion(self.stubbedGetCustomerInfoResult)
     }

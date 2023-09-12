@@ -1,0 +1,75 @@
+{
+    "template_name": "1",
+    "localized_strings": {
+        "en_US": {
+            "title": "Paywall",
+            "subtitle": "Description",
+            "call_to_action": "Purchase now",
+            "call_to_action_with_intro_offer": "Purchase now",
+            "offer_details": "{{ sub_price_per_month }} per month",
+            "offer_details_with_intro_offer": "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month",
+            "offer_name": "{{ period }}",
+            "features": [
+                {
+                    "title": "Feature 1",
+                    "content": "Content 1",
+                    "icon_id": "lock"
+                },
+                {
+                    "title": "Feature 2",
+                    "content": "Content 2",
+                    "icon_id": "bell"
+                }
+            ]
+        },
+        "es_ES": {
+            "title": "Tienda",
+            "call_to_action": "Comprar",
+            "offer_details_with_intro_offer": " ",
+            "offer_name": "{{ period }}",
+            "features": [
+                {
+                    "title": "Lista 1",
+                    "content": "Contenido",
+                    "icon_id": "lock"
+                }
+            ]
+        }
+    },
+    "config": {
+        "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
+        "default_package": "$rc_annual",
+        "images": {
+            "header": "header.jpg",
+            "background": "background.jpg",
+            "icon": "icon.jpg"
+        },
+        "blurred_background_image": true,
+        "display_restore_purchases": false,
+        "tos_url": "https://revenuecat.com/tos",
+        "privacy_url": "https://revenuecat.com/privacy",
+        "colors": {
+            "light": {
+                "background": "#FF00AA",
+                "text_1": "#FF00AA22",
+                "text_2": "#FF00AA11",
+                "text_3": "#FF00AA33",
+                "call_to_action_background": "#FF00AACC",
+                "call_to_action_foreground": "#FF00AA",
+                "accent_1": "#FF0000",
+                "accent_2": "#00FF00",
+                "call_to_action_secondary_background": "#FF00BB",
+            },
+            "dark": {
+                "background": "#FF0000",
+                "text_1": "#FF0011",
+                "call_to_action_background": "#112233AA",
+                "call_to_action_foreground": "#AABBCC",
+                "accent_1": "#00FFFF",
+                "accent_2": "#FF00FF"
+            }
+        }
+    },
+    "asset_base_url": "https://rc-paywalls.s3.amazonaws.com",
+    "revision": 7
+}

@@ -64,6 +64,20 @@ extension IntroEligibilityStatus: CustomStringConvertible {
 
 }
 
+extension IntroEligibilityStatus {
+
+    /// - Returns: `true` if this eligibility is ``IntroEligibilityStatus/isEligible``.
+    public var isEligible: Bool {
+        switch self {
+        case .unknown, .ineligible, .noIntroOfferExists:
+            return false
+        case .eligible:
+            return true
+        }
+    }
+
+}
+
 private extension IntroEligibilityStatus {
 
     enum IntroEligibilityStatusError: LocalizedError {
@@ -114,6 +128,19 @@ private extension IntroEligibilityStatus {
         self.status = .unknown
     }
 
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? Self else { return false }
+
+        return other.status == self.status
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.status)
+
+        return hasher.finalize()
+    }
+
 }
 
 extension IntroEligibility {
@@ -130,6 +157,23 @@ extension IntroEligibility {
         case .unknown: fallthrough
         @unknown default:
             return "Unknown status"
+        }
+    }
+
+    public override var debugDescription: String {
+        let name = "\(type(of: self))"
+
+        switch self.status {
+        case .eligible:
+            return "\(name).eligible"
+        case .ineligible:
+            return "\(name).ineligible"
+        case .noIntroOfferExists:
+            return "\(name).noIntroOfferExists"
+        case .unknown:
+            return "\(name).unknown"
+        @unknown default:
+            return "Unknown"
         }
     }
 

@@ -14,11 +14,26 @@
 
 import Foundation
 
+/// Represents a delay for asynchonous operations.
+///
+/// These delays prevent DDOS if a notification leads to many users opening an app at the same time,
+/// by spreading asynchronous operations over time.
+enum Delay {
+
+    case none
+    case `default`
+    case long
+
+    static func `default`(forBackgroundedApp inBackground: Bool) -> Self {
+        return inBackground ? .default : .none
+    }
+
+}
+
 class OperationDispatcher {
 
     private let mainQueue: DispatchQueue = .main
     private let workerQueue: DispatchQueue = .init(label: "OperationDispatcherWorkerQueue")
-    private let maxJitterInSeconds: Double = 5
 
     static let `default`: OperationDispatcher = .init()
 
@@ -41,12 +56,22 @@ class OperationDispatcher {
         Self.dispatchOnMainActor(block)
     }
 
-    func dispatchOnWorkerThread(withRandomDelay: Bool = false, block: @escaping @Sendable () -> Void) {
-        if withRandomDelay {
-            let delay = Double.random(in: 0..<self.maxJitterInSeconds)
-            self.workerQueue.asyncAfter(deadline: .now() + delay, execute: block)
+    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () -> Void) {
+        if delay.hasDelay {
+            self.workerQueue.asyncAfter(deadline: .now() + delay.random(), execute: block)
         } else {
             self.workerQueue.async(execute: block)
+        }
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func dispatchOnWorkerThread(delay: Delay = .none, block: @escaping @Sendable () async -> Void) {
+        Task.detached(priority: .background) {
+            if delay.hasDelay {
+                try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
+            }
+
+            await block()
         }
     }
 
@@ -67,6 +92,49 @@ extension OperationDispatcher {
     }
 
 }
+
+// MARK: -
+
+/// Visible for testing
+extension Delay {
+
+    var hasDelay: Bool {
+        return self.maximum > 0
+    }
+
+    var range: Range<TimeInterval> {
+        return self.minimum..<self.maximum
+    }
+
+}
+
+private extension Delay {
+
+    var minimum: TimeInterval {
+        switch self {
+        case .none: return 0
+        case .`default`: return 0
+        case .long: return Self.maxJitter
+        }
+    }
+
+    var maximum: TimeInterval {
+        switch self {
+        case .none: return 0
+        case .`default`: return Self.maxJitter
+        case .long: return Self.maxJitter * 2
+        }
+    }
+
+    func random() -> TimeInterval {
+        Double.random(in: self.range)
+    }
+
+    private static let maxJitter: TimeInterval = 5
+
+}
+
+// MARK: -
 
 // `DispatchQueue` is not `Sendable` as of Swift 5.8, but this class performs no mutations.
 extension OperationDispatcher: @unchecked Sendable {}

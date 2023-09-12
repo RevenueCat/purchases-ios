@@ -28,6 +28,7 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
 repo_name = 'purchases-ios'
+snapshots_repo_name = 'purchases-ios-snapshots'
 changelog_latest_path = './CHANGELOG.latest.md'
 changelog_path = './CHANGELOG.md'
 
@@ -123,6 +124,16 @@ platform :ios do
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+    
+    if options[:skip_sk_tests]
+      # For platforms that fail to run StoreKit tests.
+      # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
+      test_plan = "CI-RevenueCat"
+    elsif generate_snapshots
+      test_plan = "CI-Snapshots"
+    else
+      test_plan = "CI-AllTests"
+    end
 
     scan(
       step_name: "scan - iPhone",
@@ -132,7 +143,7 @@ platform :ios do
       prelaunch_simulator: true,
       output_types: 'junit',
       result_bundle: true,
-      testplan: generate_snapshots ? "CI-Snapshots" : "CI-AllTests",
+      testplan: test_plan,
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5,
@@ -173,6 +184,32 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/watchos"
     )
+  end
+
+  desc "Runs all RevenueCatUI tests"
+  lane :test_revenuecatui do |options|
+    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
+    
+    fetch_snapshots
+
+    begin
+      # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
+      xcodebuild(
+        workspace: '.',
+        scheme: 'RevenueCatUI',
+        destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"),
+        sdk: 'iphonesimulator',
+        output_style: :basic,
+        result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
+        report_formats: [:junit],
+        report_path: 'fastlane/test_output/revenuecatui/tests.xml',
+        test: true,
+        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+      )
+    rescue => e
+      # Equivalent to `fail_build: !generate_snapshots`
+      raise e if !generate_snapshots
+    end
   end
 
   desc "Release checks"
@@ -266,6 +303,16 @@ platform :ios do
     )
   end
 
+  desc "build RevenueCatUI API tester"
+  lane :build_revenuecatui_api_tester do
+    xcodebuild(
+      project: 'Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj',
+      scheme: 'SwiftAPITester',
+      destination: 'generic/platform=iOS',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    )
+  end
+
   desc "replace API KEY for installation and integration tests"
   lane :replace_api_key_integration_tests do
     replace_text_in_files(
@@ -351,8 +398,21 @@ platform :ios do
     end
   end
 
-  desc "Trigger CircleCI job to generate snapshots"
-  lane :generate_snapshots do 
+  desc "Trigger CircleCI job to generate snapshots for RevenueCat"
+  lane :generate_snapshots_RC do 
+    generate_snapshots(
+      pipeline: "generate_snapshots"
+    )
+  end
+
+  desc "Trigger CircleCI job to generate snapshots for RevenueCatUI"
+  lane :generate_snapshots_RCUI do 
+    generate_snapshots(
+      pipeline: "generate_revenuecatui_snapshots"
+    )
+  end
+
+  private_lane :generate_snapshots do |options|
     require 'rest-client'
 
     # Prompt branch
@@ -366,43 +426,64 @@ platform :ios do
 
     # Make request
     headers = {"Circle-Token": circle_token, "Content-Type": "application/json", "Accept": "application/json"}
-    data = {parameters: {generate_snapshots: true}, branch: branch}
-    url = "https://circleci.com/api/v2/project/github/RevenueCat/purchases-ios/pipeline"
+    data = {parameters: {options[:pipeline] => true}, branch: branch}
+    url = "https://circleci.com/api/v2/project/github/RevenueCat/#{repo_name}/pipeline"
 
     resp = RestClient.post url, data.to_json, headers
 
     # Print workflow url
     number = JSON.parse(resp.body)["number"]
-    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/purchases-ios/#{number}"
+    workflow_url = "https://app.circleci.com/pipelines/github/RevenueCat/#{repo_name}/#{number}"
 
     UI.important "Workflow: #{workflow_url}"
   end
 
   desc "Creates a new PR after new snapshot files were generated"
   lane :create_snapshot_pr do |options|
-    version = options[:version]
-    base_branch = ENV["CIRCLE_BRANCH"]
+    push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{repo_name}",
+      base_branch: ENV["CIRCLE_BRANCH"],
+      files_to_add: "../*/__Snapshots__/*"
+     )
+  end
 
+  desc "Creates a new PR on purchases-ios-snapshots after new snapshot files were generated"
+  lane :create_snapshots_repo_pr do |options|
+    Dir.chdir("../Tests/#{snapshots_repo_name}") { |dir|
+     push_snapshot_pr(
+      version: options[:version],
+      repo: "revenuecat/#{snapshots_repo_name}",
+      base_branch: "main", 
+      files_to_add: "."
+     )
+    }
+  end
+
+  private_lane :push_snapshot_pr do |options|
+    version = options[:version]
+    base_branch = options[:base_branch]
     build_number = ENV["CIRCLE_BUILD_NUM"] 
 
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
-    sh("git", "checkout", "-b", branch_name)
 
-    sh("git", "add", "../Tests")
+    sh("git", "checkout", "-b", branch_name)
+    sh("git", "add", options[:files_to_add])
+    
     file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
     if file_count == 0
       UI.important("No files to be committed")
     else
       sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
-      push_to_git_remote
+      sh("git", "push", "origin", branch_name) 
 
       circle_user = ENV["CIRCLE_USERNAME"]
       branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
       body = "Requested by @#{circle_user} for [#{base_branch}](#{branch_link})"
 
       create_pull_request(
-        repo: "revenuecat/purchases-ios",
+        repo: options[:repo],
         title: "Generating new test snapshots for `#{base_branch}` - #{version}",
         body: body,
         base: base_branch,
@@ -515,9 +596,9 @@ platform :ios do
       './Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/SPMInstallation.xcodeproj/project.pbxproj',
       './Tests/InstallationTests/ReceiptParserInstallation/ReceiptParserInstallation.xcodeproj/project.pbxproj',
       './Tests/APITesters/CustomEntitlementComputationSwiftAPITester/CustomEntitlementComputationSwiftAPITester.xcodeproj/project.pbxproj',
+      './Tests/APITesters/RevenueCatUIAPITester/RevenueCatUISwiftAPITester.xcodeproj/project.pbxproj',
       './Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.xcodeproj/project.pbxproj',
-      './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj',
-      './RevenueCat.xcodeproj/project.pbxproj'
+      './Examples/MagicWeather/MagicWeather.xcodeproj/project.pbxproj'
     ]
 
     old_kind_line = "kind = branch;"
@@ -711,6 +792,38 @@ platform :ios do
     macos_build(changelog)
   end
 
+  desc "Clones or updates snapshots repo"
+  lane :fetch_snapshots do
+    Dir.chdir("../Tests") do
+      if !File.directory?(snapshots_repo_name)
+        UI.important("Cloning snapshots repo")
+
+        sh "git", "clone", "git@github.com:RevenueCat/#{snapshots_repo_name}.git"
+      end
+
+      commit = current_snapshots_commit
+      UI.message("Updating snapshots repo to #{commit}")
+      Dir.chdir(snapshots_repo_name) do
+        sh "git", "fetch", "origin"
+        sh "git", "checkout", commit
+      end
+    end
+  end
+
+  desc "Updates purchases-ios-snapshots-commit to point to latest commit on main"
+  lane :update_snapshots_repo do
+    new_hash = ""
+
+    Dir.chdir("../Tests/#{snapshots_repo_name}") do
+      sh "git", "checkout", "main"
+      sh "git", "pull", "--rebase", "origin"
+      new_hash = sh("git", "rev-parse", "HEAD")
+    end
+
+    UI.important("Updating snapshot commit to #{new_hash}")
+    update_snapshots_commit(new_hash)
+  end
+
   desc "Create or delete sandbox testers"
   lane :sandbox_testers do
     Spaceship::ConnectAPI.login(use_portal: false)
@@ -825,8 +938,7 @@ lane :check_pods do
   pod_lib_lint(
     verbose: true,
     podspec:'RevenueCat.podspec', 
-    # TODO: re-add watchOS when https://github.com/CocoaPods/CocoaPods/issues/11558 is fixed.
-    platforms:"ios,osx,tvos",
+    platforms:"ios,osx,tvos,watchos",
     fail_fast: true
   )
 end
@@ -845,3 +957,17 @@ end
 def current_version_number
   File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
+
+# Snapshots
+
+def snapshots_commit_file
+  "#{File.dirname(__FILE__)}/../Tests/purchases-ios-snapshots-commit"
+end
+
+def current_snapshots_commit
+  File.read(snapshots_commit_file).strip
+end
+def update_snapshots_commit(hash)
+  File.write(snapshots_commit_file, hash)
+end
+ 

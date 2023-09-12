@@ -64,9 +64,3 @@ final class MockStoreTransaction: StoreTransactionType {
     }
 
 }
-
-#if swift(<5.7)
-// `@unchecked` because:
-// - `Date` is not `Sendable` until Swift 5.7
-extension MockStoreTransaction: @unchecked Sendable {}
-#endif
