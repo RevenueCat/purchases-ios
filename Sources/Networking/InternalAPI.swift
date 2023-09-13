@@ -56,11 +56,14 @@ class InternalAPI {
 
 extension InternalAPI {
 
+    /// - Throws: `BackendError`
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func postPaywallEvents(events: [PaywallStoredEvent]) async -> BackendError? {
-        return await Async.call { completion in
+    func postPaywallEvents(events: [PaywallStoredEvent]) async throws {
+        let error = await Async.call { completion in
             self.postPaywallEvents(events: events, completion: completion)
         }
+
+        if let error { throw error }
     }
 
 }

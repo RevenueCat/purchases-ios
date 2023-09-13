@@ -61,10 +61,14 @@ class BaseBackendIntegrationTests: TestCase {
     var proxyURL: String? { return Constants.proxyURL }
 
     func configurePurchases() {
+        Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
+        Purchases.logLevel = .verbose
+
         Purchases.configure(withAPIKey: self.apiKey,
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
+                            documentsDirectory: self.documentsDirectory,
                             platformInfo: nil,
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,
@@ -173,8 +177,6 @@ private extension BaseBackendIntegrationTests {
         self.simulateForegroundingApp()
 
         Purchases.shared.delegate = self.purchasesDelegate
-        Purchases.proxyURL = self.proxyURL.flatMap(URL.init(string:))
-        Purchases.logLevel = .verbose
 
         await self.waitForAnonymousUser()
     }
@@ -216,6 +218,12 @@ private extension BaseBackendIntegrationTests {
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
                      internalSettings: self)
+    }
+
+    var documentsDirectory: URL {
+        return URL
+            .cachesDirectory
+            .appendingPathComponent(UUID().uuidString, conformingTo: .directory)
     }
 
 }
