@@ -102,6 +102,7 @@ struct Template4View: TemplateViewType {
 
             self.subscribeButton
                 .defaultHorizontalPadding()
+                .padding(.bottom, Self.verticalPadding / -2)
 
             FooterView(configuration: self.configuration,
                        bold: false,
