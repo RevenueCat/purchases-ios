@@ -33,7 +33,7 @@ class PaywallEventStoreTests: TestCase {
     // - MARK: -
 
     func testCreateDefaultDoesNotThrow() throws {
-        _ = try PaywallEventStore.createDefault()
+        _ = try PaywallEventStore.createDefault(documentsDirectory: nil)
     }
 
     // - MARK: store and fetch

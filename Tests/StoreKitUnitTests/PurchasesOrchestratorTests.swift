@@ -259,6 +259,58 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
+    func testPurchaseSK1PackageWithPresentedPaywall() async throws {
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk1Product()
+        let payment = self.storeKit1Wrapper.payment(with: product)
+
+        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(
+                sk1Product: product,
+                payment: payment,
+                package: nil,
+                wrapper: self.storeKit1Wrapper
+            ) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+    }
+
+    func testFailedSK1PurchaseRemembersPresentedPaywall() async throws {
+        func purchase() async throws {
+            let product = try await self.fetchSk1Product()
+            let payment = self.storeKit1Wrapper.payment(with: product)
+
+            _ = await withCheckedContinuation { continuation in
+                self.orchestrator.purchase(
+                    sk1Product: product,
+                    payment: payment,
+                    package: nil,
+                    wrapper: self.storeKit1Wrapper
+                ) { transaction, customerInfo, error, userCancelled in
+                    continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+                }
+            }
+        }
+
+        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
+        try await purchase()
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        try await purchase()
+
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+    }
+
     func testPurchaseSK1PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
@@ -660,6 +712,56 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2PackageWithPresentedPaywall() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil)
+
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testFailedSK2PurchaseRemembersPresentedPaywall() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let mockListener = try XCTUnwrap(
+            self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
+        )
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+
+        let product = try await self.fetchSk2Product()
+
+        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+
+        self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
+        _ = try? await self.orchestrator.purchase(sk2Product: product,
+                                                  package: nil,
+                                                  promotionalOffer: nil)
+
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        _ = try await self.orchestrator.purchase(sk2Product: product,
+                                                 package: nil,
+                                                 promotionalOffer: nil)
+
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -1343,5 +1445,15 @@ private extension PurchasesOrchestratorTests {
         productType: .autoRenewableSubscription,
         localizedDescription: "Description"
     ).toStoreProduct()
+
+    static let paywallEvent: PaywallEvent.Data = .init(
+        offeringIdentifier: "offering",
+        paywallRevision: 5,
+        sessionID: .init(),
+        displayMode: .fullScreen,
+        localeIdentifier: "en_US",
+        darkMode: true,
+        date: .init(timeIntervalSince1970: 1694029328)
+    )
 
 }

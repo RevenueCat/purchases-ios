@@ -33,7 +33,7 @@ enum PaywallsStrings {
     case event_flush_already_in_progress
     case event_flush_with_empty_store
     case event_flush_starting(count: Int)
-    case event_flush_failed(BackendError)
+    case event_flush_failed(Error)
 
 }
 
@@ -78,7 +78,7 @@ extension PaywallsStrings: LogMessage {
             return "Paywall event flush: posting \(count) events."
 
         case let .event_flush_failed(error):
-            return "Paywall event flushing failed, will retry. Error: \(error.localizedDescription)"
+            return "Paywall event flushing failed, will retry. Error: \((error as NSError).localizedDescription)"
         }
     }
 
