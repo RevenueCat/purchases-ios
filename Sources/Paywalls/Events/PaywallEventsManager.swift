@@ -18,8 +18,10 @@ protocol PaywallEventsManagerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(paywallEvent: PaywallEvent) async
 
+    /// - Throws: if posting events fails
+    /// - Returns: the number of events posted
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func flushEvents(count: Int) async
+    func flushEvents(count: Int) async throws -> Int
 
 }
 
@@ -46,10 +48,10 @@ actor PaywallEventsManager: PaywallEventsManagerType {
         await self.store.store(.init(event: paywallEvent, userID: self.userProvider.currentAppUserID))
     }
 
-    func flushEvents(count: Int) async {
+    func flushEvents(count: Int) async throws -> Int {
         guard !self.flushInProgress else {
             Logger.debug(Strings.paywalls.event_flush_already_in_progress)
-            return
+            return 0
         }
         self.flushInProgress = true
         defer { self.flushInProgress = false }
@@ -58,21 +60,26 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
         guard !events.isEmpty else {
             Logger.verbose(Strings.paywalls.event_flush_with_empty_store)
-            return
+            return 0
         }
 
         Logger.verbose(Strings.paywalls.event_flush_starting(count: events.count))
 
-        let error = await self.internalAPI.postPaywallEvents(events: events)
+        do {
+            try await self.internalAPI.postPaywallEvents(events: events)
 
-        if let error {
+            await self.store.clear(count)
+
+            return events.count
+        } catch {
             Logger.error(Strings.paywalls.event_flush_failed(error))
 
-            if error.successfullySynced {
+            if let backendError = error as? BackendError,
+               backendError.successfullySynced {
                 await self.store.clear(count)
             }
-        } else {
-            await self.store.clear(count)
+
+            throw error
         }
     }
 

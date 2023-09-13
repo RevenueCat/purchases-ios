@@ -19,30 +19,105 @@ import XCTest
 
 class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
-    func testPurchasingPackageWithPresentedPaywall() async throws {
-        let offering = try await self.currentOffering
-        let paywall = try XCTUnwrap(offering.paywall)
-        let package = try XCTUnwrap(offering.monthly)
-        let event: PaywallEvent.Data = .init(
-            offering: offering,
-            paywall: paywall,
+    private var offering: Offering!
+    private var package: Package!
+    private var paywall: PaywallData!
+    private var eventData: PaywallEvent.Data!
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        self.offering = try await XCTAsyncUnwrap(try await self.currentOffering)
+        self.package = try XCTUnwrap(self.offering.monthly)
+        self.paywall = try XCTUnwrap(self.offering.paywall)
+
+        self.eventData = .init(
+            offering: self.offering,
+            paywall: self.paywall,
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .current,
             darkMode: true
         )
+    }
 
-        try await self.purchases.track(paywallEvent: .view(event))
+    func testPurchasingPackageWithPresentedPaywall() async throws {
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: package).transaction)
 
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+    }
+
+    func testPurchasingPackageAfterClearingPresentedPaywall() async throws {
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
+        try await self.purchases.track(paywallEvent: .close(self.eventData))
+
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        self.verifyTransactionHandled(with: transaction, sessionID: nil)
+    }
+
+    func testPurchasingAfterAFailureRemembersPresentedPaywall() async throws {
+        self.testSession.failTransactionsEnabled = true
+        self.testSession.failureError = .unknown
+
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
+
+        do {
+            _ = try await self.purchases.purchase(package: self.package)
+            fail("Expected error")
+        } catch {
+            // Expected error
+        }
+
+        self.logger.clearMessages()
+
+        self.testSession.failTransactionsEnabled = false
+        let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
+
+        self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
+    }
+
+    func testFlushingEmptyEvents() async throws {
+        let result = try await self.purchases.flushPaywallEvents(count: 1)
+        expect(result) == 0
+    }
+
+    func testFlushingEvents() async throws {
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(self.eventData))
+        try await self.purchases.track(paywallEvent: .close(self.eventData))
+
+        let result = try await self.purchases.flushPaywallEvents(count: 3)
+        expect(result) == 3
+    }
+
+    func testFlushingEventsClearsThem() async throws {
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(self.eventData))
+        try await self.purchases.track(paywallEvent: .close(self.eventData))
+
+        _ = try await self.purchases.flushPaywallEvents(count: 3)
+        let result = try await self.purchases.flushPaywallEvents(count: 10)
+        expect(result) == 0
+    }
+
+}
+
+private extension PaywallEventsIntegrationTests {
+
+    func verifyTransactionHandled(
+        with transaction: StoreTransaction,
+        sessionID: PaywallEvent.SessionID?
+    ) {
         self.logger.verifyMessageWasLogged(
             Strings.purchase.transaction_poster_handling_transaction(
                 transactionID: transaction.transactionIdentifier,
-                productID: package.storeProduct.productIdentifier,
+                productID: self.package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
-                paywallSessionID: event.sessionIdentifier
+                offeringID: self.package.offeringIdentifier,
+                paywallSessionID: sessionID
             )
         )
     }

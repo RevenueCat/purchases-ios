@@ -260,6 +260,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     convenience init(apiKey: String,
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
+                     documentsDirectory: URL? = nil,
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      responseVerificationMode: Signing.ResponseVerificationMode,
@@ -359,7 +360,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 paywallEventsManager = PaywallEventsManager(
                     internalAPI: backend.internalAPI,
                     userProvider: identityManager,
-                    store: try PaywallEventStore.createDefault()
+                    store: try PaywallEventStore.createDefault(documentsDirectory: documentsDirectory)
                 )
                 Logger.verbose(Strings.paywalls.event_manager_initialized)
             } else {
@@ -1266,6 +1267,7 @@ public extension Purchases {
         appUserID: String?,
         observerMode: Bool,
         userDefaults: UserDefaults?,
+        documentsDirectory: URL? = nil,
         platformInfo: PlatformInfo?,
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKit2Setting: StoreKit2Setting,
@@ -1277,6 +1279,7 @@ public extension Purchases {
             .init(apiKey: apiKey,
                   appUserID: appUserID,
                   userDefaults: userDefaults,
+                  documentsDirectory: documentsDirectory,
                   observerMode: observerMode,
                   platformInfo: platformInfo,
                   responseVerificationMode: responseVerificationMode,
@@ -1529,6 +1532,13 @@ internal extension Purchases {
 
     func invalidateOfferingsCache() {
         self.offeringsManager.invalidateCachedOfferings(appUserID: self.appUserID)
+    }
+
+    /// - Throws: if posting events fails
+    /// - Returns: the number of events posted
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func flushPaywallEvents(count: Int) async throws -> Int {
+        return try await self.paywallEventsManager?.flushEvents(count: count) ?? 0
     }
 
 }
