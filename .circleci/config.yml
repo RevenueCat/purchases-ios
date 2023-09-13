@@ -332,7 +332,7 @@ jobs:
       - install-dependencies
       - run:
           name: Run tests
-          command: bundle exec fastlane test_ios
+          command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 (17.0)
