@@ -26,9 +26,11 @@ actor MockPaywallEventsManager: PaywallEventsManagerType {
     var invokedFlushEvents = false
     var invokedFlushEventsCount = 0
 
-    func flushEvents(count: Int) async {
+    func flushEvents(count: Int) async -> Int {
         self.invokedFlushEvents = true
         self.invokedFlushEventsCount += 1
+
+        return 0
     }
 
 }
