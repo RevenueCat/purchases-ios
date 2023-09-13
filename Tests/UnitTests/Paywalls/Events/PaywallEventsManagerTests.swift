@@ -188,6 +188,10 @@ class PaywallEventsManagerTests: TestCase {
     }
 
     func testCannotFlushMultipleTimesInParallel() async throws {
+        // The way this test is written does not work in iOS 15.
+        // The second Task does not start until the first one is done.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let event1 = await self.storeRandomEvent()
         _ = await self.storeRandomEvent()
 
