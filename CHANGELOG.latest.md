@@ -1,12 +1,13 @@
-### Bugfixes
-* `DebugViewModel`: fixed runtime crash on iOS < 16 (#3139) via NachoSoto (@NachoSoto)
 ### Performance Improvements
-* `PurchasesOrchestrator`: return early if receipt has no transactions when checking for promo offers (#3123) via Mark Villacampa (@MarkVillacampa)
-* `Purchases`: don't clear intro eligibility / purchased products cache on first launch (#3067) via NachoSoto (@NachoSoto)
-### Dependency Updates
-* `SPM`: update `Package.resolved` (#3130) via NachoSoto (@NachoSoto)
+* `OperationDispatcher`: add support for "long" delays (#3168) via NachoSoto (@NachoSoto)
 ### Other Changes
-* `ReceiptParser`: fixed SPM build (#3144) via NachoSoto (@NachoSoto)
-* `carthage_installation_tests`: optimize SPM package loading (#3129) via NachoSoto (@NachoSoto)
-* `CI`: add workaround for `Carthage` timing out (#3119) via NachoSoto (@NachoSoto)
-* `Integration Tests`: workaround to not lose debug logs (#3108) via NachoSoto (@NachoSoto)
+* `Integration Tests`: add tests for ghost transfer behavior (#3135) via NachoSoto (@NachoSoto)
+* `Xcode`: removed `purchases-ios` SPM reference (#3166) via NachoSoto (@NachoSoto)
+* `Integration Tests`: another flaky failure (#3165) via NachoSoto (@NachoSoto)
+* `Integration Tests`: fix flaky test failure due to leftover transaction (#3167) via NachoSoto (@NachoSoto)
+* `Xcode 13`: removed last `Swift 5.7`  checks (#3161) via NachoSoto (@NachoSoto)
+* `Integration Tests`: improve flaky tests (#3163) via NachoSoto (@NachoSoto)
+* `Codable`: improved decoding errors (#3153) via NachoSoto (@NachoSoto)
+* Refactor: extract `HealthOperation` (#3154) via NachoSoto (@NachoSoto)
+* `Xcode 13`: remove conditional code (#3147) via NachoSoto (@NachoSoto)
+* `CircleCI`: change all jobs to use `Xcode 14.x` and replace `xcode-install` with `xcodes` (#2421) via NachoSoto (@NachoSoto)
