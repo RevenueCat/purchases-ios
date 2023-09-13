@@ -25,7 +25,7 @@ struct Template4View: TemplateViewType {
     private var selectedPackage: TemplateViewConfiguration.Package
 
     @State
-    private var packageContentHeight: CGFloat = 10
+    private var packageContentHeight: CGFloat?
     @State
     private var containerWidth: CGFloat = 600
     @State
@@ -165,14 +165,14 @@ struct Template4View: TemplateViewType {
                               packageWidth: self.packageWidth,
                               desiredHeight: nil)
                 .onSizeChange(.vertical) {
-                    if $0 > self.packageContentHeight {
+                    if $0 > self.packageContentHeight ?? 0 {
                         self.packageContentHeight = $0
                     }
                 }
             }
         }
-        .onChange(of: self.dynamicTypeSize) { _ in self.packageContentHeight = 0 }
-        .onChange(of: self.packageWidth) { _ in self.packageContentHeight = 0 }
+        .onChange(of: self.dynamicTypeSize) { _ in self.packageContentHeight = nil }
+        .onChange(of: self.containerWidth) { _ in self.packageContentHeight = nil }
         .hidden()
     }
 
