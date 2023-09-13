@@ -294,6 +294,19 @@ extension BaseStoreKitIntegrationTests {
         )
     }
 
+    func verifyReceiptIsEventuallyPosted(
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
+            timeout: .seconds(3),
+            pollInterval: .milliseconds(100),
+            file: file,
+            line: line
+        )
+    }
+
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
         guard let expirationDate = entitlement.expirationDate else { return }
 
