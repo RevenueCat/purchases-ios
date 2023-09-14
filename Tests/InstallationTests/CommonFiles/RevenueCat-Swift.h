@@ -1207,6 +1207,11 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 
 
 
+SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
+@interface HealthOperation : CacheableNetworkOperation
+@end
+
+
 
 
 enum RCIntroEligibilityStatus : NSInteger;
