@@ -103,6 +103,16 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         expect(result) == 0
     }
 
+    func testRemembersEventsWhenReopeningApp() async throws {
+        try await self.purchases.track(paywallEvent: .view(self.eventData))
+        try await self.purchases.track(paywallEvent: .close(self.eventData))
+
+        await self.resetSingleton()
+
+        let result = try await self.purchases.flushPaywallEvents(count: 10)
+        expect(result) == 2
+    }
+
 }
 
 private extension PaywallEventsIntegrationTests {

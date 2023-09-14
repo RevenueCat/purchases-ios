@@ -300,6 +300,7 @@
 		4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */; };
 		4FD368B42AA7CFED00F63354 /* PaywallEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */; };
 		4FD368B62AA7D09C00F63354 /* PaywallEventSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */; };
+		4FD7E8662AABC4470055406F /* PurchasesPaywallEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */; };
 		4FDA13842A33D9BD00C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */; };
 		4FDF10E72A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
 		4FDF10E82A725EA6004F3680 /* ExternalPurchasesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */; };
@@ -1040,6 +1041,7 @@
 		4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEvent.swift; sourceTree = "<group>"; };
 		4FD368B32AA7CFED00F63354 /* PaywallEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventStore.swift; sourceTree = "<group>"; };
 		4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventSerializer.swift; sourceTree = "<group>"; };
+		4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPaywallEventsTests.swift; sourceTree = "<group>"; };
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesManager.swift; sourceTree = "<group>"; };
 		4FDF10E92A726269004F3680 /* ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
@@ -2358,6 +2360,7 @@
 				4FFCED802AA941B200118EF4 /* PaywallEventsRequestTests.swift */,
 				4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */,
 				4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */,
+				4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */,
 			);
 			path = Events;
 			sourceTree = "<group>";
@@ -3701,6 +3704,7 @@
 				5796A39427D6BD6900653165 /* BackendGetOfferingsTests.swift in Sources */,
 				5766AA42283C768600FA6091 /* OperatorExtensionsTests.swift in Sources */,
 				4F54DF3F2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift in Sources */,
+				4FD7E8662AABC4470055406F /* PurchasesPaywallEventsTests.swift in Sources */,
 				351B516A26D44CB300BD2BD7 /* ISOPeriodFormatterTests.swift in Sources */,
 				57DC9F4A27CD37BA00DA6AF9 /* HTTPStatusCodeTests.swift in Sources */,
 				2DDF41DE24F6F527005BC22D /* MockAppleReceiptBuilder.swift in Sources */,
