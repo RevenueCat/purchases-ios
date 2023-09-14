@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
-  codecov: codecov/codecov@3.2.4
+  codecov: codecov/codecov@3.2.5
 
 version: 2.1
 
@@ -326,13 +326,16 @@ jobs:
 
   run-test-ios-17:
     <<: *base-job
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - install-dependencies
       - run:
           name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
+          # StoreKit tests currently get stuck.
+          # See https://discuss.circleci.com/t/severe-performance-problems-with-xcode-15/49205/11?u=nachosoto
+          command: bundle exec fastlane test_ios skip_sk_tests:true
+          no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 (17.0)
       - compress_result_bundle:
@@ -864,9 +867,8 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
-      # Disabled until we drop support for iOS 11
-      # - run-test-ios-17:
-      #     xcode_version: '15.0.0'
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -896,9 +898,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-receipt-parser:
           xcode_version: '14.3.0'
-      # Disabled until we drop support for iOS 11
-      # - run-test-ios-17:
-      #     xcode_version: '15.0.0'
+      - run-test-ios-17:
+          xcode_version: '15.0.0'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:

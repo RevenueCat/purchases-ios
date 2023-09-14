@@ -1,8 +1,6 @@
 {
   "headers" : {
-    "Authorization" : "Bearer asharedsecret",
-    "X-Nonce" : "MTIzNDU2Nzg5MGFi",
-    "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:be95d3a1d4c00357de2696c1a4546be1d0312dbee67feee8a971f01f8ac4b729"
+    "Authorization" : "Bearer asharedsecret"
   },
   "request" : {
     "body" : {
@@ -13,10 +11,15 @@
           "value" : "authorized"
         }
       },
-      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
+      "currency" : "UYU",
+      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "purchase",
       "is_restore" : false,
-      "observer_mode" : false
+      "observer_mode" : true,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP",
+      "test_receipt_identifier" : "12345678-1234-1234-1234-C2C35AE34D09"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"
