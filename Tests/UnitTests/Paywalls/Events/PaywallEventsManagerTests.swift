@@ -187,6 +187,32 @@ class PaywallEventsManagerTests: TestCase {
         await self.verifyEvents([.init(event: event2, userID: Self.userID)])
     }
 
+    func testCannotFlushMultipleTimesInParallel() async throws {
+        // The way this test is written does not work in iOS 15.
+        // The second Task does not start until the first one is done.
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let event1 = await self.storeRandomEvent()
+        _ = await self.storeRandomEvent()
+
+        let task1 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
+        let task2 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
+
+        let result1 = try await task1.value
+        let result2 = try await task2.value
+
+        expect(result1) == 1
+        expect(result2) == 0
+
+        expect(self.api.invokedPostPaywallEvents) == true
+        expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
+        expect(self.api.invokedPostPaywallEventsParameters.onlyElement) == [.init(event: event1, userID: Self.userID)]
+
+        self.logger.verifyMessageWasLogged(Strings.paywalls.event_flush_already_in_progress,
+                                           level: .debug,
+                                           expectedCount: 1)
+    }
+
     // MARK: -
 
     private static let userID = "nacho"
