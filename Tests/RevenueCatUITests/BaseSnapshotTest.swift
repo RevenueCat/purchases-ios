@@ -55,7 +55,7 @@ class BaseSnapshotTest: TestCase {
                            customerInfo: TestData.customerInfo,
                            mode: mode,
                            fonts: fonts,
-                           introEligibility: eligibleChecker,
+                           introEligibility: introEligibility,
                            purchaseHandler: purchaseHandler)
     }
 
