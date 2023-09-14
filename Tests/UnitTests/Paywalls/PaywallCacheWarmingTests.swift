@@ -50,7 +50,7 @@ class PaywallCacheWarmingTests: TestCase {
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == false
     }
 
-    func testWarmsUpEligibilityCache() async throws {
+    func testWarmsUpEligibilityCacheForCurrentOffering() async throws {
         let paywall = try Self.loadPaywall("PaywallData-Sample1")
         let offerings = try Self.createOfferings([
             Self.createOffering(
@@ -70,20 +70,21 @@ class PaywallCacheWarmingTests: TestCase {
             )
         ])
 
+        // Paywall filters packages so only `monthly` and `annual` is used.
+        // `product_3` is not part of the current offering, so that is ignored too.
+        let expectedProducts: Set<String> = ["product_1"]
+
         await self.cache.warmUpEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
-        // Paywall filters packages so only `monthly` and `annual` should is used.
+
         expect(
             self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters
-        ) == [
-            "product_1",
-            "product_3"
-        ]
+        ) == expectedProducts
 
         self.logger.verifyMessageWasLogged(
-            Strings.paywalls.warming_up_eligibility_cache(products: ["product_1", "product_3"]),
+            Strings.paywalls.warming_up_eligibility_cache(products: expectedProducts),
             level: .debug
         )
     }
@@ -113,12 +114,16 @@ class PaywallCacheWarmingTests: TestCase {
         )
     }
 
-    func testWarmsUpImages() async throws {
-        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+    func testWarmsUpImagesForCurrentOffering() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,
-                paywall: paywall,
+                paywall: try Self.loadPaywall("PaywallData-Sample1"),
+                products: []
+            ),
+            Self.createOffering(
+                identifier: "another offering",
+                paywall: try Self.loadPaywall("PaywallData-missing_current_locale"),
                 products: []
             )
         ])
