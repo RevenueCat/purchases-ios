@@ -519,80 +519,6 @@ internal enum TestData {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-extension TrialOrIntroEligibilityChecker {
-
-    /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
-    static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
-        return .init { packages in
-            return Dictionary(
-                uniqueKeysWithValues: Set(packages)
-                    .map { package in
-                        let result = package.storeProduct.hasIntroDiscount
-                        ? eligibility()
-                        : .noIntroOfferExists
-
-                        return (package, result)
-                    }
-            )
-        }
-    }
-
-    /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
-    func with(delay seconds: TimeInterval) -> Self {
-        return .init { [checker = self.checker] in
-            await Task.sleep(seconds: seconds)
-
-            return await checker($0)
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-extension PurchaseHandler {
-
-    static func mock() -> Self {
-        return self.init { _ in
-            return (
-                transaction: nil,
-                customerInfo: TestData.customerInfo,
-                userCancelled: false
-            )
-        } restorePurchases: {
-            return TestData.customerInfo
-        } trackEvent: { event in
-            Logger.debug("Tracking event: \(event)")
-        }
-    }
-
-    static func cancelling() -> Self {
-        return .mock()
-            .map { block in {
-                    var result = try await block($0)
-                    result.userCancelled = true
-                    return result
-                }
-            } restore: { $0 }
-    }
-
-    /// Creates a copy of this `PurchaseHandler` with a delay.
-    func with(delay seconds: TimeInterval) -> Self {
-        return self.map { purchaseBlock in {
-            await Task.sleep(seconds: seconds)
-
-            return try await purchaseBlock($0)
-        }
-        } restore: { restoreBlock in {
-            await Task.sleep(seconds: seconds)
-
-            return try await restoreBlock()
-        }
-        }
-    }
-
-}
-
 // MARK: -
 
 extension PaywallColor: ExpressibleByStringLiteral {
@@ -610,15 +536,6 @@ extension PackageType {
 
     var identifier: String {
         return Package.string(from: self)!
-    }
-
-}
-
-@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
-private extension Task where Success == Never, Failure == Never {
-
-    static func sleep(seconds: TimeInterval) async {
-        try? await Self.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 
 }
