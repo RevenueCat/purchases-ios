@@ -46,10 +46,12 @@ struct AppContentView: View {
                 Label("App", systemImage: "iphone")
             }
 
+            #if DEBUG
             SamplePaywallsList()
                 .tabItem {
                     Label("Examples", systemImage: "pawprint")
                 }
+            #endif
 
             OfferingsList()
                 .tabItem {
