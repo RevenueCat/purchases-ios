@@ -56,10 +56,7 @@ struct DebugErrorView<Content: View>: View {
 
             case let .replacement(view):
                 #if DEBUG
-                VStack {
-                    self.errorView
-                    view
-                }
+                view.overlay(alignment: .top) { self.errorView }
                 #else
                 view
                 #endif
@@ -81,13 +78,13 @@ struct DebugErrorView<Content: View>: View {
         Text(self.description)
             .unredacted()
             .padding()
-            .fixedSize(horizontal: false, vertical: false)
+            .fixedSize(horizontal: true, vertical: false)
             .background(
                 Color.red
                     .edgesIgnoringSafeArea(.all)
             )
             .foregroundColor(.white)
-            .font(.body.bold())
+            .font(.caption.bold())
             .minimumScaleFactor(0.5)
             .cornerRadius(8)
             .shadow(radius: 8)
