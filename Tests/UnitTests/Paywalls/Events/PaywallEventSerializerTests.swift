@@ -24,8 +24,8 @@ class PaywallEventSerializerTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
-    func testEncodeViewEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .view(.random()), userID: Self.userID)
+    func testEncodeImpressionEvent() throws {
+        let event: PaywallStoredEvent = .init(event: .impression(.random()), userID: Self.userID)
 
         let encoded = try PaywallEventSerializer.encode(event)
         let decoded: PaywallStoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
@@ -34,8 +34,8 @@ class PaywallEventSerializerTests: TestCase {
         expect(decoded) == event
     }
 
-    func testDecodeViewEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .view(.random()), userID: Self.userID)
+    func testDecodeImpressionEvent() throws {
+        let event: PaywallStoredEvent = .init(event: .impression(.random()), userID: Self.userID)
         expect(try event.encodeAndDecode()) == event
     }
 

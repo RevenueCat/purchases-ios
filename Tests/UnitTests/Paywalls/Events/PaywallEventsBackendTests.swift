@@ -40,7 +40,7 @@ class BackendPaywallEventTests: BaseBackendTests {
     }
 
     func testPostPaywallEventsWithOneEvent() {
-        let event: PaywallStoredEvent = .init(event: .view(Self.event1), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .impression(Self.event1), userID: Self.userID)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [event], completion: completion)
@@ -50,7 +50,7 @@ class BackendPaywallEventTests: BaseBackendTests {
     }
 
     func testPostPaywallEventsWithMultipleEvents() {
-        let event1: PaywallStoredEvent = .init(event: .view(Self.event1), userID: Self.userID)
+        let event1: PaywallStoredEvent = .init(event: .impression(Self.event1), userID: Self.userID)
         let event2: PaywallStoredEvent = .init(event: .close(Self.event2), userID: Self.userID)
 
         let error = waitUntilValue { completion in

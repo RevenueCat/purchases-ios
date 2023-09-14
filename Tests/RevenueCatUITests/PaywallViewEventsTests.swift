@@ -29,7 +29,7 @@ class PaywallViewEventsTests: TestCase {
     private let mode: PaywallViewMode = .random
     private let scheme: ColorScheme = Bool.random() ? .dark : .light
 
-    private var viewEventExpectation: XCTestExpectation!
+    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
     private var cancelEventExpectation: XCTestExpectation!
 
@@ -44,12 +44,12 @@ class PaywallViewEventsTests: TestCase {
                 }
             }
 
-        self.viewEventExpectation = .init(description: "View event")
+        self.impressionEventExpectation = .init(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
         self.cancelEventExpectation = .init(description: "Cancel event")
     }
 
-    func testPaywallViewEvent() async throws {
+    func testPaywallImpressionEvent() async throws {
         let expectation = XCTestExpectation()
 
         try self.createView()
@@ -58,9 +58,9 @@ class PaywallViewEventsTests: TestCase {
 
         await self.fulfillment(of: [expectation], timeout: 1)
 
-        expect(self.events).to(containElementSatisfying { $0.eventType == .view })
+        expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
 
-        let event = try XCTUnwrap(self.events.first { $0.eventType == .view })
+        let event = try XCTUnwrap(self.events.first { $0.eventType == .impression })
         self.verifyEventData(event.data)
     }
 
@@ -73,7 +73,7 @@ class PaywallViewEventsTests: TestCase {
         expect(self.events).to(haveCount(2))
         expect(self.events).to(containElementSatisfying { $0.eventType == .close })
 
-        let event = try XCTUnwrap(self.events.first { $0.eventType == .view })
+        let event = try XCTUnwrap(self.events.first { $0.eventType == .impression })
         self.verifyEventData(event.data)
     }
 
@@ -84,7 +84,7 @@ class PaywallViewEventsTests: TestCase {
         await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
 
         expect(self.events).to(haveCount(2))
-        expect(self.events.map(\.eventType)) == [.view, .close]
+        expect(self.events.map(\.eventType)) == [.impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
     }
 
@@ -98,7 +98,7 @@ class PaywallViewEventsTests: TestCase {
                                timeout: 1)
 
         expect(self.events).to(haveCount(3))
-        expect(self.events.map(\.eventType)).to(contain([.view, .cancel, .close]))
+        expect(self.events.map(\.eventType)).to(contain([.impression, .cancel, .close]))
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
 
         let data = try XCTUnwrap(self.events.first { $0.eventType == .cancel }).data
@@ -106,7 +106,7 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testDifferentPaywallsCreateSeparateSessionIdentifiers() async throws {
-        self.viewEventExpectation.expectedFulfillmentCount = 2
+        self.impressionEventExpectation.expectedFulfillmentCount = 2
         self.closeEventExpectation.expectedFulfillmentCount = 2
 
         let firstCloseExpectation = XCTestExpectation(description: "First paywall was closed")
@@ -120,10 +120,10 @@ class PaywallViewEventsTests: TestCase {
         try self.createView()
             .addToHierarchy()
 
-        await self.fulfillment(of: [self.viewEventExpectation, self.closeEventExpectation], timeout: 1)
+        await self.fulfillment(of: [self.impressionEventExpectation, self.closeEventExpectation], timeout: 1)
 
         expect(self.events).to(haveCount(4))
-        expect(self.events.map(\.eventType)) == [.view, .close, .view, .close]
+        expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
 
@@ -140,7 +140,7 @@ private extension PaywallViewEventsTests {
         self.events.append(event)
 
         switch event {
-        case .view: self.viewEventExpectation.fulfill()
+        case .impression: self.impressionEventExpectation.fulfill()
         case .cancel: self.cancelEventExpectation.fulfill()
         case .close: self.closeEventExpectation.fulfill()
         }
@@ -179,7 +179,7 @@ private extension PaywallEvent {
 
     enum EventType {
 
-        case view
+        case impression
         case cancel
         case close
 
@@ -187,7 +187,7 @@ private extension PaywallEvent {
 
     var eventType: EventType {
         switch self {
-        case .view: return .view
+        case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
         }

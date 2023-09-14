@@ -246,7 +246,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallView(self.eventData) }
+            .onAppear { self.purchaseHandler.trackPaywallImpression(self.eventData) }
             .onDisappear { self.purchaseHandler.trackPaywallClose(self.eventData) }
 
         switch self.mode {
