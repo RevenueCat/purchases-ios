@@ -122,28 +122,44 @@ extension BaseStoreKitIntegrationTests {
 
     @discardableResult
     func purchaseMonthlyOffering(
+        allowOfflineEntitlements: Bool = false,
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
+        let logger = TestLogHandler()
+
         let data = try await self.purchases.purchase(package: self.monthlyPackage)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
                                                     line: line)
 
+        if !allowOfflineEntitlements {
+            // Avoid false positives if the API returned a 500 and customer info was computed offline
+            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+        }
+
         return data
     }
 
     @discardableResult
     func purchaseMonthlyProduct(
+        allowOfflineEntitlements: Bool = false,
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
+        let logger = TestLogHandler()
+
         let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
                                                     line: line)
+
+        if !allowOfflineEntitlements {
+            // Avoid false positives if the API returned a 500 and customer info was computed offline
+            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+        }
 
         return data
     }
@@ -183,130 +199,6 @@ extension BaseStoreKitIntegrationTests {
         return try await self.purchases.purchase(package: package)
     }
 
-    @discardableResult
-    func verifyEntitlementWentThrough(
-        _ customerInfo: CustomerInfo,
-        file: FileString = #file,
-        line: UInt = #line
-    ) async throws -> EntitlementInfo {
-        // This is used to throw an error when the test fails.
-        // For some reason XCTest is continuing execution even after a test failure
-        // despite having `self.continueAfterFailure = false`
-        //
-        // By doing this, instead of only calling `fail`, we ensure that
-        // Swift stops executing code when an assertion has failed,
-        // and therefore avoid code running after the test has already failed.
-        // This prevents test crashes from code calling `Purchases.shared` after the test has ended.
-        func failTest(_ message: String) async throws {
-            struct ExpectationFailure: Swift.Error {}
-
-            await self.printReceiptContent()
-
-            fail(message, file: file, line: line)
-            throw ExpectationFailure()
-        }
-
-        let entitlements = customerInfo.entitlements.all
-        if entitlements.count != 1 {
-            try await failTest("Expected 1 Entitlement. Got: \(entitlements)")
-        }
-
-        let entitlement: EntitlementInfo
-
-        do {
-            entitlement = try XCTUnwrap(
-                entitlements[Self.entitlementIdentifier],
-                file: file, line: line
-            )
-        } catch {
-            await self.printReceiptContent()
-            throw error
-        }
-
-        if !entitlement.isActive {
-            try await failTest("Entitlement is not active: \(entitlement)")
-        }
-
-        return entitlement
-    }
-
-    func assertNoActiveSubscription(
-        _ customerInfo: CustomerInfo,
-        file: FileString = #file,
-        line: UInt = #line
-    ) {
-        expect(
-            file: file, line: line,
-            customerInfo.entitlements.active
-        ).to(
-            beEmpty(),
-            description: "Expected no active entitlements"
-        )
-    }
-
-    func assertNoPurchases(
-        _ customerInfo: CustomerInfo,
-        file: FileString = #file,
-        line: UInt = #line
-    ) {
-        expect(
-            file: file, line: line,
-            customerInfo.entitlements.all
-        )
-        .to(
-            beEmpty(),
-            description: "Expected no entitlements. Got: \(customerInfo.entitlements.all)"
-        )
-    }
-
-    func verifyTransactionWasFinished(
-        count: Int = 1,
-        file: FileString = #file,
-        line: UInt = #line
-    ) {
-        self.logger.verifyMessageWasLogged(Self.finishingTransactionLog,
-                                           level: .info,
-                                           expectedCount: count,
-                                           file: file,
-                                           line: line)
-    }
-
-    func verifyNoTransactionsWereFinished(
-        file: FileString = #file,
-        line: UInt = #line
-    ) {
-        self.logger.verifyMessageWasNotLogged(Self.finishingTransactionLog, file: file, line: line)
-    }
-
-    func verifyTransactionIsEventuallyFinished(
-        count: Int? = nil,
-        file: FileString = #file,
-        line: UInt = #line
-    ) async throws {
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            Self.finishingTransactionLog,
-            level: .info,
-            expectedCount: count,
-            timeout: .seconds(5),
-            pollInterval: .milliseconds(100),
-            file: file,
-            line: line
-        )
-    }
-
-    func verifyReceiptIsEventuallyPosted(
-        file: FileString = #file,
-        line: UInt = #line
-    ) async throws {
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
-            timeout: .seconds(3),
-            pollInterval: .milliseconds(100),
-            file: file,
-            line: line
-        )
-    }
-
     func expireSubscription(_ entitlement: EntitlementInfo) async throws {
         guard let expirationDate = entitlement.expirationDate else { return }
 
@@ -331,16 +223,6 @@ extension BaseStoreKitIntegrationTests {
         Logger.warn(TestMessage.sleeping_to_force_expiration(seconds: timeToSleep))
         try await Task.sleep(nanoseconds: UInt64(timeToSleep * 1_000_000_000))
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    @discardableResult
-    func verifySubscriptionExpired() async throws -> CustomerInfo {
-        let info = try await self.purchases.syncPurchases()
-        self.assertNoActiveSubscription(info)
-
-        return info
-    }
-    #endif
 
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     static func findTransaction(for productIdentifier: String) async throws -> Transaction {

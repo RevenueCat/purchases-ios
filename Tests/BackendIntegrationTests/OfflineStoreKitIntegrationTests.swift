@@ -108,9 +108,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.logger.clearMessages()
 
         self.serverDown()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
-        self.logger.verifyMessageWasLogged(Strings.offlineEntitlements.computing_offline_customer_info, level: .info)
+        self.verifyCustomerInfoWasComputedOffline()
         self.verifyNoTransactionsWereFinished()
     }
 
@@ -120,7 +120,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
         self.verifyNoTransactionsWereFinished()
 
@@ -154,7 +154,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testReopeningAppWithOfflineEntitlementsDoesNotReturnStaleCache() async throws {
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
         // 2. "Re-open" the app
         await self.resetSingleton()
@@ -168,7 +168,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testPurchaseAgainAfterServerRecovers() async throws {
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
         // 2. Purchase again when the server is back up
         // (maybe the app failed the first time?)
@@ -222,7 +222,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     func testSimultanousCallsToGetCustomerInfoWithPendingTransactionPostsReceiptOnlyOnce() async throws {
         self.serverDown()
 
-        _ = try await self.purchaseMonthlyProduct()
+        _ = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
         self.serverUp()
 
@@ -249,7 +249,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverDown()
 
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
         try self.testSession.forceRenewalOfSubscription(
             productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
@@ -300,7 +300,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
         self.verifyNoTransactionsWereFinished()
 
@@ -330,7 +330,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 1. Purchase while server is down
         self.serverDown()
 
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
         do {
             try await self.purchaseConsumablePackage()
             fail("Consumable purchases should fail while offline")
