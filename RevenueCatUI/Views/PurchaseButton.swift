@@ -59,9 +59,6 @@ struct PurchaseButton: View {
         self.purchaseHandler = purchaseHandler
     }
 
-    @Environment(\.userInterfaceIdiom)
-    var userInterfaceIdiom
-
     var body: some View {
         self.button
     }
@@ -69,29 +66,22 @@ struct PurchaseButton: View {
     private var button: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
+            guard !self.package.currentlySubscribed else { return }
 
             _ = try await self.purchaseHandler.purchase(package: self.package.content)
         } label: {
-            IntroEligibilityStateView(
-                textWithNoIntroOffer: self.package.localization.callToAction,
-                textWithIntroOffer: self.package.localization.callToActionWithIntroOffer,
+            PurchaseButtonLabel(
+                package: self.package,
+                colors: self.colors,
                 introEligibility: self.introEligibility,
-                foregroundColor: self.colors.callToActionForegroundColor
+                mode: self.mode
             )
-                .frame(
-                    maxWidth: self.mode.fullWidthButton
-                       ? .infinity
-                        : nil
-                )
-                .padding()
-                .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
         }
         .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
         .background(self.backgroundView)
         .tint(.clear)
         .frame(maxWidth: .infinity)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
-        .disabled(self.package.currentlySubscribed)
     }
 
     @ViewBuilder
@@ -112,6 +102,46 @@ struct PurchaseButton: View {
         } else {
             return AnyShapeStyle(primary)
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct PurchaseButtonLabel: View {
+
+    let package: TemplateViewConfiguration.Package
+    let colors: PaywallData.Configuration.Colors
+    let introEligibility: IntroEligibilityStatus?
+    let mode: PaywallViewMode
+
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
+
+    @Environment(\.isEnabled)
+    private var isEnabled
+
+    var body: some View {
+        IntroEligibilityStateView(
+            textWithNoIntroOffer: self.package.localization.callToAction,
+            textWithIntroOffer: self.package.localization.callToActionWithIntroOffer,
+            introEligibility: self.introEligibility,
+            foregroundColor: self.colors.callToActionForegroundColor
+        )
+            .frame(
+                maxWidth: self.mode.fullWidthButton
+                   ? .infinity
+                    : nil
+            )
+            .padding()
+            .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
+            .hidden(if: !self.isEnabled)
+            .overlay {
+                if !self.isEnabled {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(self.colors.callToActionForegroundColor)
+                }
+            }
     }
 
 }
@@ -149,6 +179,9 @@ struct PurchaseButton_Previews: PreviewProvider {
         @State
         private var eligibility: IntroEligibilityStatus?
 
+        @StateObject
+        private var purchaseHandler = PreviewHelpers.purchaseHandler
+
         var body: some View {
             PurchaseButton(
                 package: Self.package,
@@ -156,8 +189,10 @@ struct PurchaseButton_Previews: PreviewProvider {
                 fonts: DefaultPaywallFontProvider(),
                 introEligibility: self.eligibility,
                 mode: self.mode,
-                purchaseHandler: PreviewHelpers.purchaseHandler
+                purchaseHandler: self.purchaseHandler
             )
+            // This is done by PaywallView
+            .disabled(self.purchaseHandler.actionInProgress)
             .task {
                 self.eligibility = await PreviewHelpers.introEligibilityChecker.eligibility(for: Self.package.content)
             }
@@ -170,7 +205,7 @@ struct PurchaseButton_Previews: PreviewProvider {
                 context: .init(discountRelativeToMostExpensivePerMonth: nil),
                 locale: .current
             ),
-            currentlySubscribed: Bool.random(),
+            currentlySubscribed: false,
             discountRelativeToMostExpensivePerMonth: nil
         )
     }
