@@ -5,6 +5,8 @@
 //  Created by Nacho Soto on 8/9/23.
 //
 
+#if DEBUG
+
 import RevenueCat
 @testable import RevenueCatUI
 import SwiftUI
@@ -82,5 +84,7 @@ struct CustomPaywall_Previews: PreviewProvider {
     ]
 
 }
+
+#endif
 
 #endif
