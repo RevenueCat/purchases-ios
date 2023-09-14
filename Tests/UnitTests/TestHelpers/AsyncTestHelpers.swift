@@ -70,11 +70,11 @@ func asyncWait(
     until condition: @Sendable () async -> Bool
 ) async throws {
     try await asyncWait(
-        description: { _ in description },
         timeout: timeout,
         pollInterval: pollInterval,
         file: file,
         line: line,
+        description: { _ in description },
         until: { () },
         condition: { _ in await condition() }
     )
@@ -88,11 +88,11 @@ func asyncWait(
 // Fix-me: remove once we can use Quick v6.x:
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func asyncWait<T>(
-    description: (T?) -> String?,
     timeout: DispatchTimeInterval = defaultTimeout,
     pollInterval: DispatchTimeInterval = defaultPollInterval,
     file: FileString = #fileID,
     line: UInt = #line,
+    description: @Sendable (T?) -> String?,
     until value: @Sendable () async -> T,
     condition: @Sendable (T) async -> Bool
 ) async throws {

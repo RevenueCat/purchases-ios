@@ -730,6 +730,31 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(transaction.offerType) == .promotional
     }
 
+    func testCustomerInfoStream() async throws {
+        let purchases = try self.purchases
+        let updates: Atomic<[CustomerInfo]> = .init([])
+
+        let task = Task {
+            for await info in purchases.customerInfoStream {
+                updates.modify { $0.append(info) }
+            }
+        }
+        defer { task.cancel() }
+
+        try await asyncWait(timeout: .seconds(1)) {
+            "Expected only one value initially: \($0 ?? [])"
+        } until: {
+            updates.value
+        } condition: {
+            $0.count == 1
+        }
+
+        let info = try await self.purchaseMonthlyProduct().customerInfo
+
+        expect(updates.value).to(haveCount(2))
+        expect(updates.value.last) === info
+    }
+
 }
 
 private extension BaseStoreKitIntegrationTests {

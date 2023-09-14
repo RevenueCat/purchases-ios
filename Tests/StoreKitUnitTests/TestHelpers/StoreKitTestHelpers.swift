@@ -52,9 +52,9 @@ extension XCTestCase {
         line: UInt = #line
     ) async throws {
         try await asyncWait(
-            description: { "Transaction expectation never met: \($0 ?? [])" },
             file: file,
             line: line,
+            description: { "Transaction expectation never met: \($0 ?? [])" },
             until: { await Transaction.unfinished.extractValues() },
             condition: { condition($0.count) }
         )
