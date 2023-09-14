@@ -51,8 +51,8 @@ struct Template4View: TemplateViewType {
     var body: some View {
         switch self.configuration.mode {
         case .fullScreen:
-            ZStack(alignment: .bottom) {
-                TemplateBackgroundImageView(configuration: self.configuration)
+            VStack {
+                Spacer()
 
                 self.footerContent
                     .edgesIgnoringSafeArea(.bottom)
@@ -63,6 +63,9 @@ struct Template4View: TemplateViewType {
                                    corners: [.topLeft, .topRight],
                                    edgesIgnoringSafeArea: .bottom)
                     #endif
+            }
+            .background {
+                TemplateBackgroundImageView(configuration: self.configuration)
             }
 
         case .footer, .condensedFooter:
