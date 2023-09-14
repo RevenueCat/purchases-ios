@@ -97,11 +97,16 @@ final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
 
 private extension Offerings {
 
+    var offeringsToPreWarm: [Offering] {
+        // At the moment we only want to pre-warm the current offering to prevent
+        // apps with many paywalls from downloading a large amount of images
+        return self.current.map { [$0] } ?? []
+    }
+
     var allProductIdentifiersInPaywalls: Set<String> {
         return .init(
             self
-                .all
-                .values
+                .offeringsToPreWarm
                 .lazy
                 .flatMap(\.productIdentifiersInPaywall)
         )
@@ -110,8 +115,7 @@ private extension Offerings {
     var allImagesInPaywalls: Set<URL> {
         return .init(
             self
-                .all
-                .values
+                .offeringsToPreWarm
                 .lazy
                 .compactMap(\.paywall)
                 .flatMap(\.allImageURLs)
