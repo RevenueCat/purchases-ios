@@ -18,16 +18,10 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class PurchaseHandler: ObservableObject {
 
-    typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
-    typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
-    typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
+    private let purchases: PaywallPurchasesType
 
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
-
-    private let purchaseBlock: PurchaseBlock
-    private let restoreBlock: RestoreBlock
-    private let trackEventBlock: TrackEventBlock
 
     /// Whether a purchase or restore is currently in progress
     @Published
@@ -52,37 +46,23 @@ final class PurchaseHandler: ObservableObject {
     private var eventData: PaywallEvent.Data?
 
     convenience init(purchases: Purchases = .shared) {
-        self.init(isConfigured: true) { package in
-            return try await purchases.purchase(package: package)
-        } restorePurchases: {
-            return try await purchases.restorePurchases()
-        } trackEvent: { event in
-            await purchases.track(paywallEvent: event)
-        }
+        self.init(isConfigured: true, purchases: purchases)
     }
 
     init(
         isConfigured: Bool = true,
-        purchase: @escaping PurchaseBlock,
-        restorePurchases: @escaping RestoreBlock,
-        trackEvent: @escaping TrackEventBlock
+        purchases: PaywallPurchasesType
     ) {
         self.isConfigured = isConfigured
-        self.purchaseBlock = purchase
-        self.restoreBlock = restorePurchases
-        self.trackEventBlock = trackEvent
+        self.purchases = purchases
     }
 
     static func `default`() -> Self {
-        return Purchases.isConfigured ? .init() : .notConfigured()
+        return Purchases.isConfigured ? .init() : Self.notConfigured()
     }
 
     private static func notConfigured() -> Self {
-        return .init(isConfigured: false) { _ in
-            throw ErrorCode.configurationError
-        } restorePurchases: {
-            throw ErrorCode.configurationError
-        } trackEvent: { _ in }
+        return .init(isConfigured: false, purchases: NotConfiguredPurchases())
     }
 
 }
@@ -97,7 +77,7 @@ extension PurchaseHandler {
         }
         defer { self.actionInProgress = false }
 
-        let result = try await self.purchaseBlock(package)
+        let result = try await self.purchases.purchase(package: package)
 
         if result.userCancelled {
             self.trackCancelledPurchase()
@@ -116,7 +96,7 @@ extension PurchaseHandler {
         self.actionInProgress = true
         defer { self.actionInProgress = false }
 
-        let customerInfo = try await self.restoreBlock()
+        let customerInfo = try await self.purchases.restorePurchases()
 
         withAnimation(Constants.defaultAnimation) {
             self.restored = true
@@ -146,30 +126,34 @@ extension PurchaseHandler {
 
 }
 
+#if DEBUG
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PurchaseHandler {
 
     /// Creates a copy of this `PurchaseHandler` wrapping the purchase and restore blocks.
     func map(
-        purchase: @escaping (@escaping PurchaseBlock) -> PurchaseBlock,
-        restore: @escaping (@escaping RestoreBlock) -> RestoreBlock
+        purchase: @escaping (@escaping MockPurchases.PurchaseBlock) -> MockPurchases.PurchaseBlock,
+        restore: @escaping (@escaping MockPurchases.RestoreBlock) -> MockPurchases.RestoreBlock
     ) -> Self {
-        return .init(purchase: purchase(self.purchaseBlock),
-                     restorePurchases: restore(self.restoreBlock),
-                     trackEvent: self.trackEventBlock)
+        return .init(
+            isConfigured: self.isConfigured,
+            purchases: self.purchases.map(purchase: purchase, restore: restore)
+        )
     }
 
     func map(
-        trackEvent: @escaping (@escaping TrackEventBlock) -> TrackEventBlock
+        trackEvent: @escaping (@escaping MockPurchases.TrackEventBlock) -> MockPurchases.TrackEventBlock
     ) -> Self {
         return .init(
-            purchase: self.purchaseBlock,
-            restorePurchases: self.restoreBlock,
-            trackEvent: trackEvent(self.trackEventBlock)
+            isConfigured: self.isConfigured,
+            purchases: self.purchases.map(trackEvent: trackEvent)
         )
     }
 
 }
+
+#endif
 
 // MARK: - Private
 
@@ -177,10 +161,25 @@ extension PurchaseHandler {
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
-        Task.detached(priority: .background) { [block = self.trackEventBlock] in
-            await block(event)
+        Task.detached(priority: .background) { [purchases = self.purchases] in
+            await purchases.track(paywallEvent: event)
         }
     }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private final class NotConfiguredPurchases: PaywallPurchasesType {
+
+    func purchase(package: Package) async throws -> PurchaseResultData {
+        throw ErrorCode.configurationError
+    }
+
+    func restorePurchases() async throws -> CustomerInfo {
+        throw ErrorCode.configurationError
+    }
+
+    func track(paywallEvent: PaywallEvent) async {}
 
 }
 
