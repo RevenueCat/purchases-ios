@@ -62,11 +62,10 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     // We can't directly store instances of `AsyncStream`, since that causes runtime crashes when
     // loading this type in iOS <= 15, even with @available checks correctly in place.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://github.com/apple/swift/issues/58099
-    private let _updates: Any
+    private let _updates: Box<AsyncStream<TransactionResult>>
 
     var updates: AsyncStream<TransactionResult> {
-        // swiftlint:disable:next force_cast
-        return self._updates as! AsyncStream<TransactionResult>
+        return self._updates.value
     }
 
     init(delegate: StoreKit2TransactionListenerDelegate? = nil) {
@@ -80,7 +79,7 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         updates: S
     ) where S.Element == TransactionResult {
         self.delegate = delegate
-        self._updates = updates.toAsyncStream()
+        self._updates = .init(updates.toAsyncStream())
     }
 
     func set(delegate: StoreKit2TransactionListenerDelegate) {
