@@ -65,17 +65,7 @@ private extension LoadingPaywallView {
             uniqueKeysWithValues: packages.map { ($0, .unknown) }
         )
     })
-    static let purchaseHandler: PurchaseHandler = .init(
-        purchase: { _ in
-            fatalError("Should not be able to purchase")
-        },
-        restorePurchases: {
-            fatalError("Should not be able to purchase")
-        },
-        trackEvent: { _ in
-            // Ignoring events from loading paywall view
-        }
-    )
+    static let purchaseHandler: PurchaseHandler = .init(purchases: LoadingPaywallPurchases())
 
     static let offeringIdentifier = "offering"
     static let weeklyPackage = Package(
@@ -126,6 +116,23 @@ private extension LoadingPaywallView {
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year)
     )
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private final class LoadingPaywallPurchases: PaywallPurchasesType {
+
+    func purchase(package: Package) async throws -> PurchaseResultData {
+        fatalError("Should not be able to purchase")
+    }
+
+    func restorePurchases() async throws -> CustomerInfo {
+        fatalError("Should not be able to purchase")
+    }
+
+    func track(paywallEvent: PaywallEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
 }
 
 // MARK: -
