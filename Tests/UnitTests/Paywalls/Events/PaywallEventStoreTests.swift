@@ -51,7 +51,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreOneEvent() async {
-        let event: PaywallStoredEvent = .randomViewEvent()
+        let event: PaywallStoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
 
@@ -60,7 +60,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchEventsDoesNotRemoveEvents() async {
-        await self.store.store(.randomViewEvent())
+        await self.store.store(.randomImpressionEvent())
 
         let eventsBeforeFetching = await self.store.fetch(1)
         let eventsAfterFetching = await self.store.fetch(1)
@@ -70,8 +70,8 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testStoreMultipleEvents() async {
-        let event1: PaywallStoredEvent = .randomViewEvent()
-        let event2: PaywallStoredEvent = .randomViewEvent()
+        let event1: PaywallStoredEvent = .randomImpressionEvent()
+        let event2: PaywallStoredEvent = .randomImpressionEvent()
 
         await self.store.store(event1)
         await self.store.store(event2)
@@ -81,22 +81,22 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testFetchOnlySomeEvents() async {
-        let event: PaywallStoredEvent = .randomViewEvent()
+        let event: PaywallStoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
-        await self.store.store(.randomViewEvent())
-        await self.store.store(.randomViewEvent())
+        await self.store.store(.randomImpressionEvent())
+        await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(1)
         expect(events) == [event]
     }
 
     func testFetchEventsWithUnrecognizedLines() async {
-        let event: PaywallStoredEvent = .randomViewEvent()
+        let event: PaywallStoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.handler.append(line: "not an event")
-        await self.store.store(.randomViewEvent())
+        await self.store.store(.randomImpressionEvent())
 
         let events = await self.store.fetch(2)
         expect(events) == [event]
@@ -112,7 +112,7 @@ class PaywallEventStoreTests: TestCase {
     }
 
     func testClearSingleEvent() async {
-        let event: PaywallStoredEvent = .randomViewEvent()
+        let event: PaywallStoredEvent = .randomImpressionEvent()
 
         await self.store.store(event)
         await self.store.clear(1)
@@ -123,9 +123,9 @@ class PaywallEventStoreTests: TestCase {
 
     func testClearOnlyOneEvent() async {
         let storedEvents: [PaywallStoredEvent] = [
-            .randomViewEvent(),
-            .randomViewEvent(),
-            .randomViewEvent()
+            .randomImpressionEvent(),
+            .randomImpressionEvent(),
+            .randomImpressionEvent()
         ]
 
         for event in storedEvents {
@@ -142,7 +142,7 @@ class PaywallEventStoreTests: TestCase {
         let count = 3
 
         for _ in 0..<count {
-            await self.store.store(.randomViewEvent())
+            await self.store.store(.randomImpressionEvent())
         }
 
         await self.store.clear(count)
@@ -157,7 +157,7 @@ class PaywallEventStoreTests: TestCase {
         await self.handler.setRemoveFirstLineError(FakeError())
 
         for _ in 0..<3 {
-            await self.store.store(.randomViewEvent())
+            await self.store.store(.randomImpressionEvent())
         }
 
         await self.store.clear(1)
@@ -194,8 +194,8 @@ extension PaywallEvent.Data {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallEvent {
 
-    static func randomViewEvent() -> Self {
-        return .view(.random())
+    static func randomImpressionEvent() -> Self {
+        return .impression(.random())
     }
 
 }
@@ -203,8 +203,8 @@ extension PaywallEvent {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallStoredEvent {
 
-    static func randomViewEvent() -> Self {
-        return .init(event: .randomViewEvent(), userID: UUID().uuidString)
+    static func randomImpressionEvent() -> Self {
+        return .init(event: .randomImpressionEvent(), userID: UUID().uuidString)
     }
 
 }

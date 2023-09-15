@@ -549,7 +549,7 @@ final class PurchasesOrchestrator {
 
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
-        case let .view(data):
+        case let .impression(data):
             self.cachePresentedPaywall(data)
 
         case .close:

@@ -20,7 +20,7 @@ public enum PaywallEvent {
     public typealias SessionID = UUID
 
     /// A `PaywallView` was displayed.
-    case view(Data)
+    case impression(Data)
 
     /// A purchase was cancelled.
     case cancel(Data)
@@ -92,7 +92,7 @@ extension PaywallEvent {
     /// - Returns: the underlying ``PaywallEvent/Data-swift.struct`` for this event.
     public var data: Data {
         switch self {
-        case let .view(data): return data
+        case let .impression(data): return data
         case let .cancel(data): return data
         case let .close(data): return data
         }
