@@ -85,7 +85,7 @@ private extension PaywallEvent {
 
     var eventType: PaywallEventsRequest.EventType {
         switch self {
-        case .view: return .impression
+        case .impression: return .impression
         case .cancel: return .cancel
         case .close: return .close
         }

@@ -266,7 +266,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
 
         _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(
@@ -299,7 +299,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
@@ -720,7 +720,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -747,7 +747,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
-        self.orchestrator.track(paywallEvent: .view(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 

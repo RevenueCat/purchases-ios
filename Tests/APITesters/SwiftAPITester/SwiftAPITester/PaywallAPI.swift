@@ -166,7 +166,7 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     let _: PaywallEvent.SessionID = UUID()
 
     switch event {
-    case let .view(data): checkPaywallEventData(data)
+    case let .impression(data): checkPaywallEventData(data)
     case let .cancel(data): checkPaywallEventData(data)
     case let .close(data): checkPaywallEventData(data)
     @unknown default: break

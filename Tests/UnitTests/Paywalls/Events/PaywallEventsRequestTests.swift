@@ -25,8 +25,8 @@ class PaywallEventsRequestTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
-    func testViewEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .view(Self.eventData), userID: Self.userID)
+    func testImpressionEvent() throws {
+        let event: PaywallStoredEvent = .init(event: .impression(Self.eventData), userID: Self.userID)
         let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)

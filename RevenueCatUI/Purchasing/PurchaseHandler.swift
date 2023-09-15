@@ -106,9 +106,9 @@ extension PurchaseHandler {
         return customerInfo
     }
 
-    func trackPaywallView(_ eventData: PaywallEvent.Data) {
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
-        self.track(.view(eventData))
+        self.track(.impression(eventData))
     }
 
     func trackPaywallClose(_ eventData: PaywallEvent.Data) {
