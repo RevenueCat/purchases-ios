@@ -18,7 +18,6 @@ import SwiftUI
 public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (CustomerInfo) -> Void
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
 
     /// Invokes the given closure when a purchase is completed.
