@@ -105,6 +105,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownSucceedsButDoesNotFinishTransaction() async throws {
+        self.logger.clearMessages()
+
         self.serverDown()
         try await self.purchaseMonthlyProduct()
 
@@ -114,6 +116,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownPostsReceiptAfterServerComesBack() async throws {
+        self.logger.clearMessages()
+
         // 1. Purchase while server is down
         self.serverDown()
         try await self.purchaseMonthlyProduct()
@@ -292,6 +296,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseWhileServerIsDownPostsReceiptWhenForegroundingApp() async throws {
+        self.logger.clearMessages()
+
         // 1. Purchase while server is down
         self.serverDown()
         try await self.purchaseMonthlyProduct()
