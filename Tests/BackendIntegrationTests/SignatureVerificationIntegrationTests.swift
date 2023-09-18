@@ -152,7 +152,7 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.serverDown()
-        try await self.purchaseMonthlyOffering()
+        try await self.purchaseMonthlyOffering(allowOfflineEntitlements: true)
 
         self.serverUp()
         self.invalidSignature = true
