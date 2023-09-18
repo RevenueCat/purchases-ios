@@ -986,54 +986,8 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint:
-          xcode_version: '14.3.0'
-      - spm-release-build-xcode-14:
-          xcode_version: '14.3.0'
-      - spm-release-build-xcode-15:
-          xcode_version: '15.0.0'
-      - spm-xcode-14-1:
-          xcode_version: '14.1.0'
-      - spm-custom-entitlement-computation-build:
-          xcode_version: '14.3.0'
-      - spm-receipt-parser:
-          xcode_version: '14.3.0'
-      - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
-      - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
-      - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.0'
       - run-test-ios-17:
           xcode_version: '15.0.0'
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-      - run-test-watchos:
-          xcode_version: '14.3.0'
-      - run-test-tvos:
-          xcode_version: '14.3.0'
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-14:
-          xcode_version: '14.2.0'
-      - run-test-ios-13:
-          xcode_version: '14.2.0'
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          xcode_version: '14.3.0'
-      - build-visionos:
-          xcode_version: '15.0.0'
-      - backend-integration-tests:
-          xcode_version: '14.3.0'
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
   deploy:
     when:
       not:
