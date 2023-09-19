@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-class MockPurchasedProductsFetcher: PurchasedProductsFetcherType, @unchecked Sendable {
+class MockPurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     var invokedFetch = false
     var invokedFetchCount = 0
@@ -27,10 +27,6 @@ class MockPurchasedProductsFetcher: PurchasedProductsFetcherType, @unchecked Sen
         self.invokedFetchCount += 1
 
         return try self.stubbedResult.get()
-    }
-
-    func fetchPurchasedProductForTransaction(_ transactionId: String, completion: @escaping (String?) -> Void) {
-
     }
 
     var invokedClearCache = false
