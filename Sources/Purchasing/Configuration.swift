@@ -53,6 +53,7 @@ import Foundation
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
+        Self.verify(observerMode: builder.observerMode, storeKit2Setting: builder.storeKit2Setting)
 
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
@@ -129,12 +130,14 @@ import Foundation
          * Set `observerMode`.
          * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
          * RevenueCat's backend. Default is `false`.
+         *
+         * - Warning: This assumes your IAP implementation uses StoreKit 1.
+         * Observer mode is not compatible with StoreKit 2.
          */
-        @objc public func with(observerMode: Bool) -> Builder {
+        @objc public func with(observerMode: Bool) -> Configuration.Builder {
             self.observerMode = observerMode
             return self
         }
-
         /**
          * Set `userDefaults`.
          * - Parameter userDefaults: Custom `UserDefaults` to use
@@ -286,6 +289,12 @@ extension Configuration {
         case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
+        }
+    }
+
+    fileprivate static func verify(observerMode: Bool, storeKit2Setting: StoreKit2Setting) {
+        if observerMode, storeKit2Setting.usesStoreKit2IfAvailable {
+            Logger.warn(Strings.configure.observer_mode_with_storekit2)
         }
     }
 
