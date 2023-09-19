@@ -23,9 +23,6 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var verifiedTransactions: [StoreTransaction] { get async }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedTransaction(completion: @escaping (StoreTransaction?) -> Void)
 }
 
@@ -55,19 +52,12 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var verifiedTransactions: [StoreTransaction] {
-        get async {
-            return await StoreKit.Transaction.all
-                .compactMap { $0.verifiedTransaction }
-                .map { StoreTransaction(sk2Transaction: $0) }
-                .extractValues()
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedTransaction(completion: @escaping (StoreTransaction?) -> Void) {
         Task<Void, Never> {
-            completion(await verifiedTransactions.first)
+            completion(await StoreKit.Transaction.all
+                .compactMap { $0.verifiedTransaction }
+                .map { StoreTransaction(sk2Transaction: $0) }
+                .first { _ in true })
         }
     }
 }
