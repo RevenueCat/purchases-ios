@@ -913,7 +913,7 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
     }
 
     override var dangerousSettings: DangerousSettings {
-        return .init(autoSyncPurchases: true, customEntitlementComputation: true)
+        return .init(autoSyncPurchases: true, customEntitlementComputation: true, usesStoreKit2JWS: false)
     }
 
     func testDoesNotPostConsentStatus() throws {

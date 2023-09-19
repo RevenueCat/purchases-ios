@@ -58,7 +58,7 @@ final class PurchasesOrchestrator {
     private let operationDispatcher: OperationDispatcher
     private let receiptFetcher: ReceiptFetcher
     private let receiptParser: PurchasesReceiptParser
-    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
+    private let transactionFetcher: StoreKit2TransactionFetcherType
     private let customerInfoManager: CustomerInfoManager
     private let backend: Backend
     private let transactionPoster: TransactionPosterType
@@ -96,7 +96,7 @@ final class PurchasesOrchestrator {
                      operationDispatcher: OperationDispatcher,
                      receiptFetcher: ReceiptFetcher,
                      receiptParser: PurchasesReceiptParser,
-                     purchasedProductsFetcher: PurchasedProductsFetcherType?,
+                     transactionFetcher: StoreKit2TransactionFetcherType,
                      customerInfoManager: CustomerInfoManager,
                      backend: Backend,
                      transactionPoster: TransactionPoster,
@@ -118,7 +118,7 @@ final class PurchasesOrchestrator {
             operationDispatcher: operationDispatcher,
             receiptFetcher: receiptFetcher,
             receiptParser: receiptParser,
-            purchasedProductsFetcher: purchasedProductsFetcher,
+            transactionFetcher: transactionFetcher,
             customerInfoManager: customerInfoManager,
             backend: backend,
             transactionPoster: transactionPoster,
@@ -166,7 +166,7 @@ final class PurchasesOrchestrator {
          operationDispatcher: OperationDispatcher,
          receiptFetcher: ReceiptFetcher,
          receiptParser: PurchasesReceiptParser,
-         purchasedProductsFetcher: PurchasedProductsFetcherType?,
+         transactionFetcher: StoreKit2TransactionFetcherType,
          customerInfoManager: CustomerInfoManager,
          backend: Backend,
          transactionPoster: TransactionPoster,
@@ -185,7 +185,7 @@ final class PurchasesOrchestrator {
         self.operationDispatcher = operationDispatcher
         self.receiptFetcher = receiptFetcher
         self.receiptParser = receiptParser
-        self.purchasedProductsFetcher = purchasedProductsFetcher
+        self.transactionFetcher = transactionFetcher
         self.customerInfoManager = customerInfoManager
         self.backend = backend
         self.transactionPoster = transactionPoster
@@ -261,7 +261,8 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.dangerousSettings.usesStoreKit2JWS {
+        if self.systemInfo.dangerousSettings.usesStoreKit2JWS,
+            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.sk2PromotionalOffer(forProductDiscount: productDiscount,
                                      discountIdentifier: discountIdentifier,
                                      product: product,
@@ -1226,13 +1227,14 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                              discountIdentifier: String,
                              product: StoreProductType,
                              subscriptionGroupIdentifier: String,
                              completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
-        self.purchasedProductsFetcher?.fetchLastVerifiedTransaction { jwsRepresentation in
-            guard let jwsRepresentation = jwsRepresentation else {
+        self.transactionFetcher.fetchLastVerifiedTransaction { transaction in
+            guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
                 // Promotional offers require existing purchases.
                 // Fail early if there are no transactions
                 completion(.failure(ErrorUtils.ineligibleError()))
@@ -1243,7 +1245,7 @@ private extension PurchasesOrchestrator {
                                         discountIdentifier: discountIdentifier,
                                         product: product,
                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                        receiptData: jwsRepresentation.asData) { result in
+                                        receiptData: jwsRepresentation) { result in
                 completion(result)
             }
         }

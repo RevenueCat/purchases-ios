@@ -58,7 +58,6 @@ final class TransactionPoster: TransactionPosterType {
 
     private let productsManager: ProductsManagerType
     private let receiptFetcher: ReceiptFetcher
-    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let backend: Backend
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
@@ -67,7 +66,6 @@ final class TransactionPoster: TransactionPosterType {
     init(
         productsManager: ProductsManagerType,
         receiptFetcher: ReceiptFetcher,
-        purchasedProductsFetcher: PurchasedProductsFetcherType?,
         backend: Backend,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
@@ -75,7 +73,6 @@ final class TransactionPoster: TransactionPosterType {
     ) {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
-        self.purchasedProductsFetcher = purchasedProductsFetcher
         self.backend = backend
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
@@ -94,19 +91,16 @@ final class TransactionPoster: TransactionPosterType {
         ))
 
         if systemInfo.dangerousSettings.usesStoreKit2JWS {
-            self.purchasedProductsFetcher?.fetchPurchasedProductForTransaction(
-              transaction.transactionIdentifier) { jwsRepresentation in
-              guard let jwsRepresentation = jwsRepresentation else {
+            guard let jsonRepresentation = transaction.jsonRepresentation else {
                 Logger.error("Could not fetch JWS token for transaction with ID \(transaction.transactionIdentifier)")
                 return
-              }
-              self.fetchProductsAndPostReceipt(
-                  transaction: transaction,
-                  data: data,
-                  receiptData: jwsRepresentation.asData,
-                  completion: completion
-              )
             }
+            self.fetchProductsAndPostReceipt(
+                transaction: transaction,
+                data: data,
+                receiptData: jsonRepresentation,
+                completion: completion
+            )
         } else {
             self.receiptFetcher.receiptData(
                  refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)

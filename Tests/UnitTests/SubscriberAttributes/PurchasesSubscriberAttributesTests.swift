@@ -60,6 +60,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockOfferingsManager: MockOfferingsManager!
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
+    var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
@@ -114,6 +115,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                        systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
+        self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.mockReceiptFetcher = MockReceiptFetcher(
             requestFetcher: self.mockRequestFetcher,
             systemInfo: systemInfoAttribution
@@ -122,7 +124,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.transactionPoster = TransactionPoster(
             productsManager: self.mockProductsManager,
             receiptFetcher: self.mockReceiptFetcher,
-            purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
             backend: self.mockBackend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
@@ -174,6 +175,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           operationDispatcher: self.mockOperationDispatcher,
                                                           receiptFetcher: self.mockReceiptFetcher,
                                                           receiptParser: self.mockReceiptParser,
+                                                          transactionFetcher: self.mockTransactionFetcher,
                                                           customerInfoManager: self.customerInfoManager,
                                                           backend: self.mockBackend,
                                                           transactionPoster: self.transactionPoster,

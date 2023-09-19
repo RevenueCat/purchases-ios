@@ -42,6 +42,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
+    @objc public var jsonRepresentation: Data? { self.transaction.jsonRepresentation }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
@@ -111,6 +112,10 @@ internal protocol StoreTransactionType: Sendable {
     /// The App Store storefront associated with the transaction.
     /// - Note: this is only available for StoreKit 2 transactions starting with iOS 17.
     var storefront: Storefront? { get }
+
+    /// The raw JWS repesentation of the transaction.
+    /// - Note: this is only available for StoreKit 2 transactions.
+    var jsonRepresentation: Data? { get }
 
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
