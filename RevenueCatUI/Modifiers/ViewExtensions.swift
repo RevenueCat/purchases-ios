@@ -221,15 +221,34 @@ extension View {
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension View {
 
+    @ViewBuilder
     func roundedCorner(
         _ radius: CGFloat,
         corners: UIRectCorner,
         edgesIgnoringSafeArea edges: Edge.Set = []
     ) -> some View {
+        #if swift(>=5.9)
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.mask(
+                UnevenRoundedRectangle(radius: radius, corners: corners),
+                edgesIgnoringSafeArea: edges
+            )
+        } else {
+            self.mask(
+                RoundedCorner(radius: radius, corners: corners),
+                edgesIgnoringSafeArea: edges
+            )
+        }
+        #else
         self.mask(
-            RoundedCorner(radius: radius, corners: corners)
-                .edgesIgnoringSafeArea(edges)
+            RoundedCorner(radius: radius, corners: corners),
+            edgesIgnoringSafeArea: edges
         )
+        #endif
+    }
+
+    private func mask(_ shape: some Shape, edgesIgnoringSafeArea edges: Edge.Set) -> some View {
+        self.mask(shape.edgesIgnoringSafeArea(edges))
     }
 
 }
@@ -295,3 +314,23 @@ private extension Axis {
     }
 
 }
+
+// MARK: -
+
+#if swift(>=5.9)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private extension UnevenRoundedRectangle {
+
+    /// Creates a `UnevenRoundedRectangle` rounding `corners` with  `radius`.
+    /// - Note: this does not take RTL into account.
+    init(radius: CGFloat, corners: UIRectCorner) {
+        self.init(
+            topLeadingRadius: corners.contains(.topLeft) ? radius : 0,
+            bottomLeadingRadius: corners.contains(.bottomLeft) ? radius : 0,
+            bottomTrailingRadius: corners.contains(.bottomRight) ? radius : 0,
+            topTrailingRadius: corners.contains(.topRight) ? radius : 0,
+            style: .continuous
+        )
+    }
+}
+#endif
