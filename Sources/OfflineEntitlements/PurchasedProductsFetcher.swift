@@ -94,14 +94,9 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
             throw Error.foundConsumablePurchase
         }
 
-        var result: Transactions = []
-
         Logger.debug(Strings.offlineEntitlements.purchased_products_fetching)
-        for await transaction in StoreKit.Transaction.currentEntitlements {
-            result.append(transaction)
-        }
 
-        return result
+        return await StoreKit.Transaction.currentEntitlements.extractValues()
     }
 
 }
