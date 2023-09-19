@@ -398,7 +398,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 14 Pro,OS=17.0
+            SCAN_DEVICE: iPhone 15 Pro,OS=17.0
       - when:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           steps:
@@ -427,7 +427,7 @@ jobs:
           command: bundle exec fastlane test_ios skip_sk_tests:true
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 14 (17.0)
+            SCAN_DEVICE: iPhone 15 (17.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
