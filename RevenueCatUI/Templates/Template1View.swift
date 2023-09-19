@@ -145,10 +145,6 @@ private struct CircleMaskModifier: ViewModifier {
             )
     }
 
-    private var aspectRatio: CGFloat {
-        return self.size.width / self.size.height
-    }
-
     private var circleOffset: CGFloat {
         return (((self.size.height * Self.circleScale) - self.size.height) / 2.0 * -1)
             .rounded(.down)
