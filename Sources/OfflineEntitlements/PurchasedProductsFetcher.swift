@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-protocol PurchasedProductsFetcherType: Sendable {
+protocol PurchasedProductsFetcherType {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product]
@@ -59,47 +59,6 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         }
 
         return result
-    }
-
-    func fetchPurchasedProductForTransaction(_ transactionId: String, completion: @escaping (String?) -> Void) {
-      Task<Void, Never> {
-        for await transaction in StoreKit.Transaction.all {
-          if String(transaction.underlyingTransaction.id) != transactionId {
-            continue
-          }
-          switch transaction {
-          case let .unverified(transaction, verificationError):
-            Logger.appleWarning(
-                Strings.offlineEntitlements.found_unverified_transactions_in_sk2(transactionID: transaction.id,
-                                                                                 verificationError)
-            )
-            completion(nil)
-          case .verified:
-            completion(transaction.jwsRepresentation)
-          }
-          return
-        }
-        Logger.error("Could not find transaction with ID \(transactionId)")
-        completion(nil)
-      }
-    }
-
-    func fetchLastVerifiedTransaction(completion: @escaping (String?) -> Void) {
-      Task<Void, Never> {
-        for await transaction in StoreKit.Transaction.all {
-          switch transaction {
-          case let .unverified(transaction, verificationError):
-            Logger.appleWarning(
-                Strings.offlineEntitlements.found_unverified_transactions_in_sk2(transactionID: transaction.id,
-                                                                                 verificationError)
-            )
-          case .verified:
-            completion(transaction.jwsRepresentation)
-              return
-          }
-        }
-        completion(nil)
-      }
     }
 
     func clearCache() {
