@@ -106,6 +106,7 @@ final class CustomerAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: transactionData.appUserID)
 
+        // We send the receipt data base64-encoded, while we don't encode the JWS.
         var receiptData = receiptData
         if !self.backendConfig.systemInfo.dangerousSettings.usesStoreKit2JWS {
             receiptData = receiptData.asFetchToken.asData
