@@ -19,8 +19,11 @@ class MockSystemInfo: SystemInfo {
     convenience init(finishTransactions: Bool,
                      storeKit2Setting: StoreKit2Setting = .default,
                      customEntitlementsComputation: Bool = false,
+                     usesStoreKit2JWS: Bool = false,
                      clock: ClockType = TestClock()) {
-        let dangerousSettings = DangerousSettings(customEntitlementComputation: customEntitlementsComputation)
+        let dangerousSettings = DangerousSettings(
+            customEntitlementComputation: customEntitlementsComputation,
+            usesStoreKit2JWS: usesStoreKit2JWS)
         self.init(platformInfo: nil,
                   finishTransactions: finishTransactions,
                   storeKit2Setting: storeKit2Setting,

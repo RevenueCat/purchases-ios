@@ -378,6 +378,7 @@ extension CustomerInfo {
         let transactionIdentifier: String
         let quantity: Int
         var storefront: Storefront? { return nil }
+        var jsonRepresentation: Data? { return nil }
 
         var hasKnownPurchaseDate: Bool { true }
         var hasKnownTransactionIdentifier: Bool { return true }

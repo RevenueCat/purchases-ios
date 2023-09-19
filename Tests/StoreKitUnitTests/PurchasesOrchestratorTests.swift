@@ -41,6 +41,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     private var mockOfferingsManager: MockOfferingsManager!
     private var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    private var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
 
     private var orchestrator: PurchasesOrchestrator!
 
@@ -94,8 +95,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
+<<<<<<< HEAD
 
         self.mockStoreMessagesHelper = .init()
+=======
+        self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+>>>>>>> b211f9cf0 (Simplify implementation by exposing jsonRepresentation in StoreTransaction)
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
@@ -154,6 +159,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   operationDispatcher: self.operationDispatcher,
                                                   receiptFetcher: self.receiptFetcher,
                                                   receiptParser: self.receiptParser,
+                                                  transactionFetcher: self.mockTransactionFetcher,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
                                                   transactionPoster: self.transactionPoster,
@@ -179,6 +185,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   operationDispatcher: self.operationDispatcher,
                                                   receiptFetcher: self.receiptFetcher,
                                                   receiptParser: self.receiptParser,
+                                                  transactionFetcher: self.mockTransactionFetcher,
                                                   customerInfoManager: self.customerInfoManager,
                                                   backend: self.backend,
                                                   transactionPoster: self.transactionPoster,
@@ -198,7 +205,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         return .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
-            purchasedProductsFetcher: self.purchasedProductsFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,

@@ -193,7 +193,6 @@ class BasePurchasesTests: TestCase {
         return .init(
             productsManager: self.mockProductsManager,
             receiptFetcher: self.receiptFetcher,
-            purchasedProductsFetcher: self.purchasedProductsFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
@@ -241,6 +240,7 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.receiptFetcher,
             receiptParser: self.mockReceiptParser,
+            transactionFetcher: self.mockTransactionFetcher,
             customerInfoManager: self.customerInfoManager,
             backend: self.backend,
             transactionPoster: self.transactionPoster,

@@ -76,6 +76,11 @@ class OfferingsAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
+        var receiptData = receiptData
+        if !self.backendConfig.systemInfo.dangerousSettings.usesStoreKit2JWS {
+            receiptData = receiptData.asFetchToken.asData
+        }
+
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
                                                                                  productIdentifier: productIdentifier,
                                                                                  subscriptionGroup: subscriptionGroup,

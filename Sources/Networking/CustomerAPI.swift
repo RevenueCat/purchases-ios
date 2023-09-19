@@ -106,6 +106,11 @@ final class CustomerAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: transactionData.appUserID)
 
+        var receiptData = receiptData
+        if !self.backendConfig.systemInfo.dangerousSettings.usesStoreKit2JWS {
+            receiptData = receiptData.asFetchToken.asData
+        }
+
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
             productData: productData,

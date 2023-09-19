@@ -23,6 +23,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.purchaseDate = sk2Transaction.purchaseDate
         self.transactionIdentifier = String(sk2Transaction.id)
         self.quantity = sk2Transaction.purchasedQuantity
+        self.jsonRepresentation = sk2Transaction.jsonRepresentation
 
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -42,6 +43,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
     let storefront: Storefront?
+    let jsonRepresentation: Data?
 
     var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }

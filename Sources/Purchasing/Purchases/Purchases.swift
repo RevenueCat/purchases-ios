@@ -293,6 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let deviceCache = DeviceCache(sandboxEnvironmentDetector: systemInfo, userDefaults: userDefaults)
 
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
+        let transactionFetcher = StoreKit2TransactionFetcher()
 
         let backend = Backend(
             apiKey: apiKey,
@@ -326,7 +327,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
-            purchasedProductsFetcher: purchasedProductsFetcher,
             backend: backend,
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,
@@ -341,7 +341,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                       operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
-                                                      transactionFetcher: StoreKit2TransactionFetcher(),
+                                                      transactionFetcher: transactionFetcher,
                                                       transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
 
@@ -421,7 +421,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     operationDispatcher: operationDispatcher,
                     receiptFetcher: receiptFetcher,
                     receiptParser: receiptParser,
-                    purchasedProductsFetcher: purchasedProductsFetcher,
+                    transactionFetcher: transactionFetcher,
                     customerInfoManager: customerInfoManager,
                     backend: backend,
                     transactionPoster: transactionPoster,
@@ -444,7 +444,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     operationDispatcher: operationDispatcher,
                     receiptFetcher: receiptFetcher,
                     receiptParser: receiptParser,
-                    purchasedProductsFetcher: purchasedProductsFetcher,
+                    transactionFetcher: transactionFetcher,
                     customerInfoManager: customerInfoManager,
                     backend: backend,
                     transactionPoster: transactionPoster,
