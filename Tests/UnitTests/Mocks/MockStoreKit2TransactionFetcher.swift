@@ -17,7 +17,7 @@ import Foundation
 final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
     private let _stubbedUnfinishedTransactions: Atomic<[StoreTransaction]> = .init([])
-    private let _stubbedVerifiedTransactions: Atomic<[StoreTransaction]> = .init([])
+    private let _stubbedLastVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
     private let _stubbedHasPendingConsumablePurchase: Atomic<Bool> = false
 
     var stubbedUnfinishedTransactions: [StoreTransaction] {
@@ -25,9 +25,9 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         set { self._stubbedUnfinishedTransactions.value = newValue }
     }
 
-    var stubbedVerifiedTransactions: [StoreTransaction] {
-        get { return self._stubbedVerifiedTransactions.value }
-        set { self._stubbedVerifiedTransactions.value = newValue }
+    var stubbedLastVerifiedTransaction: StoreTransaction? {
+        get { return self._stubbedLastVerifiedTransaction.value }
+        set { self._stubbedLastVerifiedTransaction.value = newValue }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -38,15 +38,8 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var verifiedTransactions: [StoreTransaction] {
-        get async {
-            return self.stubbedVerifiedTransactions
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedTransaction(completion: @escaping (RevenueCat.StoreTransaction?) -> Void) {
-        completion(self.stubbedUnfinishedTransactions.first)
+        completion(self.stubbedLastVerifiedTransaction)
     }
 
     // MARK: -
