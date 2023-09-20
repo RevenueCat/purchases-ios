@@ -19,7 +19,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PurchaseHandler {
 
-    static func mock(customerInfo: CustomerInfo = TestData.customerInfo) -> Self {
+    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo) -> Self {
         return self.init(
             purchases: MockPurchases { _ in
                 return (

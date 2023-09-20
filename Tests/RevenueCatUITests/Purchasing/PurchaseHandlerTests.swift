@@ -66,7 +66,7 @@ class PurchaseHandlerTests: TestCase {
     }
 
     func testRestorePurchasesWithActiveSubscriptions() async throws {
-        let handler: PurchaseHandler = .mock(customerInfo: Self.customerInfoWithSubscriptions)
+        let handler: PurchaseHandler = .mock(Self.customerInfoWithSubscriptions)
 
         let result = try await handler.restorePurchases()
         expect(result.info) === Self.customerInfoWithSubscriptions
@@ -74,7 +74,7 @@ class PurchaseHandlerTests: TestCase {
     }
 
     func testRestorePurchasesWithNonSubscriptions() async throws {
-        let handler: PurchaseHandler = .mock(customerInfo: Self.customerInfoWithNonSubscriptions)
+        let handler: PurchaseHandler = .mock(Self.customerInfoWithNonSubscriptions)
 
         let result = try await handler.restorePurchases()
         expect(result.info) === Self.customerInfoWithNonSubscriptions
