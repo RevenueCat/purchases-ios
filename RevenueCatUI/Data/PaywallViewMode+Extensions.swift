@@ -59,4 +59,12 @@ extension PaywallViewMode {
         }
     }
 
+    func shouldDisplayInlineOfferDetails(displayingAllPlans: Bool) -> Bool {
+        switch self {
+        case .fullScreen: return false
+        case .footer: return false
+        case .condensedFooter: return !displayingAllPlans
+        }
+    }
+
 }
