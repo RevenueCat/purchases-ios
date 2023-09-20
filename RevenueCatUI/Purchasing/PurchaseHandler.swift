@@ -105,8 +105,8 @@ extension PurchaseHandler {
             self.restoredCustomerInfo = customerInfo
         }
 
-        return (customerInfo,
-                success: !customerInfo.activeSubscriptions.isEmpty)
+        return (info: customerInfo,
+                success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
@@ -220,6 +220,14 @@ private extension PaywallEvent.Data {
         copy.date = .now
 
         return copy
+    }
+
+}
+
+private extension CustomerInfo {
+
+    var hasActiveSubscriptionsOrNonSubscriptions: Bool {
+        return !self.activeSubscriptions.isEmpty || !self.nonSubscriptions.isEmpty
     }
 
 }

@@ -65,13 +65,103 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
-    func testRestorePurchasesWithNoTransactions() async throws {
-        let handler: PurchaseHandler = .mock(customerInfo: TestData.customerInfoWithSubscriptions)
+    func testRestorePurchasesWithActiveSubscriptions() async throws {
+        let handler: PurchaseHandler = .mock(customerInfo: Self.customerInfoWithSubscriptions)
 
         let result = try await handler.restorePurchases()
-        expect(result.info) === TestData.customerInfoWithSubscriptions
+        expect(result.info) === Self.customerInfoWithSubscriptions
         expect(result.success) == true
     }
+
+    func testRestorePurchasesWithNonSubscriptions() async throws {
+        let handler: PurchaseHandler = .mock(customerInfo: Self.customerInfoWithNonSubscriptions)
+
+        let result = try await handler.restorePurchases()
+        expect(result.info) === Self.customerInfoWithNonSubscriptions
+        expect(result.success) == true
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PurchaseHandlerTests {
+
+    static let customerInfoWithSubscriptions: CustomerInfo = {
+        return .decode(
+        """
+        {
+            "schema_version": "4",
+            "request_date": "2022-03-08T17:42:58Z",
+            "request_date_ms": 1646761378845,
+            "subscriber": {
+                "first_seen": "2022-03-08T17:42:58Z",
+                "last_seen": "2022-03-08T17:42:58Z",
+                "management_url": "https://apps.apple.com/account/subscriptions",
+                "non_subscriptions": {
+                },
+                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+                "original_application_version": "1.0",
+                "original_purchase_date": "2022-04-12T00:03:24Z",
+                "other_purchases": {
+                },
+                "subscriptions": {
+                    "com.revenuecat.product": {
+                        "billing_issues_detected_at": null,
+                        "expires_date": "2062-04-12T00:03:35Z",
+                        "grace_period_expires_date": null,
+                        "is_sandbox": true,
+                        "original_purchase_date": "2022-04-12T00:03:28Z",
+                        "period_type": "intro",
+                        "purchase_date": "2022-04-12T00:03:28Z",
+                        "store": "app_store",
+                        "unsubscribe_detected_at": null
+                    },
+                },
+                "entitlements": {
+                }
+            }
+        }
+        """
+        )
+    }()
+
+    static let customerInfoWithNonSubscriptions: CustomerInfo = {
+        return .decode(
+        """
+        {
+            "schema_version": "4",
+            "request_date": "2022-03-08T17:42:58Z",
+            "request_date_ms": 1646761378845,
+            "subscriber": {
+                "first_seen": "2022-03-08T17:42:58Z",
+                "last_seen": "2022-03-08T17:42:58Z",
+                "management_url": "https://apps.apple.com/account/subscriptions",
+                "non_subscriptions": {
+                    "com.revenuecat.product.tip": [
+                        {
+                            "purchase_date": "2022-02-11T00:03:28Z",
+                            "original_purchase_date": "2022-03-10T00:04:28Z",
+                            "id": "17459f5ff7",
+                            "store_transaction_id": "340001090153249",
+                            "store": "app_store",
+                            "is_sandbox": false
+                        }
+                    ]
+                },
+                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+                "original_application_version": "1.0",
+                "original_purchase_date": "2022-04-12T00:03:24Z",
+                "other_purchases": {
+                },
+                "subscriptions": {
+                },
+                "entitlements": {
+                }
+            }
+        }
+        """
+        )
+    }()
 
 }
 
