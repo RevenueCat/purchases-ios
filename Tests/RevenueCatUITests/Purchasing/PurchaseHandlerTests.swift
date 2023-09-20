@@ -55,11 +55,22 @@ class PurchaseHandlerTests: TestCase {
     func testRestorePurchases() async throws {
         let handler: PurchaseHandler = .mock()
 
-        _ = try await handler.restorePurchases()
+        let result = try await handler.restorePurchases()
+
+        expect(result.info) === TestData.customerInfo
+        expect(result.success) == false
         expect(handler.restored) == true
         expect(handler.restoredCustomerInfo) === TestData.customerInfo
         expect(handler.purchasedCustomerInfo).to(beNil())
         expect(handler.actionInProgress) == false
+    }
+
+    func testRestorePurchasesWithNoTransactions() async throws {
+        let handler: PurchaseHandler = .mock(customerInfo: TestData.customerInfoWithSubscriptions)
+
+        let result = try await handler.restorePurchases()
+        expect(result.info) === TestData.customerInfoWithSubscriptions
+        expect(result.success) == true
     }
 
 }

@@ -91,8 +91,10 @@ extension PurchaseHandler {
         return result
     }
 
+    /// - Returns: `success` is `true` only when the resulting `CustomerInfo`
+    /// had any transactions
     @MainActor
-    func restorePurchases() async throws -> CustomerInfo {
+    func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         self.actionInProgress = true
         defer { self.actionInProgress = false }
 
@@ -103,7 +105,8 @@ extension PurchaseHandler {
             self.restoredCustomerInfo = customerInfo
         }
 
-        return customerInfo
+        return (customerInfo,
+                success: !customerInfo.activeSubscriptions.isEmpty)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {

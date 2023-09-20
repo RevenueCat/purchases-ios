@@ -19,16 +19,16 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension PurchaseHandler {
 
-    static func mock() -> Self {
+    static func mock(customerInfo: CustomerInfo = TestData.customerInfo) -> Self {
         return self.init(
             purchases: MockPurchases { _ in
                 return (
                     transaction: nil,
-                    customerInfo: TestData.customerInfo,
+                    customerInfo: customerInfo,
                     userCancelled: false
                 )
             } restorePurchases: {
-                return TestData.customerInfo
+                return customerInfo
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
             }

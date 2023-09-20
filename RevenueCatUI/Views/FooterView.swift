@@ -167,9 +167,8 @@ private struct RestorePurchasesButton: View {
 
     var body: some View {
         AsyncButton {
-            let customerInfo = try await self.purchaseHandler.restorePurchases()
-
-            if !customerInfo.entitlements.active.isEmpty {
+            let success = try await self.purchaseHandler.restorePurchases().success
+            if success {
                 self.displayRestoredAlert = true
             }
         } label: {
