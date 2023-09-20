@@ -167,8 +167,10 @@ private struct RestorePurchasesButton: View {
 
     var body: some View {
         AsyncButton {
-            _ = try await self.purchaseHandler.restorePurchases()
-            self.displayRestoredAlert = true
+            let success = try await self.purchaseHandler.restorePurchases().success
+            if success {
+                self.displayRestoredAlert = true
+            }
         } label: {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
                 ViewThatFits {

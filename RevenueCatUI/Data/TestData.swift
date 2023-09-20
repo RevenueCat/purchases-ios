@@ -440,7 +440,8 @@ internal enum TestData {
     #endif
 
     static let customerInfo: CustomerInfo = {
-        let json = """
+        return .decode(
+        """
         {
             "schema_version": "4",
             "request_date": "2022-03-08T17:42:58Z",
@@ -463,13 +464,7 @@ internal enum TestData {
             }
         }
         """
-
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        decoder.dateDecodingStrategy = .iso8601
-
-        // swiftlint:disable:next force_try
-        return try! decoder.decode(CustomerInfo.self, from: Data(json.utf8))
+        )
     }()
 
     static let localization1: PaywallData.LocalizedConfiguration = .init(
@@ -536,6 +531,19 @@ extension PackageType {
 
     var identifier: String {
         return Package.string(from: self)!
+    }
+
+}
+
+extension CustomerInfo {
+
+    static func decode(_ json: String) -> Self {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        decoder.dateDecodingStrategy = .iso8601
+
+        // swiftlint:disable:next force_try
+        return try! decoder.decode(Self.self, from: Data(json.utf8))
     }
 
 }

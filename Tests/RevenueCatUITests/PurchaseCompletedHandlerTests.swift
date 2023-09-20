@@ -70,6 +70,27 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testOnRestoreCompleted() throws {
+        var customerInfo: CustomerInfo?
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.purchaseHandler
+        )
+            .onRestoreCompleted {
+                customerInfo = $0
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.restorePurchases()
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
