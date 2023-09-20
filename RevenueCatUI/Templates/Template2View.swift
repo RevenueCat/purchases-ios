@@ -57,7 +57,7 @@ struct Template2View: TemplateViewType {
             self.scrollableContent
                 .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
 
-            if self.configuration.mode.shouldDisplayInlineOfferDetails {
+            if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
                 self.offerDetails(package: self.selectedPackage, selected: false)
             }
 
@@ -296,13 +296,6 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return true
         case .footer, .condensedFooter: return false
-        }
-    }
-
-    var shouldDisplayInlineOfferDetails: Bool {
-        switch self {
-        case .fullScreen: return false
-        case .footer, .condensedFooter: return true
         }
     }
 

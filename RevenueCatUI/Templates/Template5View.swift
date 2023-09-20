@@ -64,10 +64,15 @@ struct Template5View: TemplateViewType {
 
             self.scrollableContent
                 .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
+                .padding(
+                    .top,
+                    self.displayingAllPlans
+                    ? self.defaultVerticalPaddingLength
+                    // Compensate for additional padding on condensed mode + iPad
+                    : self.defaultVerticalPaddingLength.map { $0 * -1 }
+                )
 
-            Spacer(minLength: 0)
-
-            if self.configuration.mode.shouldDisplayInlineOfferDetails {
+            if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
                 self.offerDetails(package: self.selectedPackage, selected: false)
             }
 
@@ -104,7 +109,6 @@ struct Template5View: TemplateViewType {
                 self.packages
             } else {
                 self.packages
-                    .padding(.top, self.defaultHorizontalPaddingLength)
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
@@ -285,13 +289,6 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return true
         case .footer, .condensedFooter: return false
-        }
-    }
-
-    var shouldDisplayInlineOfferDetails: Bool {
-        switch self {
-        case .fullScreen: return false
-        case .footer, .condensedFooter: return true
         }
     }
 
