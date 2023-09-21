@@ -9,7 +9,7 @@ import Foundation
 
 enum Configuration {
 
-    #warning("This needs to be configured.")
+    #warning("Configure API key if you want to test paywalls from your dashboard")
 
     // Note: you can leave this empty to use the production server, or point to your own instance.
     static let proxyURL = ""

@@ -11,19 +11,15 @@ import SwiftUI
 
 struct AppContentView: View {
 
-    let customerInfoStream: AsyncStream<CustomerInfo>
+    let customerInfoStream: AsyncStream<CustomerInfo>?
 
-    init() {
-        self.init(Purchases.shared.customerInfoStream)
-    }
-
-    init(_ customerInfoStream: AsyncStream<CustomerInfo>) {
+    init(customerInfoStream: AsyncStream<CustomerInfo>?) {
         self.customerInfoStream = customerInfoStream
     }
 
     #if DEBUG
     init(customerInfo: CustomerInfo) {
-        self.init(.init(unfolding: { customerInfo }))
+        self.init(customerInfoStream: .init(unfolding: { customerInfo }))
     }
     #endif
 
@@ -35,15 +31,17 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            NavigationView {
-                ZStack {
-                    self.background
-                    self.content
+            if self.isPurchasesConfigured {
+                NavigationView {
+                    ZStack {
+                        self.background
+                        self.content
+                    }
+                    .navigationTitle("Paywall Tester")
                 }
-                .navigationTitle("Paywall Tester")
-            }
-            .tabItem {
-                Label("App", systemImage: "iphone")
+                .tabItem {
+                    Label("App", systemImage: "iphone")
+                }
             }
 
             #if DEBUG
@@ -53,10 +51,12 @@ struct AppContentView: View {
                 }
             #endif
 
-            OfferingsList()
-                .tabItem {
-                    Label("All paywalls", systemImage: "network")
-                }
+            if self.isPurchasesConfigured {
+                OfferingsList()
+                    .tabItem {
+                        Label("All paywalls", systemImage: "network")
+                    }
+            }
         }
         .presentPaywallIfNeeded {
             !$0.hasPro
@@ -98,8 +98,10 @@ struct AppContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
         .task {
-            for await info in self.customerInfoStream {
-                self.customerInfo = info
+            if let stream = self.customerInfoStream {
+                for await info in stream {
+                    self.customerInfo = info
+                }
             }
         }
         #if DEBUG
@@ -111,6 +113,11 @@ struct AppContentView: View {
         }
         #endif
     }
+
+    private var isPurchasesConfigured: Bool {
+        return self.customerInfoStream != nil
+    }
+
 }
 
 extension CustomerInfo {
