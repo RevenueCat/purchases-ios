@@ -48,7 +48,6 @@ extension PaywallData {
     static let defaultTemplate: PaywallTemplate = .template2
 
     static let appIconPlaceholder = "revenuecatui_default_paywall_app_icon"
-    static let revisionID: Int = -1
 
 }
 
@@ -101,7 +100,8 @@ private extension PaywallData {
 
     static let backgroundImage = "background.jpg"
     static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
-
+    static let revisionID: Int = -1
+    
 }
 
 // MARK: -
