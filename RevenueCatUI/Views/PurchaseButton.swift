@@ -114,9 +114,6 @@ private struct PurchaseButtonLabel: View {
     let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
 
-    @Environment(\.userInterfaceIdiom)
-    private var userInterfaceIdiom
-
     @Environment(\.isEnabled)
     private var isEnabled
 
@@ -136,7 +133,6 @@ private struct PurchaseButtonLabel: View {
                     : nil
             )
             .padding()
-            .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
             .hidden(if: !self.isEnabled)
             .overlay {
                 if !self.isEnabled && self.isNotRedacted {
