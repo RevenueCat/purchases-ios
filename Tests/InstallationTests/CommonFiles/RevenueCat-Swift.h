@@ -588,6 +588,9 @@ SWIFT_CLASS_NAMED("Builder")
 ///
 - (RCConfigurationBuilder * _Nonnull)withAppUserID:(NSString * _Nullable)appUserID SWIFT_WARN_UNUSED_RESULT;
 /// Set <code>observerMode</code>.
+/// warning:
+/// This assumes your IAP implementation uses StoreKit 1.
+/// Observer mode is not compatible with StoreKit 2.
 /// \param observerMode Set this to <code>true</code> if you have your own IAP implementation and want to use only
 /// RevenueCat’s backend. Default is <code>false</code>.
 ///
@@ -641,7 +644,7 @@ SWIFT_CLASS_NAMED("Builder")
 
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-/// Set <code>usesStoreKit2IfAvailable</code>. If <code>true</code>, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
+/// Set <code>storeKit2Setting</code>. If <code>true</code>, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
 /// important:
 /// This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
 /// However, apps using it should work correctly.
@@ -2646,6 +2649,9 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// sync status across a shared container, such as between a host app and an extension. The instance of the
 /// Purchases SDK will be set as a singleton.
 /// You should access the singleton instance using <code>Purchases/shared</code>
+/// warning:
+/// This assumes your IAP implementation uses StoreKit 1.
+/// Observer mode is not compatible with StoreKit 2.
 /// \param apiKey The API Key generated for your app from https://app.revenuecat.com/
 ///
 /// \param appUserID The unique app user id for this user. This user id will allow users to share their
