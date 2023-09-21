@@ -45,10 +45,10 @@
 		4F4557E32A6FFE6A00160521 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F4557E52A6FFE6D00160521 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ../../..; sourceTree = "<group>"; };
-		4F6BED9A2A26A64200CD9322 /* SimpleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F6BED9A2A26A64200CD9322 /* PaywallsTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PaywallsTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywallContent.swift; sourceTree = "<group>"; };
 		4FC046BC2A572E3700A28BCF /* SimpleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleApp.swift; sourceTree = "<group>"; };
-		4FC046BD2A572E3700A28BCF /* SimpleApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimpleApp.entitlements; sourceTree = "<group>"; };
+		4FC046BD2A572E3700A28BCF /* PaywallsTester.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PaywallsTester.entitlements; sourceTree = "<group>"; };
 		4FC046BE2A572E3700A28BCF /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		4FC046BF2A572E3700A28BCF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4FC046C12A572E3700A28BCF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -92,7 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */,
-				4FC046BB2A572E3700A28BCF /* SimpleApp */,
+				4FC046BB2A572E3700A28BCF /* PaywallsTester */,
 				4F6BED9B2A26A64200CD9322 /* Products */,
 				4F6BEDCC2A26A68E00CD9322 /* Frameworks */,
 			);
@@ -101,7 +101,7 @@
 		4F6BED9B2A26A64200CD9322 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4F6BED9A2A26A64200CD9322 /* SimpleApp.app */,
+				4F6BED9A2A26A64200CD9322 /* PaywallsTester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,7 +114,7 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		4FC046BB2A572E3700A28BCF /* SimpleApp */ = {
+		4FC046BB2A572E3700A28BCF /* PaywallsTester */ = {
 			isa = PBXGroup;
 			children = (
 				4FC046BC2A572E3700A28BCF /* SimpleApp.swift */,
@@ -122,7 +122,7 @@
 				4FC046CA2A572EF300A28BCF /* Config */,
 				4FC046C02A572E3700A28BCF /* Preview Content */,
 			);
-			path = SimpleApp;
+			path = PaywallsTester;
 			sourceTree = "<group>";
 		};
 		4FC046C02A572E3700A28BCF /* Preview Content */ = {
@@ -140,7 +140,7 @@
 				4FDF11212A72714C004F3680 /* SamplePaywalls.swift */,
 				4FC882E02A5870C6005BE85E /* Info.plist */,
 				4FC046BF2A572E3700A28BCF /* Assets.xcassets */,
-				4FC046BD2A572E3700A28BCF /* SimpleApp.entitlements */,
+				4FC046BD2A572E3700A28BCF /* PaywallsTester.entitlements */,
 				4FC046BE2A572E3700A28BCF /* Products.storekit */,
 				4F4557E42A6FFE6A00160521 /* Localizable.strings */,
 			);
@@ -150,9 +150,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4F6BED992A26A64200CD9322 /* SimpleApp */ = {
+		4F6BED992A26A64200CD9322 /* PaywallsTester */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4F6BEDA92A26A64300CD9322 /* Build configuration list for PBXNativeTarget "SimpleApp" */;
+			buildConfigurationList = 4F6BEDA92A26A64300CD9322 /* Build configuration list for PBXNativeTarget "PaywallsTester" */;
 			buildPhases = (
 				4F6BED962A26A64200CD9322 /* Sources */,
 				4F6BED972A26A64200CD9322 /* Frameworks */,
@@ -163,13 +163,13 @@
 			);
 			dependencies = (
 			);
-			name = SimpleApp;
+			name = PaywallsTester;
 			packageProductDependencies = (
 				4F4EE7D12A5731E800D7EAE1 /* RevenueCat */,
 				4FC80B1F2A5DE8E300E95DB0 /* RevenueCatUI */,
 			);
 			productName = SimpleApp;
-			productReference = 4F6BED9A2A26A64200CD9322 /* SimpleApp.app */;
+			productReference = 4F6BED9A2A26A64200CD9322 /* PaywallsTester.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -187,7 +187,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 4F6BED952A26A64200CD9322 /* Build configuration list for PBXProject "SimpleApp" */;
+			buildConfigurationList = 4F6BED952A26A64200CD9322 /* Build configuration list for PBXProject "PaywallsTester" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -204,7 +204,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4F6BED992A26A64200CD9322 /* SimpleApp */,
+				4F6BED992A26A64200CD9322 /* PaywallsTester */,
 			);
 		};
 /* End PBXProject section */
@@ -370,14 +370,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SimpleApp/SimpleApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PaywallsTester/PaywallsTester.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"SimpleApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"PaywallsTester/Preview Content\"";
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SimpleApp/Info.plist;
+				INFOPLIST_FILE = PaywallsTester/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Paywalls;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -414,14 +414,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = SimpleApp/SimpleApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = PaywallsTester/PaywallsTester.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"SimpleApp/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"PaywallsTester/Preview Content\"";
 				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SimpleApp/Info.plist;
+				INFOPLIST_FILE = PaywallsTester/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Paywalls;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -456,7 +456,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4F6BED952A26A64200CD9322 /* Build configuration list for PBXProject "SimpleApp" */ = {
+		4F6BED952A26A64200CD9322 /* Build configuration list for PBXProject "PaywallsTester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4F6BEDA72A26A64300CD9322 /* Debug */,
@@ -465,7 +465,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4F6BEDA92A26A64300CD9322 /* Build configuration list for PBXNativeTarget "SimpleApp" */ = {
+		4F6BEDA92A26A64300CD9322 /* Build configuration list for PBXNativeTarget "PaywallsTester" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				4F6BEDAA2A26A64300CD9322 /* Debug */,

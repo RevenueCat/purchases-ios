@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "4F6BED992A26A64200CD9322"
-               BuildableName = "SimpleApp.app"
-               BlueprintName = "SimpleApp"
-               ReferencedContainer = "container:SimpleApp.xcodeproj">
+               BuildableName = "PaywallsTester.app"
+               BlueprintName = "PaywallsTester"
+               ReferencedContainer = "container:PaywallsTester.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,11 +44,14 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4F6BED992A26A64200CD9322"
-            BuildableName = "SimpleApp.app"
-            BlueprintName = "SimpleApp"
-            ReferencedContainer = "container:SimpleApp.xcodeproj">
+            BuildableName = "PaywallsTester.app"
+            BlueprintName = "PaywallsTester"
+            ReferencedContainer = "container:PaywallsTester.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../SimpleApp/Products.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -56,22 +59,21 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "4F6BED992A26A64200CD9322"
-            BuildableName = "SimpleApp.app"
-            BlueprintName = "SimpleApp"
-            ReferencedContainer = "container:SimpleApp.xcodeproj">
+            BuildableName = "PaywallsTester.app"
+            BlueprintName = "PaywallsTester"
+            ReferencedContainer = "container:PaywallsTester.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>
