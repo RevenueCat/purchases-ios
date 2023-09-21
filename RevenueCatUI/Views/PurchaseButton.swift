@@ -120,6 +120,9 @@ private struct PurchaseButtonLabel: View {
     @Environment(\.isEnabled)
     private var isEnabled
 
+    @Environment(\.redactionReasons.isEmpty)
+    private var isNotRedacted
+
     var body: some View {
         IntroEligibilityStateView(
             textWithNoIntroOffer: self.package.localization.callToAction,
@@ -136,7 +139,7 @@ private struct PurchaseButtonLabel: View {
             .padding(.vertical, self.userInterfaceIdiom == .pad ? 10 : 0)
             .hidden(if: !self.isEnabled)
             .overlay {
-                if !self.isEnabled {
+                if !self.isEnabled && self.isNotRedacted {
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(self.colors.callToActionForegroundColor)
