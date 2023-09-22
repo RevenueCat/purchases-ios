@@ -171,7 +171,7 @@ internal struct DebugSummaryView: View {
             case let .loaded(info):
                 LabeledContent("User ID", value: self.model.currentAppUserID ?? "")
                 LabeledContent("Original User ID", value: info.originalAppUserId)
-                LabeledContent("Active Entitlements", value: info.entitlements.active.count.description)
+                LabeledContent("Entitlements", value: info.entitlementDescription)
 
                 if let latestExpiration = info.latestExpirationDate {
                     LabeledContent("Latest Expiration Date",
@@ -492,6 +492,25 @@ private struct ProductStyle: ProductViewStyle {
     }
 
 }
+#endif
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+
+private extension CustomerInfo {
+
+    var entitlementDescription: String {
+        let total = self.entitlements.all.count
+        let active = self.entitlements.active.values
+
+        let activeList = active.isEmpty
+        ? ""
+        : ": \(active.map(\.identifier).joined(separator: ", "))"
+
+        return "\(total) total, \(active.count) active\(activeList)"
+    }
+
+}
+
 #endif
 
 #endif
