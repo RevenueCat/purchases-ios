@@ -97,3 +97,72 @@ private extension View {
     }
 
 }
+
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+struct IntroEligibilityStateView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        List {
+            Section(header: Text("Loading")) {
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: Self.textWithNoIntroOffer,
+                    textWithIntroOffer: nil,
+                    introEligibility: nil,
+                    alignment: .leading
+                )
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: nil,
+                    textWithIntroOffer: Self.textWithIntroOffer,
+                    introEligibility: nil,
+                    alignment: .leading
+                )
+            }
+
+            Section(header: Text("Eligible")) {
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: Self.textWithNoIntroOffer,
+                    textWithIntroOffer: nil,
+                    introEligibility: .eligible,
+                    alignment: .leading
+                )
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: nil,
+                    textWithIntroOffer: Self.textWithIntroOffer,
+                    introEligibility: .eligible,
+                    alignment: .leading
+                )
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: Self.textWithNoIntroOffer,
+                    textWithIntroOffer: Self.textWithIntroOffer,
+                    introEligibility: .eligible,
+                    alignment: .leading
+                )
+            }
+
+            Section(header: Text("Ineligible")) {
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: Self.textWithNoIntroOffer,
+                    textWithIntroOffer: nil,
+                    introEligibility: .ineligible,
+                    alignment: .leading
+                )
+                IntroEligibilityStateView(
+                    textWithNoIntroOffer: Self.textWithNoIntroOffer,
+                    textWithIntroOffer: Self.textWithIntroOffer,
+                    introEligibility: .ineligible,
+                    alignment: .leading
+                )
+            }
+        }
+    }
+
+    private static let textWithNoIntroOffer = "$3.99/mo"
+    private static let textWithIntroOffer = "7 day trial, then $3.99/mo"
+
+}
+
+#endif
