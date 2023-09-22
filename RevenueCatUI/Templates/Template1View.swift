@@ -93,9 +93,9 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var asyncImage: some View {
         if let headerImage = self.configuration.headerImageURL {
-            RemoteImage(url: headerImage, aspectRatio: Self.imageAspectRatio)
+            RemoteImage(url: headerImage, aspectRatio: self.imageAspectRatio)
             .frame(maxWidth: .infinity)
-            .aspectRatio(Self.imageAspectRatio, contentMode: .fit)
+            .aspectRatio(self.imageAspectRatio, contentMode: .fit)
         }
     }
 
@@ -123,7 +123,17 @@ struct Template1View: TemplateViewType {
         return self.introEligibilityViewModel.singleEligibility
     }
 
-    private static let imageAspectRatio: CGFloat = 1.2
+    private var imageAspectRatio: CGFloat {
+        switch self.userInterfaceIdiom {
+        case .pad:
+            return VersionDetector.iOS15
+                // iOS 15 has layout issues on iPad landscape, this makes it look better
+                ? 2.8
+                : 2.0
+        default:
+            return 1.2
+        }
+    }
 
 }
 
@@ -131,6 +141,9 @@ struct Template1View: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct CircleMaskModifier: ViewModifier {
+
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
 
     @State
     private var size: CGSize = .zero
@@ -140,17 +153,22 @@ private struct CircleMaskModifier: ViewModifier {
             .onSizeChange { self.size = $0 }
             .clipShape(
                 Circle()
-                    .scale(Self.circleScale)
+                    .scale(self.circleScale)
                     .offset(y: self.circleOffset)
             )
     }
 
     private var circleOffset: CGFloat {
-        return (((self.size.height * Self.circleScale) - self.size.height) / 2.0 * -1)
+        return (((self.size.height * self.circleScale) - self.size.height) / 2.0 * -1)
             .rounded(.down)
     }
 
-    private static let circleScale: CGFloat = 3
+    private var circleScale: CGFloat {
+        switch self.userInterfaceIdiom {
+        case .pad: return 7
+        default: return 3
+        }
+    }
 
 }
 
