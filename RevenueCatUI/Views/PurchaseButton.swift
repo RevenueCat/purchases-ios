@@ -132,7 +132,8 @@ private struct PurchaseButtonLabel: View {
                    ? .infinity
                     : nil
             )
-            .padding()
+        // TODO: remove
+            .padding(14)
             .hidden(if: !self.isEnabled)
             .overlay {
                 if !self.isEnabled && self.isNotRedacted {

@@ -69,7 +69,7 @@ struct Template5View: TemplateViewType {
                     self.displayingAllPlans
                     ? self.defaultVerticalPaddingLength
                     // Compensate for additional padding on condensed mode + iPad
-                    : self.defaultVerticalPaddingLength.map { $0 * -1 }
+                    : self.defaultVerticalPaddingLength * -1
                 )
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {

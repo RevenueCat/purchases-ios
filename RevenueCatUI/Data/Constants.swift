@@ -42,11 +42,11 @@ enum Constants {
         }
     }
 
-    static func defaultVerticalPaddingLength(_ idiom: UserInterfaceIdiom) -> CGFloat? {
+    static func defaultVerticalPaddingLength(_ idiom: UserInterfaceIdiom) -> CGFloat {
         if idiom == .pad {
             return 16
         } else {
-            return nil
+            return 24
         }
     }
 
@@ -68,7 +68,7 @@ extension TemplateViewType {
         return Constants.defaultHorizontalPaddingLength(self.userInterfaceIdiom)
     }
 
-    var defaultVerticalPaddingLength: CGFloat? {
+    var defaultVerticalPaddingLength: CGFloat {
         return Constants.defaultVerticalPaddingLength(self.userInterfaceIdiom)
     }
 

@@ -50,15 +50,23 @@ struct Template2View: TemplateViewType {
 
     @ViewBuilder
     var content: some View {
-        VStack(spacing: self.defaultVerticalPaddingLength) {
+        let scrollableContentVisible = self.configuration.mode.shouldDisplayPackages || self.displayingAllPlans
+
+        VStack(spacing: 0) {
             // Avoid unnecessary spacing, except for iOS 15 because SwiftUI breaks the layout.
             Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
 
             self.scrollableContent
                 .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
+                .defaultVerticalPadding()
+                .frame(height: scrollableContentVisible ? nil : 0)
+            //                        .padding(.top, self.defaultVerticalPaddingLength * -1)
+            //                        .padding(.top, scrollableContentVisible ? 0 : self.defaultVerticalPaddingLength * -1)
+//                .background(.blue)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
                 self.offerDetails(package: self.selectedPackage, selected: false)
+                    .defaultVerticalPadding()
             }
 
             self.subscribeButton
@@ -71,13 +79,12 @@ struct Template2View: TemplateViewType {
         .animation(Constants.fastAnimation, value: self.selectedPackage)
         .multilineTextAlignment(.center)
         .frame(maxHeight: .infinity)
-        .padding(
-            .top,
-            self.displayingAllPlans
-            ? self.defaultVerticalPaddingLength
-            // Compensate for additional padding on condensed mode + iPad
-            : self.defaultVerticalPaddingLength.map { $0 * -1 }
-        )
+//        .padding(
+//            .top,
+//            self.displayingAllPlans
+//            ? self.defaultVerticalPaddingLength
+//            : self.defaultVerticalPaddingLength * -1
+//        )
     }
 
     private var scrollableContent: some View {
@@ -130,8 +137,12 @@ struct Template2View: TemplateViewType {
             }
         }
         .padding(.horizontal, self.defaultHorizontalPaddingLength)
+//        .background(.orange)
 
-        Spacer()
+        // TODO: generic method
+        if self.configuration.mode.shouldDisplayPackages {
+            Spacer()
+        }
     }
 
     @ViewBuilder
@@ -205,6 +216,7 @@ struct Template2View: TemplateViewType {
             alignment: Self.packageButtonAlignment
         )
         .fixedSize(horizontal: false, vertical: true)
+//        .background(.green)
         .font(self.font(for: .body))
     }
 

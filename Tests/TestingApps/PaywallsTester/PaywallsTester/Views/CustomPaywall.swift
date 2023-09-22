@@ -31,8 +31,8 @@ struct CustomPaywall: View {
                            customerInfo: self.customerInfo,
                            condensed: self.condensed,
                            fonts: DefaultPaywallFontProvider(),
-                           introEligibility: self.introEligibility ?? .default(),
-                           purchaseHandler: self.purchaseHandler ?? .default()
+                           introEligibility: self.introEligibility,
+                           purchaseHandler: self.purchaseHandler
             )
     }
 

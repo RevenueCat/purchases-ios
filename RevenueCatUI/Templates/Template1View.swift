@@ -35,12 +35,15 @@ struct Template1View: TemplateViewType {
     }
 
     var body: some View {
-        VStack(spacing: self.defaultVerticalPaddingLength) {
+        VStack(spacing: 0) {
             self.scrollableContent
                 .scrollableIfNecessary()
                 .scrollBounceBehaviorBasedOnSize()
 
-            Spacer()
+            // TODO: generic method
+            if self.configuration.mode.shouldDisplayText {
+                Spacer()
+            }
 
             IntroEligibilityStateView(
                 textWithNoIntroOffer: self.localization.offerDetails,
@@ -51,7 +54,7 @@ struct Template1View: TemplateViewType {
             .font(self.font(for: .callout))
             .multilineTextAlignment(.center)
             .defaultHorizontalPadding()
-            .padding(.top, self.defaultVerticalPaddingLength)
+            .defaultVerticalPadding()
 
             self.button
                 .defaultHorizontalPadding()

@@ -38,6 +38,8 @@ extension PaywallViewMode {
         }
     }
 
+// TODO: combine all these
+
     var shouldDisplayText: Bool {
         switch self {
         case .fullScreen: return true

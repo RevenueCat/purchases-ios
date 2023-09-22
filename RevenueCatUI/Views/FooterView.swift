@@ -102,6 +102,9 @@ struct FooterView: View {
         .font(self.fonts.font(for: self.font).weight(self.fontWeight))
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
+        .padding(.vertical, Constants.defaultVerticalPaddingLength(self.interfaceIdiom))
+        .frame(minHeight: Constants.minimumButtonHeight)
+//        .background { Color.blue.fixedSize(horizontal: false, vertical: false) }
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         #if targetEnvironment(macCatalyst)
         .buttonStyle(.plain)
@@ -116,7 +119,7 @@ struct FooterView: View {
         } label: {
             Text("All subscriptions", bundle: .module)
         }
-        .frame(minHeight: Constants.minimumButtonHeight)
+//        .frame(minHeight: Constants.minimumButtonHeight)
     }
 
     private var separator: some View {
@@ -181,7 +184,7 @@ private struct RestorePurchasesButton: View {
                 Text("Restore purchases", bundle: .module)
             }
         }
-        .frame(minHeight: Constants.minimumButtonHeight)
+//        .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
         .alert(isPresented: self.$displayRestoredAlert) {
             Alert(title: Text("Purchases restored successfully!", bundle: .module))
@@ -227,7 +230,7 @@ private struct LinkButton: View {
             ),
             destination: self.url
         )
-        .frame(minHeight: Constants.minimumButtonHeight)
+//        .frame(minHeight: Constants.minimumButtonHeight)
     }
 
 }
