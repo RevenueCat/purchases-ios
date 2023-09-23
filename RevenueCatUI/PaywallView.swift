@@ -18,8 +18,7 @@ import SwiftUI
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 public struct PaywallView: View {
@@ -180,8 +179,7 @@ public struct PaywallView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(watchOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension PaywallView {
@@ -206,7 +204,7 @@ private extension PaywallView {
 
 // MARK: -
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -313,7 +311,7 @@ struct LoadedOfferingPaywallView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension LoadedOfferingPaywallView {
 
     struct DisplayedPaywall: Equatable {
@@ -334,8 +332,7 @@ private extension LoadedOfferingPaywallView {
 
 #if DEBUG
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-@available(watchOS, unavailable)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct PaywallView_Previews: PreviewProvider {

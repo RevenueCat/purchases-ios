@@ -172,6 +172,7 @@ private struct PaywallPresenter: View {
                 case .fullScreen:
                     PaywallView(offering: offering)
                     
+                #if !os(watchOS)
                 case .footer:
                     VStack {
                         Spacer()
@@ -184,6 +185,7 @@ private struct PaywallPresenter: View {
                         Text("This Paywall is being presented as a Condensed Footer")
                             .paywallFooter(offering: offering, condensed: true)
                     }
+                #endif
                 }
             }
         }

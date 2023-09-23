@@ -14,9 +14,10 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
+@available(watchOS, unavailable, message: "This API is not available on watchOS")
 extension View {
 
     /// Presents a ``PaywallFooterView`` at the bottom of a view that loads the `Offerings.current`.
@@ -98,9 +99,10 @@ extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let offering: Offering?

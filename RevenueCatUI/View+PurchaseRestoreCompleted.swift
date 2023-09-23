@@ -17,7 +17,7 @@ import SwiftUI
 /// A closure used for notifying of purchase or restore completion.
 public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (CustomerInfo) -> Void
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
 
@@ -82,7 +82,7 @@ extension View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OnPurchaseCompletedModifier: ViewModifier {
 
     let handler: PurchaseOrRestoreCompletedHandler
@@ -98,7 +98,7 @@ private struct OnPurchaseCompletedModifier: ViewModifier {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OnRestoreCompletedModifier: ViewModifier {
 
     let handler: PurchaseOrRestoreCompletedHandler

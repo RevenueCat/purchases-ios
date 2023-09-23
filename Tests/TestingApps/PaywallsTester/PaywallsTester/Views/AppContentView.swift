@@ -111,7 +111,7 @@ struct AppContentView: View {
         .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
-        #if DEBUG
+        #if DEBUG && !os(watchOS)
         .overlay {
             if #available(iOS 16.0, macOS 13.0, *) {
                 DebugView()
@@ -207,7 +207,7 @@ extension CustomerInfo {
 
 @testable import RevenueCatUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {

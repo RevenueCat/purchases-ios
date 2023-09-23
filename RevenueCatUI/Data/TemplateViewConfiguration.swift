@@ -15,7 +15,7 @@ import Foundation
 import RevenueCat
 
 /// The processed data necessary to render a `TemplateViewType`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateViewConfiguration {
 
     let mode: PaywallViewMode
@@ -29,7 +29,7 @@ struct TemplateViewConfiguration {
 
 // MARK: - Packages
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
     /// A `Package` with its processed localized strings.
@@ -63,7 +63,7 @@ extension TemplateViewConfiguration {
 
 // MARK: - Properties
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration.PackageConfiguration {
 
     /// Returns a single package, useful for templates that expect a single package.
@@ -73,6 +73,13 @@ extension TemplateViewConfiguration.PackageConfiguration {
             return package
         case let .multiple(first, _, _):
             return first
+        }
+    }
+
+    var singleIfNotMultiple: TemplateViewConfiguration.Package? {
+        switch self {
+        case let .single(package): return package
+        case .multiple: return nil
         }
     }
 
@@ -100,7 +107,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
 // MARK: - Creation
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration.PackageConfiguration {
 
     /// Creates a `PackageConfiguration` based on `setting`.
@@ -187,7 +194,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
     /// Filters `packages`, extracting only the values corresponding to `identifiers`.

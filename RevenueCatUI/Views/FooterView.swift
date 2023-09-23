@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
 
     @Environment(\.userInterfaceIdiom)
@@ -67,7 +67,7 @@ struct FooterView: View {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
                 Self.allPlansButton(binding)
 
-                if self.configuration.displayRestorePurchases || self.hasTOS || self.hasPrivacy {
+                if self.configuration.displayRestorePurchases || self.tosURL != nil || self.privacyURL != nil {
                     self.separator
                 }
             }
@@ -75,23 +75,23 @@ struct FooterView: View {
             if self.configuration.displayRestorePurchases {
                 RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
 
-                if self.hasTOS || self.hasPrivacy {
+                if self.tosURL != nil || self.privacyURL != nil {
                     self.separator
                 }
             }
 
-            if let url = self.configuration.termsOfServiceURL {
+            if let url = self.tosURL {
                 LinkButton(
                     url: url,
                     titles: "Terms and conditions", "Terms"
                 )
 
-                if self.hasPrivacy {
+                if self.privacyURL != nil {
                     self.separator
                 }
             }
 
-            if let url = self.configuration.privacyURL {
+            if let url = self.privacyURL {
                 LinkButton(
                     url: url,
                     titles: "Privacy policy", "Privacy"
@@ -127,8 +127,21 @@ struct FooterView: View {
         return self.boldPreferred && self.interfaceIdiom != .pad
     }
 
-    private var hasTOS: Bool { self.configuration.termsOfServiceURL != nil }
-    private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
+    private var tosURL: URL? {
+        #if os(watchOS)
+        return nil
+        #else
+        self.configuration.termsOfServiceURL
+        #endif
+    }
+    private var privacyURL: URL? {
+        #if os(watchOS)
+        return nil
+        #else
+        self.configuration.privacyURL
+        #endif
+    }
+
     private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
     fileprivate var font: Font.TextStyle {
@@ -139,7 +152,7 @@ struct FooterView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct SeparatorView: View {
 
     var bold: Bool
@@ -157,7 +170,7 @@ private struct SeparatorView: View {
     private var boldSeparatorSize: CGFloat = 5
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RestorePurchasesButton: View {
 
     let purchaseHandler: PurchaseHandler
@@ -172,7 +185,7 @@ private struct RestorePurchasesButton: View {
                 self.displayRestoredAlert = true
             }
         } label: {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits {
                     Text("Restore purchases", bundle: .module)
                     Text("Restore", bundle: .module)
@@ -190,7 +203,7 @@ private struct RestorePurchasesButton: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LinkButton: View {
 
     @Environment(\.locale)
@@ -207,7 +220,7 @@ private struct LinkButton: View {
     var body: some View {
         let bundle = Localization.localizedBundle(self.locale)
 
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             ViewThatFits {
                 ForEach(self.titles, id: \.self) { title in
                     self.link(for: title, bundle: bundle)
@@ -236,8 +249,7 @@ private struct LinkButton: View {
 
 #if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
-@available(watchOS, unavailable)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 @available(macOS, unavailable)
 struct Footer_Previews: PreviewProvider {
 

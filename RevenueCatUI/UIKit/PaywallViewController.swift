@@ -11,7 +11,7 @@
 //  
 //  Created by Nacho Soto on 8/1/23.
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 
 import RevenueCat
 import SwiftUI

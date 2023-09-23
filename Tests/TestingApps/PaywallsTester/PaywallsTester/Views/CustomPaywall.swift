@@ -5,7 +5,7 @@
 //  Created by Nacho Soto on 8/9/23.
 //
 
-#if DEBUG
+#if DEBUG && !os(watchOS)
 
 import RevenueCat
 @testable import RevenueCatUI

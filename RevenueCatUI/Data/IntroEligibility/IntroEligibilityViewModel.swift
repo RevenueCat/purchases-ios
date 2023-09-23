@@ -16,7 +16,7 @@ import SwiftUI
 
 /// Holds the state for dynamically computed `IntroEligibilityStatus`
 /// for single or multi-package templates, depending on `PackageConfiguration`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class IntroEligibilityViewModel: ObservableObject {
 
@@ -35,13 +35,14 @@ final class IntroEligibilityViewModel: ObservableObject {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension IntroEligibilityViewModel {
 
     func computeEligibility(for packages: PackageConfiguration) async {
         switch packages {
         case let .single(package):
             self.singleEligibility = await self.introEligibilityChecker.eligibility(for: package.content)
+            self.allEligibility[package.content] = self.singleEligibility
 
         case let .multiple(_, _, packages):
             self.allEligibility = await self.introEligibilityChecker.eligibility(for: packages.map(\.content))

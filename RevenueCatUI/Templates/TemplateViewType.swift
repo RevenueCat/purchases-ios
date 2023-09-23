@@ -35,7 +35,7 @@ import SwiftUI
 */
 
 /// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 protocol TemplateViewType: SwiftUI.View {
 
@@ -46,7 +46,7 @@ protocol TemplateViewType: SwiftUI.View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewType {
 
     func font(for textStyle: Font.TextStyle) -> Font {
@@ -55,7 +55,7 @@ extension TemplateViewType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallTemplate {
 
     var packageSetting: TemplateViewConfiguration.PackageSetting {
@@ -70,7 +70,7 @@ private extension PaywallTemplate {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 extension PaywallData {
 
@@ -139,6 +139,9 @@ extension PaywallData {
     @ViewBuilder
     private static func createView(template: PaywallTemplate,
                                    configuration: TemplateViewConfiguration) -> some View {
+        #if os(watchOS)
+        WatchTemplateView(configuration)
+        #else
         switch template {
         case .template1:
             Template1View(configuration)
@@ -151,11 +154,12 @@ extension PaywallData {
         case .template5:
             Template5View(configuration)
         }
+        #endif
     }
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
     @ViewBuilder
@@ -163,6 +167,8 @@ extension TemplateViewConfiguration {
         switch self.mode {
         case .fullScreen:
             self.backgroundContent
+
+        #if !os(watchOS)
         case .footer, .condensedFooter:
             self.backgroundContent
             #if canImport(UIKit)
@@ -172,6 +178,7 @@ extension TemplateViewConfiguration {
                     edgesIgnoringSafeArea: .all
                 )
             #endif
+        #endif
         }
     }
 
@@ -181,7 +188,17 @@ extension TemplateViewConfiguration {
             .edgesIgnoringSafeArea(.all)
 
         if self.configuration.blurredBackgroundImage {
+            #if os(watchOS)
+            if #available(watchOS 10.0, *) {
+                view.foregroundStyle(.thinMaterial)
+            } else {
+                // Blur is done by `TemplateBackgroundImageView`
+                view
+            }
+            #else
+            // Blur background if there is a background image.
             view.foregroundStyle(.thinMaterial)
+            #endif
         } else {
             view.foregroundStyle(self.colors.backgroundColor)
         }

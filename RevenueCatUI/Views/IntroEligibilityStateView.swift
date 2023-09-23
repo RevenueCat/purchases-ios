@@ -15,7 +15,7 @@ import RevenueCat
 import SwiftUI
 
 /// A view that can process intro eligibility and display different data based on the result.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IntroEligibilityStateView: View {
 
     var textWithNoIntroOffer: String?
@@ -63,7 +63,7 @@ struct IntroEligibilityStateView: View {
 
 // MARK: - Extensions
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension IntroEligibilityStateView {
 
     var isEligibleForIntro: Bool {
@@ -80,7 +80,7 @@ private extension IntroEligibilityStateView {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
     func withPendingData(_ pending: Bool, alignment: Alignment) -> some View {
@@ -100,7 +100,7 @@ private extension View {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 struct IntroEligibilityStateView_Previews: PreviewProvider {

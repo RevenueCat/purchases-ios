@@ -18,6 +18,8 @@ import SnapshotTesting
 import SwiftUI
 import XCTest
 
+#if !os(watchOS) && !os(macOS)
+
 /// Base class for Snapshot tests
 ///
 /// ### Automation:
@@ -117,3 +119,5 @@ extension View {
     }
 
 }
+
+#endif

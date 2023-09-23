@@ -13,7 +13,7 @@ import Foundation
 import RegexBuilder
 import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallData.LocalizedConfiguration {
 
     func processVariables(
@@ -48,7 +48,7 @@ protocol VariableDataProvider {
 }
 
 /// Processes strings, replacing `{{ variable }}` with their associated content.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum VariableHandler {
 
     /// Information necessary for computing variables
@@ -64,7 +64,7 @@ enum VariableHandler {
         context: Context,
         locale: Locale = .current
     ) -> String {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return VariableHandlerIOS16.processVariables(in: string,
                                                          with: provider,
                                                          context: context,
@@ -116,7 +116,7 @@ enum VariableHandler {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension String {
 
     func processed(
@@ -128,7 +128,7 @@ extension String {
     }
 
     func unrecognizedVariables() -> Set<String> {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return VariableHandlerIOS16.unrecognizedVariables(in: self)
         } else {
             return VariableHandlerIOS15.unrecognizedVariables(in: self)
@@ -137,7 +137,7 @@ extension String {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension VariableDataProvider {
 
     func value(
@@ -152,7 +152,7 @@ private extension VariableDataProvider {
 
 // MARK: - Regex iOS 16
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private enum VariableHandlerIOS16 {
 
     static func processVariables(
@@ -208,7 +208,7 @@ private enum VariableHandlerIOS16 {
 
 // MARK: - Regex iOS 15
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum VariableHandlerIOS15 {
 
     static func processVariables(

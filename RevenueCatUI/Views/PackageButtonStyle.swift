@@ -17,7 +17,7 @@ import SwiftUI
 /// Features:
 /// - Automatic handling of disabled state
 /// - Replaces itself with a loading indicator if it's the selected package.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PackageButtonStyle: ButtonStyle {
 
     var fadeDuringPurchases: Bool = true

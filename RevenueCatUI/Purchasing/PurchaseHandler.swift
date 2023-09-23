@@ -15,7 +15,7 @@ import RevenueCat
 import StoreKit
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
@@ -67,7 +67,7 @@ final class PurchaseHandler: ObservableObject {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
     @MainActor
@@ -131,7 +131,7 @@ extension PurchaseHandler {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
     /// Creates a copy of this `PurchaseHandler` wrapping the purchase and restore blocks.
@@ -160,7 +160,7 @@ extension PurchaseHandler {
 
 // MARK: - Private
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PurchaseHandler {
 
     func track(_ event: PaywallEvent) {
@@ -171,7 +171,7 @@ private extension PurchaseHandler {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func purchase(package: Package) async throws -> PurchaseResultData {
@@ -188,7 +188,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
 // MARK: - Preference Keys
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
 
     static var defaultValue: CustomerInfo?
@@ -199,7 +199,7 @@ struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 
     static var defaultValue: CustomerInfo?
