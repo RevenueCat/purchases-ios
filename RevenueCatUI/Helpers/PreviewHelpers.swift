@@ -23,7 +23,7 @@ import SwiftUI
 enum PreviewHelpers {
 
     static let introEligibilityChecker: TrialOrIntroEligibilityChecker =
-        .producing(eligibility: .eligible)
+        .producing(eligibility: Bool.random() ? .eligible : .ineligible)
         .with(delay: 0.5)
     static let purchaseHandler: PurchaseHandler =
         .mock()

@@ -55,8 +55,6 @@ struct Template4View: TemplateViewType {
                 Spacer()
 
                 self.footerContent
-                    .edgesIgnoringSafeArea(.bottom)
-                    .frame(maxWidth: .infinity, alignment: .bottom)
                     .background(self.configuration.colors.backgroundColor)
                     #if canImport(UIKit)
                     .roundedCorner(Self.cornerRadius,
@@ -94,14 +92,8 @@ struct Template4View: TemplateViewType {
                                        hide: !self.displayingAllPlans)
             }
 
-            IntroEligibilityStateView(
-                textWithNoIntroOffer: self.selectedPackage.localization.offerDetails,
-                textWithIntroOffer: self.selectedPackage.localization.offerDetailsWithIntroOffer,
-                introEligibility: self.introEligibility[self.selectedPackage.content],
-                foregroundColor: self.configuration.colors.text1Color
-            )
-            .font(self.font(for: .body).weight(.light))
-            .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+            self.offerDetails
+                .defaultHorizontalPadding()
 
             self.subscribeButton
                 .defaultHorizontalPadding()
@@ -131,7 +123,7 @@ struct Template4View: TemplateViewType {
     }
 
     private var packages: some View {
-        HStack(spacing: self.totalPackageHorizontalSpacing) {
+        HStack(spacing: self.packageHorizontalSpacing) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
                 let isSelected = self.selectedPackage.content === package.content
 
@@ -147,7 +139,18 @@ struct Template4View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle(isSelected: isSelected))
             }
         }
-        .padding(.horizontal, self.totalPackageHorizontalSpacing)
+        .defaultHorizontalPadding()
+    }
+
+    private var offerDetails: some View {
+        IntroEligibilityStateView(
+            textWithNoIntroOffer: self.selectedPackage.localization.offerDetails,
+            textWithIntroOffer: self.selectedPackage.localization.offerDetailsWithIntroOffer,
+            introEligibility: self.introEligibility[self.selectedPackage.content],
+            foregroundColor: self.configuration.colors.text1Color
+        )
+        .font(self.font(for: .body).weight(.light))
+        .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
     }
 
     private var subscribeButton: some View {
@@ -182,9 +185,11 @@ struct Template4View: TemplateViewType {
 
     private var packageWidth: CGFloat {
         let packages = self.packagesToDisplay
+        let availableWidth = self.containerWidth - (self.defaultHorizontalPaddingLength ?? 10) * 2
+
         return max(
             0,
-            self.containerWidth / packages - self.totalPackageHorizontalSpacing * (packages - 1)
+            availableWidth / packages - self.packageHorizontalSpacing * (packages - 1)
         )
     }
 
@@ -200,10 +205,6 @@ struct Template4View: TemplateViewType {
     @ScaledMetric(relativeTo: .title2)
     private var packageHorizontalSpacing: CGFloat = 8
 
-    private var totalPackageHorizontalSpacing: CGFloat {
-        return self.packageHorizontalSpacing + (self.defaultHorizontalPaddingLength ?? 0)
-    }
-
     private var packagesToDisplay: CGFloat {
         let desiredCount = {
             if self.dynamicTypeSize < .xxLarge {
@@ -214,9 +215,13 @@ struct Template4View: TemplateViewType {
                 return 1.5
             }
         }()
+        let maximumPackagesToDisplay = 3
 
-        // If there are fewer, use actual count
-        return min(desiredCount, CGFloat(self.configuration.packages.all.count))
+        return min(
+            // If there are fewer, use actual count
+            min(desiredCount, CGFloat(self.configuration.packages.all.count)),
+            CGFloat(maximumPackagesToDisplay)
+        )
     }
 
 }
