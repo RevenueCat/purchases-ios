@@ -65,7 +65,7 @@ extension PaywallColor {
         }
     }
 
-        #if canImport(UIKit) && !os(watchOS)
+        #if canImport(UIKit)
 
         /// Creates a dynamic color for 2 ``ColorScheme``s.
         @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
@@ -152,11 +152,14 @@ private extension PaywallColor {
 
 // MARK: - Extensions
 
-#if canImport(UIKit) && !os(watchOS)
+#if canImport(UIKit)
 private extension UIColor {
 
     @available(iOS 13.0, tvOS 13.0, macCatalyst 13.1, macOS 10.15, watchOS 6.2, *)
     convenience init(light: UIColor, dark: UIColor) {
+        #if os(watchOS)
+        self.init(cgColor: dark.cgColor)
+        #else
         self.init { trait in
             switch trait.userInterfaceStyle {
             case .dark:
@@ -167,6 +170,7 @@ private extension UIColor {
                 return light
             }
         }
+        #endif
     }
 
 }

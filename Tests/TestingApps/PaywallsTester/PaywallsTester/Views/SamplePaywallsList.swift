@@ -40,12 +40,14 @@ struct SamplePaywallsList: View {
                             introEligibility: Self.introEligibility,
                             purchaseHandler: .default())
 
+            #if !os(watchOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
                               condensed: mode == .condensedFooter,
                               introEligibility: Self.introEligibility,
                               purchaseHandler: .default())
+            #endif
             }
 
         case let .customFont(template):
@@ -56,9 +58,11 @@ struct SamplePaywallsList: View {
                         introEligibility: Self.introEligibility,
                         purchaseHandler: .default())
 
+        #if !os(watchOS)
         case let .customPaywall(mode):
             CustomPaywall(customerInfo: Self.loader.customerInfo,
                           condensed: mode == .condensedFooter)
+        #endif
 
         case .missingPaywall:
             PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
@@ -96,6 +100,7 @@ struct SamplePaywallsList: View {
             }
 
             Section("Other") {
+                #if !os(watchOS)
                 Button {
                     self.display = .customPaywall(.footer)
                 } label: {
@@ -109,6 +114,7 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Custom + condensed footer",
                                   icon: PaywallViewMode.condensedFooter.icon)
                 }
+                #endif
 
                 Button {
                     self.display = .missingPaywall
@@ -127,7 +133,11 @@ struct SamplePaywallsList: View {
         .buttonStyle(.plain)
     }
 
+    #if os(watchOS)
+    private static let customFontProvider = CustomPaywallFontProvider(fontName: "Courier New")
+    #else
     private static let customFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    #endif
     private static let loader: SamplePaywallLoader = .init()
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
@@ -165,6 +175,7 @@ private extension SamplePaywallsList {
 
         case template(PaywallTemplate, PaywallViewMode)
         case customFont(PaywallTemplate)
+        @available(watchOS, unavailable)
         case customPaywall(PaywallViewMode)
         case missingPaywall
         case unrecognizedPaywall

@@ -17,7 +17,7 @@ import SwiftUI
 
 #if canImport(SwiftUI)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
@@ -123,7 +123,6 @@ private extension PaywallData {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct DefaultPaywall_Previews: PreviewProvider {

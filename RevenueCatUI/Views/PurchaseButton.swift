@@ -83,7 +83,9 @@ struct PurchaseButton: View {
                 )
             }
             .frame(maxWidth: .infinity)
+            #if !os(watchOS)
             .padding()
+            #endif
             .hidden(if: !self.isEnabled)
             .overlay {
                 if !self.isEnabled {
@@ -172,7 +174,6 @@ private struct PurchaseButtonLabel: View {
 #if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(tvOS, unavailable)
 struct PurchaseButton_Previews: PreviewProvider {
 

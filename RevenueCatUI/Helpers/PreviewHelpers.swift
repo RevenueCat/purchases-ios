@@ -17,7 +17,6 @@ import SwiftUI
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @MainActor
 enum PreviewHelpers {
@@ -41,7 +40,6 @@ enum PreviewHelpers {
 /// }
 /// ```
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct PreviewableTemplate<T: TemplateViewType>: View {
@@ -118,7 +116,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewMode {
 
     var layout: PreviewLayout {

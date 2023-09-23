@@ -8,7 +8,7 @@
 import SwiftUI
 import RevenueCat
 
-#if DEBUG
+#if DEBUG && !os(watchOS)
 
 @available(iOS 16.0, macOS 13.0, *)
 struct DebugView: View {

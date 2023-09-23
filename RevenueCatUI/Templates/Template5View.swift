@@ -15,6 +15,8 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct Template5View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
@@ -293,6 +295,8 @@ private extension PaywallData.Configuration.Colors {
 // MARK: - Extensions
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private extension Template5View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
@@ -301,7 +305,7 @@ private extension Template5View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewMode {
 
     var shouldDisplayPackages: Bool {

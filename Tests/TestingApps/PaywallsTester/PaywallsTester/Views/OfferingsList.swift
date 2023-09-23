@@ -174,6 +174,7 @@ private struct PaywallPresenter: View {
         case .fullScreen:
             PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
 
+        #if !os(watchOS)
         case .footer:
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering)
@@ -181,6 +182,7 @@ private struct PaywallPresenter: View {
         case .condensedFooter:
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering, condensed: true)
+        #endif
         }
     }
 

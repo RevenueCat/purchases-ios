@@ -76,6 +76,13 @@ extension TemplateViewConfiguration.PackageConfiguration {
         }
     }
 
+    var singleIfNotMultiple: TemplateViewConfiguration.Package? {
+        switch self {
+        case let .single(package): return package
+        case .multiple: return nil
+        }
+    }
+
     /// Returns all packages, useful for templates that expect multiple packages.
     var all: [TemplateViewConfiguration.Package] {
         switch self {

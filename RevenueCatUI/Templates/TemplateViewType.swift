@@ -70,7 +70,6 @@ private extension PaywallTemplate {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 extension PaywallData {
@@ -132,6 +131,9 @@ extension PaywallData {
     @ViewBuilder
     private static func createView(template: PaywallTemplate,
                                    configuration: TemplateViewConfiguration) -> some View {
+        #if os(watchOS)
+        WatchTemplateView(configuration)
+        #else
         switch template {
         case .template1:
             Template1View(configuration)
@@ -144,12 +146,12 @@ extension PaywallData {
         case .template5:
             Template5View(configuration)
         }
+        #endif
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 extension View {
 
     func adaptTemplateView(with configuration: TemplateViewConfiguration) -> some View {
@@ -187,8 +189,7 @@ extension View {
 
 // MARK: - Private
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
-@available(watchOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension TemplateViewConfiguration {
 
     @ViewBuilder
@@ -196,6 +197,8 @@ private extension TemplateViewConfiguration {
         switch self.mode {
         case .fullScreen:
             self.backgroundContent
+
+        #if !os(watchOS)
         case .footer, .condensedFooter:
             self.backgroundContent
             #if canImport(UIKit)
@@ -205,6 +208,7 @@ private extension TemplateViewConfiguration {
                     edgesIgnoringSafeArea: .all
                 )
             #endif
+        #endif
         }
     }
 
@@ -214,7 +218,17 @@ private extension TemplateViewConfiguration {
             .edgesIgnoringSafeArea(.all)
 
         if self.configuration.blurredBackgroundImage {
+            #if os(watchOS)
+            if #available(watchOS 10.0, *) {
+                view.foregroundStyle(.thinMaterial)
+            } else {
+                // Blur is done by `TemplateBackgroundImageView`
+                view
+            }
+            #else
+            // Blur background if there is a background image.
             view.foregroundStyle(.thinMaterial)
+            #endif
         } else {
             view.foregroundStyle(self.colors.backgroundColor)
         }
