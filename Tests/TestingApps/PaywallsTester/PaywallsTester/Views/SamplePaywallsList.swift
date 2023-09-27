@@ -229,30 +229,6 @@ extension PaywallTemplate {
 
 }
 
-private extension PaywallViewMode {
-
-    var icon: String {
-        switch self {
-        case .fullScreen: return "iphone"
-        case .footer: return "lanyardcard"
-        case .condensedFooter: return "ruler"
-        }
-    }
-
-    var name: String {
-        switch self {
-        case .fullScreen:
-            return "Fullscreen"
-        case .footer:
-            return "Footer"
-        case .condensedFooter:
-            return "Condensed Footer"
-        }
-    }
-
-}
-
-#if DEBUG
 
 struct SamplePaywallsList_Previews: PreviewProvider {
     static var previews: some View {
@@ -261,7 +237,5 @@ struct SamplePaywallsList_Previews: PreviewProvider {
         }
     }
 }
-
-#endif
 
 #endif

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */; };
 		4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F102E262A840ECC0059EED6 /* CustomPaywall.swift */; };
 		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
 		4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F34FF622A60AD9A00AADF11 /* AppContentView.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F102E262A840ECC0059EED6 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
+				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -232,6 +235,7 @@
 				4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */,
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4FC6F8B22A7403D3002139B2 /* OfferingsList.swift in Sources */,
+				2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */,
 				4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */,
 				4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,

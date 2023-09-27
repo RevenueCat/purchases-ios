@@ -41,6 +41,9 @@ struct OfferingsList: View {
     private var content: some View {
         switch self.offerings {
         case let .success(offerings):
+            VStack {
+            Text("Press and hold to open in different modes.")
+                .font(.footnote)
             self.list(with: offerings)
             #if !targetEnvironment(macCatalyst)
                 .sheet(item: self.$selectedOffering) { offering in
@@ -79,6 +82,34 @@ struct OfferingsList: View {
                         self.selectedOffering = offering
                     }
                     #endif
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
+                    .contextMenu {
+                        Button(action: {
+                            // Action for first option
+                            print("Option 1 selected")
+                        }) {
+                            Text("Full Screen")
+                            Image(systemName: PaywallViewMode.fullScreen.icon)
+                        }
+
+                        Button(action: {
+                            // Action for second option
+                            print("Option 2 selected")
+                        }) {
+                            Text("Footer")
+                            Image(systemName: PaywallViewMode.footer.icon)
+                        }
+
+                        Button(action: {
+                            // Action for third option
+                            print("Option 3 selected")
+                        }) {
+                            Text("Condensed Footer")
+                            Image(systemName: PaywallViewMode.condensedFooter.icon)
+                        }
+                    }
+
                 }
             } header: {
                 Text(verbatim: "With paywall")
@@ -141,7 +172,7 @@ private extension OfferingsList {
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            SamplePaywallsList()
+            OfferingsList()
         }
     }
 }
