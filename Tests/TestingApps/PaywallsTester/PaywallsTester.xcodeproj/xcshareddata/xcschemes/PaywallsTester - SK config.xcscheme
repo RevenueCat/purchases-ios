@@ -50,7 +50,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../SimpleApp/Products.storekit">
+         identifier = "../PaywallsTester/Products.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
