@@ -45,7 +45,12 @@ struct OfferingsList: View {
         switch self.offerings {
         case let .success(offerings):
             VStack {
-                Text("Press and hold to open in different modes.")
+                #if targetEnvironment(macCatalyst)
+                let modesInstructions = "Right click or ⌘ + click to open in different modes."
+                #else
+                let modesInstructions = "Press and hold to open in different modes."
+                #endif
+                Text(modesInstructions)
                     .font(.footnote)
                 self.list(with: offerings)
                     .sheet(item: self.$selectedOffering) { offering in
@@ -126,7 +131,8 @@ struct OfferingsList: View {
                         self.button(for: PaywallViewMode.condensedFooter, offering: offering)
                         self.button(for: PaywallViewMode.footer, offering: offering)
                     }
-
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
                 }
             } header: {
                 Text(verbatim: "With paywall")
@@ -174,7 +180,7 @@ struct OfferingsList: View {
                 Text("Condensed Footer")
                 Image(systemName: PaywallViewMode.condensedFooter.icon)
             case .footer:
-                Text("footer")
+                Text("Footer")
                 Image(systemName: PaywallViewMode.footer.icon)
             }
         }
@@ -188,33 +194,39 @@ struct PaywallPresenter: View {
 
     var body: some View {
         NavigationView {
-            switch selectedMode {
-            case .fullScreen:
-                PaywallView(offering: selectedOffering!)
-                #if targetEnvironment(macCatalyst)
-                    .toolbar {
-                        ToolbarItem(placement: .destructiveAction) {
-                            Button {
-                                self.selectedOffering = nil
-                            } label: {
-                                Image(systemName: "xmark")
-                            }
+            Group {
+                if let offering = selectedOffering {
+                    switch selectedMode {
+                    case .fullScreen:
+                        PaywallView(offering: offering)
+
+
+                    case .footer:
+                        VStack {
+                            Spacer()
+                            Text("This Paywall is being presented as a Footer")
+                                .paywallFooter(offering: selectedOffering!)
+                        }
+                    case .condensedFooter:
+                        VStack {
+                            Spacer()
+                            Text("This Paywall is being presented as a Condensed Footer")
+                                .paywallFooter(offering: selectedOffering!, condensed: true)
                         }
                     }
-            #endif
-            case .footer:
-                VStack {
-                    Spacer()
-                    Text("This Paywall is being presented as a Footer")
-                        .paywallFooter(offering: selectedOffering!)
-                }
-            case .condensedFooter:
-                VStack {
-                    Spacer()
-                    Text("This Paywall is being presented as a Condensed Footer")
-                        .paywallFooter(offering: selectedOffering!, condensed: true)
                 }
             }
+            #if targetEnvironment(macCatalyst)
+            .toolbar {
+                ToolbarItem(placement: .destructiveAction) {
+                    Button {
+                        self.selectedOffering = nil
+                    } label: {
+                        Image(systemName: "xmark")
+                    }
+                }
+            }
+            #endif
         }
     }
 }
