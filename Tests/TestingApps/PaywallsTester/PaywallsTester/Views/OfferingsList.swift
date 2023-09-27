@@ -17,6 +17,9 @@ struct OfferingsList: View {
     @State
     private var selectedOffering: Offering?
 
+    @State
+    private var selectedMode: PaywallViewMode = .fullScreen
+
     var body: some View {
         NavigationView {
             self.content
@@ -48,7 +51,33 @@ struct OfferingsList: View {
             #if !targetEnvironment(macCatalyst)
                 .sheet(item: self.$selectedOffering) { offering in
                     NavigationView {
+                        switch self.$selectedMode.wrappedValue {
+                        case .fullScreen:
                         PaywallView(offering: offering)
+                            #if targetEnvironment(macCatalyst)
+                            .toolbar {
+                                ToolbarItem(placement: .destructiveAction) {
+                                    Button {
+                                        self.selectedOffering = nil
+                                    } label: {
+                                        Image(systemName: "xmark")
+                                    }
+                                }
+                            }
+                            #endif
+                        case .footer:
+                            VStack {
+                                Spacer()
+                                Text("This Paywall is being presented as a Footer")
+                                    .paywallFooter(offering: offering)
+                            }
+                        case .condensedFooter:
+                            VStack {
+                                Spacer()
+                                Text("This Paywall is being presented as a Condensed Footer")
+                                    .paywallFooter(offering: offering, condensed: true)
+                            }
+                        }
                     }
                 }
             #endif
@@ -85,29 +114,9 @@ struct OfferingsList: View {
                     .buttonStyle(.plain)
                     .contentShape(Rectangle())
                     .contextMenu {
-                        Button(action: {
-                            // Action for first option
-                            print("Option 1 selected")
-                        }) {
-                            Text("Full Screen")
-                            Image(systemName: PaywallViewMode.fullScreen.icon)
-                        }
-
-                        Button(action: {
-                            // Action for second option
-                            print("Option 2 selected")
-                        }) {
-                            Text("Footer")
-                            Image(systemName: PaywallViewMode.footer.icon)
-                        }
-
-                        Button(action: {
-                            // Action for third option
-                            print("Option 3 selected")
-                        }) {
-                            Text("Condensed Footer")
-                            Image(systemName: PaywallViewMode.condensedFooter.icon)
-                        }
+                        self.button(for: PaywallViewMode.fullScreen, offering: offering)
+                        self.button(for: PaywallViewMode.condensedFooter, offering: offering)
+                        self.button(for: PaywallViewMode.footer, offering: offering)
                     }
 
                 }
@@ -141,6 +150,25 @@ struct OfferingsList: View {
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
+    }
+    
+    @ViewBuilder
+    private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
+        Button(action: {
+            self.selectedMode = selectedMode
+            self.selectedOffering = offering
+        }) {
+            switch selectedMode {
+            case .fullScreen:
+                Text("Full Screen")
+                Image(systemName: PaywallViewMode.fullScreen.icon)
+            case .condensedFooter:
+                Text("Condensed Footer")
+                Image(systemName: PaywallViewMode.condensedFooter.icon)
+            case .footer:
+                Text("footer")
+                Image(systemName: PaywallViewMode.footer.icon)
+            }
         }
     }
 
