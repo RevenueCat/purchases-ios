@@ -41,23 +41,13 @@ struct OfferingsList: View {
         switch self.offerings {
         case let .success(offerings):
             self.list(with: offerings)
+            #if !targetEnvironment(macCatalyst)
                 .sheet(item: self.$selectedOffering) { offering in
                     NavigationView {
                         PaywallView(offering: offering)
-                            #if targetEnvironment(macCatalyst)
-                            .toolbar {
-                                ToolbarItem(placement: .destructiveAction) {
-                                    Button {
-                                        self.selectedOffering = nil
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                    }
-                                }
-                            }
-                            #endif
                     }
                 }
-
+            #endif
         case let .failure(error):
             Text(error.description)
 
@@ -71,8 +61,37 @@ struct OfferingsList: View {
         List {
             let offeringsWithPaywall = Self.offeringsWithPaywall(from: offerings)
 
+            #if targetEnvironment(macCatalyst)
             Section {
                 ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
+                    NavigationLink(
+                        destination: PaywallView(offering: offering),
+                        tag: offering,
+                        selection: self.$selectedOffering
+                    ) {
+                        Button {
+                            self.selectedOffering = offering
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text(offering.serverDescription)
+                                Text(verbatim: "Template: \(paywall.templateName)")
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
+                    }
+                }
+            } header: {
+                Text(verbatim: "With paywall")
+            } footer: {
+                if offeringsWithPaywall.isEmpty {
+                    Text(verbatim: "No offerings with paywall")
+                }
+            }
+            #else
+            Section {
+                ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
+
                     Button {
                         self.selectedOffering = offering
                     } label: {
@@ -91,6 +110,7 @@ struct OfferingsList: View {
                     Text(verbatim: "No offerings with paywall")
                 }
             }
+            #endif
 
             Section("Without paywall") {
                 ForEach(Self.offeringsWithNoPaywall(from: offerings), id: \.id) { offering in
