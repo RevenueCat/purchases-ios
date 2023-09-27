@@ -67,7 +67,7 @@ final class PurchasesOrchestrator {
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
-    private let storeKitMessagesHelper: StoreKitMessagesHelper
+    private let storeMessagesHelper: StoreMessagesHelper
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -106,7 +106,7 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
-                     storeKitMessagesHelper: StoreKitMessagesHelper
+                     storeMessagesHelper: StoreMessagesHelper
     ) {
         self.init(
             productsManager: productsManager,
@@ -125,7 +125,7 @@ final class PurchasesOrchestrator {
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
             beginRefundRequestHelper: beginRefundRequestHelper,
-            storeKitMessagesHelper: storeKitMessagesHelper
+            storeMessagesHelper: storeMessagesHelper
         )
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
@@ -138,7 +138,7 @@ final class PurchasesOrchestrator {
 
         Task {
             if #available(iOS 16.4, *) {
-                await storeKitMessagesHelper.deferMessagesIfNeeded()
+                await storeMessagesHelper.deferMessagesIfNeeded()
             }
             await storeKit2TransactionListener.set(delegate: self)
             if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
@@ -163,7 +163,7 @@ final class PurchasesOrchestrator {
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
-         storeKitMessagesHelper: StoreKitMessagesHelper
+         storeMessagesHelper: StoreMessagesHelper
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
@@ -181,7 +181,7 @@ final class PurchasesOrchestrator {
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
-        self.storeKitMessagesHelper = storeKitMessagesHelper
+        self.storeMessagesHelper = storeMessagesHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }

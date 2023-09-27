@@ -76,13 +76,13 @@ func checkPurchasesEnums() {
     }
 
     if #available(iOS 16.4, *) {
-        let storeKitMessageType: StoreKitMessageType = StoreKitMessageType.billingIssue
+        let storeMessageType: StoreMessageType = StoreMessageType.billingIssue
 
-        switch storeKitMessageType {
+        switch storeMessageType {
         case .billingIssue,
              .priceIncreaseConsent,
              .generic:
-            print(storeKitMessageType)
+            print(storeMessageType)
         @unknown default:
             fatalError()
         }
@@ -193,8 +193,8 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     #if os(iOS)
     if #available(iOS 16.4, *) {
         Task {
-            await purchases.showStoreKitMessage()
-            await purchases.showStoreKitMessage(forTypes: [StoreKitMessageType.billingIssue])
+            await purchases.showStoreMessages()
+            await purchases.showStoreMessages(forTypes: [StoreMessageType.billingIssue])
         }
     }
     #endif
@@ -292,7 +292,7 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
-        .with(showStoreKitMessagesAutomatically: false)
+        .with(showStoreMessagesAutomatically: false)
         .build())
 
     Purchases.configure(withAPIKey: "")

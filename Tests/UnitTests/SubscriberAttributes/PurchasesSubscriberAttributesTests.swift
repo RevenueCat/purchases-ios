@@ -62,6 +62,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
+    var mockStoreMessagesHelper: MockStoreMessagesHelper!
 
     var purchases: Purchases!
 
@@ -147,6 +148,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                                          customerInfoManager: customerInfoManager,
                                                                          currentUserProvider: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
+        self.mockStoreMessagesHelper = MockStoreMessagesHelper(systemInfo: self.systemInfo,
+                                                               showStoreMessagesAutomatically: true)
     }
 
     override func tearDown() {
@@ -179,7 +182,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                           deviceCache: self.mockDeviceCache,
                                                           offeringsManager: self.mockOfferingsManager,
                                                           manageSubscriptionsHelper: self.mockManageSubsHelper,
-                                                          beginRefundRequestHelper: self.mockBeginRefundRequestHelper)
+                                                          beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+                                                          storeMessagesHelper: self.mockStoreMessagesHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
             receiptFetcher: mockReceiptFetcher,
@@ -214,7 +218,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
                               trialOrIntroPriceEligibilityChecker: .create(
                                 with: trialOrIntroductoryPriceEligibilityChecker
-                              ))
+                              ),
+                              storeMessagesHelper: self.mockStoreMessagesHelper)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

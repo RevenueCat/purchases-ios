@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  StoreKitMessageType.swift
+//  StoreMessageType.swift
 //
 //  Created by Antonio Rico Diez on 27/9/23.
 
@@ -18,15 +18,15 @@ import StoreKit
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 /// Types of messages available in StoreKit
-@objc public enum StoreKitMessageType: Int, CaseIterable {
+@objc public enum StoreMessageType: Int, CaseIterable {
     /// Message shown when there are billing issues in a subscription
     case billingIssue = 0
     /// Message shown when there is a price increase in a subscription that requires consent
     case priceIncreaseConsent
-    /// Generic StoreKit messages  
+    /// Generic Store messages
     case generic
 
-    var messageReason: Message.Reason {
+    internal var messageReason: Message.Reason {
         switch self {
         case .billingIssue: return Message.Reason.billingIssue
         case .priceIncreaseConsent: return Message.Reason.priceIncreaseConsent
@@ -39,14 +39,14 @@ import StoreKit
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-extension StoreKitMessageType: Sendable {}
+extension StoreMessageType: Sendable {}
 
 @available(iOS 16.4, *)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 extension Message.Reason {
-    var messageType: StoreKitMessageType? {
+    var messageType: StoreMessageType? {
         switch self {
         case .billingIssue: return .billingIssue
         case .priceIncreaseConsent: return .priceIncreaseConsent

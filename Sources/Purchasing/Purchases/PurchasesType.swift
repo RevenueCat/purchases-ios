@@ -975,11 +975,16 @@ public protocol PurchasesSwiftType: AnyObject {
 
     #if os(iOS)
 
+    /**
+     * Displays the specified store in-app message types to the user if there are any available to be shown.
+     * - Important: This should only be used if you disabled these messages from showing automatically
+     * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
+     */
     @available(iOS 16.4, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreKitMessage(forTypes types: Set<StoreKitMessageType>) async
+    func showStoreMessages(forTypes types: Set<StoreMessageType>) async
 
     #endif
 

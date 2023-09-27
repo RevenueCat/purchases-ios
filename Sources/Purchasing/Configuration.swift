@@ -50,7 +50,7 @@ import Foundation
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
-    let showStoreKitMessagesAutomatically: Bool
+    let showStoreMessagesAutomatically: Bool
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -66,7 +66,7 @@ import Foundation
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
-        self.showStoreKitMessagesAutomatically = builder.showStoreKitMessagesAutomatically
+        self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -91,7 +91,7 @@ import Foundation
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
-        private(set) var showStoreKitMessagesAutomatically: Bool = true
+        private(set) var showStoreMessagesAutomatically: Bool = true
 
         /**
          * Create a new builder with your API key.
@@ -177,10 +177,16 @@ import Foundation
             return self
         }
 
-        /// Set `showStoreKitMessagesAutomatically`. Enabled by default. If you want to disable, make sure
-        /// you're configuring the SDK during the `didFinishLaunchingWithOptions` delegate call.
-        @objc public func with(showStoreKitMessagesAutomatically: Bool) -> Builder {
-            self.showStoreKitMessagesAutomatically = showStoreKitMessagesAutomatically
+        /// Set `showStoreKitMessagesAutomatically`. Enabled by default.
+        /// If enabled, if the user has billing issues, has yet to accept a price increase consent or
+        /// there are other messages from StoreKit, they will be displayed automatically when the app is initialized.
+        ///
+        /// If you want to disable this behavior so that you can customize when these messages are shown, make sure
+        /// you configure the SDK as early as possible in the app's lifetime, otherwise messages will be displayed automatically.
+        /// Then use the ``Purchases/showStoreMessages(forTypes:)`` method to display the messages.
+        /// More information:  https://rev.cat/storekit-message
+        @objc public func with(showStoreMessagesAutomatically: Bool) -> Builder {
+            self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
             return self
         }
 
