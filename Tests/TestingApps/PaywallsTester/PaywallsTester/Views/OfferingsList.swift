@@ -34,6 +34,7 @@ struct OfferingsList: View {
                     self.offerings = .failure(error)
                 }
             }
+            .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder

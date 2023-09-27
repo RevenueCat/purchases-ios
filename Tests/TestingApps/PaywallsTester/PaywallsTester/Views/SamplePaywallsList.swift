@@ -41,6 +41,7 @@ struct SamplePaywallsList: View {
                 self.display = nil
             }
             .navigationTitle("Paywalls")
+            .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder
