@@ -1069,7 +1069,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreKitMessage(forTypes types: Set<StoreKitMessageType>) async {
+    func showStoreKitMessage(forTypes types: Set<StoreKitMessageType> = Set(StoreKitMessageType.allCases)) async {
         await self.storeKitMessagesHelper.showStoreKitMessage(types: types)
     }
 

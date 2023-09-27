@@ -177,8 +177,8 @@ import Foundation
             return self
         }
 
-        /// Set `showStoreKitMessagesAutomatically`. Enabled by default. If you want to disable, make sure you're configuring the SDK during the
-        /// `didFinishLaunchingWithOptions` delegate call.
+        /// Set `showStoreKitMessagesAutomatically`. Enabled by default. If you want to disable, make sure
+        /// you're configuring the SDK during the `didFinishLaunchingWithOptions` delegate call.
         @objc public func with(showStoreKitMessagesAutomatically: Bool) -> Builder {
             self.showStoreKitMessagesAutomatically = showStoreKitMessagesAutomatically
             return self

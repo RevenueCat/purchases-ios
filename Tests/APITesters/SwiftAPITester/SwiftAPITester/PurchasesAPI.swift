@@ -74,6 +74,19 @@ func checkPurchasesEnums() {
     @unknown default:
         fatalError()
     }
+
+    if #available(iOS 16.4, *) {
+        let storeKitMessageType: StoreKitMessageType = StoreKitMessageType.billingIssue
+
+        switch storeKitMessageType {
+        case .billingIssue,
+             .priceIncreaseConsent,
+             .generic:
+            print(storeKitMessageType)
+        @unknown default:
+            fatalError()
+        }
+    }
 }
 
 private func checkStaticMethods() {
@@ -177,6 +190,14 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
         _ = purchases.delegate?.shouldShowPriceConsent
     }
     #endif
+    #if os(iOS)
+    if #available(iOS 16.4, *) {
+        Task {
+            await purchases.showStoreKitMessage()
+            await purchases.showStoreKitMessage(forTypes: [StoreKitMessageType.billingIssue])
+        }
+    }
+    #endif
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
@@ -270,6 +291,9 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "")
+        .with(showStoreKitMessagesAutomatically: false)
+        .build())
 
     Purchases.configure(withAPIKey: "")
 

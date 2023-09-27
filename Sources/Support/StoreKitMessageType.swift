@@ -18,7 +18,7 @@ import StoreKit
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 /// Types of messages available in StoreKit
-@objc public enum StoreKitMessageType: Int {
+@objc public enum StoreKitMessageType: Int, CaseIterable {
     /// Message shown when there are billing issues in a subscription
     case billingIssue = 0
     /// Message shown when there is a price increase in a subscription that requires consent
