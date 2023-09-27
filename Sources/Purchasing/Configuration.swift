@@ -50,6 +50,7 @@ import Foundation
     let storeKit1Timeout: TimeInterval
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
+    let showStoreKitMessagesAutomatically: Bool
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -65,6 +66,7 @@ import Foundation
         self.networkTimeout = builder.networkTimeout
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
+        self.showStoreKitMessagesAutomatically = builder.showStoreKitMessagesAutomatically
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -89,6 +91,7 @@ import Foundation
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
+        private(set) var showStoreKitMessagesAutomatically: Bool = true
 
         /**
          * Create a new builder with your API key.
@@ -171,6 +174,13 @@ import Foundation
         /// Set `platformInfo`.
         @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
+            return self
+        }
+
+        /// Set `showStoreKitMessagesAutomatically`. Enabled by default. If you want to disable, make sure you're configuring the SDK during the
+        /// `didFinishLaunchingWithOptions` delegate call.
+        @objc public func with(showStoreKitMessagesAutomatically: Bool) -> Builder {
+            self.showStoreKitMessagesAutomatically = showStoreKitMessagesAutomatically
             return self
         }
 

@@ -973,6 +973,16 @@ public protocol PurchasesSwiftType: AnyObject {
 
     #endif
 
+    #if os(iOS)
+
+    @available(iOS 16.4, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreKitMessage(forTypes types: Set<StoreKitMessageType>) async
+
+    #endif
+
 }
 
 // MARK: -
