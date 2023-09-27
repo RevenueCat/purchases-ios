@@ -25,19 +25,19 @@ struct OfferingsList: View {
             self.content
                 .navigationTitle("Live Paywalls")
         }
-            .task {
-                do {
-                    self.offerings = .success(
-                        try await Purchases.shared.offerings()
-                            .all
-                            .map(\.value)
-                            .sorted { $0.serverDescription > $1.serverDescription }
-                    )
-                } catch let error as NSError {
-                    self.offerings = .failure(error)
-                }
+        .task {
+            do {
+                self.offerings = .success(
+                    try await Purchases.shared.offerings()
+                        .all
+                        .map(\.value)
+                        .sorted { $0.serverDescription > $1.serverDescription }
+                )
+            } catch let error as NSError {
+                self.offerings = .failure(error)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder
@@ -45,6 +45,14 @@ struct OfferingsList: View {
         switch self.offerings {
         case let .success(offerings):
             VStack {
+                Text("Press and hold to open in different modes.")
+                    .font(.footnote)
+                self.list(with: offerings)
+                    .sheet(item: self.$selectedOffering) { offering in
+                        PaywallPresenter(selectedMode: self.$selectedMode,
+                                         selectedOffering: self.$selectedOffering)
+                    }
+            }
             Text("Press and hold to open in different modes.")
                 .font(.footnote)
             self.list(with: offerings)
@@ -173,6 +181,44 @@ struct OfferingsList: View {
     }
 
 }
+
+struct PaywallPresenter: View {
+    @Binding var selectedMode: PaywallViewMode
+    @Binding var selectedOffering: Offering?
+
+    var body: some View {
+        NavigationView {
+            switch selectedMode {
+            case .fullScreen:
+                PaywallView(offering: selectedOffering!)
+                #if targetEnvironment(macCatalyst)
+                    .toolbar {
+                        ToolbarItem(placement: .destructiveAction) {
+                            Button {
+                                self.selectedOffering = nil
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+            #endif
+            case .footer:
+                VStack {
+                    Spacer()
+                    Text("This Paywall is being presented as a Footer")
+                        .paywallFooter(offering: selectedOffering!)
+                }
+            case .condensedFooter:
+                VStack {
+                    Spacer()
+                    Text("This Paywall is being presented as a Condensed Footer")
+                        .paywallFooter(offering: selectedOffering!, condensed: true)
+                }
+            }
+        }
+    }
+}
+
 
 private extension OfferingsList {
 
