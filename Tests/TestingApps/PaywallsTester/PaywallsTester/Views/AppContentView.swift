@@ -11,18 +11,6 @@ import SwiftUI
 
 struct AppContentView: View {
 
-    let customerInfoStream: AsyncStream<CustomerInfo>?
-
-    init(customerInfoStream: AsyncStream<CustomerInfo>?) {
-        self.customerInfoStream = customerInfoStream
-    }
-
-    #if DEBUG
-    init(customerInfo: CustomerInfo) {
-        self.init(customerInfoStream: .init(unfolding: { customerInfo }))
-    }
-    #endif
-
     @State
     private var customerInfo: CustomerInfo?
 
@@ -31,7 +19,7 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            if self.isPurchasesConfigured {
+            if Purchases.isConfigured {
                 NavigationView {
                     ZStack {
                         self.background
@@ -52,7 +40,7 @@ struct AppContentView: View {
                 }
             #endif
 
-            if self.isPurchasesConfigured {
+            if Purchases.isConfigured {
                 OfferingsList()
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
@@ -97,28 +85,30 @@ struct AppContentView: View {
                 Spacer()
             }
             Spacer()
+            
+            Button("Reconfigure for demos") {
+                Purchases.configure(withAPIKey: Configuration.apiKeyForDemos)
+                self.observeCustomerInfoStream()
+            }
+            .prominentButtonStyle()
+
+            Button("Reconfigure for testing") {
+                Purchases.configure(withAPIKey: Configuration.apiKeyFromCI)
+                self.observeCustomerInfoStream()
+            }
+            .prominentButtonStyle()
+            
             Button("Present default paywall") {
                 showingDefaultPaywall.toggle()
             }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: 50)
-            .font(.headline)
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(8)
+            .prominentButtonStyle()
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
         .task {
-            if let stream = self.customerInfoStream {
-                for await info in stream {
-                    self.customerInfo = info
-                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.count == 0
-                }
-                
-            }
+            self.observeCustomerInfoStream()
         }
         #if DEBUG
         .overlay {
@@ -146,10 +136,35 @@ struct AppContentView: View {
         }
     }
 
-    private var isPurchasesConfigured: Bool {
-        return self.customerInfoStream != nil
+    private func observeCustomerInfoStream() {
+        Task {
+            if Purchases.isConfigured {
+                for await info in Purchases.shared.customerInfoStream {
+                    self.customerInfo = info
+                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.count == 0
+                }
+            }
+        }
     }
 
+}
+
+private extension View {
+    func prominentButtonStyle() -> some View {
+        self.modifier(ProminentButtonStyle())
+    }
+}
+
+private struct ProminentButtonStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: 50)
+            .font(.headline)
+            .background(Color.accentColor)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+    }
 }
 
 extension CustomerInfo {
@@ -169,7 +184,7 @@ struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {
         NavigationStack {
-            AppContentView(customerInfo: TestData.customerInfo)
+            AppContentView()
         }
     }
 

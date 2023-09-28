@@ -26,7 +26,8 @@ extension Configuration {
     }()
 
     // This is modified by CI:
-    private static let apiKeyFromCI = ""
+    static let apiKeyFromCI = ""
+    static let apiKeyForDemos = ""
 
 }
 
