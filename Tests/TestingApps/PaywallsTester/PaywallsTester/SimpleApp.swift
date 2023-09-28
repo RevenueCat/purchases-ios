@@ -27,11 +27,7 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppContentView(
-                customerInfoStream: Self.apiKeyIsConfigured
-                ? Purchases.shared.customerInfoStream
-                : nil
-            )
+            AppContentView()
         }
     }
 
