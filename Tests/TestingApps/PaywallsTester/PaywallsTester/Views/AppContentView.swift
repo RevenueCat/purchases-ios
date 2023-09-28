@@ -17,6 +17,10 @@ struct AppContentView: View {
     @State
     private var showingDefaultPaywall: Bool = false
 
+    @State
+    private var customerInfoTask: Task<(), Never>? = nil
+
+
     var body: some View {
         TabView {
             if Purchases.isConfigured {
@@ -133,7 +137,8 @@ struct AppContentView: View {
     }
 
     private func observeCustomerInfoStream() {
-        Task {
+        self.customerInfoTask?.cancel()
+        self.customerInfoTask = Task {
             if Purchases.isConfigured {
                 for await info in Purchases.shared.customerInfoStream {
                     self.customerInfo = info
