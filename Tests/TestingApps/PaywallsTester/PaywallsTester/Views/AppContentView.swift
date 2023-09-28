@@ -27,7 +27,7 @@ struct AppContentView: View {
     private var customerInfo: CustomerInfo?
 
     @State
-    private var didPurchase: Bool = false
+    private var showingDefaultPaywall: Bool = false
 
     var body: some View {
         TabView {
@@ -42,6 +42,7 @@ struct AppContentView: View {
                 .tabItem {
                     Label("App", systemImage: "iphone")
                 }
+                .navigationViewStyle(StackNavigationViewStyle())
             }
 
             #if DEBUG
@@ -57,11 +58,6 @@ struct AppContentView: View {
                         Label("All paywalls", systemImage: "network")
                     }
             }
-        }
-        .presentPaywallIfNeeded {
-            !$0.hasPro
-        } purchaseCompleted: { _ in
-            self.didPurchase = true
         }
     }
 
@@ -80,7 +76,7 @@ struct AppContentView: View {
                 Text(verbatim: "You're signed in: \(info.originalAppUserId)")
                     .font(.callout)
 
-                if self.didPurchase {
+                if self.customerInfo?.activeSubscriptions.count ?? 0 > 0 {
                     Text("Thanks for purchasing!")
                 }
 
@@ -93,15 +89,28 @@ struct AppContentView: View {
 
                 Spacer()
             }
+            Spacer()
+            Button("Present default paywall") {
+                showingDefaultPaywall.toggle()
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: 50)
+            .font(.headline)
+            .background(Color.accentColor)
+            .foregroundColor(.white)
+            .cornerRadius(8)
         }
         .padding(.horizontal)
+        .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
         .task {
             if let stream = self.customerInfoStream {
                 for await info in stream {
                     self.customerInfo = info
+                    self.showingDefaultPaywall = info.activeSubscriptions.count == 0
                 }
+                
             }
         }
         #if DEBUG
@@ -112,6 +121,22 @@ struct AppContentView: View {
             }
         }
         #endif
+        .sheet(isPresented: self.$showingDefaultPaywall) {
+            NavigationView {
+                PaywallView()
+                #if targetEnvironment(macCatalyst)
+                    .toolbar {
+                        ToolbarItem(placement: .destructiveAction) {
+                            Button {
+                                self.showingDefaultPaywall = false
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+                #endif
+            }
+        }
     }
 
     private var isPurchasesConfigured: Bool {
