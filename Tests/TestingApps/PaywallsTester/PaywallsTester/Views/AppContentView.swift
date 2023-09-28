@@ -86,14 +86,14 @@ struct AppContentView: View {
             }
             Spacer()
             
-            Button("Reconfigure for demos") {
-                Purchases.configure(withAPIKey: Configuration.apiKeyForDemos)
+            Button("Configure for demos") {
+                Purchases.configure(withAPIKey: Configuration.apiKeyFromCIForDemos)
                 self.observeCustomerInfoStream()
             }
             .prominentButtonStyle()
 
-            Button("Reconfigure for testing") {
-                Purchases.configure(withAPIKey: Configuration.apiKeyFromCI)
+            Button("Configure for testing") {
+                Purchases.configure(withAPIKey: Configuration.apiKeyFromCIForTesting)
                 self.observeCustomerInfoStream()
             }
             .prominentButtonStyle()
