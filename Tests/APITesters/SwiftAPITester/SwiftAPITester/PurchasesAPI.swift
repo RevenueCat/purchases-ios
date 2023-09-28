@@ -45,6 +45,7 @@ func checkPurchasesAPI() {
 var periodType: PeriodType!
 var oType: PurchaseOwnershipType!
 var logLevel: LogLevel!
+var storeMessageType: StoreMessageType!
 func checkPurchasesEnums() {
     switch periodType! {
     case .normal,
@@ -75,17 +76,13 @@ func checkPurchasesEnums() {
         fatalError()
     }
 
-    if #available(iOS 16.4, *) {
-        let storeMessageType: StoreMessageType = StoreMessageType.billingIssue
-
-        switch storeMessageType {
-        case .billingIssue,
-             .priceIncreaseConsent,
-             .generic:
-            print(storeMessageType)
-        @unknown default:
-            fatalError()
-        }
+    switch storeMessageType! {
+    case .billingIssue,
+         .priceIncreaseConsent,
+         .generic:
+        print(storeMessageType!)
+    @unknown default:
+        fatalError()
     }
 }
 

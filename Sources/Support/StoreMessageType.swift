@@ -13,12 +13,11 @@
 
 import StoreKit
 
-@available(iOS 16.4, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 /// Types of messages available in StoreKit
-@objc public enum StoreMessageType: Int, CaseIterable {
+///
+/// #### Related Symbols
+/// - ``Purchases/showStoreMessages(forTypes:)``
+@objc(RCStoreMessageType) public enum StoreMessageType: Int, CaseIterable, Sendable {
     /// Message shown when there are billing issues in a subscription
     case billingIssue = 0
     /// Message shown when there is a price increase in a subscription that requires consent
@@ -26,6 +25,10 @@ import StoreKit
     /// Generic Store messages
     case generic
 
+    @available(iOS 16.4, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     internal var messageReason: Message.Reason {
         switch self {
         case .billingIssue: return Message.Reason.billingIssue
@@ -34,12 +37,6 @@ import StoreKit
         }
     }
 }
-
-@available(iOS 16.4, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension StoreMessageType: Sendable {}
 
 @available(iOS 16.4, *)
 @available(macOS, unavailable)

@@ -230,6 +230,14 @@ BOOL isAnonymous;
         case RCLogLevelError:
             NSLog(@"%ld", (long)o);
     }
+
+    RCStoreMessageType smt = RCStoreMessageTypeBillingIssue;
+    switch(smt) {
+        case RCStoreMessageTypeBillingIssue:
+        case RCStoreMessageTypePriceIncreaseConsent:
+        case RCStoreMessageTypeGeneric:
+            NSLog(@"%ld", (long)o);
+    }
 }
 
 + (void)checkConstants {

@@ -15,6 +15,8 @@ import Foundation
 
 class MockStoreMessagesHelper: StoreMessagesHelper {
 
+    #if os(iOS)
+
     var deferMessagesIfNeededCalled = false
     var deferMessagesIfNeededCallCount = 0
 
@@ -38,4 +40,6 @@ class MockStoreMessagesHelper: StoreMessagesHelper {
         self.showStoreMessageCalled = true
         self.showStoreMessageCallCount += 1
     }
+
+    #endif
 }

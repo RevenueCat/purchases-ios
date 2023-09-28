@@ -122,7 +122,7 @@ public extension Purchases {
             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
             networkTimeout: Configuration.networkTimeoutDefault,
             dangerousSettings: dangerousSettings,
-            showStoreMessagesAutomatically: true // TODO: Move default
+            showStoreMessagesAutomatically: true
         )
     }
 

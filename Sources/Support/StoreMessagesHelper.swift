@@ -35,6 +35,8 @@ class StoreMessagesHelper {
         self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
     }
 
+    #if os(iOS)
+
     @available(iOS 16.4, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -66,4 +68,6 @@ class StoreMessagesHelper {
             }
         }
     }
+
+    #endif
 }

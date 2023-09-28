@@ -137,9 +137,14 @@ final class PurchasesOrchestrator {
         }
 
         Task {
+            #if os(iOS)
+
             if #available(iOS 16.4, *) {
                 await storeMessagesHelper.deferMessagesIfNeeded()
             }
+
+            #endif
+
             await storeKit2TransactionListener.set(delegate: self)
             if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
                 await storeKit2TransactionListener.listenForTransactions()
