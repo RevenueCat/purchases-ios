@@ -140,7 +140,7 @@ final class PurchasesOrchestrator {
             #if os(iOS)
 
             if #available(iOS 16.4, *) {
-                await storeMessagesHelper.deferMessagesIfNeeded()
+                try? await storeMessagesHelper.deferMessagesIfNeeded()
             }
 
             #endif

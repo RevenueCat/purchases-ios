@@ -24,12 +24,14 @@ import StoreKit
     case priceIncreaseConsent
     /// Generic Store messages
     case generic
+}
 
-    @available(iOS 16.4, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    internal var messageReason: Message.Reason {
+@available(iOS 16.4, *)
+@available(macOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+extension StoreMessageType {
+    var messageReason: Message.Reason {
         switch self {
         case .billingIssue: return Message.Reason.billingIssue
         case .priceIncreaseConsent: return Message.Reason.priceIncreaseConsent

@@ -11,6 +11,7 @@
 		1E473B662AC42D34008B07F9 /* StoreMessagesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */; };
 		1E473B682AC43254008B07F9 /* StoreMessageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B672AC43254008B07F9 /* StoreMessageType.swift */; };
 		1E473B6A2AC46908008B07F9 /* MockStoreMessagesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B692AC46908008B07F9 /* MockStoreMessagesHelper.swift */; };
+		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
 		2CD2C544278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C541278CE0E0005D1CC2 /* RevenueCat_IntegrationPurchaseTesterConfiguration.storekit */; };
@@ -811,6 +812,7 @@
 		1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelper.swift; sourceTree = "<group>"; };
 		1E473B672AC43254008B07F9 /* StoreMessageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessageType.swift; sourceTree = "<group>"; };
 		1E473B692AC46908008B07F9 /* MockStoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreMessagesHelper.swift; sourceTree = "<group>"; };
+		1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelperTests.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-Snapshots.xctestplan"; sourceTree = "<group>"; };
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
@@ -1668,6 +1670,7 @@
 				F5E5E2E82847953000216ECD /* ProductsFetcherSK2Tests.swift */,
 				F5355162286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift */,
 				57CD86E5291C344000768DE1 /* UserDefaultsDefaultTests.swift */,
+				1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -3305,6 +3308,7 @@
 				2D90F8BF26FD20D6009B9142 /* MockAttributionFetcher.swift in Sources */,
 				4F5D52EC2A57152B00E1C758 /* ImageSnapshot.swift in Sources */,
 				4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */,
+				1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */,
 				57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */,
 				2D90F8C526FD216A009B9142 /* MockSKProductDiscount.swift in Sources */,
 				4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */,
