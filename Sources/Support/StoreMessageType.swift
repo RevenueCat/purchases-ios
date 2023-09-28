@@ -26,19 +26,7 @@ import StoreKit
     case generic
 }
 
-@available(iOS 16.4, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension StoreMessageType {
-    var messageReason: Message.Reason {
-        switch self {
-        case .billingIssue: return Message.Reason.billingIssue
-        case .priceIncreaseConsent: return Message.Reason.priceIncreaseConsent
-        case .generic: return Message.Reason.generic
-        }
-    }
-}
+#if os(iOS)
 
 @available(iOS 16.4, *)
 @available(macOS, unavailable)
@@ -56,3 +44,5 @@ extension Message.Reason {
         }
     }
 }
+
+#endif
