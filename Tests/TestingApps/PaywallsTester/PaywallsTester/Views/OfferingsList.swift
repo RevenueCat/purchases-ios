@@ -37,7 +37,6 @@ struct OfferingsList: View {
                 self.offerings = .failure(error)
             }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder
@@ -53,47 +52,8 @@ struct OfferingsList: View {
                 Text(modesInstructions)
                     .font(.footnote)
                 self.list(with: offerings)
-                    .sheet(item: self.$selectedOffering) { offering in
-                        PaywallPresenter(selectedMode: self.$selectedMode,
-                                         selectedOffering: self.$selectedOffering)
-                    }
             }
-            Text("Press and hold to open in different modes.")
-                .font(.footnote)
-            self.list(with: offerings)
-            #if !targetEnvironment(macCatalyst)
-                .sheet(item: self.$selectedOffering) { offering in
-                    NavigationView {
-                        switch self.$selectedMode.wrappedValue {
-                        case .fullScreen:
-                        PaywallView(offering: offering)
-                            #if targetEnvironment(macCatalyst)
-                            .toolbar {
-                                ToolbarItem(placement: .destructiveAction) {
-                                    Button {
-                                        self.selectedOffering = nil
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                    }
-                                }
-                            }
-                            #endif
-                        case .footer:
-                            VStack {
-                                Spacer()
-                                Text("This Paywall is being presented as a Footer")
-                                    .paywallFooter(offering: offering)
-                            }
-                        case .condensedFooter:
-                            VStack {
-                                Spacer()
-                                Text("This Paywall is being presented as a Condensed Footer")
-                                    .paywallFooter(offering: offering, condensed: true)
-                            }
-                        }
-                    }
-                }
-            #endif
+
         case let .failure(error):
             Text(error.description)
 
@@ -111,28 +71,35 @@ struct OfferingsList: View {
                 ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
                     #if targetEnvironment(macCatalyst)
                     NavigationLink(
-                        destination: PaywallView(offering: offering),
+                        destination: PaywallPresenter(selectedMode: self.$selectedMode,
+                                                      selectedOffering: self.$selectedOffering),
                         tag: offering,
                         selection: self.$selectedOffering
                     ) {
                         OfferButton(offering: offering, paywall: paywall) {
                             self.selectedOffering = offering
                         }
+                        .contextMenu {
+                            self.button(for: PaywallViewMode.fullScreen, offering: offering)
+                            self.button(for: PaywallViewMode.condensedFooter, offering: offering)
+                            self.button(for: PaywallViewMode.footer, offering: offering)
+                        }
+
                     }
                     #else
                     OfferButton(offering: offering, paywall: paywall) {
                         self.selectedOffering = offering
                     }
-                    #endif
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
                     .contextMenu {
                         self.button(for: PaywallViewMode.fullScreen, offering: offering)
                         self.button(for: PaywallViewMode.condensedFooter, offering: offering)
                         self.button(for: PaywallViewMode.footer, offering: offering)
                     }
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
+                    .sheet(item: self.$selectedOffering) { offering in
+                        PaywallPresenter(selectedMode: self.$selectedMode,
+                                         selectedOffering: self.$selectedOffering)
+                    }
+                    #endif
                 }
             } header: {
                 Text(verbatim: "With paywall")
@@ -148,22 +115,6 @@ struct OfferingsList: View {
                 }
             }
         }
-    }
-
-    private struct OfferButton: View {
-        let offering: Offering
-        let paywall: PaywallData
-        let action: () -> Void
-
-        var body: some View {
-            Button(action: action) {
-                VStack(alignment: .leading) {
-                    Text(offering.serverDescription)
-                    Text(verbatim: "Template: \(paywall.templateName)")
-                }
-            }
-            .buttonStyle(.plain)
-            .contentShape(Rectangle())
     }
     
     @ViewBuilder
@@ -186,6 +137,23 @@ struct OfferingsList: View {
         }
     }
 
+    private struct OfferButton: View {
+        let offering: Offering
+        let paywall: PaywallData
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                VStack(alignment: .leading) {
+                    Text(offering.serverDescription)
+                    Text(verbatim: "Template: \(paywall.templateName)")
+                }
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+        }
+    }
+
 }
 
 struct PaywallPresenter: View {
@@ -193,40 +161,28 @@ struct PaywallPresenter: View {
     @Binding var selectedOffering: Offering?
 
     var body: some View {
-        NavigationView {
-            Group {
-                if let offering = selectedOffering {
-                    switch selectedMode {
-                    case .fullScreen:
-                        PaywallView(offering: offering)
-
-
-                    case .footer:
-                        VStack {
-                            Spacer()
-                            Text("This Paywall is being presented as a Footer")
-                                .paywallFooter(offering: selectedOffering!)
-                        }
-                    case .condensedFooter:
-                        VStack {
-                            Spacer()
-                            Text("This Paywall is being presented as a Condensed Footer")
-                                .paywallFooter(offering: selectedOffering!, condensed: true)
-                        }
+        Group {
+            if let offering = selectedOffering {
+                switch selectedMode {
+                case .fullScreen:
+                    PaywallView(offering: offering)
+                    
+                    
+                case .footer:
+                    VStack {
+                        Spacer()
+                        Text("This Paywall is being presented as a Footer")
+                            .paywallFooter(offering: selectedOffering!)
+                    }
+                case .condensedFooter:
+                    VStack {
+                        Spacer()
+                        Text("This Paywall is being presented as a Condensed Footer")
+                            .paywallFooter(offering: selectedOffering!, condensed: true)
                     }
                 }
             }
-            #if targetEnvironment(macCatalyst)
-            .toolbar {
-                ToolbarItem(placement: .destructiveAction) {
-                    Button {
-                        self.selectedOffering = nil
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                }
-            }
-            #endif
+            
         }
     }
 }
