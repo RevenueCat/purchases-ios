@@ -52,6 +52,13 @@ struct AppContentView: View {
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
                     }
+
+                UpsellView()
+                    .tabItem {
+                        Label("Upsell view", systemImage: "dollarsign")
+                    }
+                    .navigationTitle("Upsell view")
+
             }
         }
     }
