@@ -87,14 +87,12 @@ struct AppContentView: View {
             Spacer()
             
             Button("Configure for demos") {
-                Purchases.configure(withAPIKey: Configuration.apiKeyFromCIForDemos)
-                self.observeCustomerInfoStream()
+                self.reconfigure(with: Configuration.apiKeyFromCIForDemos)
             }
             .prominentButtonStyle()
 
             Button("Configure for testing") {
-                Purchases.configure(withAPIKey: Configuration.apiKeyFromCIForTesting)
-                self.observeCustomerInfoStream()
+                self.reconfigure(with: Configuration.apiKeyFromCIForTesting)
             }
             .prominentButtonStyle()
             
@@ -134,6 +132,11 @@ struct AppContentView: View {
                 #endif
             }
         }
+    }
+
+    private func reconfigure(with apiKey: String) {
+        Purchases.configure(withAPIKey: apiKey)
+        self.observeCustomerInfoStream()
     }
 
     private func observeCustomerInfoStream() {
