@@ -83,14 +83,22 @@ class StoreMessagesHelper {
 extension StoreMessagesHelper: @unchecked Sendable {}
 
 protocol StoreMessagesProvider {
+
+    #if os(iOS)
+
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     var messages: any StoreMessageAsyncSequence { get }
+
+    #endif
 }
 
 protocol StoreMessage {
+
+    #if os(iOS)
+
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
@@ -102,7 +110,11 @@ protocol StoreMessage {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     @MainActor func display(in scene: UIWindowScene) throws
+
+    #endif
 }
+
+#if os(iOS)
 
 @available(iOS 13.0, *)
 @rethrows protocol StoreMessageAsyncIteratorProtocol: AsyncIteratorProtocol where Element == StoreMessage { }
@@ -157,7 +169,11 @@ private struct StoreMessageSequence: StoreMessageAsyncSequence {
 
 }
 
+#endif
+
 private final class StoreMessagesProviderWrapper: StoreMessagesProvider {
+
+    #if os(iOS)
 
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
@@ -167,4 +183,5 @@ private final class StoreMessagesProviderWrapper: StoreMessagesProvider {
         return StoreMessageSequence(underlyingSequence: Message.messages)
     }
 
+    #endif
 }
