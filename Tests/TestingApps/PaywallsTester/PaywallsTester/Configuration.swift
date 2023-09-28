@@ -22,7 +22,7 @@ enum Configuration {
 extension Configuration {
 
     static var effectiveApiKey: String = {
-        return Self.apiKey.nonEmpty ?? Self.apiKeyFromCI
+        return Self.apiKey.nonEmpty ?? Self.apiKeyFromCIForTesting
     }()
 
     // This is modified by CI:
