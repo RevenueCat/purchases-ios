@@ -17,38 +17,43 @@ struct OfferingsList: View {
     @State
     private var selectedOffering: Offering?
 
+    @State
+    private var selectedMode: PaywallViewMode = .fullScreen
+
     var body: some View {
         NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
         }
-            .task {
-                do {
-                    self.offerings = .success(
-                        try await Purchases.shared.offerings()
-                            .all
-                            .map(\.value)
-                            .sorted { $0.serverDescription > $1.serverDescription }
-                    )
-                } catch let error as NSError {
-                    self.offerings = .failure(error)
-                }
+        .task {
+            do {
+                self.offerings = .success(
+                    try await Purchases.shared.offerings()
+                        .all
+                        .map(\.value)
+                        .sorted { $0.serverDescription > $1.serverDescription }
+                )
+            } catch let error as NSError {
+                self.offerings = .failure(error)
             }
-            .navigationViewStyle(StackNavigationViewStyle())
+        }
     }
 
     @ViewBuilder
     private var content: some View {
         switch self.offerings {
         case let .success(offerings):
-            self.list(with: offerings)
-            #if !targetEnvironment(macCatalyst)
-                .sheet(item: self.$selectedOffering) { offering in
-                    NavigationView {
-                        PaywallView(offering: offering)
-                    }
-                }
-            #endif
+            VStack {
+                #if targetEnvironment(macCatalyst)
+                let modesInstructions = "Right click or ⌘ + click to open in different modes."
+                #else
+                let modesInstructions = "Press and hold to open in different modes."
+                #endif
+                Text(modesInstructions)
+                    .font(.footnote)
+                self.list(with: offerings)
+            }
+
         case let .failure(error):
             Text(error.description)
 
@@ -66,17 +71,33 @@ struct OfferingsList: View {
                 ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
                     #if targetEnvironment(macCatalyst)
                     NavigationLink(
-                        destination: PaywallView(offering: offering),
+                        destination: PaywallPresenter(selectedMode: self.$selectedMode,
+                                                      selectedOffering: self.$selectedOffering),
                         tag: offering,
                         selection: self.$selectedOffering
                     ) {
                         OfferButton(offering: offering, paywall: paywall) {
                             self.selectedOffering = offering
                         }
+                        .contextMenu {
+                            self.button(for: PaywallViewMode.fullScreen, offering: offering)
+                            self.button(for: PaywallViewMode.condensedFooter, offering: offering)
+                            self.button(for: PaywallViewMode.footer, offering: offering)
+                        }
+
                     }
                     #else
                     OfferButton(offering: offering, paywall: paywall) {
                         self.selectedOffering = offering
+                    }
+                    .contextMenu {
+                        self.button(for: PaywallViewMode.fullScreen, offering: offering)
+                        self.button(for: PaywallViewMode.condensedFooter, offering: offering)
+                        self.button(for: PaywallViewMode.footer, offering: offering)
+                    }
+                    .sheet(item: self.$selectedOffering) { offering in
+                        PaywallPresenter(selectedMode: self.$selectedMode,
+                                         selectedOffering: self.$selectedOffering)
                     }
                     #endif
                 }
@@ -92,6 +113,26 @@ struct OfferingsList: View {
                 ForEach(Self.offeringsWithNoPaywall(from: offerings), id: \.id) { offering in
                     Text(offering.serverDescription)
                 }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
+        Button(action: {
+            self.selectedMode = selectedMode
+            self.selectedOffering = offering
+        }) {
+            switch selectedMode {
+            case .fullScreen:
+                Text("Full Screen")
+                Image(systemName: PaywallViewMode.fullScreen.icon)
+            case .condensedFooter:
+                Text("Condensed Footer")
+                Image(systemName: PaywallViewMode.condensedFooter.icon)
+            case .footer:
+                Text("Footer")
+                Image(systemName: PaywallViewMode.footer.icon)
             }
         }
     }
@@ -114,6 +155,38 @@ struct OfferingsList: View {
     }
 
 }
+
+struct PaywallPresenter: View {
+    @Binding var selectedMode: PaywallViewMode
+    @Binding var selectedOffering: Offering?
+
+    var body: some View {
+        Group {
+            if let offering = selectedOffering {
+                switch selectedMode {
+                case .fullScreen:
+                    PaywallView(offering: offering)
+                    
+                    
+                case .footer:
+                    VStack {
+                        Spacer()
+                        Text("This Paywall is being presented as a Footer")
+                            .paywallFooter(offering: selectedOffering!)
+                    }
+                case .condensedFooter:
+                    VStack {
+                        Spacer()
+                        Text("This Paywall is being presented as a Condensed Footer")
+                            .paywallFooter(offering: selectedOffering!, condensed: true)
+                    }
+                }
+            }
+            
+        }
+    }
+}
+
 
 private extension OfferingsList {
 
@@ -141,7 +214,7 @@ private extension OfferingsList {
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            SamplePaywallsList()
+            OfferingsList()
         }
     }
 }
