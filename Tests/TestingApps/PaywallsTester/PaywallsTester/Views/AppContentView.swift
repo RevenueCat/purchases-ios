@@ -57,6 +57,13 @@ struct AppContentView: View {
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
                     }
+
+                UpsellView()
+                    .tabItem {
+                        Label("Upsell view", systemImage: "dollarsign")
+                    }
+                    .navigationTitle("Upsell view")
+
             }
         }
     }
@@ -108,7 +115,7 @@ struct AppContentView: View {
             if let stream = self.customerInfoStream {
                 for await info in stream {
                     self.customerInfo = info
-                    self.showingDefaultPaywall = info.activeSubscriptions.count == 0
+                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.count == 0
                 }
                 
             }
