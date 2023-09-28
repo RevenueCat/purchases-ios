@@ -42,23 +42,13 @@ struct OfferingsList: View {
         switch self.offerings {
         case let .success(offerings):
             self.list(with: offerings)
+            #if !targetEnvironment(macCatalyst)
                 .sheet(item: self.$selectedOffering) { offering in
                     NavigationView {
                         PaywallView(offering: offering)
-                            #if targetEnvironment(macCatalyst)
-                            .toolbar {
-                                ToolbarItem(placement: .destructiveAction) {
-                                    Button {
-                                        self.selectedOffering = nil
-                                    } label: {
-                                        Image(systemName: "xmark")
-                                    }
-                                }
-                            }
-                            #endif
                     }
                 }
-
+            #endif
         case let .failure(error):
             Text(error.description)
 
@@ -74,16 +64,21 @@ struct OfferingsList: View {
 
             Section {
                 ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
-                    Button {
-                        self.selectedOffering = offering
-                    } label: {
-                        VStack(alignment: .leading) {
-                            Text(offering.serverDescription)
-                            Text(verbatim: "Template: \(paywall.templateName)")
+                    #if targetEnvironment(macCatalyst)
+                    NavigationLink(
+                        destination: PaywallView(offering: offering),
+                        tag: offering,
+                        selection: self.$selectedOffering
+                    ) {
+                        OfferButton(offering: offering, paywall: paywall) {
+                            self.selectedOffering = offering
                         }
                     }
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
+                    #else
+                    OfferButton(offering: offering, paywall: paywall) {
+                        self.selectedOffering = offering
+                    }
+                    #endif
                 }
             } header: {
                 Text(verbatim: "With paywall")
@@ -98,6 +93,23 @@ struct OfferingsList: View {
                     Text(offering.serverDescription)
                 }
             }
+        }
+    }
+
+    private struct OfferButton: View {
+        let offering: Offering
+        let paywall: PaywallData
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                VStack(alignment: .leading) {
+                    Text(offering.serverDescription)
+                    Text(verbatim: "Template: \(paywall.templateName)")
+                }
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
         }
     }
 
