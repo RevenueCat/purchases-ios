@@ -14,12 +14,12 @@ struct UpsellView: View {
                 This view automatically displays the default paywall if you're not subscribed.
                 
                 This is achieved by calling
-                `.presentPaywallIfNeeded(requiredEntitlementIdentifier: \(Configuration.entitlement))
+                `.presentPaywallIfNeeded(requiredEntitlementIdentifier: \(Configuration.shared.entitlement))
                 """)
 
         }
         .padding()
-        .presentPaywallIfNeeded(requiredEntitlementIdentifier: Configuration.entitlement)
+        .presentPaywallIfNeeded(requiredEntitlementIdentifier: Configuration.shared.entitlement)
     }
 }
 
