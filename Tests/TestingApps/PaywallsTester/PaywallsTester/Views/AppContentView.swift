@@ -11,6 +11,9 @@ import SwiftUI
 
 struct AppContentView: View {
 
+    @ObservedObject
+    private var configuration = Configuration.shared
+
     @State
     private var customerInfo: CustomerInfo?
 
@@ -89,21 +92,21 @@ struct AppContentView: View {
                 Spacer()
             }
             Spacer()
-            
-            Button("Configure for demos") {
+
+            Text("Currently configured for \(self.descriptionForCurrentMode())")
+                .font(.footnote)
+
+            ConfigurationButton(title: "Configure for demos", mode: .demos, configuration: configuration) {
                 self.reconfigure(for: .demos)
             }
-            .prominentButtonStyle()
 
-            Button("Configure for testing") {
+            ConfigurationButton(title: "Configure for testing", mode: .testing, configuration: configuration) {
                 self.reconfigure(for: .testing)
             }
-            .prominentButtonStyle()
-            
-            Button("Present default paywall") {
+
+            ProminentButton(title: "Present default paywall") {
                 showingDefaultPaywall.toggle()
             }
-            .prominentButtonStyle()
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
@@ -139,7 +142,7 @@ struct AppContentView: View {
     }
 
     private func reconfigure(for mode: Configuration.Mode) {
-        Configuration.reconfigure(for: mode)
+        configuration.reconfigure(for: mode)
         self.observeCustomerInfoStream()
     }
 
@@ -155,30 +158,57 @@ struct AppContentView: View {
         }
     }
 
-}
+    private func descriptionForCurrentMode() -> String {
 
-private extension View {
-    func prominentButtonStyle() -> some View {
-        self.modifier(ProminentButtonStyle())
+        switch self.configuration.currentMode {
+        case .custom:
+            return "the API set locally in Configuration.swift"
+        case .testing:
+            return "the Paywalls Tester app in RevenueCat Dashboard"
+        case .demos:
+            return "Demos"
+        }
+
+    }
+
+}
+private struct ProminentButton: View {
+    var title: String
+    var action: () -> Void
+    var background: Color = .accentColor
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(background)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+        }
     }
 }
 
-private struct ProminentButtonStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: 50)
-            .font(.headline)
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(8)
+private struct ConfigurationButton: View {
+    var title: String
+    var mode: Configuration.Mode
+    @ObservedObject var configuration: Configuration
+    var action: () -> Void
+
+    var body: some View {
+        ProminentButton(
+            title: title,
+            action: action,
+            background: configuration.currentMode == mode ? Color.gray : Color.accentColor
+        )
+        .disabled(configuration.currentMode == mode)
     }
 }
 
 extension CustomerInfo {
 
     var hasPro: Bool {
-        return self.entitlements.active.contains { $1.identifier == Configuration.entitlement }
+        return self.entitlements.active.contains { $1.identifier == Configuration.shared.entitlement }
     }
 
 }
