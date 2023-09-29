@@ -198,14 +198,12 @@ NSSet<NSNumber *> *mesageTypeRawValues;
     }
 #endif
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 16.4, *)) {
         [p showStoreMessagesWithCompletionHandler:^{ }];
         [p showStoreMessagesForRawValues:mesageTypeRawValues completionHandler:^{ }];
     }
-#endif
 
-#if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 14.0, *)) {
         [p presentCodeRedemptionSheet];
     }

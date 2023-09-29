@@ -177,7 +177,7 @@ import Foundation
             return self
         }
 
-        /// Set `showStoreKitMessagesAutomatically`. Enabled by default.
+        /// Set `showStoreMessagesAutomatically`. Enabled by default.
         /// If enabled, if the user has billing issues, has yet to accept a price increase consent or
         /// there are other messages from StoreKit, they will be displayed automatically when the app is initialized.
         ///
