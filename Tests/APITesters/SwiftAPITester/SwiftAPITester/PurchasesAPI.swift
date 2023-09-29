@@ -284,6 +284,14 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
     }
     #endif
+    #if os(iOS)
+    if #available(iOS 16.4, *) {
+        let rawValues: Set<NSNumber> = [NSNumber(value: StoreMessageType.generic.rawValue)]
+        purchases.showStoreMessages { }
+        purchases.showStoreMessages(forTypes: [StoreMessageType.generic]) { }
+        purchases.showStoreMessages(forRawValues: rawValues) { }
+    }
+    #endif
 }
 
 private func checkConfigure() -> Purchases! {
