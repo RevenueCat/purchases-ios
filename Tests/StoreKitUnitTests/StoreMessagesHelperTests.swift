@@ -116,7 +116,8 @@ class StoreMessagesHelperTests: TestCase {
 }
 
 @available(iOS 16.0, *)
-private final class MockStoreMessage: StoreMessage {
+private final class MockStoreMessage: @unchecked Sendable, StoreMessage {
+
     let reason: Message.Reason
 
     init(reason: Message.Reason) {
@@ -125,7 +126,7 @@ private final class MockStoreMessage: StoreMessage {
 
     var displayCalled = false
     var displayCallCount = 0
-    func display(in scene: UIWindowScene) throws {
+    @MainActor func display(in scene: UIWindowScene) throws {
         self.displayCalled = true
         self.displayCallCount += 1
     }

@@ -19,7 +19,6 @@ class StoreMessagesHelper {
     private let showStoreMessagesAutomatically: Bool
     private let storeMessagesProvider: StoreMessagesProvider
 
-    // WIP: Need to see how this handles concurrency
     private var deferredMessages: [StoreMessage] = []
 
     init(systemInfo: SystemInfo,
@@ -48,9 +47,14 @@ class StoreMessagesHelper {
         guard !self.showStoreMessagesAutomatically else {
             return
         }
-        Task(priority: .background) {
-            for try await message in self.storeMessagesProvider.messages {
-                self.deferredMessages.append(message)
+        Task(priority: .background) { [weak self] in
+            guard let storeMessagesProvider = self?.storeMessagesProvider else {
+                return
+            }
+            for try await message in storeMessagesProvider.messages {
+                await MainActor.run { [weak self] in
+                    self?.deferredMessages.append(message)
+                }
             }
         }
     }
@@ -95,7 +99,7 @@ protocol StoreMessagesProvider {
     #endif
 }
 
-protocol StoreMessage {
+protocol StoreMessage: Sendable {
 
     #if os(iOS)
 
