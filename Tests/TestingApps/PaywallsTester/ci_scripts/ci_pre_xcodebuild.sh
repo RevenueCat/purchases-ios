@@ -6,8 +6,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 if [ -z "$PAYWALLS_TESTER_API_KEY_FOR_TESTING" ]; then
     echo "PaywallsTester API key for testing environment variable is not set."
-elif
-if [ -z "$PAYWALLS_TESTER_API_KEY_FOR_DEMOS" ]; then
+elif [ -z "$PAYWALLS_TESTER_API_KEY_FOR_DEMOS" ]; then
     echo "PaywallsTester API key for demos environment variable is not set."
 else
     echo "Replacing API keys on PaywallsTester"
