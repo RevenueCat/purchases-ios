@@ -39,7 +39,11 @@ import StoreKit
 extension Message.Reason {
     var messageType: StoreMessageType? {
         switch self {
+        // billingIssue message reason was added in iOS 16.4, but it's not recognized by older xcode versions.
+        // https://developer.apple.com/documentation/xcode-release-notes/xcode-14_3-release-notes
+        #if swift(>=5.8)
         case .billingIssue: return .billingIssue
+        #endif
         case .priceIncreaseConsent: return .priceIncreaseConsent
         case .generic: return .generic
         default:
