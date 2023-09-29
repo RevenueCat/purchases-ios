@@ -29,7 +29,7 @@ class Configuration: ObservableObject {
     }
 
     private init() {
-        currentMode = apiKey.isEmpty ? .custom : .testing
+        currentMode = apiKey.isEmpty ? .testing : .custom
     }
 
 
