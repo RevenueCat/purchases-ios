@@ -180,6 +180,7 @@ private struct ProminentButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
+                .bold()
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(background)
