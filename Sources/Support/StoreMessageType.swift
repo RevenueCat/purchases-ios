@@ -24,6 +24,10 @@ import StoreKit
     case priceIncreaseConsent
     /// Generic Store messages
     case generic
+
+    var numberValue: NSNumber {
+        return NSNumber(value: self.rawValue)
+    }
 }
 
 #if os(iOS)

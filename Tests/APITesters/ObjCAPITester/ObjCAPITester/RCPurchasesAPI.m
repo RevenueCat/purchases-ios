@@ -28,6 +28,7 @@ BOOL finishTransactions;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
+NSSet<NSNumber *> *mesageTypeRawValues;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -194,6 +195,13 @@ BOOL isAnonymous;
     if (@available(iOS 13.4, *)) {
         [p showPriceConsentIfNeeded];
         BOOL consent __unused = [p.delegate shouldShowPriceConsent];
+    }
+#endif
+
+#if TARGET_OS_IPHONE
+    if (@available(iOS 16.4, *)) {
+        [p showStoreMessagesWithCompletionHandler:^{ }];
+        [p showStoreMessagesForRawValues:mesageTypeRawValues completionHandler:^{ }];
     }
 #endif
 

@@ -191,6 +191,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     if #available(iOS 16.4, *) {
         Task {
             await purchases.showStoreMessages()
+            await purchases.showStoreMessages(forRawValues: [NSNumber(value: StoreMessageType.billingIssue.rawValue)])
             await purchases.showStoreMessages(forTypes: [StoreMessageType.billingIssue])
         }
     }

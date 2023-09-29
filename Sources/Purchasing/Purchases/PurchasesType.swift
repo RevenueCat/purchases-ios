@@ -736,6 +736,41 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
+    #if os(iOS)
+
+    /**
+     * Displays all store in-app message types to the user if there are any available to be shown.
+     * - Important: This should only be used if you disabled these messages from showing automatically
+     * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
+     *
+     * ### Related Symbols
+     * - ``Purchases/showStoreMessages(forRawValues:)``
+     * - ``Purchases/showStoreMessages(forTypes:)``
+     */
+    @available(iOS 16.4, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages() async
+
+    /**
+     * Displays the specified store in-app message types as raw values to the user if there are any
+     * available to be shown. Obj-C compatible version of this method.
+     * - Important: This should only be used if you disabled these messages from showing automatically
+     * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
+     *
+     * ### Related Symbols
+     * - ``Purchases/showStoreMessages()``
+     * - ``Purchases/showStoreMessages(forTypes:)``
+     */
+    @available(iOS 16.4, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async
+
+    #endif
+
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      *
@@ -979,6 +1014,9 @@ public protocol PurchasesSwiftType: AnyObject {
      * Displays the specified store in-app message types to the user if there are any available to be shown.
      * - Important: This should only be used if you disabled these messages from showing automatically
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
+     * ### Related Symbols
+     * - ``Purchases/showStoreMessages()``
+     * - ``Purchases/showStoreMessages(forRawValues:)``
      */
     @available(iOS 16.4, *)
     @available(macOS, unavailable)
