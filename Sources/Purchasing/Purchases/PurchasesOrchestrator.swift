@@ -138,11 +138,16 @@ final class PurchasesOrchestrator {
 
         Task {
             #if os(iOS)
-
+            #if swift(>=5.8)
             if #available(iOS 16.4, *) {
-                try? await storeMessagesHelper.deferMessagesIfNeeded()
+                do {
+                    try await storeMessagesHelper.deferMessagesIfNeeded()
+                } catch {
+                    Logger.error(Strings.configure.could_not_defer_store_messages(errorMessage:
+                                                                                    error.localizedDescription))
+                }
             }
-
+            #endif
             #endif
 
             await storeKit2TransactionListener.set(delegate: self)
