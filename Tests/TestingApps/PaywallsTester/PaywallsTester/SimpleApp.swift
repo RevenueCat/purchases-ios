@@ -11,7 +11,7 @@ import SwiftUI
 struct SimpleApp: App {
 
     init() {
-        Configuration.configure()
+        Configuration.shared.configure()
     }
 
     var body: some Scene {
