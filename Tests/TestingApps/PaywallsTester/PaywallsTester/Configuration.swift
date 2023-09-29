@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 enum Configuration {
 
@@ -20,21 +21,47 @@ enum Configuration {
 }
 
 extension Configuration {
+    enum Mode {
+        case custom, testing, demos
+    }
 
-    static var effectiveApiKey: String = {
-        return Self.apiKey.nonEmpty ?? Self.apiKeyFromCIForTesting
-    }()
+    static private(set) var currentMode: Mode = Self.apiKey.isEmpty ? .custom : .testing
+
+    static var currentAPIKey: String {
+        switch currentMode {
+        case .custom:
+            Self.apiKey
+        case .testing:
+            Self.apiKeyFromCIForTesting
+        case .demos:
+            Self.apiKeyFromCIForDemos
+        }
+    }
+
+    static func reconfigure(for mode: Mode) {
+        Self.currentMode = mode
+        Purchases.configure(
+            with: .init(withAPIKey: currentAPIKey)
+                .with(entitlementVerificationMode: .informational)
+                .with(usesStoreKit2IfAvailable: true)
+        )
+    }
+
+    static func configure() {
+        Purchases.logLevel = .verbose
+        Purchases.proxyURL = Configuration.proxyURL.isEmpty
+        ? nil
+        : URL(string: Configuration.proxyURL)!
+
+        Purchases.configure(
+            with: .init(withAPIKey: currentAPIKey)
+                .with(entitlementVerificationMode: .informational)
+                .with(usesStoreKit2IfAvailable: true)
+        )
+    }
 
     // This is modified by CI:
     static let apiKeyFromCIForTesting = ""
     static let apiKeyFromCIForDemos = ""
-
-}
-
-// MARK: - Extensions
-
-private extension String {
-
-    var nonEmpty: String? { return self.isEmpty ? nil : self }
 
 }
