@@ -187,7 +187,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
         _ = purchases.delegate?.shouldShowPriceConsent
     }
     #endif
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     if #available(iOS 16.4, *) {
         Task {
             await purchases.showStoreMessages()
@@ -284,7 +284,7 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         purchases.beginRefundRequestForActiveEntitlement { (_: Result<RefundRequestStatus, PublicError>) in }
     }
     #endif
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
     if #available(iOS 16.4, *) {
         let rawValues: Set<NSNumber> = [NSNumber(value: StoreMessageType.generic.rawValue)]
         purchases.showStoreMessages { }

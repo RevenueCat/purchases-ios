@@ -137,7 +137,7 @@ final class PurchasesOrchestrator {
         }
 
         Task {
-            #if os(iOS)
+            #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
             #if swift(>=5.8)
             if #available(iOS 16.4, *) {
                 do {

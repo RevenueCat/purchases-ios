@@ -736,7 +736,7 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     /**
      * Displays all store in-app message types to the user if there are any available to be shown.
@@ -1008,7 +1008,7 @@ public protocol PurchasesSwiftType: AnyObject {
 
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     /**
      * Displays the specified store in-app message types to the user if there are any available to be shown.

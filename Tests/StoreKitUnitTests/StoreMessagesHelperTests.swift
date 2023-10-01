@@ -19,7 +19,7 @@ import XCTest
 
 @testable import RevenueCat
 
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 15.0, *)
 class StoreMessagesHelperTests: TestCase {
@@ -69,7 +69,7 @@ class StoreMessagesHelperTests: TestCase {
     }
 
     @available(iOS 16.4, *)
-    func testShowMessagesAfterDeferMessagesAndShowingMessagesAutomaticallyDoesNotShowsMessages() async throws {
+    func testShowMessagesAfterDeferMessagesAndShowingMessagesAutomaticallyDoesNotShowMessages() async throws {
         try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: true)
 
@@ -126,6 +126,7 @@ private final class MockStoreMessage: @unchecked Sendable, StoreMessage {
 
     var displayCalled = false
     var displayCallCount = 0
+
     @MainActor func display(in scene: UIWindowScene) throws {
         self.displayCalled = true
         self.displayCallCount += 1

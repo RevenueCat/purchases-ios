@@ -37,7 +37,7 @@ class StoreMessagesHelper {
         self.storeMessagesProvider = storeMessagesProvider
     }
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.4, *)
     @available(macOS, unavailable)
@@ -47,7 +47,7 @@ class StoreMessagesHelper {
         guard !self.showStoreMessagesAutomatically else {
             return
         }
-        Task(priority: .background) { [weak self] in
+        Task(priority: .medium) { [weak self] in
             guard let storeMessagesProvider = self?.storeMessagesProvider else {
                 return
             }
@@ -66,14 +66,13 @@ class StoreMessagesHelper {
     @MainActor
     func showStoreMessages(types: Set<StoreMessageType>) {
         for message in self.deferredMessages {
-            if let messageType = message.reason.messageType {
-                if types.contains(messageType) {
+            if let messageType = message.reason.messageType,
+               types.contains(messageType) {
                     do {
                         try message.display(in: self.systemInfo.currentWindowScene)
                     } catch {
                         Logger.error("Error displaying StoreKit message: \(error)")
                     }
-                }
             }
         }
     }
@@ -88,7 +87,7 @@ extension StoreMessagesHelper: @unchecked Sendable {}
 
 protocol StoreMessagesProvider {
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
@@ -101,7 +100,7 @@ protocol StoreMessagesProvider {
 
 protocol StoreMessage: Sendable {
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
@@ -118,7 +117,7 @@ protocol StoreMessage: Sendable {
     #endif
 }
 
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 13.0, *)
 @rethrows protocol StoreMessageAsyncIteratorProtocol: AsyncIteratorProtocol where Element == StoreMessage { }
@@ -177,7 +176,7 @@ private struct StoreMessageSequence: StoreMessageAsyncSequence {
 
 private final class StoreMessagesProviderWrapper: StoreMessagesProvider {
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
     @available(macOS, unavailable)

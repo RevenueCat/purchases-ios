@@ -449,7 +449,7 @@ extension MockPurchases: PurchasesSwiftType {
         self.unimplemented()
     }
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.4, *)
     func showStoreMessages() async {

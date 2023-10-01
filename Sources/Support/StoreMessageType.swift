@@ -30,7 +30,7 @@ import StoreKit
     }
 }
 
-#if os(iOS)
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 16.4, *)
 @available(macOS, unavailable)

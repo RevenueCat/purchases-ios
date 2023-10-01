@@ -15,7 +15,7 @@ import Foundation
 
 class MockStoreMessagesHelper: StoreMessagesHelper {
 
-    #if os(iOS)
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     var deferMessagesIfNeededCalled = false
     var deferMessagesIfNeededCallCount = 0
