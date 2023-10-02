@@ -44,12 +44,7 @@ struct OfferingsList: View {
         switch self.offerings {
         case let .success(offerings):
             VStack {
-                #if targetEnvironment(macCatalyst)
-                let modesInstructions = "Right click or ⌘ + click to open in different modes."
-                #else
-                let modesInstructions = "Press and hold to open in different modes."
-                #endif
-                Text(modesInstructions)
+                Text(Self.modesInstructions)
                     .font(.footnote)
                 self.list(with: offerings)
             }
@@ -80,20 +75,15 @@ struct OfferingsList: View {
                             self.selectedOffering = offering
                         }
                         .contextMenu {
-                            self.button(for: PaywallViewMode.fullScreen, offering: offering)
-                            self.button(for: PaywallViewMode.condensedFooter, offering: offering)
-                            self.button(for: PaywallViewMode.footer, offering: offering)
+                            self.contextMenu(for: offering)
                         }
-
                     }
                     #else
                     OfferButton(offering: offering, paywall: paywall) {
                         self.selectedOffering = offering
                     }
                     .contextMenu {
-                        self.button(for: PaywallViewMode.fullScreen, offering: offering)
-                        self.button(for: PaywallViewMode.condensedFooter, offering: offering)
-                        self.button(for: PaywallViewMode.footer, offering: offering)
+                        self.contextMenu(for: offering)
                     }
                     .sheet(item: self.$selectedOffering) { offering in
                         PaywallPresenter(selectedMode: self.$selectedMode,
@@ -116,24 +106,22 @@ struct OfferingsList: View {
             }
         }
     }
-    
+
+    @ViewBuilder
+    private func contextMenu(for offering: Offering) -> some View {
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+            self.button(for: mode, offering: offering)
+        }
+    }
+
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
-        Button(action: {
+        Button {
             self.selectedMode = selectedMode
             self.selectedOffering = offering
-        }) {
-            switch selectedMode {
-            case .fullScreen:
-                Text("Full Screen")
-                Image(systemName: PaywallViewMode.fullScreen.icon)
-            case .condensedFooter:
-                Text("Condensed Footer")
-                Image(systemName: PaywallViewMode.condensedFooter.icon)
-            case .footer:
-                Text("Footer")
-                Image(systemName: PaywallViewMode.footer.icon)
-            }
+        } label: {
+            Text(selectedMode.name)
+            Image(systemName: selectedMode.icon)
         }
     }
 
@@ -145,8 +133,8 @@ struct OfferingsList: View {
         var body: some View {
             Button(action: action) {
                 VStack(alignment: .leading) {
-                    Text(offering.serverDescription)
-                    Text(verbatim: "Template: \(paywall.templateName)")
+                    Text(self.offering.serverDescription)
+                    Text(verbatim: "Template: \(self.paywall.templateName)")
                 }
             }
             .buttonStyle(.plain)
@@ -154,39 +142,44 @@ struct OfferingsList: View {
         }
     }
 
+    #if targetEnvironment(macCatalyst)
+    private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
+    #else
+    private static let modesInstructions = "Press and hold to open in different modes."
+    #endif
+
 }
 
 struct PaywallPresenter: View {
+
     @Binding var selectedMode: PaywallViewMode
     @Binding var selectedOffering: Offering?
 
     var body: some View {
         Group {
-            if let offering = selectedOffering {
-                switch selectedMode {
+            if let offering = self.selectedOffering {
+                switch self.selectedMode {
                 case .fullScreen:
                     PaywallView(offering: offering)
-                    
                     
                 case .footer:
                     VStack {
                         Spacer()
                         Text("This Paywall is being presented as a Footer")
-                            .paywallFooter(offering: selectedOffering!)
+                            .paywallFooter(offering: offering)
                     }
                 case .condensedFooter:
                     VStack {
                         Spacer()
                         Text("This Paywall is being presented as a Condensed Footer")
-                            .paywallFooter(offering: selectedOffering!, condensed: true)
+                            .paywallFooter(offering: offering, condensed: true)
                     }
                 }
             }
-            
         }
     }
-}
 
+}
 
 private extension OfferingsList {
 
