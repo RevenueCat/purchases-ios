@@ -165,8 +165,9 @@ struct AppContentView: View {
             return "the Paywalls Tester app in RevenueCat Dashboard"
         case .demos:
             return "Demos"
+        case .listOnly:
+            return "showcasing the different Paywall Templates and Modes available"
         }
-
     }
 
 }

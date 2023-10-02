@@ -16,7 +16,7 @@ final class Configuration: ObservableObject {
     static let entitlement = "pro"
 
     enum Mode {
-        case custom, testing, demos
+        case custom, testing, demos, listOnly
     }
 
     #warning("Configure API key if you want to test paywalls from your dashboard")
@@ -32,7 +32,7 @@ final class Configuration: ObservableObject {
         self.currentMode = Self.apiKey.isEmpty ? .testing : .custom
     }
 
-    var currentAPIKey: String {
+    var currentAPIKey: String? {
         switch currentMode {
         case .custom:
             Self.apiKey
@@ -40,12 +40,14 @@ final class Configuration: ObservableObject {
             Self.apiKeyFromCIForTesting
         case .demos:
             Self.apiKeyFromCIForDemos
+        case .listOnly:
+            nil
         }
     }
 
     func reconfigure(for mode: Mode) {
         self.currentMode = mode
-        configureRCSDK()
+        self.configureRCSDK()
     }
 
     func configure() {
@@ -53,10 +55,15 @@ final class Configuration: ObservableObject {
         Purchases.proxyURL = Self.proxyURL.isEmpty
         ? nil
         : URL(string: Self.proxyURL)!
-        configureRCSDK()
+        self.configureRCSDK()
     }
 
     private func configureRCSDK() {
+        guard let currentAPIKey = self.currentAPIKey,
+              !currentAPIKey.isEmpty else {
+            return
+        }
+
         Purchases.configure(
             with: .init(withAPIKey: currentAPIKey)
                 .with(entitlementVerificationMode: .informational)
