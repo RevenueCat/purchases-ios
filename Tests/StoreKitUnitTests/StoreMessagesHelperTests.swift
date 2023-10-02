@@ -41,8 +41,8 @@ class StoreMessagesHelperTests: TestCase {
     func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsAllDeferredMessages() async throws {
         self.createHelper(showStoreMessagesAutomatically: false)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.generic)
-        let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
+        let message1 = MockStoreMessage(reason: .generic)
+        let message2 = MockStoreMessage(reason: .priceIncreaseConsent)
 
         try await self.waitForDeferredMessages(messages: [message1, message2])
 
@@ -55,12 +55,12 @@ class StoreMessagesHelperTests: TestCase {
     func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsSpecifiedMessages() async throws {
         self.createHelper(showStoreMessagesAutomatically: false)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.generic)
-        let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
+        let message1 = MockStoreMessage(reason: .generic)
+        let message2 = MockStoreMessage(reason: .priceIncreaseConsent)
 
-        try await waitForDeferredMessages(messages: [message1, message2])
+        try await self.waitForDeferredMessages(messages: [message1, message2])
 
-        await self.helper.showStoreMessages(types: [StoreMessageType.billingIssue])
+        await self.helper.showStoreMessages(types: [.generic])
 
         expect(message1.displayCalled) == true
         expect(message2.displayCalled) == false
@@ -69,10 +69,10 @@ class StoreMessagesHelperTests: TestCase {
     func testShowMessagesAfterDeferMessagesAndShowingMessagesAutomaticallyDoesNotShowMessages() async throws {
         self.createHelper(showStoreMessagesAutomatically: true)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.generic)
-        let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
+        let message1 = MockStoreMessage(reason: .generic)
+        let message2 = MockStoreMessage(reason: .priceIncreaseConsent)
 
-        try await waitForDeferredMessages(messages: [message1, message2])
+        try await self.waitForDeferredMessages(messages: [message1, message2])
 
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
 
@@ -83,7 +83,7 @@ class StoreMessagesHelperTests: TestCase {
     func testShowMessagesAfterDeferMessagesAndNoMessagesDoesNothing() async throws {
         self.createHelper(showStoreMessagesAutomatically: true)
 
-        try await waitForDeferredMessages(messages: [])
+        try await self.waitForDeferredMessages(messages: [])
 
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
     }
