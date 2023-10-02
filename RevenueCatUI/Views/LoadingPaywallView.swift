@@ -40,7 +40,7 @@ struct LoadingPaywallView: View {
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
         )
-        .disabled(true)
+        .allowsHitTesting(false)
         .redacted(reason: .placeholder)
     }
 
