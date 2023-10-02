@@ -41,7 +41,7 @@ class StoreMessagesHelperTests: TestCase {
         try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: false)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.billingIssue)
+        let message1 = MockStoreMessage(reason: Message.Reason.generic)
         let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
 
         try await waitForDeferredMessages(messages: [message1, message2])
@@ -57,7 +57,7 @@ class StoreMessagesHelperTests: TestCase {
         try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: false)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.billingIssue)
+        let message1 = MockStoreMessage(reason: Message.Reason.generic)
         let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
 
         try await waitForDeferredMessages(messages: [message1, message2])
@@ -73,7 +73,7 @@ class StoreMessagesHelperTests: TestCase {
         try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: true)
 
-        let message1 = MockStoreMessage(reason: Message.Reason.billingIssue)
+        let message1 = MockStoreMessage(reason: Message.Reason.generic)
         let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
 
         try await waitForDeferredMessages(messages: [message1, message2])
