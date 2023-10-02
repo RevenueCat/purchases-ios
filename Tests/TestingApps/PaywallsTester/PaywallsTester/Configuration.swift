@@ -11,27 +11,26 @@ import RevenueCat
 final class Configuration: ObservableObject {
     static let shared = Configuration()
 
-    // This is modified by CI:
-    private static let apiKeyFromCIForTesting = ""
-    private static let apiKeyFromCIForDemos = ""
-
     @Published private(set) var currentMode: Mode
 
     let entitlement = "pro"
+
+    enum Mode {
+        case custom, testing, demos
+    }
 
     #warning("Configure API key if you want to test paywalls from your dashboard")
     // Note: you can leave this empty to use the production server, or point to your own instance.
     private static let proxyURL = ""
     private static let apiKey = ""
 
-    enum Mode {
-        case custom, testing, demos
-    }
+    // This is modified by CI:
+    private static let apiKeyFromCIForTesting = ""
+    private static let apiKeyFromCIForDemos = ""
 
     private init() {
         self.currentMode = Self.apiKey.isEmpty ? .testing : .custom
     }
-
 
     var currentAPIKey: String {
         switch currentMode {
@@ -46,11 +45,7 @@ final class Configuration: ObservableObject {
 
     func reconfigure(for mode: Mode) {
         self.currentMode = mode
-        Purchases.configure(
-            with: .init(withAPIKey: currentAPIKey)
-                .with(entitlementVerificationMode: .informational)
-                .with(usesStoreKit2IfAvailable: true)
-        )
+        configureRCSDK()
     }
 
     func configure() {
@@ -58,7 +53,10 @@ final class Configuration: ObservableObject {
         Purchases.proxyURL = Self.proxyURL.isEmpty
         ? nil
         : URL(string: Self.proxyURL)!
+        configureRCSDK()
+    }
 
+    private func configureRCSDK() {
         Purchases.configure(
             with: .init(withAPIKey: currentAPIKey)
                 .with(entitlementVerificationMode: .informational)
