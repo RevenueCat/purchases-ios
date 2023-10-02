@@ -1083,8 +1083,8 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async {
-        let storeMessageTypes = rawValues.map { number in
-            StoreMessageType(rawValue: number.intValue) ?? .generic
+        let storeMessageTypes = rawValues.compactMap { number in
+            StoreMessageType(rawValue: number.intValue)
         }
         await self.storeMessagesHelper?.showStoreMessages(types: Set(storeMessageTypes))
     }
