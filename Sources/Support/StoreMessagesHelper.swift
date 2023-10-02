@@ -18,15 +18,9 @@ protocol StoreMessagesHelperType {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func deferMessagesIfNeeded() async throws
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func showStoreMessages(types: Set<StoreMessageType>) async
 
     #endif
@@ -81,6 +75,9 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
 }
 
 @available(iOS 16.0, *)
+@available(macOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 extension StoreMessagesHelper: Sendable {}
 
 protocol StoreMessagesProviderType {
@@ -88,9 +85,6 @@ protocol StoreMessagesProviderType {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     var messages: AsyncStream<StoreMessage> { get }
 
     #endif
@@ -102,16 +96,11 @@ protocol StoreMessage: Sendable {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     var reason: Message.Reason { get }
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @MainActor func display(in scene: UIWindowScene) throws
+    @MainActor
+    func display(in scene: UIWindowScene) throws
 
     #endif
 }
@@ -119,9 +108,6 @@ protocol StoreMessage: Sendable {
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 16.0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 extension StoreKit.Message: StoreMessage {}
 
 #endif
@@ -131,9 +117,6 @@ private final class StoreMessagesProvider: StoreMessagesProviderType {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     var messages: AsyncStream<StoreMessage> {
         return Message.messages
             .map { $0 as StoreMessage }

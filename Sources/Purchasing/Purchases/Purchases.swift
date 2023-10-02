@@ -399,12 +399,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let storeMessagesHelper: StoreMessagesHelperType?
 
+        #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
         if #available(iOS 16.0, *) {
             storeMessagesHelper = StoreMessagesHelper(systemInfo: systemInfo,
                                                       showStoreMessagesAutomatically: showStoreMessagesAutomatically)
         } else {
             storeMessagesHelper = nil
         }
+        #else
+        storeMessagesHelper = nil
+        #endif
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
