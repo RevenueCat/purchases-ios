@@ -17,13 +17,13 @@ protocol StoreMessagesHelperType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func deferMessagesIfNeeded() async throws
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -33,6 +33,10 @@ protocol StoreMessagesHelperType {
 
 }
 
+@available(iOS 16.0, *)
+@available(macOS, unavailable)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
 actor StoreMessagesHelper: StoreMessagesHelperType {
 
     private let systemInfo: SystemInfo
@@ -51,10 +55,6 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func deferMessagesIfNeeded() async throws {
         guard !self.showStoreMessagesAutomatically else {
             return
@@ -65,10 +65,6 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
         }
     }
 
-    @available(iOS 16.4, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func showStoreMessages(types: Set<StoreMessageType>) async {
         for message in self.deferredMessages {
             if let messageType = message.reason.messageType, types.contains(messageType) {
@@ -84,6 +80,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     #endif
 }
 
+@available(iOS 16.0, *)
 extension StoreMessagesHelper: Sendable {}
 
 protocol StoreMessagesProviderType {

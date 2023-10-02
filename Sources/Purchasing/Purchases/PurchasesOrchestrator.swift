@@ -67,7 +67,7 @@ final class PurchasesOrchestrator {
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
-    private let storeMessagesHelper: StoreMessagesHelperType
+    private let storeMessagesHelper: StoreMessagesHelperType?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -106,7 +106,7 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
-                     storeMessagesHelper: StoreMessagesHelperType
+                     storeMessagesHelper: StoreMessagesHelperType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -137,10 +137,10 @@ final class PurchasesOrchestrator {
         }
 
         #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
-        if #available(iOS 16.4, *) {
+        if #available(iOS 16.0, *), let helper = storeMessagesHelper {
             Task {
                 do {
-                    try await storeMessagesHelper.deferMessagesIfNeeded()
+                    try await helper.deferMessagesIfNeeded()
                 } catch {
                     Logger.error(Strings.configure.could_not_defer_store_messages(
                         errorMessage: error.localizedDescription
@@ -174,7 +174,7 @@ final class PurchasesOrchestrator {
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
-         storeMessagesHelper: StoreMessagesHelperType
+         storeMessagesHelper: StoreMessagesHelperType?
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper

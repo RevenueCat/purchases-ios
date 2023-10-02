@@ -20,7 +20,7 @@ class MockStoreMessagesHelper: StoreMessagesHelperType {
     var deferMessagesIfNeededCalled = false
     var deferMessagesIfNeededCallCount = 0
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -32,7 +32,7 @@ class MockStoreMessagesHelper: StoreMessagesHelperType {
     var showStoreMessageCalled = false
     var showStoreMessageCallCount = 0
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

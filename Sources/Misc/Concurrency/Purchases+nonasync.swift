@@ -64,7 +64,7 @@ public extension Purchases {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -76,7 +76,7 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -90,7 +90,7 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

@@ -21,7 +21,7 @@ import XCTest
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-@available(iOS 15.0, *)
+@available(iOS 16.0, *)
 class StoreMessagesHelperTests: TestCase {
 
     private var systemInfo: MockSystemInfo!
@@ -32,19 +32,19 @@ class StoreMessagesHelperTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         self.systemInfo = MockSystemInfo(finishTransactions: true)
         self.storeMessagesProvider = MockStoreMessagesProvider()
     }
 
-    @available(iOS 16.4, *)
     func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsAllDeferredMessages() async throws {
-        try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: false)
 
         let message1 = MockStoreMessage(reason: Message.Reason.generic)
         let message2 = MockStoreMessage(reason: Message.Reason.priceIncreaseConsent)
 
-        try await waitForDeferredMessages(messages: [message1, message2])
+        try await self.waitForDeferredMessages(messages: [message1, message2])
 
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
 
@@ -52,9 +52,7 @@ class StoreMessagesHelperTests: TestCase {
         expect(message2.displayCalled) == true
     }
 
-    @available(iOS 16.4, *)
     func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsSpecifiedMessages() async throws {
-        try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: false)
 
         let message1 = MockStoreMessage(reason: Message.Reason.generic)
@@ -68,9 +66,7 @@ class StoreMessagesHelperTests: TestCase {
         expect(message2.displayCalled) == false
     }
 
-    @available(iOS 16.4, *)
     func testShowMessagesAfterDeferMessagesAndShowingMessagesAutomaticallyDoesNotShowMessages() async throws {
-        try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: true)
 
         let message1 = MockStoreMessage(reason: Message.Reason.generic)
@@ -84,9 +80,7 @@ class StoreMessagesHelperTests: TestCase {
         expect(message2.displayCalled) == false
     }
 
-    @available(iOS 16.4, *)
     func testShowMessagesAfterDeferMessagesAndNoMessagesDoesNothing() async throws {
-        try AvailabilityChecks.iOS16_4APIAvailableOrSkipTest()
         self.createHelper(showStoreMessagesAutomatically: true)
 
         try await waitForDeferredMessages(messages: [])
@@ -94,19 +88,18 @@ class StoreMessagesHelperTests: TestCase {
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
     }
 
-    @available(iOS 16.4, *)
     private func createHelper(showStoreMessagesAutomatically: Bool) {
         self.helper = StoreMessagesHelper(systemInfo: self.systemInfo,
                                           showStoreMessagesAutomatically: showStoreMessagesAutomatically,
                                           storeMessagesProvider: self.storeMessagesProvider)
     }
 
-    @available(iOS 16.4, *)
     private func waitForDeferredMessages(messages: [StoreMessage]) async throws {
         self.storeMessagesProvider.stubbedMessages = messages
 
         try await self.helper.deferMessagesIfNeeded()
     }
+
 }
 
 @available(iOS 16.0, *)
@@ -132,15 +125,11 @@ private final class MockStoreMessage: StoreMessage {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 16.0, *)
 private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
     var stubbedMessages: [StoreMessage] = []
 
-    @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     var messages: AsyncStream<StoreMessage> {
         MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()
     }
