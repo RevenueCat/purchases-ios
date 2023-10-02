@@ -250,6 +250,19 @@ platform :ios do
 
   desc "visionOS build"
   lane :build_visionos do |options|
+    pod_lib_lint(
+      verbose: true,
+      podspec: 'RevenueCat.podspec',
+      platforms: "visionOS",
+      fail_fast: true
+    )
+    pod_lib_lint(
+      verbose: true,
+      podspec: 'RevenueCatUI.podspec',
+      platforms: "visionOS",
+      fail_fast: true
+    )
+
     build_release(
       platform: 'visionOS',
       scheme: 'RevenueCat'
@@ -988,6 +1001,8 @@ def carthage_archive
 end
 
 lane :check_pods do
+  # Note: see also `build_visionos`
+  # Fix-me: add `visionOS` when we start building with Xcode 15.1
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCat.podspec', 
