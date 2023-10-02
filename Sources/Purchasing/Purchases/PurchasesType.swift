@@ -747,7 +747,7 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/showStoreMessages(forRawValues:)``
      * - ``Purchases/showStoreMessages(forTypes:)``
      */
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -763,7 +763,7 @@ public protocol PurchasesType: AnyObject {
      * - ``Purchases/showStoreMessages()``
      * - ``Purchases/showStoreMessages(forTypes:)``
      */
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -1018,7 +1018,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * - ``Purchases/showStoreMessages()``
      * - ``Purchases/showStoreMessages(forRawValues:)``
      */
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

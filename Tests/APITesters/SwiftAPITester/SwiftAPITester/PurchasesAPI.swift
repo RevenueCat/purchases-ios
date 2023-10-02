@@ -188,7 +188,7 @@ private func checkPurchasesSupportAPI(purchases: Purchases) {
     }
     #endif
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
-    if #available(iOS 16.4, *) {
+    if #available(iOS 16.0, *) {
         Task {
             await purchases.showStoreMessages()
             await purchases.showStoreMessages(forRawValues: [NSNumber(value: StoreMessageType.billingIssue.rawValue)])
@@ -285,7 +285,7 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     }
     #endif
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
-    if #available(iOS 16.4, *) {
+    if #available(iOS 16.0, *) {
         let rawValues: Set<NSNumber> = [NSNumber(value: StoreMessageType.generic.rawValue)]
         purchases.showStoreMessages { }
         purchases.showStoreMessages(forTypes: [StoreMessageType.generic]) { }

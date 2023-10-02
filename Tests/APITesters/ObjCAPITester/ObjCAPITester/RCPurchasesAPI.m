@@ -199,7 +199,7 @@ NSSet<NSNumber *> *mesageTypeRawValues;
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
-    if (@available(iOS 16.4, *)) {
+    if (@available(iOS 16.0, *)) {
         [p showStoreMessagesWithCompletionHandler:^{ }];
         [p showStoreMessagesForRawValues:mesageTypeRawValues completionHandler:^{ }];
     }

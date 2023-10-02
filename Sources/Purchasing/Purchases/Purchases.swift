@@ -254,7 +254,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
-    private let storeMessagesHelper: StoreMessagesHelper
+    private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
 
     // swiftlint:disable:next function_body_length
@@ -397,8 +397,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
 
-        let storeMessagesHelper = StoreMessagesHelper(systemInfo: systemInfo,
+        let storeMessagesHelper: StoreMessagesHelperType?
+
+        #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+        if #available(iOS 16.0, *) {
+            storeMessagesHelper = StoreMessagesHelper(systemInfo: systemInfo,
                                                       showStoreMessagesAutomatically: showStoreMessagesAutomatically)
+        } else {
+            storeMessagesHelper = nil
+        }
+        #else
+        storeMessagesHelper = nil
+        #endif
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -517,7 +527,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
-         storeMessagesHelper: StoreMessagesHelper
+         storeMessagesHelper: StoreMessagesHelperType?
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -1064,31 +1074,31 @@ public extension Purchases {
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages() async {
-        await self.storeMessagesHelper.showStoreMessages(types: Set(StoreMessageType.allCases))
+        await self.storeMessagesHelper?.showStoreMessages(types: Set(StoreMessageType.allCases))
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async {
-        let storeMessageTypes = rawValues.map({ number in
-            StoreMessageType(rawValue: number.intValue) ?? StoreMessageType.billingIssue
-        })
-        await self.storeMessagesHelper.showStoreMessages(types: Set(storeMessageTypes))
+        let storeMessageTypes = rawValues.compactMap { number in
+            StoreMessageType(rawValue: number.intValue)
+        }
+        await self.storeMessagesHelper?.showStoreMessages(types: Set(storeMessageTypes))
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages(forTypes types: Set<StoreMessageType>) async {
-        await self.storeMessagesHelper.showStoreMessages(types: types)
+        await self.storeMessagesHelper?.showStoreMessages(types: types)
     }
 
 #endif

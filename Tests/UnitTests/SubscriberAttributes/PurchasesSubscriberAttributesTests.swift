@@ -148,8 +148,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                                          customerInfoManager: customerInfoManager,
                                                                          currentUserProvider: mockIdentityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
-        self.mockStoreMessagesHelper = MockStoreMessagesHelper(systemInfo: self.systemInfo,
-                                                               showStoreMessagesAutomatically: true)
+        self.mockStoreMessagesHelper = .init()
     }
 
     override func tearDown() {

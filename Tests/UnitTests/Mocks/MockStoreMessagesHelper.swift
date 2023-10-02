@@ -13,18 +13,18 @@
 
 import Foundation
 
-class MockStoreMessagesHelper: StoreMessagesHelper {
+class MockStoreMessagesHelper: StoreMessagesHelperType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     var deferMessagesIfNeededCalled = false
     var deferMessagesIfNeededCallCount = 0
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func deferMessagesIfNeeded() async {
+    func deferMessagesIfNeeded() {
         self.deferMessagesIfNeededCalled = true
         self.deferMessagesIfNeededCallCount += 1
     }
@@ -32,11 +32,11 @@ class MockStoreMessagesHelper: StoreMessagesHelper {
     var showStoreMessageCalled = false
     var showStoreMessageCallCount = 0
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    override func showStoreMessages(types: Set<StoreMessageType>) {
+    func showStoreMessages(types: Set<StoreMessageType>) {
         self.showStoreMessageCalled = true
         self.showStoreMessageCallCount += 1
     }

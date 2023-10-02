@@ -451,17 +451,17 @@ extension MockPurchases: PurchasesSwiftType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     func showStoreMessages() async {
         self.unimplemented()
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async {
         self.unimplemented()
     }
 
-    @available(iOS 16.4, *)
+    @available(iOS 16.0, *)
     func showStoreMessages(forTypes types: Set<StoreMessageType>) async {
         self.unimplemented()
     }

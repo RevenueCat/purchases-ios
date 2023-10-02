@@ -67,7 +67,7 @@ final class PurchasesOrchestrator {
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
-    private let storeMessagesHelper: StoreMessagesHelper
+    private let storeMessagesHelper: StoreMessagesHelperType?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -106,7 +106,7 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
-                     storeMessagesHelper: StoreMessagesHelper
+                     storeMessagesHelper: StoreMessagesHelperType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -136,20 +136,21 @@ final class PurchasesOrchestrator {
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
 
-        Task {
-            #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
-            #if swift(>=5.8)
-            if #available(iOS 16.4, *) {
+        #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+        if #available(iOS 16.0, *), let helper = storeMessagesHelper {
+            Task {
                 do {
-                    try await storeMessagesHelper.deferMessagesIfNeeded()
+                    try await helper.deferMessagesIfNeeded()
                 } catch {
-                    Logger.error(Strings.configure.could_not_defer_store_messages(errorMessage:
-                                                                                    error.localizedDescription))
+                    Logger.error(Strings.configure.could_not_defer_store_messages(
+                        errorMessage: error.localizedDescription
+                    ))
                 }
             }
-            #endif
-            #endif
+        }
+        #endif
 
+        Task {
             await storeKit2TransactionListener.set(delegate: self)
             if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
                 await storeKit2TransactionListener.listenForTransactions()
@@ -173,7 +174,7 @@ final class PurchasesOrchestrator {
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
          beginRefundRequestHelper: BeginRefundRequestHelper,
-         storeMessagesHelper: StoreMessagesHelper
+         storeMessagesHelper: StoreMessagesHelperType?
     ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper

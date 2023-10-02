@@ -112,8 +112,7 @@ class BasePurchasesTests: TestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
-        self.mockStoreMessagesHelper = MockStoreMessagesHelper(systemInfo: self.systemInfo,
-                                                               showStoreMessagesAutomatically: true)
+        self.mockStoreMessagesHelper = .init()
 
         self.addTeardownBlock {
             weak var purchases = self.purchases

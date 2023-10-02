@@ -13,25 +13,32 @@
 
 import StoreKit
 
-class StoreMessagesHelper {
+protocol StoreMessagesHelperType {
+
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+
+    @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
+    func deferMessagesIfNeeded() async throws
+
+    @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
+    func showStoreMessages(types: Set<StoreMessageType>) async
+
+    #endif
+
+}
+
+@available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
+actor StoreMessagesHelper: StoreMessagesHelperType {
 
     private let systemInfo: SystemInfo
     private let showStoreMessagesAutomatically: Bool
-    private let storeMessagesProvider: StoreMessagesProvider
+    private let storeMessagesProvider: StoreMessagesProviderType
 
     private var deferredMessages: [StoreMessage] = []
 
     init(systemInfo: SystemInfo,
-         showStoreMessagesAutomatically: Bool) {
-        self.systemInfo = systemInfo
-        self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
-        self.storeMessagesProvider = StoreMessagesProviderWrapper()
-    }
-
-    @available(iOS 16.0, *)
-    init(systemInfo: SystemInfo,
          showStoreMessagesAutomatically: Bool,
-         storeMessagesProvider: StoreMessagesProvider = StoreMessagesProviderWrapper()) {
+         storeMessagesProvider: StoreMessagesProviderType = StoreMessagesProvider()) {
         self.systemInfo = systemInfo
         self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
         self.storeMessagesProvider = storeMessagesProvider
@@ -39,45 +46,24 @@ class StoreMessagesHelper {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.4, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     func deferMessagesIfNeeded() async throws {
         guard !self.showStoreMessagesAutomatically else {
             return
         }
-        // Compilation fails in older xcode versions with a similar issue to https://github.com/apple/swift/issues/57379
-        #if swift(>=5.8)
-        Task(priority: .medium) { [weak self] in
-            guard let storeMessagesProvider = self?.storeMessagesProvider else {
-                return
-            }
-            for try await message in storeMessagesProvider.messages {
-                await MainActor.run { [weak self] in
-                    self?.deferredMessages.append(message)
-                }
-            }
+
+        for try await message in self.storeMessagesProvider.messages {
+            self.deferredMessages.append(message)
         }
-        #else
-        Logger.error("Defer messages are not enabled when compiling using Xcode <14.2")
-        #endif
     }
 
-    @available(iOS 16.4, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @MainActor
-    func showStoreMessages(types: Set<StoreMessageType>) {
+    func showStoreMessages(types: Set<StoreMessageType>) async {
         for message in self.deferredMessages {
-            if let messageType = message.reason.messageType,
-               types.contains(messageType) {
-                    do {
-                        try message.display(in: self.systemInfo.currentWindowScene)
-                    } catch {
-                        Logger.error("Error displaying StoreKit message: \(error)")
-                    }
+            if let messageType = message.reason.messageType, types.contains(messageType) {
+                do {
+                    try await message.display(in: self.systemInfo.currentWindowScene)
+                } catch {
+                    Logger.error("Error displaying StoreKit message: \(error)")
+                }
             }
         }
     }
@@ -85,110 +71,50 @@ class StoreMessagesHelper {
     #endif
 }
 
-// @unchecked because:
-// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
-// - It has mutable `_deferredMessages` which is necessary due to the availability annotations.
-extension StoreMessagesHelper: @unchecked Sendable {}
+@available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
+extension StoreMessagesHelper: Sendable {}
 
-protocol StoreMessagesProvider {
+protocol StoreMessagesProviderType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    var messages: any StoreMessageAsyncSequence { get }
+    var messages: AsyncStream<StoreMessage> { get }
 
     #endif
 }
 
+/// Abstraction over `StoreKit.Message`.
 protocol StoreMessage: Sendable {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     var reason: Message.Reason { get }
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    @MainActor func display(in scene: UIWindowScene) throws
+    @MainActor
+    func display(in scene: UIWindowScene) throws
 
     #endif
 }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-@available(iOS 13.0, *)
-@rethrows protocol StoreMessageAsyncIteratorProtocol: AsyncIteratorProtocol where Element == StoreMessage { }
-
-@available(iOS 13.0, *)
-@rethrows protocol StoreMessageAsyncSequence: AsyncSequence where AsyncIterator: StoreMessageAsyncIteratorProtocol { }
-
 @available(iOS 16.0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-private final class StoreMessageWrapper: StoreMessage {
-
-    private let message: Message
-
-    init(message: Message) {
-        self.message = message
-    }
-
-    var reason: Message.Reason {
-        return self.message.reason
-    }
-
-    func display(in scene: UIWindowScene) throws {
-        try self.message.display(in: scene)
-    }
-}
-
-@available(iOS 16.0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-private struct StoreMessageSequence: StoreMessageAsyncSequence {
-
-    struct AsyncIterator: StoreMessageAsyncIteratorProtocol {
-
-        var iterator: StoreKit.Message.Messages.AsyncIterator
-
-        mutating func next() async -> StoreMessage? {
-            await iterator.next().map {
-                StoreMessageWrapper(message: $0)
-            }
-        }
-
-    }
-
-    let underlyingSequence: Message.Messages
-
-    func makeAsyncIterator() -> AsyncIterator {
-        AsyncIterator(iterator: underlyingSequence.makeAsyncIterator())
-    }
-
-}
+extension StoreKit.Message: StoreMessage {}
 
 #endif
 
-private final class StoreMessagesProviderWrapper: StoreMessagesProvider {
+private final class StoreMessagesProvider: StoreMessagesProviderType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    var messages: any StoreMessageAsyncSequence {
-        return StoreMessageSequence(underlyingSequence: Message.messages)
+    var messages: AsyncStream<StoreMessage> {
+        return Message.messages
+            .map { $0 as StoreMessage }
+            .toAsyncStream()
     }
 
     #endif
