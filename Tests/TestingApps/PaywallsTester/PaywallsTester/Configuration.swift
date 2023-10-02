@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-class Configuration: ObservableObject {
+final class Configuration: ObservableObject {
     static let shared = Configuration()
 
     // This is modified by CI:
@@ -21,22 +21,22 @@ class Configuration: ObservableObject {
 
     #warning("Configure API key if you want to test paywalls from your dashboard")
     // Note: you can leave this empty to use the production server, or point to your own instance.
-    private let proxyURL = ""
-    private let apiKey = ""
+    private static let proxyURL = ""
+    private static let apiKey = ""
 
     enum Mode {
         case custom, testing, demos
     }
 
     private init() {
-        currentMode = apiKey.isEmpty ? .testing : .custom
+        self.currentMode = Self.apiKey.isEmpty ? .testing : .custom
     }
 
 
     var currentAPIKey: String {
         switch currentMode {
         case .custom:
-            self.apiKey
+            Self.apiKey
         case .testing:
             Self.apiKeyFromCIForTesting
         case .demos:
@@ -55,9 +55,9 @@ class Configuration: ObservableObject {
 
     func configure() {
         Purchases.logLevel = .verbose
-        Purchases.proxyURL = self.proxyURL.isEmpty
+        Purchases.proxyURL = Self.proxyURL.isEmpty
         ? nil
-        : URL(string: self.proxyURL)!
+        : URL(string: Self.proxyURL)!
 
         Purchases.configure(
             with: .init(withAPIKey: currentAPIKey)
