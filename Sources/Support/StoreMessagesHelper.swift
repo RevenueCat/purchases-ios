@@ -47,6 +47,8 @@ class StoreMessagesHelper {
         guard !self.showStoreMessagesAutomatically else {
             return
         }
+        // Compilation fails in older xcode versions with a similar issue to https://github.com/apple/swift/issues/57379
+        #if swift(>=5.8)
         Task(priority: .medium) { [weak self] in
             guard let storeMessagesProvider = self?.storeMessagesProvider else {
                 return
@@ -57,6 +59,9 @@ class StoreMessagesHelper {
                 }
             }
         }
+        #else
+        Logger.error("Defer messages are not enabled when compiling using Xcode <14.2")
+        #endif
     }
 
     @available(iOS 16.4, *)

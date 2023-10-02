@@ -19,6 +19,7 @@ import XCTest
 
 @testable import RevenueCat
 
+#if swift(>=5.8)
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 15.0, *)
@@ -163,4 +164,5 @@ private final class MockStoreMessagesProvider: StoreMessagesProvider {
     }
 }
 
+#endif
 #endif
