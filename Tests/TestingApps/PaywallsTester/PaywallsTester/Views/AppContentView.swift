@@ -177,8 +177,8 @@ private struct ProminentButton: View {
     var background: Color = .accentColor
 
     var body: some View {
-        Button(action: action) {
-            Text(title)
+        Button(action: self.action) {
+            Text(self.title)
                 .bold()
                 .padding()
                 .frame(maxWidth: .infinity)
@@ -190,6 +190,7 @@ private struct ProminentButton: View {
 }
 
 private struct ConfigurationButton: View {
+
     var title: String
     var mode: Configuration.Mode
     @ObservedObject var configuration: Configuration
@@ -203,6 +204,7 @@ private struct ConfigurationButton: View {
         )
         .disabled(self.configuration.currentMode == mode)
     }
+
 }
 
 extension CustomerInfo {
