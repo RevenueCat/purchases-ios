@@ -23,7 +23,6 @@ struct AppContentView: View {
     @State
     private var customerInfoTask: Task<(), Never>? = nil
 
-
     var body: some View {
         TabView {
             if Purchases.isConfigured {
