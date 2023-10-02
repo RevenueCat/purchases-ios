@@ -28,9 +28,6 @@ protocol StoreMessagesHelperType {
 }
 
 @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 actor StoreMessagesHelper: StoreMessagesHelperType {
 
     private let systemInfo: SystemInfo
@@ -75,9 +72,6 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
 }
 
 @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
 extension StoreMessagesHelper: Sendable {}
 
 protocol StoreMessagesProviderType {
