@@ -8,7 +8,6 @@
 import Foundation
 import RevenueCat
 
-
 internal extension PaywallViewMode {
 
     var icon: String {
