@@ -17,10 +17,10 @@ protocol StoreMessagesHelperType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    @available(iOS 16.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
     func deferMessagesIfNeeded() async throws
 
-    @available(iOS 16.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 12.0, watchOS 8.0, *)
     func showStoreMessages(types: Set<StoreMessageType>) async
 
     #endif
