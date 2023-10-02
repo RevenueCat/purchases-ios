@@ -58,6 +58,7 @@ struct LoadingPaywallView: View {
 
     private static let paywall: PaywallData = {
         var paywall: PaywallData = Self.defaultPaywall
+        // Hide background so it doesn't get shimmer
         paywall.config.images.background = nil
 
         return paywall
