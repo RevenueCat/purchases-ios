@@ -254,7 +254,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
-    private let storeMessagesHelper: StoreMessagesHelper
+    private let storeMessagesHelper: StoreMessagesHelperType
     private var customerInfoObservationDisposable: (() -> Void)?
 
     // swiftlint:disable:next function_body_length
@@ -517,7 +517,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
          trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
-         storeMessagesHelper: StoreMessagesHelper
+         storeMessagesHelper: StoreMessagesHelperType
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {

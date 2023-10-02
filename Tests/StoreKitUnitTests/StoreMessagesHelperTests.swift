@@ -19,7 +19,6 @@ import XCTest
 
 @testable import RevenueCat
 
-#if swift(>=5.8)
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
 @available(iOS 15.0, *)
@@ -104,20 +103,14 @@ class StoreMessagesHelperTests: TestCase {
 
     @available(iOS 16.4, *)
     private func waitForDeferredMessages(messages: [StoreMessage]) async throws {
+        self.storeMessagesProvider.stubbedMessages = messages
+
         try await self.helper.deferMessagesIfNeeded()
-
-        try await Task.sleep(nanoseconds: DispatchTimeInterval.milliseconds(50).nanoseconds)
-
-        for message in messages {
-            self.storeMessagesProvider.updatesPublisher.send(message)
-
-            try await Task.sleep(nanoseconds: DispatchTimeInterval.milliseconds(50).nanoseconds)
-        }
     }
 }
 
 @available(iOS 16.0, *)
-private final class MockStoreMessage: @unchecked Sendable, StoreMessage {
+private final class MockStoreMessage: StoreMessage {
 
     let reason: Message.Reason
 
@@ -125,44 +118,32 @@ private final class MockStoreMessage: @unchecked Sendable, StoreMessage {
         self.reason = reason
     }
 
-    var displayCalled = false
-    var displayCallCount = 0
+    private let _displayCalled: Atomic<Bool> = false
+    private let _displayCallCount: Atomic<Int> = .init(0)
 
-    @MainActor func display(in scene: UIWindowScene) throws {
-        self.displayCalled = true
-        self.displayCallCount += 1
-    }
-}
+    var displayCalled: Bool { return self._displayCalled.value }
+    var displayCallCount: Int { return self._displayCallCount.value }
 
-@available(iOS 15.0, *)
-extension AsyncPublisher<PassthroughSubject<StoreMessage, Never>>.Iterator: StoreMessageAsyncIteratorProtocol {}
-
-@available(iOS 15.0, *)
-private struct MockStoreMessagesAsyncSequence: StoreMessageAsyncSequence {
-
-    let publisher: PassthroughSubject<StoreMessage, Never>
-
-    typealias AsyncIterator = AsyncPublisher<PassthroughSubject<StoreMessage, Never>>.Iterator
-
-    func makeAsyncIterator() -> AsyncIterator {
-        self.publisher.values.makeAsyncIterator()
+    @MainActor
+    func display(in scene: UIWindowScene) throws {
+        self._displayCalled.value = true
+        self._displayCallCount.modify { $0 += 1 }
     }
 
 }
 
 @available(iOS 15.0, *)
-private final class MockStoreMessagesProvider: StoreMessagesProvider {
+private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
-    let updatesPublisher = PassthroughSubject<StoreMessage, Never>()
+    var stubbedMessages: [StoreMessage] = []
 
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    var messages: any StoreMessageAsyncSequence {
-        MockStoreMessagesAsyncSequence(publisher: self.updatesPublisher)
+    var messages: AsyncStream<StoreMessage> {
+        MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()
     }
 }
 
-#endif
 #endif

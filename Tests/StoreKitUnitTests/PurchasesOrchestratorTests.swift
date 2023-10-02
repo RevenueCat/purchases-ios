@@ -93,8 +93,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
 
-        self.mockStoreMessagesHelper = MockStoreMessagesHelper(systemInfo: self.systemInfo,
-                                                               showStoreMessagesAutomatically: true)
+        self.mockStoreMessagesHelper = .init()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
