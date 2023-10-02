@@ -13,7 +13,7 @@ final class Configuration: ObservableObject {
 
     @Published private(set) var currentMode: Mode
 
-    let entitlement = "pro"
+    static let entitlement = "pro"
 
     enum Mode {
         case custom, testing, demos

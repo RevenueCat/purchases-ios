@@ -142,7 +142,7 @@ struct AppContentView: View {
     }
 
     private func reconfigure(for mode: Configuration.Mode) {
-        configuration.reconfigure(for: mode)
+        self.configuration.reconfigure(for: mode)
         self.observeCustomerInfoStream()
     }
 
@@ -152,14 +152,13 @@ struct AppContentView: View {
             if Purchases.isConfigured {
                 for await info in Purchases.shared.customerInfoStream {
                     self.customerInfo = info
-                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.count == 0
+                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.isEmpty
                 }
             }
         }
     }
 
     private func descriptionForCurrentMode() -> String {
-
         switch self.configuration.currentMode {
         case .custom:
             return "the API set locally in Configuration.swift"
@@ -198,18 +197,18 @@ private struct ConfigurationButton: View {
 
     var body: some View {
         ProminentButton(
-            title: title,
-            action: action,
-            background: configuration.currentMode == mode ? Color.gray : Color.accentColor
+            title: self.title,
+            action: self.action,
+            background: self.configuration.currentMode == mode ? Color.gray : Color.accentColor
         )
-        .disabled(configuration.currentMode == mode)
+        .disabled(self.configuration.currentMode == mode)
     }
 }
 
 extension CustomerInfo {
 
     var hasPro: Bool {
-        return self.entitlements.active.contains { $1.identifier == Configuration.shared.entitlement }
+        return self.entitlements.active.contains { $1.identifier == Configuration.entitlement }
     }
 
 }
