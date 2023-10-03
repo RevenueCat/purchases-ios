@@ -1078,26 +1078,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages() async {
-        await self.storeMessagesHelper?.showStoreMessages(types: Set(StoreMessageType.allCases))
-    }
-
-    @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func showStoreMessages(for rawValues: Set<NSNumber>) async {
-        let storeMessageTypes = rawValues.compactMap { number in
-            StoreMessageType(rawValue: number.intValue)
-        }
-        await self.storeMessagesHelper?.showStoreMessages(types: Set(storeMessageTypes))
-    }
-
-    @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func showStoreMessages(for types: Set<StoreMessageType>) async {
+    func showStoreMessages(for types: Set<StoreMessageType> = Set(StoreMessageType.allCases)) async {
         await self.storeMessagesHelper?.showStoreMessages(types: types)
     }
 

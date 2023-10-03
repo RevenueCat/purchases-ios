@@ -28,7 +28,6 @@ BOOL finishTransactions;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
-NSSet<NSNumber *> *mesageTypeRawValues;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -199,11 +198,6 @@ NSSet<NSNumber *> *mesageTypeRawValues;
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
-    if (@available(iOS 16.0, *)) {
-        [p showStoreMessagesWithCompletionHandler:^{ }];
-        [p showStoreMessagesFor:mesageTypeRawValues completionHandler:^{ }];
-    }
-
     if (@available(iOS 14.0, *)) {
         [p presentCodeRedemptionSheet];
     }
