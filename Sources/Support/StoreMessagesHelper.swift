@@ -66,6 +66,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
                 }
             }
         }
+        self.deferredMessages.removeAll()
     }
 
     #endif

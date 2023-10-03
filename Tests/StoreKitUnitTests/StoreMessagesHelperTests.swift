@@ -88,6 +88,21 @@ class StoreMessagesHelperTests: TestCase {
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
     }
 
+    func testShowMessagesAfterShowMessagesDoesNotCallDisplayMultipleTimes() async throws {
+        self.createHelper(showStoreMessagesAutomatically: false)
+
+        let message1 = MockStoreMessage(reason: .generic)
+        let message2 = MockStoreMessage(reason: .priceIncreaseConsent)
+
+        try await self.waitForDeferredMessages(messages: [message1, message2])
+
+        await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
+        await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
+
+        expect(message1.displayCallCount) == 1
+        expect(message2.displayCallCount) == 1
+    }
+
 }
 
 @available(iOS 16.0, *)
