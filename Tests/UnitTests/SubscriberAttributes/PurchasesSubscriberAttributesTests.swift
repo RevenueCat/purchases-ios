@@ -609,8 +609,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         Purchases.shared.attribution.setOnesignalUserID("123abc")
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParameters?.onesignalUserID) == "123abc"
-        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParameters?.appUserID) == mockIdentityManager
-            .currentAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParameters?.appUserID) ==
+            mockIdentityManager.currentAppUserID
     }
 
     func testSetAirshipChannelIDMakesRightCalls() {
