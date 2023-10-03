@@ -457,12 +457,12 @@ extension MockPurchases: PurchasesSwiftType {
     }
 
     @available(iOS 16.0, *)
-    func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async {
+    func showStoreMessages(for rawValues: Set<NSNumber>) async {
         self.unimplemented()
     }
 
     @available(iOS 16.0, *)
-    func showStoreMessages(forTypes types: Set<StoreMessageType>) async {
+    func showStoreMessages(for types: Set<StoreMessageType>) async {
         self.unimplemented()
     }
 

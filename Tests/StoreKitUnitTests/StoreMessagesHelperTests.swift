@@ -88,6 +88,11 @@ class StoreMessagesHelperTests: TestCase {
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
     }
 
+}
+
+@available(iOS 16.0, *)
+private extension StoreMessagesHelperTests {
+
     private func createHelper(showStoreMessagesAutomatically: Bool) {
         self.helper = StoreMessagesHelper(systemInfo: self.systemInfo,
                                           showStoreMessagesAutomatically: showStoreMessagesAutomatically,

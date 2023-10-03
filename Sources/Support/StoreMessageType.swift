@@ -13,10 +13,10 @@
 
 import StoreKit
 
-/// Types of messages available in StoreKit
+/// Type of messages available in StoreKit
 ///
 /// #### Related Symbols
-/// - ``Purchases/showStoreMessages(forTypes:)``
+/// - ``Purchases/showStoreMessages(for:)-8kw87``
 @objc(RCStoreMessageType) public enum StoreMessageType: Int, CaseIterable, Sendable {
 
     /// Message shown when there are billing issues in a subscription
@@ -25,11 +25,6 @@ import StoreKit
     case priceIncreaseConsent
     /// Generic Store messages
     case generic
-
-    var numberValue: NSNumber {
-        return NSNumber(value: self.rawValue)
-    }
-
 }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS

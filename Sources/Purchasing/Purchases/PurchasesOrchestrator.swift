@@ -142,9 +142,7 @@ final class PurchasesOrchestrator {
                 do {
                     try await helper.deferMessagesIfNeeded()
                 } catch {
-                    Logger.error(Strings.configure.could_not_defer_store_messages(
-                        errorMessage: error.localizedDescription
-                    ))
+                    Logger.error(Strings.storeKit.could_not_defer_store_messages(error))
                 }
             }
         }

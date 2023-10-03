@@ -62,7 +62,7 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
                 do {
                     try await message.display(in: self.systemInfo.currentWindowScene)
                 } catch {
-                    Logger.error("Error displaying StoreKit message: \(error)")
+                    Logger.error(Strings.storeKit.error_displaying_store_message(error))
                 }
             }
         }

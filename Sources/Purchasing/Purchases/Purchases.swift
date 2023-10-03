@@ -1086,7 +1086,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async {
+    func showStoreMessages(for rawValues: Set<NSNumber>) async {
         let storeMessageTypes = rawValues.compactMap { number in
             StoreMessageType(rawValue: number.intValue)
         }
@@ -1097,7 +1097,7 @@ public extension Purchases {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages(forTypes types: Set<StoreMessageType>) async {
+    func showStoreMessages(for types: Set<StoreMessageType>) async {
         await self.storeMessagesHelper?.showStoreMessages(types: types)
     }
 
@@ -1345,8 +1345,7 @@ public extension Purchases {
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
-                  showStoreMessagesAutomatically: showStoreMessagesAutomatically
-                 )
+                  showStoreMessagesAutomatically: showStoreMessagesAutomatically)
         )
     }
 

@@ -744,8 +744,8 @@ public protocol PurchasesType: AnyObject {
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      *
      * ### Related Symbols
-     * - ``Purchases/showStoreMessages(forRawValues:)``
-     * - ``Purchases/showStoreMessages(forTypes:)``
+     * - ``Purchases/showStoreMessages(for:)-8kw87``
+     * - ``Purchases/showStoreMessages(for:)-79d0o``
      */
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
@@ -761,13 +761,13 @@ public protocol PurchasesType: AnyObject {
      *
      * ### Related Symbols
      * - ``Purchases/showStoreMessages()``
-     * - ``Purchases/showStoreMessages(forTypes:)``
+     * - ``Purchases/showStoreMessages(for:)-8kw87``
      */
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages(forRawValues rawValues: Set<NSNumber>) async
+    func showStoreMessages(for rawValues: Set<NSNumber>) async
 
     #endif
 
@@ -1016,13 +1016,13 @@ public protocol PurchasesSwiftType: AnyObject {
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      * ### Related Symbols
      * - ``Purchases/showStoreMessages()``
-     * - ``Purchases/showStoreMessages(forRawValues:)``
+     * - ``Purchases/showStoreMessages(for:)-79d0o``
      */
     @available(iOS 16.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showStoreMessages(forTypes types: Set<StoreMessageType>) async
+    func showStoreMessages(for types: Set<StoreMessageType>) async
 
     #endif
 

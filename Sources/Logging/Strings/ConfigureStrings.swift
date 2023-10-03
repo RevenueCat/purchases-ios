@@ -75,8 +75,6 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
-    case could_not_defer_store_messages(errorMessage: String)
-
 }
 
 extension ConfigureStrings: LogMessage {
@@ -189,9 +187,6 @@ extension ConfigureStrings: LogMessage {
             return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
             "transactions coming from SwiftUI paywalls. You must use `.with(usesStoreKit2IfAvailable: true)` " +
             "when configuring the SDK."
-
-        case let .could_not_defer_store_messages(errorMessage):
-            return "Tried to defer store messages but an error occured: '\(errorMessage)'."
         }
     }
 

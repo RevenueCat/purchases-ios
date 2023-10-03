@@ -81,11 +81,11 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages(
-        forTypes types: Set<StoreMessageType>,
+        for types: Set<StoreMessageType>,
         completion: @escaping () -> Void
     ) {
         _ = Task<Void, Never> {
-            await self.showStoreMessages(forTypes: types)
+            await self.showStoreMessages(for: types)
             completion()
         }
     }
@@ -95,11 +95,11 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func showStoreMessages(
-        forRawValues rawValues: Set<NSNumber>,
+        for rawValues: Set<NSNumber>,
         completion: @escaping () -> Void
     ) {
         _ = Task<Void, Never> {
-            await self.showStoreMessages(forRawValues: rawValues)
+            await self.showStoreMessages(for: rawValues)
             completion()
         }
     }
