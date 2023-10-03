@@ -37,7 +37,7 @@ class StoreMessagesTypeTests: TestCase {
         expect(Message.Reason.priceIncreaseConsent.messageType) == .priceIncreaseConsent
         expect(Message.Reason.generic.messageType) == .generic
     }
-    
+
 }
 
 #endif
