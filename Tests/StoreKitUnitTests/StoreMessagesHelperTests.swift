@@ -38,7 +38,7 @@ class StoreMessagesHelperTests: TestCase {
         self.storeMessagesProvider = MockStoreMessagesProvider()
     }
 
-    func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsAllDeferredMessages() async throws {
+    func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsFirstDeferredMessage() async throws {
         self.createHelper(showStoreMessagesAutomatically: false)
 
         let message1 = MockStoreMessage(reason: .generic)
@@ -49,7 +49,7 @@ class StoreMessagesHelperTests: TestCase {
         await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
 
         expect(message1.displayCalled) == true
-        expect(message2.displayCalled) == true
+        expect(message2.displayCalled) == false
     }
 
     func testShowMessagesAfterDeferMessagesAndNotShowingMessagesAutomaticallyShowsSpecifiedMessages() async throws {
@@ -60,10 +60,10 @@ class StoreMessagesHelperTests: TestCase {
 
         try await self.waitForDeferredMessages(messages: [message1, message2])
 
-        await self.helper.showStoreMessages(types: [.generic])
+        await self.helper.showStoreMessages(types: [.priceIncreaseConsent])
 
-        expect(message1.displayCalled) == true
-        expect(message2.displayCalled) == false
+        expect(message1.displayCalled) == false
+        expect(message2.displayCalled) == true
     }
 
     func testShowMessagesAfterDeferMessagesAndShowingMessagesAutomaticallyDoesNotShowMessages() async throws {

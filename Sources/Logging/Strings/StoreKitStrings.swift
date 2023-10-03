@@ -69,6 +69,7 @@ enum StoreKitStrings {
 
     case error_displaying_store_message(Error)
 
+    case no_store_messages_found
 }
 
 extension StoreKitStrings: LogMessage {
@@ -160,6 +161,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .error_displaying_store_message(error):
             return "Error displaying StoreKit message: '\(error)'"
+
+        case .no_store_messages_found:
+            return "No store messages with specified types found"
         }
     }
 
