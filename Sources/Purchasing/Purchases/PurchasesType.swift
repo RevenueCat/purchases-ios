@@ -739,7 +739,7 @@ public protocol PurchasesType: AnyObject {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     /**
-     * Displays first store in-app message type to the user if there are any available to be shown.
+     * Displays all store in-app message types to the user if there are any available to be shown.
      * - Important: This should only be used if you disabled these messages from showing automatically
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      *
@@ -754,7 +754,7 @@ public protocol PurchasesType: AnyObject {
     func showStoreMessages() async
 
     /**
-     * Displays the first specified store in-app message type as raw values to the user if there are any
+     * Displays the specified store in-app message types as raw values to the user if there are any
      * available to be shown. Obj-C compatible version of this method.
      * - Important: This should only be used if you disabled these messages from showing automatically
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
@@ -1011,7 +1011,7 @@ public protocol PurchasesSwiftType: AnyObject {
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
     /**
-     * Displays the first specified store in-app message type to the user if there are any available to be shown.
+     * Displays the specified store in-app message types to the user if there are any available to be shown.
      * - Important: This should only be used if you disabled these messages from showing automatically
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      * ### Related Symbols

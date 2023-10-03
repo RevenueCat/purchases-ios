@@ -57,25 +57,15 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
     }
 
     func showStoreMessages(types: Set<StoreMessageType>) async {
-        guard let message = self.removeFirstMessage(types: types) else {
-            Logger.debug(Strings.storeKit.no_store_messages_found)
-            return
+        for message in self.deferredMessages {
+            if let messageType = message.reason.messageType, types.contains(messageType) {
+                do {
+                    try await message.display(in: self.systemInfo.currentWindowScene)
+                } catch {
+                    Logger.error(Strings.storeKit.error_displaying_store_message(error))
+                }
+            }
         }
-
-        do {
-            try await message.display(in: self.systemInfo.currentWindowScene)
-        } catch {
-            Logger.error(Strings.storeKit.error_displaying_store_message(error))
-        }
-    }
-
-    private func removeFirstMessage(types: Set<StoreMessageType>) -> StoreMessage? {
-        let messageIndexToDisplay = self.deferredMessages.firstIndex { message in
-            guard let messageType = message.reason.messageType else { return false }
-            return types.contains(messageType)
-        }
-        guard let messageIndexToDisplay else { return nil }
-        return self.deferredMessages.remove(at: messageIndexToDisplay)
     }
 
     #endif
