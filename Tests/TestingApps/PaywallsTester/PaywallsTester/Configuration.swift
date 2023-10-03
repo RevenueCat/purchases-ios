@@ -33,7 +33,12 @@ final class Configuration: ObservableObject {
     private static let apiKeyFromCIForDemos = ""
 
     private init() {
-        self.currentMode = Self.apiKey.isEmpty ? .testing : .custom
+        if Self.apiKey.isEmpty {
+            self.currentMode = Self.apiKeyFromCIForTesting.isEmpty ? .listOnly : .testing
+        } else {
+            self.currentMode = .custom
+        }
+
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Self.proxyURL.isEmpty
         ? nil
