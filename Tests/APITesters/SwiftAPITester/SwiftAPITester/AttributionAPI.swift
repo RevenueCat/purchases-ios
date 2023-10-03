@@ -43,6 +43,9 @@ func checkAttributionAPI() {
     attribution.setOnesignalID("")
     attribution.setOnesignalID(nil)
 
+    attribution.setOnesignalUserID("")
+    attribution.setOnesignalUserID(nil)
+
     attribution.setCleverTapID("")
     attribution.setCleverTapID(nil)
 
