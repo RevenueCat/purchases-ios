@@ -317,7 +317,7 @@ private extension Axis {
 
 // MARK: -
 
-#if swift(>=5.9)
+#if swift(>=5.9) && canImport(UIKit)
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension UnevenRoundedRectangle {
 
