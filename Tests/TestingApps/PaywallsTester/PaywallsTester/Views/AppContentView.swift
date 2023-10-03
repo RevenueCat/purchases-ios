@@ -96,11 +96,11 @@ struct AppContentView: View {
                 .font(.footnote)
 
             ConfigurationButton(title: "Configure for demos", mode: .demos, configuration: configuration) {
-                self.reconfigure(for: .demos)
+                self.configuration.currentMode = .demos
             }
 
             ConfigurationButton(title: "Configure for testing", mode: .testing, configuration: configuration) {
-                self.reconfigure(for: .testing)
+                self.configuration.currentMode = .testing
             }
 
             ProminentButton(title: "Present default paywall") {
@@ -111,9 +111,6 @@ struct AppContentView: View {
         .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
-        .task {
-            self.observeCustomerInfoStream()
-        }
         #if DEBUG
         .overlay {
             if #available(iOS 16.0, macOS 13.0, *) {
@@ -138,16 +135,7 @@ struct AppContentView: View {
                 #endif
             }
         }
-    }
-
-    private func reconfigure(for mode: Configuration.Mode) {
-        self.configuration.reconfigure(for: mode)
-        self.observeCustomerInfoStream()
-    }
-
-    private func observeCustomerInfoStream() {
-        self.customerInfoTask?.cancel()
-        self.customerInfoTask = Task {
+        .task(id: self.configuration.currentMode) {
             if Purchases.isConfigured {
                 for await info in Purchases.shared.customerInfoStream {
                     self.customerInfo = info

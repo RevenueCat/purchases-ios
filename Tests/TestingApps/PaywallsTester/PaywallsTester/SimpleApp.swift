@@ -10,10 +10,6 @@ import SwiftUI
 @main
 struct SimpleApp: App {
 
-    init() {
-        Configuration.shared.configure()
-    }
-
     var body: some Scene {
         WindowGroup {
             AppContentView()

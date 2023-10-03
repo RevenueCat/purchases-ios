@@ -11,11 +11,15 @@ import RevenueCat
 final class Configuration: ObservableObject {
     static let shared = Configuration()
 
-    @Published private(set) var currentMode: Mode
+    @Published var currentMode: Mode {
+        didSet {
+            configure()
+        }
+    }
 
     static let entitlement = "pro"
 
-    enum Mode {
+    enum Mode: Equatable {
         case custom, testing, demos, listOnly
     }
 
@@ -30,6 +34,12 @@ final class Configuration: ObservableObject {
 
     private init() {
         self.currentMode = Self.apiKey.isEmpty ? .testing : .custom
+        Purchases.logLevel = .verbose
+        Purchases.proxyURL = Self.proxyURL.isEmpty
+        ? nil
+        : URL(string: Self.proxyURL)!
+
+        self.configure()
     }
 
     var currentAPIKey: String? {
@@ -45,20 +55,7 @@ final class Configuration: ObservableObject {
         }
     }
 
-    func reconfigure(for mode: Mode) {
-        self.currentMode = mode
-        self.configureRCSDK()
-    }
-
-    func configure() {
-        Purchases.logLevel = .verbose
-        Purchases.proxyURL = Self.proxyURL.isEmpty
-        ? nil
-        : URL(string: Self.proxyURL)!
-        self.configureRCSDK()
-    }
-
-    private func configureRCSDK() {
+    private func configure() {
         guard let currentAPIKey = self.currentAPIKey,
               !currentAPIKey.isEmpty else {
             return
