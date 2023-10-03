@@ -11,6 +11,7 @@
 		1E473B662AC42D34008B07F9 /* StoreMessagesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */; };
 		1E473B682AC43254008B07F9 /* StoreMessageType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B672AC43254008B07F9 /* StoreMessageType.swift */; };
 		1E473B6A2AC46908008B07F9 /* MockStoreMessagesHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E473B692AC46908008B07F9 /* MockStoreMessagesHelper.swift */; };
+		1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */; };
 		1E99F81F2AC5917F0023E26E /* StoreMessagesHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2CB8CF9327BF538F00C34DE3 /* PlatformInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */; };
@@ -812,6 +813,7 @@
 		1E473B652AC42D34008B07F9 /* StoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelper.swift; sourceTree = "<group>"; };
 		1E473B672AC43254008B07F9 /* StoreMessageType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessageType.swift; sourceTree = "<group>"; };
 		1E473B692AC46908008B07F9 /* MockStoreMessagesHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreMessagesHelper.swift; sourceTree = "<group>"; };
+		1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessageTypeTests.swift; sourceTree = "<group>"; };
 		1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMessagesHelperTests.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-Snapshots.xctestplan"; sourceTree = "<group>"; };
@@ -1671,6 +1673,7 @@
 				F5355162286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift */,
 				57CD86E5291C344000768DE1 /* UserDefaultsDefaultTests.swift */,
 				1E99F81D2AC5917F0023E26E /* StoreMessagesHelperTests.swift */,
+				1E568B502ACC6A8300D3C12F /* StoreMessageTypeTests.swift */,
 			);
 			path = StoreKitUnitTests;
 			sourceTree = "<group>";
@@ -3275,6 +3278,7 @@
 				2D90F8C126FD20F2009B9142 /* MockHTTPClient.swift in Sources */,
 				4F9BB6402A7AFB72001C120D /* MockPayment.swift in Sources */,
 				57DDA7B429CBEFB30098B89D /* MockPurchasedProductsFetcher.swift in Sources */,
+				1E568B512ACC6A8300D3C12F /* StoreMessageTypeTests.swift in Sources */,
 				57E6195028D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift in Sources */,
 				F5847431278D00C1001B1CE6 /* MockDNSChecker.swift in Sources */,
 				5799708B2936CE5700FF3573 /* LoggerTests.swift in Sources */,

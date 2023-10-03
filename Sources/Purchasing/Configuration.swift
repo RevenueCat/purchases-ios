@@ -184,8 +184,10 @@ import Foundation
         /// If you want to disable this behavior so that you can customize when these messages are shown, make sure
         /// you configure the SDK as early as possible in the app's lifetime, otherwise messages will be displayed
         /// automatically.
-        /// Then use the ``Purchases/showStoreMessages(for:)-8kw87`` method to display the messages.
+        /// Then use the ``Purchases/showStoreMessages(for:)`` method to display the messages.
         /// More information:  https://rev.cat/storekit-message
+        /// - Important: Set this property only if you're using Swift. If you're using ObjC, you won't be able to call
+        /// the related methods
         @objc public func with(showStoreMessagesAutomatically: Bool) -> Builder {
             self.showStoreMessagesAutomatically = showStoreMessagesAutomatically
             return self

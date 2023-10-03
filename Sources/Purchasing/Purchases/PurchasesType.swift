@@ -736,41 +736,6 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
-    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
-
-    /**
-     * Displays all store in-app message types to the user if there are any available to be shown.
-     * - Important: This should only be used if you disabled these messages from showing automatically
-     * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
-     *
-     * ### Related Symbols
-     * - ``Purchases/showStoreMessages(for:)-8kw87``
-     * - ``Purchases/showStoreMessages(for:)-79d0o``
-     */
-    @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func showStoreMessages() async
-
-    /**
-     * Displays the specified store in-app message types as raw values to the user if there are any
-     * available to be shown. Obj-C compatible version of this method.
-     * - Important: This should only be used if you disabled these messages from showing automatically
-     * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
-     *
-     * ### Related Symbols
-     * - ``Purchases/showStoreMessages()``
-     * - ``Purchases/showStoreMessages(for:)-8kw87``
-     */
-    @available(iOS 16.0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
-    func showStoreMessages(for rawValues: Set<NSNumber>) async
-
-    #endif
-
     /**
      * Displays a sheet that enables users to redeem subscription offer codes that you generated in App Store Connect.
      *
@@ -1015,8 +980,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * - Important: This should only be used if you disabled these messages from showing automatically
      * during SDK configuration using ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      * ### Related Symbols
-     * - ``Purchases/showStoreMessages()``
-     * - ``Purchases/showStoreMessages(for:)-79d0o``
+     * - ``Configuration/Builder/with(showStoreMessagesAutomatically:)``
      */
     @available(iOS 16.0, *)
     @available(macOS, unavailable)

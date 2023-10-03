@@ -16,7 +16,7 @@ import StoreKit
 /// Type of messages available in StoreKit
 ///
 /// #### Related Symbols
-/// - ``Purchases/showStoreMessages(for:)-8kw87``
+/// - ``Purchases/showStoreMessages(for:)``
 @objc(RCStoreMessageType) public enum StoreMessageType: Int, CaseIterable, Sendable {
 
     /// Message shown when there are billing issues in a subscription
