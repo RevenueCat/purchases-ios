@@ -121,7 +121,8 @@ public extension Purchases {
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
             networkTimeout: Configuration.networkTimeoutDefault,
-            dangerousSettings: dangerousSettings
+            dangerousSettings: dangerousSettings,
+            showStoreMessagesAutomatically: true
         )
     }
 

@@ -112,6 +112,7 @@ class BasePurchasesTests: TestCase {
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.identityManager)
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: self.mockReceiptParser)
+        self.mockStoreMessagesHelper = .init()
 
         self.addTeardownBlock {
             weak var purchases = self.purchases
@@ -172,6 +173,7 @@ class BasePurchasesTests: TestCase {
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
+    var mockStoreMessagesHelper: MockStoreMessagesHelper!
 
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate: MockPurchasesDelegate!
@@ -244,7 +246,8 @@ class BasePurchasesTests: TestCase {
             deviceCache: self.deviceCache,
             offeringsManager: self.mockOfferingsManager,
             manageSubscriptionsHelper: self.mockManageSubsHelper,
-            beginRefundRequestHelper: self.mockBeginRefundRequestHelper
+            beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+            storeMessagesHelper: self.mockStoreMessagesHelper
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,
@@ -280,7 +283,8 @@ class BasePurchasesTests: TestCase {
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
-                                   trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker)
+                                   trialOrIntroPriceEligibilityChecker: self.cachingTrialOrIntroPriceEligibilityChecker,
+                                   storeMessagesHelper: self.mockStoreMessagesHelper)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

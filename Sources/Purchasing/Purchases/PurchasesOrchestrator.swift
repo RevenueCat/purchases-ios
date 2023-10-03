@@ -67,6 +67,7 @@ final class PurchasesOrchestrator {
     private let offeringsManager: OfferingsManager
     private let manageSubscriptionsHelper: ManageSubscriptionsHelper
     private let beginRefundRequestHelper: BeginRefundRequestHelper
+    private let storeMessagesHelper: StoreMessagesHelperType?
 
     // Can't have these properties with `@available`.
     // swiftlint:disable identifier_name
@@ -104,7 +105,8 @@ final class PurchasesOrchestrator {
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
-                     storeKit2StorefrontListener: StoreKit2StorefrontListener
+                     storeKit2StorefrontListener: StoreKit2StorefrontListener,
+                     storeMessagesHelper: StoreMessagesHelperType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -122,7 +124,8 @@ final class PurchasesOrchestrator {
             deviceCache: deviceCache,
             offeringsManager: offeringsManager,
             manageSubscriptionsHelper: manageSubscriptionsHelper,
-            beginRefundRequestHelper: beginRefundRequestHelper
+            beginRefundRequestHelper: beginRefundRequestHelper,
+            storeMessagesHelper: storeMessagesHelper
         )
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
@@ -132,6 +135,18 @@ final class PurchasesOrchestrator {
         if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
+
+        #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+        if #available(iOS 16.0, *), let helper = storeMessagesHelper {
+            Task {
+                do {
+                    try await helper.deferMessagesIfNeeded()
+                } catch {
+                    Logger.error(Strings.storeKit.could_not_defer_store_messages(error))
+                }
+            }
+        }
+        #endif
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
@@ -156,7 +171,9 @@ final class PurchasesOrchestrator {
          deviceCache: DeviceCache,
          offeringsManager: OfferingsManager,
          manageSubscriptionsHelper: ManageSubscriptionsHelper,
-         beginRefundRequestHelper: BeginRefundRequestHelper) {
+         beginRefundRequestHelper: BeginRefundRequestHelper,
+         storeMessagesHelper: StoreMessagesHelperType?
+    ) {
         self.productsManager = productsManager
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
@@ -173,6 +190,7 @@ final class PurchasesOrchestrator {
         self.offeringsManager = offeringsManager
         self.manageSubscriptionsHelper = manageSubscriptionsHelper
         self.beginRefundRequestHelper = beginRefundRequestHelper
+        self.storeMessagesHelper = storeMessagesHelper
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }

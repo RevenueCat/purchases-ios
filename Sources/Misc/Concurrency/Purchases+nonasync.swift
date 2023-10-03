@@ -62,4 +62,48 @@ public extension Purchases {
 
     #endif
 
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(completion: @escaping () -> Void
+    ) {
+        _ = Task<Void, Never> {
+            await self.showStoreMessages()
+            completion()
+        }
+    }
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(
+        for types: Set<StoreMessageType>,
+        completion: @escaping () -> Void
+    ) {
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: types)
+            completion()
+        }
+    }
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(
+        for rawValues: Set<NSNumber>,
+        completion: @escaping () -> Void
+    ) {
+        _ = Task<Void, Never> {
+            await self.showStoreMessages(for: rawValues)
+            completion()
+        }
+    }
+
+    #endif
+
 }

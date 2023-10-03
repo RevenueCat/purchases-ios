@@ -28,6 +28,7 @@ BOOL finishTransactions;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
+NSSet<NSNumber *> *mesageTypeRawValues;
 
 + (void)checkAPI {
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
@@ -198,6 +199,11 @@ BOOL isAnonymous;
 #endif
 
 #if TARGET_OS_IPHONE && !TARGET_OS_TV && !TARGET_OS_WATCH
+    if (@available(iOS 16.0, *)) {
+        [p showStoreMessagesWithCompletionHandler:^{ }];
+        [p showStoreMessagesFor:mesageTypeRawValues completionHandler:^{ }];
+    }
+
     if (@available(iOS 14.0, *)) {
         [p presentCodeRedemptionSheet];
     }
@@ -228,6 +234,14 @@ BOOL isAnonymous;
         case RCLogLevelInfo:
         case RCLogLevelWarn:
         case RCLogLevelError:
+            NSLog(@"%ld", (long)o);
+    }
+
+    RCStoreMessageType smt = RCStoreMessageTypeBillingIssue;
+    switch(smt) {
+        case RCStoreMessageTypeBillingIssue:
+        case RCStoreMessageTypePriceIncreaseConsent:
+        case RCStoreMessageTypeGeneric:
             NSLog(@"%ld", (long)o);
     }
 }

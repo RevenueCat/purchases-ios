@@ -65,6 +65,10 @@ enum StoreKitStrings {
 
     #endif
 
+    case could_not_defer_store_messages(Error)
+
+    case error_displaying_store_message(Error)
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -151,6 +155,11 @@ extension StoreKitStrings: LogMessage {
             "for Integration Tests."
         #endif
 
+        case let .could_not_defer_store_messages(error):
+            return "Tried to defer store messages but an error occured: '\(error)'."
+
+        case let .error_displaying_store_message(error):
+            return "Error displaying StoreKit message: '\(error)'"
         }
     }
 

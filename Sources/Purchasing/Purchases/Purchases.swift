@@ -254,6 +254,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
+    private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
 
     // swiftlint:disable:next function_body_length
@@ -267,7 +268,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKit2Setting: StoreKit2Setting = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
-                     dangerousSettings: DangerousSettings? = nil) {
+                     dangerousSettings: DangerousSettings? = nil,
+                     showStoreMessagesAutomatically: Bool) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
         }
@@ -395,6 +397,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                 customerInfoManager: customerInfoManager,
                                                                 currentUserProvider: identityManager)
 
+        let storeMessagesHelper: StoreMessagesHelperType?
+
+        #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+        if #available(iOS 16.0, *) {
+            storeMessagesHelper = StoreMessagesHelper(systemInfo: systemInfo,
+                                                      showStoreMessagesAutomatically: showStoreMessagesAutomatically)
+        } else {
+            storeMessagesHelper = nil
+        }
+        #else
+        storeMessagesHelper = nil
+        #endif
+
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
@@ -415,7 +430,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
-                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil)
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                    storeMessagesHelper: storeMessagesHelper
                 )
             } else {
                 return .init(
@@ -434,7 +450,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     deviceCache: deviceCache,
                     offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
-                    beginRefundRequestHelper: beginRefundRequestHelper
+                    beginRefundRequestHelper: beginRefundRequestHelper,
+                    storeMessagesHelper: storeMessagesHelper
                 )
             }
         }()
@@ -480,7 +497,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
-                  trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker)
+                  trialOrIntroPriceEligibilityChecker: trialOrIntroPriceChecker,
+                  storeMessagesHelper: storeMessagesHelper
+        )
     }
 
     // swiftlint:disable:next function_body_length
@@ -507,7 +526,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
-         trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
+         trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker,
+         storeMessagesHelper: StoreMessagesHelperType?
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -556,6 +576,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
+        self.storeMessagesHelper = storeMessagesHelper
 
         super.init()
 
@@ -1051,6 +1072,37 @@ public extension Purchases {
 
 #endif
 
+#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages() async {
+        await self.storeMessagesHelper?.showStoreMessages(types: Set(StoreMessageType.allCases))
+    }
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(for rawValues: Set<NSNumber>) async {
+        let storeMessageTypes = rawValues.compactMap { number in
+            StoreMessageType(rawValue: number.intValue)
+        }
+        await self.storeMessagesHelper?.showStoreMessages(types: Set(storeMessageTypes))
+    }
+
+    @available(iOS 16.0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    func showStoreMessages(for types: Set<StoreMessageType>) async {
+        await self.storeMessagesHelper?.showStoreMessages(types: types)
+    }
+
+#endif
+
 }
 
 // swiftlint:enable missing_docs
@@ -1107,7 +1159,9 @@ public extension Purchases {
                   storeKit2Setting: configuration.storeKit2Setting,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
-                  dangerousSettings: configuration.dangerousSettings)
+                  dangerousSettings: configuration.dangerousSettings,
+                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically
+        )
     }
 
     /**
@@ -1276,7 +1330,8 @@ public extension Purchases {
         storeKit2Setting: StoreKit2Setting,
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
-        dangerousSettings: DangerousSettings?
+        dangerousSettings: DangerousSettings?,
+        showStoreMessagesAutomatically: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1289,7 +1344,8 @@ public extension Purchases {
                   storeKit2Setting: storeKit2Setting,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
-                  dangerousSettings: dangerousSettings)
+                  dangerousSettings: dangerousSettings,
+                  showStoreMessagesAutomatically: showStoreMessagesAutomatically)
         )
     }
 

@@ -449,4 +449,22 @@ extension MockPurchases: PurchasesSwiftType {
         self.unimplemented()
     }
 
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+
+    @available(iOS 16.0, *)
+    func showStoreMessages() async {
+        self.unimplemented()
+    }
+
+    @available(iOS 16.0, *)
+    func showStoreMessages(for rawValues: Set<NSNumber>) async {
+        self.unimplemented()
+    }
+
+    @available(iOS 16.0, *)
+    func showStoreMessages(for types: Set<StoreMessageType>) async {
+        self.unimplemented()
+    }
+
+    #endif
 }
