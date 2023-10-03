@@ -149,8 +149,8 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     override func setOnesignalUserID(_ onesignalUserID: String?, appUserID: String) {
         invokedSetOnesignalUserID = true
         invokedSetOnesignalUserIDCount += 1
-        invokedSetOnesignalUserIDParameters = (onesignalID, appUserID)
-        invokedSetOnesignalUserIDParametersList.append((onesignalID, appUserID))
+        invokedSetOnesignalUserIDParameters = (onesignalUserID, appUserID)
+        invokedSetOnesignalUserIDParametersList.append((onesignalUserID, appUserID))
     }
 
     var invokedSetAirshipChannelID = false

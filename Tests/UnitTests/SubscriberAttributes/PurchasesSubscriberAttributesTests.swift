@@ -402,7 +402,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
-    func testSetAndClearOnesignalID() {
+    func testSetAndClearOnesignalUserID() {
         setupPurchases()
         purchases.attribution.setOnesignalUserID("oneSig")
         purchases.attribution.setOnesignalUserID(nil)
@@ -600,6 +600,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDCount) == 1
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.onesignalID) == "123abc"
         expect(self.mockSubscriberAttributesManager.invokedSetOnesignalIDParameters?.appUserID) == mockIdentityManager
+            .currentAppUserID
+    }
+
+    func testSetOnesignalUserIDMakesRightCalls() {
+        setupPurchases()
+
+        Purchases.shared.attribution.setOnesignalUserID("123abc")
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParameters?.onesignalUserID) == "123abc"
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParameters?.appUserID) == mockIdentityManager
             .currentAppUserID
     }
 
