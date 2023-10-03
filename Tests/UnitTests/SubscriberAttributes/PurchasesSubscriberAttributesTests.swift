@@ -402,6 +402,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearOnesignalID() {
+        setupPurchases()
+        purchases.attribution.setOnesignalUserID("oneSig")
+        purchases.attribution.setOnesignalUserID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParametersList[0])
+            .to(equal(("oneSig", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetOnesignalUserIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearAirshipChannelID() {
         setupPurchases()
         purchases.attribution.setAirshipChannelID("airship")

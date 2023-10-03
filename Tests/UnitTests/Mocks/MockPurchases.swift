@@ -380,6 +380,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func setOnesignalUserID(_ onesignalUserID: String?) {
+        self.unimplemented()
+    }
+
     func setMediaSource(_ mediaSource: String?) {
         self.unimplemented()
     }
