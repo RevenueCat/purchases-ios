@@ -6,13 +6,22 @@
 //
 
 import RevenueCat
-import RevenueCatUI
+@testable import RevenueCatUI
 import SwiftUI
 
 struct OfferingsList: View {
 
+    fileprivate struct Template: Hashable {
+        var name: String?
+    }
+
+    fileprivate struct Data: Hashable {
+        var sections: [Template]
+        var offeringsBySection: [Template: [Offering]]
+    }
+
     @State
-    private var offerings: Result<[Offering], NSError>?
+    private var offerings: Result<Data, NSError>?
 
     @State
     private var selectedOffering: Offering?
@@ -27,11 +36,21 @@ struct OfferingsList: View {
         }
         .task {
             do {
+                let offerings = try await Purchases.shared.offerings()
+                    .all
+                    .map(\.value)
+                    .sorted { $0.serverDescription > $1.serverDescription }
+
+                let offeringsBySection = Dictionary(
+                    grouping: offerings,
+                    by: { Template(name: $0.paywall?.templateName) }
+                )
+
                 self.offerings = .success(
-                    try await Purchases.shared.offerings()
-                        .all
-                        .map(\.value)
-                        .sorted { $0.serverDescription > $1.serverDescription }
+                    .init(
+                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                        offeringsBySection: offeringsBySection
+                    )
                 )
             } catch let error as NSError {
                 self.offerings = .failure(error)
@@ -42,11 +61,11 @@ struct OfferingsList: View {
     @ViewBuilder
     private var content: some View {
         switch self.offerings {
-        case let .success(offerings):
+        case let .success(data):
             VStack {
                 Text(Self.modesInstructions)
                     .font(.footnote)
-                self.list(with: offerings)
+                self.list(with: data)
             }
 
         case let .failure(error):
@@ -58,50 +77,44 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with offerings: some Collection<Offering>) -> some View {
+    private func list(with data: Data) -> some View {
         List {
-            let offeringsWithPaywall = Self.offeringsWithPaywall(from: offerings)
-
-            Section {
-                ForEach(offeringsWithPaywall, id: \.offering.id) { offering, paywall in
-                    #if targetEnvironment(macCatalyst)
-                    NavigationLink(
-                        destination: PaywallPresenter(selectedMode: self.$selectedMode,
-                                                      selectedOffering: self.$selectedOffering),
-                        tag: offering,
-                        selection: self.$selectedOffering
-                    ) {
-                        OfferButton(offering: offering, paywall: paywall) {
-                            self.selectedOffering = offering
+            ForEach(data.sections, id: \.self) { template in
+                Section {
+                    ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
+                        if let paywall = offering.paywall {
+                            #if targetEnvironment(macCatalyst)
+                            NavigationLink(
+                                destination: PaywallPresenter(selectedMode: self.$selectedMode,
+                                                              selectedOffering: self.$selectedOffering),
+                                tag: offering,
+                                selection: self.$selectedOffering
+                            ) {
+                                OfferButton(offering: offering, paywall: paywall) {
+                                    self.selectedOffering = offering
+                                }
+                                .contextMenu {
+                                    self.contextMenu(for: offering)
+                                }
+                            }
+                            #else
+                            OfferButton(offering: offering, paywall: paywall) {
+                                self.selectedOffering = offering
+                            }
+                            .contextMenu {
+                                self.contextMenu(for: offering)
+                            }
+                            .sheet(item: self.$selectedOffering) { offering in
+                                PaywallPresenter(selectedMode: self.$selectedMode,
+                                                 selectedOffering: self.$selectedOffering)
+                            }
+                            #endif
+                        } else {
+                            Text(offering.serverDescription)
                         }
-                        .contextMenu {
-                            self.contextMenu(for: offering)
-                        }
                     }
-                    #else
-                    OfferButton(offering: offering, paywall: paywall) {
-                        self.selectedOffering = offering
-                    }
-                    .contextMenu {
-                        self.contextMenu(for: offering)
-                    }
-                    .sheet(item: self.$selectedOffering) { offering in
-                        PaywallPresenter(selectedMode: self.$selectedMode,
-                                         selectedOffering: self.$selectedOffering)
-                    }
-                    #endif
-                }
-            } header: {
-                Text(verbatim: "With paywall")
-            } footer: {
-                if offeringsWithPaywall.isEmpty {
-                    Text(verbatim: "No offerings with paywall")
-                }
-            }
-
-            Section("Without paywall") {
-                ForEach(Self.offeringsWithNoPaywall(from: offerings), id: \.id) { offering in
-                    Text(offering.serverDescription)
+                } header: {
+                    Text(verbatim: template.description)
                 }
             }
         }
@@ -132,10 +145,7 @@ struct OfferingsList: View {
 
         var body: some View {
             Button(action: action) {
-                VStack(alignment: .leading) {
-                    Text(self.offering.serverDescription)
-                    Text(verbatim: "Template: \(self.paywall.templateName)")
-                }
+                Text(self.offering.serverDescription)
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
@@ -150,7 +160,7 @@ struct OfferingsList: View {
 
 }
 
-struct PaywallPresenter: View {
+private struct PaywallPresenter: View {
 
     @Binding var selectedMode: PaywallViewMode
     @Binding var selectedOffering: Offering?
@@ -181,23 +191,18 @@ struct PaywallPresenter: View {
 
 }
 
-private extension OfferingsList {
+extension OfferingsList.Template: CustomStringConvertible {
 
-    static func offeringsWithPaywall(
-        from offerings: some Collection<Offering>
-    ) -> [(offering: Offering, paywall: PaywallData)] {
-        return offerings
-            .compactMap { offering in
-                if let paywall = offering.paywall {
-                    return (offering, paywall)
-                } else {
-                    return nil
-                }
+    var description: String {
+        if let name = self.name {
+            if let template = PaywallTemplate(rawValue: name) {
+                return template.name
+            } else {
+                return "Unrecognized template"
             }
-    }
-
-    static func offeringsWithNoPaywall(from offerings: some Collection<Offering>) -> [Offering] {
-        return offerings.filter { $0.paywall == nil }
+        } else {
+            return "No paywall"
+        }
     }
 
 }
