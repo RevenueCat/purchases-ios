@@ -1,7 +1,8 @@
-### New Features
-* Add `Attribution.setOnesignalUserID` (#3268) via Raquel Diez (@Raquel10-RevenueCat)
-* StoreKit In App messages support (#3252) via Toni Rico (@tonidero)
+### RevenueCatUI
+* `Paywalls`: added shimmer effect to `LoadingPaywallView` (#3267) via NachoSoto (@NachoSoto)
+### Bugfixes
+* `Paywalls`: fixed `macOS` compilation (#3272) via NachoSoto (@NachoSoto)
 ### Other Changes
-* Remove ObjC showStoreMessages API (#3269) via Toni Rico (@tonidero)
-* PaywallsTester: add a new tab that calls presentPaywallIfNeeded (#3259) via Andy Boedo (@aboedo)
-* `Paywalls`: small PaywallsTester refactor (#3261) via NachoSoto (@NachoSoto)
+* Update `SwiftLint` (#3273) via NachoSoto (@NachoSoto)
+* PaywallsTester: allow for configuration for demos (#3260) via Andy Boedo (@aboedo)
+* `Paywalls`: simplified `LoadingPaywallView` (#3265) via NachoSoto (@NachoSoto)
