@@ -145,10 +145,7 @@ struct OfferingsList: View {
 
         var body: some View {
             Button(action: action) {
-                VStack(alignment: .leading) {
-                    Text(self.offering.serverDescription)
-                    Text(verbatim: "Template: \(self.paywall.templateName)")
-                }
+                Text(self.offering.serverDescription)
             }
             .buttonStyle(.plain)
             .contentShape(Rectangle())
