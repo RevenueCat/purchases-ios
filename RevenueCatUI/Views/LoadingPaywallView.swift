@@ -23,13 +23,15 @@ struct LoadingPaywallView: View {
 
     var mode: PaywallViewMode
 
+    var shimmer: Bool = true
+
     var body: some View {
         LoadedOfferingPaywallView(
             offering: .init(
                 identifier: Self.offeringIdentifier,
                 serverDescription: "",
                 metadata: [:],
-                paywall: Self.defaultPaywall,
+                paywall: Self.paywall,
                 availablePackages: Self.packages
             ),
             activelySubscribedProductIdentifiers: [],
@@ -42,10 +44,25 @@ struct LoadingPaywallView: View {
         )
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
+        .shimmering(enable: self.shimmer)
+        .background {
+            TemplateBackgroundImageView(
+                url: Self.defaultPaywall.backgroundImageURL,
+                blurred: true
+            )
+        }
     }
 
     private static let template: PaywallTemplate = PaywallData.defaultTemplate
     private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages)
+
+    private static let paywall: PaywallData = {
+        var paywall: PaywallData = Self.defaultPaywall
+        // Hide background so it doesn't get shimmer
+        paywall.config.images.background = nil
+
+        return paywall
+    }()
 
     private static let packages: [Package] = [
         Self.monthlyPackage,
@@ -131,6 +148,70 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     func track(paywallEvent: PaywallEvent) async {
         // Ignoring events from loading paywall view
+    }
+
+}
+
+// MARK: - Shimmer
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private struct Shimmer: ViewModifier {
+
+    var duration: CGFloat
+    var autoreverse: Bool
+
+    @State
+    private var initialState: Bool = true
+
+    func body(content: Content) -> some View {
+        content
+            .mask(
+                LinearGradient(
+                    gradient: .init(colors: [
+                        .black.opacity(0.3),
+                        .black,
+                        .black.opacity(0.3)
+                    ]),
+                    startPoint: self.startPoint,
+                    endPoint: self.endPoint
+                )
+                .edgesIgnoringSafeArea(.all)
+            )
+            .onAppear {
+                withAnimation(
+                    .linear(duration: self.duration)
+                    .delay(self.duration / 2.0)
+                    .repeatForever(autoreverses: self.autoreverse)
+                ) {
+                    self.initialState.toggle()
+                }
+            }
+    }
+
+    private var startPoint: UnitPoint {
+        return self.initialState ? UnitPoint(x: -0.3, y: -0.3) : UnitPoint(x: 1, y: 1)
+    }
+
+    private var endPoint: UnitPoint {
+        return self.initialState ? UnitPoint(x: 0, y: 0) : UnitPoint(x: 1.3, y: 1.3)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension View {
+
+    @ViewBuilder
+    func shimmering(
+        enable: Bool,
+        duration: Double = 1.5,
+        autoreverse: Bool = false
+    ) -> some View {
+        if enable {
+            self.modifier(Shimmer(duration: duration, autoreverse: autoreverse))
+        } else {
+            self
+        }
     }
 
 }

@@ -38,8 +38,43 @@ extension TemplateViewConfiguration {
 private extension TemplateViewConfiguration {
 
     func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
-        let imageName = self.configuration.images[keyPath: image]
-        return imageName.map { self.assetBaseURL.appendingPathComponent($0) }
+        return PaywallData.url(
+            for: image,
+            in: self.configuration.images,
+            assetBaseURL: self.assetBaseURL
+        )
+    }
+
+}
+
+// MARK: -
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension PaywallData {
+
+    var headerImageURL: URL? { self.url(for: \.header) }
+    var backgroundImageURL: URL? { self.url(for: \.background) }
+    var iconImageURL: URL? { self.url(for: \.icon) }
+
+    private func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
+        return PaywallData.url(
+            for: image,
+            in: self.config.images,
+            assetBaseURL: self.assetBaseURL
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension PaywallData {
+
+    static func url(
+        for image: KeyPath<PaywallData.Configuration.Images, String?>,
+        in images: PaywallData.Configuration.Images,
+        assetBaseURL: URL
+    ) -> URL? {
+        return images[keyPath: image].map { assetBaseURL.appendingPathComponent($0) }
     }
 
 }
