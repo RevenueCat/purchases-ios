@@ -32,6 +32,8 @@ class TestCase: XCTestCase {
         XCTestObservationCenter.shared.removeTestObserver(CurrentTestCaseTracker.shared)
     }
 
+    // swiftlint:disable unneeded_override
+
     @MainActor
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -41,6 +43,8 @@ class TestCase: XCTestCase {
     override func tearDown() {
         super.tearDown()
     }
+
+    // swiftlint:enable unneeded_override
 
     // MARK: -
 

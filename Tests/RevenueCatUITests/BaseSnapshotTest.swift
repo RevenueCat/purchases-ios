@@ -31,6 +31,7 @@ import XCTest
 @MainActor
 class BaseSnapshotTest: TestCase {
 
+    // swiftlint:disable:next unneeded_override
     override class func setUp() {
         super.setUp()
 
