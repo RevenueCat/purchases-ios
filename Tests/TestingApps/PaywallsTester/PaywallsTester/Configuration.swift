@@ -13,7 +13,7 @@ final class Configuration: ObservableObject {
 
     @Published var currentMode: Mode {
         didSet {
-            configure()
+            self.configure()
         }
     }
 
