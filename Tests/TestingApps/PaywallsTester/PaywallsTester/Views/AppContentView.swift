@@ -11,17 +11,8 @@ import SwiftUI
 
 struct AppContentView: View {
 
-    let customerInfoStream: AsyncStream<CustomerInfo>?
-
-    init(customerInfoStream: AsyncStream<CustomerInfo>?) {
-        self.customerInfoStream = customerInfoStream
-    }
-
-    #if DEBUG
-    init(customerInfo: CustomerInfo) {
-        self.init(customerInfoStream: .init(unfolding: { customerInfo }))
-    }
-    #endif
+    @ObservedObject
+    private var configuration = Configuration.shared
 
     @State
     private var customerInfo: CustomerInfo?
@@ -29,9 +20,12 @@ struct AppContentView: View {
     @State
     private var showingDefaultPaywall: Bool = false
 
+    @State
+    private var customerInfoTask: Task<(), Never>? = nil
+
     var body: some View {
         TabView {
-            if self.isPurchasesConfigured {
+            if Purchases.isConfigured {
                 NavigationView {
                     ZStack {
                         self.background
@@ -52,7 +46,7 @@ struct AppContentView: View {
                 }
             #endif
 
-            if self.isPurchasesConfigured {
+            if Purchases.isConfigured {
                 OfferingsList()
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
@@ -97,29 +91,26 @@ struct AppContentView: View {
                 Spacer()
             }
             Spacer()
-            Button("Present default paywall") {
+
+            Text("Currently configured for \(self.descriptionForCurrentMode())")
+                .font(.footnote)
+
+            ConfigurationButton(title: "Configure for demos", mode: .demos, configuration: configuration) {
+                self.configuration.currentMode = .demos
+            }
+
+            ConfigurationButton(title: "Configure for testing", mode: .testing, configuration: configuration) {
+                self.configuration.currentMode = .testing
+            }
+
+            ProminentButton(title: "Present default paywall") {
                 showingDefaultPaywall.toggle()
             }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: 50)
-            .font(.headline)
-            .background(Color.accentColor)
-            .foregroundColor(.white)
-            .cornerRadius(8)
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
-        .task {
-            if let stream = self.customerInfoStream {
-                for await info in stream {
-                    self.customerInfo = info
-                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.count == 0
-                }
-                
-            }
-        }
         #if DEBUG
         .overlay {
             if #available(iOS 16.0, macOS 13.0, *) {
@@ -144,10 +135,62 @@ struct AppContentView: View {
                 #endif
             }
         }
+        .task(id: self.configuration.currentMode) {
+            if Purchases.isConfigured {
+                for await info in Purchases.shared.customerInfoStream {
+                    self.customerInfo = info
+                    self.showingDefaultPaywall = self.showingDefaultPaywall && info.activeSubscriptions.isEmpty
+                }
+            }
+        }
     }
 
-    private var isPurchasesConfigured: Bool {
-        return self.customerInfoStream != nil
+    private func descriptionForCurrentMode() -> String {
+        switch self.configuration.currentMode {
+        case .custom:
+            return "the API set locally in Configuration.swift"
+        case .testing:
+            return "the Paywalls Tester app in RevenueCat Dashboard"
+        case .demos:
+            return "Demos"
+        case .listOnly:
+            return "showcasing the different Paywall Templates and Modes available"
+        }
+    }
+
+}
+private struct ProminentButton: View {
+    var title: String
+    var action: () -> Void
+    var background: Color = .accentColor
+
+    var body: some View {
+        Button(action: self.action) {
+            Text(self.title)
+                .bold()
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(background)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+        }
+    }
+}
+
+private struct ConfigurationButton: View {
+
+    var title: String
+    var mode: Configuration.Mode
+    @ObservedObject var configuration: Configuration
+    var action: () -> Void
+
+    var body: some View {
+        ProminentButton(
+            title: self.title,
+            action: self.action,
+            background: self.configuration.currentMode == mode ? Color.gray : Color.accentColor
+        )
+        .disabled(self.configuration.currentMode == mode)
     }
 
 }
@@ -169,7 +212,7 @@ struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {
         NavigationStack {
-            AppContentView(customerInfo: TestData.customerInfo)
+            AppContentView()
         }
     }
 

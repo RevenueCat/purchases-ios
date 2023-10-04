@@ -6,34 +6,71 @@
 //
 
 import Foundation
+import RevenueCat
 
-enum Configuration {
+final class Configuration: ObservableObject {
+    static let shared = Configuration()
 
-    #warning("Configure API key if you want to test paywalls from your dashboard")
-
-    // Note: you can leave this empty to use the production server, or point to your own instance.
-    static let proxyURL = ""
-    static let apiKey = ""
+    @Published var currentMode: Mode {
+        didSet {
+            self.configure()
+        }
+    }
 
     static let entitlement = "pro"
 
-}
+    enum Mode: Equatable {
+        case custom, testing, demos, listOnly
+    }
 
-extension Configuration {
-
-    static var effectiveApiKey: String = {
-        return Self.apiKey.nonEmpty ?? Self.apiKeyFromCI
-    }()
+    #warning("Configure API key if you want to test paywalls from your dashboard")
+    // Note: you can leave this empty to use the production server, or point to your own instance.
+    private static let proxyURL = ""
+    private static let apiKey = ""
 
     // This is modified by CI:
-    private static let apiKeyFromCI = ""
+    private static let apiKeyFromCIForTesting = ""
+    private static let apiKeyFromCIForDemos = ""
 
-}
+    private init() {
+        if Self.apiKey.isEmpty {
+            self.currentMode = Self.apiKeyFromCIForTesting.isEmpty ? .listOnly : .testing
+        } else {
+            self.currentMode = .custom
+        }
 
-// MARK: - Extensions
+        Purchases.logLevel = .verbose
+        Purchases.proxyURL = Self.proxyURL.isEmpty
+        ? nil
+        : URL(string: Self.proxyURL)!
 
-private extension String {
+        self.configure()
+    }
 
-    var nonEmpty: String? { return self.isEmpty ? nil : self }
+    var currentAPIKey: String? {
+        switch currentMode {
+        case .custom:
+            Self.apiKey
+        case .testing:
+            Self.apiKeyFromCIForTesting
+        case .demos:
+            Self.apiKeyFromCIForDemos
+        case .listOnly:
+            nil
+        }
+    }
+
+    private func configure() {
+        guard let currentAPIKey = self.currentAPIKey,
+              !currentAPIKey.isEmpty else {
+            return
+        }
+
+        Purchases.configure(
+            with: .init(withAPIKey: currentAPIKey)
+                .with(entitlementVerificationMode: .informational)
+                .with(usesStoreKit2IfAvailable: true)
+        )
+    }
 
 }
