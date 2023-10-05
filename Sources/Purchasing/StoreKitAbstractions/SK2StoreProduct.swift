@@ -39,7 +39,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedDescription: String { underlyingSK2Product.description }
 
-    var currencyCode: String? { self._currencyCode }
+    var currencyCode: String? { self._currencyCodeAndLocale.code }
 
     var price: Decimal { underlyingSK2Product.price }
 
@@ -52,12 +52,17 @@ internal struct SK2StoreProduct: StoreProductType {
     var localizedTitle: String { underlyingSK2Product.displayName }
 
     var priceFormatter: NumberFormatter? {
-        guard let currencyCode = self.currencyCode else {
+        let (currencyCode, locale) = self._currencyCodeAndLocale
+
+        guard let currencyCode else {
             Logger.appleError("Can't initialize priceFormatter for SK2 product! Could not find the currency code")
             return nil
         }
 
-        return self.priceFormatterProvider.priceFormatterForSK2(withCurrencyCode: currencyCode)
+        return self.priceFormatterProvider.priceFormatterForSK2(
+            withCurrencyCode: currencyCode,
+            locale: locale ?? .autoupdatingCurrent
+        )
     }
 
     var subscriptionGroupIdentifier: String? {
@@ -86,16 +91,20 @@ internal struct SK2StoreProduct: StoreProductType {
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension SK2StoreProduct {
 
-    var _currencyCode: String? {
+    var _currencyCodeAndLocale: (code: String?, locale: Locale?) {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return self.currencyCodeFromPriceFormat
+            let format = self.currencyFormat
+            return (format.currencyCode, format.locale)
+        } else {
+            // note: if we ever need more information from the jsonRepresentation object, we
+            // should use Codable or another decoding method to clean up this code.
+            let attributes = jsonDict["attributes"] as? [String: Any]
+            let offers = attributes?["offers"] as? [[String: Any]]
+            return (
+                code: offers?.first?["currencyCode"] as? String,
+                locale: nil // Not available inside of `jsonRepresentation`
+            )
         }
-
-        // note: if we ever need more information from the jsonRepresentation object, we
-        // should use Codable or another decoding method to clean up this code.
-        let attributes = jsonDict["attributes"] as? [String: Any]
-        let offers = attributes?["offers"] as? [[String: Any]]
-        return offers?.first?["currencyCode"] as? String
     }
 
     private var jsonDict: [String: Any] {
@@ -103,11 +112,10 @@ private extension SK2StoreProduct {
         return decoded as? [String: Any] ?? [:]
     }
 
-    // This is marked as `@_backDeploy`, but it's only visible when compiling with Xcode 14.x
-    // and for some reason only returning a non-empty string on iOS 16+.
+    // This is marked as `@_backDeploy` but for some reason only returns a non-empty string on iOS 16+.
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    private var currencyCodeFromPriceFormat: String {
-        return self.underlyingSK2Product.priceFormatStyle.currencyCode
+    private var currencyFormat: Decimal.FormatStyle.Currency {
+        return self.underlyingSK2Product.priceFormatStyle
     }
 
 }
