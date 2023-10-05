@@ -201,8 +201,9 @@ class PaywallEventsManagerTests: TestCase {
         let result1 = try await task1.value
         let result2 = try await task2.value
 
-        expect(result1) == 1
-        expect(result2) == 0
+        // Tasks aren't guaranteed to start in order.
+        // We just care that one of them posted 1 event and the other 0.
+        expect(Set([result1, result2])) == [1, 0]
 
         expect(self.api.invokedPostPaywallEvents) == true
         expect(self.api.invokedPostPaywallEventsParameters).to(haveCount(1))
