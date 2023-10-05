@@ -31,20 +31,21 @@ class AttributionFetcherTests: TestCase {
 
     #if canImport(AdServices)
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func testAdServicesTokenIfAvailable() throws {
+    func testAdServicesTokenIfAvailable() async throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
         // Can't guarantee that this will produce a value in tests
         // but at least we ensure that it doesn't hang.
         // See https://github.com/RevenueCat/purchases-ios/issues/2121
-        _ = self.attributionFetcher.adServicesToken
+        _ = await self.attributionFetcher.adServicesToken
     }
     #else
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    func testAdServicesTokenNilIfNotAvailable() throws {
+    func testAdServicesTokenNilIfNotAvailable() async throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
-        expect(self.attributionFetcher.adServicesToken).to(beNil())
+        let token = await self.attributionFetcher.adServicesToken
+        expect(token).to(beNil())
     }
     #endif
 

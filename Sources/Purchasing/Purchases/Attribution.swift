@@ -415,12 +415,25 @@ extension Attribution {
         self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var unsyncedAdServicesToken: String? {
-        guard self.automaticAdServicesAttributionTokenCollection else {
-            return nil
+        get async {
+            return self.automaticAdServicesAttributionTokenCollection
+            ? await self.attributionPoster.adServicesTokenToPostIfNeeded
+            : nil
+        }
+    }
+
+    func unsyncedAdServicesToken(_ completion: @escaping (String?) -> Void) {
+        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
+              self.automaticAdServicesAttributionTokenCollection else {
+            completion(nil)
+            return
         }
 
-        return self.attributionPoster.adServicesTokenToPostIfNeeded
+        Async.call(with: completion) {
+            await self.attributionPoster.adServicesTokenToPostIfNeeded
+        }
     }
 
     @discardableResult

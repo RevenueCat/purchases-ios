@@ -82,32 +82,53 @@ class AttributionFetcher {
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     var adServicesToken: String? {
-#if canImport(AdServices)
-        do {
-            #if targetEnvironment(simulator)
-            #if DEBUG
-            if let mockToken = ProcessInfo.mockAdServicesToken {
-                Logger.warn(Strings.attribution.adservices_mocking_token(mockToken))
-                return mockToken
-            }
-            #endif
-
-                // See https://github.com/RevenueCat/purchases-ios/issues/2121
-                Logger.appleWarning(Strings.attribution.adservices_token_unavailable_in_simulator)
-                return nil
+        get async {
+            #if canImport(AdServices)
+            return await Task<String?, Never>.detached {
+                #if targetEnvironment(simulator)
+                return Self.simulatorAdServicesToken
+                #else
+                return Self.realAdServicesToken
+                #endif
+            }.value
             #else
-                return try AAAttribution.attributionToken()
+            Logger.warn(Strings.attribution.adservices_not_supported)
+            return nil
             #endif
+        }
+    }
+
+    #if canImport(AdServices)
+    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    private static var realAdServicesToken: String? {
+        RCTestAssertNotMainThread()
+
+        do {
+            return try AAAttribution.attributionToken()
         } catch {
-            let message = Strings.attribution.adservices_token_fetch_failed(error: error)
-            Logger.appleWarning(message)
+            Logger.appleWarning(Strings.attribution.adservices_token_fetch_failed(error: error))
             return nil
         }
-#else
-        Logger.warn(Strings.attribution.adservices_not_supported)
-        return nil
-#endif
     }
+
+    #if targetEnvironment(simulator)
+    private static var simulatorAdServicesToken: String? {
+        RCTestAssertNotMainThread()
+
+        #if DEBUG
+        if let mockToken = ProcessInfo.mockAdServicesToken {
+            Logger.warn(Strings.attribution.adservices_mocking_token(mockToken))
+            return mockToken
+        }
+        #endif
+
+        // See https://github.com/RevenueCat/purchases-ios/issues/2121
+        Logger.appleWarning(Strings.attribution.adservices_token_unavailable_in_simulator)
+        return nil
+    }
+    #endif
+
+    #endif
 
     var isAuthorizedToPostSearchAds: Bool {
         // Should match platforms that require permissions detailed in
