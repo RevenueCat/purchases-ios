@@ -299,6 +299,33 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.currencyCode) == "USD"
     }
 
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
+    func testSk2PriceFormatterGetsLocaleFromStoreKit() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let sk2Fetcher = ProductsFetcherSK2()
+
+        self.testSession.locale = Locale(identifier: "es_ES")
+        try await self.changeStorefront("ESP")
+
+        var storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
+        var priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        var productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "4,99 €"
+        expect(storeProduct.currencyCode) == "EUR"
+
+        self.testSession.locale = Locale(identifier: "en_EN")
+        try await self.changeStorefront("USA")
+
+        storeProduct = try await sk2Fetcher.product(withIdentifier: Self.productID)
+        priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)
+        productPrice = storeProduct.price as NSNumber
+
+        expect(priceFormatter.string(from: productPrice)) == "$4.99"
+        expect(storeProduct.currencyCode) == "USD"
+    }
+
     func testSK1ProductTypeDoesNotCrash() async throws {
         let products = try await self.sk1Fetcher.products(withIdentifiers: [Self.productID])
         let product = try XCTUnwrap(products.first)
