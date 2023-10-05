@@ -18,7 +18,7 @@ class MockAttributionFetcher: AttributionFetcher {
     var adServicesTokenCollectionCalled = false
     var adServicesTokenToReturn: String? = "mockAdServicesToken"
 
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     override var adServicesToken: String? {
         // Note: this needs to be `async` to avoid a crash
         // See https://github.com/apple/swift/issues/68998

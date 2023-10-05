@@ -30,7 +30,7 @@ class AttributionFetcherTests: TestCase {
     }
 
     #if canImport(AdServices)
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     func testAdServicesTokenIfAvailable() async throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
@@ -40,7 +40,7 @@ class AttributionFetcherTests: TestCase {
         _ = await self.attributionFetcher.adServicesToken
     }
     #else
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     func testAdServicesTokenNilIfNotAvailable() async throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 

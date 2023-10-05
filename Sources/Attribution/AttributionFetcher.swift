@@ -80,7 +80,7 @@ class AttributionFetcher {
     }
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     var adServicesToken: String? {
         get async {
             #if canImport(AdServices)

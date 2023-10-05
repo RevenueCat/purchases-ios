@@ -124,7 +124,7 @@ final class AttributionPoster {
     }
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, watchOS 6.2, macOS 11.1, macCatalyst 14.3, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     func postAdServicesTokenOncePerInstallIfNeeded(completion: ((Error?) -> Void)? = nil) {
