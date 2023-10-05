@@ -95,12 +95,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockBeginRefundRequestHelper = MockBeginRefundRequestHelper(systemInfo: self.systemInfo,
                                                                          customerInfoManager: self.customerInfoManager,
                                                                          currentUserProvider: self.currentUserProvider)
-<<<<<<< HEAD
-
         self.mockStoreMessagesHelper = .init()
-=======
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
->>>>>>> b211f9cf0 (Simplify implementation by exposing jsonRepresentation in StoreTransaction)
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
