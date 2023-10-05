@@ -153,7 +153,7 @@ struct Template5View: TemplateViewType {
                 } label: {
                     self.packageButton(package, selected: isSelected)
                 }
-                .buttonStyle(PackageButtonStyle(isSelected: isSelected))
+                .buttonStyle(PackageButtonStyle())
             }
         }
         .defaultHorizontalPadding()

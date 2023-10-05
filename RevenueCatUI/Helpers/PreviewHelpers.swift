@@ -100,6 +100,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
                 .environmentObject(self.introEligibilityViewModel)
                 .environmentObject(PreviewHelpers.purchaseHandler)
                 .background(configuration.backgroundView)
+                .disabled(PreviewHelpers.purchaseHandler.actionInProgress)
                 .task {
                     await self.introEligibilityViewModel.computeEligibility(
                         for: configuration.packages

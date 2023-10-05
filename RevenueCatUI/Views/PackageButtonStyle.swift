@@ -20,7 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct PackageButtonStyle: ButtonStyle {
 
-    var isSelected: Bool
+    var fadeDuringPurchases: Bool = true
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -29,12 +29,11 @@ struct PackageButtonStyle: ButtonStyle {
         configuration
             .label
             .contentShape(Rectangle())
-            .hidden(if: self.purchaseHandler.actionInProgress)
-            .overlay {
-                if self.isSelected, self.purchaseHandler.actionInProgress {
-                    ProgressView()
-                }
-            }
+            .opacity(
+                self.fadeDuringPurchases && self.purchaseHandler.actionInProgress
+                ? Constants.purchaseInProgressButtonOpacity
+                : 1
+            )
     }
 
 }
