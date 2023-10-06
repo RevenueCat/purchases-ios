@@ -329,7 +329,9 @@ struct PaywallView_Previews: PreviewProvider {
     private static let offerings: [Offering] = [
         TestData.offeringWithIntroOffer,
         TestData.offeringWithMultiPackagePaywall,
-        TestData.offeringWithSinglePackageFeaturesPaywall
+        TestData.offeringWithSinglePackageFeaturesPaywall,
+        TestData.offeringWithMultiPackageHorizontalPaywall,
+        TestData.offeringWithTemplate5Paywall
     ]
 
     private static let modes: [PaywallViewMode] = [

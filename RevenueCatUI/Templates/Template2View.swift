@@ -126,7 +126,7 @@ struct Template2View: TemplateViewType {
                 } label: {
                     self.packageButton(package, selected: isSelected)
                 }
-                .buttonStyle(PackageButtonStyle(isSelected: isSelected))
+                .buttonStyle(PackageButtonStyle())
             }
         }
         .padding(.horizontal, self.defaultHorizontalPaddingLength)

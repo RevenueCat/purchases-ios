@@ -136,7 +136,11 @@ struct Template4View: TemplateViewType {
                                   packageWidth: self.packageWidth,
                                   desiredHeight: self.packageContentHeight)
                 }
-                .buttonStyle(PackageButtonStyle(isSelected: isSelected))
+                .buttonStyle(PackageButtonStyle(
+                    // Reducing opacity would reveal the discount overlay
+                    // layers behind the button
+                    fadeDuringPurchases: false
+                ))
             }
         }
         .defaultHorizontalPadding()
