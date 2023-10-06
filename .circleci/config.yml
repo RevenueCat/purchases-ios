@@ -422,9 +422,7 @@ jobs:
       - install-dependencies
       - run:
           name: Run tests
-          # StoreKit tests currently get stuck.
-          # See https://discuss.circleci.com/t/severe-performance-problems-with-xcode-15/49205/11?u=nachosoto
-          command: bundle exec fastlane test_ios skip_sk_tests:true
+          command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 15 (17.0.1)
