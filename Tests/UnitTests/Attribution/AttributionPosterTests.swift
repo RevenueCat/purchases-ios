@@ -306,35 +306,41 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
     }
 
-    func testAdServicesTokenToPostIfNeededReturnsNilIfAlreadySent() {
+    func testAdServicesTokenToPostIfNeededReturnsNilIfAlreadySent() async throws {
         self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
-        expect(self.attributionPoster.adServicesTokenToPostIfNeeded).toNot(beNil())
+        var token = await self.attributionPoster.adServicesTokenToPostIfNeeded
+        expect(token).toNot(beNil())
 
-        self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
+        let error = await Async.call { completion in
+            self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded(completion: completion)
+        }
+        expect(error).to(beNil())
 
-        expect(self.attributionPoster.adServicesTokenToPostIfNeeded).to(beNil())
+        token = await self.attributionPoster.adServicesTokenToPostIfNeeded
+        expect(token).to(beNil())
     }
 
-    func testPostAdServicesTokenOncePerInstallIfNeededSkipsIfAlreadySent() {
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+    func testPostAdServicesTokenOncePerInstallIfNeededSkipsIfAlreadySent() throws {
+        self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
-        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
+        try self.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
 
-        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
+        try self.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 1
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
 
     func testPostAdServicesTokenOncePerInstallIfNeededSkipsIfNilToken() throws {
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+        self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
-        attributionFetcher.adServicesTokenToReturn = nil
-        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
+        self.attributionFetcher.adServicesTokenToReturn = nil
+
+        try self.postAdServicesTokenOncePerInstallIfNeeded()
         expect(self.backend.invokedPostAdServicesTokenCount) == 0
         expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetCount) == 0
     }
@@ -355,14 +361,24 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
     }
 
     func testPostAdServicesTokenCachesProperData() throws {
-        backend.stubbedPostAdServicesTokenCompletionResult = .success(())
+        self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
         let adServicesToken = "asdf"
-        attributionFetcher.adServicesTokenToReturn = adServicesToken
-        attributionPoster.postAdServicesTokenOncePerInstallIfNeeded()
+        self.attributionFetcher.adServicesTokenToReturn = adServicesToken
+
+        try self.postAdServicesTokenOncePerInstallIfNeeded()
+
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.deviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) ==
             ([.adServices: adServicesToken], currentUserProvider.currentAppUserID)
+    }
+
+    private func postAdServicesTokenOncePerInstallIfNeeded() throws {
+        let result: Error?? = waitUntilValue { completion in
+            self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded(completion: completion)
+        }
+        let error = try XCTUnwrap(result)
+        expect(error).to(beNil())
     }
 
 }

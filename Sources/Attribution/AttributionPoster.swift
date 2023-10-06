@@ -124,29 +124,37 @@ final class AttributionPoster {
     }
 
     // should match OS availability in https://developer.apple.com/documentation/ad_services
-    @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
+    @available(iOS 14.3, tvOS 14.3, watchOS 6.2, macOS 11.1, macCatalyst 14.3, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func postAdServicesTokenOncePerInstallIfNeeded() {
-        guard let attributionToken = self.adServicesTokenToPostIfNeeded else { return }
+    func postAdServicesTokenOncePerInstallIfNeeded(completion: ((Error?) -> Void)? = nil) {
+        Task.detached(priority: .background) {
+            guard let attributionToken = await self.adServicesTokenToPostIfNeeded else {
+                completion?(nil)
+                return
+            }
 
-        self.post(adServicesToken: attributionToken)
+            self.post(adServicesToken: attributionToken, completion: completion)
+        }
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var adServicesTokenToPostIfNeeded: String? {
-        #if os(tvOS) || os(watchOS)
-        return nil
-        #else
-        guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
+        get async {
+            #if os(tvOS) || os(watchOS)
             return nil
-        }
+            #else
+            guard #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) else {
+                return nil
+            }
 
-        guard self.latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices) == nil else {
-            return nil
-        }
+            guard self.latestNetworkIdAndAdvertisingIdentifierSent(network: .adServices) == nil else {
+                return nil
+            }
 
-        return self.attributionFetcher.adServicesToken
-        #endif
+            return await self.attributionFetcher.adServicesToken
+            #endif
+        }
     }
 
     @discardableResult
@@ -185,7 +193,7 @@ final class AttributionPoster {
         postponedAttributionData = postponedData
     }
 
-    private func post(adServicesToken: String) {
+    private func post(adServicesToken: String, completion: ((Error?) -> Void)? = nil) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
 
         // set the cache in advance to avoid multiple post calls
@@ -194,6 +202,7 @@ final class AttributionPoster {
         self.backend.post(adServicesToken: adServicesToken, appUserID: currentAppUserID) { error in
              guard let error = error else {
                  Logger.debug(Strings.attribution.adservices_token_post_succeeded)
+                 completion?(nil)
                  return
              }
              Logger.warn(Strings.attribution.adservices_token_post_failed(error: error))
@@ -201,6 +210,8 @@ final class AttributionPoster {
             // if there's an error, reset the cache
             newDictToCache[AttributionNetwork.adServices] = nil
             self.deviceCache.set(latestAdvertisingIdsByNetworkSent: newDictToCache, appUserID: currentAppUserID)
+
+            completion?(error)
         }
     }
 
