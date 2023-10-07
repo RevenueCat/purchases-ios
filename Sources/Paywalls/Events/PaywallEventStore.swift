@@ -85,9 +85,9 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PaywallEventStore {
 
-    static func createDefault(documentsDirectory: URL?) throws -> PaywallEventStore {
-        let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
-        let url = documentsDirectory
+    static func createDefault(applicationSupportDirectory: URL?) throws -> PaywallEventStore {
+        let applicationSupportDirectory = try applicationSupportDirectory ?? Self.applicationSupportDirectory
+        let url = applicationSupportDirectory
             .appendingPathComponent("revenuecat")
             .appendingPathComponent("paywall_event_store")
 
@@ -96,13 +96,13 @@ extension PaywallEventStore {
         return try .init(handler: FileHandler(url))
     }
 
-    private static var documentsDirectory: URL {
+    private static var applicationSupportDirectory: URL {
         get throws {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                return URL.documentsDirectory
+                return URL.applicationSupportDirectory
             } else {
                 return try FileManager.default.url(
-                    for: .documentDirectory,
+                    for: .applicationSupportDirectory,
                     in: .userDomainMask,
                     appropriateFor: nil,
                     create: true

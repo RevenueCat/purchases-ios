@@ -39,7 +39,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 class BaseBackendIntegrationTests: TestCase {
 
     private var userDefaults: UserDefaults!
-    private var documentsDirectory: URL!
+    private var applicationSupportDirectory: URL!
     private var testUUID: UUID!
 
     // swiftlint:disable:next weak_delegate
@@ -69,7 +69,7 @@ class BaseBackendIntegrationTests: TestCase {
                             appUserID: nil,
                             observerMode: Self.observerMode,
                             userDefaults: self.userDefaults,
-                            documentsDirectory: self.documentsDirectory,
+                            applicationSupportDirectory: self.applicationSupportDirectory,
                             platformInfo: nil,
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,
@@ -99,7 +99,7 @@ class BaseBackendIntegrationTests: TestCase {
 
         self.createUserDefaults()
 
-        self.documentsDirectory = URL
+        self.applicationSupportDirectory = URL
             .cachesDirectory
             .appendingPathComponent(UUID().uuidString, conformingTo: .directory)
 
