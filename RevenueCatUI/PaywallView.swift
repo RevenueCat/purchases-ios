@@ -181,6 +181,9 @@ public struct PaywallView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
 private extension PaywallView {
 
     static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
