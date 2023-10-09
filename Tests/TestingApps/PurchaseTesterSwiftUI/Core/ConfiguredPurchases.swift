@@ -7,7 +7,11 @@
 
 import Foundation
 
+#if DEBUG
+@testable import RevenueCat
+#else
 import RevenueCat
+#endif
 
 public final class ConfiguredPurchases {
 
@@ -44,7 +48,7 @@ public final class ConfiguredPurchases {
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
-                .with(dangerousSettings: DangerousSettings.init(autoSyncPurchases: true, usesStoreKit2JWS: true))
+                .with(dangerousSettings: .init(autoSyncPurchases: true, internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: useStoreKit2)))
                 .build()
         )
 
