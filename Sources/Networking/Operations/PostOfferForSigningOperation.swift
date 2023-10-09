@@ -22,7 +22,7 @@ class PostOfferForSigningOperation: NetworkOperation {
         let offerIdentifier: String
         let productIdentifier: String
         let subscriptionGroup: String
-        let receiptData: Data
+        let receiptData: EncodedAppleReceipt
 
     }
 
@@ -127,7 +127,7 @@ private extension PostOfferForSigningOperation {
 
         init(appUserID: String, data: PostOfferForSigningData) {
             self.appUserID = appUserID
-            self.fetchToken = String(data: data.receiptData, encoding: .utf8) ?? ""
+            self.fetchToken = data.receiptData.serialized()
             self.generateOffers = [
                 .init(
                     offerID: data.offerIdentifier,

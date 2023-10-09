@@ -70,17 +70,11 @@ class OfferingsAPI {
     func post(offerIdForSigning offerIdentifier: String,
               productIdentifier: String,
               subscriptionGroup: String,
-              receiptData: Data,
+              receiptData: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
-
-        // We send the receipt data base64-encoded, while we don't encode th
-        var receiptData = receiptData
-        if !self.backendConfig.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS {
-            receiptData = receiptData.asFetchToken.asData
-        }
 
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
                                                                                  productIdentifier: productIdentifier,
