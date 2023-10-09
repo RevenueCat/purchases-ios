@@ -8,7 +8,7 @@
         {
           "app_user_id" : "user",
           "dark_mode" : true,
-          "display_mode" : "condensed_footer",
+          "display_mode" : "full_screen",
           "locale" : "es_ES",
           "offering_id" : "offering_1",
           "paywall_revision" : 5,
