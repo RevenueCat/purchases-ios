@@ -98,7 +98,7 @@ final class TransactionPoster: TransactionPosterType {
             self.fetchProductsAndPostReceipt(
                 transaction: transaction,
                 data: data,
-                receiptData: jsonRepresentation,
+                receiptData: EncodedAppleReceipt(type: .jwt, data: jsonRepresentation),
                 completion: completion
             )
         } else {
@@ -109,7 +109,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.fetchProductsAndPostReceipt(
                         transaction: transaction,
                         data: data,
-                        receiptData: receiptData,
+                        receiptData: EncodedAppleReceipt(type: .receipt, data: receiptData),
                         completion: completion
                     )
                 } else {
@@ -202,7 +202,7 @@ private extension TransactionPoster {
     func fetchProductsAndPostReceipt(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        receiptData: Data,
+        receiptData: EncodedAppleReceipt,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
@@ -257,7 +257,7 @@ private extension TransactionPoster {
 
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
-                     receiptData: Data,
+                     receiptData: EncodedAppleReceipt,
                      product: StoreProduct?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }

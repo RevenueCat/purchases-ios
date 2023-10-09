@@ -426,7 +426,7 @@ extension BasePurchasesTests {
         }
 
         var postReceiptDataCalled = false
-        var postedReceiptData: Data?
+        var postedReceiptData: EncodedAppleReceipt?
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: Decimal?
@@ -440,7 +440,7 @@ extension BasePurchasesTests {
         var postedInitiationSource: ProductRequestData.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
 
-        override func post(receiptData: Data,
+        override func post(receiptData: EncodedAppleReceipt,
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
                            observerMode: Bool,

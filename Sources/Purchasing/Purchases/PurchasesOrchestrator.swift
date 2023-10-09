@@ -1051,7 +1051,7 @@ private extension PurchasesOrchestrator {
                             source: .init(isRestore: isRestore, initiationSource: initiationSource)
                         )
 
-                        self.backend.post(receiptData: receiptData,
+                        self.backend.post(receiptData: EncodedAppleReceipt(type: .receipt, data: receiptData),
                                           productData: productRequestData,
                                           transactionData: transactionData,
                                           observerMode: self.observerMode) { result in

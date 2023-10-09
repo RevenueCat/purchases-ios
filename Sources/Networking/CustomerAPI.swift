@@ -87,7 +87,7 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    func post(receiptData: Data,
+    func post(receiptData: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
@@ -105,12 +105,6 @@ final class CustomerAPI {
 
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: transactionData.appUserID)
-
-        // We send the receipt data base64-encoded, while we don't encode the JWS.
-        var receiptData = receiptData
-        if !self.backendConfig.systemInfo.dangerousSettings.usesStoreKit2JWS {
-            receiptData = receiptData.asFetchToken.asData
-        }
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),

@@ -53,7 +53,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `subscriberAttributesByKey`
         let cacheKey =
         """
-        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.hashString)
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.data.hashString)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
@@ -120,7 +120,7 @@ extension PostReceiptDataOperation {
     struct PostData {
 
         let appUserID: String
-        let receiptData: Data
+        let receiptData: EncodedAppleReceipt
         let isRestore: Bool
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
@@ -151,7 +151,7 @@ extension PostReceiptDataOperation.PostData {
     init(
         transactionData data: PurchasedTransactionData,
         productData: ProductRequestData?,
-        receiptData: Data,
+        receiptData: EncodedAppleReceipt,
         observerMode: Bool,
         testReceiptIdentifier: String?
     ) {
@@ -191,8 +191,15 @@ private extension PurchasedTransactionData {
 private extension PostReceiptDataOperation {
 
     func printReceiptData() {
+        if self.postData.receiptData.type == .jwt {
+            self.log(Strings.receipt.posting_jwt(
+                self.postData.receiptData.serialized(),
+                initiationSource: self.postData.initiationSource.rawValue
+            ))
+            return
+        }
         do {
-            let receipt = try PurchasesReceiptParser.default.parse(from: self.postData.receiptData)
+            let receipt = try PurchasesReceiptParser.default.parse(from: self.postData.receiptData.data)
             self.log(Strings.receipt.posting_receipt(
                 receipt,
                 initiationSource: self.postData.initiationSource.rawValue
@@ -259,7 +266,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
     }
 
-    var fetchToken: String { return String(data: self.receiptData, encoding: .utf8) ?? "" }
+    var fetchToken: String { return self.receiptData.serialized() }
 
 }
 
