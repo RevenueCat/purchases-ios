@@ -230,6 +230,7 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
+    var usesStoreKit2JWS: Bool { false }
     var forceServerErrors: Bool { return self.serverIsDown }
     var forceSignatureFailures: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
