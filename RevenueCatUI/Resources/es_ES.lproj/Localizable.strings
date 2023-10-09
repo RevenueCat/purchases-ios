@@ -15,3 +15,5 @@
 "Weekly" = "Semanalmente";
 "Lifetime" = "Toda la vida";
 "%d%% off" = "%d%% de descuento";
+"Continue" = "Continuar";
+"Default_offer_details_with_intro_offer" = "Comience su prueba de {{ sub_offer_duration }} y luego {{ total_price_and_per_month }}.";

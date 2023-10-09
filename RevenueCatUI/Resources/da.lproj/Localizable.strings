@@ -15,3 +15,5 @@
 "Weekly" = "Ugentlig";
 "Lifetime" = "Livstid";
 "%d%% off" = "%d%% rabat";
+"Continue" = "Blive ved";
+"Default_offer_details_with_intro_offer" = "Start din prøveperiode på {{ sub_offer_duration }} og derefter {{ total_price_and_per_month }}.";

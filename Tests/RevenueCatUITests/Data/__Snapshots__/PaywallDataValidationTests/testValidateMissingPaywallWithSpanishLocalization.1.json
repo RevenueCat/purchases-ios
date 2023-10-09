@@ -1,0 +1,44 @@
+{
+  "asset_base_url" : "https://assets.pawwalls.com",
+  "config" : {
+    "blurred_background_image" : true,
+    "colors" : {
+      "light" : {
+        "accent1" : "#FFFFFF",
+        "accent2" : "#FFFFFF",
+        "background" : "#FFFFFF",
+        "call_to_action_background" : "#FFFFFF",
+        "call_to_action_foreground" : "#FFFFFF",
+        "text1" : "#FFFFFF"
+      }
+    },
+    "display_restore_purchases" : true,
+    "images" : {
+      "background" : "background.jpg",
+      "header" : null,
+      "icon" : "revenuecatui_default_paywall_app_icon"
+    },
+    "packages" : [
+      "$rc_monthly",
+      "$rc_annual"
+    ],
+    "privacy_url" : null,
+    "tos_url" : null
+  },
+  "localized_strings" : {
+    "en_US" : {
+      "call_to_action" : "Continuar",
+      "call_to_action_with_intro_offer" : null,
+      "features" : [
+
+      ],
+      "offer_details" : "{{ total_price_and_per_month }}",
+      "offer_details_with_intro_offer" : "Comience su prueba de {{ sub_offer_duration }} y luego {{ total_price_and_per_month }}.",
+      "offer_name" : null,
+      "subtitle" : null,
+      "title" : "{{ app_name }}"
+    }
+  },
+  "revision" : -1,
+  "template_name" : "2"
+}

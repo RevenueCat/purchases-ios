@@ -30,6 +30,16 @@ class PaywallDataValidationTests: TestCase {
         expect(result.error) == .missingPaywall
     }
 
+    func testValidateMissingPaywallWithSpanishLocalization() {
+        let offering = TestData.offeringWithNoPaywall
+        let result = TestData.offeringWithNoPaywall.validatedPaywall(locale: .init(identifier: "es_ES"))
+
+        Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
+        Self.snapshot(result.displayablePaywall)
+
+        expect(result.error) == .missingPaywall
+    }
+
     func testValidateValidPaywall() {
         let offering = TestData.offeringWithSinglePackageFeaturesPaywall
         let result = offering.validatedPaywall()

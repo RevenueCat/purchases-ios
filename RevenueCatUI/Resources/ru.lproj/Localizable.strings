@@ -15,3 +15,5 @@
 "Weekly" = "Еженедельно";
 "Lifetime" = "Продолжительность жизни";
 "%d%% off" = "Скидка %d%%";
+"Continue" = "Продолжать";
+"Default_offer_details_with_intro_offer" = "Начните пробную версию {{ sub_offer_duration }}, затем {{ total_price_and_per_month }}.";

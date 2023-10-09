@@ -27,6 +27,9 @@ public struct PaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
+    @Environment(\.locale)
+    private var locale
+
     @StateObject
     private var purchaseHandler: PurchaseHandler
 
@@ -150,7 +153,7 @@ public struct PaywallView: View {
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
-        let (paywall, template, error) = offering.validatedPaywall()
+        let (paywall, template, error) = offering.validatedPaywall(locale: self.locale)
 
         let paywallView = LoadedOfferingPaywallView(
             offering: offering,

@@ -22,11 +22,17 @@ extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
     /// that has no paywall configuration, or when that configuration is invalid.
-    static func createDefault(with packages: [Package]) -> Self {
-        return self.createDefault(with: packages.map(\.identifier))
+    static func createDefault(
+        with packages: [Package],
+        locale: Locale
+    ) -> Self {
+        return self.createDefault(with: packages.map(\.identifier), locale: locale)
     }
 
-    static func createDefault(with packageIdentifiers: [String]) -> Self {
+    static func createDefault(
+        with packageIdentifiers: [String],
+        locale: Locale
+    ) -> Self {
         return .init(
             templateName: Self.defaultTemplate.rawValue,
             config: .init(
@@ -39,7 +45,7 @@ extension PaywallData {
                 blurredBackgroundImage: true,
                 displayRestorePurchases: true
             ),
-            localization: Self.localization,
+            localization: Self.localization(Localization.localizedBundle(locale)),
             assetBaseURL: Self.defaultTemplateBaseURL,
             revision: Self.revisionID
         )
@@ -90,13 +96,21 @@ private extension PaywallData {
         ))
     }()
 
-    static let localization: PaywallData.LocalizedConfiguration = .init(
-        title: "{{ app_name }}",
-        subtitle: nil,
-        callToAction: "Continue",
-        offerDetails: "{{ total_price_and_per_month }}",
-        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}."
-    )
+    static func localization(_ localizedBundle: Bundle) -> PaywallData.LocalizedConfiguration {
+        .init(
+            title: "{{ app_name }}",
+            subtitle: nil,
+            callToAction: localizedBundle
+                .localizedString(forKey: "Continue", value: nil, table: nil),
+            offerDetails: "{{ total_price_and_per_month }}",
+            offerDetailsWithIntroOffer: localizedBundle
+                .localizedString(
+                    forKey: "Default_offer_details_with_intro_offer",
+                    value: "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.",
+                    table: nil
+                )
+        )
+    }
 
     static let backgroundImage = "background.jpg"
     static let defaultTemplateBaseURL = Bundle.module.resourceURL ?? Bundle.module.bundleURL
@@ -124,11 +138,14 @@ struct DefaultPaywall_Previews: PreviewProvider {
         identifier: "offering",
         serverDescription: "Main offering",
         metadata: [:],
-        paywall: .createDefault(with: [
-            TestData.weeklyPackage,
-            TestData.monthlyPackage,
-            TestData.annualPackage
-        ]),
+        paywall: .createDefault(
+            with: [
+                TestData.weeklyPackage,
+                TestData.monthlyPackage,
+                TestData.annualPackage
+            ],
+            locale: .current
+        ),
         availablePackages: TestData.packages
     )
 

@@ -15,3 +15,5 @@
 "Weekly" = "每周";
 "Lifetime" = "寿命";
 "%d%% off" = "%d%%折";
+"Continue" = "继续";
+"Default_offer_details_with_intro_offer" = "开始 {{ sub_offer_duration }} 试用，然后 {{total_price_and_per_month }}。";

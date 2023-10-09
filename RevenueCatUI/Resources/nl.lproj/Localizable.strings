@@ -15,3 +15,5 @@
 "Weekly" = "Wekelijks";
 "Lifetime" = "Levenslang";
 "%d%% off" = "%d%% korting";
+"Continue" = "Doorgaan";
+"Default_offer_details_with_intro_offer" = "Start uw proefperiode van {{ sub_offer_duration }} en daarna {{ total_price_and_per_month }}.";

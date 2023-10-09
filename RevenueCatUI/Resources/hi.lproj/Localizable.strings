@@ -15,3 +15,5 @@
 "Weekly" = "साप्ताहिक";
 "Lifetime" = "जीवनभर";
 "%d%% off" = "%d%% छूट";
+"Continue" = "जारी रखना";
+"Default_offer_details_with_intro_offer" = "अपना {{sub_offer_duration }} परीक्षण शुरू करें, फिर {{ total_price_and_per_month }}।";

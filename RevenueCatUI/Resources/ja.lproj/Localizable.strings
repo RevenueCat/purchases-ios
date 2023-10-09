@@ -15,3 +15,5 @@
 "Weekly" = "毎週";
 "Lifetime" = "一生";
 "%d%% off" = "%d%%オフ";
+"Continue" = "続く";
+"Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} トライアルを開始してから、{{ total_price_and_per_month }} を開始してください。";

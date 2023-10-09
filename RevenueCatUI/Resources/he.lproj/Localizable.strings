@@ -15,3 +15,5 @@
 "Weekly" = "שְׁבוּעִי";
 "Lifetime" = "לכל החיים";
 "%d%% off" = "%d%% הנחה";
+"Continue" = "לְהַמשִׁיך";
+"Default_offer_details_with_intro_offer" = "התחל את תקופת הניסיון של {{ sub_offer_duration }} ולאחר מכן {{ total_price_and_per_month }}.";

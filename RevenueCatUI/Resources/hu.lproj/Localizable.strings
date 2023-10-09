@@ -15,3 +15,5 @@
 "Weekly" = "Heti";
 "Lifetime" = "Élettartam";
 "%d%% off" = "%d%% kedvezménnyel";
+"Continue" = "Folytatni";
+"Default_offer_details_with_intro_offer" = "Indítsa el a {{ sub_offer_duration }} próbaidőszakot, majd {{ total_price_and_per_month }}.";

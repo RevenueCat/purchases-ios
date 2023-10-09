@@ -15,3 +15,5 @@
 "Weekly" = "Щотижня";
 "Lifetime" = "Час життя";
 "%d%% off" = "Знижка %d%%";
+"Continue" = "Продовжити";
+"Default_offer_details_with_intro_offer" = "Розпочніть {{ sub_offer_duration }} пробний період, а потім {{ total_price_and_per_month }}.";
