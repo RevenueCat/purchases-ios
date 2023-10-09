@@ -46,6 +46,15 @@ struct TemplateBackgroundImageView: View {
             RemoteImage(url: url)
                 .blur(radius: 40)
                 .opacity(0.7)
+                .background {
+                    // Simulate dark materials in pre-watchOS 10.0
+                    // where `Material` isn't available.
+                    #if os(watchOS)
+                    if #unavailable(watchOS 10.0) {
+                        Color.black
+                    }
+                    #endif
+                }
         } else {
             RemoteImage(url: url)
         }
