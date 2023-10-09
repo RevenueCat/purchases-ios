@@ -82,10 +82,14 @@ public struct PaywallView: View {
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
-        self._offering = .init(initialValue: offering)
-        self._customerInfo = .init(initialValue: customerInfo)
         self._introEligibility = .init(wrappedValue: introEligibility ?? .default())
         self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+        self._offering = .init(
+            initialValue: offering ?? Self.loadCachedCurrentOfferingIfPossible()
+        )
+        self._customerInfo = .init(
+            initialValue: customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
+        )
         self.mode = mode
         self.fonts = fonts
     }
@@ -175,6 +179,32 @@ public struct PaywallView: View {
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+private extension PaywallView {
+
+    static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
+        if Purchases.isConfigured {
+            return Purchases.shared.cachedCustomerInfo
+        } else {
+            return nil
+        }
+    }
+
+    static func loadCachedCurrentOfferingIfPossible() -> Offering? {
+        if Purchases.isConfigured {
+            return Purchases.shared.cachedOfferings?.current
+        } else {
+            return nil
+        }
+    }
+
+}
+
+// MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(tvOS, unavailable)
@@ -352,21 +382,6 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .device
         case .footer, .condensedFooter: return .sizeThatFits
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension PaywallTemplate {
-
-    var name: String {
-        switch self {
-        case .template1: return "Minimalist"
-        case .template2: return "Bold Packages"
-        case .template3: return "Feature List"
-        case .template4: return "Horizontal"
-        case .template5: return "Small Banner"
         }
     }
 
