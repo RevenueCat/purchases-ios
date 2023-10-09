@@ -92,7 +92,7 @@ final class TransactionPoster: TransactionPosterType {
 
         if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS {
             guard let jsonRepresentation = transaction.jsonRepresentation else {
-                Logger.error("Could not fetch JWS token for transaction with ID \(transaction.transactionIdentifier)")
+                Logger.error(Strings.storeKit.could_not_fetch_jwt(transaction.transactionIdentifier))
                 return
             }
             self.fetchProductsAndPostReceipt(

@@ -69,6 +69,8 @@ enum StoreKitStrings {
 
     case error_displaying_store_message(Error)
 
+    case could_not_fetch_jwt(String)
+
 }
 
 extension StoreKitStrings: LogMessage {
@@ -160,6 +162,8 @@ extension StoreKitStrings: LogMessage {
 
         case let .error_displaying_store_message(error):
             return "Error displaying StoreKit message: '\(error)'"
+        case let .could_not_fetch_jwt(transactionIdentifier):
+            return "Could not fetch JWS token for transaction with ID \(transactionIdentifier)"
         }
     }
 
