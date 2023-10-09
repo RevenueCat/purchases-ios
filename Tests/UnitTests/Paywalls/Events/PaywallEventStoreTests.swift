@@ -36,6 +36,45 @@ class PaywallEventStoreTests: TestCase {
         _ = try PaywallEventStore.createDefault(applicationSupportDirectory: nil)
     }
 
+    func testPersistsEventsAcrossInitialization() async throws {
+        let container = Self.temporaryFolder()
+
+        var store = try PaywallEventStore.createDefault(
+            applicationSupportDirectory: container
+        )
+
+        await store.store(.randomImpressionEvent())
+        await self.verifyEventsInStore(store, expectedCount: 1)
+
+        store = try PaywallEventStore.createDefault(
+            applicationSupportDirectory: container
+        )
+        await self.verifyEventsInStore(store, expectedCount: 1)
+    }
+
+    func testCreateDefaultRemovesDocumentsContainer() async throws {
+        let applicationSupport = Self.temporaryFolder()
+        let documents = Self.temporaryFolder()
+
+        // 1. Initialize store with documents directory:
+        var store = try PaywallEventStore.createDefault(applicationSupportDirectory: documents)
+
+        // 2. Store event
+        await store.store(.randomImpressionEvent())
+        await self.verifyEventsInStore(store, expectedCount: 1)
+
+        // 3. Initialize store with new directories
+        store = try PaywallEventStore.createDefault(
+            applicationSupportDirectory: applicationSupport,
+            documentsDirectory: documents
+        )
+        await self.verifyEventsInStore(store, expectedCount: 0)
+
+        // 4. Verify events were removed
+        store = try PaywallEventStore.createDefault(applicationSupportDirectory: documents)
+        await self.verifyEventsInStore(store, expectedCount: 0)
+    }
+
     // - MARK: store and fetch
 
     func testFetchWithEmptyStore() async {
@@ -173,6 +212,33 @@ class PaywallEventStoreTests: TestCase {
 }
 
 // MARK: - Extensions
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension PaywallEventStoreTests {
+
+    static func temporaryFolder() -> URL {
+        return FileManager.default
+            .temporaryDirectory
+            .appendingPathComponent("paywall_event_store_tests", isDirectory: true)
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    }
+
+    func verifyEventsInStore(
+        _ store: PaywallEventStore,
+        expectedCount: Int,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async {
+        let events = await store.fetch(100)
+
+        expect(
+            file: file,
+            line: line,
+            events
+        ).to(haveCount(expectedCount))
+    }
+
+}
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PaywallEvent.Data {

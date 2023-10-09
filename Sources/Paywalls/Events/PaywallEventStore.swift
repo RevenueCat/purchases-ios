@@ -85,23 +85,46 @@ internal actor PaywallEventStore: PaywallEventStoreType {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PaywallEventStore {
 
-    static func createDefault(applicationSupportDirectory: URL?) throws -> PaywallEventStore {
-        let applicationSupportDirectory = try applicationSupportDirectory ?? Self.applicationSupportDirectory
-        let url = applicationSupportDirectory
-            .appendingPathComponent("revenuecat")
-            .appendingPathComponent("paywall_event_store")
-
+    static func createDefault(
+        applicationSupportDirectory: URL?,
+        documentsDirectory: URL? = nil
+    ) throws -> PaywallEventStore {
+        let url = Self.url(in: try applicationSupportDirectory ?? Self.applicationSupportDirectory)
         Logger.verbose(PaywallEventStoreStrings.initializing(url))
+
+        let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
+        Self.removeStoreIfExists(Self.url(in: documentsDirectory))
 
         return try .init(handler: FileHandler(url))
     }
 
+    private static func url(in container: URL) -> URL {
+        return container
+            .appendingPathComponent("revenuecat")
+            .appendingPathComponent("paywall_event_store")
+    }
+
+    private static func removeStoreIfExists(_ url: URL) {
+        guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
+
+        Logger.debug(PaywallEventStoreStrings.removing_old_documents_store(url))
+
+        do {
+            try Self.fileManager.removeItem(at: url)
+        } catch {
+            Logger.error(PaywallEventStoreStrings.error_removing_old_documents_store(error))
+        }
+    }
+
+    // See https://nemecek.be/blog/57/making-files-from-your-app-available-in-the-ios-files-app
+    // We don't want to store events in the documents directory in case app makes their documents
+    // accessible via the Files app.
     private static var applicationSupportDirectory: URL {
         get throws {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 return URL.applicationSupportDirectory
             } else {
-                return try FileManager.default.url(
+                return try Self.fileManager.url(
                     for: .applicationSupportDirectory,
                     in: .userDomainMask,
                     appropriateFor: nil,
@@ -110,6 +133,23 @@ extension PaywallEventStore {
             }
         }
     }
+
+    private static var documentsDirectory: URL {
+        get throws {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return URL.documentsDirectory
+            } else {
+                return try Self.fileManager.url(
+                    for: .documentDirectory,
+                    in: .userDomainMask,
+                    appropriateFor: nil,
+                    create: true
+                )
+            }
+        }
+    }
+
+    private static let fileManager: FileManager = .default
 
 }
 
@@ -120,6 +160,9 @@ extension PaywallEventStore {
 private enum PaywallEventStoreStrings {
 
     case initializing(URL)
+
+    case removing_old_documents_store(URL)
+    case error_removing_old_documents_store(Error)
 
     case storing_event(PaywallEvent)
 
@@ -138,6 +181,12 @@ extension PaywallEventStoreStrings: LogMessage {
         switch self {
         case let .initializing(directory):
             return "Initializing PaywallEventStore: \(directory.absoluteString)"
+
+        case let .removing_old_documents_store(url):
+            return "Removing old store: \(url)"
+
+        case let .error_removing_old_documents_store(error):
+            return "Failed removing old store: \((error as NSError).description)"
 
         case let .storing_event(event):
             return "Storing event: \(event.debugDescription)"
