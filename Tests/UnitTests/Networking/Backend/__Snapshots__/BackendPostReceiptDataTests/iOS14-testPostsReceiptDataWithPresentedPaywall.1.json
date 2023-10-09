@@ -18,7 +18,7 @@
       "observer_mode" : false,
       "paywall" : {
         "dark_mode" : true,
-        "display_mode" : "condensed_footer",
+        "display_mode" : "full_screen",
         "locale" : "en_US",
         "revision" : 5,
         "session_id" : "73616D70-6C65-2073-7472-696E67000000"
