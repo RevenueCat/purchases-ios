@@ -109,7 +109,7 @@ class Backend {
                                       completion: completion)
     }
 
-    func post(receiptData: Data,
+    func post(receiptData: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,

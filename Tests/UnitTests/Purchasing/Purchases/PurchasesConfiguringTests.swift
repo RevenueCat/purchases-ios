@@ -416,7 +416,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                           userDefaults: .emptyNewUserDefaults(),
                           observerMode: false,
                           responseVerificationMode: .default,
-                          dangerousSettings: .init(customEntitlementComputation: true, usesStoreKit2JWS: false)),
+                          dangerousSettings: .init(customEntitlementComputation: true, usesStoreKit2JWS: false),
                           showStoreMessagesAutomatically: true)
         }.to(throwAssertion())
     }
