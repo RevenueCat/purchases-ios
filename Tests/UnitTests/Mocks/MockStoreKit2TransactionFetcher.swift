@@ -38,8 +38,8 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedTransaction(completion: @escaping (RevenueCat.StoreTransaction?) -> Void) {
-        completion(self.stubbedLastVerifiedTransaction)
+    func fetchLastVerifiedTransaction() async -> RevenueCat.StoreTransaction? {
+        self.stubbedLastVerifiedTransaction
     }
 
     // MARK: -

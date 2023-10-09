@@ -1233,7 +1233,9 @@ private extension PurchasesOrchestrator {
                              product: StoreProductType,
                              subscriptionGroupIdentifier: String,
                              completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
-        self.transactionFetcher.fetchLastVerifiedTransaction { transaction in
+
+        _ = Task<Void, Never> {
+            let transaction = await self.transactionFetcher.fetchLastVerifiedTransaction()
             guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
                 // Promotional offers require existing purchases.
                 // Fail early if there are no transactions
