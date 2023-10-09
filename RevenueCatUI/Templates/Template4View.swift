@@ -147,22 +147,26 @@ struct Template4View: TemplateViewType {
     }
 
     private var offerDetails: some View {
-        IntroEligibilityStateView(
-            textWithNoIntroOffer: self.selectedPackage.localization.offerDetails,
-            textWithIntroOffer: self.selectedPackage.localization.offerDetailsWithIntroOffer,
-            introEligibility: self.introEligibility[self.selectedPackage.content],
-            foregroundColor: self.configuration.colors.text1Color
-        )
+        ConsistentPackageContentView(
+            packages: self.configuration.packages.all,
+            selected: self.selectedPackage
+        ) { package in
+            IntroEligibilityStateView(
+                textWithNoIntroOffer: package.localization.offerDetails,
+                textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
+                introEligibility: self.introEligibility[package.content],
+                foregroundColor: self.configuration.colors.text1Color
+            )
+        }
         .font(self.font(for: .body).weight(.light))
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
     }
 
     private var subscribeButton: some View {
         PurchaseButton(
-            package: self.selectedPackage,
-            configuration: self.configuration,
-            introEligibility: self.introEligibility[self.selectedPackage.content],
-            purchaseHandler: self.purchaseHandler
+            packages: self.configuration.packages,
+            selectedPackage: self.selectedPackage,
+            configuration: self.configuration
         )
     }
 

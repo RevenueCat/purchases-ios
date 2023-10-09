@@ -216,10 +216,9 @@ struct Template2View: TemplateViewType {
 
     private var subscribeButton: some View {
         PurchaseButton(
-            package: self.selectedPackage,
-            configuration: self.configuration,
-            introEligibility: self.introEligibility[self.selectedPackage.content],
-            purchaseHandler: self.purchaseHandler
+            packages: self.configuration.packages,
+            selectedPackage: self.selectedPackage,
+            configuration: self.configuration
         )
     }
 
