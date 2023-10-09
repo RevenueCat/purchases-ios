@@ -78,7 +78,7 @@ class OfferingsAPI {
 
         // We send the receipt data base64-encoded, while we don't encode th
         var receiptData = receiptData
-        if !self.backendConfig.systemInfo.dangerousSettings.usesStoreKit2JWS {
+        if !self.backendConfig.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS {
             receiptData = receiptData.asFetchToken.asData
         }
 
