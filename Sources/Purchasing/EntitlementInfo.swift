@@ -134,9 +134,9 @@ extension PeriodType: DefaultValueProvider {
     @objc public var productIdentifier: String { self.contents.productIdentifier }
 
     /**
-     The product plan identifier that unlocked this entitlement (usually for a Google Play purchase)
+     The product plan identifier that unlocked this entitlement (for a Google Play subscription purchase)
      */
-    @objc internal var productPlanIdentifier: String? { self.contents.productPlanIdentifier }
+    @objc public var productPlanIdentifier: String? { self.contents.productPlanIdentifier }
 
     /**
      False if this entitlement is unlocked via a production purchase
@@ -194,6 +194,7 @@ extension PeriodType: DefaultValueProvider {
             expirationDate=\(String(describing: self.expirationDate)),
             store=\(self.store),
             productIdentifier=\(self.productIdentifier),
+            productPlanIdentifier=\(self.productPlanIdentifier ?? "null"),
             isSandbox=\(self.isSandbox),
             unsubscribeDetectedAt=\(String(describing: self.unsubscribeDetectedAt)),
             billingIssueDetectedAt=\(String(describing: self.billingIssueDetectedAt)),

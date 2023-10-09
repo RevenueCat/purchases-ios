@@ -27,6 +27,7 @@ func checkEntitlementInfoAPI() {
     let eDate: Date? = entitlementInfo.expirationDate
     let store: Store = entitlementInfo.store
     let pId: String = entitlementInfo.productIdentifier
+    let ppId: String? = entitlementInfo.productPlanIdentifier
     let iss: Bool = entitlementInfo.isSandbox
     let uda: Date? = entitlementInfo.unsubscribeDetectedAt
     let bida: Date? = entitlementInfo.billingIssueDetectedAt
@@ -39,7 +40,7 @@ func checkEntitlementInfoAPI() {
     let rawData: [String: Any] = entitlementInfo.rawData
 
     print(entitlementInfo!, ident, isActive, isActiveInAnyEnvironment, isActiveInCurrentEnvironment,
-          willRenew, pType, lpd!, opd!, eDate!, store, pId, iss, uda!, bida!, oType, rawData)
+          willRenew, pType, lpd!, opd!, eDate!, store, pId, ppId!, iss, uda!, bida!, oType, rawData)
 }
 
 var store: Store!

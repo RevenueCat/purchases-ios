@@ -25,6 +25,7 @@
     NSDate *ed = [ri expirationDate];
     RCStore s = [ri store];
     NSString *pi = [ri productIdentifier];
+    NSString *ppi = [ri productPlanIdentifier];
     BOOL is = [ri isSandbox];
     NSDate *uda = [ri unsubscribeDetectedAt];
     NSDate *bida = [ri billingIssueDetectedAt];
@@ -35,7 +36,7 @@
         RCVerificationResult ver __unused = [ri verification];
     }
 
-    NSLog(i, ia, iaae, iace, ri, wr, pt, lpd, opd, ed, s, pi, is, uda, bida, ot, rawData);
+    NSLog(i, ia, iaae, iace, ri, wr, pt, lpd, opd, ed, s, pi, ppi, is, uda, bida, ot, rawData);
 }
 
 + (void)checkEnums {
