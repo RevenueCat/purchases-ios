@@ -90,16 +90,14 @@ import Foundation
      */
     @objc public convenience init(autoSyncPurchases: Bool = true, usesStoreKit2JWS: Bool = false) {
         self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false,
-                  usesStoreKit2JWS: usesStoreKit2JWS)
+                  customEntitlementComputation: false)
 
     }
 
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
     /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
     @objc internal convenience init(autoSyncPurchases: Bool = true,
-                                    customEntitlementComputation: Bool,
-                                    usesStoreKit2JWS: Bool) {
+                                    customEntitlementComputation: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
                   internalSettings: Internal.default)
