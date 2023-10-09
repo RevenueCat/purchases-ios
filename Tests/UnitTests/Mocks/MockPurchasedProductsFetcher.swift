@@ -15,7 +15,7 @@ import Foundation
 @testable import RevenueCat
 import StoreKit
 
-class MockPurchasedProductsFetcher: PurchasedProductsFetcherType {
+final class MockPurchasedProductsFetcher: PurchasedProductsFetcherType {
 
     var invokedFetch = false
     var invokedFetchCount = 0
