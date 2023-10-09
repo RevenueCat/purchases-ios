@@ -129,6 +129,7 @@ struct WatchTemplateView: TemplateViewType {
                         self.roundedRectangle.foregroundStyle(.thinMaterial)
                     } else {
                         self.roundedRectangle
+                            .opacity(0.3)
                     }
                 } else {
                     // Otherwise the text should have enough contrast with the selected background color.
