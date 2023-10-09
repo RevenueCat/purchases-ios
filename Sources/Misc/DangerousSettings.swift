@@ -121,13 +121,13 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
 
+    #if DEBUG
     /**
      * Controls whether StoreKit 2 JWS tokens are sent to RevenueCat instead of StoreKit 1 receipts.
      * Must be used in conjunction with the `usesStoreKit2IfAvailable configuration` option.
      */
     var usesStoreKit2JWS: Bool { get }
 
-    #if DEBUG
     /// Whether `HTTPClient` will fake server errors
     var forceServerErrors: Bool { get }
 
