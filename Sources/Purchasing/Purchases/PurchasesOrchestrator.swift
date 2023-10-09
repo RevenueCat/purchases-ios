@@ -1241,11 +1241,12 @@ private extension PurchasesOrchestrator {
                 return
             }
 
+            let receiptData = EncodedAppleReceipt(type: .jwt, data: jwsRepresentation)
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
                                         product: product,
                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                        receiptData: jwsRepresentation) { result in
+                                        receiptData: receiptData) { result in
                 completion(result)
             }
         }
@@ -1275,11 +1276,12 @@ private extension PurchasesOrchestrator {
                     completion(.failure(ErrorUtils.ineligibleError()))
                     return
                 }
+                let receipt = EncodedAppleReceipt(type: .receipt, data: receiptData)
                 self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                             discountIdentifier: discountIdentifier,
                                             product: product,
                                             subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                            receiptData: receiptData) { result in
+                                            receiptData: receipt) { result in
                     completion(result)
                 }
             }
@@ -1291,7 +1293,7 @@ private extension PurchasesOrchestrator {
                                 discountIdentifier: String,
                                 product: StoreProductType,
                                 subscriptionGroupIdentifier: String,
-                                receiptData: Data,
+                                receiptData: EncodedAppleReceipt,
                                 completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
         self.backend.offerings.post(offerIdForSigning: discountIdentifier,
                                     productIdentifier: product.productIdentifier,

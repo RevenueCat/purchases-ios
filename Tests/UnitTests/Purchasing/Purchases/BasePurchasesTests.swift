@@ -382,7 +382,7 @@ extension BasePurchasesTests {
         override func post(offerIdForSigning offerIdentifier: String,
                            productIdentifier: String,
                            subscriptionGroup: String?,
-                           receiptData: Data,
+                           receiptData: EncodedAppleReceipt,
                            appUserID: String,
                            completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
             self.postOfferForSigningCalled = true
