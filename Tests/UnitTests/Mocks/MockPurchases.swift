@@ -91,6 +91,10 @@ extension MockPurchases: PurchasesType {
         return try self.mockedCustomerInfoResponse.get()
     }
 
+    var cachedCustomerInfo: CustomerInfo? {
+        return self.mockedCustomerInfoResponse.value
+    }
+
     func getOfferings(completion: @escaping ((Offerings?, PublicError?) -> Void)) {
         self.invokedGetOfferings = true
         completion(self.mockedOfferingsResponse.value, self.mockedOfferingsResponse.error)
@@ -106,6 +110,10 @@ extension MockPurchases: PurchasesType {
         self.invokedGetOfferings = true
         self.invokedGetOfferingsParameters = fetchPolicy
         return try self.mockedOfferingsResponse.get()
+    }
+
+    var cachedOfferings: Offerings? {
+        return try? self.mockedOfferingsResponse.get()
     }
 
     // MARK: - Unimplemented

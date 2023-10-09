@@ -125,7 +125,11 @@ private func checkTypealiases(
 private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getCustomerInfo { (_: CustomerInfo?, _: Error?) in }
     purchases.getCustomerInfo(fetchPolicy: .default) { (_: CustomerInfo?, _: Error?) in }
+    let _: CustomerInfo? = purchases.cachedCustomerInfo
+
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
+    let _: Offerings? = purchases.cachedOfferings
+
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
     let storeProduct: StoreProduct! = nil

@@ -154,7 +154,11 @@ BOOL isAnonymous;
     [p getCustomerInfoWithFetchPolicy:RCCacheFetchPolicyFetchCurrent completion:^(RCCustomerInfo *customerInfo,
                                                                                   NSError *error) {}];
     [p getCustomerInfoWithCompletion:^(RCCustomerInfo *info, NSError *error) {}];
+    RCCustomerInfo * _Nullable __unused cachedCustomerInfo = p.cachedCustomerInfo;
+
     [p getOfferingsWithCompletion:^(RCOfferings *info, NSError *error) {}];
+    RCOfferings * _Nullable __unused offerings = p.cachedOfferings;
+
     [p getProductsWithIdentifiers:@[@""] completion:^(NSArray<RCStoreProduct *> *products) { }];
     [p purchaseProduct:storeProduct withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
