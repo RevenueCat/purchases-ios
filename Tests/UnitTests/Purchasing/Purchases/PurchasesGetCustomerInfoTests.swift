@@ -219,16 +219,33 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
     }
 
     func testInvalidateCustomerInfoCacheRemovesCachedCustomerInfo() {
-        setupPurchases()
-        guard let nonOptionalPurchases = purchases else { fatalError("failed when setting up purchases for testing") }
-        let appUserID = identityManager.currentAppUserID
+        self.setupPurchases()
+
+        let appUserID = self.identityManager.currentAppUserID
         self.deviceCache.cache(customerInfo: Data(), appUserID: appUserID)
         expect(self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)).toNot(beNil())
         expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == 0
 
-        nonOptionalPurchases.invalidateCustomerInfoCache()
+        self.purchases.invalidateCustomerInfoCache()
         expect(self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)).to(beNil())
         expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == 1
+        expect(self.purchases.cachedCustomerInfo).to(beNil())
+    }
+
+    // MARK: - cachedCustomerInfo
+
+    func testCachedCustomerInfoWithNoCache() {
+        self.setupPurchases()
+
+        expect(self.purchases.cachedCustomerInfo).to(beNil())
+    }
+
+    func testCachedCustomerInfoWithCache() throws {
+        self.deviceCache.cache(customerInfo: try CustomerInfo.emptyInfo.jsonEncodedData, appUserID: Self.appUserID)
+
+        self.setupPurchases()
+
+        expect(self.purchases.cachedCustomerInfo) == .emptyInfo
     }
 
 }

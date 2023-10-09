@@ -47,6 +47,10 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         }
     }
 
+    override var cachedOfferings: Offerings? {
+        return self.stubbedOfferingsCompletionResult.value
+    }
+
     struct InvokedUpdateOfferingsCacheParameters {
         let appUserID: String
         let isAppBackgrounded: Bool

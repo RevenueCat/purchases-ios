@@ -90,6 +90,21 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
+    func testCachedOfferingsEmptyByDefault() {
+        self.setupPurchases()
+
+        expect(self.purchases.cachedOfferings).to(beNil())
+    }
+
+    func testCachedOfferings() throws {
+        self.setupPurchases()
+
+        let offerings = try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(offerings)
+
+        expect(self.purchases.cachedOfferings) === offerings
+    }
+
     func testInvalidateCustomerInfoCacheDoesntClearOfferingsCache() {
         self.setupPurchases()
 

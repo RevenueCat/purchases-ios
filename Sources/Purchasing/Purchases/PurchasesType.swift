@@ -168,6 +168,15 @@ public protocol PurchasesType: AnyObject {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo
 
+    /**
+     * The currently cached ``CustomerInfo`` if one is available.
+     * This is synchronous, and therefore useful for contexts where an app needs a `CustomerInfo`
+     * right away without waiting for a callback, like a SwiftUI view.
+     *
+     * This allows initializing state to ensure that UI can be loaded from the very first frame.
+     */
+    var cachedCustomerInfo: CustomerInfo? { get }
+
     #endif
 
     /**
@@ -201,6 +210,15 @@ public protocol PurchasesType: AnyObject {
      */
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings
+
+    /**
+     * The currently cached ``Offerings`` if available.
+     * This is synchronous, and therefore useful for contexts where an app needs an instance of `Offerings`
+     * right away without waiting for a callback, like a SwiftUI view.
+     *
+     * This allows initializing state to ensure that UI can be loaded from the very first frame.
+     */
+    var cachedOfferings: Offerings? { get }
 
     /**
      * Fetches the ``StoreProduct``s for your IAPs for given `productIdentifiers`.

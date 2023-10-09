@@ -42,7 +42,7 @@ class OfferingsManager {
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        guard let memoryCachedOfferings = self.deviceCache.cachedOfferings else {
+        guard let memoryCachedOfferings = self.cachedOfferings else {
             Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -65,6 +65,10 @@ class OfferingsManager {
                                           completion: nil)
             }
         }
+    }
+
+    var cachedOfferings: Offerings? {
+        return self.deviceCache.cachedOfferings
     }
 
     func updateOfferingsCache(

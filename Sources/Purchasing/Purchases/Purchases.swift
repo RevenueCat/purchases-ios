@@ -697,6 +697,10 @@ public extension Purchases {
         return try await self.offerings(fetchPolicy: .default)
     }
 
+    var cachedOfferings: Offerings? {
+        return self.offeringsManager.cachedOfferings
+    }
+
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
@@ -842,6 +846,10 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await self.customerInfoAsync(fetchPolicy: fetchPolicy)
+    }
+
+    var cachedCustomerInfo: CustomerInfo? {
+        return self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)
     }
 
     #endif
