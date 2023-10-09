@@ -93,7 +93,7 @@ extension PaywallEventStore {
         Logger.verbose(PaywallEventStoreStrings.initializing(url))
 
         let documentsDirectory = try documentsDirectory ?? Self.documentsDirectory
-        Self.removeStoreIfExists(Self.url(in: documentsDirectory))
+        Self.removeLegacyDirectoryIfExists(documentsDirectory)
 
         return try .init(handler: FileHandler(url))
     }
@@ -104,7 +104,8 @@ extension PaywallEventStore {
             .appendingPathComponent("paywall_event_store")
     }
 
-    private static func removeStoreIfExists(_ url: URL) {
+    private static func removeLegacyDirectoryIfExists(_ documentsDirectory: URL) {
+        let url = Self.url(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
         Logger.debug(PaywallEventStoreStrings.removing_old_documents_store(url))
