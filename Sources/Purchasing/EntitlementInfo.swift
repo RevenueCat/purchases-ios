@@ -134,7 +134,7 @@ extension PeriodType: DefaultValueProvider {
     @objc public var productIdentifier: String { self.contents.productIdentifier }
 
     /**
-     The product plan identifier that unlocked this entitlement (usually for a Google Play purchase)
+     The product plan identifier that unlocked this entitlement (for a Google Play subscription purchase)
      */
     @objc public var productPlanIdentifier: String? { self.contents.productPlanIdentifier }
 
