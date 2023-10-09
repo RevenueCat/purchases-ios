@@ -60,7 +60,7 @@ class PaywallEventsRequestTests: TestCase {
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
-        displayMode: .condensedFooter,
+        displayMode: .fullScreen,
         localeIdentifier: "es_ES",
         darkMode: true
     )
