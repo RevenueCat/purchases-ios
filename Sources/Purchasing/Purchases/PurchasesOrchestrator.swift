@@ -261,7 +261,7 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.dangerousSettings.usesStoreKit2JWS,
+        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
             #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.sk2PromotionalOffer(forProductDiscount: productDiscount,
                                      discountIdentifier: discountIdentifier,
