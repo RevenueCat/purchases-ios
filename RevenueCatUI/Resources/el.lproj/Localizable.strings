@@ -15,3 +15,5 @@
 "Weekly" = "Εβδομαδιαίος";
 "Lifetime" = "Διάρκεια Ζωής";
 "%d%% off" = "Έκπτωση %d%%";
+"Continue" = "Να συνεχίσει";
+"Default_offer_details_with_intro_offer" = "Ξεκινήστε τη δοκιμή {{ sub_offer_duration }} και μετά {{ total_price_and_per_month }}.";

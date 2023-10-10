@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/15/23.
 
+import Foundation
+
 import RevenueCat
 
 // MARK: - Errors
@@ -39,7 +41,7 @@ extension Offering {
 extension Offering {
 
     /// - Returns: a validated paywall suitable to be displayed, and any associated error.
-    func validatedPaywall() -> ValidationResult {
+    func validatedPaywall(locale: Locale = .current) -> ValidationResult {
         if let paywall = self.paywall {
             switch paywall.validate() {
             case let .success(template):
@@ -48,13 +50,13 @@ extension Offering {
             case let .failure(error):
                 // If there are any errors, create a default paywall
                 // with only the configured packages.
-                return (.createDefault(with: paywall.config.packages),
+                return (.createDefault(with: paywall.config.packages, locale: locale),
                         PaywallData.defaultTemplate,
                         error)
             }
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
-            return (displayablePaywall: .createDefault(with: self.availablePackages),
+            return (displayablePaywall: .createDefault(with: self.availablePackages, locale: locale),
                     PaywallData.defaultTemplate,
                     error: .missingPaywall)
         }

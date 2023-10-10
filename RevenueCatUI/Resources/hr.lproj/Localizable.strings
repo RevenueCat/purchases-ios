@@ -15,3 +15,5 @@
 "Weekly" = "Tjedni";
 "Lifetime" = "Doživotno";
 "%d%% off" = "%d%% popusta";
+"Continue" = "Nastaviti";
+"Default_offer_details_with_intro_offer" = "Započnite probno razdoblje od {{ sub_offer_duration }}, a zatim {{ total_price_and_per_month }}.";

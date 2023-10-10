@@ -54,7 +54,7 @@ struct LoadingPaywallView: View {
     }
 
     private static let template: PaywallTemplate = PaywallData.defaultTemplate
-    private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages)
+    private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages, locale: .current)
 
     private static let paywall: PaywallData = {
         var paywall: PaywallData = Self.defaultPaywall

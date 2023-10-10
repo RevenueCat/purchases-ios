@@ -20,6 +20,12 @@ class OtherPaywallViewTests: BaseSnapshotTest {
             .snapshot(size: Self.fullScreenSize)
     }
 
+    func testDefaultSpanishPaywall() {
+        Self.createPaywall(offering: TestData.offeringWithNoPaywall)
+            .environment(\.locale, .init(identifier: "es_ES"))
+            .snapshot(size: Self.fullScreenSize)
+    }
+
     func testDefaultDarkModePaywall() {
         Self.createPaywall(offering: TestData.offeringWithNoPaywall)
             .environment(\.colorScheme, .dark)
