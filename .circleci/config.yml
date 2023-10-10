@@ -1029,7 +1029,9 @@ workflows:
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
       - build-visionos:
-          xcode_version: '15.0.0'
+          # Xcode 15.0 RC does not include visionOS (15.1 will), so this uses beta 8.
+          # See https://discuss.circleci.com/t/xcode-15-rc-released-important-notice-for-visionos-sdk-users/49278
+          xcode_version: '15.0.8'
       - backend-integration-tests:
           xcode_version: '14.3.0'
           filters:
