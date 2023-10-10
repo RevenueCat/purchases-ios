@@ -42,6 +42,7 @@ extension IntroEligibilityViewModel {
         switch packages {
         case let .single(package):
             self.singleEligibility = await self.introEligibilityChecker.eligibility(for: package.content)
+            self.allEligibility[package.content] = self.singleEligibility
 
         case let .multiple(_, _, packages):
             self.allEligibility = await self.introEligibilityChecker.eligibility(for: packages.map(\.content))

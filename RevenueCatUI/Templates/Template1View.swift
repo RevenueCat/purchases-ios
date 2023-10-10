@@ -110,10 +110,9 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var button: some View {
         PurchaseButton(
-            package: self.configuration.packages.single,
-            configuration: self.configuration,
-            introEligibility: self.introEligibility,
-            purchaseHandler: self.purchaseHandler
+            packages: self.configuration.packages,
+            selectedPackage: self.configuration.packages.default,
+            configuration: self.configuration
         )
     }
 

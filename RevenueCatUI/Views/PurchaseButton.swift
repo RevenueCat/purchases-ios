@@ -18,45 +18,43 @@ import SwiftUI
 @available(tvOS, unavailable)
 struct PurchaseButton: View {
 
-    let package: TemplateViewConfiguration.Package
+    let packages: TemplateViewConfiguration.PackageConfiguration
+    let selectedPackage: TemplateViewConfiguration.Package
     let colors: PaywallData.Configuration.Colors
     let fonts: PaywallFontProvider
-    let introEligibility: IntroEligibilityStatus?
     let mode: PaywallViewMode
 
-    @ObservedObject
-    var purchaseHandler: PurchaseHandler
+    @EnvironmentObject
+    private var introEligibilityViewModel: IntroEligibilityViewModel
+    @EnvironmentObject
+    private var purchaseHandler: PurchaseHandler
 
     init(
-        package: TemplateViewConfiguration.Package,
-        configuration: TemplateViewConfiguration,
-        introEligibility: IntroEligibilityStatus?,
-        purchaseHandler: PurchaseHandler
+        packages: TemplateViewConfiguration.PackageConfiguration,
+        selectedPackage: TemplateViewConfiguration.Package,
+        configuration: TemplateViewConfiguration
     ) {
         self.init(
-            package: package,
+            packages: packages,
+            selectedPackage: selectedPackage,
             colors: configuration.colors,
             fonts: configuration.fonts,
-            introEligibility: introEligibility,
-            mode: configuration.mode,
-            purchaseHandler: purchaseHandler
+            mode: configuration.mode
         )
     }
 
     init(
-        package: TemplateViewConfiguration.Package,
+        packages: TemplateViewConfiguration.PackageConfiguration,
+        selectedPackage: TemplateViewConfiguration.Package,
         colors: PaywallData.Configuration.Colors,
         fonts: PaywallFontProvider,
-        introEligibility: IntroEligibilityStatus?,
-        mode: PaywallViewMode,
-        purchaseHandler: PurchaseHandler
+        mode: PaywallViewMode
     ) {
-        self.package = package
+        self.packages = packages
+        self.selectedPackage = selectedPackage
         self.colors = colors
         self.fonts = fonts
-        self.introEligibility = introEligibility
         self.mode = mode
-        self.purchaseHandler = purchaseHandler
     }
 
     var body: some View {
@@ -66,16 +64,21 @@ struct PurchaseButton: View {
     private var button: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
-            guard !self.package.currentlySubscribed else { return }
+            guard !self.selectedPackage.currentlySubscribed else { return }
 
-            _ = try await self.purchaseHandler.purchase(package: self.package.content)
+            _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
         } label: {
-            PurchaseButtonLabel(
-                package: self.package,
-                colors: self.colors,
-                introEligibility: self.introEligibility,
-                mode: self.mode
-            )
+            ConsistentPackageContentView(
+                packages: self.packages.all,
+                selected: self.selectedPackage
+            ) { package in
+                PurchaseButtonLabel(
+                    package: package,
+                    colors: self.colors,
+                    introEligibility: self.introEligibilityViewModel.allEligibility[package.content],
+                    mode: self.mode
+                )
+            }
         }
         .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
         .background(self.backgroundView)
@@ -172,25 +175,28 @@ struct PurchaseButton_Previews: PreviewProvider {
 
         var mode: PaywallViewMode
 
-        @State
-        private var eligibility: IntroEligibilityStatus?
-
         @StateObject
         private var purchaseHandler = PreviewHelpers.purchaseHandler
 
+        @StateObject
+        private var eligibility = IntroEligibilityViewModel(
+            introEligibilityChecker: PreviewHelpers.introEligibilityChecker
+        )
+
         var body: some View {
             PurchaseButton(
-                package: Self.package,
+                packages: Self.packages,
+                selectedPackage: Self.package,
                 colors: TestData.colors,
                 fonts: DefaultPaywallFontProvider(),
-                introEligibility: self.eligibility,
-                mode: self.mode,
-                purchaseHandler: self.purchaseHandler
+                mode: self.mode
             )
+            .environmentObject(self.purchaseHandler)
+            .environmentObject(self.eligibility)
             // This is done by PaywallView
             .disabled(self.purchaseHandler.actionInProgress)
             .task {
-                self.eligibility = await PreviewHelpers.introEligibilityChecker.eligibility(for: Self.package.content)
+                await self.eligibility.computeEligibility(for: Self.packages)
             }
         }
 
@@ -204,6 +210,7 @@ struct PurchaseButton_Previews: PreviewProvider {
             currentlySubscribed: false,
             discountRelativeToMostExpensivePerMonth: nil
         )
+        private static let packages: TemplateViewConfiguration.PackageConfiguration = .single(Self.package)
     }
 
     static var previews: some View {
