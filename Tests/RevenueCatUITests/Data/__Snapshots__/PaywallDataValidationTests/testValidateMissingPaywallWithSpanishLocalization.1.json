@@ -33,7 +33,7 @@
 
       ],
       "offer_details" : "{{ total_price_and_per_month }}",
-      "offer_details_with_intro_offer" : "Comience su prueba de {{ sub_offer_duration }} y luego {{ total_price_and_per_month }}.",
+      "offer_details_with_intro_offer" : "{{ sub_offer_duration }} gratis y luego {{ total_price_and_per_month }}.",
       "offer_name" : null,
       "subtitle" : null,
       "title" : "{{ app_name }}"
