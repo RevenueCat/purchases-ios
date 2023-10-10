@@ -159,7 +159,9 @@ struct AppContentView: View {
     }
 
 }
+
 private struct ProminentButton: View {
+
     var title: String
     var action: () -> Void
     var background: Color = .accentColor
@@ -168,13 +170,14 @@ private struct ProminentButton: View {
         Button(action: self.action) {
             Text(self.title)
                 .bold()
-                .padding()
                 .frame(maxWidth: .infinity)
-                .background(background)
-                .foregroundColor(.white)
-                .cornerRadius(10)
         }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+        .tint(self.background)
+        .foregroundColor(.white)
     }
+
 }
 
 private struct ConfigurationButton: View {
@@ -188,9 +191,9 @@ private struct ConfigurationButton: View {
         ProminentButton(
             title: self.title,
             action: self.action,
-            background: self.configuration.currentMode == mode ? Color.gray : Color.accentColor
+            background: self.configuration.currentMode == self.mode ? Color.gray : Color.accentColor
         )
-        .disabled(self.configuration.currentMode == mode)
+        .disabled(self.configuration.currentMode == self.mode)
     }
 
 }

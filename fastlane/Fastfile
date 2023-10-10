@@ -245,6 +245,13 @@ platform :ios do
       configuration: 'release',
       xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
     )
+    xcodebuild(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: 'RevenueCatUI',
+      destination: 'generic/platform=visionOS',
+      configuration: 'release',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    )
   end
 
   desc "Run the carthage archive steps to prepare for carthage distribution"
