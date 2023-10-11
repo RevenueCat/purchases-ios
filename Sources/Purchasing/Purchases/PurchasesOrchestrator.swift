@@ -205,17 +205,32 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        self.syncPurchases(receiptRefreshPolicy: .always,
-                           isRestore: true,
-                           initiationSource: .restore,
-                           completion: completion)
+        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.syncPurchasesSK2(isRestore: true,
+                                  initiationSource: .restore,
+                                  completion: completion)
+        } else {
+            self.syncPurchases(receiptRefreshPolicy: .always,
+                               isRestore: true,
+                               initiationSource: .restore,
+                               completion: completion)
+        }
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
-        self.syncPurchases(receiptRefreshPolicy: .never,
-                           isRestore: allowSharingAppStoreAccount,
-                           initiationSource: .restore,
-                           completion: completion)
+        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.syncPurchasesSK2(isRestore: allowSharingAppStoreAccount,
+                                  initiationSource: .restore,
+                                  completion: completion)
+        } else {
+            self.syncPurchases(receiptRefreshPolicy: .never,
+                               isRestore: allowSharingAppStoreAccount,
+                               initiationSource: .restore,
+                               completion: completion)
+        }
+
     }
 
     func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
@@ -269,7 +284,6 @@ final class PurchasesOrchestrator {
                                      subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
                 completion(result)
             }
-
         } else {
                 self.sk1PromotionalOffer(forProductDiscount: productDiscount,
                                          discountIdentifier: discountIdentifier,
@@ -1067,6 +1081,54 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func syncPurchasesSK2(isRestore: Bool,
+                                  initiationSource: ProductRequestData.InitiationSource,
+                                  completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+        // Don't log anything unless the flag was explicitly set.
+        let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
+        if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
+            Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
+        }
+
+        let currentAppUserID = self.appUserID
+        let unsyncedAttributes = self.unsyncedAttributes
+
+        self.attribution.unsyncedAdServicesToken { adServicesToken in
+            _ = Task<Void, Never> {
+                let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
+                guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion?(.failure(ErrorUtils.ineligibleError()))
+                    }
+                    return
+                }
+
+                let receiptData = EncodedAppleReceipt(type: .jwt, data: jwsRepresentation)
+                self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
+                    let transactionData: PurchasedTransactionData = .init(
+                        appUserID: currentAppUserID,
+                        presentedOfferingID: nil,
+                        unsyncedAttributes: unsyncedAttributes,
+                        storefront: transaction.storefront,
+                        source: .init(isRestore: isRestore, initiationSource: initiationSource)
+                    )
+
+                    self.backend.post(receiptData: receiptData,
+                                      productData: productRequestData,
+                                      transactionData: transactionData,
+                                      observerMode: self.observerMode) { result in
+                        self.handleReceiptPost(result: result,
+                                               transactionData: transactionData,
+                                               subscriberAttributes: unsyncedAttributes,
+                                               adServicesToken: adServicesToken,
+                                               completion: completion)
+                    }
+                }
+            }
+        }
+    }
+
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
                            transactionData: PurchasedTransactionData,
                            subscriberAttributes: SubscriberAttribute.Dictionary,
@@ -1207,6 +1269,19 @@ private extension PurchasesOrchestrator {
             return
         }
 
+        self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
+            let result = products.value?.first.map {
+                ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)
+            }
+
+            completion(result)
+        }
+    }
+
+    func createProductRequestData(
+        with productIdentifier: String,
+        completion: @escaping (ProductRequestData?) -> Void
+    ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
                 ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)
@@ -1383,10 +1458,18 @@ extension PurchasesOrchestrator {
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
         return try await Async.call { completion in
-            self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
-                               isRestore: isRestore,
-                               initiationSource: initiationSource,
-                               completion: completion)
+
+            if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+               #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+                self.syncPurchasesSK2(isRestore: isRestore,
+                                      initiationSource: initiationSource,
+                                      completion: completion)
+            } else {
+                self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
+                                   isRestore: isRestore,
+                                   initiationSource: initiationSource,
+                                   completion: completion)
+            }
         }
     }
 
