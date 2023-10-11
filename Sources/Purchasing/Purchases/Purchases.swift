@@ -1296,7 +1296,7 @@ public extension Purchases {
         Self.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true, usesStoreKit2JWS: false))
+                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
                 .build())
     }
 
