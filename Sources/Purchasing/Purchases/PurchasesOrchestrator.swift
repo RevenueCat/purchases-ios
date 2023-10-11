@@ -1099,7 +1099,7 @@ private extension PurchasesOrchestrator {
                 let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
                 guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
                     self.operationDispatcher.dispatchOnMainThread {
-                        completion?(.failure(ErrorUtils.ineligibleError()))
+                        completion?(.failure(ErrorUtils.transactionNotFoundError()))
                     }
                     return
                 }
