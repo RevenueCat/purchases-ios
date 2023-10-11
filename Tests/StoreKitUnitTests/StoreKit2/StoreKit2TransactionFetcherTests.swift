@@ -45,7 +45,8 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testOneUnfinishedConsumablePurchase() async throws {
-        let transaction = try await self.createTransactionForConsumableProduct(finished: false)
+        let transaction = try await self.createTransactionForConsumableProduct(productID: Self.consumable,
+                                                                               finished: false)
         let result = await self.fetcher.unfinishedVerifiedTransactions
 
         expect(result) == [transaction]
@@ -141,7 +142,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testHasVerifiedTransactionIncludesUnfinishedConsumableTransaction() async throws {
-        let transaction = try await self.createTransactionForConsumableProduct(productID: Self.consumable, 
+        let transaction = try await self.createTransactionForConsumableProduct(productID: Self.consumable,
                                                                                finished: false)
         let result = await self.fetcher.fetchLastVerifiedTransaction()
         expect(result) == transaction
