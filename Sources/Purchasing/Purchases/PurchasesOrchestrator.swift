@@ -1235,10 +1235,10 @@ private extension PurchasesOrchestrator {
                              completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
 
         _ = Task<Void, Never> {
-            let transaction = await self.transactionFetcher.fetchLastVerifiedTransaction()
+            let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
             guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
-                // Promotional offers require existing purchases.
-                // Fail early if there are no transactions
+                // Promotional offers require an existing or expired subscription to redeem a promotional offer.
+                // Fail early if there are no transactions.
                 completion(.failure(ErrorUtils.ineligibleError()))
                 return
             }
