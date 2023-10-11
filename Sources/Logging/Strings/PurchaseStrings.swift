@@ -165,7 +165,10 @@ extension PurchaseStrings: LogMessage {
 
         case let .paymentqueue_removed_transaction_no_callbacks_found(observer, transaction):
             return "\(observer.debugName) removedTransaction for \(transaction.payment.productIdentifier) " +
-            "but no callbacks to notify"
+            "but no callbacks to notify.\n" +
+            "If the purchase completion block is not being invoked after this, it likely means that some other code " +
+            "outside of the RevenueCat SDK is calling `SKPaymentQueue.finishTransaction`, which is interfering with " +
+            "RevenueCat purchasing state handling."
 
         case let .paymentqueue_updated_transaction(observer, transaction):
             return "\(observer.debugName) updatedTransaction: \(transaction.payment.productIdentifier) " +
