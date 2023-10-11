@@ -1623,25 +1623,4 @@ private extension PurchasesOrchestratorTests {
         darkMode: true,
         date: .init(timeIntervalSince1970: 1694029328)
     )
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func createTransaction(
-        productID: String? = nil,
-        finished: Bool
-    ) async throws -> StoreTransaction {
-        return StoreTransaction(
-            sk2Transaction: try await self.simulateAnyPurchase(productID: productID,
-                                                               finishTransaction: finished)
-        )
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func createTransactionForConsumableProduct(finished: Bool) async throws -> StoreTransaction {
-        return try await self.createTransaction(productID: Self.consumable, finished: finished)
-    }
-
-    static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"
-    static let product2 = "com.revenuecat.annual_39.99_no_trial"
-    static let consumable = "com.revenuecat.consumable"
-
 }
