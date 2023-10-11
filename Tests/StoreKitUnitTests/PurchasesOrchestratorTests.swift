@@ -659,7 +659,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedLastVerifiedTransaction = transaction
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
@@ -695,7 +695,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
-        self.mockTransactionFetcher.stubbedLastVerifiedTransaction = nil
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
 
         let product = try await self.fetchSk2Product()
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
@@ -1498,6 +1498,93 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         )
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSyncPurchasesPostsTheReceipt() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let transaction = try await createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+        let product = try await self.fetchSk2StoreProduct()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.syncPurchases { result in
+                continuation.resume(returning: result.value)
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+    }
+
+    func testSyncPurchasesDoesntPostIfNoTransaction() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.syncPurchases { result in
+                continuation.resume(returning: result.value)
+            }
+        }
+
+        expect(self.backend.invokedPostReceiptData).to(beFalse())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let transaction = try await createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+
+        let customerInfo = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": "foo",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
+        self.backend.stubbedPostReceiptResult = .success(customerInfo)
+
+        let receivedCustomerInfo = await withCheckedContinuation { continuation in
+            self.orchestrator.syncPurchases { result in
+                continuation.resume(returning: result.value)
+            }
+        }
+
+        expect(receivedCustomerInfo) === customerInfo
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSyncPurchasesPassesErrorOnFailure() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let transaction = try await self.createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+
+        let error: BackendError = .missingAppUserID()
+
+        self.backend.stubbedPostReceiptResult = .failure(error)
+
+        let receivedError = await withCheckedContinuation { continuation in
+            self.orchestrator.syncPurchases { result in
+                continuation.resume(returning: result.error)
+            }
+        }
+
+        expect(receivedError).to(matchError(error.asPurchasesError))
+    }
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
