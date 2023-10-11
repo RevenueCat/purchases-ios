@@ -178,8 +178,13 @@ class ErrorCodeTests: TestCase {
                                               expectedRawValue: 37)
     }
 
+    func testTransactionNotFoundError() {
+        ensureEnumCaseMatchesExpectedRawValue(errorCode: .transactionNotFound,
+                                              expectedRawValue: 38)
+    }
+
     func testErrorCodeEnumCasesAreCoveredInTests() {
-        expect(ErrorCode.allCases).to(haveCount(37))
+        expect(ErrorCode.allCases).to(haveCount(38))
     }
 
     func ensureEnumCaseMatchesExpectedRawValue(errorCode: ErrorCode, expectedRawValue: Int) {
