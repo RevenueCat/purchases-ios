@@ -23,6 +23,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func fetchLastVerifiedAutoRenewableTransaction() async -> StoreTransaction?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedTransaction() async -> StoreTransaction?
 }
 
@@ -49,6 +52,15 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 .map { StoreProduct.ProductType($0) }
                 .contains {  $0.productCategory == .nonSubscription }
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func fetchLastVerifiedAutoRenewableTransaction() async -> StoreTransaction? {
+        await StoreKit.Transaction.all
+            .compactMap { $0.verifiedTransaction }
+            .filter { $0.productType == .autoRenewable }
+            .map { StoreTransaction(sk2Transaction: $0) }
+            .first { _ in true }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

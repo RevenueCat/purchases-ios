@@ -116,13 +116,15 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     fileprivate func setUpSystemInfo(
         finishTransactions: Bool = true,
-        storeKit2Setting: StoreKit2Setting = .default
+        storeKit2Setting: StoreKit2Setting = .default,
+        usesStoreKit2JWS: Bool = false
     ) {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
 
-        self.systemInfo = MockSystemInfo(platformInfo: platformInfo,
-                                         finishTransactions: finishTransactions,
-                                         storeKit2Setting: storeKit2Setting)
+        self.systemInfo = .init(platformInfo: platformInfo,
+                                finishTransactions: finishTransactions,
+                                storeKit2Setting: storeKit2Setting,
+                                usesStoreKit2JWS: usesStoreKit2JWS)
         self.systemInfo.stubbedIsSandbox = true
     }
 
@@ -461,9 +463,10 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.offerings.invokedPostOfferCount) == 1
         expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+        expect(self.offerings.invokedPostOfferParameters?.data?.data) == self.receiptFetcher.mockReceiptData
     }
 
-    func testGetPromotionalOfferFailsWithIneligibleIfNoReceiptIsFound() async throws {
+    func testGetSK1PromotionalOfferFailsWithIneligibleIfNoReceiptIsFound() async throws {
         self.receiptFetcher.shouldReturnReceipt = false
 
         let product = try await self.fetchSk1Product()
@@ -489,7 +492,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.offerings.invokedPostOffer) == false
     }
 
-    func testGetPromotionalOfferFailsWithIneligibleIfReceiptHasNoTransactions() async throws {
+    func testGetSK1PromotionalOfferFailsWithIneligibleIfReceiptHasNoTransactions() async throws {
         self.receiptParser.stubbedReceiptHasTransactionsResult = false
 
         let product = try await self.fetchSk1Product()
@@ -515,7 +518,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.offerings.invokedPostOffer) == false
     }
 
-    func testGetPromotionalOfferWorksWhenReceiptHasTransactions() async throws {
+    func testGetSK1PromotionalOfferWorksWhenReceiptHasTransactions() async throws {
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
         self.receiptParser.stubbedReceiptHasTransactionsResult = true
@@ -647,6 +650,74 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(cancelled) == false
 
         expect(self.backend.invokedPostReceiptDataCount) == 0
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testGetSK2PromotionalOfferWorksIfThereIsATransaction() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let transaction = try await createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedLastVerifiedTransaction = transaction
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
+        self.receiptParser.stubbedReceiptHasTransactionsResult = true
+
+        let product = try await fetchSk2Product()
+
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceFormatStyle.currencyCode,
+                                                            price: 11.1,
+                                                            localizedPriceString: "$11.10",
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
+                                                            type: .promotional)
+
+        let result = try await Async.call { completion in
+            orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                          product: StoreProduct(sk2Product: product),
+                                          completion: completion)
+        }
+
+        expect(result.signedData.identifier) == storeProductDiscount.offerIdentifier
+
+        expect(self.offerings.invokedPostOfferCount) == 1
+        expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+        expect(self.offerings.invokedPostOfferParameters?.data?.data) == transaction.jsonRepresentation
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testGetSK2PromotionalOfferFailsWithIneligibleIfNoTransactionIsFound() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        self.mockTransactionFetcher.stubbedLastVerifiedTransaction = nil
+
+        let product = try await self.fetchSk2Product()
+        let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
+                                                            currencyCode: product.priceFormatStyle.currencyCode,
+                                                            price: 11.1,
+                                                            localizedPriceString: "$11.10",
+                                                            paymentMode: .payAsYouGo,
+                                                            subscriptionPeriod: .init(value: 1, unit: .month),
+                                                            numberOfPeriods: 2,
+                                                            type: .promotional)
+
+        do {
+            _ = try await Async.call { completion in
+                self.orchestrator.promotionalOffer(forProductDiscount: storeProductDiscount,
+                                                   product: StoreProduct(sk2Product: product),
+                                                   completion: completion)
+            }
+        } catch {
+            expect(error).to(matchError(ErrorCode.ineligibleError))
+        }
+
+        expect(self.offerings.invokedPostOffer) == false
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -1465,5 +1536,25 @@ private extension PurchasesOrchestratorTests {
         darkMode: true,
         date: .init(timeIntervalSince1970: 1694029328)
     )
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func createTransaction(
+        productID: String? = nil,
+        finished: Bool
+    ) async throws -> StoreTransaction {
+        return StoreTransaction(
+            sk2Transaction: try await self.simulateAnyPurchase(productID: productID,
+                                                               finishTransaction: finished)
+        )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func createTransactionForConsumableProduct(finished: Bool) async throws -> StoreTransaction {
+        return try await self.createTransaction(productID: Self.consumable, finished: finished)
+    }
+
+    static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"
+    static let product2 = "com.revenuecat.annual_39.99_no_trial"
+    static let consumable = "com.revenuecat.consumable"
 
 }
