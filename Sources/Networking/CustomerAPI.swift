@@ -87,7 +87,7 @@ final class CustomerAPI {
         self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
-    func post(receiptData: EncodedAppleReceipt,
+    func post(receipt: EncodedAppleReceipt,
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
@@ -109,7 +109,7 @@ final class CustomerAPI {
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
             productData: productData,
-            receiptData: receiptData,
+            receipt: receipt,
             observerMode: observerMode,
             testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier
         )

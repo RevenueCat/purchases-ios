@@ -68,7 +68,7 @@ class MockOfferingsAPI: OfferingsAPI {
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
                        subscriptionGroup: String?,
-                       receiptData: EncodedAppleReceipt,
+                       receipt: EncodedAppleReceipt,
                        appUserID: String,
                        completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
         self.invokedPostOffer = true
@@ -76,13 +76,13 @@ class MockOfferingsAPI: OfferingsAPI {
         self.invokedPostOfferParameters = (offerIdentifier,
                                            productIdentifier,
                                            subscriptionGroup,
-                                           receiptData,
+                                           receipt,
                                            appUserID,
                                            completion)
         self.invokedPostOfferParametersList.append((offerIdentifier,
                                                     productIdentifier,
                                                     subscriptionGroup,
-                                                    receiptData,
+                                                    receipt,
                                                     appUserID,
                                                     completion))
 

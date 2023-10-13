@@ -39,7 +39,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let observerMode = true
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -70,7 +70,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -110,7 +110,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         )
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: .createMockProductData(),
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -139,7 +139,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = true
         let observerMode = false
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -152,7 +152,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         }
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -182,7 +182,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = false
         let observerMode = false
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -196,7 +196,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -225,7 +225,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = true
         let observerMode = true
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -239,7 +239,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        backend.post(receiptData: Self.receiptData2,
+        backend.post(receipt: Self.receipt2,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -268,7 +268,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = false
         let observerMode = true
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -283,7 +283,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         })
         let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
 
-        backend.post(receiptData: Self.receiptData2,
+        backend.post(receipt: Self.receipt2,
                      productData: productData,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -312,7 +312,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = true
         let observerMode = false
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -326,7 +326,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        backend.post(receiptData: Self.receiptData2,
+        backend.post(receipt: Self.receipt2,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -366,7 +366,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                                                      subscriptionGroup: group)
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -414,7 +414,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                                                      subscriptionGroup: group)
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -443,7 +443,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let productData: ProductRequestData = .createMockProductData()
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -539,7 +539,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url!)
         }
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -579,7 +579,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         )
 
         let customerInfo = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -606,7 +606,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         )
 
         let receivedError = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -635,7 +635,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = true
         let observerMode = false
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -658,7 +658,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                                 numberOfPeriods: 1,
                                                 type: .promotional)
         let productData: ProductRequestData = .createMockProductData(discounts: [discount])
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: productData,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -704,7 +704,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                                                                      discounts: [discount])
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -732,7 +732,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let isRestore = false
         let observerMode = true
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -746,7 +746,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             completionCalled.value += 1
         })
 
-        backend.post(receiptData: Self.receiptData,
+        backend.post(receipt: Self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
@@ -777,7 +777,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
 
         let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -812,7 +812,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
 
         let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: .createMockProductData(),
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -850,7 +850,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         )
 
         let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -881,7 +881,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         )
 
         let result = waitUntilValue { completed in
-            self.backend.post(receiptData: Self.receiptData2,
+            self.backend.post(receipt: Self.receipt2,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -925,7 +925,7 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
         )
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
@@ -947,14 +947,14 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
 
 private extension BaseBackendPostReceiptDataTests {
 
-    static let receiptData = EncodedAppleReceipt(receipt: "an awesome receipt".asData)
-    static let receiptData2 = EncodedAppleReceipt(receipt: "an awesomeer receipt".asData)
+    static let receipt = EncodedAppleReceipt(receipt: "an awesome receipt".asData)
+    static let receipt2 = EncodedAppleReceipt(receipt: "an awesomeer receipt".asData)
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
 
         waitUntil { completed in
-            self.backend.post(receiptData: Self.receiptData,
+            self.backend.post(receipt: Self.receipt,
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,

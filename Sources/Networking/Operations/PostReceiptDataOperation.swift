@@ -53,7 +53,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `subscriberAttributesByKey`
         let cacheKey =
         """
-        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.serialized().hashValue)
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.serialized().hashValue)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
@@ -120,7 +120,7 @@ extension PostReceiptDataOperation {
     struct PostData {
 
         let appUserID: String
-        let receiptData: EncodedAppleReceipt
+        let receipt: EncodedAppleReceipt
         let isRestore: Bool
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
@@ -151,13 +151,13 @@ extension PostReceiptDataOperation.PostData {
     init(
         transactionData data: PurchasedTransactionData,
         productData: ProductRequestData?,
-        receiptData: EncodedAppleReceipt,
+        receipt: EncodedAppleReceipt,
         observerMode: Bool,
         testReceiptIdentifier: String?
     ) {
         self.init(
             appUserID: data.appUserID,
-            receiptData: receiptData,
+            receipt: receipt,
             isRestore: data.source.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingID,
@@ -191,10 +191,10 @@ private extension PurchasedTransactionData {
 private extension PostReceiptDataOperation {
 
     func printReceiptData() {
-        switch self.postData.receiptData.type {
+        switch self.postData.receipt.type {
         case .jws:
             self.log(Strings.receipt.posting_jws(
-                self.postData.receiptData.serialized(),
+                self.postData.receipt.serialized(),
                 initiationSource: self.postData.initiationSource.rawValue
             ))
             return
@@ -268,7 +268,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
     }
 
-    var fetchToken: String { return self.receiptData.serialized() }
+    var fetchToken: String { return self.receipt.serialized() }
 
 }
 

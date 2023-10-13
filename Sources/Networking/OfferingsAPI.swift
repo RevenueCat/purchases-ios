@@ -70,7 +70,7 @@ class OfferingsAPI {
     func post(offerIdForSigning offerIdentifier: String,
               productIdentifier: String,
               subscriptionGroup: String,
-              receiptData: EncodedAppleReceipt,
+              receipt: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
@@ -79,7 +79,7 @@ class OfferingsAPI {
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
                                                                                  productIdentifier: productIdentifier,
                                                                                  subscriptionGroup: subscriptionGroup,
-                                                                                 receiptData: receiptData)
+                                                                                 receipt: receipt)
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
                                                                         postOfferForSigningData: postOfferData,
                                                                         responseHandler: completion)

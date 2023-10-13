@@ -21,7 +21,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
     let appUserID = "abc123"
     let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
-    let receiptData = EncodedAppleReceipt(receipt: "an awesome receipt".data(using: String.Encoding.utf8)!)
+    let receipt = EncodedAppleReceipt(receipt: "an awesome receipt".data(using: String.Encoding.utf8)!)
 
     var subscriberAttribute1: SubscriberAttribute!
     var subscriberAttribute2: SubscriberAttribute!
@@ -82,7 +82,7 @@ class BackendSubscriberAttributesTests: TestCase {
             subscriberAttribute2.key: subscriberAttribute2
         ]
 
-        backend.post(receiptData: self.receiptData,
+        backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: self.appUserID,
@@ -100,7 +100,7 @@ class BackendSubscriberAttributesTests: TestCase {
         let token = "token"
 
         waitUntil { completion in
-            self.backend.post(receiptData: self.receiptData,
+            self.backend.post(receipt: self.receipt,
                               productData: nil,
                               transactionData: .init(
                                  appUserID: self.appUserID,
@@ -128,7 +128,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         // No mocked response, the default response is an empty 200.
 
-        backend.post(receiptData: self.receiptData,
+        backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: self.appUserID,
@@ -152,7 +152,7 @@ class BackendSubscriberAttributesTests: TestCase {
     }
 
     func testPostReceiptWithoutSubscriberAttributesSkipsThem() throws {
-        backend.post(receiptData: self.receiptData,
+        backend.post(receipt: self.receipt,
                      productData: nil,
                      transactionData: .init(
                         appUserID: self.appUserID,
@@ -195,7 +195,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let receivedCustomerInfo: CustomerInfo? = waitUntilValue { completion in
             self.backend.post(
-                receiptData: self.receiptData,
+                receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
                     appUserID: self.appUserID,
@@ -249,7 +249,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let receivedError: BackendError? = waitUntilValue { completion in
             self.backend.post(
-                receiptData: self.receiptData,
+                receipt: self.receipt,
                 productData: nil,
                 transactionData: .init(
                     appUserID: self.appUserID,
