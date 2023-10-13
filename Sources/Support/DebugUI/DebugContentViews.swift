@@ -135,7 +135,7 @@ internal struct DebugSummaryView: View {
                     LabeledContent("Offline Customer Info",
                                    value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
                     LabeledContent("Entitlement Verification Mode", value: config.verificationMode)
-                    LabeledContent("Receipt URL", value: config.receiptURL?.absoluteString ?? "")
+                    LabeledContent("Receipt URL", value: config.receiptURL?.relativeString ?? "")
                         #if os(macOS)
                         .contextMenu {
                             Button {
@@ -150,6 +150,7 @@ internal struct DebugSummaryView: View {
                             }
                         }
                         #endif
+                    LabeledContent("Receipt status", value: config.receiptStatus)
 
                     ShareLink(item: AnyEncodable(config), preview: .init("Configuration")) {
                         Label("Share", systemImage: "square.and.arrow.up")

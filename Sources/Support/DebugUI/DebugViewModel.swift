@@ -103,6 +103,24 @@ extension DebugViewModel {
 
 }
 
+@available(iOS 16.0, macOS 13.0, *)
+extension DebugViewModel.Configuration {
+
+    var receiptStatus: String {
+        switch self.receiptURL {
+        case .none:
+            return "no URL"
+        case let .some(url):
+            if FileManager.default.fileExists(atPath: url.relativePath) {
+                return "present"
+            } else {
+                return "missing"
+            }
+        }
+    }
+
+}
+
 // MARK: -
 
 enum LoadingState<Value, Error: Swift.Error> {
