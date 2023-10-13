@@ -714,6 +714,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                    product: StoreProduct(sk2Product: product),
                                                    completion: completion)
             }
+            fail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.ineligibleError))
         }
