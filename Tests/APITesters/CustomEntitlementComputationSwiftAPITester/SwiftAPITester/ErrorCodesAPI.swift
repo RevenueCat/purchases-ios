@@ -53,8 +53,7 @@ func checkPurchasesErrorCodeEnums() {
          .invalidPromotionalOfferError,
          .offlineConnectionError,
          .featureNotAvailableInCustomEntitlementsComputationMode,
-         .signatureVerificationFailed,
-         .transactionNotFound:
+         .signatureVerificationFailed:
         print(errCode!)
     @unknown default:
         fatalError()
