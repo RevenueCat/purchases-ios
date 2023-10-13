@@ -193,7 +193,7 @@ private extension PostReceiptDataOperation {
     func printReceiptData() {
         switch self.postData.receiptData.type {
         case .jws:
-            self.log(Strings.receipt.posting_jwt(
+            self.log(Strings.receipt.posting_jws(
                 self.postData.receiptData.serialized(),
                 initiationSource: self.postData.initiationSource.rawValue
             ))
