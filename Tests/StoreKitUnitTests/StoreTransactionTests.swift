@@ -71,7 +71,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
 
         let sk2Transaction = try await self.createTransactionWithPurchase()
 
-        let transaction = StoreTransaction(sk2Transaction: sk2Transaction)
+        let transaction = StoreTransaction(sk2Transaction: sk2Transaction, jwsRepresentation: "")
 
         // Can't use `===` because `SK2Transaction` is a `struct`
         expect(transaction.sk2Transaction) == sk2Transaction

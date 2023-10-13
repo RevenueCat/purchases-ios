@@ -80,7 +80,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
             purchaseResult: .success(.verified(fakeTransaction))
         )
         expect(isCancelled) == false
-        expect(transaction) == fakeTransaction
+        expect(transaction?.sk2Transaction) == fakeTransaction
     }
 
     func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
@@ -136,7 +136,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
 
         let sk2Transaction = try await self.listener.handle(purchaseResult: purchaseResult)
-        expect(sk2Transaction.transaction) == purchasedTransaction
+        expect(sk2Transaction.transaction?.sk2Transaction) == purchasedTransaction
         expect(sk2Transaction.userCancelled) == false
 
         try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)

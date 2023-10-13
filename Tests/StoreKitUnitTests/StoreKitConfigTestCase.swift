@@ -138,7 +138,8 @@ extension StoreKitConfigTestCase {
     ) async throws -> StoreTransaction {
         return StoreTransaction(
             sk2Transaction: try await self.simulateAnyPurchase(productID: productID,
-                                                               finishTransaction: finished)
+                                                               finishTransaction: finished),
+            jwsRepresentation: UUID().uuidString
         )
     }
 

@@ -14,20 +14,27 @@
 import Foundation
 
 struct EncodedAppleReceipt: Equatable {
-    enum ReceiptType {
-        case jwt, receipt
+    enum ReceiptType: Equatable {
+        case jws(String), receipt(Data)
     }
     let type: ReceiptType
-    let data: Data
+
+    init(jws: String) {
+        self.type = .jws(jws)
+    }
+
+    init(receipt: Data) {
+        self.type = .receipt(receipt)
+    }
 }
 
 extension EncodedAppleReceipt {
     func serialized() -> String {
         switch type {
-        case .jwt:
-            return String(data: self.data, encoding: .utf8) ?? ""
-        case .receipt:
-            return self.data.asFetchToken
+        case .jws(let jws):
+            return jws
+        case .receipt(let data):
+            return data.asFetchToken
         }
     }
 }

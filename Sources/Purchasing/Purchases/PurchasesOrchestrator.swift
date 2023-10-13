@@ -510,14 +510,13 @@ final class PurchasesOrchestrator {
 
         // `userCancelled` above comes from `StoreKitError.userCancelled`.
         // This detects if `Product.PurchaseResult.userCancelled` is true.
-        let (userCancelled, sk2Transaction) = try await self.storeKit2TransactionListener
+        let (userCancelled, transaction) = try await self.storeKit2TransactionListener
             .handle(purchaseResult: result)
 
         if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
             throw ErrorUtils.purchaseCancelledError()
         }
 
-        let transaction = sk2Transaction.map(StoreTransaction.init(sk2Transaction:))
         let customerInfo: CustomerInfo
 
         if let transaction = transaction {
@@ -1065,7 +1064,7 @@ private extension PurchasesOrchestrator {
                             source: .init(isRestore: isRestore, initiationSource: initiationSource)
                         )
 
-                        self.backend.post(receiptData: EncodedAppleReceipt(type: .receipt, data: receiptData),
+                        self.backend.post(receiptData: EncodedAppleReceipt(receipt: receiptData),
                                           productData: productRequestData,
                                           transactionData: transactionData,
                                           observerMode: self.observerMode) { result in
@@ -1097,14 +1096,14 @@ private extension PurchasesOrchestrator {
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
                 let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
-                guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
+                guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                     self.operationDispatcher.dispatchOnMainThread {
                         completion?(.failure(ErrorUtils.transactionNotFoundError()))
                     }
                     return
                 }
 
-                let receiptData = EncodedAppleReceipt(type: .jwt, data: jwsRepresentation)
+                let receiptData = EncodedAppleReceipt(jws: jwsRepresentation)
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
@@ -1311,14 +1310,14 @@ private extension PurchasesOrchestrator {
 
         _ = Task<Void, Never> {
             let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
-            guard let transaction = transaction, let jwsRepresentation = transaction.jsonRepresentation  else {
+            guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                 // Promotional offers require an existing or expired subscription to redeem a promotional offer.
                 // Fail early if there are no transactions.
                 completion(.failure(ErrorUtils.ineligibleError()))
                 return
             }
 
-            let receiptData = EncodedAppleReceipt(type: .jwt, data: jwsRepresentation)
+            let receiptData = EncodedAppleReceipt(jws: jwsRepresentation)
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
                                         product: product,
@@ -1353,7 +1352,7 @@ private extension PurchasesOrchestrator {
                     completion(.failure(ErrorUtils.ineligibleError()))
                     return
                 }
-                let receipt = EncodedAppleReceipt(type: .receipt, data: receiptData)
+                let receipt = EncodedAppleReceipt(receipt: receiptData)
                 self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                             discountIdentifier: discountIdentifier,
                                             product: product,

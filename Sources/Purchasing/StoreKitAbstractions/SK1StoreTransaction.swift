@@ -36,7 +36,7 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         return nil
     }
 
-    var jsonRepresentation: Data? {
+    var jwsRepresentation: String? {
         // This is only available on StoreKit 2 transactions.
         return nil
     }
