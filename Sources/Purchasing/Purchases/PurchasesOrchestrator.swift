@@ -205,32 +205,17 @@ final class PurchasesOrchestrator {
     }
 
     func restorePurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
-           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.syncPurchasesSK2(isRestore: true,
-                                  initiationSource: .restore,
-                                  completion: completion)
-        } else {
-            self.syncPurchasesSK1(receiptRefreshPolicy: .always,
-                                  isRestore: true,
-                                  initiationSource: .restore,
-                                  completion: completion)
-        }
+        self.syncPurchases(receiptRefreshPolicy: .always,
+                           isRestore: true,
+                           initiationSource: .restore,
+                           completion: completion)
     }
 
     func syncPurchases(completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil) {
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
-           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.syncPurchasesSK2(isRestore: allowSharingAppStoreAccount,
-                                  initiationSource: .restore,
-                                  completion: completion)
-        } else {
-            self.syncPurchasesSK1(receiptRefreshPolicy: .never,
-                                  isRestore: allowSharingAppStoreAccount,
-                                  initiationSource: .restore,
-                                  completion: completion)
-        }
-
+        self.syncPurchases(receiptRefreshPolicy: .always,
+                           isRestore: allowSharingAppStoreAccount,
+                           initiationSource: .restore,
+                           completion: completion)
     }
 
     func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
@@ -1007,17 +992,34 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    // swiftlint:disable:next function_body_length
-    func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                          isRestore: Bool,
-                          initiationSource: ProductRequestData.InitiationSource,
-                          completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                       isRestore: Bool,
+                       initiationSource: ProductRequestData.InitiationSource,
+                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         // Don't log anything unless the flag was explicitly set.
         let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
         if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
+        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.syncPurchasesSK2(isRestore: isRestore,
+                                  initiationSource: initiationSource,
+                                  completion: completion)
+        } else {
+            self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
+                                  isRestore: isRestore,
+                                  initiationSource: initiationSource,
+                                  completion: completion)
+        }
+    }
+
+    // swiftlint:disable:next function_body_length
+    func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                          isRestore: Bool,
+                          initiationSource: ProductRequestData.InitiationSource,
+                          completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
 
@@ -1084,12 +1086,6 @@ private extension PurchasesOrchestrator {
     private func syncPurchasesSK2(isRestore: Bool,
                                   initiationSource: ProductRequestData.InitiationSource,
                                   completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
-        // Don't log anything unless the flag was explicitly set.
-        let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
-        if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
-            Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
-        }
-
         let currentAppUserID = self.appUserID
         let unsyncedAttributes = self.unsyncedAttributes
 
@@ -1461,18 +1457,10 @@ extension PurchasesOrchestrator {
                        isRestore: Bool,
                        initiationSource: ProductRequestData.InitiationSource) async throws -> CustomerInfo {
         return try await Async.call { completion in
-
-            if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
-               #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-                self.syncPurchasesSK2(isRestore: isRestore,
-                                      initiationSource: initiationSource,
-                                      completion: completion)
-            } else {
-                self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
-                                      isRestore: isRestore,
-                                      initiationSource: initiationSource,
-                                      completion: completion)
-            }
+            self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
+                               isRestore: isRestore,
+                               initiationSource: initiationSource,
+                               completion: completion)
         }
     }
 
