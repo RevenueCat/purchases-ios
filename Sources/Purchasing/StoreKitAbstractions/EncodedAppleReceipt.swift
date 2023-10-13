@@ -13,11 +13,13 @@
 
 import Foundation
 
+/// Represents an `AppleReceipt` that's been encoded
+/// in a suitable representation for the RevenueCat backend.
 struct EncodedAppleReceipt: Equatable {
-    enum ReceiptType: Equatable {
+    enum `Type`: Equatable {
         case jws(String), receipt(Data)
     }
-    let type: ReceiptType
+    let type: `Type`
 
     init(jws: String) {
         self.type = .jws(jws)
@@ -29,6 +31,7 @@ struct EncodedAppleReceipt: Equatable {
 }
 
 extension EncodedAppleReceipt {
+
     func serialized() -> String {
         switch type {
         case .jws(let jws):
@@ -37,4 +40,5 @@ extension EncodedAppleReceipt {
             return data.asFetchToken
         }
     }
+
 }
