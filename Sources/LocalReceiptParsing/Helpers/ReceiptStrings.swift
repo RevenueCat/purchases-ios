@@ -29,7 +29,7 @@ enum ReceiptStrings {
     case refreshing_empty_receipt
     case unable_to_load_receipt(Error)
     case posting_receipt(AppleReceipt, initiationSource: String)
-    case posting_jwt(String, initiationSource: String)
+    case posting_jws(String, initiationSource: String)
     case receipt_subscription_purchase_equals_expiration(
         productIdentifier: String,
         purchase: Date,
@@ -92,8 +92,8 @@ extension ReceiptStrings: LogMessage {
             return "Posting receipt (source: '\(initiationSource)') (note: the contents might not be up-to-date, " +
             "but it will be refreshed with Apple's servers):\n\(receipt.debugDescription)"
 
-        case let .posting_jwt(token, initiationSource):
-            return "Posting JWT token (source: '\(initiationSource)'):\n\(token)"
+        case let .posting_jws(token, initiationSource):
+            return "Posting JWS token (source: '\(initiationSource)'):\n\(token)"
 
         case let .receipt_subscription_purchase_equals_expiration(
             productIdentifier,
