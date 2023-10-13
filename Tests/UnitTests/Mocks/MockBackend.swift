@@ -41,19 +41,19 @@ class MockBackend: Backend {
                   internalAPI: internalAPI)
     }
 
-    override func post(receiptData: EncodedAppleReceipt,
+    override func post(receipt: EncodedAppleReceipt,
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
                        observerMode: Bool,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
-        invokedPostReceiptDataParameters = (receiptData,
+        invokedPostReceiptDataParameters = (receipt,
                                             productData,
                                             transactionData,
                                             observerMode,
                                             completion)
-        invokedPostReceiptDataParametersList.append((receiptData,
+        invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
                                                      observerMode,

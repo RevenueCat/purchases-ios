@@ -382,7 +382,7 @@ extension BasePurchasesTests {
         override func post(offerIdForSigning offerIdentifier: String,
                            productIdentifier: String,
                            subscriptionGroup: String?,
-                           receiptData: EncodedAppleReceipt,
+                           receipt: EncodedAppleReceipt,
                            appUserID: String,
                            completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
             self.postOfferForSigningCalled = true
@@ -440,13 +440,13 @@ extension BasePurchasesTests {
         var postedInitiationSource: ProductRequestData.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
 
-        override func post(receiptData: EncodedAppleReceipt,
+        override func post(receipt: EncodedAppleReceipt,
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
                            observerMode: Bool,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
-            self.postedReceiptData = receiptData
+            self.postedReceiptData = receipt
             self.postedIsRestore = transactionData.source.isRestore
 
             if let productData = productData {

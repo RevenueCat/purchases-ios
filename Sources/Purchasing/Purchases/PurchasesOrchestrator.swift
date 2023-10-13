@@ -1064,7 +1064,7 @@ private extension PurchasesOrchestrator {
                             source: .init(isRestore: isRestore, initiationSource: initiationSource)
                         )
 
-                        self.backend.post(receiptData: EncodedAppleReceipt(receipt: receiptData),
+                        self.backend.post(receipt: EncodedAppleReceipt(receipt: receiptData),
                                           productData: productRequestData,
                                           transactionData: transactionData,
                                           observerMode: self.observerMode) { result in
@@ -1113,7 +1113,7 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
-                let receiptData = EncodedAppleReceipt(jws: jwsRepresentation)
+                let receipt = EncodedAppleReceipt(jws: jwsRepresentation)
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
@@ -1123,7 +1123,7 @@ private extension PurchasesOrchestrator {
                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
                     )
 
-                    self.backend.post(receiptData: receiptData,
+                    self.backend.post(receipt: receipt,
                                       productData: productRequestData,
                                       transactionData: transactionData,
                                       observerMode: self.observerMode) { result in
@@ -1327,12 +1327,12 @@ private extension PurchasesOrchestrator {
                 return
             }
 
-            let receiptData = EncodedAppleReceipt(jws: jwsRepresentation)
+            let receipt = EncodedAppleReceipt(jws: jwsRepresentation)
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
                                         product: product,
                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                        receiptData: receiptData) { result in
+                                        receipt: receipt) { result in
                 completion(result)
             }
         }
@@ -1367,7 +1367,7 @@ private extension PurchasesOrchestrator {
                                             discountIdentifier: discountIdentifier,
                                             product: product,
                                             subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                            receiptData: receipt) { result in
+                                            receipt: receipt) { result in
                     completion(result)
                 }
             }
@@ -1379,12 +1379,12 @@ private extension PurchasesOrchestrator {
                                 discountIdentifier: String,
                                 product: StoreProductType,
                                 subscriptionGroupIdentifier: String,
-                                receiptData: EncodedAppleReceipt,
+                                receipt: EncodedAppleReceipt,
                                 completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
         self.backend.offerings.post(offerIdForSigning: discountIdentifier,
                                     productIdentifier: product.productIdentifier,
                                     subscriptionGroup: subscriptionGroupIdentifier,
-                                    receiptData: receiptData,
+                                    receipt: receipt,
                                     appUserID: self.appUserID) { result in
             let result: Result<PromotionalOffer, PurchasesError> = result
                 .map { data in

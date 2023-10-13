@@ -98,7 +98,7 @@ final class TransactionPoster: TransactionPosterType {
             self.fetchProductsAndPostReceipt(
                 transaction: transaction,
                 data: data,
-                receiptData: EncodedAppleReceipt(jws: jwsRepresentation),
+                receipt: EncodedAppleReceipt(jws: jwsRepresentation),
                 completion: completion
             )
         } else {
@@ -109,7 +109,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.fetchProductsAndPostReceipt(
                         transaction: transaction,
                         data: data,
-                        receiptData: EncodedAppleReceipt(receipt: receiptData),
+                        receipt: EncodedAppleReceipt(receipt: receiptData),
                         completion: completion
                     )
                 } else {
@@ -202,14 +202,14 @@ private extension TransactionPoster {
     func fetchProductsAndPostReceipt(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        receiptData: EncodedAppleReceipt,
+        receipt: EncodedAppleReceipt,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
             self.product(with: productIdentifier) { product in
                 self.postReceipt(transaction: transaction,
                                  purchasedTransactionData: data,
-                                 receiptData: receiptData,
+                                 receipt: receipt,
                                  product: product,
                                  completion: completion)
             }
@@ -257,12 +257,12 @@ private extension TransactionPoster {
 
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
-                     receiptData: EncodedAppleReceipt,
+                     receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
-        self.backend.post(receiptData: receiptData,
+        self.backend.post(receipt: receipt,
                           productData: productData,
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode) { result in
