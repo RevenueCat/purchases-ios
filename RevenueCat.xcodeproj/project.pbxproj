@@ -1542,6 +1542,7 @@
 			isa = PBXGroup;
 			children = (
 				4F1428A52A4A1330006CD196 /* Test Data */,
+				4DC546262AD44BBE005CDB35 /* EncodedAppleReceipt.swift */,
 				57EFDC6A27BC1F370057EC39 /* ProductType.swift */,
 				2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */,
 				57DE807028074C23008D6C6F /* SK1Storefront.swift */,
@@ -2049,7 +2050,6 @@
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
-				4DC546262AD44BBE005CDB35 /* EncodedAppleReceipt.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
 				B3DF6A4F269524080030D57C /* IntroEligibility.swift */,
