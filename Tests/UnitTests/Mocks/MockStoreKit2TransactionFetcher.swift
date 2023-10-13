@@ -44,13 +44,17 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedTransaction() async -> RevenueCat.StoreTransaction? {
-        self.stubbedLastVerifiedTransaction
+    var lastVerifiedTransaction: RevenueCat.StoreTransaction? {
+        get async {
+            self.stubbedLastVerifiedTransaction
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedAutoRenewableTransaction() async -> RevenueCat.StoreTransaction? {
-        self.stubbedLastVerifiedAutoRenewableTransaction
+    var lastVerifiedAutoRenewableTransaction: RevenueCat.StoreTransaction? {
+        get async {
+            self.stubbedLastVerifiedAutoRenewableTransaction
+        }
     }
 
     // MARK: -

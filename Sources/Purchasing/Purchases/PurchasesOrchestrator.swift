@@ -1095,7 +1095,7 @@ private extension PurchasesOrchestrator {
 
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
-                let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
+                let transaction = await self.transactionFetcher.lastVerifiedAutoRenewableTransaction
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                     self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                                           fetchPolicy: .cachedOrFetched) { result in
@@ -1313,7 +1313,7 @@ private extension PurchasesOrchestrator {
                              completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
 
         _ = Task<Void, Never> {
-            let transaction = await self.transactionFetcher.fetchLastVerifiedAutoRenewableTransaction()
+            let transaction = await self.transactionFetcher.lastVerifiedAutoRenewableTransaction
             guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                 // Promotional offers require an existing or expired subscription to redeem a promotional offer.
                 // Fail early if there are no transactions.
