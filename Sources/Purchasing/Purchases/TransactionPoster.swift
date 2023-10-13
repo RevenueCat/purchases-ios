@@ -90,11 +90,8 @@ final class TransactionPoster: TransactionPosterType {
             paywallSessionID: data.presentedPaywall?.sessionIdentifier
         ))
 
-        if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS {
-            guard let jwsRepresentation = transaction.jwsRepresentation else {
-                Logger.error(Strings.storeKit.could_not_fetch_jws(transaction.transactionIdentifier))
-                return
-            }
+        if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           let jwsRepresentation = transaction.jwsRepresentation {
             self.fetchProductsAndPostReceipt(
                 transaction: transaction,
                 data: data,
