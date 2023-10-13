@@ -463,7 +463,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         expect(self.offerings.invokedPostOfferCount) == 1
         expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
-        expect(self.offerings.invokedPostOfferParameters?.data?.serialized()) == 
+        expect(self.offerings.invokedPostOfferParameters?.data?.serialized()) ==
             self.receiptFetcher.mockReceiptData.asFetchToken
     }
 
@@ -1519,20 +1519,24 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData).to(beTrue())
     }
 
-    func testSyncPurchasesDoesntPostIfNoTransaction() async throws {
+    func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {
         self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
         self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
 
-        _ = await withCheckedContinuation { continuation in
+        let customerInfo = await withCheckedContinuation { continuation in
             self.orchestrator.syncPurchases { result in
                 continuation.resume(returning: result.value)
             }
         }
 
         expect(self.backend.invokedPostReceiptData).to(beFalse())
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
+        expect(customerInfo) == mockCustomerInfo
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

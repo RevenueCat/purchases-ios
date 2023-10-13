@@ -58,7 +58,6 @@
         case RCInvalidPromotionalOfferError:
         case RCOfflineConnectionError:
         case RCSignatureVerificationFailed:
-        case RCTransactionNotFoundError:
             NSLog(@"%ld", (long)errCode);
         case RCFeatureNotAvailableInCustomEntitlementsComputationMode:
             break;
