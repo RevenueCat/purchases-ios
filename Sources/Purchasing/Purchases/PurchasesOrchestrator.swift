@@ -1278,13 +1278,7 @@ private extension PurchasesOrchestrator {
             return
         }
 
-        self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
-            let result = products.value?.first.map {
-                ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)
-            }
-
-            completion(result)
-        }
+        self.createProductRequestData(with: productIdentifier, completion: completion)
     }
 
     func createProductRequestData(
