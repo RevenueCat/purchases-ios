@@ -554,18 +554,6 @@ enum ErrorUtils {
                                 fileName: fileName, functionName: functionName, line: line)
     }
 
-    /**
-     * Constructs an Error with the ``ErrorCode/transactionNotFound`` code.
-     *
-     * - Note: This error is used  when trying to retrieve the latest transaction but none can be found.
-     */
-    static func transactionNotFoundError(
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> PurchasesError {
-        return ErrorUtils.error(with: .transactionNotFound,
-                                fileName: fileName, functionName: functionName, line: line)
-    }
-
 }
 
 extension ErrorUtils {
@@ -687,8 +675,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed,
-                .transactionNotFound:
+                .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,
