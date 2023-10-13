@@ -1510,14 +1510,14 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
         let product = try await self.fetchSk2StoreProduct()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        _ = await withCheckedContinuation { continuation in
-            self.orchestrator.syncPurchases { result in
-                continuation.resume(returning: result.value)
-            }
-        }
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                                     isRestore: false,
+                                                                     initiationSource: .purchase)
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(customerInfo) == mockCustomerInfo
     }
 
     func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {
@@ -1526,15 +1526,11 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
-        self.customerInfoManager.stubbedCachedCustomerInfoResult = nil
         self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
 
-        let customerInfo = await withCheckedContinuation { continuation in
-            self.orchestrator.syncPurchases { result in
-                continuation.resume(returning: result.value)
-            }
-        }
-
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                                     isRestore: false,
+                                                                     initiationSource: .purchase)
         expect(self.backend.invokedPostReceiptData).to(beFalse())
         expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
         expect(customerInfo) == mockCustomerInfo
@@ -1561,11 +1557,9 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         ])
         self.backend.stubbedPostReceiptResult = .success(customerInfo)
 
-        let receivedCustomerInfo = await withCheckedContinuation { continuation in
-            self.orchestrator.syncPurchases { result in
-                continuation.resume(returning: result.value)
-            }
-        }
+        let receivedCustomerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                                             isRestore: false,
+                                                                             initiationSource: .purchase)
 
         expect(receivedCustomerInfo) === customerInfo
     }
@@ -1579,17 +1573,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let transaction = try await self.createTransaction(finished: true)
         self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
 
-        let error: BackendError = .missingAppUserID()
+        let expectedError: BackendError = .missingAppUserID()
 
-        self.backend.stubbedPostReceiptResult = .failure(error)
+        self.backend.stubbedPostReceiptResult = .failure(expectedError)
 
-        let receivedError = await withCheckedContinuation { continuation in
-            self.orchestrator.syncPurchases { result in
-                continuation.resume(returning: result.error)
-            }
+        do {
+            _ = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                          isRestore: false,
+                                                          initiationSource: .purchase)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(expectedError.asPurchasesError))
         }
-
-        expect(receivedError).to(matchError(error.asPurchasesError))
     }
 }
 
