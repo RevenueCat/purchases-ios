@@ -660,7 +660,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         offerings.stubbedPostOfferCompletionResult = .success(("signature", "identifier", UUID(), 12345))
@@ -696,7 +696,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = nil
 
         let product = try await self.fetchSk2Product()
         let storeProductDiscount = MockStoreProductDiscount(offerIdentifier: "offerid1",
@@ -1507,7 +1507,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
         let product = try await self.fetchSk2StoreProduct()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
@@ -1525,7 +1525,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = nil
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = nil
         self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
@@ -1543,7 +1543,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
 
         let customerInfo = try CustomerInfo(data: [
             "request_date": "2019-08-16T10:30:42Z",
@@ -1571,7 +1571,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpStoreKit2Listener()
 
         let transaction = try await self.createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedLastVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
 
         let expectedError: BackendError = .missingAppUserID()
 

@@ -23,10 +23,10 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedAutoRenewableTransaction: StoreTransaction? { get async }
+    var firstVerifiedAutoRenewableTransaction: StoreTransaction? { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedTransaction: StoreTransaction? { get async }
+    var firstVerifiedTransaction: StoreTransaction? { get async }
 
 }
 
@@ -55,7 +55,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedAutoRenewableTransaction: StoreTransaction? {
+    var firstVerifiedAutoRenewableTransaction: StoreTransaction? {
         get async {
             await StoreKit.Transaction.all
                 .compactMap { $0.verifiedStoreTransaction }
@@ -65,7 +65,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedTransaction: StoreTransaction? {
+    var firstVerifiedTransaction: StoreTransaction? {
         get async {
             await StoreKit.Transaction.all
                 .compactMap { $0.verifiedStoreTransaction }

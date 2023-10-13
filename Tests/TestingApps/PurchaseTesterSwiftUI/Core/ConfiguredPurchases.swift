@@ -8,10 +8,7 @@
 import Foundation
 
 #if DEBUG
-@testable import RevenueCat
-#else
 import RevenueCat
-#endif
 
 public final class ConfiguredPurchases {
 
