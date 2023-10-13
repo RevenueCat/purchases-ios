@@ -143,8 +143,4 @@ extension StoreKitConfigTestCase {
         )
     }
 
-    func createTransactionForConsumableProduct(productID: String?, finished: Bool) async throws -> StoreTransaction {
-        return try await self.createTransaction(productID: productID, finished: finished)
-    }
-
 }
