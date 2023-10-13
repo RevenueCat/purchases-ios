@@ -1628,4 +1628,5 @@ private extension PurchasesOrchestratorTests {
         darkMode: true,
         date: .init(timeIntervalSince1970: 1694029328)
     )
+
 }

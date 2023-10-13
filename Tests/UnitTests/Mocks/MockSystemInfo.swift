@@ -23,8 +23,10 @@ class MockSystemInfo: SystemInfo {
                      usesStoreKit2JWS: Bool = false,
                      clock: ClockType = TestClock()) {
         let dangerousSettings = DangerousSettings(
-            autoSyncPurchases: true, customEntitlementComputation: customEntitlementsComputation,
-            internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: usesStoreKit2JWS))
+            autoSyncPurchases: true,
+            customEntitlementComputation: customEntitlementsComputation,
+            internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: usesStoreKit2JWS)
+        )
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   storeKit2Setting: storeKit2Setting,
