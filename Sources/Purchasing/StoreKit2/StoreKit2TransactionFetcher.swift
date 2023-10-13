@@ -23,10 +23,11 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedAutoRenewableTransaction() async -> StoreTransaction?
+    var lastVerifiedAutoRenewableTransaction: StoreTransaction? { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedTransaction() async -> StoreTransaction?
+    var lastVerifiedTransaction: StoreTransaction? { get async }
+
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -54,19 +55,24 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedAutoRenewableTransaction() async -> StoreTransaction? {
-        await StoreKit.Transaction.all
-            .compactMap { $0.verifiedStoreTransaction }
-            .filter { $0.sk2Transaction?.productType == .autoRenewable }
-            .first { _ in true }
+    var lastVerifiedAutoRenewableTransaction: StoreTransaction? {
+        get async {
+            await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .filter { $0.sk2Transaction?.productType == .autoRenewable }
+                .first { _ in true }
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func fetchLastVerifiedTransaction() async -> StoreTransaction? {
-        await StoreKit.Transaction.all
-            .compactMap { $0.verifiedStoreTransaction }
-            .first { _ in true }
+    var lastVerifiedTransaction: StoreTransaction? {
+        get async {
+            await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .first { _ in true }
+        }
     }
+
 }
 
 // MARK: -
