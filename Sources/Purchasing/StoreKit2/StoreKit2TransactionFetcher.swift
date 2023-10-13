@@ -36,8 +36,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         get async {
             return await StoreKit.Transaction
                 .unfinished
-                .compactMap { $0.verifiedTransaction }
-                .map { StoreTransaction(sk2Transaction: $0) }
+                .compactMap { $0.verifiedStoreTransaction }
                 .extractValues()
         }
     }
@@ -57,17 +56,15 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedAutoRenewableTransaction() async -> StoreTransaction? {
         await StoreKit.Transaction.all
-            .compactMap { $0.verifiedTransaction }
-            .filter { $0.productType == .autoRenewable }
-            .map { StoreTransaction(sk2Transaction: $0) }
+            .compactMap { $0.verifiedStoreTransaction }
+            .filter { $0.sk2Transaction?.productType == .autoRenewable }
             .first { _ in true }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchLastVerifiedTransaction() async -> StoreTransaction? {
         await StoreKit.Transaction.all
-            .compactMap { $0.verifiedTransaction }
-            .map { StoreTransaction(sk2Transaction: $0) }
+            .compactMap { $0.verifiedStoreTransaction }
             .first { _ in true }
     }
 }
@@ -87,6 +84,14 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
     var verifiedTransaction: StoreKit.Transaction? {
         switch self {
         case let .verified(transaction): return transaction
+        case .unverified: return nil
+        }
+    }
+
+    var verifiedStoreTransaction: StoreTransaction? {
+        switch self {
+        case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction, 
+                                                                 jwsRepresentation: self.jwsRepresentation)
         case .unverified: return nil
         }
     }

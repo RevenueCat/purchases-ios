@@ -48,8 +48,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = EncodedAppleReceipt(type: .receipt,
-                                               data: "an awesome discount".asData)
+        let discountData = EncodedAppleReceipt(receipt: "an awesome discount".asData)
 
         waitUntil { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
@@ -75,8 +74,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = EncodedAppleReceipt(type: .receipt,
-                                               data: "an awesome discount".data(using: String.Encoding.utf8)!)
+        let discountData = EncodedAppleReceipt(receipt: "an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
@@ -104,8 +102,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = EncodedAppleReceipt(type: .receipt,
-                                               data: "an awesome discount".data(using: String.Encoding.utf8)!)
+        let discountData = EncodedAppleReceipt(receipt: "an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
@@ -148,8 +145,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = EncodedAppleReceipt(type: .receipt,
-                                               data: "an awesome discount".data(using: String.Encoding.utf8)!)
+        let discountData = EncodedAppleReceipt(receipt: "an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
@@ -185,8 +181,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = EncodedAppleReceipt(type: .receipt,
-                                               data: "an awesome discount".data(using: String.Encoding.utf8)!)
+        let discountData = EncodedAppleReceipt(receipt: "an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,

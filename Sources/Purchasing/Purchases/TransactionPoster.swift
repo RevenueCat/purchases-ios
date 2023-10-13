@@ -91,14 +91,14 @@ final class TransactionPoster: TransactionPosterType {
         ))
 
         if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS {
-            guard let jsonRepresentation = transaction.jsonRepresentation else {
+            guard let jwsRepresentation = transaction.jwsRepresentation else {
                 Logger.error(Strings.storeKit.could_not_fetch_jwt(transaction.transactionIdentifier))
                 return
             }
             self.fetchProductsAndPostReceipt(
                 transaction: transaction,
                 data: data,
-                receiptData: EncodedAppleReceipt(type: .jwt, data: jsonRepresentation),
+                receiptData: EncodedAppleReceipt(jws: jwsRepresentation),
                 completion: completion
             )
         } else {
@@ -109,7 +109,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.fetchProductsAndPostReceipt(
                         transaction: transaction,
                         data: data,
-                        receiptData: EncodedAppleReceipt(type: .receipt, data: receiptData),
+                        receiptData: EncodedAppleReceipt(receipt: receiptData),
                         completion: completion
                     )
                 } else {

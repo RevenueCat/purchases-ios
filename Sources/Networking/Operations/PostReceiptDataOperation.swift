@@ -53,7 +53,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `subscriberAttributesByKey`
         let cacheKey =
         """
-        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.data.hashString)
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.serialized().hashValue)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
@@ -191,30 +191,32 @@ private extension PurchasedTransactionData {
 private extension PostReceiptDataOperation {
 
     func printReceiptData() {
-        if self.postData.receiptData.type == .jwt {
+        switch self.postData.receiptData.type {
+        case .jws:
             self.log(Strings.receipt.posting_jwt(
                 self.postData.receiptData.serialized(),
                 initiationSource: self.postData.initiationSource.rawValue
             ))
             return
-        }
-        do {
-            let receipt = try PurchasesReceiptParser.default.parse(from: self.postData.receiptData.data)
-            self.log(Strings.receipt.posting_receipt(
-                receipt,
-                initiationSource: self.postData.initiationSource.rawValue
-            ))
-
-            for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
-                Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(
-                    productIdentifier: purchase.productId,
-                    purchase: purchase.purchaseDate,
-                    expiration: purchase.expiresDate
+        case .receipt(let data):
+            do {
+                let receipt = try PurchasesReceiptParser.default.parse(from: data)
+                self.log(Strings.receipt.posting_receipt(
+                    receipt,
+                    initiationSource: self.postData.initiationSource.rawValue
                 ))
-            }
 
-        } catch {
-            Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+                for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
+                    Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(
+                        productIdentifier: purchase.productId,
+                        purchase: purchase.purchaseDate,
+                        expiration: purchase.expiresDate
+                    ))
+                }
+
+            } catch {
+                Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+            }
         }
     }
 
