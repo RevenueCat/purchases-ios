@@ -17,8 +17,8 @@ import Foundation
 final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
     private let _stubbedUnfinishedTransactions: Atomic<[StoreTransaction]> = .init([])
-    private let _stubbedLastVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
-    private let _stubbedLastVerifiedAutoRenewableTransaction: Atomic<StoreTransaction?> = .init(nil)
+    private let _stubbedFirstVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
+    private let _stubbedFirstVerifiedAutoRenewableTransaction: Atomic<StoreTransaction?> = .init(nil)
     private let _stubbedHasPendingConsumablePurchase: Atomic<Bool> = false
 
     var stubbedUnfinishedTransactions: [StoreTransaction] {
@@ -26,14 +26,14 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         set { self._stubbedUnfinishedTransactions.value = newValue }
     }
 
-    var stubbedLastVerifiedTransaction: StoreTransaction? {
-        get { return self._stubbedLastVerifiedTransaction.value }
-        set { self._stubbedLastVerifiedTransaction.value = newValue }
+    var stubbedFirstVerifiedTransaction: StoreTransaction? {
+        get { return self._stubbedFirstVerifiedTransaction.value }
+        set { self._stubbedFirstVerifiedTransaction.value = newValue }
     }
 
-    var stubbedLastVerifiedAutoRenewableTransaction: StoreTransaction? {
-        get { return self._stubbedLastVerifiedAutoRenewableTransaction.value }
-        set { self._stubbedLastVerifiedAutoRenewableTransaction.value = newValue }
+    var stubbedFirstVerifiedAutoRenewableTransaction: StoreTransaction? {
+        get { return self._stubbedFirstVerifiedAutoRenewableTransaction.value }
+        set { self._stubbedFirstVerifiedAutoRenewableTransaction.value = newValue }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -44,16 +44,16 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedTransaction: RevenueCat.StoreTransaction? {
+    var firstVerifiedTransaction: RevenueCat.StoreTransaction? {
         get async {
-            self.stubbedLastVerifiedTransaction
+            self.stubbedFirstVerifiedTransaction
         }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var lastVerifiedAutoRenewableTransaction: RevenueCat.StoreTransaction? {
+    var firstVerifiedAutoRenewableTransaction: RevenueCat.StoreTransaction? {
         get async {
-            self.stubbedLastVerifiedAutoRenewableTransaction
+            self.stubbedFirstVerifiedAutoRenewableTransaction
         }
     }
 

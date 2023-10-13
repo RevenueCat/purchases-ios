@@ -97,54 +97,54 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         expect(result) == true
     }
 
-    // MARK: - lastVerifiedAutoRenewableTransaction
+    // MARK: - firstVerifiedAutoRenewableTransaction
 
-    func testHasLastVerifiedAutoRenewableTransaction() async throws {
+    func testHasFirstVerifiedAutoRenewableTransaction() async throws {
         let transaction = try await self.createTransaction(finished: true)
-        let result = await self.fetcher.lastVerifiedAutoRenewableTransaction
+        let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == transaction
     }
 
-    func testDoesNotHaveLastVerifiedAutoRenewableTransaction() async throws {
-        let result = await self.fetcher.lastVerifiedAutoRenewableTransaction
+    func testDoesNotHaveFirstVerifiedAutoRenewableTransaction() async throws {
+        let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == nil
     }
 
-    func testLastVerifiedAutoRenewableTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
+    func testFirstVerifiedAutoRenewableTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
         _ = try await self.createTransaction(productID: Self.consumable, finished: true)
-        let result = await self.fetcher.lastVerifiedAutoRenewableTransaction
+        let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == nil
     }
 
     func testHasVerifiedAutoRenewableTransactionDoesNotIncludeUnfinishedConsumableTransaction() async throws {
         _ = try await self.createTransaction(productID: Self.consumable, finished: false)
-        let result = await self.fetcher.lastVerifiedAutoRenewableTransaction
+        let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == nil
     }
 
-    // MARK: - lastVerifiedTransaction
+    // MARK: - firstVerifiedTransaction
 
-    func testHasLastVerifiedTransaction() async throws {
+    func testHasFirstVerifiedTransaction() async throws {
         let transaction = try await self.createTransaction(finished: true)
-        let result = await self.fetcher.lastVerifiedTransaction
+        let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == transaction
     }
 
-    func testDoesNotHaveLastVerifiedTransaction() async throws {
-        let result = await self.fetcher.lastVerifiedTransaction
+    func testDoesNotHaveFirstVerifiedTransaction() async throws {
+        let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == nil
     }
 
-    func testLastVerifiedTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
+    func testFirstVerifiedTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
         _ = try await self.createTransaction(productID: Self.consumable, finished: true)
-        let result = await self.fetcher.lastVerifiedTransaction
+        let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == nil
     }
 
     func testHasVerifiedTransactionIncludesUnfinishedConsumableTransaction() async throws {
         let transaction = try await self.createTransaction(productID: Self.consumable,
                                                            finished: false)
-        let result = await self.fetcher.lastVerifiedTransaction
+        let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == transaction
     }
 
