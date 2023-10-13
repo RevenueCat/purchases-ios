@@ -211,10 +211,10 @@ final class PurchasesOrchestrator {
                                   initiationSource: .restore,
                                   completion: completion)
         } else {
-            self.syncPurchases(receiptRefreshPolicy: .always,
-                               isRestore: true,
-                               initiationSource: .restore,
-                               completion: completion)
+            self.syncPurchasesSK1(receiptRefreshPolicy: .always,
+                                  isRestore: true,
+                                  initiationSource: .restore,
+                                  completion: completion)
         }
     }
 
@@ -225,10 +225,10 @@ final class PurchasesOrchestrator {
                                   initiationSource: .restore,
                                   completion: completion)
         } else {
-            self.syncPurchases(receiptRefreshPolicy: .never,
-                               isRestore: allowSharingAppStoreAccount,
-                               initiationSource: .restore,
-                               completion: completion)
+            self.syncPurchasesSK1(receiptRefreshPolicy: .never,
+                                  isRestore: allowSharingAppStoreAccount,
+                                  initiationSource: .restore,
+                                  completion: completion)
         }
 
     }
@@ -1008,10 +1008,10 @@ private extension PurchasesOrchestrator {
     }
 
     // swiftlint:disable:next function_body_length
-    func syncPurchases(receiptRefreshPolicy: ReceiptRefreshPolicy,
-                       isRestore: Bool,
-                       initiationSource: ProductRequestData.InitiationSource,
-                       completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
+    func syncPurchasesSK1(receiptRefreshPolicy: ReceiptRefreshPolicy,
+                          isRestore: Bool,
+                          initiationSource: ProductRequestData.InitiationSource,
+                          completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
         // Don't log anything unless the flag was explicitly set.
         let allowSharingAppStoreAccountSet = self._allowSharingAppStoreAccount.value != nil
         if allowSharingAppStoreAccountSet, !self.allowSharingAppStoreAccount {
@@ -1474,10 +1474,10 @@ extension PurchasesOrchestrator {
                                       initiationSource: initiationSource,
                                       completion: completion)
             } else {
-                self.syncPurchases(receiptRefreshPolicy: receiptRefreshPolicy,
-                                   isRestore: isRestore,
-                                   initiationSource: initiationSource,
-                                   completion: completion)
+                self.syncPurchasesSK1(receiptRefreshPolicy: receiptRefreshPolicy,
+                                      isRestore: isRestore,
+                                      initiationSource: initiationSource,
+                                      completion: completion)
             }
         }
     }
