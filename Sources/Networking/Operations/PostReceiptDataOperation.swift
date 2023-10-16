@@ -192,12 +192,11 @@ private extension PostReceiptDataOperation {
 
     func printReceiptData() {
         switch self.postData.receipt {
-        case .jws:
+        case .jws(let content):
             self.log(Strings.receipt.posting_jws(
-                self.postData.receipt.serialized(),
+                content,
                 initiationSource: self.postData.initiationSource.rawValue
             ))
-            return
         case .receipt(let data):
             do {
                 let receipt = try PurchasesReceiptParser.default.parse(from: data)
