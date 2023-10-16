@@ -321,3 +321,18 @@ extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
         .dictionaryWithKeys { $0.rawValue }
 
 }
+
+// MARK: - EncodedAppleReceipt
+
+private extension EncodedAppleReceipt {
+
+    var hash: String {
+        switch self {
+        case let .jws(content):
+            return content.asData.hashString
+        case let .receipt(data):
+            return data.hashString
+        }
+    }
+
+}
