@@ -35,7 +35,7 @@ extension StoreKitConfigTestCase {
         }
 
         return try await self.simulateAnyPurchase(product: product,
-                                                  finishTransaction: finishTransaction)
+                                                  finishTransaction: finishTransaction).underlyingTransaction
     }
 
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
@@ -44,7 +44,7 @@ extension StoreKitConfigTestCase {
     func simulateAnyPurchase(
         product: SK2Product? = nil,
         finishTransaction: Bool = false
-    ) async throws -> SK2Transaction {
+    ) async throws -> StoreKit.VerificationResult<SK2Transaction> {
         let productToPurchase: SK2Product
         if let product = product {
             productToPurchase = product
@@ -59,13 +59,13 @@ extension StoreKitConfigTestCase {
             await verificationResult.underlyingTransaction.finish()
         }
 
-        return verificationResult.underlyingTransaction
+        return verificationResult
     }
 
     /// - Returns: `SK2Transaction` after the purchase succeeded. This transaction is automatically finished.
     @MainActor
     func createTransactionWithPurchase(product: SK2Product? = nil) async throws -> Transaction {
-        return try await self.simulateAnyPurchase(product: product, finishTransaction: true)
+        return try await self.simulateAnyPurchase(product: product, finishTransaction: true).underlyingTransaction
     }
 
     @MainActor
@@ -78,6 +78,27 @@ extension StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchSk2StoreProduct(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2StoreProduct {
         return SK2StoreProduct(sk2Product: try await self.fetchSk2Product(productID))
+    }
+
+    @MainActor
+    func createTransaction(
+        productID: String? = nil,
+        finished: Bool
+    ) async throws -> StoreTransaction {
+        let product: SK2Product?
+
+        if let productID = productID {
+            product = try await self.fetchSk2Product(productID)
+        } else {
+            product = nil
+        }
+
+        let result = try await self.simulateAnyPurchase(product: product,
+                                                        finishTransaction: finished)
+        return StoreTransaction(
+            sk2Transaction: result.underlyingTransaction,
+            jwsRepresentation: result.jwsRepresentation
+        )
     }
 
 }

@@ -50,6 +50,7 @@ class BasePurchasesTests: TestCase {
             self.paywallEventsManager = nil
         }
         self.requestFetcher = MockRequestFetcher()
+        self.purchasedProductsFetcher = .init()
         self.mockProductsManager = MockProductsManager(systemInfo: self.systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
         self.mockOperationDispatcher = MockOperationDispatcher()
@@ -142,6 +143,7 @@ class BasePurchasesTests: TestCase {
     var receiptFetcher: MockReceiptFetcher!
     var requestFetcher: MockRequestFetcher!
     var mockProductsManager: MockProductsManager!
+    var purchasedProductsFetcher: MockPurchasedProductsFetcher!
     var backend: MockBackend!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
     var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
@@ -238,6 +240,7 @@ class BasePurchasesTests: TestCase {
             operationDispatcher: self.mockOperationDispatcher,
             receiptFetcher: self.receiptFetcher,
             receiptParser: self.mockReceiptParser,
+            transactionFetcher: self.mockTransactionFetcher,
             customerInfoManager: self.customerInfoManager,
             backend: self.backend,
             transactionPoster: self.transactionPoster,
@@ -379,7 +382,7 @@ extension BasePurchasesTests {
         override func post(offerIdForSigning offerIdentifier: String,
                            productIdentifier: String,
                            subscriptionGroup: String?,
-                           receiptData: Data,
+                           receipt: EncodedAppleReceipt,
                            appUserID: String,
                            completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
             self.postOfferForSigningCalled = true
@@ -423,7 +426,7 @@ extension BasePurchasesTests {
         }
 
         var postReceiptDataCalled = false
-        var postedReceiptData: Data?
+        var postedReceiptData: EncodedAppleReceipt?
         var postedIsRestore: Bool?
         var postedProductID: String?
         var postedPrice: Decimal?
@@ -437,13 +440,13 @@ extension BasePurchasesTests {
         var postedInitiationSource: ProductRequestData.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
 
-        override func post(receiptData: Data,
+        override func post(receipt: EncodedAppleReceipt,
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
                            observerMode: Bool,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
             self.postReceiptDataCalled = true
-            self.postedReceiptData = receiptData
+            self.postedReceiptData = receipt
             self.postedIsRestore = transactionData.source.isRestore
 
             if let productData = productData {

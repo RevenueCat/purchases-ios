@@ -22,6 +22,12 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var hasPendingConsumablePurchase: Bool { get async }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var firstVerifiedAutoRenewableTransaction: StoreTransaction? { get async }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var firstVerifiedTransaction: StoreTransaction? { get async }
+
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -31,8 +37,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         get async {
             return await StoreKit.Transaction
                 .unfinished
-                .compactMap { $0.verifiedTransaction }
-                .map { StoreTransaction(sk2Transaction: $0) }
+                .compactMap { $0.verifiedStoreTransaction }
                 .extractValues()
         }
     }
@@ -46,6 +51,25 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 .map(\.productType)
                 .map { StoreProduct.ProductType($0) }
                 .contains {  $0.productCategory == .nonSubscription }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var firstVerifiedAutoRenewableTransaction: StoreTransaction? {
+        get async {
+            await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .filter { $0.sk2Transaction?.productType == .autoRenewable }
+                .first { _ in true }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var firstVerifiedTransaction: StoreTransaction? {
+        get async {
+            await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .first { _ in true }
         }
     }
 
@@ -66,6 +90,14 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
     var verifiedTransaction: StoreKit.Transaction? {
         switch self {
         case let .verified(transaction): return transaction
+        case .unverified: return nil
+        }
+    }
+
+    fileprivate var verifiedStoreTransaction: StoreTransaction? {
+        switch self {
+        case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
+                                                                 jwsRepresentation: self.jwsRepresentation)
         case .unverified: return nil
         }
     }

@@ -90,21 +90,31 @@ final class TransactionPoster: TransactionPosterType {
             paywallSessionID: data.presentedPaywall?.sessionIdentifier
         ))
 
-        self.receiptFetcher.receiptData(
-            refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
-        ) { receiptData, receiptURL in
-            if let receiptData = receiptData, !receiptData.isEmpty {
-                self.fetchProductsAndPostReceipt(
-                    transaction: transaction,
-                    data: data,
-                    receiptData: receiptData,
-                    completion: completion
-                )
-            } else {
-                self.handleReceiptPost(withTransaction: transaction,
-                                       result: .failure(.missingReceiptFile(receiptURL)),
-                                       subscriberAttributes: nil,
-                                       completion: completion)
+        if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           let jwsRepresentation = transaction.jwsRepresentation {
+            self.fetchProductsAndPostReceipt(
+                transaction: transaction,
+                data: data,
+                receipt: .jws(jwsRepresentation),
+                completion: completion
+            )
+        } else {
+            self.receiptFetcher.receiptData(
+                 refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+            ) { receiptData, receiptURL in
+                if let receiptData = receiptData, !receiptData.isEmpty {
+                    self.fetchProductsAndPostReceipt(
+                        transaction: transaction,
+                        data: data,
+                        receipt: .receipt(receiptData),
+                        completion: completion
+                    )
+                } else {
+                    self.handleReceiptPost(withTransaction: transaction,
+                                           result: .failure(.missingReceiptFile(receiptURL)),
+                                           subscriberAttributes: nil,
+                                           completion: completion)
+                }
             }
         }
     }
@@ -189,14 +199,14 @@ private extension TransactionPoster {
     func fetchProductsAndPostReceipt(
         transaction: StoreTransactionType,
         data: PurchasedTransactionData,
-        receiptData: Data,
+        receipt: EncodedAppleReceipt,
         completion: @escaping CustomerAPI.CustomerInfoResponseHandler
     ) {
         if let productIdentifier = transaction.productIdentifier.notEmpty {
             self.product(with: productIdentifier) { product in
                 self.postReceipt(transaction: transaction,
                                  purchasedTransactionData: data,
-                                 receiptData: receiptData,
+                                 receipt: receipt,
                                  product: product,
                                  completion: completion)
             }
@@ -244,12 +254,12 @@ private extension TransactionPoster {
 
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
-                     receiptData: Data,
+                     receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
-        self.backend.post(receiptData: receiptData,
+        self.backend.post(receipt: receipt,
                           productData: productData,
                           transactionData: purchasedTransactionData,
                           observerMode: self.observerMode) { result in

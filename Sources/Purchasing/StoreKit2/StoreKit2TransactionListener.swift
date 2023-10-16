@@ -52,7 +52,7 @@ protocol StoreKit2TransactionListenerType: Sendable {
 actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
     /// Similar to ``PurchaseResultData`` but with an optional `CustomerInfo`
-    typealias ResultData = (userCancelled: Bool, transaction: SK2Transaction?)
+    typealias ResultData = (userCancelled: Bool, transaction: StoreTransaction?)
     typealias TransactionResult = StoreKit.VerificationResult<StoreKit.Transaction>
 
     private(set) var taskHandle: Task<Void, Never>?
@@ -122,7 +122,6 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         case let .success(verificationResult):
             let transaction = try await self.handle(transactionResult: verificationResult,
                                                     fromTransactionUpdate: false)
-
             return (false, transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()
@@ -146,7 +145,7 @@ private extension StoreKit2TransactionListener {
     func handle(
         transactionResult: TransactionResult,
         fromTransactionUpdate: Bool
-    ) async throws -> SK2Transaction {
+    ) async throws -> StoreTransaction {
         switch transactionResult {
         case let .unverified(unverifiedTransaction, verificationError):
             throw ErrorUtils.storeProblemError(
@@ -158,6 +157,8 @@ private extension StoreKit2TransactionListener {
             )
 
         case let .verified(verifiedTransaction):
+            let transaction = StoreTransaction(sk2Transaction: verifiedTransaction,
+                                               jwsRepresentation: transactionResult.jwsRepresentation)
             if fromTransactionUpdate, let delegate = self.delegate {
                 Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
                     productID: verifiedTransaction.productID
@@ -165,11 +166,11 @@ private extension StoreKit2TransactionListener {
 
                 try await delegate.storeKit2TransactionListener(
                     self,
-                    updatedTransaction: StoreTransaction(sk2Transaction: verifiedTransaction)
+                    updatedTransaction: transaction
                 )
             }
 
-            return verifiedTransaction
+            return transaction
         }
     }
 

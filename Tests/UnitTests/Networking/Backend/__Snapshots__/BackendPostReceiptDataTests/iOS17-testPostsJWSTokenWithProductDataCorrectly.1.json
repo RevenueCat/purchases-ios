@@ -1,0 +1,26 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "currency" : "USD",
+      "fetch_token" : "an awesomer jws token",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : true,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

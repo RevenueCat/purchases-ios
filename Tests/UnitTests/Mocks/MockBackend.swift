@@ -8,7 +8,7 @@
 // swiftlint:disable large_tuple line_length
 class MockBackend: Backend {
 
-    typealias PostReceiptParameters = (data: Data?,
+    typealias PostReceiptParameters = (data: EncodedAppleReceipt?,
                                        productData: ProductRequestData?,
                                        transactionData: PurchasedTransactionData,
                                        observerMode: Bool,
@@ -41,19 +41,19 @@ class MockBackend: Backend {
                   internalAPI: internalAPI)
     }
 
-    override func post(receiptData: Data,
+    override func post(receipt: EncodedAppleReceipt,
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
                        observerMode: Bool,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
-        invokedPostReceiptDataParameters = (receiptData,
+        invokedPostReceiptDataParameters = (receipt,
                                             productData,
                                             transactionData,
                                             observerMode,
                                             completion)
-        invokedPostReceiptDataParametersList.append((receiptData,
+        invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
                                                      observerMode,

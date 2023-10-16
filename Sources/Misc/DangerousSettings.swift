@@ -16,6 +16,7 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
+        let usesStoreKit2JWS: Bool
 
         #if DEBUG
         let forceServerErrors: Bool
@@ -24,18 +25,24 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
+            usesStoreKit2JWS: Bool = false,
             forceServerErrors: Bool = false,
             forceSignatureFailures: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesStoreKit2JWS = usesStoreKit2JWS
             self.forceServerErrors = forceServerErrors
             self.forceSignatureFailures = forceSignatureFailures
             self.testReceiptIdentifier = testReceiptIdentifier
         }
         #else
-        init(enableReceiptFetchRetry: Bool = false) {
+        init(
+            enableReceiptFetchRetry: Bool = false,
+            usesStoreKit2JWS: Bool = false
+        ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesStoreKit2JWS = usesStoreKit2JWS
         }
         #endif
 
@@ -87,7 +94,8 @@ import Foundation
 
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
     /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
-    @objc internal convenience init(autoSyncPurchases: Bool = true, customEntitlementComputation: Bool) {
+    @objc internal convenience init(autoSyncPurchases: Bool = true,
+                                    customEntitlementComputation: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: customEntitlementComputation,
                   internalSettings: Internal.default)
@@ -112,6 +120,12 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
+
+    /**
+     * Controls whether StoreKit 2 JWS tokens are sent to RevenueCat instead of StoreKit 1 receipts.
+     * Must be used in conjunction with the `usesStoreKit2IfAvailable configuration` option.
+     */
+    var usesStoreKit2JWS: Bool { get }
 
     #if DEBUG
     /// Whether `HTTPClient` will fake server errors

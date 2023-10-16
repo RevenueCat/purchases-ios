@@ -53,7 +53,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `subscriberAttributesByKey`
         let cacheKey =
         """
-        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receiptData.hashString)
+        \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.debugDescription ?? "")
@@ -120,7 +120,7 @@ extension PostReceiptDataOperation {
     struct PostData {
 
         let appUserID: String
-        let receiptData: Data
+        let receipt: EncodedAppleReceipt
         let isRestore: Bool
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
@@ -151,13 +151,13 @@ extension PostReceiptDataOperation.PostData {
     init(
         transactionData data: PurchasedTransactionData,
         productData: ProductRequestData?,
-        receiptData: Data,
+        receipt: EncodedAppleReceipt,
         observerMode: Bool,
         testReceiptIdentifier: String?
     ) {
         self.init(
             appUserID: data.appUserID,
-            receiptData: receiptData,
+            receipt: receipt,
             isRestore: data.source.isRestore,
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingID,
@@ -191,23 +191,31 @@ private extension PurchasedTransactionData {
 private extension PostReceiptDataOperation {
 
     func printReceiptData() {
-        do {
-            let receipt = try PurchasesReceiptParser.default.parse(from: self.postData.receiptData)
-            self.log(Strings.receipt.posting_receipt(
-                receipt,
+        switch self.postData.receipt {
+        case .jws(let content):
+            self.log(Strings.receipt.posting_jws(
+                content,
                 initiationSource: self.postData.initiationSource.rawValue
             ))
-
-            for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
-                Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(
-                    productIdentifier: purchase.productId,
-                    purchase: purchase.purchaseDate,
-                    expiration: purchase.expiresDate
+        case .receipt(let data):
+            do {
+                let receipt = try PurchasesReceiptParser.default.parse(from: data)
+                self.log(Strings.receipt.posting_receipt(
+                    receipt,
+                    initiationSource: self.postData.initiationSource.rawValue
                 ))
-            }
 
-        } catch {
-            Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+                for purchase in receipt.inAppPurchases where purchase.purchaseDateEqualsExpiration {
+                    Logger.appleError(Strings.receipt.receipt_subscription_purchase_equals_expiration(
+                        productIdentifier: purchase.productId,
+                        purchase: purchase.purchaseDate,
+                        expiration: purchase.expiresDate
+                    ))
+                }
+
+            } catch {
+                Logger.appleError(Strings.receipt.parse_receipt_locally_error(error: error))
+            }
         }
     }
 
@@ -259,7 +267,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.testReceiptIdentifier, forKey: .testReceiptIdentifier)
     }
 
-    var fetchToken: String { return self.receiptData.asFetchToken }
+    var fetchToken: String { return self.receipt.serialized() }
 
 }
 
@@ -311,5 +319,20 @@ extension ProductRequestData.InitiationSource: Encodable, RawRepresentable {
     private static let codes: [String: ProductRequestData.InitiationSource] = Self
         .allCases
         .dictionaryWithKeys { $0.rawValue }
+
+}
+
+// MARK: - EncodedAppleReceipt
+
+private extension EncodedAppleReceipt {
+
+    var hash: String {
+        switch self {
+        case let .jws(content):
+            return content.asData.hashString
+        case let .receipt(data):
+            return data.hashString
+        }
+    }
 
 }

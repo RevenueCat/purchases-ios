@@ -16,12 +16,18 @@ class MockSystemInfo: SystemInfo {
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
 
-    convenience init(finishTransactions: Bool,
+    convenience init(platformInfo: Purchases.PlatformInfo? = nil,
+                     finishTransactions: Bool,
                      storeKit2Setting: StoreKit2Setting = .default,
                      customEntitlementsComputation: Bool = false,
+                     usesStoreKit2JWS: Bool = false,
                      clock: ClockType = TestClock()) {
-        let dangerousSettings = DangerousSettings(customEntitlementComputation: customEntitlementsComputation)
-        self.init(platformInfo: nil,
+        let dangerousSettings = DangerousSettings(
+            autoSyncPurchases: true,
+            customEntitlementComputation: customEntitlementsComputation,
+            internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: usesStoreKit2JWS)
+        )
+        self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   storeKit2Setting: storeKit2Setting,
                   dangerousSettings: dangerousSettings,

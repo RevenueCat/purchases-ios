@@ -48,13 +48,12 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".asData
 
         waitUntil { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
-                                receiptData: discountData,
+                                receipt: .receipt("an awesome discount".asData),
                                 appUserID: Self.userID) { _ in
                 completed()
             }
@@ -74,13 +73,13 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
+        let receipt = EncodedAppleReceipt.receipt("an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
-                                receiptData: discountData,
+                                receipt: receipt,
                                 appUserID: Self.userID,
                                 completion: completed)
         }
@@ -102,13 +101,13 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
+        let receipt = EncodedAppleReceipt.receipt("an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
-                                receiptData: discountData,
+                                receipt: receipt,
                                 appUserID: Self.userID,
                                 completion: completed)
         }
@@ -145,13 +144,13 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
+        let receipt = EncodedAppleReceipt.receipt("an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
-                                receiptData: discountData,
+                                receipt: receipt,
                                 appUserID: Self.userID,
                                 completion: completed)
         }
@@ -181,13 +180,13 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let productIdentifier = "a_great_product"
         let group = "sub_group"
         let offerIdentifier = "offerid"
-        let discountData = "an awesome discount".data(using: String.Encoding.utf8)!
+        let receipt = EncodedAppleReceipt.receipt("an awesome discount".data(using: String.Encoding.utf8)!)
 
         let result = waitUntilValue { completed in
             self.offerings.post(offerIdForSigning: offerIdentifier,
                                 productIdentifier: productIdentifier,
                                 subscriptionGroup: group,
-                                receiptData: discountData,
+                                receipt: receipt,
                                 appUserID: Self.userID,
                                 completion: completed)
         }

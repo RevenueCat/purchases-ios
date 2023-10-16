@@ -56,11 +56,11 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedPostOffer = false
     var invokedPostOfferCount = 0
-    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: Data?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
+    var invokedPostOfferParameters: (offerIdentifier: String?, productIdentifier: String?, subscriptionGroup: String?, data: EncodedAppleReceipt?, applicationUsername: String?, completion: OfferingsAPI.OfferSigningResponseHandler?)?
     var invokedPostOfferParametersList = [(offerIdentifier: String?,
                                            productIdentifier: String?,
                                            subscriptionGroup: String?,
-                                           data: Data?,
+                                           data: EncodedAppleReceipt?,
                                            applicationUsername: String?,
                                            completion: OfferingsAPI.OfferSigningResponseHandler?)]()
     var stubbedPostOfferCompletionResult: Result<PostOfferForSigningOperation.SigningData, BackendError>?
@@ -68,7 +68,7 @@ class MockOfferingsAPI: OfferingsAPI {
     override func post(offerIdForSigning offerIdentifier: String,
                        productIdentifier: String,
                        subscriptionGroup: String?,
-                       receiptData: Data,
+                       receipt: EncodedAppleReceipt,
                        appUserID: String,
                        completion: @escaping OfferingsAPI.OfferSigningResponseHandler) {
         self.invokedPostOffer = true
@@ -76,13 +76,13 @@ class MockOfferingsAPI: OfferingsAPI {
         self.invokedPostOfferParameters = (offerIdentifier,
                                            productIdentifier,
                                            subscriptionGroup,
-                                           receiptData,
+                                           receipt,
                                            appUserID,
                                            completion)
         self.invokedPostOfferParametersList.append((offerIdentifier,
                                                     productIdentifier,
                                                     subscriptionGroup,
-                                                    receiptData,
+                                                    receipt,
                                                     appUserID,
                                                     completion))
 

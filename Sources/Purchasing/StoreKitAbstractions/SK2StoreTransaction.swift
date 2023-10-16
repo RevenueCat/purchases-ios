@@ -16,13 +16,14 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreTransaction: StoreTransactionType {
 
-    init(sk2Transaction: SK2Transaction) {
+    init(sk2Transaction: SK2Transaction, jwsRepresentation: String) {
         self.underlyingSK2Transaction = sk2Transaction
 
         self.productIdentifier = sk2Transaction.productID
         self.purchaseDate = sk2Transaction.purchaseDate
         self.transactionIdentifier = String(sk2Transaction.id)
         self.quantity = sk2Transaction.purchasedQuantity
+        self.jwsRepresentation = jwsRepresentation
 
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -42,6 +43,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let transactionIdentifier: String
     let quantity: Int
     let storefront: Storefront?
+    let jwsRepresentation: String?
 
     var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }

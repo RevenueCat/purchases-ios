@@ -63,6 +63,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.storefront).to(beNil())
         expect(transaction.hasKnownPurchaseDate) == false
         expect(transaction.hasKnownTransactionIdentifier) == true
+        expect(transaction.jwsRepresentation).to(beNil())
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -70,8 +71,9 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let sk2Transaction = try await self.createTransactionWithPurchase()
+        let jwsRepresentation = UUID().uuidString
 
-        let transaction = StoreTransaction(sk2Transaction: sk2Transaction)
+        let transaction = StoreTransaction(sk2Transaction: sk2Transaction, jwsRepresentation: jwsRepresentation)
 
         // Can't use `===` because `SK2Transaction` is a `struct`
         expect(transaction.sk2Transaction) == sk2Transaction
@@ -82,6 +84,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.quantity) == sk2Transaction.purchasedQuantity
         expect(transaction.hasKnownPurchaseDate) == true
         expect(transaction.hasKnownTransactionIdentifier) == true
+        expect(transaction.jwsRepresentation) == jwsRepresentation
 
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             let expected = await Storefront.currentStorefront
