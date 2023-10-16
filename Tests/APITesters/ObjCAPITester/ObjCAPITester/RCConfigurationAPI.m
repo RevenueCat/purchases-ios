@@ -18,7 +18,7 @@
                                                 withUserDefaults:NSUserDefaults.standardUserDefaults]
                                                withAppUserID:@""]
                                               withAppUserID:nil]
-                                             withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true usesStoreKit2JWS:true]]
+                                             withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true]]
                                             withNetworkTimeout:1]
                                            withStoreKit1Timeout: 1]
                                           withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
