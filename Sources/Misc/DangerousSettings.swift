@@ -85,8 +85,6 @@ import Foundation
      * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
-     * - Parameter usesStoreKit2JWS: Disable or enable sending StoreKit 2 JWS tokens to RevenueCat
-     * instead of StoreKit 1 receipts.
      */
     @objc public convenience init(autoSyncPurchases: Bool = true) {
         self.init(autoSyncPurchases: autoSyncPurchases,
