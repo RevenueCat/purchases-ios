@@ -135,9 +135,9 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
     func testHandlePurchaseResultDoesNotFinishTransaction() async throws {
         let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
 
-        let sk2Transaction = try await self.listener.handle(purchaseResult: purchaseResult)
-        expect(sk2Transaction.transaction?.sk2Transaction) == purchasedTransaction
-        expect(sk2Transaction.userCancelled) == false
+        let resultData = try await self.listener.handle(purchaseResult: purchaseResult)
+        expect(resultData.transaction?.sk2Transaction) == purchasedTransaction
+        expect(resultData.userCancelled) == false
 
         try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
     }
