@@ -83,7 +83,9 @@ class TransactionPosterTests: TestCase {
             source: .init(isRestore: false, initiationSource: .queue)
         )
 
+        let receiptData = "mock receipt".asData
         self.receiptFetcher.shouldReturnReceipt = true
+        self.receiptFetcher.mockReceiptData = receiptData
         self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
         self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
 
@@ -93,6 +95,34 @@ class TransactionPosterTests: TestCase {
 
         expect(self.backend.invokedPostReceiptData) == true
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .receipt(receiptData)
+        expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.mockTransaction.finishInvoked) == true
+    }
+
+    func testHandlePurchasedTransactionSendsJWS() throws {
+        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        let jwsRepresentation = UUID().uuidString
+        self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation)
+
+        let product = MockSK1Product(mockProductIdentifier: "product")
+
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        self.receiptFetcher.shouldReturnReceipt = false
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value) === Self.mockCustomerInfo
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(jwsRepresentation)
         expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
         expect(self.mockTransaction.finishInvoked) == true
     }
