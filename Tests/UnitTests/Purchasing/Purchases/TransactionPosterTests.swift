@@ -74,6 +74,29 @@ class TransactionPosterTests: TestCase {
         expect(self.mockTransaction.finishInvoked) == true
     }
 
+    func testHandlePurchasedTransactionSendsReceiptIfJWSSettingEnabledButJWSTokenIsMissing() throws {
+        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+
+        let product = MockSK1Product(mockProductIdentifier: "product")
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        self.receiptFetcher.shouldReturnReceipt = true
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value) === Self.mockCustomerInfo
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.mockTransaction.finishInvoked) == true
+    }
+
     func testHandlePurchasedTransactionDoesNotFinishNonProcessedConsumables() throws {
         let product = Self.createTestProduct(.consumable)
         let transactionData = PurchasedTransactionData(
@@ -260,9 +283,9 @@ class TransactionPosterTests: TestCase {
 
 private extension TransactionPosterTests {
 
-    func setUp(observerMode: Bool) {
+    func setUp(observerMode: Bool, usesStoreKit2JWS: Bool = false) {
         self.operationDispatcher = .init()
-        self.systemInfo = .init(finishTransactions: !observerMode)
+        self.systemInfo = .init(finishTransactions: !observerMode, usesStoreKit2JWS: usesStoreKit2JWS)
         self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
