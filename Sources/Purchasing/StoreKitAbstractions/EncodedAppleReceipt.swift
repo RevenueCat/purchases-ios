@@ -34,3 +34,16 @@ extension EncodedAppleReceipt {
     }
 
 }
+
+internal extension EncodedAppleReceipt {
+
+    var hash: String {
+        switch self {
+        case let .jws(content):
+            return content.asData.hashString
+        case let .receipt(data):
+            return data.hashString
+        }
+    }
+
+}
