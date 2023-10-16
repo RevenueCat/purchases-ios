@@ -157,6 +157,8 @@ private extension StoreKit2TransactionListener {
             )
 
         case let .verified(verifiedTransaction):
+            let transaction = StoreTransaction(sk2Transaction: verifiedTransaction,
+                                               jwsRepresentation: transactionResult.jwsRepresentation)
             if fromTransactionUpdate, let delegate = self.delegate {
                 Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
                     productID: verifiedTransaction.productID
@@ -164,13 +166,11 @@ private extension StoreKit2TransactionListener {
 
                 try await delegate.storeKit2TransactionListener(
                     self,
-                    updatedTransaction: StoreTransaction(sk2Transaction: verifiedTransaction,
-                                                         jwsRepresentation: transactionResult.jwsRepresentation)
+                    updatedTransaction: transaction
                 )
             }
 
-            return StoreTransaction(sk2Transaction: verifiedTransaction,
-                                    jwsRepresentation: transactionResult.jwsRepresentation)
+            return transaction
         }
     }
 
