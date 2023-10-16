@@ -947,8 +947,8 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
 
 private extension BaseBackendPostReceiptDataTests {
 
-    static let receipt = EncodedAppleReceipt(receipt: "an awesome receipt".asData)
-    static let receipt2 = EncodedAppleReceipt(receipt: "an awesomeer receipt".asData)
+    static let receipt = EncodedAppleReceipt.receipt("an awesome receipt".asData)
+    static let receipt2 = EncodedAppleReceipt.receipt("an awesomeer receipt".asData)
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)

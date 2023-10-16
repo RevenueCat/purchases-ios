@@ -95,7 +95,7 @@ final class TransactionPoster: TransactionPosterType {
             self.fetchProductsAndPostReceipt(
                 transaction: transaction,
                 data: data,
-                receipt: EncodedAppleReceipt(jws: jwsRepresentation),
+                receipt: .jws(jwsRepresentation),
                 completion: completion
             )
         } else {
@@ -106,7 +106,7 @@ final class TransactionPoster: TransactionPosterType {
                     self.fetchProductsAndPostReceipt(
                         transaction: transaction,
                         data: data,
-                        receipt: EncodedAppleReceipt(receipt: receiptData),
+                        receipt: .receipt(receiptData),
                         completion: completion
                     )
                 } else {

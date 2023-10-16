@@ -21,7 +21,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
     let appUserID = "abc123"
     let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
-    let receipt = EncodedAppleReceipt(receipt: "an awesome receipt".data(using: String.Encoding.utf8)!)
+    let receipt = EncodedAppleReceipt.receipt("an awesome receipt".data(using: String.Encoding.utf8)!)
 
     var subscriberAttribute1: SubscriberAttribute!
     var subscriberAttribute2: SubscriberAttribute!
