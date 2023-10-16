@@ -834,6 +834,37 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.mockOfflineCustomerInfoCreator.createRequestCount) == 1
     }
 
+    func testPostsJWSTokenWithProductDataCorrectly() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let observerMode = true
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.jws,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
+                              observerMode: observerMode,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
 }
 
 // swiftlint:disable:next type_name
@@ -949,6 +980,7 @@ private extension BaseBackendPostReceiptDataTests {
 
     static let receipt = EncodedAppleReceipt.receipt("an awesome receipt".asData)
     static let receipt2 = EncodedAppleReceipt.receipt("an awesomeer receipt".asData)
+    static let jws = EncodedAppleReceipt.jws("an awesomer jws token")
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
