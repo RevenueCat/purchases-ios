@@ -730,7 +730,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
-        mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction)
+        mockStoreKit2TransactionListener?.mockTransaction = .init(mockTransaction.underlyingTransaction)
 
         let product = try await self.fetchSk2Product()
 
@@ -743,7 +743,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                                          package: package,
                                                                                          promotionalOffer: nil)
 
-        expect(transaction?.sk2Transaction) == mockTransaction
+        expect(transaction?.sk2Transaction) == mockTransaction.underlyingTransaction
         expect(userCancelled) == false
 
         let expectedCustomerInfo: CustomerInfo = .emptyInfo
