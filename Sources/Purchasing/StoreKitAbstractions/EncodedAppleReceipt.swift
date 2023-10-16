@@ -15,25 +15,17 @@ import Foundation
 
 /// Represents an `AppleReceipt` that's been encoded
 /// in a suitable representation for the RevenueCat backend.
-struct EncodedAppleReceipt: Equatable {
-    enum `Type`: Equatable {
-        case jws(String), receipt(Data)
-    }
-    let type: `Type`
+enum EncodedAppleReceipt: Equatable {
 
-    init(jws: String) {
-        self.type = .jws(jws)
-    }
+  case jws(String)
+  case receipt(Data)
 
-    init(receipt: Data) {
-        self.type = .receipt(receipt)
-    }
 }
 
 extension EncodedAppleReceipt {
 
     func serialized() -> String {
-        switch type {
+        switch self {
         case .jws(let jws):
             return jws
         case .receipt(let data):

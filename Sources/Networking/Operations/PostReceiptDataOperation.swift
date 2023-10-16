@@ -191,7 +191,7 @@ private extension PurchasedTransactionData {
 private extension PostReceiptDataOperation {
 
     func printReceiptData() {
-        switch self.postData.receipt.type {
+        switch self.postData.receipt {
         case .jws:
             self.log(Strings.receipt.posting_jws(
                 self.postData.receipt.serialized(),
