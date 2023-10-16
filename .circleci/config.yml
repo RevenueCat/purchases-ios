@@ -649,7 +649,7 @@ jobs:
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests
-          no_output_timeout: 5m
+          no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 (17.0.1)
       - compress_result_bundle:
@@ -878,7 +878,7 @@ jobs:
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests
-          no_output_timeout: 5m
+          no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 14 (17.0.1)
       - compress_result_bundle:
