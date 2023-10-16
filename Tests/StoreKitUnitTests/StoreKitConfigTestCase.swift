@@ -128,19 +128,3 @@ private extension StoreKitConfigTestCase {
     }
 
 }
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-extension StoreKitConfigTestCase {
-
-    func createTransaction(
-        productID: String? = nil,
-        finished: Bool
-    ) async throws -> StoreTransaction {
-        return StoreTransaction(
-            sk2Transaction: try await self.simulateAnyPurchase(productID: productID,
-                                                               finishTransaction: finished),
-            jwsRepresentation: UUID().uuidString
-        )
-    }
-
-}

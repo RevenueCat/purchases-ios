@@ -77,10 +77,10 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         let fakeTransaction = try await self.simulateAnyPurchase()
 
         let (isCancelled, transaction) = try await self.listener.handle(
-            purchaseResult: .success(.verified(fakeTransaction))
+            purchaseResult: .success(fakeTransaction)
         )
         expect(isCancelled) == false
-        expect(transaction?.sk2Transaction) == fakeTransaction
+        expect(transaction?.sk2Transaction) == fakeTransaction.underlyingTransaction
     }
 
     func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
@@ -109,7 +109,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 
         let transaction = try await self.simulateAnyPurchase()
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
-        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction, error)
+        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
 
         // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
         // because neither of them accept `async`
