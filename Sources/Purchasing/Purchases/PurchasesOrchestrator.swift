@@ -1095,15 +1095,8 @@ private extension PurchasesOrchestrator {
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                     self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                                           fetchPolicy: .cachedOrFetched) { result in
-                        switch result {
-                        case .success(let customerInfo):
-                            self.operationDispatcher.dispatchOnMainThread {
-                                completion?(.success(customerInfo))
-                            }
-                        case .failure(let error):
-                            self.operationDispatcher.dispatchOnMainThread {
-                                completion?(.failure(ErrorUtils.customerInfoError(error: error)))
-                            }
+                        self.operationDispatcher.dispatchOnMainThread {
+                            completion?(result.mapError(\.asPurchasesError))
                         }
                     }
                     return
