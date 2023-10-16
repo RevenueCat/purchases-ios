@@ -42,7 +42,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var transactionIdentifier: String { self.transaction.transactionIdentifier }
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
-    @objc public var jwsRepresentation: String? { self.transaction.jwsRepresentation }
+    @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
