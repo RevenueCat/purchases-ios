@@ -1031,7 +1031,7 @@ workflows:
           # See https://discuss.circleci.com/t/xcode-15-rc-released-important-notice-for-visionos-sdk-users/49278
           xcode_version: '15.0.8'
       - backend-integration-tests:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
