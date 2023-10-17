@@ -956,7 +956,7 @@ workflows:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -976,7 +976,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
   
   build-test:
     when:
@@ -991,7 +991,7 @@ workflows:
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
       - spm-release-build-xcode-15:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
@@ -1003,9 +1003,9 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
