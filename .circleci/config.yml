@@ -422,9 +422,7 @@ jobs:
       - install-dependencies
       - run:
           name: Run tests
-          # StoreKit tests currently get stuck.
-          # See https://discuss.circleci.com/t/severe-performance-problems-with-xcode-15/49205/11?u=nachosoto
-          command: bundle exec fastlane test_ios skip_sk_tests:true
+          command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 15 (17.0.1)
@@ -958,7 +956,7 @@ workflows:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -978,7 +976,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
   
   build-test:
     when:
@@ -993,7 +991,7 @@ workflows:
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
       - spm-release-build-xcode-15:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
@@ -1005,9 +1003,9 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-17:
-          xcode_version: '15.0.0'
+          xcode_version: '15.0.1'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
