@@ -30,7 +30,6 @@ class BasePurchasesTests: TestCase {
         // this level it should be moved to `StoreKitUnitTests`, which runs serially.
         Purchases.logLevel = .verbose
 
-        self.storeKit1Wrapper = MockStoreKit1Wrapper()
         self.notificationCenter = MockNotificationCenter()
         self.purchasesDelegate = MockPurchasesDelegate()
 
@@ -41,6 +40,7 @@ class BasePurchasesTests: TestCase {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
                                          storeKit2Setting: self.storeKit2Setting,
                                          clock: self.clock)
+        self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
                                            userDefaults: self.userDefaults)
         self.paywallCache = .init()
@@ -228,6 +228,7 @@ class BasePurchasesTests: TestCase {
                                          finishTransactions: false,
                                          storeKit2Setting: self.storeKit2Setting,
                                          clock: self.clock)
+        self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: true)
         self.initializePurchasesInstance(appUserId: nil)
     }
 

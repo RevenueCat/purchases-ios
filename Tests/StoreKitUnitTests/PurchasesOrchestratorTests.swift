@@ -129,7 +129,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     fileprivate func setUpStoreKit1Wrapper() {
-        self.storeKit1Wrapper = MockStoreKit1Wrapper()
+        self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
         self.storeKit1Wrapper.mockAddPaymentTransactionState = .purchased
         self.storeKit1Wrapper.mockCallUpdatedTransactionInstantly = true
 
