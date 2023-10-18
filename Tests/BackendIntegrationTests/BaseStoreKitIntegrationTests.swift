@@ -199,7 +199,7 @@ extension BaseStoreKitIntegrationTests {
         return try await self.purchases.purchase(package: package)
     }
 
-    func expireSubscription(_ entitlement: EntitlementInfo) async throws {
+    func expireSubscription(_ entitlement: EntitlementInfo) {
         Logger.info(TestMessage.expiring_subscription(productID: entitlement.productIdentifier))
 
         // Try expiring using `SKTestSession`

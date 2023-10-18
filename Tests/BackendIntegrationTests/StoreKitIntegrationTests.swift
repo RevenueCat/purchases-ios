@@ -513,7 +513,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let customerInfo = try await self.purchases.purchase(product: productWithNoTrial).customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
 
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
         expect(eligibility) == .eligible
@@ -525,7 +525,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let customerInfo = try await self.purchases.purchase(product: monthlyWithTrial).customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: annualWithTrial)
         expect(eligibility) == .ineligible
@@ -539,7 +539,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 2. Expire subscription
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
 
         // 3. Check eligibility
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
@@ -553,7 +553,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let customerInfo = try await self.purchases.purchase(product: productWithNoIntro).customerInfo
         let entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
 
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
         try await self.verifySubscriptionExpired()
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithIntro)
@@ -569,7 +569,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
         try await self.verifySubscriptionExpired()
     }
 
@@ -587,7 +587,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
 
         // 2. Expire subscription
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
 
         // 3. Resubscribe
         try await subscribe()
@@ -616,7 +616,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await waitForNewPurchaseDate()
 
         // 4. Expire subscription
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
 
         // 5. Re-open app
         await self.resetSingleton()
@@ -709,7 +709,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 2. Expire subscription
 
-        try await self.expireSubscription(entitlement)
+        self.expireSubscription(entitlement)
         try await self.verifySubscriptionExpired()
 
         // 3. Get eligible offer
