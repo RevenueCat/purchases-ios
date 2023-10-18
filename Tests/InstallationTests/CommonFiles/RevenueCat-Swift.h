@@ -3371,6 +3371,7 @@ SWIFT_CLASS_NAMED("StoreTransaction")
 @property (nonatomic, readonly, copy) NSString * _Nonnull transactionIdentifier;
 @property (nonatomic, readonly) NSInteger quantity;
 @property (nonatomic, readonly, strong) RCStorefront * _Nullable storefront;
+@property (nonatomic, readonly, copy) NSString * _Nullable jwsRepresentation;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
