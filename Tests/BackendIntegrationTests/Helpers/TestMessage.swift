@@ -25,8 +25,6 @@ enum TestMessage: LogMessage {
 
     case expiring_subscription(productID: String)
     case expire_subscription_failed(Error)
-    case finished_waiting_for_expiration
-    case sleeping_to_force_expiration(seconds: Int)
 
     case resetting_purchases_singleton
     case removing_receipt(URL)
@@ -50,12 +48,6 @@ extension TestMessage {
                 Test will now wait for expiration instead of triggering it.
                 Error: \(error.localizedDescription)
                 """
-
-        case .finished_waiting_for_expiration:
-            return "Done waiting for subscription expiration, continuing test."
-
-        case let .sleeping_to_force_expiration(seconds):
-            return "Sleeping for \(seconds) seconds to force expiration"
 
         case .resetting_purchases_singleton:
             return "Resetting Purchases.shared"
