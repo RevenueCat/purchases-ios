@@ -98,14 +98,16 @@ extension PaywallEventStore {
         return try .init(handler: FileHandler(url))
     }
 
+    private static func revenueCatFolder(in container: URL) -> URL {
+        return container.appendingPathComponent("revenuecat")
+    }
+
     private static func url(in container: URL) -> URL {
-        return container
-            .appendingPathComponent("revenuecat")
-            .appendingPathComponent("paywall_event_store")
+        return self.revenueCatFolder(in: container).appendingPathComponent("paywall_event_store")
     }
 
     private static func removeLegacyDirectoryIfExists(_ documentsDirectory: URL) {
-        let url = Self.url(in: documentsDirectory)
+        let url = Self.revenueCatFolder(in: documentsDirectory)
         guard Self.fileManager.fileExists(atPath: url.relativePath) else { return }
 
         Logger.debug(PaywallEventStoreStrings.removing_old_documents_store(url))
