@@ -39,7 +39,8 @@ enum PurchaseStrings {
     case paymentqueue_removed_transaction(SKPaymentTransactionObserver,
                                           SKPaymentTransaction)
     case paymentqueue_removed_transaction_no_callbacks_found(SKPaymentTransactionObserver,
-                                                             SKPaymentTransaction)
+                                                             SKPaymentTransaction,
+                                                             observerMode: Bool)
     case paymentqueue_updated_transaction(SKPaymentTransactionObserver,
                                           SKPaymentTransaction)
     case presenting_code_redemption_sheet
@@ -163,12 +164,20 @@ extension PurchaseStrings: LogMessage {
                 .compactMap { $0 }
                 .joined(separator: " ")
 
-        case let .paymentqueue_removed_transaction_no_callbacks_found(observer, transaction):
-            return "\(observer.debugName) removedTransaction for \(transaction.payment.productIdentifier) " +
-            "but no callbacks to notify.\n" +
-            "If the purchase completion block is not being invoked after this, it likely means that some other code " +
-            "outside of the RevenueCat SDK is calling `SKPaymentQueue.finishTransaction`, which is interfering with " +
-            "RevenueCat purchasing state handling."
+        case let .paymentqueue_removed_transaction_no_callbacks_found(observer, transaction, observerMode):
+            // Transactions finished with observer mode won't have a callback because they're being finished
+            // by the developer and not our SDK.
+            let shouldIncludeCompletionBlockMessage = !observerMode
+
+            let prefix = "\(observer.debugName) removedTransaction for \(transaction.payment.productIdentifier) " +
+            "but no callbacks to notify."
+            let completionBlockMessage = "If the purchase completion block is not being invoked after this, " +
+            "it likely means that some other code outside of the RevenueCat SDK is calling " +
+            "`SKPaymentQueue.finishTransaction`, which is interfering with RevenueCat purchasing state handling."
+
+            return shouldIncludeCompletionBlockMessage
+                ? prefix + "\n" + completionBlockMessage
+                : prefix
 
         case let .paymentqueue_updated_transaction(observer, transaction):
             return "\(observer.debugName) updatedTransaction: \(transaction.payment.productIdentifier) " +

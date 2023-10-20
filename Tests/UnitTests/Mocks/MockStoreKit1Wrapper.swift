@@ -7,6 +7,10 @@
 import StoreKit
 
 class MockStoreKit1Wrapper: StoreKit1Wrapper {
+    init(observerMode: Bool = false) {
+        super.init(observerMode: observerMode)
+    }
+
     var payment: SKPayment?
     var addPaymentCallCount = 0
 

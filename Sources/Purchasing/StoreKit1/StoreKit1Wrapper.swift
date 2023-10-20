@@ -68,13 +68,16 @@ class StoreKit1Wrapper: NSObject {
 
     private let paymentQueue: SKPaymentQueue
     private let operationDispatcher: OperationDispatcher
+    private let observerMode: Bool
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
 
     init(paymentQueue: SKPaymentQueue = .default(),
          operationDispatcher: OperationDispatcher = .default,
+         observerMode: Bool,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default) {
         self.paymentQueue = paymentQueue
         self.operationDispatcher = operationDispatcher
+        self.observerMode = observerMode
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
 
         super.init()
@@ -211,8 +214,11 @@ extension StoreKit1Wrapper: SKPaymentTransactionObserver {
                     !callbacks.isEmpty {
                     callbacks.forEach { $0() }
                 } else {
-                    Logger.debug(Strings.purchase.paymentqueue_removed_transaction_no_callbacks_found(self,
-                                                                                                      transaction))
+                    Logger.debug(Strings.purchase.paymentqueue_removed_transaction_no_callbacks_found(
+                        self,
+                        transaction,
+                        observerMode: self.observerMode
+                    ))
                 }
             }
         }

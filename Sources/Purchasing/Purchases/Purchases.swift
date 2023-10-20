@@ -311,7 +311,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
             ? .right(.init())
-            : .left(.init(operationDispatcher: operationDispatcher, sandboxEnvironmentDetector: systemInfo))
+            : .left(.init(
+                operationDispatcher: operationDispatcher,
+                observerMode: observerMode,
+                sandboxEnvironmentDetector: systemInfo
+            ))
 
         let offeringsFactory = OfferingsFactory()
         let receiptParser = PurchasesReceiptParser.default
