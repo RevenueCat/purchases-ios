@@ -6,7 +6,11 @@
 //
 
 import RevenueCat
+#if DEBUG
 @testable import RevenueCatUI
+#else
+import RevenueCatUI
+#endif
 import SwiftUI
 
 struct OfferingsList: View {
@@ -195,11 +199,15 @@ extension OfferingsList.Template: CustomStringConvertible {
 
     var description: String {
         if let name = self.name {
+            #if DEBUG
             if let template = PaywallTemplate(rawValue: name) {
                 return template.name
             } else {
                 return "Unrecognized template"
             }
+            #else
+            return name
+            #endif
         } else {
             return "No paywall"
         }

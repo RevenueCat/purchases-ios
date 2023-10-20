@@ -57,8 +57,13 @@ struct AppContentView: View {
                         Label("Upsell view", systemImage: "dollarsign")
                     }
                     .navigationTitle("Upsell view")
-
             }
+
+            #if !DEBUG
+            if !Purchases.isConfigured {
+                Text("Purchases is not configured")
+            }
+            #endif
         }
     }
 
