@@ -59,7 +59,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             Strings.network.api_request_completed(
                 .init(method: .get,
                       path: .getCustomerInfo(appUserID: try self.purchases.appUserID)),
-                httpCode: .notModified
+                httpCode: .notModified,
+                metadata: nil
             ),
             level: .debug,
             expectedCount: 1
@@ -103,7 +104,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             Strings.network.api_request_completed(
                 .init(method: .get,
                       path: .getOfferings(appUserID: try self.purchases.appUserID)),
-                httpCode: .notModified
+                httpCode: .notModified,
+                metadata: nil
             ),
             level: .debug,
             expectedCount: 1
@@ -156,7 +158,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         // 3. Verify response was 304
         self.logger.verifyMessageWasLogged(
-            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
+            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
     }
 
@@ -175,7 +177,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Verify response was 304
         self.logger.verifyMessageWasLogged(
-            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified)
+            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
         )
     }
 
