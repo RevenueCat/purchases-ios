@@ -81,7 +81,7 @@ class ETagManager {
     func httpResultFromCacheOrBackend(with response: VerifiedHTTPResponse<Data?>,
                                       request: URLRequest,
                                       retried: Bool) -> VerifiedHTTPResponse<Data>? {
-        let statusCode: HTTPStatusCode = response.statusCode
+        let statusCode: HTTPStatusCode = response.httpStatusCode
         let resultFromBackend = response.asOptionalResponse
 
         guard let eTagInResponse = response.value(forHeaderField: Self.eTagResponseHeader) else {
@@ -172,7 +172,7 @@ private extension ETagManager {
                 self.storeIfPossible(
                     Response(
                         eTag: eTag,
-                        statusCode: response.statusCode,
+                        statusCode: response.httpStatusCode,
                         data: data,
                         verificationResult: response.verificationResult
                     ),
@@ -257,7 +257,7 @@ extension ETagManager.Response {
         responseVerificationResult: VerificationResult
     ) -> VerifiedHTTPResponse<Data> {
         return HTTPResponse(
-            statusCode: self.statusCode,
+            httpStatusCode: self.statusCode,
             responseHeaders: headers,
             body: self.data,
             requestDate: requestDate
@@ -280,10 +280,10 @@ private extension VerifiedHTTPResponse {
 
     var shouldStore: Bool {
         return (
-            self.statusCode != .notModified &&
+            self.httpStatusCode != .notModified &&
             // Note that we do want to store 400 responses to help the server
             // If the request was wrong, it will also be wrong the next time.
-            !self.statusCode.isServerError &&
+            !self.httpStatusCode.isServerError &&
             self.verificationResult.shouldStore
         )
     }

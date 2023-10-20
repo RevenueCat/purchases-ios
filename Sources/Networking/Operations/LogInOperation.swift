@@ -84,7 +84,7 @@ private extension LogInOperation {
             .map { response in
                 (
                     response.body.copy(with: response.verificationResult),
-                    created: response.statusCode == .createdSuccess
+                    created: response.httpStatusCode == .createdSuccess
                 )
             }
             .mapError(BackendError.networkError)

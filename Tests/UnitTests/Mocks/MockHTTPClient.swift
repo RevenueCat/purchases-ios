@@ -35,7 +35,7 @@ class MockHTTPClient: HTTPClient {
 
             let response = VerifiedHTTPResponse(
                 response: .init(
-                    statusCode: statusCode,
+                    httpStatusCode: statusCode,
                     responseHeaders: responseHeaders,
                     body: data
                 ),

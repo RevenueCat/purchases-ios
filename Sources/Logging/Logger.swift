@@ -69,6 +69,12 @@ struct Logger {
 
 }
 
+extension Logger {
+
+    static var verboseLogsEnabled: Bool { self.logLevel == .verbose }
+
+}
+
 // MARK: - LoggerType implementation
 
 /// `Logger` can be used both with static or instance methods.

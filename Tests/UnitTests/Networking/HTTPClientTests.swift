@@ -643,7 +643,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(result).toNot(beNil())
         expect(result).to(beSuccess())
         expect(result?.value?.body) == response
-        expect(result?.value?.statusCode) == .success
+        expect(result?.value?.httpStatusCode) == .success
     }
 
     func testCachedRequestsIncludeETagHeader() {
@@ -1153,7 +1153,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         self.eTagManager.stubResponseEtag(eTag)
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: headers,
             body: mockedCachedResponse,
             verificationResult: .verified
@@ -1174,7 +1174,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         expect(response).toNot(beNil())
-        expect(response?.value?.statusCode) == .success
+        expect(response?.value?.httpStatusCode) == .success
         expect(response?.value?.body) == mockedCachedResponse
         expect(response?.value?.requestDate).to(beCloseToDate(requestDate))
         expect(response?.value?.verificationResult) == .notRequested
@@ -1392,7 +1392,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         self.eTagManager.stubResponseEtag(eTag)
         self.eTagManager.shouldReturnResultFromBackend = false
         self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = .init(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [:],
             body: encodedResponse,
             requestDate: requestDate,

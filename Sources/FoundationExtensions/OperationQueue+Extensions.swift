@@ -30,7 +30,7 @@ extension OperationQueue {
             Logger.debug(
                 Strings.network.reusing_existing_request_for_operation(
                     T.self,
-                    Logger.logLevel == .verbose
+                    Logger.verboseLogsEnabled
                     ? factory.cacheKey
                     : factory.cacheKey.prefix(15) + "…"
                 )

@@ -61,7 +61,7 @@ class PostOfferForSigningOperation: NetworkOperation {
                     }
                 }
                 .flatMap { response in
-                    let (statusCode, response) = (response.statusCode, response.body)
+                    let (statusCode, response) = (response.httpStatusCode, response.body)
 
                     let offers = response.offers
 

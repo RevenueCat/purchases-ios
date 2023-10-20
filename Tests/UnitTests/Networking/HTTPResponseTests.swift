@@ -24,7 +24,7 @@ class HTTPResponseTests: TestCase {
     func testResponseVerificationNotRequestedWithNoPublicKey() {
         let request = HTTPRequest(method: .get, path: .health)
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [:],
             body: Data()
         )
@@ -41,7 +41,7 @@ class HTTPResponseTests: TestCase {
 
         let request = HTTPRequest(method: .get, path: .postOfferForSigning)
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [:],
             body: Data()
         )
@@ -58,7 +58,7 @@ class HTTPResponseTests: TestCase {
 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [:],
             body: Data()
         )
@@ -123,7 +123,7 @@ class HTTPResponseTests: TestCase {
 private extension HTTPResponse where Body == HTTPEmptyResponseBody {
 
     static func create(_ headers: HTTPResponse.Headers) -> Self {
-        return .init(statusCode: .success,
+        return .init(httpStatusCode: .success,
                      responseHeaders: headers,
                      body: .init())
     }
@@ -133,7 +133,7 @@ private extension HTTPResponse where Body == HTTPEmptyResponseBody {
 private extension HTTPResponse where Body == Data {
 
     static func create(body: Data, headers: HTTPResponse.Headers) -> Self {
-        return .init(statusCode: .success,
+        return .init(httpStatusCode: .success,
                      responseHeaders: headers,
                      body: body,
                      requestDate: Date())

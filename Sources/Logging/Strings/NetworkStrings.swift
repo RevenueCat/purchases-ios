@@ -18,8 +18,15 @@ import Foundation
 enum NetworkStrings {
 
     case api_request_started(HTTPRequest)
-    case api_request_completed(_ request: HTTPRequest, httpCode: HTTPStatusCode)
-    case api_request_failed(_ request: HTTPRequest, httpCode: HTTPStatusCode?, error: NetworkError)
+    case api_request_completed(
+        _ request: HTTPRequest,
+        httpCode: HTTPStatusCode,
+        metadata: HTTPClient.ResponseMetadata?
+    )
+    case api_request_failed(_ request: HTTPRequest,
+                            httpCode: HTTPStatusCode?,
+                            error: NetworkError,
+                            metadata: HTTPClient.ResponseMetadata?)
     case api_request_failed_status_code(HTTPStatusCode)
     case reusing_existing_request_for_operation(CacheableNetworkOperation.Type, String)
     case enqueing_operation(CacheableNetworkOperation.Type, cacheKey: String)
@@ -51,12 +58,24 @@ extension NetworkStrings: LogMessage {
         case let .api_request_started(request):
             return "API request started: \(request.description)"
 
-        case let .api_request_completed(request, httpCode):
-            return "API request completed: \(request.description) (\(httpCode.rawValue))"
+        case let .api_request_completed(request, httpCode, metadata):
+            let prefix = "API request completed: \(request.description) (\(httpCode.rawValue))"
 
-        case let .api_request_failed(request, statusCode, error):
-            return "API request failed: \(request.description) (\(statusCode?.rawValue.description ?? "<>")): " +
+            if let metadata {
+                return prefix + "\n" + metadata.description
+            } else {
+                return prefix
+            }
+
+        case let .api_request_failed(request, statusCode, error, metadata):
+            let prefix = "API request failed: \(request.description) (\(statusCode?.rawValue.description ?? "<>")): " +
             "\(error.description)"
+
+            if let metadata {
+                return prefix + "\n" + metadata.description
+            } else {
+                return prefix
+            }
 
         case let .api_request_failed_status_code(statusCode):
             return "API request failed with status code \(statusCode.rawValue)"
@@ -129,6 +148,15 @@ private extension HTTPRequest {
 
     var description: String {
         return "\(self.method.httpMethod) '\(self.path.relativePath)'"
+    }
+
+}
+
+private extension HTTPClient.ResponseMetadata {
+
+    var description: String {
+        return "Request-ID: '\(self.requestID ?? "")'; " +
+        "Amzn-Trace-ID: '\(self.amazonTraceID ?? "")'"
     }
 
 }

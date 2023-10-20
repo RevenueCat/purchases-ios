@@ -32,7 +32,7 @@ class CustomerInfoResponseHandler {
                 if !response.body.errorResponse.attributeErrors.isEmpty {
                     // If there are any, log attribute errors.
                     // Creating the error implicitly logs it.
-                    _ = response.body.errorResponse.asBackendError(with: response.statusCode)
+                    _ = response.body.errorResponse.asBackendError(with: response.httpStatusCode)
                 }
 
                 return response.body.customerInfo.copy(with: response.verificationResult)
