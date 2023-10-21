@@ -1,0 +1,58 @@
+{
+  "configurations" : [
+    {
+      "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
+      "name" : "Configuration 1",
+      "options" : {
+        "testTimeoutsEnabled" : true
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      },
+      {
+        "key" : "XCODE_CLOUD",
+        "value" : "1"
+      }
+    ],
+    "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestRepetitions" : 3,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RevenueCat.xcodeproj",
+      "identifier" : "2DEAC2D926EFE46E006914ED",
+      "name" : "UnitTestsHostApp"
+    },
+    "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "UnitTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DAC5F7126F13C9800C5258F",
+        "name" : "StoreKitUnitTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "5759B330296DF65D002472D5",
+        "name" : "ReceiptParserTests"
+      }
+    }
+  ],
+  "version" : 1
+}

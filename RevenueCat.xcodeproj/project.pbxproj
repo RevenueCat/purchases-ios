@@ -1057,6 +1057,7 @@
 		4FD368B52AA7D09C00F63354 /* PaywallEventSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventSerializer.swift; sourceTree = "<group>"; };
 		4FD7E8652AABC4470055406F /* PurchasesPaywallEventsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPaywallEventsTests.swift; sourceTree = "<group>"; };
 		4FDA13662A33D13700C45CFE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		4FDE95A92A769E9E006E7D2D /* XC-AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "XC-AllTests.xctestplan"; path = "Tests/TestPlans/XC-AllTests.xctestplan"; sourceTree = "<group>"; };
 		4FDF10E62A725EA6004F3680 /* ExternalPurchasesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesManager.swift; sourceTree = "<group>"; };
 		4FDF10E92A726269004F3680 /* ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObserverModeManager.swift; sourceTree = "<group>"; };
 		4FDF10EC2A726291004F3680 /* SK1ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1ProductFetcher.swift; sourceTree = "<group>"; };
@@ -2566,6 +2567,7 @@
 				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
 				57910CBD29C393A6006209D5 /* CI-RevenueCat.xctestplan */,
 				2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */,
+				4FDE95A92A769E9E006E7D2D /* XC-AllTests.xctestplan */,
 				570896B427595C8100296F1C /* Coverage.xctestplan */,
 				570896B327595C8100296F1C /* RevenueCat.xctestplan */,
 				570896B527595C8100296F1C /* UnitTests.xctestplan */,

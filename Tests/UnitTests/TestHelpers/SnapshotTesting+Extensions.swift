@@ -14,12 +14,80 @@
 import Foundation
 import Nimble
 import SnapshotTesting
+import XCTest
 
 #if swift(>=5.8) && canImport(SwiftUI)
 import SwiftUI
 #endif
 
 @testable import RevenueCat
+
+// MARK: - Overloads for Xcode Cloud support
+
+func assertSnapshot<Value, Format>(
+  matching value: @autoclosure () throws -> Value,
+  as snapshotting: Snapshotting<Value, Format>,
+  named name: String? = nil,
+  record recording: Bool = false,
+  timeout: TimeInterval = 5,
+  file: StaticString = #file,
+  testName: String = #function,
+  line: UInt = #line
+) {
+    let failure = verifySnapshot(
+        matching: try value(),
+        as: snapshotting,
+        named: name,
+        record: recording,
+        timeout: timeout,
+        file: file,
+        testName: testName,
+        line: line
+    )
+
+    if let message = failure {
+        XCTFail(message, file: file, line: line)
+    }
+}
+
+func verifySnapshot<Value, Format>(
+  matching value: @autoclosure () throws -> Value,
+  as snapshotting: Snapshotting<Value, Format>,
+  named name: String? = nil,
+  record recording: Bool = false,
+  timeout: TimeInterval = 5,
+  file: StaticString = #file,
+  testName: String = #function,
+  line: UInt = #line
+) -> String? {
+    let snapshotDirectory: String?
+
+    if ProcessInfo.isXcodeCloud {
+        let ciPathPrefix = "/Volumes/workspace/repository/ci_scripts/"
+        let components = URL(string: file.description)!.pathComponents
+        let projectIndex = components.firstIndex(of: "repository")!
+        let folders = components[(projectIndex + 1)..<components.endIndex - 1].joined(separator: "/")
+        let fileName = (components[components.endIndex - 1] as NSString).deletingPathExtension
+
+        snapshotDirectory = "\(ciPathPrefix)\(folders)/__Snapshots__/\(fileName)"
+    } else {
+        snapshotDirectory = nil
+    }
+
+    return SnapshotTesting.verifySnapshot(
+        matching: try value(),
+        as: snapshotting,
+        named: name,
+        record: recording,
+        snapshotDirectory: snapshotDirectory,
+        timeout: timeout,
+        file: file,
+        testName: testName,
+        line: line
+    )
+}
+
+// MARK: - Snapshotting extensions
 
 extension Snapshotting where Value == Encodable, Format == String {
 

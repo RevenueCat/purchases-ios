@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
-  codecov: codecov/codecov@3.2.5
+  codecov: codecov/codecov@3.3.0
 
 version: 2.1
 
@@ -454,7 +454,7 @@ jobs:
           environment:
             SCAN_DEVICE: iPhone 14 (16.4)
       - codecov/upload:
-          xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult"
+          xtra_args: "-v --xc --xp fastlane/test_output/xctest/ios/RevenueCat.xcresult --preventSymbolicLinks=true"
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat

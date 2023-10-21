@@ -1,5 +1,4 @@
 import Nimble
-import SnapshotTesting
 import XCTest
 
 @testable import RevenueCat
@@ -10,50 +9,50 @@ class ProductRequestDataTests: TestCase {
         let productIdentifier = "cool_product"
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsPaymentModeCorrectly() throws {
         var paymentMode: StoreProductDiscount.PaymentMode?
         var productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
 
         paymentMode = .payAsYouGo
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
 
         paymentMode = .freeTrial
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
 
         paymentMode = .payUpFront
         productData = .createMockProductData(paymentMode: paymentMode)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsCurrencyCodeCorrectly() throws {
         let currencyCode = "USD"
         let productData: ProductRequestData = .createMockProductData(currencyCode: currencyCode)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsPriceCorrectly() throws {
         let price: NSDecimalNumber = 9.99
         let productData: ProductRequestData = .createMockProductData(price: price as Decimal)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsNormalDurationCorrectly() throws {
         let normalDuration = "P3Y"
         let productData: ProductRequestData = .createMockProductData(normalDuration: normalDuration)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForFreeTrial() throws {
@@ -61,7 +60,7 @@ class ProductRequestDataTests: TestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: trialDuration,
                                                                      introDurationType: .freeTrial)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroDurationCorrectlyForIntroPrice() throws {
@@ -69,7 +68,7 @@ class ProductRequestDataTests: TestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
                                                                      introDurationType: .payUpFront)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryDoesntAddIntroDurationIfDurationTypeUnknown() throws {
@@ -77,21 +76,21 @@ class ProductRequestDataTests: TestCase {
         let productData: ProductRequestData = .createMockProductData(introDuration: introDuration,
                                                                      introDurationType: nil)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsIntroPriceCorrectly() throws {
         let introPrice: NSDecimalNumber = 6.99
         let productData: ProductRequestData = .createMockProductData(introPrice: introPrice as Decimal)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsSubscriptionGroupCorrectly() {
         let subscriptionGroup = "cool_group"
         let productData: ProductRequestData = .createMockProductData(subscriptionGroup: subscriptionGroup)
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testAsDictionaryConvertsDiscountsCorrectly() throws {
@@ -124,7 +123,7 @@ class ProductRequestDataTests: TestCase {
 
         let productData: ProductRequestData = .createMockProductData(discounts: [discount1, discount2, discount3])
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testEncoding() throws {
@@ -166,7 +165,7 @@ class ProductRequestDataTests: TestCase {
                                                                      subscriptionGroup: "cool_group",
                                                                      discounts: [discount1, discount2, discount3])
 
-        assertSnapshot(productData)
+        self.snapshot(productData)
     }
 
     func testCacheKey() throws {
@@ -218,10 +217,10 @@ class ProductRequestDataTests: TestCase {
 
 private extension ProductRequestDataTests {
 
-    func assertSnapshot(_ data: ProductRequestData,
-                        testName: String = #function,
-                        line: UInt = #line) {
-        SnapshotTesting.assertSnapshot(
+    func snapshot(_ data: ProductRequestData,
+                  testName: String = #function,
+                  line: UInt = #line) {
+        assertSnapshot(
             matching: data,
             as: .formattedJson,
             testName: testName,
