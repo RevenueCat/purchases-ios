@@ -25,7 +25,7 @@ class PurchaseHandlerTests: TestCase {
     func testInitialState() async throws {
         let handler: PurchaseHandler = .mock()
 
-        expect(handler.purchasedCustomerInfo).to(beNil())
+        expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
         expect(handler.restored) == false
@@ -37,7 +37,7 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        expect(handler.purchasedCustomerInfo) === TestData.customerInfo
+        expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == true
         expect(handler.actionInProgress) == false
@@ -47,7 +47,7 @@ class PurchaseHandlerTests: TestCase {
         let handler: PurchaseHandler = .cancelling()
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
-        expect(handler.purchasedCustomerInfo).to(beNil())
+        expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
         expect(handler.actionInProgress) == false
     }
@@ -61,7 +61,7 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == false
         expect(handler.restored) == true
         expect(handler.restoredCustomerInfo) === TestData.customerInfo
-        expect(handler.purchasedCustomerInfo).to(beNil())
+        expect(handler.purchaseResult).to(beNil())
         expect(handler.actionInProgress) == false
     }
 

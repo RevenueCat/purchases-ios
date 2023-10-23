@@ -45,9 +45,12 @@ public final class PaywallViewController: UIViewController {
         let paywallView = self.offering.map { PaywallView(offering: $0) } ?? PaywallView()
 
         let view = paywallView
-            .onPurchaseCompleted { [weak self] customerInfo in
+            .onPurchaseCompleted { [weak self] transaction, customerInfo in
                 guard let self = self else { return }
                 self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
+                self.delegate?.paywallViewController?(self,
+                                                      didFinishPurchasingWith: customerInfo,
+                                                      transaction: transaction)
             }
             .onRestoreCompleted { [weak self] customerInfo in
                 guard let self = self else { return }
@@ -82,6 +85,12 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didFinishPurchasingWith customerInfo: CustomerInfo)
+
+    /// Notifies that a purchase has completed in a ``PaywallViewController``.
+    @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:transaction:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didFinishPurchasingWith customerInfo: CustomerInfo,
+                                        transaction: StoreTransaction?)
 
     /// Notifies that the restore operation has completed in a ``PaywallViewController``.
     ///

@@ -274,8 +274,8 @@ struct LoadedOfferingPaywallView: View {
                         locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
-            .preference(key: PurchasedCustomerInfoPreferenceKey.self,
-                        value: self.purchaseHandler.purchasedCustomerInfo)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.purchaseResult))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
