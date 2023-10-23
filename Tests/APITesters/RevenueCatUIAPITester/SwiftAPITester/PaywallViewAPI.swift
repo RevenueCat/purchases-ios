@@ -14,8 +14,8 @@ struct App: View {
 
     private var offering: Offering
     private var fonts: PaywallFontProvider
-    private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
-    private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
+    private var completed: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
+    private var purchaseCompleted: PurchaseCompletedHandler = { (_: CustomerInfo, _: StoreTransaction?) in }
 
     var body: some View {
         self.content
@@ -93,8 +93,7 @@ struct App: View {
             .paywallFooter(offering: offering, restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering, fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering, fonts: self.fonts,
-                           purchaseCompleted: self.purchaseOrRestoreCompleted,
-                           restoreCompleted: self.purchaseOrRestoreCompleted)
+                           purchaseCompleted: completed, restoreCompleted: self.purchaseOrRestoreCompleted)
     }
 
     @ViewBuilder
