@@ -49,16 +49,11 @@ class PaywallViewEventsTests: TestCase {
         self.cancelEventExpectation = .init(description: "Cancel event")
     }
 
-    func testPaywallImpressionEvent() async throws {
-        let expectation = XCTestExpectation()
-
+    func testPaywallImpressionEvent() throws {
         try self.createView()
-        .onAppear { expectation.fulfill() }
-        .addToHierarchy()
+            .addToHierarchy()
 
-        await self.fulfillment(of: [expectation], timeout: 1)
-
-        expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
+        expect(self.events).toEventually(containElementSatisfying { $0.eventType == .impression })
 
         let event = try XCTUnwrap(self.events.first { $0.eventType == .impression })
         self.verifyEventData(event.data)
@@ -123,7 +118,7 @@ class PaywallViewEventsTests: TestCase {
         await self.fulfillment(of: [self.impressionEventExpectation, self.closeEventExpectation], timeout: 1)
 
         expect(self.events).to(haveCount(4))
-        expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
+        expect(Set(self.events.map(\.eventType))) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
 

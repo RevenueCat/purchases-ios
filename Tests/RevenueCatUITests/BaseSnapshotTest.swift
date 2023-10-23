@@ -88,10 +88,6 @@ extension View {
 
     /// Adds the receiver to a view hierarchy to be able to test lifetime logic.
     func addToHierarchy() throws {
-        if #available(iOS 17.0, *) {
-            try XCTSkipIf(true, "This is currently not working on iOS 17")
-        }
-
         UIView.setAnimationsEnabled(false)
 
         let controller = UIHostingController(
