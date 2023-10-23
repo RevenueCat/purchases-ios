@@ -83,6 +83,17 @@ class PaywallViewEventsTests: TestCase {
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
     }
 
+    func testImpressionAndCloseEventOnlyHappensOnceInSameSessionID() async throws {
+        try self.createView()
+            .addToHierarchy()
+
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+
+        expect(self.events).to(haveCount(2))
+        expect(self.events.map(\.eventType)) == [.impression, .close]
+        expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
+    }
+
     func testCancelledPurchase() async throws {
         try self.createView()
             .addToHierarchy()
@@ -112,7 +123,15 @@ class PaywallViewEventsTests: TestCase {
 
         await self.fulfillment(of: [firstCloseExpectation], timeout: 1)
 
-        try self.createView()
+        let handler2: PurchaseHandler =
+            .cancelling()
+            .map { _ in
+                return { [weak self] event in
+                    await self?.track(event)
+                }
+            }
+
+        try self.createView(handler2)
             .addToHierarchy()
 
         await self.fulfillment(of: [self.impressionEventExpectation, self.closeEventExpectation], timeout: 1)
@@ -141,13 +160,13 @@ private extension PaywallViewEventsTests {
         }
     }
 
-    func createView() -> some View {
+    func createView(_ purchaseHandler: PurchaseHandler? = nil) -> some View {
         PaywallView(
             offering: Self.offering.withLocalImages,
             customerInfo: TestData.customerInfo,
             mode: self.mode,
             introEligibility: .producing(eligibility: .eligible),
-            purchaseHandler: self.handler
+            purchaseHandler: purchaseHandler ?? self.handler
         )
         .environment(\.colorScheme, self.scheme)
     }

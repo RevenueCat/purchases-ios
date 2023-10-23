@@ -81,6 +81,27 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == true
     }
 
+    func testTrackImpressionAndCloseOnlyTrackOnce() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false)
+
+        let result1 = handler.trackPaywallImpression(eventData)
+        expect(result1) == true
+        let result2 = handler.trackPaywallImpression(eventData)
+        expect(result2) == false
+
+        let result3 = handler.trackPaywallClose(eventData)
+        expect(result3) == true
+        let result4 = handler.trackPaywallClose(eventData)
+        expect(result4) == false
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
