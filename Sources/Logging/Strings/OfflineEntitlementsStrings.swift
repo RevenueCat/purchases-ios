@@ -34,6 +34,7 @@ enum OfflineEntitlementsStrings {
     case computed_offline_customer_info_details([PurchasedSK2Product], EntitlementInfos)
 
     case purchased_products_fetching
+    case purchased_products_fetched(count: Int)
     case purchased_products_fetching_too_slow
     case purchased_products_returning_cache(count: Int)
     case purchased_products_invalidating_cache
@@ -100,6 +101,9 @@ extension OfflineEntitlementsStrings: LogMessage {
 
         case .purchased_products_fetching:
             return "PurchasedProductsFetcher: fetching products from StoreKit"
+
+        case let .purchased_products_fetched(count):
+            return "PurchasedProductsFetcher: fetched \(count) products from StoreKit"
 
         case .purchased_products_fetching_too_slow:
             return "PurchasedProductsFetcher: fetching products took too long"
