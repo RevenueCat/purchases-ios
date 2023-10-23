@@ -19,24 +19,32 @@ struct TemplateBackgroundImageView: View {
 
     private let url: URL?
     private let blurred: Bool
+    private let ignoreSafeArea: Bool
 
     init(configuration: TemplateViewConfiguration) {
         self.init(url: configuration.backgroundImageURLToDisplay,
                   blurred: configuration.configuration.blurredBackgroundImage)
     }
 
-    init(url: URL?, blurred: Bool) {
+    init(url: URL?, blurred: Bool, ignoreSafeArea: Bool = true) {
         self.url = url
         self.blurred = blurred
+        self.ignoreSafeArea = ignoreSafeArea
     }
 
     var body: some View {
         if let url = self.url {
-            self.image(url)
-                .scaledToFill()
+            let image = self.image(url)
                 .unredacted()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .edgesIgnoringSafeArea(.all)
+
+            if self.ignoreSafeArea {
+                image
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                image
+            }
         }
     }
 
