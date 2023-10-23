@@ -93,8 +93,12 @@ struct App: View {
             .paywallFooter(offering: offering, restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering, fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering, fonts: self.fonts,
+<<<<<<< HEAD
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
+=======
+                           purchaseCompleted: completed, restoreCompleted: self.purchaseOrRestoreCompleted)
+>>>>>>> 316e2e855 (`Paywalls`: new `.onPurchaseCompleted` overload with `StoreTransaction`)
     }
 
     @ViewBuilder
