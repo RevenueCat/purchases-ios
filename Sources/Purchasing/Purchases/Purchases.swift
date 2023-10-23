@@ -248,7 +248,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let paywallEventsManager: PaywallEventsManagerType?
     private let trialOrIntroPriceEligibilityChecker: CachingTrialOrIntroPriceEligibilityChecker
-    private let purchasedProductsFetcher: PurchasedProductsFetcherType?
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
@@ -581,7 +580,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.offeringsManager = offeringsManager
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
-        self.purchasedProductsFetcher = purchasedProductsFetcher
         self.trialOrIntroPriceEligibilityChecker = trialOrIntroPriceEligibilityChecker
         self.storeMessagesHelper = storeMessagesHelper
 
@@ -1607,7 +1605,6 @@ private extension Purchases {
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {
             self.trialOrIntroPriceEligibilityChecker.clearCache()
-            self.purchasedProductsFetcher?.clearCache()
         }
 
         self.delegate?.purchases?(self, receivedUpdated: new)

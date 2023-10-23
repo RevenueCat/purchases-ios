@@ -35,8 +35,6 @@ enum OfflineEntitlementsStrings {
 
     case purchased_products_fetching
     case purchased_products_fetching_too_slow
-    case purchased_products_returning_cache(count: Int)
-    case purchased_products_invalidating_cache
 
 }
 
@@ -103,12 +101,6 @@ extension OfflineEntitlementsStrings: LogMessage {
 
         case .purchased_products_fetching_too_slow:
             return "PurchasedProductsFetcher: fetching products took too long"
-
-        case let .purchased_products_returning_cache(count):
-            return "PurchasedProductsFetcher: returning \(count) cached products"
-
-        case .purchased_products_invalidating_cache:
-            return "PurchasedProductsFetcher: invalidating cache"
         }
     }
 

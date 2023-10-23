@@ -83,24 +83,4 @@ class PurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
         ]))
     }
 
-    func testCacheIsInvalidated() async throws {
-        let product1 = try await self.fetchSk2Product(Self.productID)
-        _ = try await self.createTransactionWithPurchase(product: product1)
-
-        let products1 = try await self.fetcher.fetchPurchasedProducts()
-        expect(products1).to(haveCount(1))
-
-        let product2 = try await self.fetchSk2Product("com.revenuecat.annual_39.99_no_trial")
-        _ = try await self.createTransactionWithPurchase(product: product2)
-
-        self.fetcher.clearCache()
-
-        let products2 = try await self.fetcher.fetchPurchasedProducts()
-        expect(products2).to(haveCount(2))
-        expect(products2.map(\.productIdentifier)).to(contain([
-            product1.id,
-            product2.id
-        ]))
-    }
-
 }

@@ -231,13 +231,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
     }
 
-    func testFirstInitializationDoesNotClearPurchasedProductsCache() {
-        self.setupPurchases()
-        expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(1))
-
-        expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
-    }
-
     func testFirstInitializationFromForegroundDelegateForAnonIfNothingCached() {
         self.systemInfo.stubbedIsApplicationBackgrounded = false
         self.setupPurchases()
