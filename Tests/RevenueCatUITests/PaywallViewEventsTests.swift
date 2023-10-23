@@ -36,6 +36,8 @@ class PaywallViewEventsTests: TestCase {
     override func setUp() {
         super.setUp()
 
+        self.continueAfterFailure = false
+
         self.handler =
             .cancelling()
             .map { _ in
@@ -95,10 +97,11 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testCancelledPurchase() async throws {
-        try self.createView()
-            .addToHierarchy()
-
-        _ = try await self.handler.purchase(package: try XCTUnwrap(Self.offering.monthly))
+        try await self.runDuringViewLifetime {
+            // Purchase once the view is visible
+            await self.fulfillment(of: [self.impressionEventExpectation], timeout: 1)
+            _ = try await self.handler.purchase(package: try XCTUnwrap(Self.offering.monthly))
+        }
 
         await self.fulfillment(of: [self.cancelEventExpectation, self.closeEventExpectation],
                                timeout: 1)
@@ -141,6 +144,20 @@ class PaywallViewEventsTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewEventsTests {
+
+    /// Invokes `createView` and runs the given `closure` during the lifetime of the view.
+    /// Returns after the view has been completly removed from the hierarchy.
+    func runDuringViewLifetime(
+        _ closure: @escaping () async throws -> Void
+    ) async throws {
+        // Create a `Task` to run inside of an `autoreleasepool`.
+        try await Task {
+            let dispose = try self.createView()
+                .addToHierarchy()
+            try await closure()
+            dispose()
+        }.value
+    }
 
     func track(_ event: PaywallEvent) {
         self.events.append(event)
