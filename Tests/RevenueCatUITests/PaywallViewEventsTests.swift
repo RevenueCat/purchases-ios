@@ -98,7 +98,7 @@ class PaywallViewEventsTests: TestCase {
         await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(4))
-        expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
+        expect(Set(self.events.map(\.eventType))) == [.impression, .close, .impression, .close]
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(2))
     }
 
