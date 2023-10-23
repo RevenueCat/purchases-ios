@@ -45,10 +45,6 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    private var hasTrackedImpression = false
-
-    private var hasTrackedClose = false
-
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
     }
@@ -113,16 +109,9 @@ extension PurchaseHandler {
                 success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
     }
 
-    /// - Returns: whether the event was tracked
-    @discardableResult
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) -> Bool {
-        guard !hasTrackedImpression else { return false }
-
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
-        self.hasTrackedImpression = true
         self.track(.impression(eventData))
-
-        return true
     }
 
     /// - Returns: whether the event was tracked
