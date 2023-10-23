@@ -81,7 +81,7 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == true
     }
 
-    func testTrackImpressionAndCloseOnlyTrackOnce() async throws {
+    func testTrackCloseOnlyAfterImpressionAndOnlyOnce() async throws {
         let handler: PurchaseHandler = .mock()
 
         let eventData: PaywallEvent.Data = .init(
@@ -92,15 +92,15 @@ class PurchaseHandlerTests: TestCase {
             locale: .init(identifier: "en_US"),
             darkMode: false)
 
-        let result1 = handler.trackPaywallImpression(eventData)
-        expect(result1) == true
-        let result2 = handler.trackPaywallImpression(eventData)
-        expect(result2) == false
+        let result1 = handler.trackPaywallClose()
+        expect(result1) == false
 
-        let result3 = handler.trackPaywallClose(eventData)
-        expect(result3) == true
-        let result4 = handler.trackPaywallClose(eventData)
-        expect(result4) == false
+        handler.trackPaywallImpression(eventData)
+
+        let result2 = handler.trackPaywallClose()
+        expect(result2) == true
+        let result3 = handler.trackPaywallClose()
+        expect(result3) == false
     }
 }
 

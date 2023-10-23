@@ -123,15 +123,7 @@ class PaywallViewEventsTests: TestCase {
 
         await self.fulfillment(of: [firstCloseExpectation], timeout: 1)
 
-        let handler2: PurchaseHandler =
-            .cancelling()
-            .map { _ in
-                return { [weak self] event in
-                    await self?.track(event)
-                }
-            }
-
-        try self.createView(handler2)
+        try self.createView()
             .addToHierarchy()
 
         await self.fulfillment(of: [self.impressionEventExpectation, self.closeEventExpectation], timeout: 1)

@@ -45,10 +45,6 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    private var hasTrackedImpression = false
-
-    private var hasTrackedClose = false
-
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
     }
@@ -113,36 +109,34 @@ extension PurchaseHandler {
                 success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
     }
 
-    /// - Returns: whether the event was tracked
-    @discardableResult
-    func trackPaywallImpression(_ eventData: PaywallEvent.Data) -> Bool {
-        guard !hasTrackedImpression else { return false }
-
+    func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
-        self.hasTrackedImpression = true
         self.track(.impression(eventData))
-
-        return true
     }
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackPaywallClose(_ eventData: PaywallEvent.Data) -> Bool {
-        guard !hasTrackedClose else { return false }
-
-        self.hasTrackedClose = true
-        self.track(.close(eventData))
-
-        return true
-    }
-
-    fileprivate func trackCancelledPurchase() {
+    func trackPaywallClose() -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return
+            return false
+        }
+
+        self.track(.close(data.withCurrentDate()))
+        self.eventData = nil
+        return true
+    }
+
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    fileprivate func trackCancelledPurchase() -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
         }
 
         self.track(.cancel(data.withCurrentDate()))
+        return true
     }
 
 }
