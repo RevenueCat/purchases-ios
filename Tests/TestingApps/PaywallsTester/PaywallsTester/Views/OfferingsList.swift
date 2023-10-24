@@ -89,8 +89,8 @@ struct OfferingsList: View {
                         if let paywall = offering.paywall {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
-                                destination: PaywallPresenter(selectedMode: self.$selectedMode,
-                                                              selectedOffering: self.$selectedOffering),
+                                destination: PaywallPresenter(offering: offering,
+                                                              mode: self.selectedMode),
                                 tag: offering,
                                 selection: self.$selectedOffering
                             ) {
