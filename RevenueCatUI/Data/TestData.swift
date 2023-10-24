@@ -402,9 +402,9 @@ internal enum TestData {
                 offerName: "{{ sub_period }}",
                 features: [
                     .init(title: "Unique gourmet recipes", iconID: "tick"),
-                    .init(title: "Advanced nutritional recipes", iconID: "tick"),
-                    .init(title: "Personalized support from our Chef", iconID: "tick"),
-                    .init(title: "Unlimited receipt collections", iconID: "tick")
+                    .init(title: "Advanced nutritional recipes", iconID: "apple"),
+                    .init(title: "Personalized support from our Chef", iconID: "warning"),
+                    .init(title: "Unlimited receipt collections", iconID: "bookmark")
                 ]
             ),
             assetBaseURL: Self.paywallAssetBaseURL
