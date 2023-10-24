@@ -126,7 +126,7 @@ struct Template5View: TemplateViewType {
                         .aspectRatio(1, contentMode: .fit)
                         .overlay {
                             if let icon = feature.icon {
-                                IconView(icon: icon, tint: self.configuration.colors.accent1Color)
+                                IconView(icon: icon, tint: self.configuration.colors.featureIcon)
                             }
                         }
                         .frame(width: self.iconSize, height: self.iconSize)
@@ -176,26 +176,39 @@ struct Template5View: TemplateViewType {
             self.roundedRectangle
                 .stroke(
                     selected
-                    ? self.configuration.colors.accent1Color
-                    : self.configuration.colors.accent2Color,
+                    ? self.configuration.colors.selectedOutline
+                    : self.configuration.colors.unselectedOutline,
                     lineWidth: Constants.defaultPackageBorderWidth
                 )
         }
         .overlay(alignment: .topTrailing) {
-            self.packageDiscountLabel(package)
+            self.packageDiscountLabel(package, selected: selected)
                 .padding(8)
         }
     }
 
     @ViewBuilder
-    private func packageDiscountLabel(_ package: TemplateViewConfiguration.Package) -> some View {
+    private func packageDiscountLabel(
+        _ package: TemplateViewConfiguration.Package,
+        selected: Bool
+    ) -> some View {
         if let discount = package.discountRelativeToMostExpensivePerMonth {
+            let colors = self.configuration.colors
+
             Text(Localization.localized(discount: discount, locale: self.locale))
                 .textCase(.uppercase)
                 .padding(.vertical, 4)
                 .padding(.horizontal, 8)
-                .background(self.roundedRectangle.foregroundColor(self.configuration.colors.accent1Color))
-                .foregroundColor(self.configuration.colors.callToActionForegroundColor)
+                .background(self.roundedRectangle.foregroundColor(
+                    selected
+                    ? colors.selectedOutline
+                    : colors.unselectedOutline
+                ))
+                .foregroundColor(
+                    selected
+                    ? colors.selectedDiscountText
+                    : colors.unselectedDiscountText
+                )
                 .font(self.font(for: .caption))
                 .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
         }
@@ -217,10 +230,10 @@ struct Template5View: TemplateViewType {
                         EmptyView()
                     } else {
                         Circle()
-                            .foregroundColor(self.selectedBackgroundColor)
+                            .foregroundColor(self.configuration.colors.unselectedOutline)
                     }
                 }
-                .foregroundColor(self.configuration.colors.accent1Color)
+                .foregroundColor(self.configuration.colors.selectedOutline)
 
             Text(package.localization.offerName ?? package.content.productName)
         }
@@ -252,8 +265,6 @@ struct Template5View: TemplateViewType {
         return self.introEligibilityViewModel.allEligibility
     }
 
-    private var selectedBackgroundColor: Color { self.configuration.colors.accent2Color }
-
     @ScaledMetric(relativeTo: .body)
     private var iconSize = 25
 
@@ -266,6 +277,17 @@ struct Template5View: TemplateViewType {
         default: return 2
         }
     }
+
+}
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private extension PaywallData.Configuration.Colors {
+
+    var featureIcon: Color { self.accent1Color }
+    var selectedOutline: Color { self.accent2Color }
+    var unselectedOutline: Color { self.accent3Color }
+    var selectedDiscountText: Color { self.text2Color }
+    var unselectedDiscountText: Color { self.text3Color }
 
 }
 
