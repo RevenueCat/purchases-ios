@@ -279,10 +279,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear {
-                self.updateSession()
-                self.purchaseHandler.trackPaywallImpression(self.eventData)
-            }
+            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
 
         switch self.mode {
@@ -296,7 +293,7 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
-    private var eventData: PaywallEvent.Data {
+    private func createEventData() -> PaywallEvent.Data {
         return .init(
             offering: self.offering,
             paywall: self.paywall,
@@ -305,13 +302,6 @@ struct LoadedOfferingPaywallView: View {
             locale: .current,
             darkMode: self.colorScheme == .dark
         )
-    }
-
-    private func updateSession() {
-        let newPaywall: DisplayedPaywall = .init(offering: self.offering, paywall: self.paywall)
-
-        self.session.lastPaywall = newPaywall
-        self.session.id = .init()
     }
 
 }

@@ -81,7 +81,7 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == true
     }
 
-    func testTrackCloseOnlyAfterImpressionAndOnlyOnce() async throws {
+    func testCloseEventIsTrackedOnlyAfterImpressionAndOnlyOnce() async throws {
         let handler: PurchaseHandler = .mock()
 
         let eventData: PaywallEvent.Data = .init(
@@ -90,7 +90,8 @@ class PurchaseHandlerTests: TestCase {
             sessionID: .init(),
             displayMode: .fullScreen,
             locale: .init(identifier: "en_US"),
-            darkMode: false)
+            darkMode: false
+        )
 
         let result1 = handler.trackPaywallClose()
         expect(result1) == false
