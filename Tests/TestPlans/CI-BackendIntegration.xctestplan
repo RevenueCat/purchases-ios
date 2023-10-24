@@ -26,7 +26,6 @@
     ],
     "maximumTestExecutionTimeAllowance" : 180,
     "maximumTestRepetitions" : 5,
-    "repeatInNewRunnerProcess" : true,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
       "identifier" : "2DEAC2D926EFE46E006914ED",
