@@ -29,12 +29,11 @@ class PaywallViewEventsTests: TestCase {
     private let mode: PaywallViewMode = .random
     private let scheme: ColorScheme = Bool.random() ? .dark : .light
 
-    private var impressionEventExpectation: XCTestExpectation!
     private var closeEventExpectation: XCTestExpectation!
-    private var cancelEventExpectation: XCTestExpectation!
-
     override func setUp() {
         super.setUp()
+
+        self.continueAfterFailure = false
 
         self.handler =
             .cancelling()
@@ -43,20 +42,11 @@ class PaywallViewEventsTests: TestCase {
                     await self?.track(event)
                 }
             }
-
-        self.impressionEventExpectation = .init(description: "Impression event")
         self.closeEventExpectation = .init(description: "Close event")
-        self.cancelEventExpectation = .init(description: "Cancel event")
     }
 
     func testPaywallImpressionEvent() async throws {
-        let expectation = XCTestExpectation()
-
-        try self.createView()
-        .onAppear { expectation.fulfill() }
-        .addToHierarchy()
-
-        await self.fulfillment(of: [expectation], timeout: 1)
+        try await self.runDuringViewLifetime {}
 
         expect(self.events).to(containElementSatisfying { $0.eventType == .impression })
 
@@ -65,10 +55,8 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testPaywallCloseEvent() async throws {
-        try self.createView()
-            .addToHierarchy()
-
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        try await self.runDuringViewLifetime {}
+        await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
         expect(self.events).to(containElementSatisfying { $0.eventType == .close })
@@ -78,10 +66,8 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testCloseEventHasSameSessionID() async throws {
-        try self.createView()
-            .addToHierarchy()
-
-        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
+        try await self.runDuringViewLifetime {}
+        await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(2))
         expect(self.events.map(\.eventType)) == [.impression, .close]
@@ -89,13 +75,11 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testCancelledPurchase() async throws {
-        try self.createView()
-            .addToHierarchy()
+        try await self.runDuringViewLifetime {
+            _ = try await self.handler.purchase(package: try XCTUnwrap(Self.offering.monthly))
+        }
 
-        _ = try await self.handler.purchase(package: try XCTUnwrap(Self.offering.monthly))
-
-        await self.fulfillment(of: [self.cancelEventExpectation, self.closeEventExpectation],
-                               timeout: 1)
+        await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(3))
         expect(self.events.map(\.eventType)).to(contain([.impression, .cancel, .close]))
@@ -106,21 +90,12 @@ class PaywallViewEventsTests: TestCase {
     }
 
     func testDifferentPaywallsCreateSeparateSessionIdentifiers() async throws {
-        self.impressionEventExpectation.expectedFulfillmentCount = 2
         self.closeEventExpectation.expectedFulfillmentCount = 2
 
-        let firstCloseExpectation = XCTestExpectation(description: "First paywall was closed")
+        try await self.runDuringViewLifetime {}
+        try await self.runDuringViewLifetime {}
 
-        try self.createView()
-            .onDisappear { firstCloseExpectation.fulfill() }
-            .addToHierarchy()
-
-        await self.fulfillment(of: [firstCloseExpectation], timeout: 1)
-
-        try self.createView()
-            .addToHierarchy()
-
-        await self.fulfillment(of: [self.impressionEventExpectation, self.closeEventExpectation], timeout: 1)
+        await self.waitForCloseEvent()
 
         expect(self.events).to(haveCount(4))
         expect(self.events.map(\.eventType)) == [.impression, .close, .impression, .close]
@@ -136,12 +111,26 @@ class PaywallViewEventsTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewEventsTests {
 
+    /// Invokes `createView` and runs the given `closure` during the lifetime of the view.
+    /// Returns after the view has been completly removed from the hierarchy.
+    func runDuringViewLifetime(
+        _ closure: @escaping () async throws -> Void
+    ) async throws {
+        // Create a `Task` to run inside of an `autoreleasepool`.
+        try await Task {
+            let dispose = try self.createView()
+                .addToHierarchy()
+            try await closure()
+            dispose()
+        }.value
+    }
+
     func track(_ event: PaywallEvent) {
         self.events.append(event)
 
         switch event {
-        case .impression: self.impressionEventExpectation.fulfill()
-        case .cancel: self.cancelEventExpectation.fulfill()
+        case .impression: break
+        case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         }
     }
@@ -163,6 +152,10 @@ private extension PaywallViewEventsTests {
         expect(data.displayMode) == self.mode
         expect(data.localeIdentifier) == Locale.current.identifier
         expect(data.darkMode) == (self.scheme == .dark)
+    }
+
+    func waitForCloseEvent() async {
+        await self.fulfillment(of: [self.closeEventExpectation], timeout: 1)
     }
 
 }
