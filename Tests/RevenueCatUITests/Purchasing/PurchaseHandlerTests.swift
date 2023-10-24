@@ -102,6 +102,7 @@ class PurchaseHandlerTests: TestCase {
         expect(result2) == true
         let result3 = handler.trackPaywallClose()
         expect(result3) == false
+
     }
 }
 
