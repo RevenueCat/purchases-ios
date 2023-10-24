@@ -41,6 +41,7 @@ extension PaywallEventsRequest {
 
     struct Event {
 
+        let id: String
         let version: Int
         var type: EventType
         var appUserID: String
@@ -63,6 +64,7 @@ extension PaywallEventsRequest.Event {
         let data = storedEvent.event.data
 
         self.init(
+            id: data.id.uuidString,
             version: Self.version,
             type: storedEvent.event.eventType,
             appUserID: storedEvent.userID,
@@ -102,6 +104,7 @@ extension PaywallEventsRequest.Event: Encodable {
 
     private enum CodingKeys: String, CodingKey {
 
+        case id
         case version
         case type
         case appUserID = "appUserId"

@@ -36,6 +36,7 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
+        public var id: UUID
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
@@ -74,6 +75,7 @@ extension PaywallEvent {
             darkMode: Bool,
             date: Date
         ) {
+            self.id = UUID()
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
             self.sessionIdentifier = sessionID
