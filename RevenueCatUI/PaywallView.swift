@@ -287,7 +287,7 @@ struct LoadedOfferingPaywallView: View {
         return .init(
             offering: self.offering,
             paywall: self.paywall,
-            sessionID: self.session.id,
+            sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark
