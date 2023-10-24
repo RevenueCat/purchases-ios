@@ -95,8 +95,10 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
         }
 
         Logger.debug(Strings.offlineEntitlements.purchased_products_fetching)
+        let result = await StoreKit.Transaction.currentEntitlements.extractValues()
+        Logger.debug(Strings.offlineEntitlements.purchased_products_fetched(count: result.count))
 
-        return await StoreKit.Transaction.currentEntitlements.extractValues()
+        return result
     }
 
 }

@@ -19,6 +19,8 @@ import Foundation
 @testable import RevenueCat
 #endif
 
+import StoreKit
+
 // swiftlint:disable identifier_name
 
 enum TestMessage: LogMessage {
@@ -32,6 +34,8 @@ enum TestMessage: LogMessage {
     case removing_receipt(URL)
     case error_removing_url(URL, Error)
     case receipt_content(String)
+    case current_entitlements([StoreKit.VerificationResult<StoreKit.Transaction>])
+    case unfinished_transactions([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unable_parse_receipt_without_sdk
     case error_parsing_receipt(Error)
 
@@ -68,6 +72,12 @@ extension TestMessage {
 
         case let .receipt_content(receipt):
             return "Receipt content:\n\(receipt)"
+
+        case let .current_entitlements(transactions):
+            return "Current entitlements:\n\(transactions)"
+
+        case let .unfinished_transactions(transactions):
+            return "Unfinished transactions:\n\(transactions)"
 
         case .unable_parse_receipt_without_sdk:
             return "Can't print receipt when purchases isn't configured"

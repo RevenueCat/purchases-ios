@@ -256,6 +256,11 @@ extension BaseStoreKitIntegrationTests {
             return
         }
 
+        await self.printReceipt()
+        await self.printStoreKit2Transactions()
+    }
+
+    private func printReceipt() async {
         do {
             let receipt = try await self.purchases.fetchReceipt(.always)
             let description = receipt.map { $0.debugDescription } ?? "<null>"
@@ -271,6 +276,18 @@ extension BaseStoreKitIntegrationTests {
             }
         } catch {
             Logger.error(TestMessage.error_parsing_receipt(error))
+        }
+    }
+
+    private func printStoreKit2Transactions() async {
+        do {
+            let transactions = await StoreKit.Transaction.currentEntitlements.extractValues()
+            Logger.appleWarning(TestMessage.current_entitlements(transactions))
+        }
+
+        do {
+            let transactions = await StoreKit.Transaction.unfinished.extractValues()
+            Logger.appleWarning(TestMessage.unfinished_transactions(transactions))
         }
     }
 
