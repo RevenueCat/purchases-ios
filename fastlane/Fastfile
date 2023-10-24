@@ -226,31 +226,27 @@ platform :ios do
   lane :build_tv_watch_mac do |options|
     check_pods
     load_spm_dependencies
-    carthage(command: "build", no_skip_current: true, platform: "watchOS,tvOS,Mac", use_xcframeworks: true)
+    build_release(platform: 'watchOS')
+    build_release(platform: 'tvOS')
+    build_release(platform: 'macOS')
   end
 
   desc "macOS build"
   lane :build_mac do |options|
     check_pods
     load_spm_dependencies
-    carthage(command: "build", no_skip_current: true, platform: "Mac", use_xcframeworks: true)
+    build_release(platform: 'macOS')
   end
 
   desc "visionOS build"
   lane :build_visionos do |options|
-    xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
-      scheme: 'RevenueCat',
-      destination: 'generic/platform=visionOS',
-      configuration: 'release',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    build_release(
+      platform: 'visionOS',
+      scheme: 'RevenueCat'
     )
-    xcodebuild(
-      workspace: 'RevenueCat.xcworkspace',
-      scheme: 'RevenueCatUI',
-      destination: 'generic/platform=visionOS',
-      configuration: 'release',
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    build_release(
+      platform: 'visionOS',
+      scheme: 'RevenueCatUI'
     )
   end
 
@@ -416,6 +412,19 @@ platform :ios do
   lane :generate_snapshots_RCUI do 
     generate_snapshots(
       pipeline: "generate_revenuecatui_snapshots"
+    )
+  end
+
+  private_lane :build_release do |options|
+    platform = options[:platform]
+    scheme = options[:scheme] || 'RevenueCat'
+
+    xcodebuild(
+      workspace: 'RevenueCat.xcworkspace',
+      scheme: scheme,
+      destination: "generic/platform=#{platform}",
+      configuration: 'release',
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES"
     )
   end
 
