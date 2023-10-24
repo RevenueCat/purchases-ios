@@ -572,7 +572,6 @@ platform :ios do
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
-      number_of_retries: 3,
       result_bundle: true,
       testplan: "CI-BackendIntegration",
       configuration: 'Debug',
