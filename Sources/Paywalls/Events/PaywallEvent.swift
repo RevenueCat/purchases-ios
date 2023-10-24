@@ -17,7 +17,7 @@ import Foundation
 public enum PaywallEvent {
 
     /// An identifier that represents a paywall event.
-    public typealias EventID = UUID
+    public typealias ID = UUID
 
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
@@ -39,7 +39,7 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        public var id: EventID
+        public var id: ID
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
@@ -58,7 +58,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
-                id: EventID(),
+                id: .init(),
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
@@ -71,7 +71,7 @@ extension PaywallEvent {
         // swiftlint:enable missing_docs
 
         init(
-            id: EventID,
+            id: ID,
             offeringIdentifier: String,
             paywallRevision: Int,
             sessionID: SessionID,
