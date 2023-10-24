@@ -38,7 +38,8 @@ extension View {
         requiredEntitlementIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             shouldDisplay: { info in
@@ -48,7 +49,8 @@ extension View {
                     .contains(requiredEntitlementIdentifier)
             },
             purchaseCompleted: purchaseCompleted,
-            restoreCompleted: restoreCompleted
+            restoreCompleted: restoreCompleted,
+            onDismiss: onDismiss
         )
     }
 
@@ -64,6 +66,8 @@ extension View {
     ///     } restoreCompleted: { customerInfo in
     ///         // If `entitlement_identifier` is active, paywall will dismiss automatically.
     ///         print("Purchases restored")
+    ///     } onDismiss: {
+    ///         print("Paywall was dismissed either manually or automatically after a purchase.")
     ///     }
     /// }
     /// ```
@@ -73,12 +77,14 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             shouldDisplay: shouldDisplay,
             purchaseCompleted: purchaseCompleted,
             restoreCompleted: restoreCompleted,
+            onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
                     throw PaywallError.purchasesNotConfigured
@@ -98,6 +104,7 @@ extension View {
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
         return self
@@ -105,6 +112,7 @@ extension View {
                 shouldDisplay: shouldDisplay,
                 purchaseCompleted: purchaseCompleted,
                 restoreCompleted: restoreCompleted,
+                onDismiss: onDismiss,
                 offering: offering,
                 fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
@@ -128,6 +136,8 @@ private struct PresentingPaywallModifier: ViewModifier {
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
+    var onDismiss: (() -> Void)?
+
     var offering: Offering?
     var fontProvider: PaywallFontProvider
 
@@ -140,7 +150,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .sheet(item: self.$data) { data in
+            .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                 NavigationView {
                     PaywallView(
                         offering: self.offering,
@@ -188,9 +198,9 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     private func close() {
-        self.data = nil
-
         Logger.debug(Strings.dismissing_paywall)
+
+        self.data = nil
     }
 
 }

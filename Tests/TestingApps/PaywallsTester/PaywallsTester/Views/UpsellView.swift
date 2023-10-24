@@ -20,7 +20,12 @@ struct UpsellView: View {
 
         }
         .padding()
-        .presentPaywallIfNeeded(requiredEntitlementIdentifier: Configuration.entitlement)
+        .presentPaywallIfNeeded(
+            requiredEntitlementIdentifier: Configuration.entitlement,
+            onDismiss: {
+                print("Paywall dismissed")
+            }
+        )
     }
 
 }

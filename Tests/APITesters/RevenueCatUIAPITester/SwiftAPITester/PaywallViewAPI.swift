@@ -16,6 +16,7 @@ struct App: View {
     private var fonts: PaywallFontProvider
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
+    private var paywallDismissed: () -> Void = {}
 
     var body: some View {
         self.content
@@ -35,6 +36,7 @@ struct App: View {
     var checkPresentPaywallIfNeeded: some View {
         Text("")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     purchaseCompleted: self.purchaseOrRestoreCompleted)
@@ -47,6 +49,10 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts,
+                                    purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                    restoreCompleted: self.purchaseOrRestoreCompleted,
+                                    onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
                 false
@@ -59,6 +65,15 @@ struct App: View {
                 self.purchaseOrRestoreCompleted($0)
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
+            }
+            .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } restoreCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } onDismiss: {
+                self.paywallDismissed()
             }
     }
 
