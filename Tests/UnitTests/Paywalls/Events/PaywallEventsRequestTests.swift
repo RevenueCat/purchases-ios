@@ -49,6 +49,7 @@ class PaywallEventsRequestTests: TestCase {
     // MARK: -
 
     private static let eventData: PaywallEvent.Data = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
