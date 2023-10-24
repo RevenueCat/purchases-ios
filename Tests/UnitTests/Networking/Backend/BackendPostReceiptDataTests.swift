@@ -398,6 +398,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let currencyCode = "BFD"
 
         let paywallEventData: PaywallEvent.Data = .init(
+            id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
