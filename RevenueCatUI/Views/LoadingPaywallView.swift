@@ -44,11 +44,12 @@ struct LoadingPaywallView: View {
         )
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
-        .shimmering(enable: self.shimmer)
+        .shimmering(enable: self.mode.shouldDisplayBackground && self.shimmer)
         .background {
             TemplateBackgroundImageView(
                 url: Self.defaultPaywall.backgroundImageURL,
-                blurred: true
+                blurred: true,
+                ignoreSafeArea: self.mode.shouldDisplayBackground
             )
         }
     }
