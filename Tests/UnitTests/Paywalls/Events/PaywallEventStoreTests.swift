@@ -245,6 +245,7 @@ extension PaywallEvent.Data {
 
     static func random() -> Self {
         return .init(
+            id: .init(),
             offeringIdentifier: "offering",
             paywallRevision: Int.random(in: 0..<100),
             sessionID: .init(),
