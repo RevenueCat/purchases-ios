@@ -16,6 +16,9 @@ import Foundation
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent {
 
+    /// An identifier that represents a paywall event.
+    public typealias EventID = UUID
+
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
 
@@ -36,7 +39,7 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        public var id: UUID
+        public var id: EventID
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
@@ -55,6 +58,7 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
+                id: EventID(),
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
@@ -67,6 +71,7 @@ extension PaywallEvent {
         // swiftlint:enable missing_docs
 
         init(
+            id: EventID,
             offeringIdentifier: String,
             paywallRevision: Int,
             sessionID: SessionID,
@@ -75,7 +80,7 @@ extension PaywallEvent {
             darkMode: Bool,
             date: Date
         ) {
-            self.id = UUID()
+            self.id = id
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
             self.sessionIdentifier = sessionID
