@@ -220,9 +220,6 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
 
-    @State
-    private var session: (lastPaywall: DisplayedPaywall, id: PaywallEvent.SessionID)
-
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
     @ObservedObject
@@ -254,13 +251,6 @@ struct LoadedOfferingPaywallView: View {
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
-
-        // Each `PaywallView` impression gets its own session.
-        // See also `updateSessionIfNeeded`.
-        self._session = .init(initialValue: (
-            lastPaywall: .init(offering: offering, paywall: paywall),
-            id: .init()
-        ))
     }
 
     var body: some View {
@@ -279,8 +269,8 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.eventData) }
-            .onDisappear { self.purchaseHandler.trackPaywallClose(self.eventData) }
+            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onDisappear { self.purchaseHandler.trackPaywallClose() }
 
         switch self.mode {
         case .fullScreen:
@@ -293,25 +283,15 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
-    private var eventData: PaywallEvent.Data {
-        self.updateSessionIfNeeded()
-
+    private func createEventData() -> PaywallEvent.Data {
         return .init(
             offering: self.offering,
             paywall: self.paywall,
-            sessionID: self.session.id,
+            sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark
         )
-    }
-
-    private func updateSessionIfNeeded() {
-        let newPaywall: DisplayedPaywall = .init(offering: self.offering, paywall: self.paywall)
-        guard self.session.lastPaywall != newPaywall else { return }
-
-        self.session.lastPaywall = newPaywall
-        self.session.id = .init()
     }
 
 }

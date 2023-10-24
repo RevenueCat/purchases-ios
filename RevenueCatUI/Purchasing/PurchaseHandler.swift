@@ -114,17 +114,29 @@ extension PurchaseHandler {
         self.track(.impression(eventData))
     }
 
-    func trackPaywallClose(_ eventData: PaywallEvent.Data) {
-        self.track(.close(eventData))
-    }
-
-    fileprivate func trackCancelledPurchase() {
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    func trackPaywallClose() -> Bool {
         guard let data = self.eventData else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return
+            return false
+        }
+
+        self.track(.close(data.withCurrentDate()))
+        self.eventData = nil
+        return true
+    }
+
+    /// - Returns: whether the event was tracked
+    @discardableResult
+    fileprivate func trackCancelledPurchase() -> Bool {
+        guard let data = self.eventData else {
+            Logger.warning(Strings.attempted_to_track_event_with_missing_data)
+            return false
         }
 
         self.track(.cancel(data.withCurrentDate()))
+        return true
     }
 
 }
