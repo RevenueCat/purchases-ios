@@ -70,6 +70,29 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testOnPurchaseCompletedWithTransaction() throws {
+        var result: (transaction: StoreTransaction?, customerInfo: CustomerInfo)?
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.purchaseHandler
+        )
+            .onPurchaseCompleted { transaction, customerInfo in
+                result = (transaction, customerInfo)
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+        }
+
+        expect(result).toEventuallyNot(beNil())
+        expect(result?.customerInfo) === TestData.customerInfo
+        expect(result?.transaction).to(beNil())
+    }
+
     func testOnRestoreCompleted() throws {
         var customerInfo: CustomerInfo?
 

@@ -33,7 +33,7 @@ final class PurchaseHandler: ObservableObject {
 
     /// When `purchased` becomes `true`, this will include the `CustomerInfo` associated to it.
     @Published
-    fileprivate(set) var purchasedCustomerInfo: CustomerInfo?
+    fileprivate(set) var purchaseResult: PurchaseResultData?
 
     /// Whether a restore was successfully completed.
     @Published
@@ -84,7 +84,7 @@ extension PurchaseHandler {
         } else {
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
-                self.purchasedCustomerInfo = result.customerInfo
+                self.purchaseResult = result
             }
         }
 
@@ -189,11 +189,26 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 // MARK: - Preference Keys
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-struct PurchasedCustomerInfoPreferenceKey: PreferenceKey {
+struct PurchasedResultPreferenceKey: PreferenceKey {
 
-    static var defaultValue: CustomerInfo?
+    struct PurchaseResult: Equatable {
+        var transaction: StoreTransaction?
+        var customerInfo: CustomerInfo
 
-    static func reduce(value: inout CustomerInfo?, nextValue: () -> CustomerInfo?) {
+        init(data: PurchaseResultData) {
+            self.transaction = data.transaction
+            self.customerInfo = data.customerInfo
+        }
+
+        init?(data: PurchaseResultData?) {
+            guard let data else { return nil }
+            self.init(data: data)
+        }
+    }
+
+    static var defaultValue: PurchaseResult?
+
+    static func reduce(value: inout PurchaseResult?, nextValue: () -> PurchaseResult?) {
         value = nextValue()
     }
 

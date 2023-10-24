@@ -24,6 +24,10 @@ final class Delegate: PaywallViewControllerDelegate {
                                didFinishPurchasingWith customerInfo: CustomerInfo) {}
 
     func paywallViewController(_ controller: PaywallViewController,
+                               didFinishPurchasingWith customerInfo: CustomerInfo,
+                               transaction: StoreTransaction?) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
                                didFinishRestoringWith customerInfo: CustomerInfo) {}
 
 }

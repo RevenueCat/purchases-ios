@@ -17,6 +17,10 @@ import SwiftUI
 /// A closure used for notifying of purchase or restore completion.
 public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (CustomerInfo) -> Void
 
+/// A closure used for notifying of purchase completion.
+public typealias PurchaseCompletedHandler = @MainActor @Sendable (_ transaction: StoreTransaction?,
+                                                                  _ customerInfo: CustomerInfo) -> Void
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
@@ -34,7 +38,7 @@ extension View {
     ///             PaywallView()
     ///                 .onPurchaseCompleted { customerInfo in
     ///                     print("Purchase completed: \(customerInfo.entitlements)")
-    ///                     self.didPurchase = false
+    ///                     self.displayPaywall = false
     ///                 }
     ///         }
     ///  }
@@ -44,6 +48,33 @@ extension View {
     /// [Documentation](https://rev.cat/paywalls)
     public func onPurchaseCompleted(
         _ handler: @escaping PurchaseOrRestoreCompletedHandler
+    ) -> some View {
+        return self.modifier(OnPurchaseCompletedModifier(handler: handler))
+    }
+
+    /// Invokes the given closure when a purchase is completed.
+    /// The closure includes the `CustomerInfo` with unlocked entitlements.
+    /// Example:
+    /// ```swift
+    ///  @State
+    ///  private var displayPaywall: Bool = true
+    ///
+    ///  var body: some View {
+    ///     ContentView()
+    ///         .sheet(isPresented: self.$displayPaywall) {
+    ///             PaywallView()
+    ///                 .onPurchaseCompleted { transaction, customerInfo in
+    ///                     print("Purchase completed: \(customerInfo.entitlements)")
+    ///                     self.displayPaywall = false
+    ///                 }
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onPurchaseCompleted(
+        _ handler: @escaping PurchaseCompletedHandler
     ) -> some View {
         return self.modifier(OnPurchaseCompletedModifier(handler: handler))
     }
@@ -85,13 +116,21 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct OnPurchaseCompletedModifier: ViewModifier {
 
-    let handler: PurchaseOrRestoreCompletedHandler
+    let handler: PurchaseCompletedHandler
+
+    init(handler: @escaping PurchaseOrRestoreCompletedHandler) {
+        self.handler = { _, customerInfo in handler(customerInfo) }
+    }
+
+    init(handler: @escaping PurchaseCompletedHandler) {
+        self.handler = handler
+    }
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(PurchasedCustomerInfoPreferenceKey.self) { customerInfo in
-                if let customerInfo {
-                    self.handler(customerInfo)
+            .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
+                if let result {
+                    self.handler(result.transaction, result.customerInfo)
                 }
             }
     }

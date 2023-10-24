@@ -23,6 +23,7 @@ extension PurchaseHandler {
         return self.init(
             purchases: MockPurchases { _ in
                 return (
+                    // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
                     customerInfo: customerInfo,
                     userCancelled: false
