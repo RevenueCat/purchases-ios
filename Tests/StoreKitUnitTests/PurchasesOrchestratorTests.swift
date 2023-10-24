@@ -1616,6 +1616,7 @@ private extension PurchasesOrchestratorTests {
     ).toStoreProduct()
 
     static let paywallEvent: PaywallEvent.Data = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(),
