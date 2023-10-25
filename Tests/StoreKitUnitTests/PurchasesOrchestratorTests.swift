@@ -291,8 +291,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEvent
     }
 
     func testFailedSK1PurchaseRemembersPresentedPaywall() async throws {
@@ -321,8 +325,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         try await purchase()
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEvent
     }
 
     func testPurchaseSK1PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
@@ -805,7 +813,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -818,8 +826,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                  package: nil,
                                                  promotionalOffer: nil)
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEvent
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -847,8 +859,12 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                  package: nil,
                                                  promotionalOffer: nil)
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData
+        ) == Self.paywallEventCreationData
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data
+        ) == Self.paywallEvent
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
