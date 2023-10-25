@@ -16,9 +16,12 @@ import Foundation
 /// An event to be sent by the `RevenueCatUI` SDK.
 public enum PaywallEvent {
 
-    /// An identifier that represents a paywall event.
     // swiftlint:disable:next type_name
+
+    /// An identifier that represents a paywall event.
     public typealias ID = UUID
+
+    // swiftlint:enable:next type_name
 
     /// An identifier that represents a paywall session.
     public typealias SessionID = UUID
