@@ -241,18 +241,28 @@ private extension PaywallEventStoreTests {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension PaywallEvent.Data {
+extension PaywallEvent.CreationData {
 
     static func random() -> Self {
         return .init(
             id: .init(),
+            date: .now.removingMilliseconds
+        )
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension PaywallEvent.Data {
+
+    static func random() -> Self {
+        return .init(
             offeringIdentifier: "offering",
             paywallRevision: Int.random(in: 0..<100),
             sessionID: .init(),
             displayMode: PaywallViewMode.allCases.randomElement()!,
             localeIdentifier: "es_ES",
-            darkMode: Bool.random(),
-            date: .now.removingMilliseconds
+            darkMode: Bool.random()
         )
     }
 
@@ -262,7 +272,7 @@ extension PaywallEvent.Data {
 extension PaywallEvent {
 
     static func randomImpressionEvent() -> Self {
-        return .impression(.random())
+        return .impression(.random(), .random())
     }
 
 }

@@ -26,21 +26,21 @@ class PaywallEventsRequestTests: TestCase {
     }
 
     func testImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(Self.eventData), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .impression(Self.eventCreationData, Self.eventData), userID: Self.userID)
         let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(Self.eventData), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .cancel(Self.eventCreationData, Self.eventData), userID: Self.userID)
         let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
     }
 
     func testCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(Self.eventData), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .close(Self.eventCreationData, Self.eventData), userID: Self.userID)
         let requestEvent: PaywallEventsRequest.Event = .init(storedEvent: event)
 
         assertSnapshot(matching: requestEvent, as: .formattedJson)
@@ -48,15 +48,18 @@ class PaywallEventsRequestTests: TestCase {
 
     // MARK: -
 
-    private static let eventData: PaywallEvent.Data = .init(
+    private static let eventCreationData: PaywallEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 1694029328)
+    )
+
+    private static let eventData: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .condensedFooter,
         localeIdentifier: "es_ES",
-        darkMode: true,
-        date: .init(timeIntervalSince1970: 1694029328)
+        darkMode: true
     )
 
     private static let userID = "Jack Shepard"

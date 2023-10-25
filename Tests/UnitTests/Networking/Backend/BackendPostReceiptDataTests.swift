@@ -397,15 +397,17 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         let currencyCode = "BFD"
 
-        let paywallEventData: PaywallEvent.Data = .init(
+        let paywallEventCreationData: PaywallEvent.CreationData = .init(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+            date: .init(timeIntervalSince1970: 1694029328)
+        )
+        let paywallEventData: PaywallEvent.Data = .init(
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
             displayMode: .condensedFooter,
             localeIdentifier: "en_US",
-            darkMode: true,
-            date: .init(timeIntervalSince1970: 1694029328)
+            darkMode: true
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
@@ -420,7 +422,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               transactionData: .init(
                                  appUserID: Self.userID,
                                  presentedOfferingID: offeringIdentifier,
-                                 presentedPaywall: paywallEventData,
+                                 presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)

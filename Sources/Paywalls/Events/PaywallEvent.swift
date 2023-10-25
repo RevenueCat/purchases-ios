@@ -46,10 +46,9 @@ extension PaywallEvent {
         public var id: ID
         public var date: Date
 
-        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
             id: ID = .init(),
-            date: Date = .now
+            date: Date = .init()
         ) {
             self.id = id
             self.date = date

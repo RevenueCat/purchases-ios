@@ -166,13 +166,35 @@ func checkPaywallEvent(_ event: PaywallEvent) {
     let _: PaywallEvent.SessionID = UUID()
 
     switch event {
-    case let .impression(data): checkPaywallEventData(data)
-    case let .cancel(data): checkPaywallEventData(data)
-    case let .close(data): checkPaywallEventData(data)
+    case let .impression(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .cancel(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
+    case let .close(creationData, data):
+        checkPaywallEventCreationData(creationData)
+        checkPaywallEventData(data)
     @unknown default: break
     }
 
     let _: PaywallEvent.Data = event.data
+}
+
+func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
+    let _: PaywallEvent.ID = creationData.id
+    let _: Date = creationData.date
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func create(
+        id: PaywallEvent.ID,
+        date: Date
+    ) {
+        _ = PaywallEvent.CreationData.init(
+            id: id,
+            date: date
+        )
+    }
 }
 
 func checkPaywallEventData(_ data: PaywallEvent.Data) {
@@ -182,7 +204,6 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
     let _: PaywallViewMode = data.displayMode
     let _: String = data.localeIdentifier
     let _: Bool = data.darkMode
-    let _: Date = data.date
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func create(

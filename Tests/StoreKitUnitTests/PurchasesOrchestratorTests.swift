@@ -278,7 +278,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let product = try await self.fetchSk1Product()
         let payment = self.storeKit1Wrapper.payment(with: product)
 
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
 
         _ = await withCheckedContinuation { continuation in
             self.orchestrator.purchase(
@@ -291,7 +291,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
     }
 
     func testFailedSK1PurchaseRemembersPresentedPaywall() async throws {
@@ -311,7 +312,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             }
         }
 
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
         self.backend.stubbedPostReceiptResult = .failure(.unexpectedBackendResponse(.customerInfoNil))
@@ -320,7 +321,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         try await purchase()
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
     }
 
     func testPurchaseSK1PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
@@ -803,7 +805,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData Self.paywallEvent))
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -816,7 +818,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                  package: nil,
                                                  promotionalOffer: nil)
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -830,7 +833,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let product = try await self.fetchSk2Product()
 
-        self.orchestrator.track(paywallEvent: .impression(Self.paywallEvent))
+        self.orchestrator.track(paywallEvent: .impression(Self.paywallEventCreationData, Self.paywallEvent))
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
 
@@ -844,7 +847,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                  package: nil,
                                                  promotionalOffer: nil)
 
-        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall) == Self.paywallEvent
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.creationData) == Self.paywallEventCreationData
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedPaywall?.data) == Self.paywallEvent
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -1615,15 +1619,18 @@ private extension PurchasesOrchestratorTests {
         localizedDescription: "Description"
     ).toStoreProduct()
 
-    static let paywallEvent: PaywallEvent.Data = .init(
+    static let paywallEventCreationData: PaywallEvent.CreationData = .init(
         id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 1694029328)
+    )
+
+    static let paywallEvent: PaywallEvent.Data = .init(
         offeringIdentifier: "offering",
         paywallRevision: 5,
         sessionID: .init(),
         displayMode: .fullScreen,
         localeIdentifier: "en_US",
-        darkMode: true,
-        date: .init(timeIntervalSince1970: 1694029328)
+        darkMode: true
     )
 
 }
