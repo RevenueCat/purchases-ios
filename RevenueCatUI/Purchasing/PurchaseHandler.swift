@@ -122,7 +122,7 @@ extension PurchaseHandler {
             return false
         }
 
-        self.track(.close(data.withCurrentDate()))
+        self.track(.close(data.withNewID().withCurrentDate()))
         self.eventData = nil
         return true
     }
@@ -135,7 +135,7 @@ extension PurchaseHandler {
             return false
         }
 
-        self.track(.cancel(data.withCurrentDate()))
+        self.track(.cancel(data.withNewID().withCurrentDate()))
         return true
     }
 
@@ -240,6 +240,14 @@ struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 // MARK: -
 
 private extension PaywallEvent.Data {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func withNewID() -> Self {
+        var copy = self
+        copy.id = .init()
+
+        return copy
+    }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func withCurrentDate() -> Self {
