@@ -84,7 +84,7 @@ class ProductsManager: NSObject, ProductsManagerType {
             }
         } else {
             self.sk1Products(withIdentifiers: identifiers) { result in
-                completion(result.map { Set($0.map(StoreProduct.init(sk1Product:))) })
+                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
         }
     }
@@ -122,8 +122,8 @@ class ProductsManager: NSObject, ProductsManagerType {
 private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
-                     completion: @escaping (Result<Set<SK1Product>, PurchasesError>) -> Void) {
-        return self.productsFetcherSK1.sk1Products(withIdentifiers: identifiers, completion: completion)
+                     completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
+        return self.productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
     }
 
 }

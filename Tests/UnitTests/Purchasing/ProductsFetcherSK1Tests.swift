@@ -20,16 +20,16 @@ class ProductsFetcherSK1Tests: TestCase {
 
     func testProductsWithIdentifiersMakesRightRequest() {
         let productIdentifiers = Set(["1", "2", "3"])
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1))
         expect(self.productsRequestFactory.invokedRequestParameters) == productIdentifiers
     }
 
     func testProductsWithIdentifiersCallsCompletionCorrectly() throws {
         let productIdentifiers = Set(["1", "2", "3"])
-        var receivedProducts: Result<Set<SK1Product>, PurchasesError>?
+        var receivedProducts: Result<Set<SK1StoreProduct>, PurchasesError>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             receivedProducts = products
         }
 
@@ -45,10 +45,10 @@ class ProductsFetcherSK1Tests: TestCase {
         let productIdentifiers = Set(["1", "2", "3"])
         var completionCallCount = 0
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in
             completionCallCount += 1
 
-            self.productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in
+            self.productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in
                 completionCallCount += 1
             }
         }
@@ -61,8 +61,8 @@ class ProductsFetcherSK1Tests: TestCase {
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductsAreBeingFetched() {
         let productIdentifiers = Set(["1", "2", "3"])
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1),
                                                                              timeout: Self.defaultTimeoutInterval)
@@ -72,15 +72,15 @@ class ProductsFetcherSK1Tests: TestCase {
     func testProductsWithIdentifiersMakesNewRequestIfAtLeastOneNewProductRequested() {
         let firstCallProducts = Set(["1", "2", "3"])
         let secondCallProducts = Set(["1", "2", "3", "4"])
-        productsFetcherSK1.sk1Products(withIdentifiers: firstCallProducts) { _ in }
-        productsFetcherSK1.sk1Products(withIdentifiers: secondCallProducts) { _ in }
+        productsFetcherSK1.products(withIdentifiers: firstCallProducts) { _ in }
+        productsFetcherSK1.products(withIdentifiers: secondCallProducts) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(2))
         expect(self.productsRequestFactory.invokedRequestParametersList) == [firstCallProducts, secondCallProducts]
     }
 
     func testProductsWithIdentifiersReturnsDoesntMakeNewRequestIfProductIdentifiersEmpty() {
-        productsFetcherSK1.sk1Products(withIdentifiers: []) { _ in }
+        productsFetcherSK1.products(withIdentifiers: []) { _ in }
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(0),
                                                                              timeout: Self.defaultTimeoutInterval)
     }
@@ -98,9 +98,9 @@ class ProductsFetcherSK1Tests: TestCase {
         let fetcher = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
                                          requestTimeout: timeout.seconds)
 
-        var receivedResult: Result<Set<SK1Product>, PurchasesError>?
+        var receivedResult: Result<Set<SK1StoreProduct>, PurchasesError>?
 
-        fetcher.sk1Products(withIdentifiers: productIdentifiers) { result in
+        fetcher.products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result
         }
 
@@ -110,16 +110,16 @@ class ProductsFetcherSK1Tests: TestCase {
 
     func testCacheProductCachesCorrectly() {
         let productIdentifiers = Set(["1", "2", "3"])
-        let mockProducts: Set<SK1Product> = Set(productIdentifiers.map {
-            MockSK1Product(mockProductIdentifier: $0)
+        let mockProducts: Set<SK1StoreProduct> = Set(productIdentifiers.map {
+            SK1StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: $0))
         })
 
-        mockProducts.forEach { productsFetcherSK1.cacheProduct($0) }
+        mockProducts.forEach { self.productsFetcherSK1.cacheProduct($0.underlyingSK1Product) }
 
         var completionCallCount = 0
-        var receivedProducts: Result<Set<SK1Product>, PurchasesError>?
+        var receivedProducts: Result<Set<SK1StoreProduct>, PurchasesError>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { products in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { products in
             receivedProducts = products
             completionCallCount += 1
         }
@@ -141,9 +141,9 @@ class ProductsFetcherSK1Tests: TestCase {
                                                 requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
-        var receivedResult: Result<Set<SKProduct>, PurchasesError>?
+        var receivedResult: Result<Set<SK1StoreProduct>, PurchasesError>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result
             completionCallCount += 1
         }
@@ -169,9 +169,9 @@ class ProductsFetcherSK1Tests: TestCase {
                                                 requestTimeout: tolerance.seconds)
 
         var completionCallCount = 0
-        var receivedResult: Result<Set<SKProduct>, PurchasesError>?
+        var receivedResult: Result<Set<SK1StoreProduct>, PurchasesError>?
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { result in
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { result in
             receivedResult = result
             completionCallCount += 1
         }
@@ -194,7 +194,7 @@ class ProductsFetcherSK1Tests: TestCase {
 
         productsFetcherSK1.clearCache()
 
-        productsFetcherSK1.sk1Products(withIdentifiers: productIdentifiers) { _ in }
+        productsFetcherSK1.products(withIdentifiers: productIdentifiers) { _ in }
 
         expect(self.productsRequestFactory.invokedRequestCount).toEventually(equal(1),
                                                                              timeout: Self.defaultTimeoutInterval)
