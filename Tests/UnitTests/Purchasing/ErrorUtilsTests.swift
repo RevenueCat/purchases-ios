@@ -136,6 +136,14 @@ class ErrorUtilsTests: TestCase {
             .to(matchError(error))
     }
 
+    func testPurchasesErrorWithNetworkErrorAsSKError() {
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        let expectedError = ErrorUtils.offlineConnectionError()
+
+        expect(ErrorUtils.purchasesError(withSKError: error))
+            .to(matchError(expectedError))
+    }
+
     func testPurchaseErrorsAreLoggedAsApppleErrors() {
         let underlyingError = NSError(domain: SKErrorDomain, code: SKError.Code.paymentInvalid.rawValue)
         let error = ErrorUtils.purchaseNotAllowedError(error: underlyingError)

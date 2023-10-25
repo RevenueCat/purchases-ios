@@ -381,4 +381,15 @@ extension NetworkError {
         )
     }
 
+    static func offlineConnection(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .networkError(
+            NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet),
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+
 }

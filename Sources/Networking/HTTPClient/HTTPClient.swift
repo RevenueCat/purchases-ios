@@ -527,14 +527,7 @@ private extension NetworkError {
             Logger.error(blockedError.description)
             self = blockedError
         } else {
-            let nsError = error as NSError
-
-            switch (nsError.domain, nsError.code) {
-            case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet):
-                self = .offlineConnection()
-            default:
-                self = .networkError(error)
-            }
+            self = .networkError(error as NSError)
         }
     }
 

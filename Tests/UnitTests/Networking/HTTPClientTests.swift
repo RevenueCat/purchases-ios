@@ -1282,6 +1282,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        let expectedError: NetworkError = .networkError(error)
 
         stub(condition: isPath(path)) { _ in
             let response = HTTPStubsResponse.emptySuccessResponse()
@@ -1295,8 +1296,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             }
         }
 
-        expect(obtainedError).toNot(beNil())
-        expect(obtainedError) == .offlineConnection()
+        // Can't compare the errors directly because `obtainedError` has additional userInfo.
+        expect(obtainedError?.asPurchasesError)
+            .to(matchError(expectedError.asPurchasesError))
     }
 
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
