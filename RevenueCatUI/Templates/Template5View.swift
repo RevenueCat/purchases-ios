@@ -94,7 +94,7 @@ struct Template5View: TemplateViewType {
             if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedLocalization.title))
                     .font(self.font(for: .largeTitle).bold())
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .defaultHorizontalPadding()
 
                 Spacer()
