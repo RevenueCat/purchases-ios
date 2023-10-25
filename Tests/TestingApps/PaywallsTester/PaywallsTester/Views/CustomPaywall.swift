@@ -25,8 +25,6 @@ struct CustomPaywall: View {
 
     private var content: some View {
         CustomPaywallContent()
-            .scrollableIfNecessary(.vertical)
-            .background(CustomPaywallContent.backgroundColor)
             .paywallFooter(offering: self.offering,
                            customerInfo: self.customerInfo,
                            condensed: self.condensed,

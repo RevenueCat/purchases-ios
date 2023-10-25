@@ -24,14 +24,16 @@ struct OfferingsList: View {
         var offeringsBySection: [Template: [Offering]]
     }
 
+    fileprivate struct PresentedPaywall: Hashable {
+        var offering: Offering
+        var mode: PaywallViewMode
+    }
+
     @State
     private var offerings: Result<Data, NSError>?
 
     @State
-    private var selectedOffering: Offering?
-
-    @State
-    private var selectedMode: PaywallViewMode = .fullScreen
+    private var presentedPaywall: PresentedPaywall?
 
     var body: some View {
         NavigationView {
@@ -103,7 +105,7 @@ struct OfferingsList: View {
                             }
                             #else
                             OfferButton(offering: offering, paywall: paywall) {
-                                self.selectedOffering = offering
+                                self.presentedPaywall = .init(offering: offering, mode: .default)
                             }
                             .contextMenu {
                                 self.contextMenu(for: offering)
@@ -118,8 +120,8 @@ struct OfferingsList: View {
                 }
             }
         }
-        .sheet(item: self.$selectedOffering) { offering in
-            PaywallPresenter(offering: offering, mode: self.selectedMode)
+        .sheet(item: self.$presentedPaywall) { paywall in
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
         }
     }
 
@@ -133,8 +135,7 @@ struct OfferingsList: View {
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
         Button {
-            self.selectedMode = selectedMode
-            self.selectedOffering = offering
+            self.presentedPaywall = .init(offering: offering, mode: selectedMode)
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
@@ -174,18 +175,12 @@ private struct PaywallPresenter: View {
             PaywallView(offering: self.offering)
 
         case .footer:
-            VStack {
-                Spacer()
-                Text("This Paywall is being presented as a Footer")
-                    .paywallFooter(offering: self.offering)
-            }
+            CustomPaywallContent()
+                .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
-            VStack {
-                Spacer()
-                Text("This Paywall is being presented as a Condensed Footer")
-                    .paywallFooter(offering: self.offering, condensed: true)
-            }
+            CustomPaywallContent()
+                .paywallFooter(offering: self.offering, condensed: true)
         }
     }
 
@@ -207,6 +202,14 @@ extension OfferingsList.Template: CustomStringConvertible {
         } else {
             return "No paywall"
         }
+    }
+
+}
+
+extension OfferingsList.PresentedPaywall: Identifiable {
+
+    var id: String {
+        return "\(self.offering.id)-\(self.mode.name)"
     }
 
 }

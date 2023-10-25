@@ -5,6 +5,11 @@
 //  Created by Nacho Soto on 8/25/23.
 //
 
+#if DEBUG
+@testable import RevenueCatUI
+#else
+import RevenueCatUI
+#endif
 
 import SwiftUI
 
@@ -14,6 +19,15 @@ struct CustomPaywallContent: View {
     @State private var starOpacity: Double = 1
 
     var body: some View {
+        self.content
+        #if DEBUG
+            .scrollableIfNecessary(.vertical)
+        #endif
+            .background(CustomPaywallContent.backgroundColor)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         VStack(alignment: .leading, spacing: 8) {
             Image("cat-picture")
                 .resizable()
