@@ -26,7 +26,7 @@ struct PurchasedTransactionData {
 
     var appUserID: String
     var presentedOfferingID: String?
-    var presentedPaywall: PaywallEvent.Data?
+    var presentedPaywall: PaywallEvent?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var aadAttributionToken: String?
     var storefront: StorefrontType?
@@ -87,7 +87,7 @@ final class TransactionPoster: TransactionPosterType {
             productID: transaction.productIdentifier,
             transactionDate: transaction.purchaseDate,
             offeringID: data.presentedOfferingID,
-            paywallSessionID: data.presentedPaywall?.sessionIdentifier
+            paywallSessionID: data.presentedPaywall?.data.sessionIdentifier
         ))
 
         if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,

@@ -27,13 +27,35 @@ public enum PaywallEvent {
     public typealias SessionID = UUID
 
     /// A `PaywallView` was displayed.
-    case impression(Data)
+    case impression(CreationData, Data)
 
     /// A purchase was cancelled.
-    case cancel(Data)
+    case cancel(CreationData, Data)
 
     /// A `PaywallView` was closed.
-    case close(Data)
+    case close(CreationData, Data)
+
+}
+
+extension PaywallEvent {
+
+    /// The creation data of a ``PaywallEvent``.
+    public struct CreationData {
+
+        // swiftlint:disable missing_docs
+        public var id: ID
+        public var date: Date
+
+        @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+        public init(
+            id: ID = .init(),
+            date: Date = .now
+        ) {
+            self.id = id
+            self.date = date
+        }
+
+    }
 
 }
 
@@ -43,14 +65,12 @@ extension PaywallEvent {
     public struct Data {
 
         // swiftlint:disable missing_docs
-        public var id: ID?
         public var offeringIdentifier: String
         public var paywallRevision: Int
         public var sessionIdentifier: SessionID
         public var displayMode: PaywallViewMode
         public var localeIdentifier: String
         public var darkMode: Bool
-        public var date: Date
 
         @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
         public init(
@@ -62,36 +82,30 @@ extension PaywallEvent {
             darkMode: Bool
         ) {
             self.init(
-                id: .init(),
                 offeringIdentifier: offering.identifier,
                 paywallRevision: paywall.revision,
                 sessionID: sessionID,
                 displayMode: displayMode,
                 localeIdentifier: locale.identifier,
-                darkMode: darkMode,
-                date: .now
+                darkMode: darkMode
             )
         }
         // swiftlint:enable missing_docs
 
         init(
-            id: ID,
             offeringIdentifier: String,
             paywallRevision: Int,
             sessionID: SessionID,
             displayMode: PaywallViewMode,
             localeIdentifier: String,
-            darkMode: Bool,
-            date: Date
+            darkMode: Bool
         ) {
-            self.id = id
             self.offeringIdentifier = offeringIdentifier
             self.paywallRevision = paywallRevision
             self.sessionIdentifier = sessionID
             self.displayMode = displayMode
             self.localeIdentifier = localeIdentifier
             self.darkMode = darkMode
-            self.date = date
         }
 
     }
@@ -100,12 +114,21 @@ extension PaywallEvent {
 
 extension PaywallEvent {
 
+    /// - Returns: the underlying ``PaywallEvent/CreationData-swift.struct`` for this event.
+    public var creationData: CreationData {
+        switch self {
+        case let .impression(creationData, _): return creationData
+        case let .cancel(creationData, _): return creationData
+        case let .close(creationData, _): return creationData
+        }
+    }
+
     /// - Returns: the underlying ``PaywallEvent/Data-swift.struct`` for this event.
     public var data: Data {
         switch self {
-        case let .impression(data): return data
-        case let .cancel(data): return data
-        case let .close(data): return data
+        case let .impression(_, data): return data
+        case let .cancel(_, data): return data
+        case let .close(_, data): return data
         }
     }
 
@@ -113,5 +136,6 @@ extension PaywallEvent {
 
 // MARK: - 
 
+extension PaywallEvent.CreationData: Equatable, Codable, Sendable {}
 extension PaywallEvent.Data: Equatable, Codable, Sendable {}
 extension PaywallEvent: Equatable, Codable, Sendable {}

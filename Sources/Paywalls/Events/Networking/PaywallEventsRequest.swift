@@ -61,17 +61,18 @@ extension PaywallEventsRequest.Event {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init(storedEvent: PaywallStoredEvent) {
+        let creationData = storedEvent.event.creationData
         let data = storedEvent.event.data
 
         self.init(
-            id: data.id?.uuidString,
+            id: creationData.id.uuidString,
             version: Self.version,
             type: storedEvent.event.eventType,
             appUserID: storedEvent.userID,
             sessionID: data.sessionIdentifier.uuidString,
             offeringID: data.offeringIdentifier,
             paywallRevision: data.paywallRevision,
-            timestamp: data.date.millisecondsSince1970,
+            timestamp: creationData.date.millisecondsSince1970,
             displayMode: data.displayMode,
             darkMode: data.darkMode,
             localeIdentifier: data.localeIdentifier
