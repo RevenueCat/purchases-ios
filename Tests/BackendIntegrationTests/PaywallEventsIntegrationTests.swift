@@ -42,7 +42,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchasingPackageWithPresentedPaywall() async throws {
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: package).transaction)
 
@@ -50,8 +50,8 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchasingPackageAfterClearingPresentedPaywall() async throws {
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
-        try await self.purchases.track(paywallEvent: .close(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
@@ -62,7 +62,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         self.testSession.failTransactionsEnabled = true
         self.testSession.failureError = .unknown
 
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
 
         do {
             _ = try await self.purchases.purchase(package: self.package)
@@ -85,18 +85,18 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testFlushingEvents() async throws {
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
-        try await self.purchases.track(paywallEvent: .cancel(self.eventData))
-        try await self.purchases.track(paywallEvent: .close(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         let result = try await self.purchases.flushPaywallEvents(count: 3)
         expect(result) == 3
     }
 
     func testFlushingEventsClearsThem() async throws {
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
-        try await self.purchases.track(paywallEvent: .cancel(self.eventData))
-        try await self.purchases.track(paywallEvent: .close(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .cancel(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         _ = try await self.purchases.flushPaywallEvents(count: 3)
         let result = try await self.purchases.flushPaywallEvents(count: 10)
@@ -104,8 +104,8 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testRemembersEventsWhenReopeningApp() async throws {
-        try await self.purchases.track(paywallEvent: .impression(self.eventData))
-        try await self.purchases.track(paywallEvent: .close(self.eventData))
+        try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
+        try await self.purchases.track(paywallEvent: .close(.init(), self.eventData))
 
         await self.resetSingleton()
 
