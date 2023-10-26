@@ -369,20 +369,26 @@ internal enum TestData {
                 ),
                 colors: .init(
                     light: .init(
-                        background: "#FFFFFF",
+                        background: "#ffffff",
                         text1: "#000000",
-                        callToActionBackground: "#008575",
-                        callToActionForeground: "#FFFFFF",
-                        accent1: "#008575",
-                        accent2: "#DFDFDF"
+                        text2: "#adf5c5",
+                        text3: "#b15d5d",
+                        callToActionBackground: "#45c186",
+                        callToActionForeground: "#ffffff",
+                        accent1: "#b24010",
+                        accent2: "#027424",
+                        accent3: "#D1D1D1"
                     ),
                     dark: .init(
                         background: "#000000",
-                        text1: "#FFFFFF",
+                        text1: "#ffffff",
+                        text2: "#adf5c5",
+                        text3: "#b15d5d",
                         callToActionBackground: "#41E194",
                         callToActionForeground: "#000000",
                         accent1: "#41E194",
-                        accent2: "#DFDFDF"
+                        accent2: "#DFDFDF",
+                        accent3: "#D1D1D1"
                     )
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
@@ -396,9 +402,9 @@ internal enum TestData {
                 offerName: "{{ sub_period }}",
                 features: [
                     .init(title: "Unique gourmet recipes", iconID: "tick"),
-                    .init(title: "Advanced nutritional recipes", iconID: "tick"),
-                    .init(title: "Personalized support from our Chef", iconID: "tick"),
-                    .init(title: "Unlimited receipt collections", iconID: "tick")
+                    .init(title: "Advanced nutritional recipes", iconID: "apple"),
+                    .init(title: "Personalized support from our Chef", iconID: "warning"),
+                    .init(title: "Unlimited receipt collections", iconID: "bookmark")
                 ]
             ),
             assetBaseURL: Self.paywallAssetBaseURL

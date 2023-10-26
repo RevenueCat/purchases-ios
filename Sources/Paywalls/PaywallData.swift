@@ -339,6 +339,8 @@ extension PaywallData.Configuration {
         public var accent1: PaywallColor?
         /// Secondary accent color
         public var accent2: PaywallColor?
+        /// Tertiary accent color
+        public var accent3: PaywallColor?
 
         // swiftlint:disable:next missing_docs
         public init(
@@ -350,7 +352,8 @@ extension PaywallData.Configuration {
             callToActionForeground: PaywallColor,
             callToActionSecondaryBackground: PaywallColor? = nil,
             accent1: PaywallColor? = nil,
-            accent2: PaywallColor? = nil
+            accent2: PaywallColor? = nil,
+            accent3: PaywallColor? = nil
         ) {
             self.background = background
             self.text1 = text1
@@ -361,6 +364,7 @@ extension PaywallData.Configuration {
             self.callToActionSecondaryBackground = callToActionSecondaryBackground
             self.accent1 = accent1
             self.accent2 = accent2
+            self.accent3 = accent3
         }
     }
 

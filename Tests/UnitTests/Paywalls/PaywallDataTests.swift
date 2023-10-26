@@ -44,6 +44,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.light.callToActionSecondaryBackground?.stringRepresentation) == "#FF00BB"
         expect(paywall.config.colors.light.accent1?.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.light.accent2?.stringRepresentation) == "#00FF00"
+        expect(paywall.config.colors.light.accent3?.stringRepresentation) == "#0000FF"
 
         expect(paywall.config.colors.dark?.background.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.dark?.text1.stringRepresentation) == "#FF0011"
@@ -53,6 +54,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
         expect(paywall.config.colors.dark?.accent1?.stringRepresentation) == "#00FFFF"
         expect(paywall.config.colors.dark?.accent2?.stringRepresentation) == "#FF00FF"
+        expect(paywall.config.colors.dark?.accent3).to(beNil())
 
         let enConfig = try XCTUnwrap(paywall.config(for: Locale(identifier: "en_US")))
         expect(enConfig.title) == "Paywall"
