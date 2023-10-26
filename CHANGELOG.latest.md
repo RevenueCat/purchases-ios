@@ -1,15 +1,15 @@
 ### New Features
 * `PaywallColor`: change visibility of `Color.init(light:dark:)` to `private` (#3345) via NachoSoto (@NachoSoto)
-* `Paywalls`: new `.onPurchaseCompleted` overload with `StoreTransaction` (#3323) via NachoSoto (@NachoSoto)
 ### RevenueCatUI
+* `Paywalls`: new `.onPurchaseCompleted` overload with `StoreTransaction` (#3323) via NachoSoto (@NachoSoto)
 * `Paywalls`: finished template 5 (#3340) via NachoSoto (@NachoSoto)
 * `Paywalls`: new `onDismiss` parameter for `presentPaywallIfNeeded` (#3342) via NachoSoto (@NachoSoto)
-* `Paywalls`: add identifier to events (#3332) via Josh Holtz (@joshdholtz)
 * `Paywalls`: disable shimmering on footer loading view (#3324) via NachoSoto (@NachoSoto)
 ### Bugfixes
 * `ErrorUtils.purchasesError(withSKError:)`: handle `URLError`s (#3346) via NachoSoto (@NachoSoto)
-* `Paywalls`: create new event session when paywall appears (#3330) via Josh Holtz (@joshdholtz)
 ### Other Changes
+* `Paywalls`: add identifier to events (#3332) via Josh Holtz (@joshdholtz)
+* `Paywalls`: create new event session when paywall appears (#3330) via Josh Holtz (@joshdholtz)
 * `HTTPClient`: verbose logs for request IDs (#3320) via NachoSoto (@NachoSoto)
 * `Paywalls Tester`: fix `macOS` build (#3341) via NachoSoto (@NachoSoto)
 * `ProductFetcherSK1`: enable `TimingUtil` log (#3327) via NachoSoto (@NachoSoto)
