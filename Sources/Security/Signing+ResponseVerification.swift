@@ -22,7 +22,7 @@ extension HTTPResponse where Body == Data? {
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
-            statusCode: self.statusCode,
+            statusCode: self.httpStatusCode,
             headers: self.responseHeaders,
             requestDate: self.requestDate,
             request: request,
@@ -36,7 +36,7 @@ extension HTTPResponse where Body == Data? {
                 request,
                 self.body,
                 self.responseHeaders,
-                statusCode
+                self.httpStatusCode
             ))
         }
         #endif

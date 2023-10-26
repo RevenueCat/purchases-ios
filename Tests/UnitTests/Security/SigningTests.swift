@@ -504,7 +504,7 @@ class SigningTests: TestCase {
 
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
-        let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
+        let response = HTTPResponse<Data?>(httpStatusCode: .success, responseHeaders: [:], body: Data())
         let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: nil)
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -513,7 +513,7 @@ class SigningTests: TestCase {
     func testResponseVerificationWithNoSignatureInResponse() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
 
-        let response = HTTPResponse<Data?>(statusCode: .success, responseHeaders: [:], body: Data())
+        let response = HTTPResponse<Data?>(httpStatusCode: .success, responseHeaders: [:], body: Data())
         let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -525,7 +525,7 @@ class SigningTests: TestCase {
     func testResponseVerificationWithInvalidSignature() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: "invalid_signature"
             ],
@@ -557,7 +557,7 @@ class SigningTests: TestCase {
         )
 
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
@@ -590,7 +590,7 @@ class SigningTests: TestCase {
         )
 
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate),
@@ -623,7 +623,7 @@ class SigningTests: TestCase {
         )
 
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
@@ -641,7 +641,7 @@ class SigningTests: TestCase {
 
         let request = HTTPRequest(method: .get, path: .postOfferForSigning, nonce: nil)
         let response = HTTPResponse<Data?>(
-            statusCode: .success,
+            httpStatusCode: .success,
             responseHeaders: [
                 HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
             ],

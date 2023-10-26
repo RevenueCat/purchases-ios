@@ -373,7 +373,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         }
 
         expect(response).toNot(beNil())
-        expect(response?.value?.statusCode) == .success
+        expect(response?.value?.httpStatusCode) == .success
         expect(response?.value?.verificationResult) == .verified
     }
 

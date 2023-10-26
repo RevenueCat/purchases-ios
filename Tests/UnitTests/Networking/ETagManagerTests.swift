@@ -66,7 +66,7 @@ class ETagManagerTests: TestCase {
             )
         )
 
-        expect(response.statusCode) == .success
+        expect(response.httpStatusCode) == .success
         expect(response.body) == cachedResponse
         expect(response.responseHeaders).toNot(beEmpty())
         expect(Set(response.responseHeaders.keys.compactMap { $0 as? String }))
@@ -92,7 +92,7 @@ class ETagManagerTests: TestCase {
             retried: false
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == cachedResponse
 
         let newCachedResponse = try self.getCachedResponse(for: request)
@@ -118,7 +118,7 @@ class ETagManagerTests: TestCase {
         )
 
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == responseObject
         expect(response?.requestDate) == requestDate
     }
@@ -153,7 +153,7 @@ class ETagManagerTests: TestCase {
         )
 
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModified
+        expect(response?.httpStatusCode) == .notModified
         expect(response?.body) == responseObject
     }
 
@@ -253,7 +253,7 @@ class ETagManagerTests: TestCase {
         )
 
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .internalServerError
+        expect(response?.httpStatusCode) == .internalServerError
         expect(response?.body) == responseObject
 
         expect(self.mockUserDefaults.setObjectForKeyCallCount) == 0
@@ -352,7 +352,7 @@ class ETagManagerTests: TestCase {
             retried: true
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .notModified
+        expect(response?.httpStatusCode) == .notModified
         expect(response?.body) == actualResponse
     }
 
@@ -662,7 +662,7 @@ class ETagManagerTests: TestCase {
             retried: true
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == actualResponse
         expect(response?.verificationResult) == .notRequested
     }
@@ -691,7 +691,7 @@ class ETagManagerTests: TestCase {
             retried: true
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == actualResponse
         expect(response?.verificationResult) == .verified
     }
@@ -720,7 +720,7 @@ class ETagManagerTests: TestCase {
             retried: true
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == actualResponse
         expect(response?.verificationResult) == .failed
     }
@@ -747,7 +747,7 @@ class ETagManagerTests: TestCase {
             retried: true
         )
         expect(response).toNot(beNil())
-        expect(response?.statusCode) == .success
+        expect(response?.httpStatusCode) == .success
         expect(response?.body) == actualResponse
         expect(response?.verificationResult) == .notRequested
     }
@@ -804,7 +804,7 @@ private extension ETagManagerTests {
         requestDate: Date? = nil,
         verificationResult: RevenueCat.VerificationResult = .defaultValue
     ) -> VerifiedHTTPResponse<Data?> {
-        return .init(statusCode: statusCode,
+        return .init(httpStatusCode: statusCode,
                      responseHeaders: self.getHeaders(eTag: eTag),
                      body: body,
                      requestDate: requestDate,

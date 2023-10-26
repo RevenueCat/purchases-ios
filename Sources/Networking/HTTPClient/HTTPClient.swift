@@ -130,6 +130,8 @@ extension HTTPClient {
         case requestDate = "X-RevenueCat-Request-Time"
         case contentType = "Content-Type"
         case isLoadShedder = "X-RevenueCat-Fortress"
+        case requestID = "X-Request-ID"
+        case amazonTraceID = "X-Amzn-Trace-ID"
 
     }
 
@@ -323,7 +325,7 @@ private extension HTTPClient {
                 if let response = response, response.verificationResult == .failed {
                     if case .enforced = request.verificationMode {
                         return .failure(.signatureVerificationFailed(path: request.httpRequest.path,
-                                                                     code: response.statusCode))
+                                                                     code: response.httpStatusCode))
                     } else {
                         // Any other mode gets forwarded as a success, but we log the error
                         Logger.error(Strings.signing.request_failed_verification(request.httpRequest))
@@ -353,13 +355,16 @@ private extension HTTPClient {
         )
 
         if let response = response {
+            let httpURLResponse = urlResponse as? HTTPURLResponse
+
             switch response {
             case let .success(response):
                 Logger.debug(Strings.network.api_request_completed(
                     request.httpRequest,
                     // Getting status code from the original response to detect 304s
                     // If that can't be extracted, get status code from the parsed response.
-                    httpCode: urlResponse?.httpStatusCode ?? response.statusCode
+                    httpCode: httpURLResponse?.httpStatusCode ?? response.httpStatusCode,
+                    metadata: Logger.verboseLogsEnabled ? response.metadata : nil
                 ))
 
                 if response.isLoadShedder {
@@ -367,9 +372,18 @@ private extension HTTPClient {
                 }
 
             case let .failure(error):
-                Logger.debug(Strings.network.api_request_failed(request.httpRequest,
-                                                                httpCode: urlResponse?.httpStatusCode,
-                                                                error: error))
+                let httpURLResponse = urlResponse as? HTTPURLResponse
+
+                Logger.debug(Strings.network.api_request_failed(
+                    request.httpRequest,
+                    httpCode: httpURLResponse?.httpStatusCode,
+                    error: error,
+                    metadata: httpURLResponse?.metadata)
+                )
+
+                if httpURLResponse?.isLoadShedder == true {
+                    Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
+                }
             }
 
             request.completionHandler?(response)
@@ -470,6 +484,16 @@ private extension HTTPClient {
 
 // MARK: - Extensions
 
+extension HTTPClient {
+
+    /// Information from a response to help identify a request.
+    struct ResponseMetadata {
+        var requestID: String?
+        var amazonTraceID: String?
+    }
+
+}
+
 extension HTTPRequest {
 
     func requestAddingNonceIfRequired(
@@ -550,7 +574,7 @@ extension Result where Success == Data?, Failure == NetworkError {
         return self.flatMap { body in
             return .success(
                 .init(
-                    statusCode: .init(rawValue: response.statusCode),
+                    httpStatusCode: response.httpStatusCode,
                     responseHeaders: response.allHeaderFields,
                     body: body
                 )
@@ -583,7 +607,7 @@ extension Result where Success == VerifiedHTTPResponse<Data>, Failure == Network
     // Converts an unsuccessful response into a `Result.failure`
     fileprivate func convertUnsuccessfulResponseToError() -> Self {
         return self.flatMap {
-            $0.response.statusCode.isSuccessfulResponse
+            $0.response.httpStatusCode.isSuccessfulResponse
             ? .success($0)
             : .failure($0.response.parseUnsuccessfulResponse())
         }
@@ -602,8 +626,19 @@ private extension VerifiedHTTPResponse {
         }
     }
 
+}
+
+private extension HTTPResponseType {
+
     var isLoadShedder: Bool {
-        return self.response.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder) == "true"
+        return self.value(forHeaderField: HTTPClient.ResponseHeader.isLoadShedder) == "true"
+    }
+
+    var metadata: HTTPClient.ResponseMetadata {
+        return .init(
+            requestID: self.value(forHeaderField: HTTPClient.ResponseHeader.requestID),
+            amazonTraceID: self.value(forHeaderField: HTTPClient.ResponseHeader.amazonTraceID)
+        )
     }
 
 }
@@ -618,7 +653,7 @@ private extension HTTPResponse where Body == Data {
             isJSON
                 ? .from(self.body)
                 : .defaultResponse,
-            self.statusCode
+            self.httpStatusCode
         )
     }
 

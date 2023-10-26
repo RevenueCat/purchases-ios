@@ -43,7 +43,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
     func testHandleNormalResponse() async {
         let result = await self.handle(
             .success(
-                .init(statusCode: .success,
+                .init(httpStatusCode: .success,
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
@@ -60,7 +60,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
     func testHandleWithFailedVerification() async {
         let result = await self.handle(
             .success(
-                .init(statusCode: .success,
+                .init(httpStatusCode: .success,
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
@@ -98,7 +98,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
 
         let result = await self.handle(
             .success(
-                .init(statusCode: .success,
+                .init(httpStatusCode: .success,
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: errorResponse),
