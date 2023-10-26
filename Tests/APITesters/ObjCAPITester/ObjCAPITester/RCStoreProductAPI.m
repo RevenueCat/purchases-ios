@@ -31,6 +31,7 @@
     if (@available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)) {
         RCSubscriptionPeriod *subscriptionPeriod __unused = product.subscriptionPeriod;
         RCStoreProductDiscount *introductoryPrice __unused = product.introductoryDiscount;
+        NSDecimalNumber *pricePerWeek __unused = product.pricePerWeek;
         NSDecimalNumber *pricePerMonth __unused = product.pricePerMonth;
         NSDecimalNumber *pricePerYear __unused = product.pricePerYear;
     }

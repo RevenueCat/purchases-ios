@@ -30,6 +30,7 @@ func checkStoreProductAPI() {
     if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) {
         let _: SubscriptionPeriod? = product.subscriptionPeriod
         let _: StoreProductDiscount? = product.introductoryDiscount
+        let _: NSDecimalNumber? = product.pricePerWeek
         let _: NSDecimalNumber? = product.pricePerMonth
         let _: NSDecimalNumber? = product.pricePerYear
     }

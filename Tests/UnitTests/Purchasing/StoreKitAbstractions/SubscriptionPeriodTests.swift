@@ -45,60 +45,90 @@ class SubscriptionPeriodTests: TestCase {
 
     // Note: can't test creation from `StoreKit.Product.SubscriptionPeriod` because it has no public constructors.
 
-    func testPricePerMonth() {
-        let expectations: [(period: SubscriptionPeriod, price: Decimal, expected: Decimal)] = [
-            (p(1, .day), 2, 60),
-            (p(15, .day), 5, 10),
-            (p(1, .week), 10, 40),
-            (p(2, .week), 10, 20),
-            (p(1, .month), 14.99, 14.99),
-            (p(2, .month), 30, 15),
-            (p(3, .month), 40, 13.33),
-            (p(1, .year), 120, 10),
-            (p(1, .year), 50, 4.16),
-            (p(1, .year), 29.99, 2.49),
-            (p(3, .year), 720, 20)
+    func testPricePerWeek() {
+        let tests: [Test] = [
+            .init(p(1, .day), 1, 7),
+            .init(p(14, .day), 2, 1),
+            .init(p(1, .week), 10, 10),
+            .init(p(2, .week), 10, 5),
+            .init(p(1, .month), 14.99, 3.74),
+            .init(p(2, .month), 30, 3.75),
+            .init(p(3, .month), 40, 3.33),
+            .init(p(1, .year), 120, 2.3),
+            .init(p(1, .year), 50, 0.95),
+            .init(p(1, .year), 29.99, 0.57),
+            .init(p(3, .year), 720, 4.6)
         ]
 
-        for expectation in expectations {
-            let pricePerMonth = expectation.period.pricePerMonth(withTotalPrice: expectation.price) as NSDecimalNumber
-            let result = Double(truncating: pricePerMonth)
-            let expected = Double(truncating: expectation.expected as NSDecimalNumber)
+        for test in tests {
+            let pricePerWeek = test.period.pricePerWeek(withTotalPrice: test.price) as NSDecimalNumber
+            let result = Double(truncating: pricePerWeek)
+            let expected = Double(truncating: test.expected as NSDecimalNumber)
 
-            expect(result).to(beCloseTo(expected),
-                              description: "\(expectation.price) / \(expectation.period.debugDescription)")
+            expect(
+                line: test.line,
+                result
+            ).to(beCloseTo(expected),
+                 description: "\(test.price) / \(test.period.debugDescription)")
+        }
+    }
+
+    func testPricePerMonth() {
+        let tests: [Test] = [
+            .init(p(1, .day), 2, 60),
+            .init(p(15, .day), 5, 10),
+            .init(p(1, .week), 10, 40),
+            .init(p(2, .week), 10, 20),
+            .init(p(1, .month), 14.99, 14.99),
+            .init(p(2, .month), 30, 15),
+            .init(p(3, .month), 40, 13.33),
+            .init(p(1, .year), 120, 10),
+            .init(p(1, .year), 50, 4.16),
+            .init(p(1, .year), 29.99, 2.49),
+            .init(p(3, .year), 720, 20)
+        ]
+
+        for test in tests {
+            let pricePerMonth = test.period.pricePerMonth(withTotalPrice: test.price) as NSDecimalNumber
+            let result = Double(truncating: pricePerMonth)
+            let expected = Double(truncating: test.expected as NSDecimalNumber)
+
+            expect(
+                line: test.line,
+                result
+            ).to(beCloseTo(expected),
+                 description: "\(test.price) / \(test.period.debugDescription)")
         }
     }
 
     func testPricePerYear() {
-        let expectations: [(period: SubscriptionPeriod, price: Decimal, expected: Decimal)] = [
-            (p(1, .day), 1, 365),
-            (p(1, .day), 2, 730),
-            (p(15, .day), 5, 121.66),
-            (p(1, .week), 10, 521.4),
-            (p(2, .week), 10, 260.7),
-            (p(1, .month), 14.99, 179.88),
-            (p(1, .month), 5, 60),
-            (p(2, .month), 30, 180),
-            (p(3, .month), 40, 160),
-            (p(1, .year), 120, 120),
-            (p(1, .year), 29.99, 29.99),
-            (p(2, .year), 50, 25),
-            (p(3, .year), 720, 240)
+        let tests: [Test] = [
+            .init(p(1, .day), 1, 365),
+            .init(p(1, .day), 2, 730),
+            .init(p(15, .day), 5, 121.66),
+            .init(p(1, .week), 10, 521.4),
+            .init(p(2, .week), 10, 260.7),
+            .init(p(1, .month), 14.99, 179.88),
+            .init(p(1, .month), 5, 60),
+            .init(p(2, .month), 30, 180),
+            .init(p(3, .month), 40, 160),
+            .init(p(1, .year), 120, 120),
+            .init(p(1, .year), 29.99, 29.99),
+            .init(p(2, .year), 50, 25),
+            .init(p(3, .year), 720, 240)
         ]
 
-        for expectation in expectations {
-            let pricePerYear = expectation.period.pricePerYear(withTotalPrice: expectation.price) as NSDecimalNumber
+        for test in tests {
+            let pricePerYear = test.period.pricePerYear(withTotalPrice: test.price) as NSDecimalNumber
             let result = Double(truncating: pricePerYear)
-            let expected = Double(truncating: expectation.expected as NSDecimalNumber)
+            let expected = Double(truncating: test.expected as NSDecimalNumber)
 
-            expect(result).to(beCloseTo(expected),
-                              description: "\(expectation.price) / \(expectation.period.debugDescription)")
+            expect(
+                line: test.line,
+                result
+            ).to(beCloseTo(expected),
+                 description: "\(test.price) / \(test.period.debugDescription)")
         }
-    }
-
-    private func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
-        return .init(value: value, unit: unit)
     }
 
     func testFromSK1PeriodNormalizes() throws {
@@ -181,6 +211,30 @@ extension SKProductSubscriptionPeriod {
         }
 
         return "SKProductSubscriptionPeriod: \(numberOfUnits) \(periodUnit)"
+    }
+
+}
+
+// MARK: -
+
+private extension SubscriptionPeriodTests {
+
+    func p(_ value: Int, _ unit: SubscriptionPeriod.Unit) -> SubscriptionPeriod {
+        return .init(value: value, unit: unit)
+    }
+
+    struct Test {
+        var period: SubscriptionPeriod
+        var price: Decimal
+        var expected: Decimal
+        var line: UInt
+
+        init(_ period: SubscriptionPeriod, _ price: Decimal, _ expected: Decimal, line: UInt = #line) {
+            self.period = period
+            self.price = price
+            self.expected = expected
+            self.line = line
+        }
     }
 
 }
