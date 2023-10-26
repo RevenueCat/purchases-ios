@@ -173,10 +173,13 @@ private struct RestorePurchasesButton: View {
             }
         } label: {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+                let largestText = Text("Restore purchases", bundle: .module)
+
                 ViewThatFits {
-                    Text("Restore purchases", bundle: .module)
+                    largestText
                     Text("Restore", bundle: .module)
                 }
+                .accessibilityLabel(largestText)
             } else {
                 Text("Restore purchases", bundle: .module)
             }
@@ -213,6 +216,11 @@ private struct LinkButton: View {
                     self.link(for: title, bundle: bundle)
                 }
             }
+            // Only use the largest label for accessibility
+            .accessibilityLabel(
+                self.titles.first.map { Self.localizedString($0, bundle) }
+                ?? ""
+            )
         } else if let first = self.titles.first {
             self.link(for: first, bundle: bundle)
         }
@@ -220,14 +228,18 @@ private struct LinkButton: View {
 
     private func link(for title: String, bundle: Bundle) -> some View {
         Link(
-            bundle.localizedString(
-                forKey: title,
-                value: nil,
-                table: nil
-            ),
+            Self.localizedString(title, bundle),
             destination: self.url
         )
         .frame(minHeight: Constants.minimumButtonHeight)
+    }
+
+    private static func localizedString(_ string: String, _ bundle: Bundle) -> String {
+        return bundle.localizedString(
+            forKey: string,
+            value: nil,
+            table: nil
+        )
     }
 
 }
