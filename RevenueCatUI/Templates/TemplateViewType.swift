@@ -154,6 +154,7 @@ extension View {
         self
             .background(configuration.backgroundView)
             .adjustColorScheme(with: configuration)
+            .adjustSize(with: configuration.mode)
     }
 
     @ViewBuilder
@@ -164,6 +165,19 @@ extension View {
             // If paywall has no dark mode configured, prevent materials
             // and other SwiftUI elements from automatically taking a dark appearance.
             self.environment(\.colorScheme, .light)
+        }
+    }
+
+    @ViewBuilder
+    private func adjustSize(with mode: PaywallViewMode) -> some View {
+        switch mode {
+        case .fullScreen:
+            self
+
+        case .footer, .condensedFooter:
+            self
+                .fixedSize(horizontal: false, vertical: true)
+                .edgesIgnoringSafeArea(.bottom)
         }
     }
 

@@ -254,7 +254,7 @@ struct LoadedOfferingPaywallView: View {
     }
 
     var body: some View {
-        let view = self.paywall
+        self.paywall
             .createView(for: self.offering,
                         activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
                         template: self.template,
@@ -271,16 +271,6 @@ struct LoadedOfferingPaywallView: View {
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
-
-        switch self.mode {
-        case .fullScreen:
-            view
-
-        case .footer, .condensedFooter:
-            view
-                .fixedSize(horizontal: false, vertical: true)
-                .edgesIgnoringSafeArea(.bottom)
-        }
     }
 
     private func createEventData() -> PaywallEvent.Data {
