@@ -126,12 +126,13 @@ class PaywallEventsManagerTests: TestCase {
     func testFlushWithUnsuccessfulPostError() async throws {
         let event = await self.storeRandomEvent()
         let storedEvent: PaywallStoredEvent = .init(event: event, userID: Self.userID)
+        let expectedError: NetworkError = .offlineConnection()
 
-        self.api.stubbedPostPaywallEventsCompletionResult = .networkError(.offlineConnection())
+        self.api.stubbedPostPaywallEventsCompletionResult = .networkError(expectedError)
         do {
             _ = try await self.manager.flushEvents(count: 1)
             fail("Expected error")
-        } catch BackendError.networkError(.offlineConnection) {
+        } catch BackendError.networkError(expectedError) {
             // Expected
         } catch {
             throw error

@@ -19,7 +19,6 @@ import Foundation
 enum NetworkError: Swift.Error, Equatable {
 
     case decoding(NSError, Source)
-    case offlineConnection(Source)
     case networkError(NSError, Source)
     case dnsError(failedURL: URL, resolvedHost: String?, Source)
     case unableToCreateRequest(path: String, Source)
@@ -43,12 +42,6 @@ extension NetworkError {
         ))
 
         return .decoding(error as NSError, .init(file: file, function: function, line: line))
-    }
-
-    static func offlineConnection(
-        file: String = #fileID, function: String = #function, line: UInt = #line
-    ) -> Self {
-        return .offlineConnection(.init(file: file, function: function, line: line))
     }
 
     static func networkError(
@@ -113,7 +106,8 @@ extension NetworkError: PurchasesErrorConvertible {
                 line: source.line
             )
 
-        case let .offlineConnection(source):
+        case let .networkError(error, source)
+            where error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet:
             return ErrorUtils.offlineConnectionError(
                 fileName: source.file,
                 functionName: source.function,
@@ -183,7 +177,8 @@ extension NetworkError: DescribableError {
         case let .decoding(error, _):
             return error.localizedDescription
 
-        case .offlineConnection:
+        case let .networkError(error, _)
+            where error.domain == NSURLErrorDomain && error.code == NSURLErrorNotConnectedToInternet:
             return ErrorCode.offlineConnectionError.description
 
         case let .networkError(error, _):
@@ -240,8 +235,7 @@ extension NetworkError {
         case let .errorResponse(_, statusCode, _):
             return statusCode
 
-        case .offlineConnection,
-             .decoding,
+        case .decoding,
              .networkError,
              .dnsError,
              .unableToCreateRequest,

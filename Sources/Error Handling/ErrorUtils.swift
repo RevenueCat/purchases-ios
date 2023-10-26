@@ -288,6 +288,15 @@ enum ErrorUtils {
             return skError.asPurchasesError
         case let purchasesError as PurchasesError:
             return purchasesError
+        case is URLError:
+            // Some StoreKit APIs can return `URLError`s.
+            // See https://github.com/RevenueCat/purchases-ios/issues/3343
+            return NetworkError.networkError(
+                error as NSError,
+                .init(file: fileName,
+                      function: functionName,
+                      line: line)
+            ).asPurchasesError
         default:
             return ErrorUtils.unknownError(
                 error: error,
