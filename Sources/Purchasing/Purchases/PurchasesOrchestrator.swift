@@ -43,7 +43,7 @@ final class PurchasesOrchestrator {
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let presentedOfferingIDsByProductID: Atomic<[String: String]> = .init([:])
-    private let presentedPaywall: Atomic<PaywallEvent.Data?> = nil
+    private let presentedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -547,8 +547,8 @@ final class PurchasesOrchestrator {
 
     func track(paywallEvent: PaywallEvent) {
         switch paywallEvent {
-        case let .impression(data):
-            self.cachePresentedPaywall(data)
+        case .impression:
+            self.cachePresentedPaywall(paywallEvent)
 
         case .close:
             self.clearPresentedPaywall()
@@ -1230,7 +1230,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedPaywall(_ paywall: PaywallEvent.Data) {
+    func cachePresentedPaywall(_ paywall: PaywallEvent) {
         Logger.verbose(Strings.paywalls.caching_presented_paywall)
         self.presentedPaywall.value = paywall
     }
@@ -1250,7 +1250,7 @@ private extension PurchasesOrchestrator {
         return self.getAndRemovePresentedOfferingIdentifier(for: transaction.productIdentifier)
     }
 
-    func getAndRemovePresentedPaywall() -> PaywallEvent.Data? {
+    func getAndRemovePresentedPaywall() -> PaywallEvent? {
         return self.presentedPaywall.getAndSet(nil)
     }
 

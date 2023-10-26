@@ -42,7 +42,7 @@ class PaywallEventsManagerTests: TestCase {
     // MARK: - trackEvent
 
     func testTrackEvent() async {
-        let event: PaywallEvent = .impression(.random())
+        let event: PaywallEvent = .impression(.random(), .random())
 
         await self.manager.track(paywallEvent: event)
 
@@ -53,8 +53,8 @@ class PaywallEventsManagerTests: TestCase {
     }
 
     func testTrackMultipleEvents() async {
-        let event1: PaywallEvent = .impression(.random())
-        let event2: PaywallEvent = .close(.random())
+        let event1: PaywallEvent = .impression(.random(), .random())
+        let event2: PaywallEvent = .close(.random(), .random())
 
         await self.manager.track(paywallEvent: event1)
         await self.manager.track(paywallEvent: event2)
@@ -226,7 +226,7 @@ class PaywallEventsManagerTests: TestCase {
 private extension PaywallEventsManagerTests {
 
     func storeRandomEvent() async -> PaywallEvent {
-        let event: PaywallEvent = .impression(.random())
+        let event: PaywallEvent = .impression(.random(), .random())
         await self.manager.track(paywallEvent: event)
 
         return event

@@ -111,7 +111,7 @@ extension PurchaseHandler {
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.eventData = eventData
-        self.track(.impression(eventData))
+        self.track(.impression(.init(), eventData))
     }
 
     /// - Returns: whether the event was tracked
@@ -122,7 +122,7 @@ extension PurchaseHandler {
             return false
         }
 
-        self.track(.close(data.withCurrentDate()))
+        self.track(.close(.init(), data))
         self.eventData = nil
         return true
     }
@@ -135,7 +135,7 @@ extension PurchaseHandler {
             return false
         }
 
-        self.track(.cancel(data.withCurrentDate()))
+        self.track(.cancel(.init(), data))
         return true
     }
 
@@ -238,18 +238,6 @@ struct RestoredCustomerInfoPreferenceKey: PreferenceKey {
 }
 
 // MARK: -
-
-private extension PaywallEvent.Data {
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func withCurrentDate() -> Self {
-        var copy = self
-        copy.date = .now
-
-        return copy
-    }
-
-}
 
 private extension CustomerInfo {
 

@@ -40,7 +40,8 @@ class BackendPaywallEventTests: BaseBackendTests {
     }
 
     func testPostPaywallEventsWithOneEvent() {
-        let event: PaywallStoredEvent = .init(event: .impression(Self.event1), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .impression(Self.eventCreation1,
+                                                                 Self.eventData1), userID: Self.userID)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [event], completion: completion)
@@ -50,8 +51,9 @@ class BackendPaywallEventTests: BaseBackendTests {
     }
 
     func testPostPaywallEventsWithMultipleEvents() {
-        let event1: PaywallStoredEvent = .init(event: .impression(Self.event1), userID: Self.userID)
-        let event2: PaywallStoredEvent = .init(event: .close(Self.event2), userID: Self.userID)
+        let event1: PaywallStoredEvent = .init(event: .impression(Self.eventCreation1,
+                                                                  Self.eventData1), userID: Self.userID)
+        let event2: PaywallStoredEvent = .init(event: .close(Self.eventCreation2, Self.eventData2), userID: Self.userID)
 
         let error = waitUntilValue { completion in
             self.internalAPI.postPaywallEvents(events: [event1, event2],
@@ -68,24 +70,32 @@ class BackendPaywallEventTests: BaseBackendTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension BackendPaywallEventTests {
 
-    static let event1: PaywallEvent.Data = .init(
+    static let eventCreation1: PaywallEvent.CreationData = .init(
+        id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
+        date: .init(timeIntervalSince1970: 1694029328)
+    )
+
+    static let eventCreation2: PaywallEvent.CreationData = .init(
+        id: .init(uuidString: "25B68D80-68D8-461C-8C68-1A8591190A88")!,
+        date: .init(timeIntervalSince1970: 1694022321)
+    )
+
+    static let eventData1: PaywallEvent.Data = .init(
         offeringIdentifier: "offering_1",
         paywallRevision: 5,
         sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .condensedFooter,
         localeIdentifier: "es_ES",
-        darkMode: true,
-        date: .init(timeIntervalSince1970: 1694029328)
+        darkMode: true
     )
 
-    static let event2: PaywallEvent.Data = .init(
+    static let eventData2: PaywallEvent.Data = .init(
         offeringIdentifier: "offering_2",
         paywallRevision: 3,
         sessionID: .init(uuidString: "10CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
         displayMode: .fullScreen,
         localeIdentifier: "en_US",
-        darkMode: false,
-        date: .init(timeIntervalSince1970: 1694022321)
+        darkMode: false
     )
 
 }

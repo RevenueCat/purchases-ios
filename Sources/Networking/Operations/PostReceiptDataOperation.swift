@@ -177,11 +177,11 @@ private extension PurchasedTransactionData {
     var paywall: PostReceiptDataOperation.Paywall? {
         guard let paywall = self.presentedPaywall else { return nil }
 
-        return .init(sessionID: paywall.sessionIdentifier.uuidString,
-                     revision: paywall.paywallRevision,
-                     displayMode: paywall.displayMode,
-                     darkMode: paywall.darkMode,
-                     localeIdentifier: paywall.localeIdentifier)
+        return .init(sessionID: paywall.data.sessionIdentifier.uuidString,
+                     revision: paywall.data.paywallRevision,
+                     displayMode: paywall.data.displayMode,
+                     darkMode: paywall.data.darkMode,
+                     localeIdentifier: paywall.data.localeIdentifier)
     }
 
 }

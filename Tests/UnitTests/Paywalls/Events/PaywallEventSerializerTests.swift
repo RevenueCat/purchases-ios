@@ -25,7 +25,7 @@ class PaywallEventSerializerTests: TestCase {
     }
 
     func testEncodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random()), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
 
         let encoded = try PaywallEventSerializer.encode(event)
         let decoded: PaywallStoredEvent = try JSONDecoder.default.decode(jsonData: encoded.asData)
@@ -35,17 +35,17 @@ class PaywallEventSerializerTests: TestCase {
     }
 
     func testDecodeImpressionEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .impression(.random()), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .impression(.random(), .random()), userID: Self.userID)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCancelEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .cancel(.random()), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .cancel(.random(), .random()), userID: Self.userID)
         expect(try event.encodeAndDecode()) == event
     }
 
     func testDecodeCloseEvent() throws {
-        let event: PaywallStoredEvent = .init(event: .close(.random()), userID: Self.userID)
+        let event: PaywallStoredEvent = .init(event: .close(.random(), .random()), userID: Self.userID)
         expect(try event.encodeAndDecode()) == event
     }
 
