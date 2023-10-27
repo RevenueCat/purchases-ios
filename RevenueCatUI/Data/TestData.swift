@@ -381,15 +381,15 @@ internal enum TestData {
                         accent3: "#D1D1D1"
                     ),
                     dark: .init(
-                        background: "#000000",
-                        text1: "#ffffff",
-                        text2: "#adf5c5",
-                        text3: "#b15d5d",
-                        callToActionBackground: "#41E194",
-                        callToActionForeground: "#000000",
-                        accent1: "#41E194",
-                        accent2: "#DFDFDF",
-                        accent3: "#D1D1D1"
+                        background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                        text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                        text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        callToActionBackground: #colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1).asPaywallColor,
+                        callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                        accent1: #colorLiteral(red: 0.5568627715, green: 0.3529411852, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                        accent3: #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1).asPaywallColor
                     )
                 ),
                 termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
