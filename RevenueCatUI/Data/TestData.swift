@@ -7,12 +7,13 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 // swiftlint:disable type_body_length file_length
 
 #if DEBUG
 
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 internal enum TestData {
 
     static let weeklyProduct = TestStoreProduct(

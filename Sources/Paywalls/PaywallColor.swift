@@ -116,10 +116,10 @@ private extension PaywallColor {
                 hexNumber |= 0xff
             }
 
-            red = CGFloat((hexNumber & 0xff000000) >> 24) / 256
-            green = CGFloat((hexNumber & 0x00ff0000) >> 16) / 256
-            blue = CGFloat((hexNumber & 0x0000ff00) >> 8) / 256
-            alpha = CGFloat(hexNumber & 0x000000ff) / 256
+            red = CGFloat((hexNumber & 0xff000000) >> 24) / 255
+            green = CGFloat((hexNumber & 0x00ff0000) >> 16) / 255
+            blue = CGFloat((hexNumber & 0x0000ff00) >> 8) / 255
+            alpha = CGFloat(hexNumber & 0x000000ff) / 255
 
             return .init(red: red, green: green, blue: blue, opacity: alpha)
         } else {
@@ -187,17 +187,27 @@ private extension Color {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 public extension Color {
 
     /// Converts a `Color` into a `PaywallColor`.
-    /// - Warning: This `PaywallColor` won't be able to be encoded,
-    /// its ``PaywallColor/stringRepresentation`` will be undefined.
     var asPaywallColor: PaywallColor {
-        return .init(stringRepresentation: "#FFFFFF", color: self)
+        return .init(stringRepresentation: self.stringRepresentation,
+                     color: self)
     }
 
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+public extension UIColor {
+
+    /// Converts a `UIColor` into a `PaywallColor`.
+    var asPaywallColor: PaywallColor {
+        return Color(uiColor: self).asPaywallColor
+    }
+
+}
+
 #endif
 
 // MARK: - Conformances
@@ -247,3 +257,50 @@ extension PaywallColor: Codable {
 }
 
 // swiftlint:enable missing_docs
+
+// MARK: -
+
+#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+internal extension Color {
+
+    var rgba: (red: Int, green: Int, blue: Int, alpha: Int) {
+        let color = UIColor(self)
+
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        assert(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
+
+        return (red.rounded, green.rounded, blue.rounded, alpha.rounded)
+    }
+
+}
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+private extension Color {
+
+    /// - Returns: the color converted to `#RRGGBBAA` or `#RRGGBB`.`
+    var stringRepresentation: String {
+        let (red, green, blue, alpha) = self.rgba
+
+        if alpha < 255 {
+            return String(format: "#%02X%02X%02X%02X", red, green, blue, alpha)
+        } else {
+            return String(format: "#%02X%02X%02X", red, green, blue)
+        }
+    }
+
+}
+
+#endif
+
+private extension CGFloat {
+
+    var rounded: Int {
+        return Int((self * 255).rounded())
+    }
+
+}
