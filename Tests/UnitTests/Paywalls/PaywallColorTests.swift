@@ -68,6 +68,28 @@ final class PaywallColorTests: TestCase {
         expect(try JSONDecoder.default.decode(PaywallColor.self, jsonData: "\"ABBCC22\"".asData)).to(throwError())
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testOpaqueColorAsPaywallColor() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let color = #colorLiteral(red: 1, green: 0, blue: 0, alpha: 1).asPaywallColor
+        let expected = try PaywallColor(stringRepresentation: "#FF0000")
+
+        expect(color) == expected
+        color.verifyComponents(255, 0, 0, 255)
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testTranslucentColorAsPaywallColor() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let color = #colorLiteral(red: 1, green: 0, blue: 0, alpha: 0.4).asPaywallColor
+        let expected = try PaywallColor(stringRepresentation: "#FF000066")
+
+        expect(color) == expected
+        color.verifyComponents(255, 0, 0, 102)
+    }
+
 }
 
 // MARK: -
@@ -101,31 +123,6 @@ private extension PaywallColor {
             line: line,
             components
         ) == (red, green, blue, alpha)
-    }
-
-}
-
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-private extension Color {
-
-    var rgba: (red: Int, green: Int, blue: Int, alpha: Int) {
-        let color = UIColor(self)
-
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        assert(color.getRed(&red, green: &green, blue: &blue, alpha: &alpha))
-
-        return (red.rounded, green.rounded, blue.rounded, alpha.rounded)
-    }
-
-}
-
-private extension CGFloat {
-
-    var rounded: Int {
-        return Int((self * 256).rounded())
     }
 
 }

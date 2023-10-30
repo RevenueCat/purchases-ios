@@ -4,12 +4,12 @@
     "blurred_background_image" : true,
     "colors" : {
       "light" : {
-        "accent1" : "#FFFFFF",
-        "accent2" : "#FFFFFF",
+        "accent1" : "#007AFF",
+        "accent2" : "#000000",
         "background" : "#FFFFFF",
-        "call_to_action_background" : "#FFFFFF",
+        "call_to_action_background" : "#007AFF",
         "call_to_action_foreground" : "#FFFFFF",
-        "text1" : "#FFFFFF"
+        "text1" : "#000000"
       }
     },
     "display_restore_purchases" : true,
