@@ -85,6 +85,11 @@ struct PurchaseButton: View {
         .tint(.clear)
         .frame(maxWidth: .infinity)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+        .transaction { transaction in
+            if !self.packagesProduceDifferentLabels {
+                transaction.animation = nil
+            }
+        }
     }
 
     @ViewBuilder
@@ -108,6 +113,29 @@ struct PurchaseButton: View {
     }
 
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(tvOS, unavailable)
+private extension PurchaseButton {
+
+    var packagesProduceDifferentLabels: Bool {
+        return Set(
+            self.packages.all
+                .lazy
+                .map {
+                    IntroEligibilityStateView.text(
+                        for: .callToAction,
+                        localization: $0.localization,
+                        introEligibility: self.introEligibilityViewModel.allEligibility[$0.content]
+                    )
+                }
+        )
+        .count > 1
+    }
+
+}
+
+// MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PurchaseButtonLabel: View {

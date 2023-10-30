@@ -73,12 +73,41 @@ struct IntroEligibilityStateView: View {
     }
 
     private var text: String {
-        if let textWithIntroOffer = self.textWithIntroOffer, self.isEligibleForIntro {
+        return Self.text(
+            textWithNoIntroOffer: self.textWithNoIntroOffer,
+            textWithIntroOffer: self.textWithIntroOffer,
+            introEligibility: self.introEligibility
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension IntroEligibilityStateView {
+
+    static func text(
+        for display: Display,
+        localization: ProcessedLocalizedConfiguration,
+        introEligibility: IntroEligibilityStatus?
+    ) -> String {
+        return Self.text(
+            textWithNoIntroOffer: display.textWithNoIntroOffer(localization),
+            textWithIntroOffer: display.textWithIntroOffer(localization),
+            introEligibility: introEligibility
+        )
+    }
+
+    private static func text(
+        textWithNoIntroOffer: String?,
+        textWithIntroOffer: String?,
+        introEligibility: IntroEligibilityStatus?
+    ) -> String {
+        if let textWithIntroOffer, introEligibility.isEligibleForIntro {
             return textWithIntroOffer
         } else {
             // Display text with intro offer as a backup to ensure layout does not change
             // when switching states.
-            return self.textWithNoIntroOffer ?? self.textWithIntroOffer ?? ""
+            return textWithNoIntroOffer ?? textWithIntroOffer ?? ""
         }
     }
 
@@ -111,15 +140,28 @@ private extension IntroEligibilityStateView.Display {
 private extension IntroEligibilityStateView {
 
     var isEligibleForIntro: Bool {
-        return self.introEligibility?.isEligible != false
+        return self.introEligibility.isEligibleForIntro
     }
 
     var isNotEligibleForIntro: Bool {
-        return self.introEligibility?.isEligible == false
+        return self.introEligibility.isNotEligibleForIntro
     }
 
     var needsToWaitForIntroEligibility: Bool {
         return self.introEligibility == nil && self.textWithIntroOffer != nil
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension Optional<IntroEligibilityStatus> {
+
+    var isEligibleForIntro: Bool {
+        return self?.isEligible != false
+    }
+
+    var isNotEligibleForIntro: Bool {
+        return self?.isEligible == false
     }
 
 }
