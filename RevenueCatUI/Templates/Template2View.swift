@@ -78,6 +78,7 @@ struct Template2View: TemplateViewType {
             // Compensate for additional padding on condensed mode + iPad
             : self.defaultVerticalPaddingLength.map { $0 * -1 }
         )
+        .edgesIgnoringSafeArea(self.configuration.mode.shouldDisplayIcon ? .top : [])
     }
 
     private var scrollableContent: some View {
