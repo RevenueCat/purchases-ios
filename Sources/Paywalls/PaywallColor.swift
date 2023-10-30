@@ -172,7 +172,9 @@ private extension UIColor {
 }
 #endif
 
-#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
+#if canImport(SwiftUI) && canImport(UIKit)
+
+#if !os(watchOS)
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension Color {
 
@@ -186,6 +188,7 @@ private extension Color {
     }
 
 }
+#endif
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 public extension Color {
@@ -198,7 +201,7 @@ public extension Color {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension UIColor {
 
     /// Converts a `UIColor` into a `PaywallColor`.
@@ -260,7 +263,7 @@ extension PaywallColor: Codable {
 
 // MARK: -
 
-#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
+#if canImport(SwiftUI) && canImport(UIKit)
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 internal extension Color {

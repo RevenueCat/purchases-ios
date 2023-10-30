@@ -151,13 +151,13 @@ func checkPaywallColor(_ color: PaywallColor) throws {
     #endif
 }
 
-#if canImport(SwiftUI) && canImport(UIKit) && !os(watchOS)
+#if canImport(SwiftUI) && canImport(UIKit)
 
-@available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 func checkConversions(color: Color, uiColor: UIColor) {
     let _: PaywallColor = color.asPaywallColor
 
-    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, *) {
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
         let _: PaywallColor = uiColor.asPaywallColor
     }
 }

@@ -68,7 +68,7 @@ final class PaywallColorTests: TestCase {
         expect(try JSONDecoder.default.decode(PaywallColor.self, jsonData: "\"ABBCC22\"".asData)).to(throwError())
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func testOpaqueColorAsPaywallColor() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
@@ -79,7 +79,7 @@ final class PaywallColorTests: TestCase {
         color.verifyComponents(255, 0, 0, 255)
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func testTranslucentColorAsPaywallColor() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
