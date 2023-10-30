@@ -22,23 +22,7 @@ struct SamplePaywallsList: View {
                 .navigationTitle("Test Paywalls")
         }
             .sheet(item: self.$display) { display in
-                NavigationView {
-                    self.view(for: display)
-                        #if targetEnvironment(macCatalyst) || (swift(>=5.9) && os(xrOS))
-                        .toolbar {
-                            ToolbarItem(placement: .destructiveAction) {
-                                Button {
-                                    self.display = nil
-                                } label: {
-                                    Image(systemName: "xmark")
-                                }
-                            }
-                        }
-                        #endif
-                }
-            }
-            .onPurchaseCompleted { _ in
-                self.display = nil
+                self.view(for: display)
             }
             .navigationTitle("Paywalls")
             .navigationViewStyle(StackNavigationViewStyle())
@@ -52,6 +36,7 @@ struct SamplePaywallsList: View {
             case .fullScreen:
                 PaywallView(offering: Self.loader.offering(for: template),
                             customerInfo: Self.loader.customerInfo,
+                            displayCloseButton: true,
                             introEligibility: Self.introEligibility,
                             purchaseHandler: .default())
 
@@ -67,6 +52,7 @@ struct SamplePaywallsList: View {
             PaywallView(offering: Self.loader.offering(for: template),
                         customerInfo: Self.loader.customerInfo,
                         fonts: Self.customFontProvider,
+                        displayCloseButton: true,
                         introEligibility: Self.introEligibility,
                         purchaseHandler: .default())
 

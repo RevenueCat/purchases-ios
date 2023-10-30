@@ -26,9 +26,12 @@ public struct PaywallView: View {
 
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
+    private let displayCloseButton: Bool
 
     @Environment(\.locale)
     private var locale
+    @Environment(\.dismiss)
+    private var dismissAction
 
     @StateObject
     private var purchaseHandler: PurchaseHandler
@@ -43,35 +46,48 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
-    /// Create a view that loads the `Offerings.current`.
+    /// Create a view to display the paywall in `Offerings.current`.
+    ///
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    ///
     /// - Note: If loading the current `Offering` fails (if the user is offline, for example),
     /// an error will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     /// If you want to handle that, you can use ``init(offering:)`` instead.
     public init(
-        fonts: PaywallFontProvider = DefaultPaywallFontProvider()
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false
     ) {
         self.init(
             offering: nil,
             customerInfo: nil,
             fonts: fonts,
+            displayCloseButton: displayCloseButton,
             introEligibility: nil,
             purchaseHandler: nil
         )
     }
 
-    /// Create a view for the given `Offering`.
+    /// Create a view to display the paywall in a given `Offering`.
+    ///
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// - Parameter fonts: An optional `PaywallFontProvider`.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    ///
     /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
     /// a default paywall will be displayed.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
         offering: Offering,
-        fonts: PaywallFontProvider = DefaultPaywallFontProvider()
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false
     ) {
         self.init(
             offering: offering,
             customerInfo: nil,
             fonts: fonts,
+            displayCloseButton: displayCloseButton,
             introEligibility: nil,
             purchaseHandler: nil
         )
@@ -82,6 +98,7 @@ public struct PaywallView: View {
         customerInfo: CustomerInfo?,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker?,
         purchaseHandler: PurchaseHandler?
     ) {
@@ -95,6 +112,7 @@ public struct PaywallView: View {
         )
         self.mode = mode
         self.fonts = fonts
+        self.displayCloseButton = displayCloseButton
     }
 
     // swiftlint:disable:next missing_docs
@@ -116,7 +134,7 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    LoadingPaywallView(mode: self.mode)
+                    LoadingPaywallView(mode: self.mode, dismiss: self.dismiss)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -162,6 +180,7 @@ public struct PaywallView: View {
             template: template,
             mode: self.mode,
             fonts: fonts,
+            dismiss: self.dismiss,
             introEligibility: checker,
             purchaseHandler: purchaseHandler
         )
@@ -177,6 +196,10 @@ public struct PaywallView: View {
         } else {
             paywallView
         }
+    }
+
+    private var dismiss: (() -> Void)? {
+        return self.displayCloseButton ? self.dismissAction.callAsFunction : nil
     }
 
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
@@ -219,6 +242,7 @@ struct LoadedOfferingPaywallView: View {
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
+    private let dismiss: (() -> Void)?
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -238,6 +262,7 @@ struct LoadedOfferingPaywallView: View {
         template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
+        dismiss: (() -> Void)?,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) {
@@ -247,6 +272,7 @@ struct LoadedOfferingPaywallView: View {
         self.template = template
         self.mode = mode
         self.fonts = fonts
+        self.dismiss = dismiss
         self._introEligibility = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
@@ -254,7 +280,17 @@ struct LoadedOfferingPaywallView: View {
     }
 
     var body: some View {
-        self.paywall
+        // Note: preferences need to be applied after `.toolbar` call
+        self.content
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.purchaseResult))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        let view = self.paywall
             .createView(for: self.offering,
                         activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
                         template: self.template,
@@ -264,13 +300,18 @@ struct LoadedOfferingPaywallView: View {
                         locale: self.locale)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
-            .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.purchaseResult))
-            .preference(key: RestoredCustomerInfoPreferenceKey.self,
-                        value: self.purchaseHandler.restoredCustomerInfo)
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
+
+        if let dismiss = self.dismiss {
+            NavigationView {
+                view
+                    .toolbar { Self.toolbar(dismiss) }
+            }
+        } else {
+            view
+        }
     }
 
     private func createEventData() -> PaywallEvent.Data {
@@ -282,6 +323,16 @@ struct LoadedOfferingPaywallView: View {
             locale: .current,
             darkMode: self.colorScheme == .dark
         )
+    }
+
+    private static func toolbar(_ dismiss: @escaping () -> Void) -> some ToolbarContent {
+        ToolbarItem(placement: .destructiveAction) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+            }
+        }
     }
 
 }
@@ -304,6 +355,8 @@ private extension LoadedOfferingPaywallView {
 }
 
 // MARK: -
+
+// swiftlint:disable file_length
 
 #if DEBUG
 

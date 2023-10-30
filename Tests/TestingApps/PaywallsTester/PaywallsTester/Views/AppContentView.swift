@@ -109,7 +109,7 @@ struct AppContentView: View {
             }
 
             ProminentButton(title: "Present default paywall") {
-                showingDefaultPaywall.toggle()
+                self.showingDefaultPaywall.toggle()
             }
         }
         .padding(.horizontal)
@@ -125,20 +125,7 @@ struct AppContentView: View {
         }
         #endif
         .sheet(isPresented: self.$showingDefaultPaywall) {
-            NavigationView {
-                PaywallView()
-                #if targetEnvironment(macCatalyst)
-                    .toolbar {
-                        ToolbarItem(placement: .destructiveAction) {
-                            Button {
-                                self.showingDefaultPaywall = false
-                            } label: {
-                                Image(systemName: "xmark")
-                            }
-                        }
-                    }
-                #endif
-            }
+            PaywallView(displayCloseButton: true)
         }
         .task(id: self.configuration.currentMode) {
             if Purchases.isConfigured {

@@ -151,34 +151,24 @@ private struct PresentingPaywallModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
-                NavigationView {
-                    PaywallView(
-                        offering: self.offering,
-                        customerInfo: data.customerInfo,
-                        fonts: self.fontProvider,
-                        introEligibility: self.introEligibility,
-                        purchaseHandler: self.purchaseHandler
-                    )
-                    .onPurchaseCompleted {
-                        self.purchaseCompleted?($0)
+                PaywallView(
+                    offering: self.offering,
+                    customerInfo: data.customerInfo,
+                    fonts: self.fontProvider,
+                    displayCloseButton: true,
+                    introEligibility: self.introEligibility,
+                    purchaseHandler: self.purchaseHandler
+                )
+                .onPurchaseCompleted {
+                    self.purchaseCompleted?($0)
 
+                    self.close()
+                }
+                .onRestoreCompleted { customerInfo in
+                    self.restoreCompleted?(customerInfo)
+
+                    if !self.shouldDisplay(customerInfo) {
                         self.close()
-                    }
-                    .onRestoreCompleted { customerInfo in
-                        self.restoreCompleted?(customerInfo)
-
-                        if !self.shouldDisplay(customerInfo) {
-                            self.close()
-                        }
-                    }
-                    .toolbar {
-                        ToolbarItem(placement: .destructiveAction) {
-                            Button {
-                                self.close()
-                            } label: {
-                                Image(systemName: "xmark")
-                            }
-                        }
                     }
                 }
             }
