@@ -91,14 +91,13 @@ struct OfferingsList: View {
                         if let paywall = offering.paywall {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
-                                destination: PaywallPresenter(offering: offering,
-                                                              mode: self.selectedMode),
-                                tag: offering,
-                                selection: self.$selectedOffering
+                                destination: PaywallPresenter(offering: offering, 
+                                                              mode: .default,
+                                                              displayCloseButton: false),
+                                tag: PresentedPaywall(offering: offering, mode: .default),
+                                selection: self.$presentedPaywall
                             ) {
-                                OfferButton(offering: offering, paywall: paywall) {
-                                    self.selectedOffering = offering
-                                }
+                                OfferButton(offering: offering, paywall: paywall) {}
                                 .contextMenu {
                                     self.contextMenu(for: offering)
                                 }
@@ -168,11 +167,12 @@ private struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode
+    var displayCloseButton: Bool = true
 
     var body: some View {
         switch self.mode {
         case .fullScreen:
-            PaywallView(offering: self.offering)
+            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
 
         case .footer:
             CustomPaywallContent()

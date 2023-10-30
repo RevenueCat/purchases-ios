@@ -27,9 +27,13 @@ struct App: View {
     @ViewBuilder
     var content: some View {
         PaywallView()
+        PaywallView(displayCloseButton: true)
         PaywallView(fonts: self.fonts)
+        PaywallView(fonts: self.fonts, displayCloseButton: true)
         PaywallView(offering: self.offering)
+        PaywallView(offering: self.offering, displayCloseButton: true)
         PaywallView(offering: self.offering, fonts: self.fonts)
+        PaywallView(offering: self.offering, fonts: self.fonts, displayCloseButton: true)
     }
 
     @ViewBuilder

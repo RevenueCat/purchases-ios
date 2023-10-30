@@ -22,6 +22,7 @@ import SwiftUI
 struct LoadingPaywallView: View {
 
     var mode: PaywallViewMode
+    var dismiss: (() -> Void)?
 
     var shimmer: Bool = true
 
@@ -39,6 +40,7 @@ struct LoadingPaywallView: View {
             template: Self.template,
             mode: self.mode,
             fonts: DefaultPaywallFontProvider(),
+            dismiss: dismiss,
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
         )
