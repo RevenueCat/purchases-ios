@@ -77,6 +77,59 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var receipt: StoreKit2Receipt {
+        get async {
+            async let transactions = verifiedTransactions.compactMap(\.jwsRepresentation)
+            async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
+            async let appTransaction = appTransaction
+
+            return await StoreKit2Receipt.init(
+                environment: .xcode,
+                subscriptionStatus: statuses,
+                transactions: transactions,
+                bundleId: appTransaction?.bundleId ?? "",
+                originalApplicationVersion: appTransaction?.originalApplicationVersion,
+                originalPurchaseDate: appTransaction?.originalPurchaseDate
+            )
+        }
+    }
+
+}
+
+// MARK: -
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
+
+    var underlyingTransaction: StoreKit.Transaction {
+        switch self {
+        case let .unverified(transaction, _): return transaction
+        case let .verified(transaction): return transaction
+        }
+    }
+
+    var verifiedTransaction: StoreKit.Transaction? {
+        switch self {
+        case let .verified(transaction): return transaction
+        case .unverified: return nil
+        }
+    }
+
+    fileprivate var verifiedStoreTransaction: StoreTransaction? {
+        switch self {
+        case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
+                                                                 jwsRepresentation: self.jwsRepresentation)
+        case .unverified: return nil
+        }
+    }
+
+}
+
+// MARK: - Private
+
+extension StoreKit2TransactionFetcher {
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private var verifiedTransactions: [StoreTransaction] {
         get async {
             return await StoreKit.Transaction.all
@@ -127,53 +180,6 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             } catch {
                 return nil
             }
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var receipt: StoreKit2Receipt {
-        get async {
-            async let transactions = verifiedTransactions.compactMap(\.jwsRepresentation)
-            async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
-            async let appTransaction = appTransaction
-
-            return await StoreKit2Receipt.init(
-                environment: .xcode,
-                subscriptionStatus: statuses,
-                transactions: transactions,
-                bundleId: appTransaction?.bundleId ?? "",
-                originalApplicationVersion: appTransaction?.originalApplicationVersion,
-                originalPurchaseDate: appTransaction?.originalPurchaseDate
-            )
-        }
-    }
-
-}
-
-// MARK: -
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
-
-    var underlyingTransaction: StoreKit.Transaction {
-        switch self {
-        case let .unverified(transaction, _): return transaction
-        case let .verified(transaction): return transaction
-        }
-    }
-
-    var verifiedTransaction: StoreKit.Transaction? {
-        switch self {
-        case let .verified(transaction): return transaction
-        case .unverified: return nil
-        }
-    }
-
-    fileprivate var verifiedStoreTransaction: StoreTransaction? {
-        switch self {
-        case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
-                                                                 jwsRepresentation: self.jwsRepresentation)
-        case .unverified: return nil
         }
     }
 
