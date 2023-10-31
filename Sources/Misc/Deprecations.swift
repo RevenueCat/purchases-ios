@@ -379,6 +379,7 @@ extension CustomerInfo {
         let quantity: Int
         var storefront: Storefront? { return nil }
         internal var jwsRepresentation: String? { return nil }
+        internal var environment: StoreEnvironment? { return nil }
 
         var hasKnownPurchaseDate: Bool { true }
         var hasKnownTransactionIdentifier: Bool { return true }

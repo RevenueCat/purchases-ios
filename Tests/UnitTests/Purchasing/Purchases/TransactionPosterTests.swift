@@ -319,12 +319,14 @@ private extension TransactionPosterTests {
         self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)
+        self.transactionFetcher = .init()
         self.backend = .init()
         self.paymentQueueWrapper = .init()
 
         self.poster = .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
+            transactionFetcher: self.transactionFetcher,
             backend: self.backend,
             paymentQueueWrapper: .right(self.paymentQueueWrapper),
             systemInfo: self.systemInfo,

@@ -20,6 +20,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var unfinishedVerifiedTransactions: [StoreTransaction] { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var receipt: StoreKit2Receipt { get async }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -70,6 +73,78 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             await StoreKit.Transaction.all
                 .compactMap { $0.verifiedStoreTransaction }
                 .first { _ in true }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private var verifiedTransactions: [StoreTransaction] {
+        get async {
+            return await StoreKit.Transaction.all
+                .compactMap { $0.verifiedStoreTransaction }
+                .extractValues()
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private var subscriptionStatus: [String: [Product.SubscriptionInfo.Status]] {
+        get async {
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+                return await StoreKit.Product.SubscriptionInfo.Status.all
+                    .extractValues()
+                    .reduce(into: [:]) {result, value in
+                        result[value.groupID] = value.statuses
+                    }
+            } else {
+                // `StoreKit.Product.SubscriptionInfo.Status.all` is only available starting in iOS 17.0
+                // For previous versions, we retrieve all the previously purchased transactions,
+                // and fetch the subscription status only once per subscription group.
+                var subscriptionGroups: [String: [Product.SubscriptionInfo.Status]] = [:]
+                for await transaction in StoreKit.Transaction.all {
+                    if let verifiedTransaction = transaction.verifiedTransaction,
+                       let subscriptionGroup = verifiedTransaction.subscriptionGroupID,
+                       !subscriptionGroups.keys.contains(subscriptionGroup),
+                       let status = await verifiedTransaction.subscriptionStatus {
+                        subscriptionGroups[subscriptionGroup] = [status]
+                    }
+                }
+                return subscriptionGroups
+            }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private var appTransaction: SK2AppTransaction? {
+        get async {
+            do {
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *) {
+                    switch try await StoreKit.AppTransaction.shared {
+                    case let .verified(transaction): return SK2AppTransaction.init(appTransaction: transaction)
+                    case .unverified: return nil
+                    }
+                } else {
+                    return nil
+                }
+            } catch {
+                return nil
+            }
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var receipt: StoreKit2Receipt {
+        get async {
+            async let transactions = verifiedTransactions.compactMap(\.jwsRepresentation)
+            async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
+            async let appTransaction = appTransaction
+
+            return await StoreKit2Receipt.init(
+                environment: .xcode,
+                subscriptionStatus: statuses,
+                transactions: transactions,
+                bundleId: appTransaction?.bundleId ?? "",
+                originalApplicationVersion: appTransaction?.originalApplicationVersion,
+                originalPurchaseDate: appTransaction?.originalPurchaseDate
+            )
         }
     }
 

@@ -1102,6 +1102,13 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
+                var receipt: EncodedAppleReceipt = .jws(jwsRepresentation)
+
+                if transaction.environment == .xcode {
+                    let sk2receipt = await self.transactionFetcher.receipt
+                    receipt = .sk2receipt(sk2receipt)
+                }
+
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
@@ -1111,7 +1118,7 @@ private extension PurchasesOrchestrator {
                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
                     )
 
-                    self.backend.post(receipt: .jws(jwsRepresentation),
+                    self.backend.post(receipt: receipt,
                                       productData: productRequestData,
                                       transactionData: transactionData,
                                       observerMode: self.observerMode) { result in
