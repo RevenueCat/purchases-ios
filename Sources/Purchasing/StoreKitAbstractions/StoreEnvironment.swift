@@ -15,6 +15,7 @@
 import Foundation
 import StoreKit
 
+/// A wrapper for `StoreKit.AppStore.Environment`.
 enum StoreEnvironment: String {
 
     case production
@@ -40,6 +41,20 @@ extension StoreEnvironment {
             self = .xcode
         default:
             Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: environment)))
+            return nil
+        }
+    }
+
+    init?(environment: String) {
+        switch environment {
+        case "Production":
+            self = .production
+        case "Sandbox":
+            self = .sandbox
+        case "Xcode":
+            self = .xcode
+        default:
+            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(environment))
             return nil
         }
     }
