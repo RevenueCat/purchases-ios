@@ -1512,6 +1512,7 @@
 		006E105DDA8D0D0FA32D690C /* StoreKit2 */ = {
 			isa = PBXGroup;
 			children = (
+				4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */,
 				3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */,
 				A55D082F2722368600D919E0 /* SK2BeginRefundRequestHelper.swift */,
 				F516BD28282434070083480B /* StoreKit2StorefrontListener.swift */,
@@ -1562,7 +1563,6 @@
 				57DE807228074C76008D6C6F /* SK2Storefront.swift */,
 				57AC4C172770F55C00DDE30F /* SK2StoreProduct.swift */,
 				57C381DB27961547009E3940 /* SK2StoreProductDiscount.swift */,
-				4D6ABB0F2AF13FBD00BB2A08 /* SK2AppTransaction.swift */,
 				57536A27278522B400E2AE7F /* SK2StoreTransaction.swift */,
 				57DE806C28074976008D6C6F /* Storefront.swift */,
 				4D6ABB0D2AF13FB100BB2A08 /* StoreEnvironment.swift */,
