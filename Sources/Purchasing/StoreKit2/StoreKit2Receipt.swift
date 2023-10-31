@@ -14,7 +14,7 @@
 import StoreKit
 
 /// A type that resembles the structure of a StoreKit 1 receipt using StoreKit 2 data.
-struct StoreKit2Receipt: Equatable, Codable {
+struct StoreKit2Receipt: Equatable {
 
     /// The server environment where the receipt was generated.
     let environment: StoreEnvironment
@@ -36,6 +36,12 @@ struct StoreKit2Receipt: Equatable, Codable {
     /// The date the user originally purchased the app from the App Store.
     let originalPurchaseDate: Date?
 
+}
+
+// MARK: -
+
+extension StoreKit2Receipt: Codable {
+
     private enum CodingKeys: String, CodingKey {
         case environment
         case subscriptionStatus = "subscription_status"
@@ -44,4 +50,5 @@ struct StoreKit2Receipt: Equatable, Codable {
         case originalApplicationVersion = "original_application_version"
         case originalPurchaseDate = "original_purchase_date"
     }
+
 }
