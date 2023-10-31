@@ -28,6 +28,8 @@ struct PurchaseButton: View {
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
+    @Environment(\.isEnabled)
+    private var isEnabled
 
     init(
         packages: TemplateViewConfiguration.PackageConfiguration,
@@ -75,12 +77,21 @@ struct PurchaseButton: View {
                 PurchaseButtonLabel(
                     package: package,
                     colors: self.colors,
-                    introEligibility: self.introEligibilityViewModel.allEligibility[package.content],
-                    mode: self.mode
+                    introEligibility: self.introEligibilityViewModel.allEligibility[package.content]
                 )
             }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .hidden(if: !self.isEnabled)
+            .overlay {
+                if !self.isEnabled {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(self.colors.callToActionForegroundColor)
+                }
+            }
         }
-        .font(self.fonts.font(for: self.mode.buttonFont).weight(.semibold))
+        .font(self.fonts.font(for: .title3).weight(.semibold))
         .background(self.backgroundView)
         .tint(.clear)
         .frame(maxWidth: .infinity)
@@ -143,10 +154,6 @@ private struct PurchaseButtonLabel: View {
     let package: TemplateViewConfiguration.Package
     let colors: PaywallData.Configuration.Colors
     let introEligibility: IntroEligibilityStatus?
-    let mode: PaywallViewMode
-
-    @Environment(\.isEnabled)
-    private var isEnabled
 
     var body: some View {
         IntroEligibilityStateView(
@@ -155,37 +162,6 @@ private struct PurchaseButtonLabel: View {
             introEligibility: self.introEligibility,
             foregroundColor: self.colors.callToActionForegroundColor
         )
-            .frame(
-                maxWidth: self.mode.fullWidthButton
-                   ? .infinity
-                    : nil
-            )
-            .padding()
-            .hidden(if: !self.isEnabled)
-            .overlay {
-                if !self.isEnabled {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(self.colors.callToActionForegroundColor)
-                }
-            }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension PaywallViewMode {
-
-    var buttonFont: Font.TextStyle {
-        switch self {
-        case .fullScreen, .footer, .condensedFooter: return .title3
-        }
-    }
-
-    var fullWidthButton: Bool {
-        switch self {
-        case .fullScreen, .footer, .condensedFooter: return true
-        }
     }
 
 }
