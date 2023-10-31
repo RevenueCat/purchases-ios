@@ -96,6 +96,41 @@ class AbbreviatedUnitSpanishLocalizationTests: BaseLocalizationTests {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class AbbreviatedUnitJapaneseLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "ja_JP") }
+
+    func testDay() {
+        verify(.day, "日")
+    }
+
+    func testWeek() {
+        verify(.week, "週間")
+    }
+
+    func testMonth() {
+        verify(.month, "か月")
+    }
+
+    func testTwoMonths() {
+        verify(.init(2, .month), "2か月")
+    }
+
+    func testThreeMonths() {
+        verify(.init(3, .month), "3か月")
+    }
+
+    func testSixMonths() {
+        verify(.init(6, .month), "6か月")
+    }
+
+    func testYear() {
+        verify(.year, "年")
+    }
+
+}
+
 // MARK: - SubscriptionPeriod
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
