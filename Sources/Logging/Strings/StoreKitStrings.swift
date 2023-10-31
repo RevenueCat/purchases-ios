@@ -63,6 +63,8 @@ enum StoreKitStrings {
 
     case sk2_error_encoding_receipt(Error)
 
+    case sk2_error_fetching_app_transaction(Error)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -158,6 +160,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_error_encoding_receipt(error):
             return "Error encoding SK2 receipt: '\(error)'"
+
+        case let .sk2_error_fetching_app_transaction(error):
+            return "Error fetching AppTransaction: '\(error)'"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):
