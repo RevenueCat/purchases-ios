@@ -178,6 +178,7 @@ extension StoreKit2TransactionFetcher {
                     return nil
                 }
             } catch {
+                Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
                 return nil
             }
         }
