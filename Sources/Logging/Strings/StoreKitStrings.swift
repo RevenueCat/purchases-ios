@@ -67,6 +67,8 @@ enum StoreKitStrings {
 
     case sk2_app_transaction_unavailable
 
+    case sk2_unverified_transaction(String, Error)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -168,6 +170,9 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_app_transaction_unavailable:
             return "Not fetching AppTransaction because it is not available"
+
+        case let .sk2_unverified_transaction(id, error):
+            return "Found unverified transaction with ID: '\(id)' Error: '\(error)'"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):
