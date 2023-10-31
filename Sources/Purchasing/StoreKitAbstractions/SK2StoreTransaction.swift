@@ -16,7 +16,7 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2StoreTransaction: StoreTransactionType {
 
-    init(sk2Transaction: SK2Transaction, jwsRepresentation: String) {
+    init(sk2Transaction: SK2Transaction, jwsRepresentation: String, environment: StoreEnvironment? = nil) {
         self.underlyingSK2Transaction = sk2Transaction
 
         self.productIdentifier = sk2Transaction.productID
@@ -24,6 +24,9 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.transactionIdentifier = String(sk2Transaction.id)
         self.quantity = sk2Transaction.purchasedQuantity
         self.jwsRepresentation = jwsRepresentation
+        self.environment = environment ?? StoreEnvironment(
+            rawValue: sk2Transaction.environmentStringRepresentation.lowercased()
+        )
 
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -44,6 +47,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let quantity: Int
     let storefront: Storefront?
     let jwsRepresentation: String?
+    var environment: StoreEnvironment?
 
     var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }

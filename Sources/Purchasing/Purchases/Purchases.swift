@@ -331,6 +331,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let transactionPoster = TransactionPoster(
             productsManager: productsManager,
             receiptFetcher: receiptFetcher,
+            transactionFetcher: transactionFetcher,
             backend: backend,
             paymentQueueWrapper: paymentQueueWrapper,
             systemInfo: systemInfo,

@@ -58,6 +58,7 @@ final class TransactionPoster: TransactionPosterType {
 
     private let productsManager: ProductsManagerType
     private let receiptFetcher: ReceiptFetcher
+    private let transactionFetcher: StoreKit2TransactionFetcherType
     private let backend: Backend
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
@@ -66,6 +67,7 @@ final class TransactionPoster: TransactionPosterType {
     init(
         productsManager: ProductsManagerType,
         receiptFetcher: ReceiptFetcher,
+        transactionFetcher: StoreKit2TransactionFetcherType,
         backend: Backend,
         paymentQueueWrapper: EitherPaymentQueueWrapper,
         systemInfo: SystemInfo,
@@ -73,6 +75,7 @@ final class TransactionPoster: TransactionPosterType {
     ) {
         self.productsManager = productsManager
         self.receiptFetcher = receiptFetcher
+        self.transactionFetcher = transactionFetcher
         self.backend = backend
         self.paymentQueueWrapper = paymentQueueWrapper
         self.systemInfo = systemInfo
@@ -92,15 +95,27 @@ final class TransactionPoster: TransactionPosterType {
 
         if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
            let jwsRepresentation = transaction.jwsRepresentation {
-            self.fetchProductsAndPostReceipt(
-                transaction: transaction,
-                data: data,
-                receipt: .jws(jwsRepresentation),
-                completion: completion
-            )
+            if transaction.environment == .xcode, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                _ = Task<Void, Never> {
+                    let receipt = await transactionFetcher.receipt
+                    self.fetchProductsAndPostReceipt(
+                        transaction: transaction,
+                        data: data,
+                        receipt: .sk2receipt(receipt),
+                        completion: completion
+                    )
+                }
+            } else {
+                self.fetchProductsAndPostReceipt(
+                    transaction: transaction,
+                    data: data,
+                    receipt: .jws(jwsRepresentation),
+                    completion: completion
+                )
+            }
         } else {
             self.receiptFetcher.receiptData(
-                 refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
+                refreshPolicy: self.refreshRequestPolicy(forProductIdentifier: transaction.productIdentifier)
             ) { receiptData, receiptURL in
                 if let receiptData = receiptData, !receiptData.isEmpty {
                     self.fetchProductsAndPostReceipt(

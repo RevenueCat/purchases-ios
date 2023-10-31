@@ -193,6 +193,7 @@ class BasePurchasesTests: TestCase {
         return .init(
             productsManager: self.mockProductsManager,
             receiptFetcher: self.receiptFetcher,
+            transactionFetcher: self.mockTransactionFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,

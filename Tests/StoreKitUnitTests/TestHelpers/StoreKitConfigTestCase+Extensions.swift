@@ -83,7 +83,8 @@ extension StoreKitConfigTestCase {
     @MainActor
     func createTransaction(
         productID: String? = nil,
-        finished: Bool
+        finished: Bool,
+        environment: StoreEnvironment = .sandbox
     ) async throws -> StoreTransaction {
         let product: SK2Product?
 
@@ -97,7 +98,8 @@ extension StoreKitConfigTestCase {
                                                         finishTransaction: finished)
         return StoreTransaction(
             sk2Transaction: result.underlyingTransaction,
-            jwsRepresentation: result.jwsRepresentation
+            jwsRepresentation: result.jwsRepresentation,
+            environment: environment
         )
     }
 
