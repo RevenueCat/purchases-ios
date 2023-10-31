@@ -1102,10 +1102,11 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
-                var receipt: EncodedAppleReceipt = .jws(jwsRepresentation)
-
+                let receipt: EncodedAppleReceipt
                 if transaction.environment == .xcode {
                     receipt = .sk2receipt(await self.transactionFetcher.receipt)
+                } else {
+                    receipt = .jws(jwsRepresentation)
                 }
 
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
