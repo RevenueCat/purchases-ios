@@ -198,7 +198,7 @@ private extension PostReceiptDataOperation {
                 initiationSource: self.postData.initiationSource.rawValue
             ))
         case .sk2receipt(let receipt):
-            self.log(Strings.receipt.posting_jws(
+            self.log(Strings.receipt.posting_sk2_receipt(
                 (try? receipt.prettyPrintedJSON) ?? "",
                 initiationSource: self.postData.initiationSource.rawValue
             ))
