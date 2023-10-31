@@ -66,7 +66,10 @@ struct PurchaseButton: View {
     private var button: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
-            guard !self.selectedPackage.currentlySubscribed else { return }
+            guard !self.selectedPackage.currentlySubscribed else {
+                Logger.warning(Strings.product_already_subscribed)
+                return
+            }
 
             _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
         } label: {
