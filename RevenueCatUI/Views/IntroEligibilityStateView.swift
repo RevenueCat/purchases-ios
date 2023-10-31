@@ -134,27 +134,6 @@ private extension IntroEligibilityStateView.Display {
 
 }
 
-// MARK: - Private
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-private extension IntroEligibilityStateView.Display {
-
-    func textWithNoIntroOffer(_ localization: ProcessedLocalizedConfiguration) -> String? {
-        switch self {
-        case .callToAction: return localization.callToAction
-        case .offerDetails: return localization.offerDetails
-        }
-    }
-
-    func textWithIntroOffer(_ localization: ProcessedLocalizedConfiguration) -> String? {
-        switch self {
-        case .callToAction: return localization.callToActionWithIntroOffer
-        case .offerDetails: return localization.offerDetailsWithIntroOffer
-        }
-    }
-
-}
-
 // MARK: - Extensions
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
