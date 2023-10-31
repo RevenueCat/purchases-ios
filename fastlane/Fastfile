@@ -14,6 +14,7 @@ default_platform(:ios)
 
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
+  './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
@@ -918,8 +919,12 @@ platform :ios do
 
 end
 
-def push_pods
+def push_revenuecat_pod
   pod_push(path: "RevenueCat.podspec", synchronous: true)
+end
+
+def push_revenuecatui_pod
+  pod_push(path: "RevenueCatUI.podspec", synchronous: true)
 end
 
 def check_no_git_tag_exists(version_number)
@@ -952,8 +957,14 @@ end
 lane :check_pods do
   pod_lib_lint(
     verbose: true,
-    podspec:'RevenueCat.podspec', 
-    platforms:"ios,osx,tvos,watchos",
+    podspec: 'RevenueCat.podspec', 
+    platforms: 'ios,osx,tvos,watchos',
+    fail_fast: true
+  ) 
+  pod_lib_lint(
+    verbose: true,
+    podspec: 'RevenueCatUI.podspec', 
+    platforms: 'ios',
     fail_fast: true
   )
 end

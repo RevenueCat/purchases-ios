@@ -710,7 +710,7 @@ jobs:
           command: bundle exec fastlane release
           no_output_timeout: 30m
 
-  push-pods:
+  push-revenuecat-pod:
     <<: *base-job
     steps:
       - checkout
@@ -718,7 +718,18 @@ jobs:
       - trust-github-key
       - run:
           name: Deploy new version
-          command: bundle exec fastlane push_pods
+          command: bundle exec fastlane push_revenuecat_pod
+          no_output_timeout: 30m
+
+  push-revenuecatui-pod:
+    <<: *base-job
+    steps:
+      - checkout
+      - install-bundle-dependencies
+      - trust-github-key
+      - run:
+          name: Deploy new version
+          command: bundle exec fastlane push_revenuecatui_pod
           no_output_timeout: 30m
 
   prepare-next-version:
@@ -1080,8 +1091,12 @@ workflows:
       - make-release:
           xcode_version: '14.3.0'
           <<: *release-tags
-      - push-pods:
-          # This runs as its own job until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
+      - push-revenuecat-pod:
+          xcode_version: '14.3.0'
+          requires:
+            - make-release
+          <<: *release-tags
+      - push-revenuecatui-pod:
           xcode_version: '14.3.0'
           requires:
             - make-release

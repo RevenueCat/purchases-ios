@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
-  s.name             = "RevenueCat"
+  s.name             = "RevenueCatUI"
   s.version          = "4.30.0-SNAPSHOT"
-  s.summary          = "Subscription and in-app-purchase backend service."
+  s.summary          = "UI library for RevenueCat paywalls."
 
   s.description      = <<-DESC
                        Save yourself the hassle of implementing a subscriptions backend. Use RevenueCat instead https://www.revenuecat.com/
@@ -13,18 +13,23 @@ Pod::Spec.new do |s|
   s.source           = { :git => "https://github.com/revenuecat/purchases-ios.git", :tag => s.version.to_s }
   s.documentation_url = "https://docs.revenuecat.com/"
 
-  s.framework      = 'StoreKit'
+  s.framework      = 'SwiftUI'
   s.swift_version  = '5.7'
 
-  s.ios.deployment_target = '11.0'
-  s.watchos.deployment_target = '6.2'
-  s.tvos.deployment_target = '11.0'
-  s.osx.deployment_target = '10.13'
+  s.ios.deployment_target = '15.0'
   
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
-  s.source_files = 'Sources/**/*.swift'
-  s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
-  
+  s.source_files = 'RevenueCatUI/**/*.swift'
+
+  s.dependency 'RevenueCat', s.version.to_s
+
+  s.resource_bundles = {
+    'RevenueCat_RevenueCatUI' => [
+       # Note: these have to match the values in Package.swift
+       'RevenueCatUI/Resources/background.jpg',
+       'RevenueCatUI/Resources/icons.xcassets',
+    ]
+  }
   
 end
