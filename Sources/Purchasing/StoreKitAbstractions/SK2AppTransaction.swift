@@ -16,7 +16,7 @@ import StoreKit
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2AppTransaction {
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     init(appTransaction: AppTransaction) {
         self.bundleId = appTransaction.bundleID
         self.originalApplicationVersion = appTransaction.originalAppVersion
