@@ -111,7 +111,9 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
     var verifiedTransaction: StoreKit.Transaction? {
         switch self {
         case let .verified(transaction): return transaction
-        case .unverified: return nil
+        case let .unverified(transaction, error):
+            Logger.warn(Strings.storeKit.sk2_unverified_transaction(String(transaction.id), error))
+            return nil
         }
     }
 
@@ -119,7 +121,9 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
         switch self {
         case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
                                                                  jwsRepresentation: self.jwsRepresentation)
-        case .unverified: return nil
+        case let .unverified(transaction, error):
+            Logger.warn(Strings.storeKit.sk2_unverified_transaction(String(transaction.id), error))
+            return nil
         }
     }
 
@@ -172,7 +176,9 @@ extension StoreKit2TransactionFetcher {
                 if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                     switch try await StoreKit.AppTransaction.shared {
                     case let .verified(transaction): return SK2AppTransaction.init(appTransaction: transaction)
-                    case .unverified: return nil
+                    case let .unverified(transaction, error):
+                        Logger.warn(Strings.storeKit.sk2_unverified_transaction(transaction.bundleID, error))
+                        return nil
                     }
                 } else {
                     Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
