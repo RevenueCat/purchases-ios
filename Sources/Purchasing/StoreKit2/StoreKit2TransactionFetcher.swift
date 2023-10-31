@@ -88,7 +88,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private var subscriptionStatus: [String: [Product.SubscriptionInfo.Status]] {
         get async {
-            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+            if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
                 return await StoreKit.Product.SubscriptionInfo.Status.all
                     .extractValues()
                     .reduce(into: [:]) {result, value in
@@ -116,7 +116,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     private var appTransaction: SK2AppTransaction? {
         get async {
             do {
-                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *) {
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                     switch try await StoreKit.AppTransaction.shared {
                     case let .verified(transaction): return SK2AppTransaction.init(appTransaction: transaction)
                     case .unverified: return nil
