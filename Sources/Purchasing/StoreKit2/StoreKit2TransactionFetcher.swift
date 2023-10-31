@@ -175,6 +175,7 @@ extension StoreKit2TransactionFetcher {
                     case .unverified: return nil
                     }
                 } else {
+                    Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
                     return nil
                 }
             } catch {
