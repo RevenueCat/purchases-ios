@@ -61,6 +61,8 @@ enum StoreKitStrings {
 
     case sk2_unknown_environment(String)
 
+    case sk2_error_encoding_receipt(Error)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -153,6 +155,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_unknown_environment(environment):
             return "Unrecognized StoreKit Environment: \(environment)"
+
+        case let .sk2_error_encoding_receipt(error):
+            return "Error encoding SK2 receipt: '\(error)'"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):
