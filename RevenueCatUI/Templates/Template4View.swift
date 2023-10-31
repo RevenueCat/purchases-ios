@@ -152,8 +152,8 @@ struct Template4View: TemplateViewType {
             selected: self.selectedPackage
         ) { package in
             IntroEligibilityStateView(
-                textWithNoIntroOffer: package.localization.offerDetails,
-                textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
+                display: .offerDetails,
+                localization: package.localization,
                 introEligibility: self.introEligibility[package.content],
                 foregroundColor: self.configuration.colors.text1Color
             )

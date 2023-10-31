@@ -18,13 +18,36 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 struct IntroEligibilityStateView: View {
 
-    var textWithNoIntroOffer: String?
-    var textWithIntroOffer: String?
-    var introEligibility: IntroEligibilityStatus?
-    var foregroundColor: Color?
-    var alignment: Alignment
+    enum Display {
+
+        case callToAction
+        case offerDetails
+
+    }
+
+    private var textWithNoIntroOffer: String?
+    private var textWithIntroOffer: String?
+    private var introEligibility: IntroEligibilityStatus?
+    private var foregroundColor: Color?
+    private var alignment: Alignment
 
     init(
+        display: Display,
+        localization: ProcessedLocalizedConfiguration,
+        introEligibility: IntroEligibilityStatus?,
+        foregroundColor: Color? = nil,
+        alignment: Alignment = .center
+    ) {
+        self.init(
+            textWithNoIntroOffer: display.textWithNoIntroOffer(localization),
+            textWithIntroOffer: display.textWithIntroOffer(localization),
+            introEligibility: introEligibility,
+            foregroundColor: foregroundColor,
+            alignment: alignment
+        )
+    }
+
+    fileprivate init(
         textWithNoIntroOffer: String?,
         textWithIntroOffer: String?,
         introEligibility: IntroEligibilityStatus?,
@@ -56,6 +79,27 @@ struct IntroEligibilityStateView: View {
             // Display text with intro offer as a backup to ensure layout does not change
             // when switching states.
             return self.textWithNoIntroOffer ?? self.textWithIntroOffer ?? ""
+        }
+    }
+
+}
+
+// MARK: - Private
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private extension IntroEligibilityStateView.Display {
+
+    func textWithNoIntroOffer(_ localization: ProcessedLocalizedConfiguration) -> String? {
+        switch self {
+        case .callToAction: return localization.callToAction
+        case .offerDetails: return localization.offerDetails
+        }
+    }
+
+    func textWithIntroOffer(_ localization: ProcessedLocalizedConfiguration) -> String? {
+        switch self {
+        case .callToAction: return localization.callToActionWithIntroOffer
+        case .offerDetails: return localization.offerDetailsWithIntroOffer
         }
     }
 

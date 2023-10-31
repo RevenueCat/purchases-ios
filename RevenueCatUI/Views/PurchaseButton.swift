@@ -122,8 +122,8 @@ private struct PurchaseButtonLabel: View {
 
     var body: some View {
         IntroEligibilityStateView(
-            textWithNoIntroOffer: self.package.localization.callToAction,
-            textWithIntroOffer: self.package.localization.callToActionWithIntroOffer,
+            display: .callToAction,
+            localization: self.package.localization,
             introEligibility: self.introEligibility,
             foregroundColor: self.colors.callToActionForegroundColor
         )

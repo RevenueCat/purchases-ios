@@ -241,8 +241,8 @@ struct Template5View: TemplateViewType {
 
     private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
         IntroEligibilityStateView(
-            textWithNoIntroOffer: package.localization.offerDetails,
-            textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
+            display: .offerDetails,
+            localization: package.localization,
             introEligibility: self.introEligibility[package.content],
             foregroundColor: self.configuration.colors.text1Color,
             alignment: Self.packageButtonAlignment

@@ -43,8 +43,8 @@ struct Template1View: TemplateViewType {
             Spacer()
 
             IntroEligibilityStateView(
-                textWithNoIntroOffer: self.localization.offerDetails,
-                textWithIntroOffer: self.localization.offerDetailsWithIntroOffer,
+                display: .offerDetails,
+                localization: self.localization,
                 introEligibility: self.introEligibility,
                 foregroundColor: self.configuration.colors.text1Color
             )
