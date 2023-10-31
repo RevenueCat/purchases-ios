@@ -145,6 +145,7 @@ extension StoreKit2TransactionFetcher {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private var subscriptionStatus: [String: [Product.SubscriptionInfo.Status]] {
         get async {
+            #if swift(>=5.9)
             if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
                 return await StoreKit.Product.SubscriptionInfo.Status.all
                     .extractValues()
@@ -166,6 +167,9 @@ extension StoreKit2TransactionFetcher {
                 }
                 return subscriptionGroups
             }
+            #else
+            return [:]
+            #endif
         }
     }
 
