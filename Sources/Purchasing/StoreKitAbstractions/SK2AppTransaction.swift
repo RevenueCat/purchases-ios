@@ -13,6 +13,7 @@
 
 import StoreKit
 
+/// A wrapper for `StoreKit.AppTransaction`.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2AppTransaction {
 
@@ -21,7 +22,7 @@ internal struct SK2AppTransaction {
         self.bundleId = appTransaction.bundleID
         self.originalApplicationVersion = appTransaction.originalAppVersion
         self.originalPurchaseDate = appTransaction.originalPurchaseDate
-        self.environment = StoreEnvironment.init(rawValue: appTransaction.environment.rawValue.lowercased())
+        self.environment = StoreEnvironment.init(environment: appTransaction.environment)
     }
 
     let bundleId: String

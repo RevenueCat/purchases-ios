@@ -59,6 +59,8 @@ enum StoreKitStrings {
 
     case sk2_observing_transaction_updates
 
+    case sk2_unknown_environment(String)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -148,6 +150,9 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_observing_transaction_updates:
             return "Observing StoreKit.Transaction.updates"
+
+        case let .sk2_unknown_environment(environment):
+            return "Unrecognized StoreKit Environment: \(environment)"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):
