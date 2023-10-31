@@ -79,7 +79,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var receipt: StoreKit2Receipt {
         get async {
-            async let transactions = verifiedTransactions.compactMap(\.jwsRepresentation)
+            async let transactions = verifiedTransactionsJWS
             async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
             async let appTransaction = appTransaction
 
@@ -134,10 +134,10 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
 extension StoreKit2TransactionFetcher {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private var verifiedTransactions: [StoreTransaction] {
+    private var verifiedTransactionsJWS: [String] {
         get async {
             return await StoreKit.Transaction.all
-                .compactMap { $0.verifiedStoreTransaction }
+                .compactMap { $0.verifiedStoreTransaction?.jwsRepresentation }
                 .extractValues()
         }
     }
