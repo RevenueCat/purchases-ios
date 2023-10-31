@@ -338,7 +338,12 @@ private extension EncodedAppleReceipt {
         case let .receipt(data):
             return data.hashString
         case .sk2receipt(let receipt):
-            return (try? receipt.jsonEncodedData.hashString) ?? ""
+            do {
+                return try receipt.jsonEncodedData.hashString
+            } catch {
+                Logger.warn(Strings.storeKit.sk2_error_encoding_receipt(error))
+                return ""
+            }
         }
     }
 
