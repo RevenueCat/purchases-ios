@@ -83,7 +83,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
             async let appTransaction = appTransaction
 
-            return await StoreKit2Receipt.init(
+            return await .init(
                 environment: .xcode,
                 subscriptionStatus: statuses,
                 transactions: transactions,
@@ -175,7 +175,7 @@ extension StoreKit2TransactionFetcher {
             do {
                 if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                     switch try await StoreKit.AppTransaction.shared {
-                    case let .verified(transaction): return SK2AppTransaction.init(appTransaction: transaction)
+                    case let .verified(transaction): return .init(appTransaction: transaction)
                     case let .unverified(transaction, error):
                         Logger.warn(Strings.storeKit.sk2_unverified_transaction(transaction.bundleID, error))
                         return nil
