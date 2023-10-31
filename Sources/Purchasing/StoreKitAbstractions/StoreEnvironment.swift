@@ -13,7 +13,35 @@
 //
 
 import Foundation
+import StoreKit
 
-enum StoreEnvironment: String, Equatable, Codable {
-    case production, sandbox, xcode
+enum StoreEnvironment: String {
+
+    case production
+    case sandbox
+    case xcode
+
+}
+
+extension StoreEnvironment: Equatable, Codable {}
+
+// MARK: - Private
+
+extension StoreEnvironment {
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    init?(environment: StoreKit.AppStore.Environment) {
+        switch environment {
+        case .production:
+            self = .production
+        case .sandbox:
+            self = .sandbox
+        case .xcode:
+            self = .xcode
+        default:
+            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: environment)))
+            return nil
+        }
+    }
+
 }
