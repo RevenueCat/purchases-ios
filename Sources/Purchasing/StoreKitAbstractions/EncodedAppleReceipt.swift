@@ -32,11 +32,7 @@ extension EncodedAppleReceipt {
         case .receipt(let data):
             return data.base64EncodedString()
         case .sk2receipt(let receipt):
-            do {
-                return try receipt.jsonEncodedData.base64EncodedString()
-            } catch {
-                return ""
-            }
+            return (try? receipt.jsonEncodedData.base64EncodedString()) ?? ""
         }
     }
 
