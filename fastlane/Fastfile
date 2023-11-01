@@ -963,7 +963,8 @@ lane :check_pods do
   ) 
   pod_lib_lint(
     verbose: true,
-    podspec: 'RevenueCatUI.podspec', 
+    podspec: 'RevenueCatUI.podspec',
+    include_podspecs: 'RevenueCat.podspec',
     platforms: 'ios',
     fail_fast: true
   )
