@@ -161,7 +161,7 @@ private extension Localization {
     }
 
     static func preferedAbbreviationStyles(for locale: Locale) -> [DateComponentsFormatter.UnitsStyle] {
-        switch locale.languageCode {
+        switch locale.languageCodeIdentifier {
         // Abbreviated does not fully work with Japanese
         case "ja": return [.brief]
         default: return [.full, .brief, .abbreviated]
@@ -251,6 +251,18 @@ private extension PackageType {
 
         case .unknown, .custom:
             return nil
+        }
+    }
+
+}
+
+private extension Locale {
+
+    var languageCodeIdentifier: String? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.languageCode?.identifier
+        } else {
+            return self.languageCode
         }
     }
 
