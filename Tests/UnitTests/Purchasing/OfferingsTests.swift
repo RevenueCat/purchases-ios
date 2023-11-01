@@ -256,7 +256,7 @@ class OfferingsTests: TestCase {
             expect(offeringA.getMetadataValue(for: "dictionary") as Data?)
                 .to(beNil())
 
-            logger.verifyMessageWasLogged("Error deserializing `Optional<Data>`",
+            logger.verifyMessageWasLogged("Error deserializing `Data`",
                                           level: .debug,
                                           expectedCount: 1)
         }

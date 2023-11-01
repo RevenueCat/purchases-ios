@@ -236,7 +236,11 @@ extension Offering {
             guard let value = self.metadata[key] else { return nil }
             let data = try JSONSerialization.data(withJSONObject: value)
 
-            return try JSONDecoder.default.decode(jsonData: data, logErrors: true)
+            return try JSONDecoder.default.decode(
+                T.self,
+                jsonData: data,
+                logErrors: true
+            )
         } catch {
             return nil
         }
