@@ -174,6 +174,17 @@ class OfferingsTests: TestCase {
             "array": ["five"],
             "dictionary": [
                 "string": "five"
+            ],
+            "elements": [
+                [
+                    "number": 1
+                ],
+                [
+                    "number": 2
+                ]
+            ],
+            "element": [
+                "number": 3
             ]
         ]
 
@@ -212,7 +223,7 @@ class OfferingsTests: TestCase {
         expect(offerings.current) == offerings["offering_a"]
 
         let offeringA = try XCTUnwrap(offerings["offering_a"])
-        expect(offeringA.metadata).to(haveCount(6))
+        expect(offeringA.metadata).to(haveCount(8))
         expect(offeringA.getMetadataValue(for: "int", default: 0)) == 5
         expect(offeringA.getMetadataValue(for: "double", default: 0.0)) == 5.5
         expect(offeringA.getMetadataValue(for: "boolean", default: false)) == true
@@ -225,6 +236,31 @@ class OfferingsTests: TestCase {
 
         let wrongMetadataType = offeringA.getMetadataValue(for: "string", default: 5.5)
         expect(wrongMetadataType) == 5.5
+
+        struct Data: Decodable, Equatable {
+            var number: Int
+        }
+
+        let elements: [Data]? = offeringA.getMetadataValue(for: "elements")
+        expect(elements) == [.init(number: 1), .init(number: 2)]
+
+        let element: Data? = offeringA.getMetadataValue(for: "element")
+        expect(element) == .init(number: 3)
+
+        let missing: Data? = offeringA.getMetadataValue(for: "missing")
+        expect(missing).to(beNil())
+
+        do {
+            let logger = TestLogHandler()
+
+            expect(offeringA.getMetadataValue(for: "dictionary") as Data?)
+                .to(beNil())
+
+            logger.verifyMessageWasLogged("Error deserializing `Optional<Data>`",
+                                          level: .debug,
+                                          expectedCount: 1)
+        }
+
     }
 
     func testLifetimePackage() throws {

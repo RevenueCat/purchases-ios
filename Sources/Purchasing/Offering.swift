@@ -215,15 +215,31 @@ import Foundation
 
 extension Offering {
 
-    /**
-     - Returns: the `metadata` value associated to `key` for the expected type,
-     or `default` if not found, or it's not the expected type.
-     */
+    ///
+    /// - Returns: the `metadata` value associated to `key` for the expected type,
+    /// or `default` if not found, or it's not the expected type.
+    ///
     public func getMetadataValue<T>(for key: String, default: T) -> T {
         guard let rawValue = self.metadata[key], let value = rawValue as? T else {
             return `default`
         }
         return value
+    }
+
+    ///
+    /// - Returns: the `metadata` value associated to `key` for the expected `Decodable` type,
+    /// or `nil` if not found.
+    /// - Throws: Error if the content couldn't be deserialized to the expected type.
+    ///
+    public func getMetadataValue<T: Decodable>(for key: String) -> T? {
+        do {
+            guard let value = self.metadata[key] else { return nil }
+            let data = try JSONSerialization.data(withJSONObject: value)
+
+            return try JSONDecoder.default.decode(jsonData: data, logErrors: true)
+        } catch {
+            return nil
+        }
     }
 
 }
