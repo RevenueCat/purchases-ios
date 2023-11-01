@@ -131,6 +131,7 @@ internal protocol StoreProductType: Sendable {
     /// For a string representation of the price to display to customers, use ``localizedPriceString``.
     ///
     /// #### Related Symbols
+    /// - ``StoreProduct/pricePerWeek``
     /// - ``StoreProduct/pricePerMonth``
     /// - ``StoreProduct/pricePerYear``
     var price: Decimal { get }
@@ -202,10 +203,18 @@ public extension StoreProduct {
     /// - Note: this is meant for  Objective-C. For Swift, use ``price`` instead.
     ///
     /// #### Related Symbols
+    /// - ``pricePerWeek``
     /// - ``pricePerMonth``
     /// - ``pricePerYear``
     @objc(price) var priceDecimalNumber: NSDecimalNumber {
         return self.price as NSDecimalNumber
+    }
+
+    /// Calculates the price of this subscription product per week.
+    /// - Returns: `nil` if the product is not a subscription.
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var pricePerWeek: NSDecimalNumber? {
+        return self.subscriptionPeriod?.pricePerWeek(withTotalPrice: self.price) as NSDecimalNumber?
     }
 
     /// Calculates the price of this subscription product per month.

@@ -103,6 +103,10 @@ extension SubscriptionPeriod: Sendable {}
 
 extension SubscriptionPeriod {
 
+    func pricePerWeek(withTotalPrice price: Decimal) -> Decimal {
+        return self.pricePerPeriod(for: self.unitsPerWeek, totalPrice: price)
+    }
+
     func pricePerMonth(withTotalPrice price: Decimal) -> Decimal {
         return self.pricePerPeriod(for: self.unitsPerMonth, totalPrice: price)
     }
@@ -111,20 +115,29 @@ extension SubscriptionPeriod {
         return self.pricePerPeriod(for: self.unitsPerYear, totalPrice: price)
     }
 
+    private var unitsPerWeek: Decimal {
+        switch self.unit {
+        case .day: return 1 / Constants.daysPerWeek
+        case .week: return 1
+        case .month: return Constants.weeksPerMonth
+        case .year: return Constants.weeksPerYear
+        }
+    }
+
     private var unitsPerMonth: Decimal {
         switch self.unit {
-        case .day: return 1 / 30
-        case .week: return 1 / 4
+        case .day: return 1 / Constants.daysPerMonth
+        case .week: return 1 / Constants.weeksPerMonth
         case .month: return 1
-        case .year: return 12
+        case .year: return Constants.monthsPerYear
         }
     }
 
     private var unitsPerYear: Decimal {
         switch self.unit {
-        case .day: return 1 / 365
-        case .week: return 1 / 52.14 // Number of weeks in a year
-        case .month: return 1 / 12
+        case .day: return 1 / Constants.daysPerYear
+        case .week: return 1 / Constants.weeksPerYear
+        case .month: return 1 / Constants.monthsPerYear
         case .year: return 1
         }
     }
@@ -148,7 +161,21 @@ extension SubscriptionPeriod {
 
 }
 
+private extension SubscriptionPeriod {
+
+    enum Constants {
+        static let daysPerWeek: Decimal = 7
+        static let daysPerMonth: Decimal = 30
+        static let daysPerYear: Decimal = 365
+        static let weeksPerMonth: Decimal = 4
+        static let weeksPerYear: Decimal = 52.14
+        static let monthsPerYear: Decimal = 12
+    }
+
+}
+
 extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
+
     // swiftlint:disable missing_docs
     public var debugDescription: String {
         switch self {
@@ -158,6 +185,7 @@ extension SubscriptionPeriod.Unit: CustomDebugStringConvertible {
         case .year: return "year"
         }
     }
+
 }
 
 extension SubscriptionPeriod {
