@@ -1,16 +1,22 @@
 PODS:
-  - RevenueCat (4.2.0-SNAPSHOT)
+  - RevenueCat (4.30.0-SNAPSHOT)
+  - RevenueCatUI (4.30.0-SNAPSHOT):
+    - RevenueCat (= 4.30.0-SNAPSHOT)
 
 DEPENDENCIES:
-  - RevenueCat (from `../../`)
+  - RevenueCat (from `../../../`)
+  - RevenueCatUI (from `../../../`)
 
 EXTERNAL SOURCES:
   RevenueCat:
-    :path: "../../"
+    :path: "../../../"
+  RevenueCatUI:
+    :path: "../../../"
 
 SPEC CHECKSUMS:
-  RevenueCat: 0043d66c3aa68e164da86c48d30d8f9f08dd34c2
+  RevenueCat: 2d5cdc4f0f231037a8b11644fbc533978074623a
+  RevenueCatUI: af130700b3343405839740d84ec9ab3df5ddb84d
 
-PODFILE CHECKSUM: 11a908757598cc1b7ee0e24c3ff4e4f53e9c0837
+PODFILE CHECKSUM: 6b53f6c924112821dc91aa516b6a04a56ff14a1b
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.12.1

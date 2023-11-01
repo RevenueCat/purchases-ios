@@ -210,10 +210,18 @@ replace API KEY for installation and integration tests
 
 Create Carthage archive, export XCFramework, and create GitHub release
 
-### ios push_pods
+### ios push_revenuecat_pod
 
 ```sh
-[bundle exec] fastlane ios push_pods
+[bundle exec] fastlane ios push_revenuecat_pod
+```
+
+Release to CocoaPods
+
+### ios push_revenuecatui_pod
+
+```sh
+[bundle exec] fastlane ios push_revenuecatui_pod
 ```
 
 Release to CocoaPods

@@ -14,6 +14,7 @@ default_platform(:ios)
 
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
+  './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
   './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
@@ -358,18 +359,21 @@ platform :ios do
   desc "Create Carthage archive, export XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    # making it its own lane until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
-    # push_pods 
     carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
 
   desc "Release to CocoaPods"
-  lane :push_pods do |options|
-    push_pods
+  lane :push_revenuecat_pod do |options|
+    pod_push(path: "RevenueCat.podspec", synchronous: true)
   end
-
+  
+  desc "Release to CocoaPods"
+  lane :push_revenuecatui_pod do |options|
+    pod_push(path: "RevenueCatUI.podspec", synchronous: true)
+  end
+  
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
@@ -918,10 +922,6 @@ platform :ios do
 
 end
 
-def push_pods
-  pod_push(path: "RevenueCat.podspec", synchronous: true)
-end
-
 def check_no_git_tag_exists(version_number)
   if git_tag_exists(tag: version_number, remote: true, remote_name: 'origin')
     raise "git tag with version #{version_number} already exists!"
@@ -952,8 +952,15 @@ end
 lane :check_pods do
   pod_lib_lint(
     verbose: true,
-    podspec:'RevenueCat.podspec', 
-    platforms:"ios,osx,tvos,watchos",
+    podspec: 'RevenueCat.podspec', 
+    platforms: 'ios,osx,tvos,watchos',
+    fail_fast: true
+  ) 
+  pod_lib_lint(
+    verbose: true,
+    podspec: 'RevenueCatUI.podspec',
+    include_podspecs: 'RevenueCat.podspec',
+    platforms: 'ios',
     fail_fast: true
   )
 end

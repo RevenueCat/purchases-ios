@@ -13,6 +13,7 @@ If these requirements change, there are several places that need to be updated:
 - https://www.revenuecat.com/docs/getting-started
 - Xcode `Project` build settings (at the project level; targets inherit these settings)
 - `RevenueCat.podspec`
+- `RevenueCatUI.podspec`
 - `Package.swift`
 - `SwiftVersionCheck.swift`
 
