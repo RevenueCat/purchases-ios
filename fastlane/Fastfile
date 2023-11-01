@@ -359,18 +359,21 @@ platform :ios do
   desc "Create Carthage archive, export XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    # making it its own lane until https://github.com/CocoaPods/CocoaPods/issues/11621 is fixed.
-    # push_pods 
     carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
 
   desc "Release to CocoaPods"
-  lane :push_pods do |options|
-    push_pods
+  lane :push_revenuecat_pod do |options|
+    pod_push(path: "RevenueCat.podspec", synchronous: true)
   end
-
+  
+  desc "Release to CocoaPods"
+  lane :push_revenuecatui_pod do |options|
+    pod_push(path: "RevenueCatUI.podspec", synchronous: true)
+  end
+  
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
@@ -917,14 +920,6 @@ platform :ios do
     end
   end
 
-end
-
-def push_revenuecat_pod
-  pod_push(path: "RevenueCat.podspec", synchronous: true)
-end
-
-def push_revenuecatui_pod
-  pod_push(path: "RevenueCatUI.podspec", synchronous: true)
 end
 
 def check_no_git_tag_exists(version_number)
