@@ -23,6 +23,10 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedPriceString
     }
 
+    var localizedPricePerWeek: String {
+        return self.priceFormatter.string(from: self.pricePerWeek) ?? ""
+    }
+
     var localizedPricePerMonth: String {
         return self.priceFormatter.string(from: self.pricePerMonth) ?? ""
     }
@@ -98,6 +102,15 @@ private extension Package {
 
     var isMonthly: Bool {
         return self.storeProduct.subscriptionPeriod == SubscriptionPeriod(value: 1, unit: .month)
+    }
+
+    var pricePerWeek: NSDecimalNumber {
+        guard let price = self.storeProduct.pricePerWeek else {
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.priceDecimalNumber
+        }
+
+        return price
     }
 
     var pricePerMonth: NSDecimalNumber {

@@ -32,6 +32,7 @@ protocol VariableDataProvider {
     var applicationName: String { get }
 
     var localizedPrice: String { get }
+    var localizedPricePerWeek: String { get }
     var localizedPricePerMonth: String { get }
     var localizedIntroductoryOfferPrice: String? { get }
     var productName: String { get }
@@ -99,6 +100,7 @@ enum VariableHandler {
         case "product_name": return { (provider, _, _) in provider.productName }
         case "sub_period": return { (provider, _, locale) in provider.periodName(locale) }
         case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
+        case "sub_price_per_week": return { (provider, _, _) in provider.localizedPricePerWeek }
         case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }
         case "sub_duration_in_months": return { (provider, _, locale) in
             provider.normalizedSubscriptionDuration(locale)

@@ -30,6 +30,15 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.localizedPriceString) == "$119.49"
     }
 
+    func testLocalizedPricePerWeek() {
+        expect(TestData.weeklyPackage.localizedPricePerWeek) == "$1.99"
+        expect(TestData.monthlyPackage.localizedPricePerWeek) == "$1.74"
+        expect(TestData.threeMonthPackage.localizedPricePerWeek) == "$0.41"
+        expect(TestData.sixMonthPackage.localizedPricePerWeek) == "$0.33"
+        expect(TestData.annualPackage.localizedPricePerWeek) == "$1.03"
+        expect(TestData.lifetimePackage.localizedPricePerWeek) == "$119.49"
+    }
+
     func testLocalizedPricePerMonth() {
         expect(TestData.weeklyPackage.localizedPricePerMonth) == "$7.96"
         expect(TestData.monthlyPackage.localizedPricePerMonth) == "$6.99"
