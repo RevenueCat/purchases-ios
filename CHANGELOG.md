@@ -1,9 +1,9 @@
 ## 4.30.0
 ### New Features
 * Add `StoreProduct.pricePerWeek` (#3354) via NachoSoto (@NachoSoto)
-* `Paywalls`: new optional `displayCloseButton` parameter (#3359) via NachoSoto (@NachoSoto)
 ### RevenueCatUI
 * `Paywalls`: `.presentPaywallIfNeeded` allows overriding `Offering` (#3370) via NachoSoto (@NachoSoto)
+* `Paywalls`: new optional `displayCloseButton` parameter (#3359) via NachoSoto (@NachoSoto)
 * `Paywalls`: improve period abbreviations in Japanese (#3367) via NachoSoto (@NachoSoto)
 * `Paywalls`: new `{{ sub_price_per_week }}` variable (#3355) via NachoSoto (@NachoSoto)
 * `Paywalls`: log warning when attempting to purchase already-subscribed product (#3366) via NachoSoto (@NachoSoto)
