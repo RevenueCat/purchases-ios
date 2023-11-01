@@ -21,13 +21,11 @@ enum Localization {
         for period: SubscriptionPeriod,
         locale: Locale = .current
     ) -> String {
-        let (full, brief, abbreviated) = self.unitLocalizedString(for: period, locale: locale)
-
-        let options = [
-            full,
-            brief,
-            abbreviated
-        ]
+        let options = self.unitLocalizedString(
+            for: period,
+            styles: Self.preferedAbbreviationStyles(for: locale),
+            locale: locale
+        )
 
         // Return the first option that matches the preferred length
         return self.unitAbbreviationLengthPriorities
@@ -124,8 +122,9 @@ private extension Localization {
 
     static func unitLocalizedString(
         for period: SubscriptionPeriod,
+        styles: [DateComponentsFormatter.UnitsStyle],
         locale: Locale = .current
-    ) -> (full: String, brief: String, abbreviated: String) {
+    ) -> [String] {
         var calendar: Calendar = .current
         calendar.locale = locale
 
@@ -136,7 +135,9 @@ private extension Localization {
 
         guard let sinceUnits = calendar.date(byAdding: component,
                                              value: value,
-                                             to: date) else { return ("", "", "") }
+                                             to: date) else {
+            return styles.map { _ in "" }
+        }
 
         let formatter = DateComponentsFormatter()
         formatter.calendar = calendar
@@ -156,9 +157,15 @@ private extension Localization {
             }
         }
 
-        return (full: result(for: .full),
-                brief: result(for: .brief),
-                abbreviated: result(for: .abbreviated))
+        return styles.map(result(for:))
+    }
+
+    static func preferedAbbreviationStyles(for locale: Locale) -> [DateComponentsFormatter.UnitsStyle] {
+        switch locale.languageCode {
+        // Abbreviated does not fully work with Japanese
+        case "ja": return [.brief]
+        default: return [.full, .brief, .abbreviated]
+        }
     }
 
     /// The order in which unit abbreviations are preferred.
