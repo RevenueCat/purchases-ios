@@ -77,6 +77,7 @@ public struct PaywallView: View {
     ///
     /// - Note: if `offering` does not have a current paywall, or it fails to load due to invalid data,
     /// a default paywall will be displayed.
+    /// - Note: Specifying this parameter means that it will ignore the offering configured in an active experiment.
     /// - Warning: `Purchases` must have been configured prior to displaying it.
     public init(
         offering: Offering,

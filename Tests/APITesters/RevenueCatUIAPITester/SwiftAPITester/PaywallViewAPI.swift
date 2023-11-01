@@ -41,7 +41,10 @@ struct App: View {
         Text("")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: nil)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     purchaseCompleted: self.purchaseOrRestoreCompleted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
@@ -57,7 +60,14 @@ struct App: View {
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                    restoreCompleted: self.purchaseOrRestoreCompleted,
+                                    onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(offering: nil) { (_: CustomerInfo) in false }
+            .presentPaywallIfNeeded(offering: self.offering) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
+            .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
                 false
             } purchaseCompleted: {
@@ -71,6 +81,15 @@ struct App: View {
                 self.purchaseOrRestoreCompleted($0)
             }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } restoreCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } onDismiss: {
+                self.paywallDismissed()
+            }
+            .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in
                 false
             } purchaseCompleted: {
                 self.purchaseOrRestoreCompleted($0)

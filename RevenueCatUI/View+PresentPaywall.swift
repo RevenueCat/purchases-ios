@@ -31,17 +31,25 @@ extension View {
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
-    /// 
+    ///
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
+    /// that it will ignore the offering configured in an active experiment.
+    /// - Parameter fonts: An optional `PaywallFontProvider`.
+    ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
+        offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
+            offering: offering,
+            fonts: fonts,
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
@@ -73,7 +81,13 @@ extension View {
     /// ```
     /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
     /// the paywall won't be displayed.
+    ///
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
+    /// that it will ignore the offering configured in an active experiment.
+    /// - Parameter fonts: An optional `PaywallFontProvider`.
     public func presentPaywallIfNeeded(
+        offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -81,6 +95,8 @@ extension View {
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
+            offering: offering,
+            fonts: fonts,
             shouldDisplay: shouldDisplay,
             purchaseCompleted: purchaseCompleted,
             restoreCompleted: restoreCompleted,
