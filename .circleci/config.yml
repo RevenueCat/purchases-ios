@@ -1100,6 +1100,7 @@ workflows:
           xcode_version: '14.3.0'
           requires:
             - make-release
+            - push-revenuecat-pod
           <<: *release-tags
       - docs-deploy:
           xcode_version: '14.3.0'
