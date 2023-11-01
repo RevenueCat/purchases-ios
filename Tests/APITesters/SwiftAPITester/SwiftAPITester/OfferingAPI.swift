@@ -16,6 +16,8 @@ import RevenueCat
 
 var off: Offering!
 func checkOfferingAPI() {
+    struct Data: Decodable {}
+
     let ident: String = off.identifier
     let sDesc: String = off.serverDescription
     let aPacks: [Package] = off.availablePackages
@@ -33,10 +35,12 @@ func checkOfferingAPI() {
     let metadataString: String = off.getMetadataValue(for: "", default: "")
     let metadataInt: Int = off.getMetadataValue(for: "", default: 0)
     let metadataOptionalInt: Int? = off.getMetadataValue(for: "", default: nil)
+    let metadataDecodable: Data? = off.getMetadataValue(for: "")
     let _: PaywallData? = off.paywall
 
     print(off!, ident, sDesc, aPacks, lPack!, annPack!, smPack!, thmPack!, twmPack!,
-          mPack!, wPack!, pPack!, package!, metadata, metadataString, metadataInt, metadataOptionalInt!)
+          mPack!, wPack!, pPack!, package!, metadata, metadataString, metadataInt, metadataOptionalInt!,
+          metadataDecodable!)
 }
 
 private func checkCreateOfferingAPI(package: Package) {
