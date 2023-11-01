@@ -681,6 +681,7 @@ jobs:
           command: bundle exec fastlane release_checks
           environment:
             SCAN_SCHEME: All Tests
+          no_output_timeout: 30m
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
