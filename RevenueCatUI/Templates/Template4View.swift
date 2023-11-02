@@ -117,7 +117,7 @@ struct Template4View: TemplateViewType {
             .scrollableIfNecessary(.horizontal)
             .frame(height: self.packageContentHeight)
             .frame(maxWidth: .infinity)
-            .onSizeChange(.horizontal) {
+            .onWidthChange {
                 self.containerWidth = $0
             }
     }
@@ -179,7 +179,7 @@ struct Template4View: TemplateViewType {
                               selected: false,
                               packageWidth: self.packageWidth,
                               desiredHeight: nil)
-                .onSizeChange(.vertical) {
+                .onHeightChange {
                     if $0 > self.packageContentHeight ?? 0 {
                         self.packageContentHeight = $0
                     }
@@ -374,7 +374,7 @@ private struct PackageButton: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .padding(.horizontal, 2)
-                .onSizeChange(.vertical) {
+                .onHeightChange {
                     self.discountLabelHeight = $0
                 }
                 .offset(

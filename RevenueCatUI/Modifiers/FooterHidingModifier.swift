@@ -48,7 +48,7 @@ private struct FooterHidingModifier: ViewModifier {
 
         case .condensedFooter:
             content
-                .onSizeChange(.vertical) { if $0 > 0 { self.height = $0 } }
+                .onHeightChange { if $0 > 0 { self.height = $0 } }
                 .opacity(self.hide ? 0 : 1)
                 .offset(
                     y: self.hide

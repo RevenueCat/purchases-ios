@@ -192,9 +192,9 @@ extension View {
             .onPreferenceChange(ViewSizePreferenceKey.self, perform: closure)
     }
 
-    /// Invokes the given closure with the dimension specified by `axis` changes whenever it changes.
-    func onSizeChange(
-        _ axis: Axis,
+    /// Invokes the given closure with the view width whenever it changes.
+    @ViewBuilder
+    func onWidthChange(
         _ closure: @escaping (CGFloat) -> Void
     ) -> some View {
         self
@@ -202,14 +202,30 @@ extension View {
                 GeometryReader { geometry in
                     Color.clear
                         .preference(
-                            key: ViewDimensionPreferenceKey.self,
-                            value: axis == .horizontal
-                                ? geometry.size.width
-                                : geometry.size.height
+                            key: ViewWidthPreferenceKey.self,
+                            value: geometry.size.width
                         )
                 }
             )
-            .onPreferenceChange(ViewDimensionPreferenceKey.self, perform: closure)
+            .onPreferenceChange(ViewWidthPreferenceKey.self, perform: closure)
+    }
+
+    /// Invokes the given closure with the view height whenever it changes.
+    @ViewBuilder
+    func onHeightChange(
+        _ closure: @escaping (CGFloat) -> Void
+    ) -> some View {
+        self
+            .overlay(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(
+                            key: ViewHeightPreferenceKey.self,
+                            value: geometry.size.height
+                        )
+                }
+            )
+            .onPreferenceChange(ViewHeightPreferenceKey.self, perform: closure)
     }
 
 }
@@ -272,14 +288,29 @@ private struct RoundedCorner: Shape {
 
 // MARK: - Preference Keys
 
-/// `PreferenceKey` for keeping track of a view dimension.
-private struct ViewDimensionPreferenceKey: PreferenceKey {
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private protocol ViewDimensionPreferenceKey: PreferenceKey where Value == CGFloat {}
 
-    typealias Value = CGFloat
+/// `PreferenceKey` for keeping track of a view width.
+private struct ViewWidthPreferenceKey: ViewDimensionPreferenceKey {
 
     static var defaultValue: Value = 10
 
-    static func reduce(value: inout Value, nextValue: () -> Value) {
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        let newValue = max(value, nextValue())
+        if newValue != value {
+            value = newValue
+        }
+    }
+
+}
+
+/// `PreferenceKey` for keeping track of a view height.
+private struct ViewHeightPreferenceKey: ViewDimensionPreferenceKey {
+
+    static var defaultValue: Value = 10
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         let newValue = max(value, nextValue())
         if newValue != value {
             value = newValue
