@@ -1,3 +1,7 @@
+## 4.30.1
+### RevenueCatUI
+* `Paywalls`: `RevenueCatUI` CocoaPods support (#3368) via NachoSoto (@NachoSoto)
+
 ## 4.30.0
 ### New Features
 * `Offering`: new `getMetadataValue` with `Decodable` type (#3373) via NachoSoto (@NachoSoto)
