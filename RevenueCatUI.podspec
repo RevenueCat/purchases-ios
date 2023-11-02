@@ -16,7 +16,9 @@ Pod::Spec.new do |s|
   s.framework      = 'SwiftUI'
   s.swift_version  = '5.7'
 
-  s.ios.deployment_target = '15.0'
+  # Technically PaywallView isn't available until iOS 15,
+  # but this can be detected at compile time.
+  s.ios.deployment_target = '11.0'
   
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
