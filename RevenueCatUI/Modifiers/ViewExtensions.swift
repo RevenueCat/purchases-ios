@@ -291,10 +291,8 @@ private struct RoundedCorner: Shape {
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private protocol ViewDimensionPreferenceKey: PreferenceKey where Value == CGFloat {}
 
-/// `PreferenceKey` for keeping track of a view width.
-private struct ViewWidthPreferenceKey: ViewDimensionPreferenceKey {
-
-    static var defaultValue: Value = 10
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+extension ViewDimensionPreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         let newValue = max(value, nextValue())
@@ -305,17 +303,17 @@ private struct ViewWidthPreferenceKey: ViewDimensionPreferenceKey {
 
 }
 
+/// `PreferenceKey` for keeping track of a view width.
+private struct ViewWidthPreferenceKey: ViewDimensionPreferenceKey {
+
+    static var defaultValue: Value = 10
+
+}
+
 /// `PreferenceKey` for keeping track of a view height.
 private struct ViewHeightPreferenceKey: ViewDimensionPreferenceKey {
 
     static var defaultValue: Value = 10
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        let newValue = max(value, nextValue())
-        if newValue != value {
-            value = newValue
-        }
-    }
 
 }
 
