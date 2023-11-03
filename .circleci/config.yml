@@ -632,6 +632,7 @@ jobs:
 
   build-visionos:
     <<: *base-job
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - install-dependencies
