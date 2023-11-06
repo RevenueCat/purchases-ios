@@ -1,5 +1,6 @@
-### Performance Improvements
-* `Paywalls`: optimize `background.jpg` image (#3379) via NachoSoto (@NachoSoto)
+### RevenueCatUI
+* `Paywalls`: fix template 4 layout bug on iOS 16 (#3381) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `a297205` to `0ddee10` (#3383) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* `RevenueCatUI`: lowered CocoaPods deployment target to 11.0 (#3378) via NachoSoto (@NachoSoto)
-* Fix deprecation warning (#3371) via NachoSoto (@NachoSoto)
+* `CircleCI`: fix `visionOS` job (#3384) via NachoSoto (@NachoSoto)
