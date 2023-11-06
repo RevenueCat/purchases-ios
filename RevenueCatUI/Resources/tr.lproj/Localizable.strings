@@ -1,11 +1,11 @@
 "OK" = "TAMAM";
 "All subscriptions" = "Tüm abonelikler";
-"Privacy" = "Mahremiyet";
+"Privacy" = "Gizlilik";
 "Privacy policy" = "Gizlilik Politikası";
 "Purchases restored successfully!" = "Satın almalar başarıyla geri yüklendi!";
-"Restore" = "Eski haline getirmek";
+"Restore" = "Geri yükle";
 "Restore purchases" = "Satın alınanları geri yükle";
-"Terms" = "şartlar";
+"Terms" = "Şartlar";
 "Terms and conditions" = "Şartlar ve koşullar";
 "Annual" = "Yıllık";
 "6 Month" = "6 ay";
@@ -13,7 +13,7 @@
 "2 Month" = "2 ay";
 "Monthly" = "Aylık";
 "Weekly" = "Haftalık";
-"Lifetime" = "Ömür";
+"Lifetime" = "Ömür boyu";
 "%d%% off" = "%d%% indirim";
-"Continue" = "Devam etmek";
+"Continue" = "Devam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
