@@ -14,6 +14,6 @@
 "Monthly" = "Aylık";
 "Weekly" = "Haftalık";
 "Lifetime" = "Ömür";
-"%d%% off" = "%%d%% indirim";
+"%d%% off" = "%d%% indirim";
 "Continue" = "Devam etmek";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
