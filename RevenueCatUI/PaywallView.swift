@@ -235,6 +235,7 @@ private extension PaywallView {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
+@available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct LoadedOfferingPaywallView: View {
 
@@ -341,6 +342,7 @@ struct LoadedOfferingPaywallView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
+@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension LoadedOfferingPaywallView {
 

@@ -172,23 +172,7 @@ private extension UIColor {
 }
 #endif
 
-#if canImport(SwiftUI) && canImport(UIKit)
-
-#if !os(watchOS)
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-private extension Color {
-
-    init(light: UIColor, dark: UIColor) {
-        self.init(UIColor(light: light, dark: dark))
-    }
-
-    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-    init(light: Color, dark: Color) {
-        self.init(light: UIColor(light), dark: UIColor(dark))
-    }
-
-}
-#endif
+#if canImport(SwiftUI)
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 public extension Color {
@@ -201,6 +185,24 @@ public extension Color {
 
 }
 
+#if canImport(UIKit)
+
+    #if !os(watchOS)
+    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+    private extension Color {
+
+        init(light: UIColor, dark: UIColor) {
+            self.init(UIColor(light: light, dark: dark))
+        }
+
+        @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+        init(light: Color, dark: Color) {
+            self.init(light: UIColor(light), dark: UIColor(dark))
+        }
+
+    }
+    #endif
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension UIColor {
 
@@ -210,6 +212,20 @@ public extension UIColor {
     }
 
 }
+
+#elseif os(macOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public extension NSColor {
+
+    /// Converts an `NSColor` into a `PaywallColor`.
+    var asPaywallColor: PaywallColor {
+        return Color(nsColor: self).asPaywallColor
+    }
+
+}
+
+#endif
 
 #endif
 
@@ -281,6 +297,29 @@ internal extension Color {
     }
 
 }
+
+#elseif os(macOS)
+
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+internal extension Color {
+
+    var rgba: (red: Int, green: Int, blue: Int, alpha: Int) {
+        let color = NSColor(self)
+
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+
+        return (red.rounded, green.rounded, blue.rounded, alpha.rounded)
+    }
+
+}
+
+#endif
+
+#if canImport(SwiftUI)
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 private extension Color {
