@@ -16,13 +16,18 @@ import StoreKit
 /// A type that resembles the structure of a StoreKit 1 receipt using StoreKit 2 data.
 struct StoreKit2Receipt: Equatable {
 
+    struct SubscriptionStatus: Equatable {
+        /// Subscription Group Identifiers.
+        let subscriptionGroupId: String
+        /// JWS tokens of the renewal information.
+        let renewalInfoJWSTokens: [String]
+    }
+
     /// The server environment where the receipt was generated.
     let environment: StoreEnvironment
 
     /// The current subscription status for each subscription group, including the renewal information.
-    /// The keys of the dictionary represent Subscription Group Identifiers, where the values are arrays 
-    /// of JWS tokens of the renewal information.
-    let subscriptionStatus: [String: [String]]
+    let subscriptionStatus: [SubscriptionStatus]
 
     /// The list of transaction JWS tokens purchased by the customer.
     let transactions: [String]
@@ -40,6 +45,8 @@ struct StoreKit2Receipt: Equatable {
 
 // MARK: -
 
+extension StoreKit2Receipt.SubscriptionStatus: Codable {}
+
 extension StoreKit2Receipt: Codable {
 
     private enum CodingKeys: String, CodingKey {
@@ -49,6 +56,19 @@ extension StoreKit2Receipt: Codable {
         case bundleId = "bundle_id"
         case originalApplicationVersion = "original_application_version"
         case originalPurchaseDate = "original_purchase_date"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.environment, forKey: .environment)
+        try container.encode(self.transactions, forKey: .transactions)
+        try container.encode(self.bundleId, forKey: .bundleId)
+        try container.encode(self.originalApplicationVersion, forKey: .originalApplicationVersion)
+        try container.encode(self.originalPurchaseDate, forKey: .originalPurchaseDate)
+        let statuses = Dictionary(uniqueKeysWithValues: self.subscriptionStatus.map {
+            ($0.subscriptionGroupId, $0.renewalInfoJWSTokens)
+        })
+        try container.encode(statuses, forKey: .subscriptionStatus)
     }
 
 }
