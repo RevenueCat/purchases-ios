@@ -15,7 +15,7 @@ import RevenueCat
 import SwiftUI
 
 /// A view that can process intro eligibility and display different data based on the result.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IntroEligibilityStateView: View {
 
     enum Display {
@@ -82,7 +82,7 @@ struct IntroEligibilityStateView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension IntroEligibilityStateView {
 
     static func text(
@@ -115,7 +115,7 @@ extension IntroEligibilityStateView {
 
 // MARK: - Private
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension IntroEligibilityStateView.Display {
 
     func textWithNoIntroOffer(_ localization: ProcessedLocalizedConfiguration) -> String? {
@@ -136,7 +136,7 @@ private extension IntroEligibilityStateView.Display {
 
 // MARK: - Extensions
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension IntroEligibilityStateView {
 
     var isEligibleForIntro: Bool {
@@ -166,7 +166,7 @@ private extension Optional<IntroEligibilityStatus> {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
     func withPendingData(_ pending: Bool, alignment: Alignment) -> some View {
@@ -186,9 +186,10 @@ private extension View {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
+@available(tvOS, unavailable)
 struct IntroEligibilityStateView_Previews: PreviewProvider {
 
     static var previews: some View {

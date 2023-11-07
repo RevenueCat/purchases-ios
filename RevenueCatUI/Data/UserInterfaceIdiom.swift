@@ -20,7 +20,7 @@ enum UserInterfaceIdiom {
 
 extension UserInterfaceIdiom {
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(watchOS)
     static let `default`: Self = UIDevice.interfaceIdiom
     #elseif os(macOS)
     static let `default`: Self = .mac
@@ -49,7 +49,7 @@ extension EnvironmentValues {
 
 // MARK: - UIKit
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 
 private extension UIDevice {
 

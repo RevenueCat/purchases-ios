@@ -14,7 +14,8 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
 @available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
@@ -279,7 +280,9 @@ struct Template2View: TemplateViewType {
 
 // MARK: - Extensions
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension Template2View {
 
@@ -321,7 +324,7 @@ private extension Bundle {
 
 #if DEBUG
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
