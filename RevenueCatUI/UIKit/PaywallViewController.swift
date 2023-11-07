@@ -49,7 +49,7 @@ public final class PaywallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private lazy var hostingController: UIHostingController<AnyView> = {
+    private lazy var hostingController: UIHostingController<some View> = {
         let paywallView = self.offering
             .map { PaywallView(offering: $0, displayCloseButton: self.displayCloseButton) }
             ?? PaywallView(displayCloseButton: self.displayCloseButton)
@@ -67,7 +67,7 @@ public final class PaywallViewController: UIViewController {
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
 
-        return .init(rootView: AnyView(view))
+        return .init(rootView: view)
     }()
 
     public override func loadView() {
