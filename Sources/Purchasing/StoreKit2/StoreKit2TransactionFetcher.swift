@@ -80,7 +80,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     var receipt: StoreKit2Receipt {
         get async {
             async let transactions = verifiedTransactionsJWS
-            async let statuses = subscriptionStatus
+            async let statuses = subscriptionStatusBySubscriptionGroupId
             async let appTransaction = appTransaction
 
             return await .init(
@@ -148,7 +148,7 @@ extension StoreKit2TransactionFetcher {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private var subscriptionStatus: [String: [Product.SubscriptionInfo.Status]] {
+    private var subscriptionStatusBySubscriptionGroupId: [String: [Product.SubscriptionInfo.Status]] {
         get async {
             #if swift(>=5.9)
             if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -161,15 +161,37 @@ extension StoreKit2TransactionFetcher {
                 // `StoreKit.Product.SubscriptionInfo.Status.all` is only available starting in iOS 17.0
                 // For previous versions, we retrieve all the previously purchased transactions,
                 // and fetch the subscription status only once per subscription group.
-                var subscriptionGroups: [String: [Product.SubscriptionInfo.Status]] = [:]
+                var transactionBySubscriptionGroup: [String: StoreKit.Transaction] = [:]
                 for await transaction in StoreKit.Transaction.all {
                     if let verifiedTransaction = transaction.verifiedTransaction,
                        let subscriptionGroup = verifiedTransaction.subscriptionGroupID,
-                       !subscriptionGroups.keys.contains(subscriptionGroup),
-                       let status = await verifiedTransaction.subscriptionStatus {
-                        subscriptionGroups[subscriptionGroup] = [status]
+                       !transactionBySubscriptionGroup.keys.contains(subscriptionGroup) {
+                        transactionBySubscriptionGroup[subscriptionGroup] = verifiedTransaction
                     }
                 }
+
+                let subscriptionGroups = await withTaskGroup(
+                    of: Optional<(String, Product.SubscriptionInfo.Status)>.self,
+                    returning: [String: [Product.SubscriptionInfo.Status]].self) { taskGroup in
+
+                    for (subscriptionGroup, transaction) in transactionBySubscriptionGroup {
+                        taskGroup.addTask {
+                            if let status = await transaction.subscriptionStatus {
+                                return (subscriptionGroup, status)
+                            }
+                            return nil
+                        }
+                    }
+
+                    return await taskGroup.reduce(
+                        into: [String: [Product.SubscriptionInfo.Status]]()
+                    ) { result, value  in
+                        if let value = value {
+                            result[value.0] = [value.1]
+                        }
+                    }
+                }
+
                 return subscriptionGroups
             }
             #else
