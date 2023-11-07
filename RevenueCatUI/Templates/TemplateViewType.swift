@@ -47,6 +47,7 @@ protocol TemplateViewType: SwiftUI.View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(tvOS, unavailable)
 extension TemplateViewType {
 
     func font(for textStyle: Font.TextStyle) -> Font {

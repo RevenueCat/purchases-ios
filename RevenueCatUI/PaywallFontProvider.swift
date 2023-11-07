@@ -93,7 +93,11 @@ private extension Font.TextStyle {
 
     var style: UIFont.TextStyle {
         switch self {
+        #if os(tvOS)
+        case .largeTitle: return .title1
+        #else
         case .largeTitle: return .largeTitle
+        #endif
         case .title: return .title1
         case .title2: return .title2
         case .title3: return .title3
