@@ -111,6 +111,10 @@ struct AppContentView: View {
             ProminentButton(title: "Present default paywall") {
                 self.showingDefaultPaywall.toggle()
             }
+
+            ProminentButton(title: "Present PaywallViewController") {
+                self.presentPaywallViewController()
+            }
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
@@ -148,6 +152,17 @@ struct AppContentView: View {
         case .listOnly:
             return "showcasing the different Paywall Templates and Modes available"
         }
+    }
+
+    private func presentPaywallViewController() {
+        let paywall = PaywallViewController(displayCloseButton: true)
+        paywall.modalPresentationStyle = .pageSheet
+
+        UIApplication.shared
+            .currentWindowScene?
+            .keyWindow?
+            .rootViewController?
+            .present(paywall, animated: true)
     }
 
 }
@@ -197,6 +212,23 @@ extension CustomerInfo {
     }
 
 }
+
+private extension UIApplication {
+
+    @available(iOS 13.0, macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
+    @MainActor
+    var currentWindowScene: UIWindowScene? {
+        return self
+            .connectedScenes
+            .filter { $0.activationState == .foregroundActive }
+            .first as? UIWindowScene
+    }
+
+}
+
 
 #if DEBUG
 

@@ -15,6 +15,8 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     controller.delegate = delegate
 
     let _: UIViewController = PaywallViewController(offering: offering)
+    let _: UIViewController = PaywallViewController(displayCloseButton: true)
+    let _: UIViewController = PaywallViewController(offering: offering, displayCloseButton: true)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
