@@ -34,6 +34,7 @@ public final class PaywallViewController: UIViewController {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    @objc
     public init(
         offering: Offering? = nil,
         displayCloseButton: Bool = false
