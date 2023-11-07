@@ -148,6 +148,21 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         expect(result) == transaction
     }
 
+    // MARK: - receipt
+
+    func testGeneratesReceipt() async throws {
+        let transaction1 = try await self.createTransaction(productID: Self.product1,
+                                                            finished: false)
+        let transaction2 = try await self.createTransaction(productID: Self.product2,
+                                                            finished: false)
+        let receipt = await self.fetcher.receipt
+        expect(receipt.transactions.count) ==  2
+        expect(receipt.subscriptionStatus.count) == 2
+        expect(receipt.environment) == .xcode
+        expect(receipt.bundleId) == Bundle.main.bundleIdentifier
+        expect(receipt.originalApplicationVersion).notTo(beEmpty())
+        expect(receipt.originalPurchaseDate).notTo(beNil())
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
