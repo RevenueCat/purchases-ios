@@ -80,12 +80,17 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     var receipt: StoreKit2Receipt {
         get async {
             async let transactions = verifiedTransactionsJWS
-            async let statuses = subscriptionStatus.mapValues { $0.map(\.renewalInfo.jwsRepresentation) }
+            async let statuses = subscriptionStatus
             async let appTransaction = appTransaction
 
             return await .init(
                 environment: .xcode,
-                subscriptionStatus: statuses,
+                subscriptionStatus: statuses.map({ (key: String, value: [Product.SubscriptionInfo.Status]) in
+                        .init(
+                            subscriptionGroupId: key,
+                            renewalInfoJWSTokens: value.map(\.renewalInfo.jwsRepresentation)
+                        )
+                }),
                 transactions: transactions,
                 bundleId: appTransaction?.bundleId ?? "",
                 originalApplicationVersion: appTransaction?.originalApplicationVersion,

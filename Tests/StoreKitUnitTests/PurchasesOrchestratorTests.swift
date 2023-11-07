@@ -1551,7 +1551,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let transaction = try await createTransaction(finished: true, environment: .xcode)
         self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
         let receipt = StoreKit2Receipt(environment: .xcode,
-                                       subscriptionStatus: [:],
+                                       subscriptionStatus: [],
                                        transactions: [],
                                        bundleId: "",
                                        originalApplicationVersion: nil,
