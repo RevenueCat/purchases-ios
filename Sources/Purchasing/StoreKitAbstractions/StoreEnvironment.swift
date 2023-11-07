@@ -40,7 +40,7 @@ extension StoreEnvironment {
         case .xcode:
             self = .xcode
         default:
-            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String.init(describing: environment)))
+            Logger.appleWarning(Strings.storeKit.sk2_unknown_environment(String.init(describing: environment)))
             return nil
         }
     }
@@ -54,7 +54,7 @@ extension StoreEnvironment {
         case "Xcode":
             self = .xcode
         default:
-            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(environment))
+            Logger.appleWarning(Strings.storeKit.sk2_unknown_environment(environment))
             return nil
         }
     }
