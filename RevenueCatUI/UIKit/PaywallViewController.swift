@@ -28,10 +28,19 @@ public final class PaywallViewController: UIViewController {
     public weak var delegate: PaywallViewControllerDelegate?
 
     private let offering: Offering?
+    private let displayCloseButton: Bool
 
-    // swiftlint:disable:next missing_docs
-    public init(offering: Offering? = nil) {
+    /// Initialize a `PaywallViewController` with an optional `Offering`.
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// `Offerings.current` will be used by default.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    @objc
+    public init(
+        offering: Offering? = nil,
+        displayCloseButton: Bool = false
+    ) {
         self.offering = offering
+        self.displayCloseButton = displayCloseButton
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -41,8 +50,10 @@ public final class PaywallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private lazy var hostingController: UIHostingController<AnyView> = {
-        let paywallView = self.offering.map { PaywallView(offering: $0) } ?? PaywallView()
+    private lazy var hostingController: UIHostingController<some View> = {
+        let paywallView = self.offering
+            .map { PaywallView(offering: $0, displayCloseButton: self.displayCloseButton) }
+            ?? PaywallView(displayCloseButton: self.displayCloseButton)
 
         let view = paywallView
             .onPurchaseCompleted { [weak self] transaction, customerInfo in
@@ -57,7 +68,7 @@ public final class PaywallViewController: UIViewController {
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
 
-        return .init(rootView: AnyView(view))
+        return .init(rootView: view)
     }()
 
     public override func loadView() {
