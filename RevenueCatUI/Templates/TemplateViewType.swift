@@ -37,7 +37,6 @@ import SwiftUI
 /// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 protocol TemplateViewType: SwiftUI.View {
 
     var configuration: TemplateViewConfiguration { get }
@@ -49,7 +48,6 @@ protocol TemplateViewType: SwiftUI.View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 extension TemplateViewType {
 
     func font(for textStyle: Font.TextStyle) -> Font {

@@ -16,7 +16,6 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 struct Template5View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
@@ -296,7 +295,6 @@ private extension PaywallData.Configuration.Colors {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 private extension Template5View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {

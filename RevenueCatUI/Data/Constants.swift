@@ -65,7 +65,6 @@ extension Constants {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 extension TemplateViewType {
 
     var defaultHorizontalPaddingLength: CGFloat? {

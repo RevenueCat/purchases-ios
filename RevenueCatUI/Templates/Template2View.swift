@@ -16,7 +16,6 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
@@ -282,7 +281,6 @@ struct Template2View: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(tvOS, unavailable)
 private extension Template2View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
