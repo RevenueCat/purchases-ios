@@ -1,7 +1,6 @@
 ### RevenueCatUI
-* `Paywalls`: fix Turkish discount string (#3385) via NachoSoto (@NachoSoto)
-* `Paywalls`: fix template 4 layout bug on iOS 16 (#3381) via NachoSoto (@NachoSoto)
-### Dependency Updates
-* Bump fastlane-plugin-revenuecat_internal from `a297205` to `0ddee10` (#3383) via dependabot[bot] (@dependabot[bot])
+* `Paywalls`: add `displayCloseButton` to `PaywallViewController` (#3391) via NachoSoto (@NachoSoto)
+* `Paywalls`: fix Turkish translation (#3389) via Dogancan Mavideniz (@mavideniz)
+* `Paywalls`: fix Turkish translation (#3388) via iremkaraoglu (@iremkaraoglu)
 ### Other Changes
-* `CircleCI`: fix `visionOS` job (#3384) via NachoSoto (@NachoSoto)
+* `RevenueCatUI`: added support to other deployment targets (#3392) via NachoSoto (@NachoSoto)
