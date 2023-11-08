@@ -151,10 +151,11 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     // MARK: - receipt
 
     func testGeneratesReceipt() async throws {
-        let transaction1 = try await self.createTransaction(productID: Self.product1,
-                                                            finished: false)
-        let transaction2 = try await self.createTransaction(productID: Self.product2,
-                                                            finished: false)
+        try AvailabilityChecks.skipIfXcode14orEarlier()
+        _ = try await self.createTransaction(productID: Self.product1,
+                                             finished: false)
+        _ = try await self.createTransaction(productID: Self.product2,
+                                             finished: false)
         let receipt = await self.fetcher.receipt
         expect(receipt.transactions.count) ==  2
         expect(receipt.subscriptionStatus.count) == 2
