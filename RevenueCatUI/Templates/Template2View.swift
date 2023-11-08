@@ -16,7 +16,6 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
 @available(watchOS, unavailable)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct Template2View: TemplateViewType {
 
@@ -283,7 +282,6 @@ struct Template2View: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension Template2View {
 

@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS)
+
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
 ///
 /// ### Related Articles
@@ -418,5 +420,7 @@ private extension PaywallViewMode {
     }
 
 }
+
+#endif
 
 #endif

@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
@@ -212,3 +214,5 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
 }
+
+#endif
