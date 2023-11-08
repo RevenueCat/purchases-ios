@@ -21,7 +21,7 @@ import SwiftUI
 public protocol PaywallFontProvider {
 
     /// - Returns: Desired `Font` for the given `Font.TextStyle`.
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func font(for textStyle: Font.TextStyle) -> Font
 
 }
@@ -33,7 +33,7 @@ open class DefaultPaywallFontProvider: PaywallFontProvider {
     // swiftlint:disable:next missing_docs
     public init() {}
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next cyclomatic_complexity missing_docs
     open func font(for textStyle: Font.TextStyle) -> Font {
         switch textStyle {
@@ -72,7 +72,7 @@ open class CustomPaywallFontProvider: PaywallFontProvider {
         self.fontName = fontName
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     // swiftlint:disable:next missing_docs
     open func font(for textStyle: Font.TextStyle) -> Font {
         return Font.custom(self.fontName,
@@ -93,7 +93,11 @@ private extension Font.TextStyle {
 
     var style: UIFont.TextStyle {
         switch self {
+        #if os(tvOS)
+        case .largeTitle: return .title1
+        #else
         case .largeTitle: return .largeTitle
+        #endif
         case .title: return .title1
         case .title2: return .title2
         case .title3: return .title3

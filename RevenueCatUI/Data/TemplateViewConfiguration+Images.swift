@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
     var headerImageURL: URL? { self.url(for: \.header) }
@@ -23,7 +23,7 @@ extension TemplateViewConfiguration {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration {
 
     var backgroundImageURLToDisplay: URL? {
@@ -34,7 +34,7 @@ extension TemplateViewConfiguration {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension TemplateViewConfiguration {
 
     func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
@@ -49,7 +49,7 @@ private extension TemplateViewConfiguration {
 
 // MARK: -
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallData {
 
     var headerImageURL: URL? { self.url(for: \.header) }
@@ -66,7 +66,7 @@ extension PaywallData {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallData {
 
     static func url(

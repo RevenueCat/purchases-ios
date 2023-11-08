@@ -15,7 +15,7 @@ import RevenueCat
 import SwiftUI
 
 /// A view that renders an icon by name, tinted with a color.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IconView<S: ShapeStyle>: View {
 
     let icon: PaywallIcon
@@ -94,7 +94,7 @@ extension PaywallData.LocalizedConfiguration.Feature {
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct IconView_Previews: PreviewProvider {
 
     static var previews: some View {

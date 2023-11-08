@@ -21,7 +21,8 @@ public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (Custo
 public typealias PurchaseCompletedHandler = @MainActor @Sendable (_ transaction: StoreTransaction?,
                                                                   _ customerInfo: CustomerInfo) -> Void
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable, message: "RevenueCatUI does not support watchOS yet")
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
 
@@ -113,7 +114,7 @@ extension View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OnPurchaseCompletedModifier: ViewModifier {
 
     let handler: PurchaseCompletedHandler
@@ -137,7 +138,7 @@ private struct OnPurchaseCompletedModifier: ViewModifier {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OnRestoreCompletedModifier: ViewModifier {
 
     let handler: PurchaseOrRestoreCompletedHandler

@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
 
     @Environment(\.userInterfaceIdiom)
@@ -139,7 +139,7 @@ struct FooterView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct SeparatorView: View {
 
     var bold: Bool
@@ -157,7 +157,7 @@ private struct SeparatorView: View {
     private var boldSeparatorSize: CGFloat = 5
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct RestorePurchasesButton: View {
 
     let purchaseHandler: PurchaseHandler
@@ -172,7 +172,7 @@ private struct RestorePurchasesButton: View {
                 self.displayRestoredAlert = true
             }
         } label: {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 let largestText = Text("Restore purchases", bundle: .module)
 
                 ViewThatFits {
@@ -193,7 +193,7 @@ private struct RestorePurchasesButton: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct LinkButton: View {
 
     @Environment(\.locale)
@@ -210,7 +210,7 @@ private struct LinkButton: View {
     var body: some View {
         let bundle = Localization.localizedBundle(self.locale)
 
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             ViewThatFits {
                 ForEach(self.titles, id: \.self) { title in
                     self.link(for: title, bundle: bundle)
@@ -248,9 +248,10 @@ private struct LinkButton: View {
 
 #if DEBUG && canImport(SwiftUI) && canImport(UIKit)
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
+@available(tvOS, unavailable)
 struct Footer_Previews: PreviewProvider {
 
     static var previews: some View {

@@ -14,7 +14,7 @@
 import SwiftUI
 
 /// A modifier that allows easily displaying an `NSError` as an `alert`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ErrorDisplay: ViewModifier {
 
     @Binding
@@ -53,7 +53,7 @@ struct ErrorDisplay: ViewModifier {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
     func displayError(_ error: Binding<NSError?>, dismissOnClose: Bool = false) -> some View {

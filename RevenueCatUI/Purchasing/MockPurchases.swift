@@ -16,7 +16,7 @@ import RevenueCat
 #if DEBUG
 
 /// An implementation of `PaywallPurchasesType` that allows creating custom blocks.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class MockPurchases: PaywallPurchasesType {
 
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
@@ -51,7 +51,7 @@ final class MockPurchases: PaywallPurchasesType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallPurchasesType {
 
     /// Creates a copy of this `PaywallPurchasesType` wrapping `purchase` and `restore`.

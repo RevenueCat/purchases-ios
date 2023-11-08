@@ -960,7 +960,7 @@ lane :check_pods do
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios',
+    platforms: 'ios,osx,tvos,watchos',
     fail_fast: true
   )
 end

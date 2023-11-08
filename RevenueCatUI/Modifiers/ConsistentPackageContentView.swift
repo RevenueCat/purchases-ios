@@ -16,7 +16,7 @@ import SwiftUI
 
 /// A wrapper view that can display content based on a selected package
 /// and maintain a consistent layout when that selected package changes.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ConsistentPackageContentView<Content: View>: View {
 
     typealias Creator = @Sendable @MainActor (TemplateViewConfiguration.Package) -> Content

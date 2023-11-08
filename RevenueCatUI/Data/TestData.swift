@@ -13,7 +13,7 @@ import SwiftUI
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal enum TestData {
 
     static let weeklyProduct = TestStoreProduct(
@@ -442,7 +442,9 @@ internal enum TestData {
         accent2: "#FF00FF"
     )
 
-    #if canImport(SwiftUI) && canImport(UIKit)
+    #if os(watchOS)
+    static let colors: PaywallData.Configuration.Colors = Self.darkColors
+    #elseif canImport(SwiftUI) && canImport(UIKit)
     static let colors: PaywallData.Configuration.Colors = .combine(light: Self.lightColors, dark: Self.darkColors)
     #endif
 

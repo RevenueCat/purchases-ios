@@ -64,7 +64,7 @@ private extension PaywallData {
             return Self.fallbackColors
         }
 
-        #if os(macOS)
+        #if os(macOS) || os(watchOS)
         return Self.fallbackColors
         #else
         let background: PaywallColor = .init(light: Color.white.asPaywallColor, dark: Color.black.asPaywallColor)
@@ -122,7 +122,7 @@ private extension PaywallData {
 
 #if DEBUG
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

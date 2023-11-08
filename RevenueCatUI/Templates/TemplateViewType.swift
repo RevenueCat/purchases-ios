@@ -35,8 +35,7 @@ import SwiftUI
 */
 
 /// A `SwiftUI` view that can display a paywall with `TemplateViewConfiguration`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-@available(tvOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol TemplateViewType: SwiftUI.View {
 
     var configuration: TemplateViewConfiguration { get }
@@ -46,7 +45,7 @@ protocol TemplateViewType: SwiftUI.View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewType {
 
     func font(for textStyle: Font.TextStyle) -> Font {
@@ -55,7 +54,7 @@ extension TemplateViewType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallTemplate {
 
     var packageSetting: TemplateViewConfiguration.PackageSetting {
@@ -70,7 +69,9 @@ private extension PaywallTemplate {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
 @available(tvOS, unavailable)
 extension PaywallData {
 
@@ -147,7 +148,8 @@ extension PaywallData {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
 extension View {
 
     func adaptTemplateView(with configuration: TemplateViewConfiguration) -> some View {
@@ -185,7 +187,8 @@ extension View {
 
 // MARK: - Private
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
+@available(watchOS, unavailable)
 private extension TemplateViewConfiguration {
 
     @ViewBuilder

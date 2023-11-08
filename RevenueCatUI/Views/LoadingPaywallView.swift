@@ -14,8 +14,11 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS)
+
 /// A `PaywallView` suitable to be displayed as a loading placeholder.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @MainActor
@@ -75,7 +78,8 @@ struct LoadingPaywallView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 private extension LoadingPaywallView {
@@ -237,5 +241,7 @@ struct LoadingPaywallView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
 
 #endif

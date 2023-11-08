@@ -14,7 +14,8 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
 @available(tvOS, unavailable)
 struct Template1View: TemplateViewType {
 
@@ -175,7 +176,7 @@ private struct CircleMaskModifier: ViewModifier {
 
 #if DEBUG
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)

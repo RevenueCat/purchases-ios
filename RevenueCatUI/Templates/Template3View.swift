@@ -14,7 +14,8 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
 @available(tvOS, unavailable)
 struct Template3View: TemplateViewType {
 
@@ -104,7 +105,7 @@ struct Template3View: TemplateViewType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct FeatureView: View {
 
     let feature: PaywallData.LocalizedConfiguration.Feature
@@ -182,7 +183,7 @@ private struct FeatureView: View {
 
 #if DEBUG
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
