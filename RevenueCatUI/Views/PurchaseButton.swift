@@ -15,7 +15,6 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 struct PurchaseButton: View {
 
     let packages: TemplateViewConfiguration.PackageConfiguration
@@ -129,7 +128,6 @@ struct PurchaseButton: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 private extension PurchaseButton {
 
     var packagesProduceDifferentLabels: Bool {
@@ -152,7 +150,6 @@ private extension PurchaseButton {
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 private struct PurchaseButtonLabel: View {
 
     let package: TemplateViewConfiguration.Package

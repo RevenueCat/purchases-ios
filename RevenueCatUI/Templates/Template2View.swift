@@ -14,8 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
-@available(watchOS, unavailable)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct Template2View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
@@ -160,6 +159,7 @@ struct Template2View: TemplateViewType {
                 self.roundedRectangle
                     .foregroundColor(self.selectedBackgroundColor)
             } else {
+                #if !os(watchOS)
                 if self.configuration.backgroundImageURLToDisplay != nil {
                     // Blur background if there is a background image.
                     self.roundedRectangle
@@ -168,6 +168,7 @@ struct Template2View: TemplateViewType {
                     // Otherwise the text should have enough contrast with the selected background color.
                     EmptyView()
                 }
+                #endif
             }
         }
     }
@@ -280,7 +281,6 @@ struct Template2View: TemplateViewType {
 // MARK: - Extensions
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 private extension Template2View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
