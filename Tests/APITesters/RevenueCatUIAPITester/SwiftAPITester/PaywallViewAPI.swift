@@ -9,7 +9,7 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct App: View {
 
     private var offering: Offering
@@ -152,7 +152,7 @@ struct App: View {
 
 private struct CustomFontProvider: PaywallFontProvider {
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func font(for textStyle: Font.TextStyle) -> Font {
         return Font.body
     }
