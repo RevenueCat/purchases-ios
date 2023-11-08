@@ -158,11 +158,16 @@ struct AppContentView: View {
         let paywall = PaywallViewController(displayCloseButton: true)
         paywall.modalPresentationStyle = .pageSheet
 
-        UIApplication.shared
+        guard let rootController = UIApplication
+            .shared
             .currentWindowScene?
             .keyWindow?
-            .rootViewController?
-            .present(paywall, animated: true)
+            .rootViewController else {
+            assertionFailure("Couldn't find root view controller")
+            return
+        }
+
+        rootController.present(paywall, animated: true)
     }
 
 }
