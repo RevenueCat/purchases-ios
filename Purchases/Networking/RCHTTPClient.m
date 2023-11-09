@@ -262,7 +262,9 @@ beginNextRequestWhenFinished:(BOOL)beginNextRequestWhenFinished
         @"X-Platform-Flavor": self.systemInfo.platformFlavor,
         @"X-Client-Version": RCSystemInfo.appVersion,
         @"X-Client-Build-Version": RCSystemInfo.buildVersion,
-        @"X-Observer-Mode-Enabled": observerMode
+        @"X-Sandbox": RCSystemInfo.buildVersion,
+        @"X-Observer-Mode-Enabled": observerMode,
+        @"X-Is-Sandbox": RCSystemInfo.isSandbox ? @"true" : @"false"
     }];
 
     NSString * _Nullable platformFlavorVersion = self.systemInfo.platformFlavorVersion;
