@@ -5,9 +5,9 @@ objc: true
 sdk: iphonesimulator
 module: Purchases
 umbrella_header: Purchases/Public/Purchases.h
-module_version: 3.14.3
+module_version: 3.14.4
 github_url: https://github.com/revenuecat/purchases-ios
-github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/3.14.3
+github_file_prefix: https://github.com/revenuecat/purchases-ios/tree/3.14.4
 output: docs
 # Leaving this commented out. We used to specify this before, but now it's working without it
 # xcodebuild_arguments: [--objc,Purchases/Public/Purchases.h,--,-x,objective-c,-isysroot,$(xcrun --show-sdk-path),-I,$(pwd)]

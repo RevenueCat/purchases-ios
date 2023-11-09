@@ -1,2 +1,4 @@
- - `RCProductInfo`: added `SKStoreFront.countryCode` to post `store_country` with receipts  
-		https://github.com/RevenueCat/purchases-ios/pull/2093
+ - `HTTPClient`: add `X-Is-Sandbox` header 
+ 		https://github.com/RevenueCat/purchases-ios/pull/3396
+ - `RCSystemInfo.isSandbox`: improve implementation
+ 		https://github.com/RevenueCat/purchases-ios/pull/3397
