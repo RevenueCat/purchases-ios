@@ -194,7 +194,6 @@ private extension BaseBackendIntegrationTests {
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
         self.addTeardownBlock {
-            Purchases.shared.delegate = nil
             Purchases.clearSingleton()
 
             // Note: this captures the boolean to avoid race conditions when Nimble tries
