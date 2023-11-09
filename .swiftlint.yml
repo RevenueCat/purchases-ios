@@ -8,8 +8,12 @@ excluded:
   - StoreKitTests
   - vendor
   - scan_derived_data
+  - .build
+
 disabled_rules:
   - trailing_comma
+  - blanket_disable_command
+
 identifier_name: 
   max_length: 
     warning: 60 

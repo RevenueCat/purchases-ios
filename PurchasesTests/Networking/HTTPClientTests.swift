@@ -108,6 +108,22 @@ class HTTPClientTests: XCTestCase {
         expect(headerPresent).toEventually(equal(true))
     }
 
+    func testAlwaysPassesSandboxHeader() {
+        let path = "/a_random_path"
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed("X-Is-Sandbox", value: "true")) { request in
+            headerPresent = true
+            return HTTPStubsResponse(data: Data.init(), statusCode:200, headers:nil)
+        }
+
+        self.client.performRequest("POST", serially: true, path: path, body: Dictionary.init(),
+                                   headers: [:],
+                                   completionHandler:nil)
+
+        expect(headerPresent).toEventually(equal(true))
+    }
+
     func testAlwaysPassesVersionHeader() {
         let path = "/a_random_path"
         var headerPresent = false
