@@ -58,9 +58,34 @@ static BOOL _forceUniversalAppStore = NO;
 }
 
 + (BOOL)isSandbox {
-    NSURL *url = NSBundle.mainBundle.appStoreReceiptURL;
+    NSBundle *bundle = NSBundle.mainBundle;
+
+#if TARGET_OS_SIMULATOR
+    return [self isSandboxWithBundle:bundle inSimulator:true];
+#else
+    return [self isSandboxWithBundle:bundle inSimulator:false];
+#endif
+}
+
++ (BOOL)isSandboxWithBundle:(NSBundle *)bundle inSimulator:(BOOL)simulator {
+    if (simulator) {
+        return true;
+    }
+
+    NSURL *url = bundle.appStoreReceiptURL;
     NSString *receiptURLString = url.path;
-    return ([receiptURLString rangeOfString:@"sandboxReceipt"].location != NSNotFound);
+
+    if (receiptURLString == nil) {
+        return false;
+    }
+
+    // `true` for either `macOS` or `Catalyst`
+    const BOOL isMASReceipt = [receiptURLString containsString:@"MASReceipt/receipt"];
+    if (isMASReceipt) {
+        return [receiptURLString containsString:@"Xcode/DerivedData"];
+    } else {
+        return [receiptURLString containsString:@"sandboxReceipt"];
+    }
 }
 
 + (NSString *)frameworkVersion {

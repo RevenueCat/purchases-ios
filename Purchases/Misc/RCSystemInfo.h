@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion)version;
 
 + (BOOL)isSandbox;
++ (BOOL)isSandboxWithBundle:(NSBundle *)bundle inSimulator:(BOOL)simulator;
+
 + (NSString *)frameworkVersion;
 + (NSString *)systemVersion;
 + (NSString *)appVersion;
