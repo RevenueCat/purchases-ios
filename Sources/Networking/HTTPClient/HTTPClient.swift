@@ -222,8 +222,8 @@ private extension HTTPClient {
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
-            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)",
-            "X-RC-Canary": "pr7165"
+            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
+//            "X-RC-Canary": "pr7165"
         ]
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
