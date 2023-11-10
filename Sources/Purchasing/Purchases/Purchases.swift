@@ -629,7 +629,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     }
 
     static func clearSingleton() {
-        Self.purchases.value = nil
+        self.purchases.modify { purchases in
+            purchases?.delegate = nil
+            purchases = nil
+        }
     }
 
     /// - Parameter purchases: this is an `@autoclosure` to be able to clear the previous instance
