@@ -84,6 +84,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.oneSignalID, value: onesignalID, appUserID: appUserID)
     }
 
+    func setOnesignalUserID(_ onesignalUserID: String?, appUserID: String) {
+        setReservedAttribute(.oneSignalUserID, value: onesignalUserID, appUserID: appUserID)
+    }
+
     func setAirshipChannelID(_ airshipChannelID: String?, appUserID: String) {
         setReservedAttribute(.airshipChannelID, value: airshipChannelID, appUserID: appUserID)
     }
