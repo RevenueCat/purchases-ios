@@ -34,8 +34,6 @@
     [a setMparticleID: @""];
     [a setOnesignalID: nil];
     [a setOnesignalID: @""];
-    [a setOnesignalUserID: nil];
-    [a setOnesignalUserID: @""];
     [a setCleverTapID: nil];
     [a setCleverTapID: @""];
     [a setMixpanelDistinctID: nil];

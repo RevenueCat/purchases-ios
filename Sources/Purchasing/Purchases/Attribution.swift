@@ -228,7 +228,7 @@ public extension Attribution {
 
     /**
      * Subscriber attribute associated with the OneSignal Player ID for the user.
-     * Required for the RevenueCat OneSignal integration. Deprecated for OneSignal versions above v9.0.
+     * Required for the RevenueCat OneSignal integration.
      *
      * #### Related Articles
      * - [OneSignal RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
@@ -237,19 +237,6 @@ public extension Attribution {
      */
     @objc func setOnesignalID(_ onesignalID: String?) {
         self.subscriberAttributesManager.setOnesignalID(onesignalID, appUserID: appUserID)
-    }
-
-    /**
-     * Subscriber attribute associated with the OneSignal User ID for the user.
-     * Required for the RevenueCat OneSignal integration with versions v11.0 and above.
-     *
-     * #### Related Articles
-     * - [OneSignal RevenueCat Integration](https://docs.revenuecat.com/docs/onesignal)
-     *
-     *- Parameter onesignalUserID: Empty String or `nil` will delete the subscriber attribute.
-     */
-    @objc func setOnesignalUserID(_ onesignalUserID: String?) {
-        self.subscriberAttributesManager.setOnesignalUserID(onesignalUserID, appUserID: appUserID)
     }
 
     /**

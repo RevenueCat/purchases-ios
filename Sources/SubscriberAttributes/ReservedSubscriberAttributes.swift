@@ -36,7 +36,6 @@ enum ReservedSubscriberAttribute: String {
     case fBAnonID = "$fbAnonId"
     case mpParticleID = "$mparticleId"
     case oneSignalID = "$onesignalId"
-    case oneSignalUserID = "$onesignalUserId"
     case airshipChannelID = "$airshipChannelId"
     case cleverTapID = "$clevertapId"
     case mixpanelDistinctID = "$mixpanelDistinctId"
