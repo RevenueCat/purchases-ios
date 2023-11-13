@@ -58,6 +58,12 @@ class BaseBackendIntegrationTests: TestCase {
     }
     var enableReceiptFetchRetry: Bool = true
 
+    static var isSandbox: Bool = true {
+        didSet {
+            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
+        }
+    }
+
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
 
@@ -80,6 +86,10 @@ class BaseBackendIntegrationTests: TestCase {
     }
 
     // MARK: -
+
+    override class func setUp() {
+        Self.isSandbox = true
+    }
 
     @MainActor
     override func setUp() async throws {

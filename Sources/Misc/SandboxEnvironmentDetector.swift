@@ -49,7 +49,12 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         }
     }
 
+    #if DEBUG
+    // Mutable in tests so it can be overriden
+    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #else
     static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #endif
 
 }
 

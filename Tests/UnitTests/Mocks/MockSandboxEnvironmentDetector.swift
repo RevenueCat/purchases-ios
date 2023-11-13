@@ -11,7 +11,11 @@
 //
 //  Created by Nacho Soto on 6/2/22.
 
+#if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+@testable import RevenueCat_CustomEntitlementComputation
+#else
 @testable import RevenueCat
+#endif
 
 final class MockSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
