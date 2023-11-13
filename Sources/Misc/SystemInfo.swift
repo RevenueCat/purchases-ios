@@ -53,6 +53,14 @@ class SystemInfo {
         return self.sandboxEnvironmentDetector.isSandbox
     }
 
+    var storefront: StorefrontType? {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+            return Storefront.sk1CurrentStorefrontType
+        } else {
+            return nil
+        }
+    }
+
     static var frameworkVersion: String {
         return "4.31.0-SNAPSHOT"
     }
