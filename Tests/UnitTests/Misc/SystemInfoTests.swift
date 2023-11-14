@@ -54,14 +54,12 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
-    func testStorefront() {
-        let storefront = SystemInfo(platformInfo: nil, finishTransactions: false).storefront
-
+    func testStorefrontForUnsupportedPlatforms() throws {
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            expect(storefront?.countryCode) == "USA"
-        } else {
-            expect(storefront).to(beNil())
+            throw XCTSkip("Test only for older platforms")
         }
+
+        expect(SystemInfo.default.storefront).to(beNil())
     }
 
     func testIsAppleSubscriptionURLWithAnotherURL() {

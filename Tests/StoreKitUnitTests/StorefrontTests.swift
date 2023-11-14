@@ -47,4 +47,14 @@ class StorefrontTests: StoreKitConfigTestCase {
         }
     }
 
+    func testSystemInfoStorefront() async throws {
+        let expected = "ESP"
+        try await self.changeStorefront(expected)
+
+        let systemInfo = SystemInfo(platformInfo: nil, finishTransactions: false)
+        let storefront = try XCTUnwrap(systemInfo.storefront)
+
+        expect(storefront.countryCode) == expected
+    }
+
 }
