@@ -8,8 +8,6 @@
 import Foundation
 import RevenueCat_CustomEntitlementComputation
 
-// Trusted Entitlements: internal until ready to be made public.
-/*
 func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
                                 _ result: VerificationResult = .notRequested) {
     switch mode {
@@ -31,4 +29,3 @@ func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
     @unknown default: break
     }
 }
-*/
