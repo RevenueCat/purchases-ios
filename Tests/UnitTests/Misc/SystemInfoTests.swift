@@ -54,12 +54,11 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
-    func testStorefront() {
+    func testStorefrontForUnsupportedPlatform() {
         let storefront = SystemInfo(platformInfo: nil, finishTransactions: false).storefront
 
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            expect(storefront?.countryCode) == "USA"
-        } else {
+        // See `StorefrontTests` for real tests
+        if #unavailable(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1) {
             expect(storefront).to(beNil())
         }
     }
