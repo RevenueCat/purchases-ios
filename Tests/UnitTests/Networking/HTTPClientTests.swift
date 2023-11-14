@@ -306,24 +306,23 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
     }
 
     func testRequestsWithoutStorefrontDoNotSendHeader() {
-        let headerName = "X-Storefrontt"
-        self.systemInfo.stubbedStorefront = nil
-
+        let headerName = "X-Storefront"
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 
-        var headerPresent = true
+        self.systemInfo.stubbedStorefront = nil
+
+        let header: Atomic<(value: String?, set: Bool)> = .init((nil, false))
 
         stub(condition: isPath(request.path)) { request in
-            let headers =  request.allHTTPHeaderFields ?? [:]
-            headerPresent = headers[headerName] != nil
+            header.value = (value: request.value(forHTTPHeaderField: headerName), set: true)
             return .emptySuccessResponse()
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: DataResponse) in completion() }
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
         }
 
-        expect(headerPresent) == false
+        expect(header.value) == (value: nil, set: true)
     }
 
     func testCallsTheGivenPath() {
