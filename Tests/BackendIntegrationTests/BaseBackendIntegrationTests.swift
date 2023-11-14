@@ -49,6 +49,12 @@ class BaseBackendIntegrationTests: TestCase {
 
     fileprivate var serverIsDown: Bool = false
 
+    static var isSandbox: Bool = true {
+        didSet {
+            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
+        }
+    }
+
     // MARK: - Overridable configuration
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
@@ -57,12 +63,6 @@ class BaseBackendIntegrationTests: TestCase {
         return .enforced(Signing.loadPublicKey())
     }
     var enableReceiptFetchRetry: Bool = true
-
-    static var isSandbox: Bool = true {
-        didSet {
-            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
-        }
-    }
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
@@ -87,10 +87,6 @@ class BaseBackendIntegrationTests: TestCase {
 
     // MARK: -
 
-    override class func setUp() {
-        Self.isSandbox = true
-    }
-
     @MainActor
     override func setUp() async throws {
         try await super.setUp()
@@ -103,6 +99,8 @@ class BaseBackendIntegrationTests: TestCase {
               self.proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
+
+        Self.isSandbox = true
 
         self.mainThreadMonitor = .init()
         self.mainThreadMonitor.run()
