@@ -222,9 +222,12 @@ private extension HTTPClient {
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
-            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)",
-            "X-Storefront": self.systemInfo.storefront?.countryCode ?? ""
+            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
+
+        if let storefront = self.systemInfo.storefront {
+            headers["X-Storefront"] = storefront.countryCode
+        }
 
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
             headers["X-Platform-Flavor-Version"] = platformFlavorVersion

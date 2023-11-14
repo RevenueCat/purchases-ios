@@ -285,6 +285,47 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(header.value) == "false"
     }
 
+    func testRequestWithStorefrontPassesHeader() {
+        let headerName = "X-Storefront"
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "USA"
+    }
+
+    func testRequestsWithoutStorefrontDoNotSendHeader() {
+        let headerName = "X-Storefront"
+        self.systemInfo.stubbedStorefront = nil
+
+        var headerPresent = false
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            let headers =  request.allHTTPHeaderFields ?? [:]
+            headerPresent = headers[headerName] != nil
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(headerPresent) == false
+    }
+
     func testCallsTheGivenPath() {
         let request = HTTPRequest(method: .post([:]), path: .mockPath)
 

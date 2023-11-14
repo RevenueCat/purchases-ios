@@ -15,6 +15,7 @@ class MockSystemInfo: SystemInfo {
 
     var stubbedIsApplicationBackgrounded: Bool?
     var stubbedIsSandbox: Bool?
+    var stubbedStorefront: StorefrontType?
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
@@ -56,6 +57,9 @@ class MockSystemInfo: SystemInfo {
         return self.stubbedIsSandbox ?? super.isSandbox
     }
 
+    override var storefront: StorefrontType? {
+        return self.stubbedStorefront
+    }
 }
 
 extension OperatingSystemVersion: Comparable {
