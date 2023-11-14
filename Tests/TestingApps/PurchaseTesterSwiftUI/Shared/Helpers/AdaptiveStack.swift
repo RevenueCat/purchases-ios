@@ -27,7 +27,7 @@ struct AdaptiveStack<Content: View>: View {
     }
 
     var body: some View {
-        #if os(xrOS)
+        #if os(visionOS)
         VStack(alignment: self.horizontalAlignment, spacing: self.spacing, content: self.content)
         #else
         HStack(alignment: self.verticalAlignment, spacing: spacing, content: self.content)

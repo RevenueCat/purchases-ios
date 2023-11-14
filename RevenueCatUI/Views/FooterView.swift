@@ -103,7 +103,7 @@ struct FooterView: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
-        #if targetEnvironment(macCatalyst) || (swift(>=5.9) && os(xrOS))
+        #if targetEnvironment(macCatalyst) || (swift(>=5.9) && os(visionOS))
         .buttonStyle(.plain)
         #endif
     }

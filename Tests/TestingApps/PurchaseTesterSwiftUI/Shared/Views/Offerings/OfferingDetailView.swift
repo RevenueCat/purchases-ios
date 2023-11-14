@@ -94,7 +94,7 @@ struct OfferingDetailView: View {
                         try await self.purchaseAsSK1Product()
                     }
 
-                    #if !os(xrOS)
+                    #if !os(visionOS)
                     self.button("Buy directly from SK2 (w/o RevenueCat)") {
                         try await self.purchaseAsSK2Product()
                     }
@@ -152,7 +152,7 @@ struct OfferingDetailView: View {
             try await self.observerModeManager.purchaseAsSK1Product(self.package.storeProduct)
         }
 
-        #if !os(xrOS)
+        #if !os(visionOS)
         private func purchaseAsSK2Product() async throws {
             self.isPurchasing = true
             defer { self.isPurchasing = false }
