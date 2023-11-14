@@ -54,6 +54,16 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
+    func testStorefront() {
+        let storefront = SystemInfo(platformInfo: nil, finishTransactions: false).storefront
+
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+            expect(storefront?.countryCode) == "USA"
+        } else {
+            expect(storefront).to(beNil())
+        }
+    }
+
     func testIsAppleSubscriptionURLWithAnotherURL() {
         expect(SystemInfo.isAppleSubscription(managementURL: URL(string: "www.google.com")!)) == false
     }
