@@ -755,6 +755,19 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(updates.value.last) === info
     }
 
+    func testSandboxXcodePurchasesDoNotGrantProductionEntitlements() async throws {
+        // 1. Purchase subscription
+        try await self.purchaseMonthlyProduct()
+
+        // 2. Relaunch in "production" mode
+        Self.isSandbox = false
+        await self.resetSingleton()
+
+        // 3. Verify no subscriptions are active
+        let customerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        self.assertNoActiveSubscription(customerInfo)
+    }
+
 }
 
 private extension BaseStoreKitIntegrationTests {

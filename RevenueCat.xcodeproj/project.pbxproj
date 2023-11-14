@@ -263,6 +263,8 @@
 		4F7C37E62A27F14B001E17D3 /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		4F7D8E562A56290100F17FFC /* HTTPRequestBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7D8E552A56290100F17FFC /* HTTPRequestBody.swift */; };
 		4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */; };
+		4F7E3A812B02DF5A0051234A /* MockSandboxEnvironmentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */; };
+		4F7E3A822B02DFFC0051234A /* MockSandboxEnvironmentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */; };
 		4F8038332A1EA7C300D21039 /* TransactionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F8038322A1EA7C300D21039 /* TransactionPoster.swift */; };
 		4F82C2682A3CD58200EC98AF /* Matchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F69EB082A14406E00ED6D4B /* Matchers.swift */; };
 		4F83F6B62A5DB773003F90A5 /* TestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57554CC0282AE1E3009A7E58 /* TestCase.swift */; };
@@ -3852,6 +3854,7 @@
 				4FDF10F02A7262D8004F3680 /* SK2ProductFetcher.swift in Sources */,
 				575A8EE22922C56300936709 /* AsyncTestHelpers.swift in Sources */,
 				2DA85A8B26DEA7DD00F1136D /* MockProductsRequestFactory.swift in Sources */,
+				4F7E3A812B02DF5A0051234A /* MockSandboxEnvironmentDetector.swift in Sources */,
 				4F1E84022A6062C9000AF177 /* ImageSnapshot.swift in Sources */,
 				2D3BFAD326DEA47100370B11 /* MockSKProductDiscount.swift in Sources */,
 				4FDF10ED2A726291004F3680 /* SK1ProductFetcher.swift in Sources */,
@@ -3923,6 +3926,7 @@
 				4F7C37E42A27EFE1001E17D3 /* BaseBackendIntegrationTests.swift in Sources */,
 				4FDF10EE2A726291004F3680 /* SK1ProductFetcher.swift in Sources */,
 				4F6BEE882A27E16B00CD9322 /* TestLogHandler.swift in Sources */,
+				4F7E3A822B02DFFC0051234A /* MockSandboxEnvironmentDetector.swift in Sources */,
 				4FF017C42AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

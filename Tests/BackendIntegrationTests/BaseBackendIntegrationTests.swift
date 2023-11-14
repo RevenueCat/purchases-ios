@@ -49,6 +49,12 @@ class BaseBackendIntegrationTests: TestCase {
 
     fileprivate var serverIsDown: Bool = false
 
+    static var isSandbox: Bool = true {
+        didSet {
+            BundleSandboxEnvironmentDetector.default = MockSandboxEnvironmentDetector(isSandbox: Self.isSandbox)
+        }
+    }
+
     // MARK: - Overridable configuration
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
@@ -93,6 +99,8 @@ class BaseBackendIntegrationTests: TestCase {
               self.proxyURL != "REVENUECAT_PROXY_URL" else {
             throw ErrorUtils.configurationError(message: "Must set configuration in `Constants.swift`")
         }
+
+        Self.isSandbox = true
 
         self.mainThreadMonitor = .init()
         self.mainThreadMonitor.run()
