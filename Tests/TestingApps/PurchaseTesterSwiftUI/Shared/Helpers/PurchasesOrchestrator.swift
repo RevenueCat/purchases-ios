@@ -42,7 +42,7 @@ final class PurchasesOrchestrator: NSObject {
     }
 
     // Fix-me: inject @Environment(\.product) to fix this
-    #if !os(xrOS)
+    #if !os(visionOS)
     func purchase(sk2Product product: SK2Product) async throws {
         let result = try await product.purchase()
 

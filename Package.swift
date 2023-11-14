@@ -18,7 +18,7 @@ if shouldIncludeDocCPlugin {
 }
 
 // See https://github.com/RevenueCat/purchases-ios/pull/2989
-// #if os(xrOS) can't really be used in Xcode 13, so we use this instead.
+// #if os(visionOS) can't really be used in Xcode 13, so we use this instead.
 let visionOSSetting: SwiftSetting = .define("VISION_OS", .when(platforms: [.visionOS]))
 
 let package = Package(

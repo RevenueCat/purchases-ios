@@ -171,7 +171,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        #if DEBUG && !os(xrOS) && !os(watchOS)
+        #if DEBUG && !os(visionOS) && !os(watchOS)
         if #available(iOS 16.0, macOS 13.0, *) {
             self.content
                 .debugRevenueCatOverlay(isPresented: self.$debugOverlayVisible)
@@ -320,7 +320,7 @@ private struct CustomerInfoHeaderView: View {
     }
     
     private var horizontalAlignment: HorizontalAlignment {
-        #if os(xrOS)
+        #if os(visionOS)
         return .center
         #else
         return .leading
