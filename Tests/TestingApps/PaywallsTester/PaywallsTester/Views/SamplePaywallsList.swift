@@ -36,7 +36,7 @@ struct SamplePaywallsList: View {
             case .fullScreen:
                 PaywallView(offering: Self.loader.offering(for: template),
                             customerInfo: Self.loader.customerInfo,
-                            displayCloseButton: true,
+                            displayCloseButton: Self.displayCloseButton,
                             introEligibility: Self.introEligibility,
                             purchaseHandler: .default())
 
@@ -54,7 +54,7 @@ struct SamplePaywallsList: View {
             PaywallView(offering: Self.loader.offering(for: template),
                         customerInfo: Self.loader.customerInfo,
                         fonts: Self.customFontProvider,
-                        displayCloseButton: true,
+                        displayCloseButton: Self.displayCloseButton,
                         introEligibility: Self.introEligibility,
                         purchaseHandler: .default())
 
@@ -135,9 +135,12 @@ struct SamplePaywallsList: View {
 
     #if os(watchOS)
     private static let customFontProvider = CustomPaywallFontProvider(fontName: "Courier New")
+    private static let displayCloseButton = false
     #else
     private static let customFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    private static let displayCloseButton = true
     #endif
+
     private static let loader: SamplePaywallLoader = .init()
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
