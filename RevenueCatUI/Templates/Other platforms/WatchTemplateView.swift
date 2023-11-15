@@ -141,8 +141,8 @@ struct WatchTemplateView: TemplateViewType {
 
     private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
         IntroEligibilityStateView(
-            textWithNoIntroOffer: package.localization.offerDetails,
-            textWithIntroOffer: package.localization.offerDetailsWithIntroOffer,
+            display: .offerDetails,
+            localization: package.localization,
             introEligibility: self.introEligibility[package.content],
             foregroundColor: self.textColor(selected)
         )
@@ -174,10 +174,9 @@ struct WatchTemplateView: TemplateViewType {
     @ViewBuilder
     private var button: some View {
         PurchaseButton(
-            package: self.configuration.packages.single,
-            configuration: self.configuration,
-            introEligibility: self.introEligibility[self.selectedPackage.content],
-            purchaseHandler: self.purchaseHandler
+            packages: self.configuration.packages,
+            selectedPackage: self.selectedPackage,
+            configuration: self.configuration
         )
     }
 

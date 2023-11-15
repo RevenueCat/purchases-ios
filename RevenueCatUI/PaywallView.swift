@@ -14,7 +14,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) && !os(watchOS)
+#if !os(macOS) && !os(tvOS)
 
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
 ///

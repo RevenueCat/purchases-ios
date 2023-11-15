@@ -129,7 +129,11 @@ struct DefaultPaywall_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: Self.offering) {
+            #if os(watchOS)
+            WatchTemplateView($0)
+            #else
             Template2View($0)
+            #endif
         }
     }
 

@@ -70,8 +70,12 @@ extension PaywallColor {
         /// Creates a dynamic color for 2 ``ColorScheme``s.
         @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
         public init(light: PaywallColor, dark: PaywallColor) {
+            #if os(watchOS)
+            self = dark
+            #else
             self.init(stringRepresentation: light.stringRepresentation,
                       color: .init(light: light.underlyingColor, dark: dark.underlyingColor))
+            #endif
         }
 
         #endif
