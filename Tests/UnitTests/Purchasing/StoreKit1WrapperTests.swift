@@ -78,7 +78,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testAddsPaymentsToTheQueue() {
-        let payment = SKPayment.init(product: SK1Product())
+        let payment = SKPayment(product: SK1Product())
 
         wrapper?.add(payment)
 
@@ -86,7 +86,7 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testCallsDelegateWhenTransactionsAreUpdated() {
-        let payment = SKPayment.init(product: SK1Product())
+        let payment = SKPayment(product: SK1Product())
         wrapper?.add(payment)
 
         let transaction = MockTransaction()
@@ -134,10 +134,10 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     #endif
 
     func testCallsDelegateOncePerTransaction() {
-        let payment1 = SKPayment.init(product: SK1Product())
+        let payment1 = SKPayment(product: SK1Product())
         wrapper?.add(payment1)
 
-        let payment2 = SKPayment.init(product: SK1Product())
+        let payment2 = SKPayment(product: SK1Product())
         wrapper?.add(payment2)
 
         let transaction1 = MockTransaction()
@@ -203,9 +203,9 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
 
     func testCallsRemovedTransactionDelegateMethod() {
         let transaction1 = MockTransaction()
-        transaction1.mockPayment = SKPayment.init(product: SK1Product())
+        transaction1.mockPayment = SKPayment(product: SK1Product())
         let transaction2 = MockTransaction()
-        transaction2.mockPayment = SKPayment.init(product: SK1Product())
+        transaction2.mockPayment = SKPayment(product: SK1Product())
 
         wrapper?.paymentQueue(paymentQueue, removedTransactions: [transaction1, transaction2])
 

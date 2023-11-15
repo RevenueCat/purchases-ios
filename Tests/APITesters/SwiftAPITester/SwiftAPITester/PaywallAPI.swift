@@ -216,7 +216,7 @@ func checkPaywallEventCreationData(_ creationData: PaywallEvent.CreationData) {
         id: PaywallEvent.ID,
         date: Date
     ) {
-        _ = PaywallEvent.CreationData.init(
+        _ = PaywallEvent.CreationData(
             id: id,
             date: date
         )
@@ -240,7 +240,7 @@ func checkPaywallEventData(_ data: PaywallEvent.Data) {
         locale: Locale,
         darkMode: Bool
     ) {
-        _ = PaywallEvent.Data.init(
+        _ = PaywallEvent.Data(
             offering: offering,
             paywall: paywall,
             sessionID: sessionID,

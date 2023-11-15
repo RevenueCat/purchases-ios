@@ -15,6 +15,7 @@ opt_in_rules:
   - multiline_parameters
   - vertical_parameter_alignment
   - vertical_parameter_alignment_on_call
+  - explicit_init
 
 disabled_rules:
   - orphaned_doc_comment

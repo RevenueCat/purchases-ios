@@ -731,9 +731,9 @@ extension Error {
 
     func addingUserInfo<Result: NSError>(_ userInfo: [String: Any]) -> Result {
         let nsError = self as NSError
-        return Result.init(domain: nsError.domain,
-                           code: nsError.code,
-                           userInfo: nsError.userInfo + userInfo)
+        return .init(domain: nsError.domain,
+                     code: nsError.code,
+                     userInfo: nsError.userInfo + userInfo)
     }
 
 }

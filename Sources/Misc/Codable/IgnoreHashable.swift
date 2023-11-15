@@ -39,7 +39,7 @@ extension IgnoreHashable: Hashable {
 extension IgnoreHashable: Decodable where Value: Decodable {
 
     init(from decoder: Decoder) throws {
-        self.init(wrappedValue: try Value.init(from: decoder))
+        self.init(wrappedValue: try .init(from: decoder))
     }
 
 }
