@@ -248,7 +248,12 @@ public extension Attribution {
      *
      *- Parameter onesignalUserID: Empty String or `nil` will delete the subscriber attribute.
      */
-    @available(*, deprecated, message: "This API is not currently available. Contact support if you need to use it.")
+    @available(
+      *, 
+      deprecated,
+      message: "This API is not currently available. Contact support if you need to use it.",
+      renamed: "setOnesignalID"
+      )
     @objc func setOnesignalUserID(_ onesignalUserID: String?) {
         self.subscriberAttributesManager.setOnesignalUserID(onesignalUserID, appUserID: appUserID)
     }
