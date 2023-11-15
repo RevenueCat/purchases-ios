@@ -22,7 +22,7 @@ internal struct SK2AppTransaction {
         self.bundleId = appTransaction.bundleID
         self.originalApplicationVersion = appTransaction.originalAppVersion
         self.originalPurchaseDate = appTransaction.originalPurchaseDate
-        self.environment = StoreEnvironment.init(environment: appTransaction.environment)
+        self.environment = .init(environment: appTransaction.environment)
     }
 
     let bundleId: String
