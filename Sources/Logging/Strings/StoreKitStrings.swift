@@ -65,11 +65,11 @@ enum StoreKitStrings {
 
     case sk2_error_fetching_app_transaction(Error)
 
-    case sk2_error_fetching_subscription_status(String, Error)
+    case sk2_error_fetching_subscription_status(subscriptionGroupId: String, Error)
 
     case sk2_app_transaction_unavailable
 
-    case sk2_unverified_transaction(String, Error)
+    case sk2_unverified_transaction(identifier: String, Error)
 
     #if DEBUG
 

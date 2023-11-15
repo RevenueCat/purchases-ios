@@ -117,7 +117,7 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
         switch self {
         case let .verified(transaction): return transaction
         case let .unverified(transaction, error):
-            Logger.warn(Strings.storeKit.sk2_unverified_transaction(String(transaction.id), error))
+            Logger.warn(Strings.storeKit.sk2_unverified_transaction(identifier: String(transaction.id), error))
             return nil
         }
     }
@@ -127,7 +127,7 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
         case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
                                                                  jwsRepresentation: self.jwsRepresentation)
         case let .unverified(transaction, error):
-            Logger.warn(Strings.storeKit.sk2_unverified_transaction(String(transaction.id), error))
+            Logger.warn(Strings.storeKit.sk2_unverified_transaction(identifier: String(transaction.id), error))
             return nil
         }
     }
@@ -198,7 +198,9 @@ extension StoreKit2TransactionFetcher {
                             return (subscriptionGroup, status)
                         } catch {
                             Logger.warn(
-                                Strings.storeKit.sk2_error_fetching_subscription_status(subscriptionGroup, error)
+                                Strings.storeKit.sk2_error_fetching_subscription_status(
+                                    subscriptionGroupId: subscriptionGroup, error
+                                )
                             )
                         }
                         return nil
