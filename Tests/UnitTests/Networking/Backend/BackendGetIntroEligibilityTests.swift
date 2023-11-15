@@ -74,7 +74,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
             let products: Set<String> = ["producta", "productb", "productc"]
             self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                               receiptData: Data.init(1...2),
+                                               receiptData: .init(1...2),
                                                productIdentifiers: products,
                                                completion: {(productEligibility, error) in
                 expect(error).to(beNil())
@@ -97,7 +97,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         let products: Set<String> = ["producta"]
         var eventualError: BackendError?
         self.backend.offerings.getIntroEligibility(appUserID: "",
-                                                   receiptData: Data.init(1...2),
+                                                   receiptData: .init(1...2),
                                                    productIdentifiers: products,
                                                    completion: {(productEligibility, error) in
             eventualError = error
@@ -112,7 +112,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         eventualError = nil
 
         self.offerings.getIntroEligibility(appUserID: "   ",
-                                           receiptData: Data.init(1...2),
+                                           receiptData: .init(1...2),
                                            productIdentifiers: products,
                                            completion: {(productEligibility, error) in
             eventualError = error
@@ -136,7 +136,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
         let eligibility: [String: IntroEligibility]? = waitUntilValue { completed in
 
             self.offerings.getIntroEligibility(appUserID: Self.userID,
-                                               receiptData: Data.init(1...2),
+                                               receiptData: .init(1...2),
                                                productIdentifiers: products,
                                                completion: { productEligbility, error in
                 expect(error).to(beNil())

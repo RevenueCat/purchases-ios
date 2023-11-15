@@ -740,7 +740,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
 
         let transaction = MockTransaction()
-        transaction.mockPayment = SKPayment.init(product: otherProduct)
+        transaction.mockPayment = .init(product: otherProduct)
 
         self.backend.postReceiptResult = .success(try CustomerInfo(data: Self.emptyCustomerInfoData))
 
