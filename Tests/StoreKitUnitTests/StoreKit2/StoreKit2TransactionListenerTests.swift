@@ -149,6 +149,13 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         expect(self.delegate.invokedTransactionUpdated) == false
     }
 
+    func testHandlePurchaseResultNotifiesDelegate() async throws {
+        let result = try await self.purchase().result
+        await Purchases.shared.processObserverModeTransaction(result)
+
+        expect(self.delegate.invokedTransactionUpdated) == true
+    }
+
     func testHandleUnverifiedPurchase() async throws {
         let (_, _, transaction) = try await self.purchase()
 

@@ -51,7 +51,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        XCTExpectFailure("This test currently does not pass (see FB12231111)")
+        await Purchases.shared.processObserverModeTransaction(result)
 
         try await asyncWait(
             description: "Entitlement didn't become active",

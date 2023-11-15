@@ -1101,6 +1101,16 @@ public extension Purchases {
 
 #endif
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    func processObserverModeTransaction(_ transaction: StoreKit.Product.PurchaseResult) async {
+        do {
+            _ = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
+                purchaseResult: transaction, fromTransactionUpdate: true)
+        } catch {
+            Logger.warn(Strings.purchase.sk2_error_processing_observer_mode_transaction(error: error))
+        }
+    }
+
 }
 
 // swiftlint:enable missing_docs

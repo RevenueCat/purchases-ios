@@ -40,7 +40,8 @@ protocol StoreKit2TransactionListenerType: Sendable {
     /// - Returns: `nil` `CustomerInfo` if purchases were not synced
     /// - Throws: Error if purchase was not completed successfully
     func handle(
-        purchaseResult: StoreKit.Product.PurchaseResult
+        purchaseResult: StoreKit.Product.PurchaseResult,
+        fromTransactionUpdate: Bool
     ) async throws -> StoreKit2TransactionListener.ResultData
 
 }
@@ -116,12 +117,13 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
     /// - Returns: `nil` `CustomerInfo` if purchases were not synced
     /// - Throws: Error if purchase was not completed successfully
     func handle(
-        purchaseResult: StoreKit.Product.PurchaseResult
+        purchaseResult: StoreKit.Product.PurchaseResult,
+        fromTransactionUpdate: Bool = false
     ) async throws -> ResultData {
         switch purchaseResult {
         case let .success(verificationResult):
             let transaction = try await self.handle(transactionResult: verificationResult,
-                                                    fromTransactionUpdate: false)
+                                                    fromTransactionUpdate: fromTransactionUpdate)
             return (false, transaction)
         case .pending:
             throw ErrorUtils.paymentDeferredError()

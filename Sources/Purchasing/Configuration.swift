@@ -54,7 +54,6 @@ import Foundation
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
-        Self.verify(observerMode: builder.observerMode, storeKitVersion: builder.storeKitVersion)
 
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
@@ -321,12 +320,6 @@ extension Configuration {
         case .validApplePlatform: break
         case .legacy: Logger.debug(Strings.configure.legacyAPIKey)
         case .otherPlatforms: Logger.error(Strings.configure.invalidAPIKey)
-        }
-    }
-
-    fileprivate static func verify(observerMode: Bool, storeKitVersion: StoreKitVersion) {
-        if observerMode, storeKitVersion == .storeKit2 {
-            Logger.warn(Strings.configure.observer_mode_with_storekit2)
         }
     }
 
