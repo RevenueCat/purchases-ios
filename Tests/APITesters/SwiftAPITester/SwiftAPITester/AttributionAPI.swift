@@ -81,8 +81,6 @@ func checkAttributionAPI() {
 
 @available(*, deprecated)
 func checkAttributionAPIDeprecated() {
-    attribution.setAttributes([String: String]())
-
     attribution.setOnesignalUserID("")
     attribution.setOnesignalUserID(nil)
 }
