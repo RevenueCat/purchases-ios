@@ -225,6 +225,10 @@ private extension HTTPClient {
             "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
         ]
 
+        if let storefront = self.systemInfo.storefront {
+            headers["X-Storefront"] = storefront.countryCode
+        }
+
         if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
             headers["X-Platform-Flavor-Version"] = platformFlavorVersion
         }

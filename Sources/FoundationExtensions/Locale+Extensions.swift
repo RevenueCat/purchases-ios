@@ -19,7 +19,7 @@ extension Locale {
     var rc_currencyCode: String? {
         #if swift(>=5.9)
         // `Locale.currencyCode` is deprecated
-        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, xrOS 1.0, *) {
+        if #available(macOS 13, iOS 16, tvOS 16, watchOS 9, visionOS 1.0, *) {
             return self.currency?.identifier
         } else {
             return self.currencyCode

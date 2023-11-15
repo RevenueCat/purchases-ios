@@ -54,6 +54,14 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.withReceiptResult(.receiptWithData, sandboxDetector).isSandbox) == false
     }
 
+    func testStorefrontForUnsupportedPlatforms() throws {
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+            throw XCTSkip("Test only for older platforms")
+        }
+
+        expect(SystemInfo.default.storefront).to(beNil())
+    }
+
     func testIsAppleSubscriptionURLWithAnotherURL() {
         expect(SystemInfo.isAppleSubscription(managementURL: URL(string: "www.google.com")!)) == false
     }

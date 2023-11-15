@@ -398,7 +398,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro,OS=17.0.1
+            SCAN_DEVICE: iPhone 15 Pro,OS=17.2
       - when:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           steps:
@@ -989,7 +989,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.1'
+          xcode_version: '15.1'
   
   build-test:
     when:
@@ -1004,7 +1004,7 @@ workflows:
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
       - spm-release-build-xcode-15:
-          xcode_version: '15.0.1'
+          xcode_version: '15.1'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
@@ -1016,7 +1016,7 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.0.1'
+          xcode_version: '15.1'
       - run-test-ios-17:
           xcode_version: '15.0.1'
       - run-test-ios-16:
@@ -1040,9 +1040,7 @@ workflows:
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
       - build-visionos:
-          # Xcode 15.0 RC does not include visionOS (15.1 will), so this uses beta 8.
-          # See https://discuss.circleci.com/t/xcode-15-rc-released-important-notice-for-visionos-sdk-users/49278
-          xcode_version: '15.0.8'
+          xcode_version: '15.1'
       - backend-integration-tests:
           xcode_version: '14.3.0'
           filters:

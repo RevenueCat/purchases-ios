@@ -86,7 +86,7 @@ public extension Storefront {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *)
-    private static var sk1CurrentStorefrontType: StorefrontType? {
+    internal static var sk1CurrentStorefrontType: StorefrontType? {
         return SKPaymentQueue.default().storefront.map(SK1Storefront.init)
     }
 
