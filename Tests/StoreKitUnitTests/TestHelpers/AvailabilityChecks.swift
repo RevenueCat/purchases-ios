@@ -74,10 +74,4 @@ enum AvailabilityChecks {
         #endif
     }
 
-    static func skipIfXcode14orEarlier() throws {
-        #if swift(<5.9)
-        throw XCTSkip("Test for for Xcode 14 or earlier")
-        #endif
-    }
-
 }

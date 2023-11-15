@@ -65,6 +65,8 @@ enum StoreKitStrings {
 
     case sk2_error_fetching_app_transaction(Error)
 
+    case sk2_error_fetching_subscription_status(String, Error)
+
     case sk2_app_transaction_unavailable
 
     case sk2_unverified_transaction(String, Error)
@@ -167,6 +169,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_error_fetching_app_transaction(error):
             return "Error fetching AppTransaction: '\(error)'"
+
+        case let .sk2_error_fetching_subscription_status(subscriptionGroupId, error):
+            return "Error fetching status for subscription group with id '\(subscriptionGroupId)': '\(error)'"
 
         case .sk2_app_transaction_unavailable:
             return "Not fetching AppTransaction because it is not available"

@@ -157,46 +157,48 @@ extension StoreKit2TransactionFetcher {
                     .reduce(into: [:]) {result, value in
                         result[value.groupID] = value.statuses
                     }
-            } else {
-                // `StoreKit.Product.SubscriptionInfo.Status.all` is only available starting in iOS 17.0
-                // For previous versions, we retrieve all the previously purchased transactions,
-                // and fetch the subscription status only once per subscription group.
-                var transactionBySubscriptionGroup: [String: StoreKit.Transaction] = [:]
-                for await transaction in StoreKit.Transaction.all {
-                    if let verifiedTransaction = transaction.verifiedTransaction,
-                       let subscriptionGroup = verifiedTransaction.subscriptionGroupID,
-                       !transactionBySubscriptionGroup.keys.contains(subscriptionGroup) {
-                        transactionBySubscriptionGroup[subscriptionGroup] = verifiedTransaction
-                    }
-                }
-
-                let subscriptionGroups = await withTaskGroup(
-                    of: Optional<(String, Product.SubscriptionInfo.Status)>.self,
-                    returning: [String: [Product.SubscriptionInfo.Status]].self) { taskGroup in
-
-                    for (subscriptionGroup, transaction) in transactionBySubscriptionGroup {
-                        taskGroup.addTask {
-                            if let status = await transaction.subscriptionStatus {
-                                return (subscriptionGroup, status)
-                            }
-                            return nil
-                        }
-                    }
-
-                    return await taskGroup.reduce(
-                        into: [String: [Product.SubscriptionInfo.Status]]()
-                    ) { result, value  in
-                        if let value = value {
-                            result[value.0] = [value.1]
-                        }
-                    }
-                }
-
-                return subscriptionGroups
             }
-            #else
-            return [:]
             #endif
+
+            // `StoreKit.Product.SubscriptionInfo.Status.all` is only available starting in iOS 17.0
+            // For previous versions, we retrieve all the previously purchased transactions,
+            // and fetch the subscription status only once per subscription group.
+            var subscriptionGroups: Set<String> = []
+            for await transaction in StoreKit.Transaction.all {
+                if let verifiedTransaction = transaction.verifiedTransaction,
+                   let subscriptionGroup = verifiedTransaction.subscriptionGroupID {
+                    subscriptionGroups.insert(subscriptionGroup)
+                }
+            }
+
+            let statusBySubscriptionGroup = await withTaskGroup(
+                of: Optional<(String, [Product.SubscriptionInfo.Status])>.self,
+                returning: [String: [Product.SubscriptionInfo.Status]].self) { taskGroup in
+
+                for subscriptionGroup in subscriptionGroups {
+                    taskGroup.addTask {
+                        do {
+                            let status = try await Product.SubscriptionInfo.status(for: subscriptionGroup)
+                            return (subscriptionGroup, status)
+                        } catch {
+                            Logger.warn(
+                                Strings.storeKit.sk2_error_fetching_subscription_status(subscriptionGroup, error)
+                            )
+                        }
+                        return nil
+                    }
+                }
+
+                return await taskGroup.reduce(
+                    into: [String: [Product.SubscriptionInfo.Status]]()
+                ) { result, value  in
+                    if let value = value {
+                        result[value.0] = value.1
+                    }
+                }
+            }
+
+            return statusBySubscriptionGroup
         }
     }
 

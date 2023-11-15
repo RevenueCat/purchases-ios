@@ -151,7 +151,6 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     // MARK: - receipt
 
     func testGeneratesReceipt() async throws {
-        try AvailabilityChecks.skipIfXcode14orEarlier()
         _ = try await self.createTransaction(productID: Self.product1,
                                              finished: false)
         _ = try await self.createTransaction(productID: Self.product2,
