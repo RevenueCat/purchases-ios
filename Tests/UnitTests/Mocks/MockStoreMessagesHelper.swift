@@ -11,6 +11,8 @@
 //
 //  Created by Antonio Rico Diez on 27/9/23.
 
+@testable import RevenueCat
+
 import Foundation
 
 class MockStoreMessagesHelper: StoreMessagesHelperType {
