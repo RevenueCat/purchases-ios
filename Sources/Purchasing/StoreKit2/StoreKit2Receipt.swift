@@ -65,9 +65,10 @@ extension StoreKit2Receipt: Codable {
         try container.encode(self.bundleId, forKey: .bundleId)
         try container.encode(self.originalApplicationVersion, forKey: .originalApplicationVersion)
         try container.encode(self.originalPurchaseDate, forKey: .originalPurchaseDate)
-        let statuses = Dictionary(uniqueKeysWithValues: self.subscriptionStatus.map {
+        let statuses = Dictionary(self.subscriptionStatus.map {
             ($0.subscriptionGroupId, $0.renewalInfoJWSTokens)
-        })
+        }) { _, new in new }
+
         try container.encode(statuses, forKey: .subscriptionStatus)
     }
 
