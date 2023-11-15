@@ -39,11 +39,11 @@ class StoreEnvironmentTests: StoreKitConfigTestCase {
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func testFromUnknownAppStoreEnvironment() throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let environment = AppStore.Environment.init(rawValue: "revenuecat")
+        let environment = StoreKit.AppStore.Environment(rawValue: "revenuecat")
         expect(StoreEnvironment(environment: environment)) == nil
 
         self.logger.verifyMessageWasLogged(
-            Strings.storeKit.sk2_unknown_environment(String.init(describing: environment)),
+            Strings.storeKit.sk2_unknown_environment(.init(describing: environment)),
             level: .warn
         )
     }
@@ -58,7 +58,7 @@ class StoreEnvironmentTests: StoreKitConfigTestCase {
         expect(StoreEnvironment(environment: "revenuecat")) == nil
 
         self.logger.verifyMessageWasLogged(
-            Strings.storeKit.sk2_unknown_environment(String.init(describing: "revenuecat")),
+            Strings.storeKit.sk2_unknown_environment("revenuecat"),
             level: .warn
         )
     }
