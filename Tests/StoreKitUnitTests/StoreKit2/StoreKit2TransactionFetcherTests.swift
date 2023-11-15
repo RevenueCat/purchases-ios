@@ -207,6 +207,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func testHandlesUnverifiedAppTransactions() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let transaction = try await StoreKit.AppTransaction.shared
         let error: StoreKit.VerificationResult<AppTransaction>.VerificationError = .invalidSignature
         let result: StoreKit.VerificationResult<AppTransaction> = .unverified(transaction.unsafePayloadValue, error)
