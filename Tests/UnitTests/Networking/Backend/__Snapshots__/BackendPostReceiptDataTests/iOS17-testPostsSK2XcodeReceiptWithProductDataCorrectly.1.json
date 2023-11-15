@@ -1,0 +1,26 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "authorized"
+        }
+      },
+      "currency" : "USD",
+      "fetch_token" : "ewogICJidW5kbGVfaWQiIDogIjEyM19idW5kbGVfaWQiLAogICJlbnZpcm9ubWVudCIgOiAieGNvZGUiLAogICJvcmlnaW5hbF9hcHBsaWNhdGlvbl92ZXJzaW9uIiA6ICIxMjNfb3JpZ2luYWxfYXBwbGljYXRpb25fdmVyc2lvbiIsCiAgIm9yaWdpbmFsX3B1cmNoYXNlX2RhdGUiIDogIjE5NzAtMDEtMDFUMDA6MDI6MDNaIiwKICAic3Vic2NyaXB0aW9uX3N0YXR1cyIgOiB7CiAgICAiMTIzX3N1YnNjcmlwdGlvbl9pZCIgOiBbCiAgICAgICIxMjNfcmVuZXdhbF9pbmZvX2p3c190b2tlbiIKICAgIF0KICB9LAogICJ0cmFuc2FjdGlvbnMiIDogWwogICAgIjEyM190cmFuc2FjdGlvbl9qd3NfdG9rZW4iCiAgXQp9",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : true,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}

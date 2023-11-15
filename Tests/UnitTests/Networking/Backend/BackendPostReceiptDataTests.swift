@@ -868,6 +868,37 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsSK2XcodeReceiptWithProductDataCorrectly() throws {
+        let path: HTTPRequest.Path = .postReceiptData
+
+        httpClient.mock(
+            requestPath: path,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let isRestore = false
+        let observerMode = true
+        let productData: ProductRequestData = .createMockProductData(currencyCode: "USD")
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.sk2receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingID: nil,
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: isRestore, initiationSource: .purchase)
+                              ),
+                              observerMode: observerMode,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
 }
 
 // swiftlint:disable:next type_name
@@ -984,6 +1015,17 @@ private extension BaseBackendPostReceiptDataTests {
     static let receipt = EncodedAppleReceipt.receipt("an awesome receipt".asData)
     static let receipt2 = EncodedAppleReceipt.receipt("an awesomeer receipt".asData)
     static let jws = EncodedAppleReceipt.jws("an awesomer jws token")
+    static let sk2receipt = EncodedAppleReceipt.sk2receipt(StoreKit2Receipt(
+        environment: .xcode,
+        subscriptionStatus: [StoreKit2Receipt.SubscriptionStatus(
+            subscriptionGroupId: "123_subscription_id",
+            renewalInfoJWSTokens: ["123_renewal_info_jws_token"])
+        ],
+        transactions: ["123_transaction_jws_token"],
+        bundleId: "123_bundle_id",
+        originalApplicationVersion: "123_original_application_version",
+        originalPurchaseDate: Date(timeIntervalSince1970: 123))
+    )
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {
         let productData: ProductRequestData = .createMockProductData(paymentMode: paymentMode)
