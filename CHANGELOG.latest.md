@@ -1,8 +1,3 @@
-### Bugfixes
-* `visionOS`: fix support for `Xcode 15.1 beta 3` (#3409) via NachoSoto (@NachoSoto)
-### Other Changes
-* `SystemInfo`: fix flaky `Storefront` test (#3411) via NachoSoto (@NachoSoto)
-* Adds `X-Storefront` request header for App Store Storefront (#3405) via Josh Holtz (@joshdholtz)
-* `CircleCI`: upgrade to Xcode 15.1 (#3408) via NachoSoto (@NachoSoto)
-* `Integration Tests`: verify that `SKTestSession` purchases do not grant production entitlements (#3406) via NachoSoto (@NachoSoto)
-* `Integration Tests`: fix potential crash on `tearDown` (#3401) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump fastlane from 2.216.0 to 2.217.0 (#3415) via dependabot[bot] (@dependabot[bot])
+* Bump danger from 9.3.2 to 9.4.0 (#3414) via dependabot[bot] (@dependabot[bot])
