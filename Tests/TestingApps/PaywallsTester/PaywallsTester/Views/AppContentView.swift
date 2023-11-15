@@ -112,9 +112,11 @@ struct AppContentView: View {
                 self.showingDefaultPaywall.toggle()
             }
 
+            #if !os(watchOS)
             ProminentButton(title: "Present PaywallViewController") {
                 self.presentPaywallViewController()
             }
+            #endif
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
@@ -154,6 +156,7 @@ struct AppContentView: View {
         }
     }
 
+    #if !os(watchOS)
     private func presentPaywallViewController() {
         let paywall = PaywallViewController(displayCloseButton: true)
         paywall.modalPresentationStyle = .pageSheet
@@ -169,6 +172,7 @@ struct AppContentView: View {
 
         rootController.present(paywall, animated: true)
     }
+    #endif
 
 }
 
@@ -185,7 +189,9 @@ private struct ProminentButton: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
+        #if !os(watchOS)
         .controlSize(.large)
+        #endif
         .tint(self.background)
         .foregroundColor(.white)
     }
@@ -218,6 +224,8 @@ extension CustomerInfo {
 
 }
 
+#if !os(watchOS)
+
 private extension UIApplication {
 
     @available(iOS 13.0, macCatalyst 13.1, *)
@@ -234,6 +242,7 @@ private extension UIApplication {
 
 }
 
+#endif
 
 #if DEBUG
 

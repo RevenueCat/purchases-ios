@@ -106,9 +106,11 @@ struct OfferingsList: View {
                             OfferButton(offering: offering, paywall: paywall) {
                                 self.presentedPaywall = .init(offering: offering, mode: .default)
                             }
-                            .contextMenu {
-                                self.contextMenu(for: offering)
-                            }
+                                #if !os(watchOS)
+                                .contextMenu {
+                                    self.contextMenu(for: offering)
+                                }
+                                #endif
                             #endif
                         } else {
                             Text(offering.serverDescription)
@@ -124,12 +126,14 @@ struct OfferingsList: View {
         }
     }
 
+    #if !os(watchOS)
     @ViewBuilder
     private func contextMenu(for offering: Offering) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
     }
+    #endif
 
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
