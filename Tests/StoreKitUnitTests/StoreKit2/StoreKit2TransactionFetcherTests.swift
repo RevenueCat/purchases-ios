@@ -159,10 +159,66 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         expect(receipt.transactions.count) ==  2
         expect(receipt.subscriptionStatus.count) == 2
         expect(receipt.environment) == .xcode
-        expect(receipt.bundleId) == Bundle.main.bundleIdentifier
-        expect(receipt.originalApplicationVersion).notTo(beEmpty())
-        expect(receipt.originalPurchaseDate).notTo(beNil())
+
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            expect(receipt.bundleId) == Bundle.main.bundleIdentifier
+            expect(receipt.originalApplicationVersion).notTo(beEmpty())
+            expect(receipt.originalPurchaseDate).notTo(beNil())
+        } else {
+            // AppTransaction is not available on iOS 15
+            expect(receipt.bundleId).to(beEmpty())
+            expect(receipt.originalApplicationVersion).to(beNil())
+            expect(receipt.originalPurchaseDate).to(beNil())
+
+            self.logger.verifyMessageWasLogged(
+                Strings.storeKit.sk2_app_transaction_unavailable,
+                level: .warn
+            )
+        }
     }
+
+    // MARK: - unverified transactions
+
+    func testHandlesUnverifiedTransactions() async throws {
+        let transaction = try await self.simulateAnyPurchase()
+        let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
+
+        expect(result.verifiedTransaction).to(beNil())
+
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk2_unverified_transaction(identifier: String(result.underlyingTransaction.id), error),
+            level: .warn
+        )
+    }
+
+    func testHandlesUnverifiedStoreTransactions() async throws {
+        let transaction = try await self.simulateAnyPurchase()
+        let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
+
+        expect(result.verifiedTransaction).to(beNil())
+
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk2_unverified_transaction(identifier: String(result.underlyingTransaction.id), error),
+            level: .warn
+        )
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func testHandlesUnverifiedAppTransactions() async throws {
+        let transaction = try await StoreKit.AppTransaction.shared
+        let error: StoreKit.VerificationResult<AppTransaction>.VerificationError = .invalidSignature
+        let result: StoreKit.VerificationResult<AppTransaction> = .unverified(transaction.unsafePayloadValue, error)
+
+        expect(result.verifiedAppTransaction).to(beNil())
+
+        self.logger.verifyMessageWasLogged(
+            Strings.storeKit.sk2_unverified_transaction(identifier: transaction.unsafePayloadValue.bundleID, error),
+            level: .warn
+        )
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
