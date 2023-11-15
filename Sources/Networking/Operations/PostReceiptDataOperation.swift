@@ -337,7 +337,7 @@ private extension EncodedAppleReceipt {
             return content.asData.hashString
         case let .receipt(data):
             return data.hashString
-        case .sk2receipt(let receipt):
+        case let .sk2receipt(receipt):
             do {
                 return try receipt.jsonEncodedData.hashString
             } catch {
