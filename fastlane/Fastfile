@@ -190,7 +190,10 @@ platform :ios do
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
-    
+    platform = ENV['SCAN_PLATFORM'] || 'iOS Simulator'
+    destination = ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
     fetch_snapshots
 
     begin
@@ -198,8 +201,8 @@ platform :ios do
       xcodebuild(
         workspace: '.',
         scheme: 'RevenueCatUI',
-        destination: "platform=iOS Simulator,name=" + (ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"),
-        sdk: 'iphonesimulator',
+        destination: "platform=" + platform + ",name=" + destination,
+        sdk: sdk,
         output_style: :basic,
         result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
         report_formats: [:junit],

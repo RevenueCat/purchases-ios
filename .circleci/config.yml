@@ -394,6 +394,10 @@ jobs:
       - checkout
       - update-spm-installation-commit
       - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 5m
+      - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
@@ -405,6 +409,28 @@ jobs:
             - run:
                 name: Run create_snapshot_pr 
                 command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-17"
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+          
+  spm-revenuecat-ui-watchos:
+    <<: *base-job
+    steps:
+      - checkout
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 8 (41mm),OS=10.0
+            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -1017,6 +1043,8 @@ workflows:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.1'
+      - spm-revenuecat-ui-watchos:
+          xcode_version: '14.3.0'
       - run-test-ios-17:
           xcode_version: '15.0.1'
       - run-test-ios-16:
