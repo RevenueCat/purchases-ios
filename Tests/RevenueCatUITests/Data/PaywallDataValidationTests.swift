@@ -148,11 +148,17 @@ private extension PaywallDataValidationTests {
         testName: String = #function,
         line: UInt = #line
     ) {
+        #if os(watchOS)
+        let test = testName + "-watchOS"
+        #else
+        let test = testName
+        #endif
+
         assertSnapshot(
             matching: paywall.withTestAssetBaseURL,
             as: .formattedJson,
             file: file,
-            testName: testName,
+            testName: test,
             line: line
         )
     }
