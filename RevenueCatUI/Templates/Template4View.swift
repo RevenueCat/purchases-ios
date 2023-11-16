@@ -17,7 +17,6 @@ import SwiftUI
 // swiftlint:disable file_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 struct Template4View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
@@ -243,7 +242,6 @@ struct Template4View: TemplateViewType {
 // MARK: - Views
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 private struct PackageButton: View {
 
     var configuration: TemplateViewConfiguration
