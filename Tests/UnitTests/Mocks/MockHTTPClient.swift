@@ -85,6 +85,7 @@ class MockHTTPClient: HTTPClient {
 
         let call = Call(request: request,
                         headers: request.headers(with: self.authHeaders,
+                                                 defaultHeaders: self.defaultHeaders,
                                                  verificationMode: verificationMode))
 
         DispatchQueue.main.async {
@@ -117,6 +118,21 @@ class MockHTTPClient: HTTPClient {
 
     private func mock(path: HTTPRequestPath, response: Response) {
         self.mocks[path.url!] = response
+    }
+
+    /// Override headers that depend on the environment to make them stable.
+    override var defaultHeaders: RequestHeaders {
+        var result = super.defaultHeaders
+        result["X-Version"] = "4.0.0"
+        result["X-Client-Build-Version"] = "12345"
+        result["X-Client-Version"] = "17.0.0"
+        result["X-Platform-Version"] = "Version 17.0.0 (Build 21A342)"
+
+        if result.keys.contains("X-Apple-Device-Identifier") {
+            result["X-Apple-Device-Identifier"] = "5D7C0074-07E4-4564-AAA4-4008D0640881"
+        }
+
+        return result
     }
 
 }

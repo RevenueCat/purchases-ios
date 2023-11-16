@@ -80,6 +80,7 @@ class HTTPClient {
 
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
+                                    defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
                                     completionHandler: completionHandler))
     }
@@ -90,6 +91,41 @@ class HTTPClient {
 
     var signatureVerificationEnabled: Bool {
         return self.systemInfo.responseVerificationMode.isEnabled
+    }
+
+    // Visible for tests
+    var defaultHeaders: RequestHeaders {
+        var headers: RequestHeaders = [
+            "content-type": "application/json",
+            "X-Version": SystemInfo.frameworkVersion,
+            "X-Platform": SystemInfo.platformHeader,
+            "X-Platform-Version": SystemInfo.systemVersion,
+            "X-Platform-Flavor": self.systemInfo.platformFlavor,
+            "X-Client-Version": SystemInfo.appVersion,
+            "X-Client-Build-Version": SystemInfo.buildVersion,
+            "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
+            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
+            "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
+            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
+        ]
+
+        if let storefront = self.systemInfo.storefront {
+            headers["X-Storefront"] = storefront.countryCode
+        }
+
+        if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
+            headers["X-Platform-Flavor-Version"] = platformFlavorVersion
+        }
+
+        if let idfv = self.systemInfo.identifierForVendor {
+            headers["X-Apple-Device-Identifier"] = idfv
+        }
+
+        if self.systemInfo.dangerousSettings.customEntitlementComputation {
+            headers["X-Custom-Entitlements-Computation"] = "\(true)"
+        }
+
+        return headers
     }
 
 }
@@ -119,6 +155,8 @@ extension HTTPClient {
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
+        case headerParametersForSignature = "X-Header-Params-Hash"
+        case sandbox = "X-Is-Sandbox"
 
     }
 
@@ -162,11 +200,15 @@ private extension HTTPClient {
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
+                                      defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
-            self.headers = self.httpRequest.headers(with: authHeaders,
-                                                    verificationMode: verificationMode)
+            self.headers = self.httpRequest.headers(
+                with: authHeaders,
+                defaultHeaders: defaultHeaders,
+                verificationMode: verificationMode
+            )
             self.verificationMode = verificationMode
 
             if let completionHandler = completionHandler {
@@ -180,13 +222,6 @@ private extension HTTPClient {
 
         var method: HTTPRequest.Method { self.httpRequest.method }
         var path: String { self.httpRequest.path.relativePath }
-
-        func adding(defaultHeaders: HTTPClient.RequestHeaders) -> Self {
-            var copy = self
-            copy.headers = defaultHeaders.merging(self.headers)
-
-            return copy
-        }
 
         func retriedRequest() -> Self {
             var copy = self
@@ -209,40 +244,6 @@ private extension HTTPClient {
 }
 
 private extension HTTPClient {
-
-    var defaultHeaders: [String: String] {
-        var headers: [String: String] = [
-            "content-type": "application/json",
-            "X-Version": SystemInfo.frameworkVersion,
-            "X-Platform": SystemInfo.platformHeader,
-            "X-Platform-Version": SystemInfo.systemVersion,
-            "X-Platform-Flavor": systemInfo.platformFlavor,
-            "X-Client-Version": SystemInfo.appVersion,
-            "X-Client-Build-Version": SystemInfo.buildVersion,
-            "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
-            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
-            "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
-            "X-Is-Sandbox": "\(self.systemInfo.isSandbox)"
-        ]
-
-        if let storefront = self.systemInfo.storefront {
-            headers["X-Storefront"] = storefront.countryCode
-        }
-
-        if let platformFlavorVersion = self.systemInfo.platformFlavorVersion {
-            headers["X-Platform-Flavor-Version"] = platformFlavorVersion
-        }
-
-        if let idfv = systemInfo.identifierForVendor {
-            headers["X-Apple-Device-Identifier"] = idfv
-        }
-
-        if systemInfo.dangerousSettings.customEntitlementComputation {
-            headers["X-Custom-Entitlements-Computation"] = "\(true)"
-        }
-
-        return headers
-    }
 
     static let serverErrorResponse: ErrorResponse = .init(code: .internalServerError,
                                                           originalCode: BackendErrorCode.unknownBackendError.rawValue)
@@ -420,7 +421,7 @@ private extension HTTPClient {
     }
 
     func start(request: Request) {
-        let urlRequest = self.convert(request: request.adding(defaultHeaders: self.defaultHeaders))
+        let urlRequest = self.convert(request: request)
 
         guard let urlRequest = urlRequest else {
             let error: NetworkError = .unableToCreateRequest(request.httpRequest.path)
@@ -517,9 +518,10 @@ extension HTTPRequest {
 
     func headers(
         with authHeaders: HTTPClient.RequestHeaders,
+        defaultHeaders: HTTPClient.RequestHeaders,
         verificationMode: Signing.ResponseVerificationMode
     ) -> HTTPClient.RequestHeaders {
-        var result: HTTPClient.RequestHeaders = [:]
+        var result: HTTPClient.RequestHeaders = defaultHeaders
 
         if self.path.authenticated {
             result += authHeaders
@@ -533,8 +535,8 @@ extension HTTPRequest {
            verificationMode.isEnabled,
            self.path.supportsSignatureVerification,
            let body = self.requestBody {
-            result += HTTPClient.postParametersHeaderForSigning(with: body)
-        }
+                result += HTTPClient.postParametersHeaderForSigning(with: body)
+            }
 
         return result
     }
