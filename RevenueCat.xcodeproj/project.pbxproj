@@ -327,6 +327,7 @@
 		4FE6FEEB2AA940E300780B45 /* PaywallEventSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */; };
 		4FF017C32AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF017C22AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift */; };
 		4FF017C42AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF017C22AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift */; };
+		4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */; };
 		4FF8464D2A32554300617F00 /* DiagnosticsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */; };
 		4FFCED822AA941B200118EF4 /* PaywallEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED802AA941B200118EF4 /* PaywallEventsRequestTests.swift */; };
 		4FFCED832AA941B200118EF4 /* PaywallEventsBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED812AA941B200118EF4 /* PaywallEventsBackendTests.swift */; };
@@ -1075,6 +1076,7 @@
 		4FE6FEE82AA940E300780B45 /* PaywallEventSerializerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventSerializerTests.swift; sourceTree = "<group>"; };
 		4FED3AD62AAA7DD4001D4D5E /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ..; sourceTree = "<group>"; };
 		4FF017C22AB378A7004976EB /* BaseStoreKitIntegrationTests+Verification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BaseStoreKitIntegrationTests+Verification.swift"; sourceTree = "<group>"; };
+		4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPRequest+Signing.swift"; sourceTree = "<group>"; };
 		4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsStrings.swift; sourceTree = "<group>"; };
 		4FFCED802AA941B200118EF4 /* PaywallEventsRequestTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventsRequestTests.swift; sourceTree = "<group>"; };
 		4FFCED812AA941B200118EF4 /* PaywallEventsBackendTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventsBackendTests.swift; sourceTree = "<group>"; };
@@ -2604,6 +2606,7 @@
 				5740FCD22996CE5E00E049F9 /* VerificationResult.swift */,
 				4F6EEBD82A38ED76007FD783 /* FakeSigning.swift */,
 				4F8452672A5756CC00084550 /* HTTPRequestBody+Signing.swift */,
+				4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */,
 			);
 			path = Security;
 			sourceTree = "<group>";
@@ -3405,6 +3408,7 @@
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
+				4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */,
 				57488C7729CB90F90000EE7E /* PurchasedProductsFetcher.swift in Sources */,
 				4F3C986A2A44FA60009AECA3 /* ErrorResponse.swift in Sources */,
 				578C5F2C28DB82DD00A56F02 /* PurchasesDiagnostics.swift in Sources */,

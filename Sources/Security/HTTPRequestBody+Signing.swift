@@ -11,7 +11,6 @@
 //
 //  Created by Nacho Soto on 7/6/23.
 
-import CryptoKit
 import Foundation
 
 extension HTTPRequestBody {
@@ -27,30 +26,12 @@ extension HTTPRequestBody {
             return nil
         }
 
-        let pieces = [
-            keys.joined(separator: ","),
-            postParameterHashingAlgorithmName,
-            self.postParameterHash
-        ]
-
-        return pieces.joined(separator: ":")
+        return HTTPRequest.signatureHashHeader(keys: keys, hash: self.postParameterHash)
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    var postParameterHash: String {
-        var sha256 = SHA256()
-
-        let values = self.contentForSignature.map(\.value)
-
-        for (index, value) in values.enumerated() {
-            if index > 0 {
-                sha256.update(data: fieldSeparator)
-            }
-
-            sha256.update(data: value.asData)
-        }
-
-        return sha256.toString()
+    private var postParameterHash: String {
+        return HTTPRequest.signingParameterHash(self.contentForSignature.map(\.value))
     }
 
 }
@@ -63,6 +44,3 @@ private extension HTTPRequestBody {
     }
 
 }
-
-private let postParameterHashingAlgorithmName = "sha256"
-private let fieldSeparator = Data(bytes: [0x00], count: 1)

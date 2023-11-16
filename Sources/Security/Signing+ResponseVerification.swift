@@ -18,12 +18,14 @@ extension HTTPResponse where Body == Data? {
     func verify(
         signing: SigningType,
         request: HTTPRequest,
+        requestHeaders: HTTPRequest.Headers,
         publicKey: Signing.PublicKey?
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
             statusCode: self.httpStatusCode,
-            headers: self.responseHeaders,
+            requestHeaders: requestHeaders,
+            responseHeaders: self.responseHeaders,
             requestDate: self.requestDate,
             request: request,
             publicKey: publicKey,
@@ -48,7 +50,8 @@ extension HTTPResponse where Body == Data? {
     private static func verificationResult(
         body: Data?,
         statusCode: HTTPStatusCode,
-        headers: HTTPClient.ResponseHeaders,
+        requestHeaders: HTTPClient.RequestHeaders,
+        responseHeaders: HTTPClient.ResponseHeaders,
         requestDate: Date?,
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
@@ -62,7 +65,7 @@ extension HTTPResponse where Body == Data? {
 
         guard let signature = HTTPResponse.value(
             forCaseInsensitiveHeaderField: .signature,
-            in: headers
+            in: responseHeaders
         ) else {
             if request.path.supportsSignatureVerification {
                 Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
@@ -82,9 +85,10 @@ extension HTTPResponse where Body == Data? {
                           with: .init(
                             path: request.path,
                             message: body,
+                            requestHeaders: requestHeaders,
                             requestBody: request.requestBody,
                             nonce: request.nonce,
-                            etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: headers),
+                            etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
                             requestDate: requestDate.millisecondsSince1970
                           ),
                           publicKey: publicKey) {
