@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 1/13/23.
 
+// swiftlint:disable file_length
+
 import CryptoKit
 import Foundation
 
@@ -37,6 +39,7 @@ final class Signing: SigningType {
 
         var path: HTTPRequestPath
         var message: Data?
+        var requestHeaders: HTTPRequest.Headers
         var requestBody: HTTPRequestBody?
         var nonce: Data?
         var etag: String?
@@ -246,6 +249,7 @@ extension Signing.SignatureParameters {
     init(
         path: HTTPRequest.Path,
         message: Data? = nil,
+        requestHeaders: HTTPRequest.Headers = [:],
         requestBody: HTTPRequestBody? = nil,
         nonce: Data? = nil,
         etag: String? = nil,
@@ -253,6 +257,7 @@ extension Signing.SignatureParameters {
     ) {
         self.path = path
         self.message = message
+        self.requestHeaders = requestHeaders
         self.requestBody = requestBody
         self.nonce = nonce
         self.etag = etag
@@ -267,6 +272,8 @@ extension Signing.SignatureParameters {
     var asData: Data {
         let nonce: Data = self.nonce ?? .init()
         let path: Data = self.path.relativePath.asData
+        let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(headers: self.requestHeaders)?
+        .asData ?? .init()
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let requestDate: Data = String(self.requestDate).asData
         let etag: Data = (self.etag ?? "").asData
@@ -275,6 +282,7 @@ extension Signing.SignatureParameters {
         return (
             nonce +
             path +
+            headerParametersHash +
             postParameterHash +
             requestDate +
             etag +
@@ -291,6 +299,10 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
         SignatureParameters(" +
             path: '\(self.path.relativePath)'
             message: '\(self.messageString.trimmingWhitespacesAndNewLines)'
+            headerParametersHash: '\(HTTPRequest.headerParametersForSignatureHeader(
+                headers: self.requestHeaders
+            ) ?? "")'
+            headers: '\(self.requestHeaders)'
             postParameterHeader: '\(self.requestBody?.postParameterHeader ?? "")'
             nonce: '\(self.nonce?.base64EncodedString() ?? "")'
             etag: '\(self.etag ?? "")'

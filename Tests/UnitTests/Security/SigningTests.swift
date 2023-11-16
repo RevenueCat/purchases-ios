@@ -33,6 +33,9 @@ class SigningTests: TestCase {
 
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
+        // TODO: remove
+        Logger.logLevel = .verbose
+
         self.signing = .init(apiKey: Self.apiKey, clock: TestClock(now: Self.mockDate))
     }
 
@@ -505,7 +508,12 @@ class SigningTests: TestCase {
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse<Data?>(httpStatusCode: .success, responseHeaders: [:], body: Data())
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: nil)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: nil
+        )
 
         expect(verifiedResponse.verificationResult) == .notRequested
     }
@@ -514,7 +522,12 @@ class SigningTests: TestCase {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
 
         let response = HTTPResponse<Data?>(httpStatusCode: .success, responseHeaders: [:], body: Data())
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .failed
 
@@ -531,7 +544,12 @@ class SigningTests: TestCase {
             ],
             body: Data()
         )
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .failed
     }
@@ -543,9 +561,13 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
+        ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
                                                         message: message.asData,
+                                                        requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: nil,
                                                         requestDate: requestDate),
@@ -564,7 +586,12 @@ class SigningTests: TestCase {
             ],
             body: message.asData
         )
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .verified
     }
@@ -576,9 +603,11 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get, path: .health, nonce: nonce.asData)
+        let requestHeaders: HTTPRequest.Headers = [:]
 
         let signature = try self.sign(parameters: .init(path: request.path,
                                                         message: nil,
+                                                        requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
                                                         etag: etag,
                                                         requestDate: requestDate),
@@ -598,7 +627,12 @@ class SigningTests: TestCase {
             ],
             body: nil
         )
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .verified
     }
@@ -609,9 +643,13 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
+        ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
                                                         message: message.asData,
+                                                        requestHeaders: requestHeaders,
                                                         nonce: nil,
                                                         etag: nil,
                                                         requestDate: requestDate),
@@ -630,7 +668,12 @@ class SigningTests: TestCase {
             ],
             body: message.asData
         )
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .verified
     }
@@ -647,7 +690,12 @@ class SigningTests: TestCase {
             ],
             body: message.asData
         )
-        let verifiedResponse = response.verify(signing: self.signing, request: request, publicKey: self.publicKey)
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: self.publicKey
+        )
 
         expect(verifiedResponse.verificationResult) == .notRequested
 

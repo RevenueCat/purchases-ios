@@ -28,7 +28,12 @@ class HTTPResponseTests: TestCase {
             responseHeaders: [:],
             body: Data()
         )
-        let verifiedResponse = response.verify(signing: Self.signing, request: request, publicKey: nil)
+        let verifiedResponse = response.verify(
+            signing: Self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: nil
+        )
 
         expect(verifiedResponse.verificationResult) == .notRequested
     }
@@ -45,7 +50,12 @@ class HTTPResponseTests: TestCase {
             responseHeaders: [:],
             body: Data()
         )
-        let verifiedResponse = response.verify(signing: Self.signing, request: request, publicKey: key)
+        let verifiedResponse = response.verify(
+            signing: Self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: key
+        )
 
         expect(verifiedResponse.verificationResult) == .notRequested
     }
@@ -62,7 +72,12 @@ class HTTPResponseTests: TestCase {
             responseHeaders: [:],
             body: Data()
         )
-        let verifiedResponse = response.verify(signing: Self.signing, request: request, publicKey: key)
+        let verifiedResponse = response.verify(
+            signing: Self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: key
+        )
 
         expect(verifiedResponse.verificationResult) == .failed
     }
