@@ -127,6 +127,46 @@ class TransactionPosterTests: TestCase {
         expect(self.mockTransaction.finishInvoked) == true
     }
 
+    func testHandlePurchasedTransactionSendsSK2Receipt() throws {
+        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        let jwsRepresentation = UUID().uuidString
+        self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation, environment: .xcode)
+
+        let product = MockSK1Product(mockProductIdentifier: "product")
+
+        let transactionData = PurchasedTransactionData(
+            appUserID: "user",
+            source: .init(isRestore: false, initiationSource: .queue)
+        )
+
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatus: [.init(
+                subscriptionGroupId: "123_subscription_id",
+                renewalInfoJWSTokens: ["123_renewal_info_jws_token"])
+            ],
+            transactions: ["123_transaction_jws_token"],
+            bundleId: "123_bundle_id",
+            originalApplicationVersion: "123_original_application_version",
+            originalPurchaseDate: Date(timeIntervalSince1970: 123)
+        )
+
+        self.receiptFetcher.shouldReturnReceipt = false
+        self.transactionFetcher.stubbedReceipt = receipt
+        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+
+        let result = try self.handleTransaction(transactionData)
+        expect(result).to(beSuccess())
+        expect(result.value) === Self.mockCustomerInfo
+
+        expect(self.backend.invokedPostReceiptData) == true
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData).to(match(transactionData))
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
+        expect(self.backend.invokedPostReceiptDataParameters?.observerMode) == self.systemInfo.observerMode
+        expect(self.mockTransaction.finishInvoked) == true
+    }
+
     func testHandlePurchasedTransactionDoesNotFinishNonProcessedConsumables() throws {
         let product = Self.createTestProduct(.consumable)
         let transactionData = PurchasedTransactionData(
