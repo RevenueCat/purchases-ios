@@ -148,6 +148,14 @@ extension HTTPClient {
         }
     }
 
+    static func headerParametersForSignatureHeader(with headers: RequestHeaders) -> RequestHeaders {
+        if let header = HTTPRequest.headerParametersForSignatureHeader(headers: headers) {
+            return [RequestHeader.headerParametersForSignature.rawValue: header]
+        } else {
+            return [:]
+        }
+    }
+
     enum RequestHeader: String {
 
         case authorization = "Authorization"
@@ -155,6 +163,7 @@ extension HTTPClient {
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
+        case headerParametersForSignature = "X-Header-Params-Hash"
         case sandbox = "X-Is-Sandbox"
 
     }
@@ -313,6 +322,7 @@ private extension HTTPClient {
                 return cachedResponse.verify(
                     signing: self.signing(for: request.httpRequest),
                     request: request.httpRequest,
+                    requestHeaders: request.headers,
                     publicKey: request.verificationMode.publicKey
                 )
             }
@@ -532,10 +542,13 @@ extension HTTPRequest {
 
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
            verificationMode.isEnabled,
-           self.path.supportsSignatureVerification,
-           let body = self.requestBody {
+           self.path.supportsSignatureVerification {
+            result += HTTPClient.headerParametersForSignatureHeader(with: defaultHeaders)
+
+            if let body = self.requestBody {
                 result += HTTPClient.postParametersHeaderForSigning(with: body)
             }
+        }
 
         return result
     }

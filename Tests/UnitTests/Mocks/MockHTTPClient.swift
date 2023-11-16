@@ -83,6 +83,8 @@ class MockHTTPClient: HTTPClient {
             .requestAddingNonceIfRequired(with: verificationMode)
             .withHardcodedNonce
 
+isRecording = true
+
         let call = Call(request: request,
                         headers: request.headers(with: self.authHeaders,
                                                  defaultHeaders: self.defaultHeaders,
