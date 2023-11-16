@@ -1006,6 +1006,7 @@
 		4F3D56622A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManagerPostReceiptTests.swift; sourceTree = "<group>"; };
 		4F4EECE32AAFA8DA0047DE7A /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4F4FF3E02A3B731A0028018C /* ETagStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagStrings.swift; sourceTree = "<group>"; };
+		4F520EF22B06C7A700DB6770 /* CI-RevenueCat-Snapshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-RevenueCat-Snapshots.xctestplan"; path = "Tests/TestPlans/CI-RevenueCat-Snapshots.xctestplan"; sourceTree = "<group>"; };
 		4F54DF3E2A1D8C7500FD72BF /* MockStoreKit2TransactionFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2TransactionFetcher.swift; sourceTree = "<group>"; };
 		4F54DF412A1D8D0700FD72BF /* MockTransactionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTransactionPoster.swift; sourceTree = "<group>"; };
 		4F5A62AB2A9AD18E0096067E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.3.sdk/System/iOSSupport/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
@@ -2570,6 +2571,7 @@
 				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
 				57910CBD29C393A6006209D5 /* CI-RevenueCat.xctestplan */,
 				2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */,
+				4F520EF22B06C7A700DB6770 /* CI-RevenueCat-Snapshots.xctestplan */,
 				4FDE95A92A769E9E006E7D2D /* XC-AllTests.xctestplan */,
 				570896B427595C8100296F1C /* Coverage.xctestplan */,
 				570896B327595C8100296F1C /* RevenueCat.xctestplan */,

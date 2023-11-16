@@ -125,13 +125,19 @@ platform :ios do
   desc "Runs all the iOS tests"
   lane :test_ios do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
+    # For platforms that fail to run StoreKit tests.
+    # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
+    skip_sk_tests = options[:skip_sk_tests]
     
-    if options[:skip_sk_tests]
-      # For platforms that fail to run StoreKit tests.
-      # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
+    if generate_snapshots
+      if skip_sk_tests
+        test_plan = "CI-RevenueCat-Snapshots"
+      else
+        test_plan = "CI-Snapshots"
+      end
+    elsif skip_sk_tests
       test_plan = "CI-RevenueCat"
-    elsif generate_snapshots
-      test_plan = "CI-Snapshots"
     else
       test_plan = "CI-AllTests"
     end

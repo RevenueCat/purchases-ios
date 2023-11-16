@@ -1,0 +1,50 @@
+{
+  "configurations" : [
+    {
+      "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
+      "name" : "Configuration 1",
+      "options" : {
+        "testTimeoutsEnabled" : true
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      },
+      {
+        "key" : "CIRCLECI_TESTS_GENERATE_SNAPSHOTS",
+        "value" : "1"
+      }
+    ],
+    "maximumTestExecutionTimeAllowance" : 180,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RevenueCat.xcodeproj",
+      "identifier" : "2DEAC2D926EFE46E006914ED",
+      "name" : "UnitTestsHostApp"
+    },
+    "testExecutionOrdering" : "random",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DC5621D24EC63430031F69B",
+        "name" : "UnitTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "5759B330296DF65D002472D5",
+        "name" : "ReceiptParserTests"
+      }
+    }
+  ],
+  "version" : 1
+}
