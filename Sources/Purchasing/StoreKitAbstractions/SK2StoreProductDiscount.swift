@@ -60,7 +60,7 @@ private extension StoreProductDiscount.PaymentMode {
         case .freeTrial:
             self = .freeTrial
         default:
-            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(.init(describing: paymentMode)))
+            Logger.appleWarning(Strings.storeKit.skunknown_payment_mode(String(paymentMode.rawValue)))
             return nil
         }
     }
