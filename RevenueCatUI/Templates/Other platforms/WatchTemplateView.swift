@@ -124,19 +124,27 @@ struct WatchTemplateView: TemplateViewType {
                     .foregroundColor(self.configuration.colors.callToActionBackgroundColor)
             } else {
                 if self.configuration.backgroundImageURLToDisplay != nil {
+                    #if swift(>=5.9)
                     if #available(watchOS 10.0, *) {
                         // Blur background if there is a background image.
                         self.roundedRectangle.foregroundStyle(.thinMaterial)
                     } else {
-                        self.roundedRectangle
-                            .opacity(0.3)
+                        self.fadedBackgroundRectangle
                     }
+                    #else
+                    self.fadedBackgroundRectangle
+                    #endif
                 } else {
                     // Otherwise the text should have enough contrast with the selected background color.
                     EmptyView()
                 }
             }
         }
+    }
+
+    private var fadedBackgroundRectangle: some View {
+        self.roundedRectangle
+            .opacity(0.3)
     }
 
     private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {

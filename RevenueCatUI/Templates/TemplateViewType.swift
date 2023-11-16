@@ -219,12 +219,16 @@ private extension TemplateViewConfiguration {
 
         if self.configuration.blurredBackgroundImage {
             #if os(watchOS)
-            if #available(watchOS 10.0, *) {
-                view.foregroundStyle(.thinMaterial)
-            } else {
-                // Blur is done by `TemplateBackgroundImageView`
+                #if swift(>=5.9)
+                if #available(watchOS 10.0, *) {
+                    view.foregroundStyle(.thinMaterial)
+                } else {
+                    // Blur is done by `TemplateBackgroundImageView`
+                    view
+                }
+                #else
                 view
-            }
+                #endif
             #else
             // Blur background if there is a background image.
             view.foregroundStyle(.thinMaterial)
