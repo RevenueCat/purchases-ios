@@ -45,9 +45,9 @@ struct StoreKit2Receipt: Equatable {
 
 // MARK: -
 
-extension StoreKit2Receipt.SubscriptionStatus: Codable {}
+extension StoreKit2Receipt.SubscriptionStatus: Encodable {}
 
-extension StoreKit2Receipt: Codable {
+extension StoreKit2Receipt: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case environment
