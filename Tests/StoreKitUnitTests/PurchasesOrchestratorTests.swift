@@ -1605,7 +1605,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        let transaction = try await self.simulateAnyPurchase()
+        mockListener.mockTransaction = .init(transaction.verifiedTransaction)
         mockListener.mockEnvironment = .xcode
 
         let receipt = StoreKit2Receipt(environment: .xcode,
@@ -1620,6 +1621,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
 
+        expect(result.transaction) == transaction.verifiedStoreTransaction
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
