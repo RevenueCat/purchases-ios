@@ -14,13 +14,16 @@ enum UserInterfaceIdiom {
     case phone
     case pad
     case mac
+    case watch
     case unknown
 
 }
 
 extension UserInterfaceIdiom {
 
-    #if canImport(UIKit) && !os(watchOS)
+    #if os(watchOS)
+    static let `default`: Self = .watch
+    #elseif canImport(UIKit)
     static let `default`: Self = UIDevice.interfaceIdiom
     #elseif os(macOS)
     static let `default`: Self = .mac

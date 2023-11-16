@@ -4,12 +4,10 @@
     "blurred_background_image" : true,
     "colors" : {
       "light" : {
-        "accent1" : "#007AFF",
-        "accent2" : "#000000",
         "background" : "#FFFFFF",
-        "call_to_action_background" : "#007AFF",
+        "call_to_action_background" : "#FFFFFF",
         "call_to_action_foreground" : "#FFFFFF",
-        "text1" : "#000000"
+        "text1" : "#FFFFFF"
       }
     },
     "display_restore_purchases" : true,
@@ -26,14 +24,14 @@
     "tos_url" : null
   },
   "localized_strings" : {
-    "es_ES" : {
-      "call_to_action" : "Continuar",
+    "en_US" : {
+      "call_to_action" : "Continue",
       "call_to_action_with_intro_offer" : null,
       "features" : [
 
       ],
       "offer_details" : "{{ total_price_and_per_month }}",
-      "offer_details_with_intro_offer" : "{{ sub_offer_duration }} gratis y luego {{ total_price_and_per_month }}.",
+      "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.",
       "offer_name" : null,
       "subtitle" : null,
       "title" : "{{ app_name }}"

@@ -401,7 +401,7 @@ private struct PackageButton: View {
 
 // MARK: - Extensions
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallViewMode {
 
     var shouldDisplayPackages: Bool {

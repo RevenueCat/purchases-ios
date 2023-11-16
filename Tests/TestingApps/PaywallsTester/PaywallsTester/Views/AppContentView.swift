@@ -112,15 +112,17 @@ struct AppContentView: View {
                 self.showingDefaultPaywall.toggle()
             }
 
+            #if !os(watchOS)
             ProminentButton(title: "Present PaywallViewController") {
                 self.presentPaywallViewController()
             }
+            #endif
         }
         .padding(.horizontal)
         .padding(.bottom, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle("Simple App")
-        #if DEBUG
+        #if DEBUG && !os(watchOS)
         .overlay {
             if #available(iOS 16.0, macOS 13.0, *) {
                 DebugView()
@@ -154,6 +156,7 @@ struct AppContentView: View {
         }
     }
 
+    #if !os(watchOS)
     private func presentPaywallViewController() {
         let paywall = PaywallViewController(displayCloseButton: true)
         paywall.modalPresentationStyle = .pageSheet
@@ -169,6 +172,7 @@ struct AppContentView: View {
 
         rootController.present(paywall, animated: true)
     }
+    #endif
 
 }
 
@@ -185,7 +189,9 @@ private struct ProminentButton: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
+        #if !os(watchOS)
         .controlSize(.large)
+        #endif
         .tint(self.background)
         .foregroundColor(.white)
     }
@@ -218,6 +224,8 @@ extension CustomerInfo {
 
 }
 
+#if !os(watchOS)
+
 private extension UIApplication {
 
     @available(iOS 13.0, macCatalyst 13.1, *)
@@ -234,12 +242,13 @@ private extension UIApplication {
 
 }
 
+#endif
 
 #if DEBUG
 
 @testable import RevenueCatUI
 
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, *)
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {

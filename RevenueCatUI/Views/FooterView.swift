@@ -67,7 +67,7 @@ struct FooterView: View {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
                 Self.allPlansButton(binding)
 
-                if self.configuration.displayRestorePurchases || self.hasTOS || self.hasPrivacy {
+                if self.configuration.displayRestorePurchases || self.tosURL != nil || self.privacyURL != nil {
                     self.separator
                 }
             }
@@ -75,23 +75,23 @@ struct FooterView: View {
             if self.configuration.displayRestorePurchases {
                 RestorePurchasesButton(purchaseHandler: self.purchaseHandler)
 
-                if self.hasTOS || self.hasPrivacy {
+                if self.tosURL != nil || self.privacyURL != nil {
                     self.separator
                 }
             }
 
-            if let url = self.configuration.termsOfServiceURL {
+            if let url = self.tosURL {
                 LinkButton(
                     url: url,
                     titles: "Terms and conditions", "Terms"
                 )
 
-                if self.hasPrivacy {
+                if self.privacyURL != nil {
                     self.separator
                 }
             }
 
-            if let url = self.configuration.privacyURL {
+            if let url = self.privacyURL {
                 LinkButton(
                     url: url,
                     titles: "Privacy policy", "Privacy"
@@ -127,8 +127,21 @@ struct FooterView: View {
         return self.boldPreferred && self.interfaceIdiom != .pad
     }
 
-    private var hasTOS: Bool { self.configuration.termsOfServiceURL != nil }
-    private var hasPrivacy: Bool { self.configuration.privacyURL != nil }
+    private var tosURL: URL? {
+        #if os(watchOS)
+        return nil
+        #else
+        self.configuration.termsOfServiceURL
+        #endif
+    }
+    private var privacyURL: URL? {
+        #if os(watchOS)
+        return nil
+        #else
+        self.configuration.privacyURL
+        #endif
+    }
+
     private var fontWeight: Font.Weight { self.bold ? .bold : .regular }
 
     fileprivate var font: Font.TextStyle {
@@ -172,16 +185,16 @@ private struct RestorePurchasesButton: View {
                 self.displayRestoredAlert = true
             }
         } label: {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                let largestText = Text("Restore purchases", bundle: .module)
+            let largestText = Text("Restore purchases", bundle: .module)
 
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                 ViewThatFits {
                     largestText
                     Text("Restore", bundle: .module)
                 }
                 .accessibilityLabel(largestText)
             } else {
-                Text("Restore purchases", bundle: .module)
+                largestText
             }
         }
         .frame(minHeight: Constants.minimumButtonHeight)

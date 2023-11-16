@@ -405,7 +405,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             offeringIdentifier: offeringIdentifier,
             paywallRevision: 5,
             sessionID: .init(uuidString: "73616D70-6C65-2073-7472-696E67000000")!,
-            displayMode: .condensedFooter,
+            displayMode: .fullScreen,
             localeIdentifier: "en_US",
             darkMode: true
         )

@@ -24,7 +24,8 @@ internal enum TestData {
         productType: .autoRenewableSubscription,
         localizedDescription: "PRO weekly",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: .init(value: 1, unit: .week)
+        subscriptionPeriod: .init(value: 1, unit: .week),
+        locale: Self.locale
     )
     static let monthlyProduct = TestStoreProduct(
         localizedTitle: "Monthly",
@@ -35,7 +36,8 @@ internal enum TestData {
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .month),
-        introductoryDiscount: Self.intro(7, .day)
+        introductoryDiscount: Self.intro(7, .day),
+        locale: Self.locale
     )
     static let threeMonthProduct = TestStoreProduct(
         localizedTitle: "3 months",
@@ -46,7 +48,8 @@ internal enum TestData {
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 3, unit: .month),
-        introductoryDiscount: Self.intro(7, .day)
+        introductoryDiscount: Self.intro(7, .day),
+        locale: Self.locale
     )
     static let sixMonthProduct = TestStoreProduct(
         localizedTitle: "6 months",
@@ -57,7 +60,8 @@ internal enum TestData {
         localizedDescription: "PRO monthly",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 6, unit: .month),
-        introductoryDiscount: Self.intro(7, .day)
+        introductoryDiscount: Self.intro(7, .day),
+        locale: Self.locale
     )
     static let annualProduct = TestStoreProduct(
         localizedTitle: "Annual",
@@ -68,7 +72,8 @@ internal enum TestData {
         localizedDescription: "PRO annual",
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
-        introductoryDiscount: Self.intro(14, .day, priceString: "$1.99")
+        introductoryDiscount: Self.intro(14, .day, priceString: "$1.99"),
+        locale: Self.locale
     )
     static let lifetimeProduct = TestStoreProduct(
         localizedTitle: "Lifetime",
@@ -78,7 +83,8 @@ internal enum TestData {
         productType: .nonConsumable,
         localizedDescription: "Lifetime purchase",
         subscriptionGroupIdentifier: "group",
-        subscriptionPeriod: nil
+        subscriptionPeriod: nil,
+        locale: Self.locale
     )
     static let productWithIntroOffer = TestStoreProduct(
         localizedTitle: "PRO monthly",
@@ -98,7 +104,8 @@ internal enum TestData {
             numberOfPeriods: 1,
             type: .introductory
         ),
-        discounts: []
+        discounts: [],
+        locale: Self.locale
     )
     static let productWithNoIntroOffer = TestStoreProduct(
         localizedTitle: "PRO annual",
@@ -110,7 +117,8 @@ internal enum TestData {
         subscriptionGroupIdentifier: "group",
         subscriptionPeriod: .init(value: 1, unit: .year),
         introductoryDiscount: nil,
-        discounts: []
+        discounts: [],
+        locale: Self.locale
     )
     static let weeklyPackage = Package(
         identifier: PackageType.weekly.identifier,
@@ -504,6 +512,13 @@ internal enum TestData {
     )
     static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
 
+    #if os(watchOS)
+    // `Locale.current` in watchOS produces `en_001` when running tests
+    static let locale: Locale = .init(identifier: "en_US")
+    #else
+    static let locale: Locale = .current
+    #endif
+
     private static let offeringIdentifier = "offering"
 
     private static func intro(
@@ -521,6 +536,7 @@ internal enum TestData {
             type: .introductory
         )
     }
+
 }
 
 // MARK: -

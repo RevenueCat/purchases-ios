@@ -106,9 +106,11 @@ struct OfferingsList: View {
                             OfferButton(offering: offering, paywall: paywall) {
                                 self.presentedPaywall = .init(offering: offering, mode: .default)
                             }
-                            .contextMenu {
-                                self.contextMenu(for: offering)
-                            }
+                                #if !os(watchOS)
+                                .contextMenu {
+                                    self.contextMenu(for: offering)
+                                }
+                                #endif
                             #endif
                         } else {
                             Text(offering.serverDescription)
@@ -124,12 +126,14 @@ struct OfferingsList: View {
         }
     }
 
+    #if !os(watchOS)
     @ViewBuilder
     private func contextMenu(for offering: Offering) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
     }
+    #endif
 
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
@@ -167,13 +171,14 @@ private struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode
-    var displayCloseButton: Bool = true
+    var displayCloseButton: Bool = Self.defaultDisplayCloseButton
 
     var body: some View {
         switch self.mode {
         case .fullScreen:
             PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
 
+        #if !os(watchOS)
         case .footer:
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering)
@@ -181,8 +186,15 @@ private struct PaywallPresenter: View {
         case .condensedFooter:
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering, condensed: true)
+        #endif
         }
     }
+
+    #if os(watchOS)
+    private static let defaultDisplayCloseButton = false
+    #else
+    private static let defaultDisplayCloseButton = true
+    #endif
 
 }
 

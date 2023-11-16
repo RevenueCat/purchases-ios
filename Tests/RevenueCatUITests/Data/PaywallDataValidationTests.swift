@@ -22,7 +22,7 @@ class PaywallDataValidationTests: TestCase {
 
     func testValidateMissingPaywall() {
         let offering = TestData.offeringWithNoPaywall
-        let result = TestData.offeringWithNoPaywall.validatedPaywall()
+        let result = TestData.offeringWithNoPaywall.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
         Self.snapshot(result.displayablePaywall)
@@ -42,7 +42,7 @@ class PaywallDataValidationTests: TestCase {
 
     func testValidateValidPaywall() {
         let offering = TestData.offeringWithSinglePackageFeaturesPaywall
-        let result = offering.validatedPaywall()
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         expect(result.displayablePaywall) == offering.paywall
         expect(result.error).to(beNil())
@@ -53,7 +53,7 @@ class PaywallDataValidationTests: TestCase {
 
         let originalOffering = TestData.offeringWithMultiPackagePaywall
         let offering = originalOffering.with(templateName: templateName)
-        let result = offering.validatedPaywall()
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
         Self.snapshot(result.displayablePaywall)
@@ -69,7 +69,7 @@ class PaywallDataValidationTests: TestCase {
                 callToAction: "{{ future_variable }}",
                 offerDetails: nil
             ))
-        let result = offering.validatedPaywall()
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
         Self.snapshot(result.displayablePaywall)
@@ -86,7 +86,7 @@ class PaywallDataValidationTests: TestCase {
         ]
 
         let offering = originalOffering.with(localization: localization)
-        let result = offering.validatedPaywall()
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
         Self.snapshot(result.displayablePaywall)
@@ -103,7 +103,7 @@ class PaywallDataValidationTests: TestCase {
         ]
 
         let offering = originalOffering.with(localization: localization)
-        let result = offering.validatedPaywall()
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: originalOffering.paywall)
         Self.snapshot(result.displayablePaywall)
@@ -148,11 +148,17 @@ private extension PaywallDataValidationTests {
         testName: String = #function,
         line: UInt = #line
     ) {
+        #if os(watchOS)
+        let test = testName + "-watchOS"
+        #else
+        let test = testName
+        #endif
+
         assertSnapshot(
             matching: paywall.withTestAssetBaseURL,
             as: .formattedJson,
             file: file,
-            testName: testName,
+            testName: test,
             line: line
         )
     }

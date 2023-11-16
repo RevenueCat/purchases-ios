@@ -54,6 +54,15 @@ struct TemplateBackgroundImageView: View {
             RemoteImage(url: url)
                 .blur(radius: 40)
                 .opacity(0.7)
+                .background {
+                    // Simulate dark materials in pre-watchOS 10.0
+                    // where `Material` isn't available.
+                    #if os(watchOS)
+                    if #unavailable(watchOS 10.0) {
+                        Color.black
+                    }
+                    #endif
+                }
         } else {
             RemoteImage(url: url)
         }
@@ -66,7 +75,6 @@ struct TemplateBackgroundImageView: View {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct TemplateBackgroundImageView_Previews: PreviewProvider {

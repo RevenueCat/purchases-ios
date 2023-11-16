@@ -394,14 +394,13 @@ extension PaywallData {
         config: Configuration,
         localization: LocalizedConfiguration,
         assetBaseURL: URL,
-        revision: Int = 0
+        revision: Int = 0,
+        locale: Locale = .current
     ) {
-        let locale = Locale.current.identifier
-
         self.init(
             templateName: templateName,
             config: config,
-            localization: [locale: localization],
+            localization: [locale.identifier: localization],
             assetBaseURL: assetBaseURL,
             revision: revision
         )

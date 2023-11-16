@@ -52,7 +52,7 @@ extension PaywallData {
     }
 
     /// For snapshot tests to be able to produce a consistent `assetBaseURL`
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var withTestAssetBaseURL: Self {
         var copy = self
         copy.assetBaseURL = TestData.paywallAssetBaseURL

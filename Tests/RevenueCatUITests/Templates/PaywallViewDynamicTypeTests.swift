@@ -11,6 +11,8 @@ import RevenueCat
 import SnapshotTesting
 import SwiftUI
 
+#if !os(watchOS) && !os(macOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallViewDynamicTypeTests: BaseSnapshotTest {
 
@@ -74,3 +76,5 @@ private extension PaywallViewDynamicTypeTests {
     }
 
 }
+
+#endif

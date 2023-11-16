@@ -17,7 +17,7 @@ import SwiftUI
 
 #if canImport(SwiftUI)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallData {
 
     /// Default `PaywallData` to display when attempting to present a ``PaywallView`` with an offering
@@ -47,7 +47,8 @@ extension PaywallData {
             ),
             localization: Self.localization(Localization.localizedBundle(locale)),
             assetBaseURL: Self.defaultTemplateBaseURL,
-            revision: Self.revisionID
+            revision: Self.revisionID,
+            locale: locale
         )
     }
 
@@ -123,14 +124,17 @@ private extension PaywallData {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 struct DefaultPaywall_Previews: PreviewProvider {
 
     static var previews: some View {
         PreviewableTemplate(offering: Self.offering) {
+            #if os(watchOS)
+            WatchTemplateView($0)
+            #else
             Template2View($0)
+            #endif
         }
     }
 
