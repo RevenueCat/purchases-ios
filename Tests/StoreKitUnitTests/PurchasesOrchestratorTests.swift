@@ -1539,6 +1539,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                      initiationSource: .purchase)
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
         expect(customerInfo) == mockCustomerInfo
     }
 
@@ -1568,6 +1569,62 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptData).to(beTrue())
         expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
         expect(customerInfo) == mockCustomerInfo
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasePostsJWSToken() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        let transaction = try await self.simulateAnyPurchase()
+        mockListener.mockTransaction = .init(transaction.verifiedTransaction)
+        mockListener.mockJWSToken = transaction.jwsRepresentation
+
+        let product = try await fetchSk2Product()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+
+        expect(result.transaction) == transaction.verifiedStoreTransaction
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasePostsSK2ReceiptInXcodeEnvironment() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        mockListener.mockTransaction = .init(try await self.simulateAnyPurchase())
+        mockListener.mockEnvironment = .xcode
+
+        let receipt = StoreKit2Receipt(environment: .xcode,
+                                       subscriptionStatus: [],
+                                       transactions: [],
+                                       bundleId: "",
+                                       originalApplicationVersion: nil,
+                                       originalPurchaseDate: nil)
+        mockTransactionFetcher.stubbedReceipt = receipt
+
+        let product = try await fetchSk2Product()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {
