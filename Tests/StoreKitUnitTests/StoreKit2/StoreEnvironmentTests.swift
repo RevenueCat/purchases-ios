@@ -44,7 +44,7 @@ class StoreEnvironmentTests: StoreKitConfigTestCase {
         expect(StoreEnvironment(environment: environment)).to(beNil())
 
         self.logger.verifyMessageWasLogged(
-            Strings.storeKit.sk2_unknown_environment(.init(describing: environment)),
+            Strings.storeKit.sk2_unknown_environment(String(environment.rawValue)),
             level: .warn
         )
     }
