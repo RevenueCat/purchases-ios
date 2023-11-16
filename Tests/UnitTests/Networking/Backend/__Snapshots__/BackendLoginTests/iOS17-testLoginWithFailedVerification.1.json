@@ -1,8 +1,20 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
+    "content-type" : "application/json",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Sandbox" : "true",
     "X-Nonce" : "MTIzNDU2Nzg5MGFi",
-    "X-Post-Params-Hash" : "app_user_id,new_app_user_id:sha256:6fa58b9e3bdb1ca187ac082d128c19f04da8711fe6b17873a48bc7ca37bbf95a"
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-Post-Params-Hash" : "app_user_id,new_app_user_id:sha256:6fa58b9e3bdb1ca187ac082d128c19f04da8711fe6b17873a48bc7ca37bbf95a",
+    "X-StoreKit2-Enabled" : "false",
+    "X-Version" : "4.0.0"
   },
   "request" : {
     "body" : {
