@@ -1009,9 +1009,9 @@ private extension BaseBackendPostReceiptDataTests {
     static let receipt = EncodedAppleReceipt.receipt("an awesome receipt".asData)
     static let receipt2 = EncodedAppleReceipt.receipt("an awesomeer receipt".asData)
     static let jws = EncodedAppleReceipt.jws("an awesomer jws token")
-    static let sk2receipt = EncodedAppleReceipt.sk2receipt(StoreKit2Receipt(
+    static let sk2receipt = EncodedAppleReceipt.sk2receipt(.init(
         environment: .xcode,
-        subscriptionStatus: [StoreKit2Receipt.SubscriptionStatus(
+        subscriptionStatus: [.init(
             subscriptionGroupId: "123_subscription_id",
             renewalInfoJWSTokens: ["123_renewal_info_jws_token"])
         ],
