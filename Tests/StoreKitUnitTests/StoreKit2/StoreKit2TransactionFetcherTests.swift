@@ -179,7 +179,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
     // MARK: - unverified transactions
 
-    func testHandlesUnverifiedTransactions() async throws {
+    func testVerifiedTransactionHandlesUnverifiedTransactions() async throws {
         let transaction = try await self.simulateAnyPurchase()
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
         let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
@@ -192,7 +192,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         )
     }
 
-    func testHandlesUnverifiedStoreTransactions() async throws {
+    func testVerifiedStoreTransactionHandlesUnverifiedTransactions() async throws {
         let transaction = try await self.simulateAnyPurchase()
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
         let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
@@ -206,7 +206,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-    func testHandlesUnverifiedAppTransactions() async throws {
+    func testVerifiedAppTransactionHandlesUnverifiedTransactions() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let transaction = try await StoreKit.AppTransaction.shared
         let error: StoreKit.VerificationResult<AppTransaction>.VerificationError = .invalidSignature
