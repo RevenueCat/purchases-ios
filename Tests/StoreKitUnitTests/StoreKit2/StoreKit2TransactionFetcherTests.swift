@@ -156,8 +156,8 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         _ = try await self.createTransaction(productID: Self.product2,
                                              finished: false)
         let receipt = await self.fetcher.receipt
-        expect(receipt.transactions.count) ==  2
-        expect(receipt.subscriptionStatus.count) == 2
+        expect(receipt.transactions).to(haveCount(2))
+        expect(receipt.subscriptionStatus).to(haveCount(2))
         expect(receipt.environment) == .xcode
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -197,7 +197,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
         let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
 
-        expect(result.verifiedTransaction).to(beNil())
+        expect(result.verifiedStoreTransaction).to(beNil())
 
         self.logger.verifyMessageWasLogged(
             Strings.storeKit.sk2_unverified_transaction(identifier: String(result.underlyingTransaction.id), error),

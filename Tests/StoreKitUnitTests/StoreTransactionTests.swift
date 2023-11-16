@@ -40,6 +40,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.storefront).to(beNil())
         expect(transaction.hasKnownPurchaseDate) == true
         expect(transaction.hasKnownTransactionIdentifier) == true
+        expect(transaction.environment).to(beNil())
     }
 
     func testSK1TransactionWithMissingDate() async throws {

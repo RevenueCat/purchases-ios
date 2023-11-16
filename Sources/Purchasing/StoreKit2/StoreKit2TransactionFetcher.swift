@@ -122,7 +122,7 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.Transaction {
         }
     }
 
-    fileprivate var verifiedStoreTransaction: StoreTransaction? {
+    var verifiedStoreTransaction: StoreTransaction? {
         switch self {
         case let .verified(transaction): return StoreTransaction(sk2Transaction: transaction,
                                                                  jwsRepresentation: self.jwsRepresentation)
