@@ -47,7 +47,8 @@ extension PaywallData {
             ),
             localization: Self.localization(Localization.localizedBundle(locale)),
             assetBaseURL: Self.defaultTemplateBaseURL,
-            revision: Self.revisionID
+            revision: Self.revisionID,
+            locale: locale
         )
     }
 

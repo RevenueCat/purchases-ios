@@ -24,7 +24,7 @@
     "tos_url" : null
   },
   "localized_strings" : {
-    "en_001" : {
+    "es_ES" : {
       "call_to_action" : "Continuar",
       "call_to_action_with_intro_offer" : null,
       "features" : [

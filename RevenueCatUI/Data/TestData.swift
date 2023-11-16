@@ -512,6 +512,13 @@ internal enum TestData {
     )
     static let paywallAssetBaseURL = URL(string: "https://assets.pawwalls.com")!
 
+    #if os(watchOS)
+    // `Locale.current` in watchOS produces `en_001` when running tests
+    static let locale: Locale = .init(identifier: "en_US")
+    #else
+    static let locale: Locale = .current
+    #endif
+
     private static let offeringIdentifier = "offering"
 
     private static func intro(
@@ -529,13 +536,6 @@ internal enum TestData {
             type: .introductory
         )
     }
-
-    #if os(watchOS)
-    // `Locale.current` in watchOS produces `en_001` when running tests
-    private static let locale: Locale = .init(identifier: "en_US")
-    #else
-    private static let locale: Locale = .current
-    #endif
 
 }
 
