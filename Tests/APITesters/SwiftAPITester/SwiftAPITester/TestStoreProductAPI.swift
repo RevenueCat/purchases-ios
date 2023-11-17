@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 6/26/23.
 //
 
+import Foundation
 import RevenueCat
 
 // swiftlint:disable syntactic_sugar

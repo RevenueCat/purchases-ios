@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 1/5/22.
 //
 
+import Foundation
 import RevenueCat
 
 var discount: StoreProductDiscount!

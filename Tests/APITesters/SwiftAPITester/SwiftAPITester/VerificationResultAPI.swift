@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-func checkVerificationResultAPI(_ mode: EntitlementVerificationMode = .disabled,
+func checkVerificationResultAPI(_ mode: Configuration.EntitlementVerificationMode = .disabled,
                                 _ result: VerificationResult = .notRequested) {
     let _: Bool = result.isVerified
 
