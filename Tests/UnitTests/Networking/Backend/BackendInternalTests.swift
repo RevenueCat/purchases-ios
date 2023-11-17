@@ -33,14 +33,16 @@ class BackendInternalTests: BaseBackendTests {
         expect(error).to(beNil())
     }
 
-    func testHealthRequestIsNotAuthenticated() {
+    func testHealthRequestIsNotAuthenticated() throws {
         waitUntil { completed in
             self.internalAPI.healthRequest(signatureVerification: false) { _ in
                 completed()
             }
         }
 
-        expect(self.httpClient.calls.onlyElement?.headers).to(beEmpty())
+        let request = try XCTUnwrap(self.httpClient.calls.onlyElement)
+
+        expect(request.headers.keys).toNot(contain(HTTPClient.RequestHeader.authorization.rawValue))
     }
 
     func testHealthRequestWithFailure() {
