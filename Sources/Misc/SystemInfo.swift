@@ -46,6 +46,7 @@ class SystemInfo {
     var observerMode: Bool { return !self.finishTransactions }
 
     private let sandboxEnvironmentDetector: SandboxEnvironmentDetector
+    private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
 
@@ -54,11 +55,7 @@ class SystemInfo {
     }
 
     var storefront: StorefrontType? {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
-            return Storefront.sk1CurrentStorefrontType
-        } else {
-            return nil
-        }
+        return self.storefrontProvider.currentStorefront
     }
 
     static var frameworkVersion: String {
@@ -114,6 +111,7 @@ class SystemInfo {
          operationDispatcher: OperationDispatcher = .default,
          bundle: Bundle = .main,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
+         storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKit2Setting: StoreKit2Setting = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -126,6 +124,7 @@ class SystemInfo {
         self.operationDispatcher = operationDispatcher
         self.storeKit2Setting = storeKit2Setting
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
+        self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock

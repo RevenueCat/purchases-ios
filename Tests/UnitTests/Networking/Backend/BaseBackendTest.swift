@@ -38,18 +38,17 @@ class BaseBackendTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.createDependencies(
-            SystemInfo(
-                platformInfo: nil,
-                finishTransactions: true,
-                responseVerificationMode: self.responseVerificationMode,
-                dangerousSettings: self.dangerousSettings
-            )
-        )
+        self.createDependencies(dangerousSettings: self.dangerousSettings)
     }
 
-    final func createDependencies(_ systemInfo: SystemInfo) {
-        self.systemInfo = systemInfo
+    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+        self.systemInfo =  SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            storefrontProvider: MockStorefrontProvider(),
+            responseVerificationMode: self.responseVerificationMode,
+            dangerousSettings: dangerousSettings
+        )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
@@ -136,5 +135,18 @@ extension BaseBackendTests {
             ]
         ] as [String: Any]
     ]
+
+}
+
+final class MockStorefrontProvider: StorefrontProviderType {
+
+    var currentStorefront: StorefrontType? {
+        // Simulate `DefaultStorefrontProvider` availability.
+        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, macCatalyst 13.1, *) {
+            return MockStorefront(countryCode: "USA")
+        } else {
+            return nil
+        }
+    }
 
 }
