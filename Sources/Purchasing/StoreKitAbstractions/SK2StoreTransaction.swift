@@ -24,19 +24,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.transactionIdentifier = String(sk2Transaction.id)
         self.quantity = sk2Transaction.purchasedQuantity
         self.jwsRepresentation = jwsRepresentation
-
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            self.environment = environment ?? StoreEnvironment(environment: sk2Transaction.environment)
-
-        } else {
-            #if VISION_OS
-            self.environment = environment ?? StoreEnvironment(environment: sk2Transaction.environment)
-            #else
-            self.environment = environment ?? StoreEnvironment(
-                environment: sk2Transaction.environmentStringRepresentation
-            )
-            #endif
-        }
+        self.environment = environment ?? .init(sk2Transaction: sk2Transaction)
 
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
