@@ -128,6 +128,8 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsSK2Receipt() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.setUp(observerMode: false, usesStoreKit2JWS: true)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation, environment: .xcode)
