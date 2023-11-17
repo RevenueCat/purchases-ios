@@ -46,7 +46,11 @@ class BackendSubscriberAttributesTests: TestCase {
         ] as [String: Any]
     ]
 
-    let systemInfo = SystemInfo(platformInfo: .init(flavor: "Unity", version: "2.3.3"), finishTransactions: true)
+    private let systemInfo = SystemInfo(
+        platformInfo: .init(flavor: "Unity", version: "2.3.3"),
+        finishTransactions: true,
+        storefrontProvider: MockStorefrontProvider()
+    )
 
     override func setUpWithError() throws {
         mockHTTPClient = self.createClient()

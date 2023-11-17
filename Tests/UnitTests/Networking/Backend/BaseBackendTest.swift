@@ -140,7 +140,7 @@ extension BaseBackendTests {
 
 }
 
-private final class MockStorefrontProvider: StorefrontProviderType {
+final class MockStorefrontProvider: StorefrontProviderType {
 
     var currentStorefront: StorefrontType? {
         return MockStorefront(countryCode: "USA")
