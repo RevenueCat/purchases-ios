@@ -155,7 +155,6 @@ extension HTTPClient {
         case eTag = "X-RevenueCat-ETag"
         case eTagValidationTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
-        case headerParametersForSignature = "X-Header-Params-Hash"
         case sandbox = "X-Is-Sandbox"
 
     }
