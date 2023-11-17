@@ -49,7 +49,7 @@ struct StoreKit2Receipt: Equatable {
     let environment: StoreEnvironment
 
     /// The current subscription status for each subscription group, including the renewal information.
-    let subscriptionStatus: [String: [SubscriptionStatus]]
+    let subscriptionStatusBySubscriptionGroupId: [String: [SubscriptionStatus]]
 
     /// The list of transaction JWS tokens purchased by the customer.
     let transactions: [String]
@@ -105,7 +105,7 @@ extension StoreKit2Receipt: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case environment
-        case subscriptionStatus = "subscription_status"
+        case subscriptionStatusBySubscriptionGroupId = "subscription_status"
         case transactions
         case bundleId = "bundle_id"
         case originalApplicationVersion = "original_application_version"

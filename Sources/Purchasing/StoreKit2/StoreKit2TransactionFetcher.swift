@@ -85,7 +85,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
 
             return await .init(
                 environment: .xcode,
-                subscriptionStatus: subscriptionStatuses.mapValues { statuses in
+                subscriptionStatusBySubscriptionGroupId: subscriptionStatuses.mapValues { statuses in
                     statuses.map { status in
                         return .init(state: .from(state: status.state),
                                      renewalInfoJWSTokens: status.renewalInfo.jwsRepresentation,
