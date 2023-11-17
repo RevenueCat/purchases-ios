@@ -42,6 +42,7 @@ class BaseBackendTests: TestCase {
             SystemInfo(
                 platformInfo: nil,
                 finishTransactions: true,
+                storefrontProvider: MockStorefrontProvider(),
                 responseVerificationMode: self.responseVerificationMode,
                 dangerousSettings: self.dangerousSettings
             )
@@ -136,5 +137,13 @@ extension BaseBackendTests {
             ]
         ] as [String: Any]
     ]
+
+}
+
+private final class MockStorefrontProvider: StorefrontProviderType {
+
+    var currentStorefront: StorefrontType? {
+        return MockStorefront(countryCode: "USA")
+    }
 
 }
