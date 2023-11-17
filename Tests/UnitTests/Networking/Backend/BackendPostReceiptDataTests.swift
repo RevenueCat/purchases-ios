@@ -91,16 +91,10 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testPostsReceiptDataWithTestReceiptIdentifier() throws {
         let identifier = try XCTUnwrap(UUID(uuidString: "12345678-1234-1234-1234-C2C35AE34D09")).uuidString
 
-        self.createDependencies(
-            SystemInfo(
-                platformInfo: nil,
-                finishTransactions: false,
-                dangerousSettings: .init(
-                    autoSyncPurchases: true,
-                    internalSettings: DangerousSettings.Internal(testReceiptIdentifier: identifier)
-                )
-            )
-        )
+        self.createDependencies(dangerousSettings: .init(
+            autoSyncPurchases: true,
+            internalSettings: DangerousSettings.Internal(testReceiptIdentifier: identifier)
+        ))
 
         let path: HTTPRequest.Path = .postReceiptData
 
