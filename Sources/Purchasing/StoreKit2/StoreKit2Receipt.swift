@@ -37,8 +37,8 @@ struct StoreKit2Receipt: Equatable {
         /// The renewal state of the auto-renewable subscription.
         let state: SubscriptionState
 
-        /// JWS tokens of the renewal information.
-        let renewalInfoJWSTokens: String
+        /// JWS token of the renewal information.
+        let renewalInfoJWSToken: String
 
         /// JWS token of the latest transaction for the subscription group.
         let transactionJWSToken: String
@@ -95,7 +95,7 @@ extension StoreKit2Receipt.SubscriptionStatus: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case state
-        case renewalInfoJWSTokens = "renewal_info"
+        case renewalInfoJWSToken = "renewal_info"
         case transactionJWSToken = "transaction"
     }
 

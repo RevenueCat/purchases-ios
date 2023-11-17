@@ -1551,12 +1551,19 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
         let transaction = try await createTransaction(finished: true, environment: .xcode)
         self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
-        let receipt = StoreKit2Receipt(environment: .xcode,
-                                       subscriptionStatus: [],
-                                       transactions: [],
-                                       bundleId: "",
-                                       originalApplicationVersion: nil,
-                                       originalPurchaseDate: nil)
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: [
+                "123_subscription_group_id": [
+                    .init(state: .subscribed,
+                          renewalInfoJWSToken: "123_renewal_info_jws_token",
+                          transactionJWSToken: "123_transaction_jws_token")
+                ]
+            ],
+            transactions: ["123_transaction_jws_token"],
+            bundleId: "123_bundle_id",
+            originalApplicationVersion: "123_original_application_version",
+            originalPurchaseDate: Date(timeIntervalSince1970: 123))
         self.mockTransactionFetcher.stubbedReceipt = receipt
         let product = try await self.fetchSk2StoreProduct()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
@@ -1609,12 +1616,19 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         mockListener.mockTransaction = .init(transaction.verifiedTransaction)
         mockListener.mockEnvironment = .xcode
 
-        let receipt = StoreKit2Receipt(environment: .xcode,
-                                       subscriptionStatus: [],
-                                       transactions: [],
-                                       bundleId: "",
-                                       originalApplicationVersion: nil,
-                                       originalPurchaseDate: nil)
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: [
+                "123_subscription_group_id": [
+                    .init(state: .subscribed,
+                          renewalInfoJWSToken: "123_renewal_info_jws_token",
+                          transactionJWSToken: "123_transaction_jws_token")
+                ]
+            ],
+            transactions: ["123_transaction_jws_token"],
+            bundleId: "123_bundle_id",
+            originalApplicationVersion: "123_original_application_version",
+            originalPurchaseDate: Date(timeIntervalSince1970: 123))
         mockTransactionFetcher.stubbedReceipt = receipt
 
         let product = try await fetchSk2Product()

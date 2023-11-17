@@ -157,7 +157,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
                                              finished: false)
         let receipt = await self.fetcher.receipt
         expect(receipt.transactions).to(haveCount(2))
-        expect(receipt.subscriptionStatus).to(haveCount(2))
+        expect(receipt.subscriptionStatusBySubscriptionGroupId).to(haveCount(2))
         expect(receipt.environment) == .xcode
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
