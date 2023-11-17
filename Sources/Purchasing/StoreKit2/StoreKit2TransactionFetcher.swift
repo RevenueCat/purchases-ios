@@ -88,7 +88,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
                 subscriptionStatusBySubscriptionGroupId: subscriptionStatuses.mapValues { statuses in
                     statuses.map { status in
                         return .init(state: .from(state: status.state),
-                                     renewalInfoJWSTokens: status.renewalInfo.jwsRepresentation,
+                                     renewalInfoJWSToken: status.renewalInfo.jwsRepresentation,
                                      transactionJWSToken: status.transaction.jwsRepresentation)
                     }
                 },

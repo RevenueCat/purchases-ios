@@ -143,15 +143,17 @@ class TransactionPosterTests: TestCase {
 
         let receipt = StoreKit2Receipt(
             environment: .xcode,
-            subscriptionStatus: [.init(
-                subscriptionGroupId: "123_subscription_id",
-                renewalInfoJWSTokens: ["123_renewal_info_jws_token"])
+            subscriptionStatusBySubscriptionGroupId: [
+                "123_subscription_group_id": [
+                    .init(state: .subscribed,
+                          renewalInfoJWSToken: "123_renewal_info_jws_token",
+                          transactionJWSToken: "123_transaction_jws_token")
+                ]
             ],
             transactions: ["123_transaction_jws_token"],
             bundleId: "123_bundle_id",
             originalApplicationVersion: "123_original_application_version",
-            originalPurchaseDate: Date(timeIntervalSince1970: 123)
-        )
+            originalPurchaseDate: Date(timeIntervalSince1970: 123))
 
         self.receiptFetcher.shouldReturnReceipt = false
         self.transactionFetcher.stubbedReceipt = receipt
