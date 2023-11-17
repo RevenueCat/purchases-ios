@@ -20,7 +20,6 @@ import XCTest
 @MainActor
 class StoreEnvironmentTests: StoreKitConfigTestCase {
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
