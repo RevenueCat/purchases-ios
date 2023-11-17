@@ -16,18 +16,40 @@ import StoreKit
 /// A type that resembles the structure of a StoreKit 1 receipt using StoreKit 2 data.
 struct StoreKit2Receipt: Equatable {
 
+    struct SubscriptionState: RawRepresentable, Equatable {
+
+        let rawValue: Int
+
+        init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+
+        static let subscribed = Self(rawValue: 1)
+        static let expired = Self(rawValue: 2)
+        static let inBillingRetryPeriod = Self(rawValue: 3)
+        static let inGracePeriod = Self(rawValue: 4)
+        static let revoked = Self(rawValue: 5)
+
+    }
+
     struct SubscriptionStatus: Equatable {
-        /// Subscription Group Identifiers.
-        let subscriptionGroupId: String
+
+        /// The renewal state of the auto-renewable subscription.
+        let state: SubscriptionState
+
         /// JWS tokens of the renewal information.
-        let renewalInfoJWSTokens: [String]
+        let renewalInfoJWSTokens: String
+
+        /// JWS token of the latest transaction for the subscription group.
+        let transactionJWSToken: String
+
     }
 
     /// The server environment where the receipt was generated.
     let environment: StoreEnvironment
 
     /// The current subscription status for each subscription group, including the renewal information.
-    let subscriptionStatus: [SubscriptionStatus]
+    let subscriptionStatus: [String: [SubscriptionStatus]]
 
     /// The list of transaction JWS tokens purchased by the customer.
     let transactions: [String]
@@ -45,9 +67,41 @@ struct StoreKit2Receipt: Equatable {
 
 // MARK: -
 
-extension StoreKit2Receipt.SubscriptionStatus: Encodable {}
+extension StoreKit2Receipt.SubscriptionState: Codable {}
 
-extension StoreKit2Receipt: Encodable {
+extension StoreKit2Receipt.SubscriptionState {
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    static func from(state: StoreKit.Product.SubscriptionInfo.RenewalState) -> Self {
+        switch state {
+        case .subscribed:
+            return .subscribed
+        case .expired:
+            return .expired
+        case .inBillingRetryPeriod:
+            return .inBillingRetryPeriod
+        case .inGracePeriod:
+            return .inGracePeriod
+        case .revoked:
+            return .revoked
+        default:
+            return .init(rawValue: state.rawValue)
+        }
+    }
+
+}
+
+extension StoreKit2Receipt.SubscriptionStatus: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case state
+        case renewalInfoJWSTokens = "renewal_info"
+        case transactionJWSToken = "transaction"
+    }
+
+}
+
+extension StoreKit2Receipt: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case environment
@@ -56,20 +110,6 @@ extension StoreKit2Receipt: Encodable {
         case bundleId = "bundle_id"
         case originalApplicationVersion = "original_application_version"
         case originalPurchaseDate = "original_purchase_date"
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.environment, forKey: .environment)
-        try container.encode(self.transactions, forKey: .transactions)
-        try container.encode(self.bundleId, forKey: .bundleId)
-        try container.encode(self.originalApplicationVersion, forKey: .originalApplicationVersion)
-        try container.encode(self.originalPurchaseDate, forKey: .originalPurchaseDate)
-        let statuses = Dictionary(self.subscriptionStatus.map {
-            ($0.subscriptionGroupId, $0.renewalInfoJWSTokens)
-        }) { _, new in new }
-
-        try container.encode(statuses, forKey: .subscriptionStatus)
     }
 
 }
