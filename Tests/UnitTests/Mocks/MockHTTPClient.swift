@@ -124,6 +124,8 @@ class MockHTTPClient: HTTPClient {
     override var defaultHeaders: RequestHeaders {
         var result = super.defaultHeaders
         result["X-Version"] = "4.0.0"
+        // Snapshots are shared across platforms so we need this to be stable.
+        result["X-Platform"] = "iOS"
         result["X-Client-Build-Version"] = "12345"
         result["X-Client-Version"] = "17.0.0"
         result["X-Platform-Version"] = "Version 17.0.0 (Build 21A342)"
