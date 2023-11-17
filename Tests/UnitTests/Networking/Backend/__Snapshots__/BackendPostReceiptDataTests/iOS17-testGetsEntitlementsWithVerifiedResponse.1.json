@@ -13,6 +13,7 @@
     "X-Platform-Flavor" : "native",
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
     "X-Post-Params-Hash" : "app_user_id,fetch_token:sha256:2cc3741ddb808ae6fd179f1398d9115b58772590765edf799ec778f929faa46d",
+    "X-Storefront" : "USA",
     "X-StoreKit2-Enabled" : "false",
     "X-Version" : "4.0.0"
   },
