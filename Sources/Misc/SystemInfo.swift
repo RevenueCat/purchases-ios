@@ -26,7 +26,11 @@ import AppKit
 class SystemInfo {
 
     static let appleSubscriptionsURL = URL(string: "https://apps.apple.com/account/subscriptions")!
-    static var forceUniversalAppStore: Bool = false
+
+    static var forceUniversalAppStore: Bool {
+        get { self._forceUniversalAppStore.value }
+        set { self._forceUniversalAppStore.value = newValue }
+    }
 
     let storeKit2Setting: StoreKit2Setting
     let operationDispatcher: OperationDispatcher
@@ -49,6 +53,9 @@ class SystemInfo {
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
+
+    private static let _forceUniversalAppStore: Atomic<Bool> = false
+    private static let _proxyURL: Atomic<URL?> = nil
 
     var isSandbox: Bool {
         return self.sandboxEnvironmentDetector.isSandbox
@@ -88,6 +95,8 @@ class SystemInfo {
         // https://developer.apple.com/documentation/watchkit/wkinterfacedevice?language=swift
 
         #if os(iOS) || os(tvOS) || VISION_OS
+            // Fix-me: `UIDevice.current` is `@MainActor` so this method
+            // will need to be marked as such too.
             return UIDevice.current.identifierForVendor?.uuidString
         #elseif os(watchOS)
             return WKInterfaceDevice.current().identifierForVendor?.uuidString
@@ -99,8 +108,11 @@ class SystemInfo {
     }
 
     static var proxyURL: URL? {
-        didSet {
-            if let privateProxyURLString = proxyURL?.absoluteString {
+        get { return self._proxyURL.value }
+        set {
+            self._proxyURL.value = newValue
+
+            if let privateProxyURLString = newValue?.absoluteString {
                 Logger.info(Strings.configure.configuring_purchases_proxy_url_set(url: privateProxyURLString))
             }
         }
@@ -132,7 +144,7 @@ class SystemInfo {
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
     /// - Seealso: `isApplicationBackgrounded`
-    func isApplicationBackgrounded(completion: @escaping (Bool) -> Void) {
+    func isApplicationBackgrounded(completion: @escaping @Sendable (Bool) -> Void) {
         self.operationDispatcher.dispatchOnMainActor {
             completion(self.isApplicationBackgrounded)
         }
