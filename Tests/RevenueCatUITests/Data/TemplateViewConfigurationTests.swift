@@ -253,13 +253,12 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
 // MARK: -
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: BaseTemplateViewConfigurationTests {
+class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfigurationTests {
 
-    private typealias Eligibility = [Package: IntroEligibilityStatus]
-
-    private var singlePackageConfiguration: TemplateViewConfiguration.PackageConfiguration!
-    private var multiPackageConfigurationSameText: TemplateViewConfiguration.PackageConfiguration!
-    private var multiPackageConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var singlePackageConfiguration: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiPackageConfigurationSameText: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiPackageConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiPackageConfigurationNoOfferDetails: TemplateViewConfiguration.PackageConfiguration!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -297,7 +296,28 @@ class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: BaseTemplate
             localization: Self.localization,
             setting: .multiple
         )
+
+        self.multiPackageConfigurationNoOfferDetails = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: Self.allPackages.map(\.packageType.identifier),
+            default: nil,
+            localization: .init(
+                title: "Title: {{ product_name }}",
+                subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                callToAction: "Start now",
+                callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                offerDetails: nil,
+                features: []
+            ),
+            setting: .multiple
+        )
     }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: TemplateViewConfigurationBaseExtensionTests {
 
     func testSinglePackageNoEligibility() throws {
         expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
@@ -426,14 +446,94 @@ class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: BaseTemplate
         )) == true
     }
 
-    private static let package1 = TestData.monthlyPackage
-    private static let package2 = TestData.annualPackage
-    private static let package3 = TestData.weeklyPackage
-    private static let allPackages: [Package] = [
-        package1,
-        package2,
-        package3
-    ]
+}
+
+// MARK: -
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class TemplateViewConfigurationPackagesProduceAnyLabelTests: TemplateViewConfigurationBaseExtensionTests {
+
+    func testSinglePackageNoEligibility() throws {
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == true
+    }
+
+    func testSinglePackageEligible() throws {
+        let eligibility: Eligibility = [TestData.monthlyPackage: .eligible]
+
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testSinglePackageNotEligible() throws {
+        let eligibility: Eligibility = [TestData.monthlyPackage: .ineligible]
+
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.singlePackageConfiguration.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testMultiPackageUnknownEligibility() throws {
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == false
+    }
+
+    func testMultiPackageNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testMultiPackageWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
 
 }
 
@@ -443,6 +543,7 @@ class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: BaseTemplate
 private extension BaseTemplateViewConfigurationTests {
 
     typealias Config = TemplateViewConfiguration.PackageConfiguration
+    typealias Eligibility = TemplateViewConfiguration.PackageConfiguration.Eligibility
 
     static let consumable = Package(
         identifier: "consumable",
@@ -461,6 +562,15 @@ private extension BaseTemplateViewConfigurationTests {
         "then {{ sub_price_per_month }} per month",
         features: []
     )
+
+    static let package1 = TestData.monthlyPackage
+    static let package2 = TestData.annualPackage
+    static let package3 = TestData.weeklyPackage
+    static let allPackages: [Package] = [
+        package1,
+        package2,
+        package3
+    ]
 
     private static let consumableProduct = TestStoreProduct(
         localizedTitle: "Coins",

@@ -90,8 +90,13 @@ struct Template4View: TemplateViewType {
                                        hide: !self.displayingAllPlans)
             }
 
-            self.offerDetails
-                .defaultHorizontalPadding()
+            if self.configuration.packages.packagesProduceAnyLabel(
+                for: .offerDetails,
+                eligibility: self.introEligibility
+            ) {
+                self.offerDetails
+                    .defaultHorizontalPadding()
+            }
 
             self.subscribeButton
                 .defaultHorizontalPadding()
