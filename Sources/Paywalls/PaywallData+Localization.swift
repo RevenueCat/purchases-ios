@@ -23,7 +23,8 @@ public extension PaywallData {
         return locales
             .lazy
             .compactMap(self.config(for:))
-            .first ?? self.fallbackLocalizedConfiguration
+            .first { _ in true } // See https://github.com/apple/swift/issues/55374
+            ?? self.fallbackLocalizedConfiguration
     }
 
     private var fallbackLocalizedConfiguration: LocalizedConfiguration {

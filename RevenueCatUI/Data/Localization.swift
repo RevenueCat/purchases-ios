@@ -31,7 +31,7 @@ enum Localization {
         return self.unitAbbreviationLengthPriorities
             .lazy
             .compactMap { length in options.first { $0.count == length } }
-            .first
+            .first { _ in true } // See https://github.com/apple/swift/issues/55374
         ?? options.last!
     }
 
