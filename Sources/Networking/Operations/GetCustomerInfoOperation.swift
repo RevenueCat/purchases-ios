@@ -61,7 +61,7 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
                    cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.getCustomerInfo(completion: completion)
     }
 
@@ -69,7 +69,7 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
 
 private extension GetCustomerInfoOperation {
 
-    func getCustomerInfo(completion: @escaping () -> Void) {
+    func getCustomerInfo(completion: @escaping @Sendable () -> Void) {
         let appUserID = self.configuration.appUserID
 
         guard appUserID.isNotEmpty else {

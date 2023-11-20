@@ -188,9 +188,11 @@ extension Signing {
 
 }
 
+extension Signing.ResponseVerificationMode: Sendable {}
+
 /// A type representing a public key that can be used to validate signatures
 /// The current type used is `CryptoKit.Curve25519.Signing.PublicKey`
-protocol SigningPublicKey {
+protocol SigningPublicKey: Sendable {
 
     func isValidSignature(_ signature: Data, for data: Data) -> Bool
     var rawRepresentation: Data { get }
@@ -199,6 +201,8 @@ protocol SigningPublicKey {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Signing.Algorithm: SigningPublicKey {}
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+extension Signing.Algorithm: @unchecked Sendable {}
 
 // MARK: - Internal implementation (visible for tests)
 

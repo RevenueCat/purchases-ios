@@ -226,3 +226,7 @@ extension VerifiedHTTPResponse {
     }
 
 }
+
+// @unchecked because headers contains `Any`.
+extension HTTPResponse: @unchecked Sendable where Body: Sendable {}
+extension VerifiedHTTPResponse: Sendable where Body: Sendable {}

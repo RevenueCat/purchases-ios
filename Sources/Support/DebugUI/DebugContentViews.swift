@@ -236,6 +236,7 @@ private struct DebugOfferingView: View {
         }
     }
 
+    @MainActor
     private var content: some View {
         List {
             Section("Data") {

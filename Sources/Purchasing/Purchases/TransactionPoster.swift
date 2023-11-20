@@ -324,7 +324,7 @@ extension TransactionPoster {
 
 private extension TransactionPoster {
 
-    func product(with identifier: String, completion: @escaping (StoreProduct?) -> Void) {
+    func product(with identifier: String, completion: @escaping @Sendable (StoreProduct?) -> Void) {
         self.productsManager.products(withIdentifiers: [identifier]) { products in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(products.value?.first)

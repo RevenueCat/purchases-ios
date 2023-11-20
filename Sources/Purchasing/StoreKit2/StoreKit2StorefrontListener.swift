@@ -37,7 +37,7 @@ class StoreKit2StorefrontListener {
     convenience init(delegate: StoreKit2StorefrontListenerDelegate?) {
         self.init(
             delegate: delegate,
-            updates: StoreKit.Storefront.updates.map(Storefront.init(sk2Storefront:))
+            updates: StoreKit.Storefront.updates.map { Storefront(sk2Storefront: $0) }
         )
     }
 
@@ -52,9 +52,9 @@ class StoreKit2StorefrontListener {
     }
 
     func listenForStorefrontChanges() {
-        self.taskHandle = Task(priority: .utility) { [weak self, updates = self.updates] in
+        self.taskHandle = Task(priority: .utility) { [weak delegate = self.delegate, updates = self.updates] in
             for await storefront in updates {
-                guard let delegate = self?.delegate else { break }
+                guard let delegate else { break }
                 await MainActor.run { @Sendable in
                     delegate.storefrontDidUpdate(with: storefront)
                 }

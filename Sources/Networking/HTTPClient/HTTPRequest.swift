@@ -76,3 +76,8 @@ extension HTTPRequest.Method {
     }
 
 }
+
+// MARK: -
+
+extension HTTPRequest.Method: Sendable {}
+extension HTTPRequest: Sendable {}

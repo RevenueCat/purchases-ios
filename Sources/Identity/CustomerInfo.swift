@@ -272,6 +272,7 @@ extension CustomerInfo: RawDataContainer {
 
 }
 
+extension CustomerInfo.Contents: Sendable {}
 extension CustomerInfo: Sendable {}
 
 /// `CustomerInfo`'s `Codable` implementation relies on `Data`

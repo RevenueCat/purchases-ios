@@ -144,6 +144,8 @@ extension LoadingState where Error == NSError {
 
 }
 
+extension LoadingState: Sendable where Value: Sendable {}
+
 @available(iOS 16.0, macOS 13.0, *)
 private extension DebugViewModel.Configuration {
 

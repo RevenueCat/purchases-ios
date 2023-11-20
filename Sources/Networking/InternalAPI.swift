@@ -15,7 +15,7 @@ import Foundation
 
 class InternalAPI {
 
-    typealias ResponseHandler = (BackendError?) -> Void
+    typealias ResponseHandler = @Sendable (BackendError?) -> Void
 
     private let backendConfig: BackendConfiguration
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>

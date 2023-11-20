@@ -47,7 +47,7 @@ final class LogInOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.logIn(completion: completion)
     }
 
@@ -55,7 +55,7 @@ final class LogInOperation: CacheableNetworkOperation {
 
 private extension LogInOperation {
 
-    func logIn(completion: @escaping () -> Void) {
+    func logIn(completion: @escaping @Sendable () -> Void) {
         guard self.newAppUserID.isNotEmpty else {
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(.failure(.missingAppUserID()))

@@ -52,3 +52,5 @@ extension IgnoreHashable: Encodable where Value: Encodable {
     }
 
 }
+
+extension IgnoreHashable: Sendable where Value: Sendable {}

@@ -39,8 +39,18 @@ internal typealias InternalLogHandler = (_ level: LogLevel,
 // swiftlint:disable:next convenience_type
 struct Logger {
 
-    static var logLevel: LogLevel = Self.defaultLogLevel
-    static var internalLogHandler: InternalLogHandler = Self.defaultLogHandler
+    static var logLevel: LogLevel {
+        get { return self._logLevel.value }
+        set { self._logLevel.value = newValue }
+    }
+    static var internalLogHandler: InternalLogHandler {
+        get { return self._internalLogHandler.value }
+        set { self._internalLogHandler.value = newValue }
+    }
+    static var verbose: Bool {
+        get { return self._verbose.value }
+        set { self._verbose.value = newValue }
+    }
 
     static let defaultLogHandler: InternalLogHandler = { level, message, category, file, functionName, line in
         RCDefaultLogHandler(
@@ -55,8 +65,6 @@ struct Logger {
         )
     }
 
-    static var verbose: Bool = false
-
     private static let defaultLogLevel: LogLevel = {
         #if DEBUG
         return .debug
@@ -67,6 +75,11 @@ struct Logger {
 
     internal static let frameworkDescription = "Purchases"
 
+    // MARK: -
+
+    private static let _logLevel: Atomic<LogLevel> = .init(Self.defaultLogLevel)
+    private static let _internalLogHandler: Atomic<InternalLogHandler> = .init(Self.defaultLogHandler)
+    private static let _verbose: Atomic<Bool> = .init(false)
 }
 
 extension Logger {

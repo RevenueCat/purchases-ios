@@ -47,3 +47,6 @@ extension BackendErrorStrings: LogMessage {
     var category: String { return "backend" }
 
 }
+
+// @unchecked because some strings contain `any`.
+extension BackendErrorStrings: @unchecked Sendable {}

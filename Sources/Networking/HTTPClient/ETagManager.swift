@@ -243,6 +243,7 @@ extension ETagManager {
 }
 
 extension ETagManager.Response: Codable {}
+extension ETagManager.Response: Sendable {}
 
 extension ETagManager.Response {
 

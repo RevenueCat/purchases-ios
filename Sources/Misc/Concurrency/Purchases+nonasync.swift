@@ -28,7 +28,7 @@ public extension Purchases {
     @available(tvOS, unavailable)
     func beginRefundRequest(
         forProduct productID: String,
-        completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void
+        completion: @escaping @Sendable (Result<RefundRequestStatus, PublicError>) -> Void
     ) {
         Async.call(with: completion) {
             try await self.beginRefundRequest(forProduct: productID)
@@ -41,7 +41,7 @@ public extension Purchases {
     @available(tvOS, unavailable)
     func beginRefundRequest(
         forEntitlement entitlementID: String,
-        completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void
+        completion: @escaping @Sendable (Result<RefundRequestStatus, PublicError>) -> Void
     ) {
         Async.call(with: completion) {
             try await self.beginRefundRequest(forEntitlement: entitlementID)
@@ -53,7 +53,7 @@ public extension Purchases {
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
     func beginRefundRequestForActiveEntitlement(
-        completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void
+        completion: @escaping @Sendable (Result<RefundRequestStatus, PublicError>) -> Void
     ) {
         Async.call(with: completion) {
             try await self.beginRefundRequestForActiveEntitlement()
@@ -70,7 +70,7 @@ public extension Purchases {
     @available(tvOS, unavailable)
     func showStoreMessages(
         for types: Set<StoreMessageType> = Set(StoreMessageType.allCases),
-        completion: @escaping () -> Void
+        completion: @escaping @Sendable () -> Void
     ) {
         _ = Task<Void, Never> {
             await self.showStoreMessages(for: types)

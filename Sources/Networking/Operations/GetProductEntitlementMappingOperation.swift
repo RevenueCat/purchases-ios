@@ -38,7 +38,7 @@ final class GetProductEntitlementMappingOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.getResponse(completion: completion)
     }
 
@@ -46,7 +46,7 @@ final class GetProductEntitlementMappingOperation: CacheableNetworkOperation {
 
 private extension GetProductEntitlementMappingOperation {
 
-    func getResponse(completion: @escaping () -> Void) {
+    func getResponse(completion: @escaping @Sendable () -> Void) {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ProductEntitlementMappingResponse>.Result) in

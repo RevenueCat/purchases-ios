@@ -71,6 +71,8 @@ extension AttributionNetwork: Encodable {
 
 }
 
+extension AttributionNetwork: Sendable {}
+
 extension AttributionNetwork {
 
     var isAppleSearchAdds: Bool {

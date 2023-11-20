@@ -218,7 +218,7 @@ final class PurchasesOrchestrator {
                            completion: completion)
     }
 
-    func products(withIdentifiers identifiers: [String], completion: @escaping ([StoreProduct]) -> Void) {
+    func products(withIdentifiers identifiers: [String], completion: @escaping @Sendable ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -233,7 +233,7 @@ final class PurchasesOrchestrator {
     }
 
     func productsFromOptimalStoreKitVersion(withIdentifiers identifiers: [String],
-                                            completion: @escaping ([StoreProduct]) -> Void) {
+                                            completion: @escaping @Sendable ([StoreProduct]) -> Void) {
         let productIdentifiersSet = Set(identifiers)
         guard !productIdentifiersSet.isEmpty else {
             operationDispatcher.dispatchOnMainThread { completion([]) }
@@ -562,7 +562,7 @@ final class PurchasesOrchestrator {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscription(completion: @escaping (PurchasesError?) -> Void) {
+    func showManageSubscription(completion: @escaping @Sendable (PurchasesError?) -> Void) {
         self.manageSubscriptionsHelper.showManageSubscriptions { result in
             switch result {
             case .failure(let error):
@@ -1258,7 +1258,7 @@ private extension PurchasesOrchestrator {
     /// or `nil` if there is any issue fetching it.
     func createProductRequestData(
         with receiptData: Data,
-        completion: @escaping (ProductRequestData?) -> Void
+        completion: @escaping @Sendable (ProductRequestData?) -> Void
     ) {
         guard let receipt = try? self.receiptParser.parse(from: receiptData),
         let productIdentifier = receipt.mostRecentActiveSubscription?.productId else {
@@ -1271,7 +1271,7 @@ private extension PurchasesOrchestrator {
 
     func createProductRequestData(
         with productIdentifier: String,
-        completion: @escaping (ProductRequestData?) -> Void
+        completion: @escaping @Sendable (ProductRequestData?) -> Void
     ) {
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
