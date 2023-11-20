@@ -605,7 +605,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         /// for promotional offers to work.
         self.paymentQueueWrapper.sk2Wrapper?.delegate = purchasesOrchestrator
 
-        self.subscribeToAppStateNotifications()
+        operationDispatcher.dispatchSyncOnMainActor { @Sendable in
+            self.subscribeToAppStateNotifications()
+        }
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -1643,6 +1645,7 @@ private extension Purchases {
         self.dispatchSyncSubscriberAttributes()
     }
 
+    @MainActor
     func subscribeToAppStateNotifications() {
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationWillEnterForeground),

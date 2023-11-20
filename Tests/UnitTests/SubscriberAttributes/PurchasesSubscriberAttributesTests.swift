@@ -233,6 +233,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     // MARK: Notifications
 
+    @MainActor
     func testSubscribesToForegroundNotifications() {
         setupPurchases()
 
@@ -246,6 +247,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 2
     }
 
+    @MainActor
     func testSubscribesToBackgroundNotifications() {
         setupPurchases()
 
