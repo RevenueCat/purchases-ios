@@ -74,4 +74,21 @@ extension TemplateViewType {
         return Constants.defaultVerticalPaddingLength(self.userInterfaceIdiom)
     }
 
+    var isVerticalSizeCompact: Bool {
+        #if os(tvOS)
+        // tvOS never reports UserInterfaceSizeClass.compact
+        // but for the purposes of template layouts, we consider landscape
+        // on tvOS as compact to produce horizontal layouts.
+        return true
+        #elseif os(macOS)
+        return false
+        #elseif os(watchOS)
+        return false
+        #else
+        // Ignore size class when displaying footer paywalls.
+        return (self.configuration.mode.isFullScreen &&
+                self.verticalSizeClass == .compact)
+        #endif
+    }
+
 }

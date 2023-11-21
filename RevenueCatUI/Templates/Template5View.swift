@@ -27,9 +27,14 @@ struct Template5View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
 
     @Environment(\.locale)
     var locale
+
+    @Namespace
+    private var namespace
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
@@ -43,22 +48,47 @@ struct Template5View: TemplateViewType {
     }
 
     var body: some View {
-        self.content
+        Group {
+            if self.isVerticalSizeCompact {
+                self.horizontalContent
+            } else {
+                self.verticalFullScreenContent
+            }
+        }
+            .foregroundColor(self.configuration.colors.text1Color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .animation(Constants.fastAnimation, value: self.selectedPackage)
     }
 
     @ViewBuilder
-    var content: some View {
+    var horizontalContent: some View {
+        VStack {
+            HStack {
+                VStack {
+                    self.title
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    self.features
+                }
+                .padding(.top, self.defaultVerticalPaddingLength)
+                .scrollableIfNecessary()
+
+                self.packages
+                    .padding(.top, self.defaultVerticalPaddingLength)
+                    .scrollableIfNecessary()
+            }
+
+            self.subscribeButton
+
+            self.footerView
+        }
+    }
+
+    @ViewBuilder
+    var verticalFullScreenContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.isFullScreen {
-                if let header = self.configuration.headerImageURL {
-                    RemoteImage(url: header,
-                                aspectRatio: self.headerAspectRatio,
-                                maxWidth: .infinity)
-                    .clipped()
-
-                    Spacer()
-                }
+                self.headerImage
             }
 
             self.scrollableContent
@@ -78,23 +108,28 @@ struct Template5View: TemplateViewType {
             self.subscribeButton
                 .defaultHorizontalPadding()
 
-            FooterView(configuration: self.configuration,
-                       purchaseHandler: self.purchaseHandler,
-                       displayingAllPlans: self.$displayingAllPlans)
+            self.footerView
         }
-        .foregroundColor(self.configuration.colors.text1Color)
         .edgesIgnoringSafeArea(.top)
-        .animation(Constants.fastAnimation, value: self.selectedPackage)
-        .frame(maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var headerImage: some View {
+        if let header = self.configuration.headerImageURL {
+            RemoteImage(url: header,
+                        aspectRatio: self.headerAspectRatio,
+                        maxWidth: .infinity)
+            .clipped()
+
+            Spacer()
+        }
     }
 
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.isFullScreen {
-                Text(.init(self.selectedLocalization.title))
-                    .font(self.font(for: .largeTitle).bold())
+                self.title
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .defaultHorizontalPadding()
 
                 Spacer()
 
@@ -103,14 +138,21 @@ struct Template5View: TemplateViewType {
 
                 Spacer()
 
-                self.packages
+                self.packagesWithBottomSpacer
             } else {
-                self.packages
+                self.packagesWithBottomSpacer
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
         }
         .frame(maxHeight: .infinity)
+    }
+
+    private var title: some View {
+        Text(.init(self.selectedLocalization.title))
+            .font(self.font(for: .largeTitle).bold())
+            .defaultHorizontalPadding()
+            .matchedGeometryEffect(id: Geometry.title, in: self.namespace)
     }
 
     @ViewBuilder
@@ -137,9 +179,9 @@ struct Template5View: TemplateViewType {
                 .accessibilityElement(children: .combine)
             }
         }
+        .matchedGeometryEffect(id: Geometry.features, in: self.namespace)
     }
 
-    @ViewBuilder
     private var packages: some View {
         VStack(spacing: 16) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
@@ -153,7 +195,13 @@ struct Template5View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle())
             }
         }
+        .matchedGeometryEffect(id: Geometry.packages, in: self.namespace)
         .defaultHorizontalPadding()
+    }
+
+    @ViewBuilder
+    private var packagesWithBottomSpacer: some View {
+        self.packages
 
         Spacer()
     }
@@ -182,6 +230,13 @@ struct Template5View: TemplateViewType {
             self.packageDiscountLabel(package, selected: selected)
                 .padding(8)
         }
+    }
+
+    private var footerView: some View {
+        FooterView(configuration: self.configuration,
+                   purchaseHandler: self.purchaseHandler,
+                   displayingAllPlans: self.$displayingAllPlans)
+        .matchedGeometryEffect(id: Geometry.footer, in: self.namespace)
     }
 
     @ViewBuilder
@@ -254,6 +309,7 @@ struct Template5View: TemplateViewType {
             selectedPackage: self.selectedPackage,
             configuration: self.configuration
         )
+        .matchedGeometryEffect(id: Geometry.subscribeButton, in: self.namespace)
     }
 
     // MARK: -
@@ -273,6 +329,19 @@ struct Template5View: TemplateViewType {
         case .pad: return 3
         default: return 2
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension Template5View {
+
+    enum Geometry: Hashable {
+        case title
+        case features
+        case packages
+        case subscribeButton
+        case footer
     }
 
 }

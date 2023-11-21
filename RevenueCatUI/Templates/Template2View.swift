@@ -27,6 +27,8 @@ struct Template2View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
@@ -40,15 +42,23 @@ struct Template2View: TemplateViewType {
     }
 
     var body: some View {
-        self.content
+        Group {
+            if self.isVerticalSizeCompact {
+                self.horizontalContent
+            } else {
+                self.verticalFullScreenContent
+            }
+        }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
+            .animation(Constants.fastAnimation, value: self.selectedPackage)
             .background {
                 TemplateBackgroundImageView(configuration: self.configuration)
             }
     }
 
     @ViewBuilder
-    var content: some View {
+    private var verticalFullScreenContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
             // Avoid unnecessary spacing, except for iOS 15 because SwiftUI breaks the layout.
             Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
@@ -63,13 +73,9 @@ struct Template2View: TemplateViewType {
             self.subscribeButton
                 .defaultHorizontalPadding()
 
-            FooterView(configuration: self.configuration,
-                       purchaseHandler: self.purchaseHandler,
-                       displayingAllPlans: self.$displayingAllPlans)
+            self.footer
         }
-        .animation(Constants.fastAnimation, value: self.selectedPackage)
         .multilineTextAlignment(.center)
-        .frame(maxHeight: .infinity)
         .padding(
             .top,
             self.displayingAllPlans
@@ -77,7 +83,39 @@ struct Template2View: TemplateViewType {
             // Compensate for additional padding on condensed mode + iPad
             : self.defaultVerticalPaddingLength.map { $0 * -1 }
         )
-        .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
+    }
+
+    @ViewBuilder
+    private var horizontalContent: some View {
+        VStack {
+            HStack {
+                VStack {
+                    Spacer()
+                    self.iconImage
+                    Spacer()
+                    self.title
+                    Spacer()
+                    self.subtitle
+                    Spacer()
+                }
+                .scrollableIfNecessary()
+                .frame(maxHeight: .infinity)
+
+                VStack(spacing: self.defaultVerticalPaddingLength) {
+                    Spacer()
+
+                    self.packages
+                        .scrollableIfNecessary()
+
+                    Spacer(minLength: self.defaultVerticalPaddingLength)
+
+                    self.subscribeButton
+                }
+                .frame(maxHeight: .infinity)
+            }
+
+            self.footer
+        }
     }
 
     private var scrollableContent: some View {
@@ -87,28 +125,36 @@ struct Template2View: TemplateViewType {
                 self.iconImage
                 Spacer()
 
-                Text(.init(self.selectedLocalization.title))
-                    .foregroundColor(self.configuration.colors.text1Color)
-                    .font(self.font(for: .largeTitle).bold())
-                    .defaultHorizontalPadding()
+                self.title
 
                 Spacer()
 
-                Text(.init(self.selectedLocalization.subtitle ?? ""))
-                    .foregroundColor(self.configuration.colors.text1Color)
-                    .font(self.font(for: .title3))
-                    .defaultHorizontalPadding()
+                self.subtitle
 
                 Spacer()
 
-                self.packages
+                self.packagesWithBottomSpacer
             } else {
-                self.packages
+                self.packagesWithBottomSpacer
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
         }
         .frame(maxHeight: .infinity)
+    }
+
+    private var title: some View {
+        Text(.init(self.selectedLocalization.title))
+            .foregroundColor(self.configuration.colors.text1Color)
+            .font(self.font(for: .largeTitle).bold())
+            .defaultHorizontalPadding()
+    }
+
+    private var subtitle: some View {
+        Text(.init(self.selectedLocalization.subtitle ?? ""))
+            .foregroundColor(self.configuration.colors.text1Color)
+            .font(self.font(for: .title3))
+            .defaultHorizontalPadding()
     }
 
     @ViewBuilder
@@ -125,7 +171,12 @@ struct Template2View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle())
             }
         }
-        .padding(.horizontal, self.defaultHorizontalPaddingLength)
+    }
+
+    @ViewBuilder
+    private var packagesWithBottomSpacer: some View {
+        self.packages
+            .padding(.horizontal, self.defaultHorizontalPaddingLength)
 
         Spacer()
     }
@@ -218,6 +269,12 @@ struct Template2View: TemplateViewType {
             selectedPackage: self.selectedPackage,
             configuration: self.configuration
         )
+    }
+
+    private var footer: some View {
+        FooterView(configuration: self.configuration,
+                   purchaseHandler: self.purchaseHandler,
+                   displayingAllPlans: self.$displayingAllPlans)
     }
 
     @ViewBuilder

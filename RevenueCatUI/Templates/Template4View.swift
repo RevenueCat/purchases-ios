@@ -33,6 +33,8 @@ struct Template4View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
 
@@ -63,7 +65,9 @@ struct Template4View: TemplateViewType {
                     #endif
             }
             .background {
-                TemplateBackgroundImageView(configuration: self.configuration)
+                if !self.isVerticalSizeCompact {
+                    TemplateBackgroundImageView(configuration: self.configuration)
+                }
             }
 
         case .footer, .condensedFooter:

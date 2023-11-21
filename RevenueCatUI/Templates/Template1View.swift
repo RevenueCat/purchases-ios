@@ -24,6 +24,8 @@ struct Template1View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
