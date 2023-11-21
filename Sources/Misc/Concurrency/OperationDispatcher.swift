@@ -97,12 +97,16 @@ extension OperationDispatcher {
     }
 
     static func dispatchSyncOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
+        #if swift(>=5.9)
         if Thread.isMainThread,
             #available(macOS 14.0, iOS 17.0, iOSApplicationExtension 17.0, watchOS 10.0, tvOS 17.0, *) {
             MainActor.assumeIsolated(block)
         } else {
             Self.dispatchOnMainActor(block)
         }
+        #else
+        Self.dispatchOnMainActor(block)
+        #endif
     }
 }
 
