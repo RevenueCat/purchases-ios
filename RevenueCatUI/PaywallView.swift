@@ -311,6 +311,8 @@ struct LoadedOfferingPaywallView: View {
                 view
                     .toolbar { Self.toolbar(dismiss) }
             }
+            .navigationViewStyle(.stack)
+
         } else {
             view
         }
