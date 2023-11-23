@@ -37,24 +37,20 @@ struct Template3View: TemplateViewType {
 
     var body: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayIcon {
+            if self.configuration.mode.isFullScreen {
                 if let url = self.configuration.iconImageURL {
                     RemoteImage(url: url, aspectRatio: 1)
                         .frame(width: self.iconSize, height: self.iconSize)
                         .cornerRadius(8)
                 }
-            }
 
-            if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.localization.title))
                     .font(self.font(for: .title))
                     .foregroundStyle(self.configuration.colors.text1Color)
                     .multilineTextAlignment(.center)
 
                 Spacer()
-            }
 
-            if self.configuration.mode.shouldDisplayFeatures {
                 self.features
                     .scrollableIfNecessary()
             }

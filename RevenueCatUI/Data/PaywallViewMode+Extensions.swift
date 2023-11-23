@@ -31,27 +31,6 @@ extension PaywallViewMode {
         }
     }
 
-    var shouldDisplayIcon: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
-    }
-
-    var shouldDisplayText: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
-    }
-
-    var shouldDisplayFeatures: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
-    }
-
     var shouldDisplayBackground: Bool {
         switch self {
         case .fullScreen: return true

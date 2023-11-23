@@ -50,7 +50,7 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     var content: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayIcon {
+            if self.configuration.mode.isFullScreen {
                 if let header = self.configuration.headerImageURL {
                     RemoteImage(url: header,
                                 aspectRatio: self.headerAspectRatio,
@@ -62,7 +62,7 @@ struct Template5View: TemplateViewType {
             }
 
             self.scrollableContent
-                .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
+                .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
                 .padding(
                     .top,
                     self.displayingAllPlans
@@ -90,7 +90,7 @@ struct Template5View: TemplateViewType {
 
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayText {
+            if self.configuration.mode.isFullScreen {
                 Text(.init(self.selectedLocalization.title))
                     .font(self.font(for: .largeTitle).bold())
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -102,9 +102,7 @@ struct Template5View: TemplateViewType {
                     .defaultHorizontalPadding()
 
                 Spacer()
-            }
 
-            if self.configuration.mode.shouldDisplayPackages {
                 self.packages
             } else {
                 self.packages
@@ -297,18 +295,6 @@ private extension Template5View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.selectedPackage.localization
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewMode {
-
-    var shouldDisplayPackages: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
     }
 
 }

@@ -74,16 +74,14 @@ struct Template4View: TemplateViewType {
     @ViewBuilder
     var footerContent: some View {
         VStack(spacing: Self.verticalPadding) {
-            if self.configuration.mode.shouldDisplayText {
+            if self.configuration.mode.isFullScreen {
                 Text(.init(self.selectedPackage.localization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .title).bold())
                     .padding([.horizontal])
                     .padding(.top, Self.verticalPadding)
                     .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
-            }
 
-            if self.configuration.mode.shouldDisplayPackages {
                 self.packagesScrollView
             } else {
                 self.packagesScrollView
@@ -395,20 +393,6 @@ private struct PackageButton: View {
 
     private func font(for textStyle: Font.TextStyle) -> Font {
         return self.configuration.fonts.font(for: textStyle)
-    }
-
-}
-
-// MARK: - Extensions
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewMode {
-
-    var shouldDisplayPackages: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
     }
 
 }

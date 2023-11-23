@@ -54,7 +54,7 @@ struct Template2View: TemplateViewType {
             Spacer(minLength: VersionDetector.iOS15 ? nil : 0)
 
             self.scrollableContent
-                .scrollableIfNecessary(enabled: self.configuration.mode.shouldDisplayPackages)
+                .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
                 self.offerDetails(package: self.selectedPackage, selected: false)
@@ -77,18 +77,16 @@ struct Template2View: TemplateViewType {
             // Compensate for additional padding on condensed mode + iPad
             : self.defaultVerticalPaddingLength.map { $0 * -1 }
         )
-        .edgesIgnoringSafeArea(self.configuration.mode.shouldDisplayIcon ? .top : [])
+        .edgesIgnoringSafeArea(self.configuration.mode.isFullScreen ? .top : [])
     }
 
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayIcon {
+            if self.configuration.mode.isFullScreen {
                 Spacer()
                 self.iconImage
                 Spacer()
-            }
 
-            if self.configuration.mode.shouldDisplayText {
                 Text(.init(self.selectedLocalization.title))
                     .foregroundColor(self.configuration.colors.text1Color)
                     .font(self.font(for: .largeTitle).bold())
@@ -102,9 +100,7 @@ struct Template2View: TemplateViewType {
                     .defaultHorizontalPadding()
 
                 Spacer()
-            }
 
-            if self.configuration.mode.shouldDisplayPackages {
                 self.packages
             } else {
                 self.packages
@@ -285,18 +281,6 @@ private extension Template2View {
 
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.selectedPackage.localization
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewMode {
-
-    var shouldDisplayPackages: Bool {
-        switch self {
-        case .fullScreen: return true
-        case .footer, .condensedFooter: return false
-        }
     }
 
 }

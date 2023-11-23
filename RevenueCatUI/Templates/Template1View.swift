@@ -65,11 +65,9 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.shouldDisplayIcon {
+            if self.configuration.mode.isFullScreen {
                 self.headerImage
-            }
 
-            if self.configuration.mode.shouldDisplayText {
                 Group {
                     Text(.init(self.localization.title))
                         .font(self.font(for: .largeTitle))
