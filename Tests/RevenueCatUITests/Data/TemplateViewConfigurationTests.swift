@@ -457,7 +457,7 @@ private extension BaseTemplateViewConfigurationTests {
         callToAction: "Purchase for {{ price }}",
         callToActionWithIntroOffer: nil,
         offerDetails: "{{ sub_price_per_month }} per month",
-        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial" +
+        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
         "then {{ sub_price_per_month }} per month",
         features: []
     )
