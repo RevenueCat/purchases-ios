@@ -16,6 +16,8 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+// swiftlint:disable file_length type_name
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class BaseTemplateViewConfigurationTests: TestCase {}
 
@@ -178,6 +180,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
 }
 
+// MARK: -
+
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTests {
 
@@ -243,6 +247,193 @@ class TemplateViewConfigurationFilteringTests: BaseTemplateViewConfigurationTest
             TestData.weeklyPackage
         ]
     }
+
+}
+
+// MARK: -
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: BaseTemplateViewConfigurationTests {
+
+    private typealias Eligibility = [Package: IntroEligibilityStatus]
+
+    private var singlePackageConfiguration: TemplateViewConfiguration.PackageConfiguration!
+    private var multiPackageConfigurationSameText: TemplateViewConfiguration.PackageConfiguration!
+    private var multiPackageConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.singlePackageConfiguration = try Config.create(
+            with: [Self.package1],
+            activelySubscribedProductIdentifiers: [],
+            filter: [Self.package1.packageType.identifier],
+            default: nil,
+            localization: Self.localization,
+            setting: .single
+        )
+        self.multiPackageConfigurationSameText = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: Self.allPackages.map(\.packageType.identifier),
+            default: nil,
+            localization: .init(
+                title: "Title: {{ product_name }}",
+                subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                callToAction: "Start now",
+                callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                offerDetails: "No trial",
+                offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+                "then {{ sub_price_per_month }} per month",
+                features: []
+            ),
+            setting: .multiple
+        )
+        self.multiPackageConfigurationDifferentText = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: Self.allPackages.map(\.packageType.identifier),
+            default: nil,
+            localization: Self.localization,
+            setting: .multiple
+        )
+    }
+
+    func testSinglePackageNoEligibility() throws {
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: [:]
+        )) == false
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == false
+    }
+
+    func testSinglePackageEligible() throws {
+        let eligibility: Eligibility = [TestData.monthlyPackage: .eligible]
+
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == false
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testSinglePackageNotEligible() throws {
+        let eligibility: Eligibility = [TestData.monthlyPackage: .ineligible]
+
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == false
+        expect(self.singlePackageConfiguration.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testMultiPackageSameTextUnknownEligibility() throws {
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == true
+    }
+
+    func testMultiPackageSameTextNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == false
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testMultiPackageSameTextWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiPackageConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testMultiPackageDifferentTextUnknownEligibility() throws {
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == true
+    }
+
+    func testMultiPackageDifferentTextNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testMultiPackageDifferentTextWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiPackageConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    private static let package1 = TestData.monthlyPackage
+    private static let package2 = TestData.annualPackage
+    private static let package3 = TestData.weeklyPackage
+    private static let allPackages: [Package] = [
+        package1,
+        package2,
+        package3
+    ]
 
 }
 

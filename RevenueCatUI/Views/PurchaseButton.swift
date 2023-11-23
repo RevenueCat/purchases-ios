@@ -133,18 +133,10 @@ struct PurchaseButton: View {
 private extension PurchaseButton {
 
     var packagesProduceDifferentLabels: Bool {
-        return Set(
-            self.packages.all
-                .lazy
-                .map {
-                    IntroEligibilityStateView.text(
-                        for: .callToAction,
-                        localization: $0.localization,
-                        introEligibility: self.introEligibilityViewModel.allEligibility[$0.content]
-                    )
-                }
+        return self.packages.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: self.introEligibilityViewModel
         )
-        .count > 1
     }
 
 }
