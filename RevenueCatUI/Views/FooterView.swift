@@ -13,6 +13,7 @@
 
 import RevenueCat
 import SwiftUI
+import WebKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
@@ -240,11 +241,10 @@ private struct LinkButton: View {
     }
 
     private func link(for title: String, bundle: Bundle) -> some View {
-        Link(
-            Self.localizedString(title, bundle),
-            destination: self.url
-        )
-        .frame(minHeight: Constants.minimumButtonHeight)
+        NavigationLink(destination: WebView(url: self.url)) {
+            Text(Self.localizedString(title, bundle))
+                .frame(minHeight: Constants.minimumButtonHeight)
+        }
     }
 
     private static func localizedString(_ string: String, _ bundle: Bundle) -> String {
@@ -255,6 +255,23 @@ private struct LinkButton: View {
         )
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+private struct WebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        return WKWebView()
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        let request = URLRequest(url: url)
+        uiView.load(request)
+    }
 }
 
 // MARK: - Previews
