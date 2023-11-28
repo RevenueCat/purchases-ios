@@ -164,6 +164,8 @@ private extension Localization {
         switch locale.languageCodeIdentifier {
         // Abbreviated does not fully work with Japanese
         case "ja": return [.brief]
+        // Abbreviated is too short for German
+        case "de": return [.full, .brief]
         default: return [.full, .brief, .abbreviated]
         }
     }
