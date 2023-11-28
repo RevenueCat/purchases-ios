@@ -33,16 +33,16 @@ struct RemoteImage: View {
     }
 
     var body: some View {
-        if let image = loader.image {
-            let uiImage = Image(uiImage: image)
+        if let loadedUIImage = loader.image {
+            let image = Image(uiImage: loadedUIImage)
             if let aspectRatio {
-                uiImage
+                image
                     .fitToAspect(aspectRatio, contentMode: .fill)
                     .frame(maxWidth: self.maxWidth)
                     .transition(.opacity.animation(Constants.defaultAnimation))
 
             } else {
-                uiImage
+                image
                     .resizable()
                     .transition(.opacity.animation(Constants.defaultAnimation))
             }
