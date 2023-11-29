@@ -164,8 +164,10 @@ private extension Localization {
         switch locale.languageCodeIdentifier {
         // Abbreviated does not fully work with Japanese
         case "ja": return [.brief]
-        // Abbreviated is too short for German
-        case "de": return [.full, .brief]
+        // Abbreviated is too short for German - Tag = T, Woche = Wo., Monat = M, Jahr = J
+        // In Brief Tag = Tg., Woche = Wo., Monat = Mo., Jahr = J the Year is just J, which is not very clear
+        // the full version is the best for German
+        case "de": return [.full]
         default: return [.full, .brief, .abbreviated]
         }
     }
