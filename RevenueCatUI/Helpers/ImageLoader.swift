@@ -9,15 +9,17 @@ import Combine
 import Foundation
 import UIKit
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension URLCache {
+
     static let imageCache = URLCache(memoryCapacity: 5 * 1000 * 1000, diskCapacity: 30 * 1000 * 1000)
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class ImageLoader: ObservableObject {
+
     @Published var image: UIImage?
     @Published var error: Error?
     private var cancellable: AnyCancellable?
