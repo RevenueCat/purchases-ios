@@ -834,6 +834,14 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testPostsJWSTokenWithProductDataCorrectly() throws {
         let path: HTTPRequest.Path = .postReceiptData
 
+        self.createDependencies(dangerousSettings: .init(
+            autoSyncPurchases: true,
+            internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: true)
+        ))
+
+        self.systemInfo.originalAppVersion = "1.2.3"
+        self.systemInfo.originalAppPurchaseDate = Date(timeIntervalSince1970: 123)
+
         httpClient.mock(
             requestPath: path,
             response: .init(statusCode: .success, response: Self.validCustomerResponse)

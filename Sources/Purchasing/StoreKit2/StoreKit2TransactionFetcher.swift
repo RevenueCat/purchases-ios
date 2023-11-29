@@ -31,6 +31,8 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? { get async }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var appTransaction: SK2AppTransaction? { get async }
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -97,6 +99,24 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             originalApplicationVersion: appTransaction?.originalApplicationVersion,
             originalPurchaseDate: appTransaction?.originalPurchaseDate
         )
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var appTransaction: SK2AppTransaction? {
+        get async {
+            do {
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    let transaction = try await StoreKit.AppTransaction.shared
+                    return transaction.verifiedAppTransaction
+                } else {
+                    Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
+                    return nil
+                }
+            } catch {
+                Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
+                return nil
+            }
+        }
     }
 
 }
@@ -236,24 +256,6 @@ extension StoreKit2TransactionFetcher {
             }
 
             return statusBySubscriptionGroup
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private var appTransaction: SK2AppTransaction? {
-        get async {
-            do {
-                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                    let transaction = try await StoreKit.AppTransaction.shared
-                    return transaction.verifiedAppTransaction
-                } else {
-                    Logger.warn(Strings.storeKit.sk2_app_transaction_unavailable)
-                    return nil
-                }
-            } catch {
-                Logger.warn(Strings.storeKit.sk2_error_fetching_app_transaction(error))
-                return nil
-            }
         }
     }
 

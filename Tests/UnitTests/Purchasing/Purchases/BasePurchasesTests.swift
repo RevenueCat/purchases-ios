@@ -268,6 +268,7 @@ class BasePurchasesTests: TestCase {
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
                                    receiptFetcher: self.receiptFetcher,
+                                   transactionFetcher: self.mockTransactionFetcher,
                                    attributionFetcher: self.attributionFetcher,
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,

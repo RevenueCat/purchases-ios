@@ -389,6 +389,73 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.mockPaymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
+    func testCachesAppTransactionIfInStoreKit2JWSMode() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let date = Date()
+        self.mockTransactionFetcher.stubbedAppTransaction = SK2AppTransaction(
+            bundleID: "bundle_id",
+            originalApplicationVersion: "app_version",
+            originalPurchaseDate: date,
+            environment: .xcode
+        )
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: false,
+            storeKit2Setting: .enabledForCompatibleDevices,
+            usesStoreKit2JWS: true
+        )
+
+        self.setupPurchases()
+
+        expect(self.systemInfo.originalAppVersion) == "app_version"
+        expect(self.systemInfo.originalAppPurchaseDate) == date
+    }
+
+    func testDoesNotCacheAppTransactionIfInBackground() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let date = Date()
+        self.mockTransactionFetcher.stubbedAppTransaction = SK2AppTransaction(
+            bundleID: "bundle_id",
+            originalApplicationVersion: "app_version",
+            originalPurchaseDate: date,
+            environment: .xcode
+        )
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: false,
+            storeKit2Setting: .enabledForCompatibleDevices,
+            usesStoreKit2JWS: true
+        )
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+
+        self.setupPurchases()
+
+        expect(self.systemInfo.originalAppVersion).to(beNil())
+        expect(self.systemInfo.originalAppPurchaseDate).to(beNil())
+    }
+
+    func testDoesNotCacheAppTransactionIfNotInStoreKit2JWSMode() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let date = Date()
+        self.mockTransactionFetcher.stubbedAppTransaction = SK2AppTransaction(
+            bundleID: "bundle_id",
+            originalApplicationVersion: "app_version",
+            originalPurchaseDate: date,
+            environment: .xcode
+        )
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: false,
+            storeKit2Setting: .enabledForCompatibleDevices,
+            usesStoreKit2JWS: false
+        )
+
+        self.setupPurchases()
+
+        expect(self.systemInfo.originalAppVersion).to(beNil())
+        expect(self.systemInfo.originalAppPurchaseDate).to(beNil())
+    }
+
     // MARK: - Custom Entitlement Computation
     func testCustomEntitlementComputationSkipsFirstDelegateCall() throws {
         self.systemInfo = MockSystemInfo(finishTransactions: true,

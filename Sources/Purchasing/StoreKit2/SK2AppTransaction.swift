@@ -14,7 +14,6 @@
 import StoreKit
 
 /// A wrapper for `StoreKit.AppTransaction`.
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct SK2AppTransaction {
 
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
@@ -23,6 +22,18 @@ internal struct SK2AppTransaction {
         self.originalApplicationVersion = appTransaction.originalAppVersion
         self.originalPurchaseDate = appTransaction.originalPurchaseDate
         self.environment = .init(environment: appTransaction.environment)
+    }
+
+    init(
+        bundleID: String,
+        originalApplicationVersion: String?,
+        originalPurchaseDate: Date?,
+        environment: StoreEnvironment?
+    ) {
+        self.bundleId = bundleID
+        self.originalApplicationVersion = originalApplicationVersion
+        self.originalPurchaseDate = originalPurchaseDate
+        self.environment = environment
     }
 
     let bundleId: String

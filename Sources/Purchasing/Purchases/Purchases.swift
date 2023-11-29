@@ -252,6 +252,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let purchasesOrchestrator: PurchasesOrchestrator
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
+    private let transactionFetcher: StoreKit2TransactionFetcherType
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
     private let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
@@ -485,6 +486,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.init(appUserID: appUserID,
                   requestFetcher: fetcher,
                   receiptFetcher: receiptFetcher,
+                  transactionFetcher: transactionFetcher,
                   attributionFetcher: attributionFetcher,
                   attributionPoster: attributionPoster,
                   backend: backend,
@@ -514,6 +516,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     init(appUserID: String?,
          requestFetcher: StoreKitRequestFetcher,
          receiptFetcher: ReceiptFetcher,
+         transactionFetcher: StoreKit2TransactionFetcherType,
          attributionFetcher: AttributionFetcher,
          attributionPoster: AttributionPoster,
          backend: Backend,
@@ -561,6 +564,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
+        self.transactionFetcher = transactionFetcher
         self.attributionFetcher = attributionFetcher
         self.attributionPoster = attributionPoster
         self.backend = backend
@@ -1690,6 +1694,8 @@ private extension Purchases {
         if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
+
+        self.fetchAndCacheAppTransactionIfNeeded()
     }
 
     func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
@@ -1723,6 +1729,22 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+
+        self.fetchAndCacheAppTransactionIfNeeded()
+    }
+
+    func fetchAndCacheAppTransactionIfNeeded() {
+        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+           self.systemInfo.originalAppVersion == nil,
+           self.systemInfo.originalAppPurchaseDate == nil {
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                _ = Task<Void, Never> {
+                    let appTransaction = await self.transactionFetcher.appTransaction
+                    systemInfo.originalAppVersion = appTransaction?.originalApplicationVersion
+                    systemInfo.originalAppPurchaseDate = appTransaction?.originalPurchaseDate
+                }
+            }
+        }
     }
 
     // Used when delegate is being set

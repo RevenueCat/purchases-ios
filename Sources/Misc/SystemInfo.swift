@@ -45,6 +45,16 @@ class SystemInfo {
         set { self._finishTransactions.value = newValue }
     }
 
+    var originalAppVersion: String? {
+        get { self._originalAppVersion.value }
+        set { self._originalAppVersion.value = newValue }
+    }
+
+    var originalAppPurchaseDate: Date? {
+        get { self._originalAppPurchaseDate.value }
+        set { self._originalAppPurchaseDate.value = newValue }
+    }
+
     var bundle: Bundle { return self._bundle.value }
 
     var observerMode: Bool { return !self.finishTransactions }
@@ -53,6 +63,8 @@ class SystemInfo {
     private let storefrontProvider: StorefrontProviderType
     private let _finishTransactions: Atomic<Bool>
     private let _bundle: Atomic<Bundle>
+    private let _originalAppVersion: Atomic<String?> = nil
+    private let _originalAppPurchaseDate: Atomic<Date?> = nil
 
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
