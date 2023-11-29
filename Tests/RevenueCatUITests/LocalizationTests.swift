@@ -131,6 +131,41 @@ class AbbreviatedUnitJapaneseLocalizationTests: BaseLocalizationTests {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class AbbreviatedUnitGermanLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "de_DE") }
+
+    func testDay() {
+        verify(.day, "Tag")
+    }
+
+    func testWeek() {
+        verify(.week, "Woche")
+    }
+
+    func testMonth() {
+        verify(.month, "Monat")
+    }
+
+    func testTwoMonths() {
+        verify(.init(2, .month), "2Monate")
+    }
+
+    func testThreeMonths() {
+        verify(.init(3, .month), "3Monate")
+    }
+
+    func testSixMonths() {
+        verify(.init(6, .month), "6Monate")
+    }
+
+    func testYear() {
+        verify(.year, "Jahr")
+    }
+
+}
+
 // MARK: - SubscriptionPeriod
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -157,6 +192,34 @@ class SubscriptionPeriodEnglishLocalizationTests: BaseLocalizationTests {
     func testYearPeriod() {
         verify(1, .year, "1 year")
         verify(3, .year, "3 years")
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class SubscriptionPeriodGermanLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "de_DE") }
+
+    func testDayPeriod() {
+        verify(1, .day, "1 Tag")
+        verify(7, .day, "7 Tage")
+    }
+
+    func testsWeekPeriod() {
+        verify(1, .week, "1 Woche")
+        verify(3, .week, "3 Wochen")
+    }
+
+    func testMonthPeriod() {
+        verify(1, .month, "1 Monat")
+        verify(3, .month, "3 Monate")
+        verify(6, .month, "6 Monate")
+    }
+
+    func testYearPeriod() {
+        verify(1, .year, "1 Jahr")
+        verify(3, .year, "3 Jahre")
     }
 
 }
@@ -203,6 +266,28 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
         verify(.monthly, "Monthly")
         verify(.weekly, "Weekly")
         verify(.lifetime, "Lifetime")
+    }
+
+    func testOtherValues() {
+        verify(.custom, "")
+        verify(.unknown, "")
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class PackageTypeGermanLocalizationTests: BaseLocalizationTests {
+
+    override var locale: Locale { return .init(identifier: "de_DE") }
+
+    func testLocalization() {
+        verify(.annual, "Jährlich")
+        verify(.sixMonth, "6 Monate")
+        verify(.threeMonth, "3 Monate")
+        verify(.twoMonth, "2 Monate")
+        verify(.monthly, "Monatlich")
+        verify(.weekly, "Wöchentlich")
+        verify(.lifetime, "Lebenslang")
     }
 
     func testOtherValues() {
