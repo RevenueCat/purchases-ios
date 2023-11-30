@@ -8,6 +8,8 @@
     "X-Client-Version" : "17.0.0",
     "X-Is-Sandbox" : "true",
     "X-Observer-Mode-Enabled" : "false",
+    "X-Original-App-Purchase-Date" : "1970-01-01T00:02:03Z",
+    "X-Original-App-Version" : "1.2.3",
     "X-Platform" : "iOS",
     "X-Platform-Flavor" : "native",
     "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
