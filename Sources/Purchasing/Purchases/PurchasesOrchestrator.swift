@@ -1316,11 +1316,18 @@ private extension PurchasesOrchestrator {
                 return
             }
 
+            let receipt: EncodedAppleReceipt
+            if transaction.environment == .xcode {
+                receipt = .sk2receipt(await self.transactionFetcher.receipt)
+            } else {
+                receipt = .jws(jwsRepresentation)
+            }
+
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
                                         product: product,
                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                        receipt: .jws(jwsRepresentation)) { result in
+                                        receipt: receipt) { result in
                 completion(result)
             }
         }
