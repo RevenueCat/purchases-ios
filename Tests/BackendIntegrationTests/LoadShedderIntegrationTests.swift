@@ -25,6 +25,12 @@ class LoadShedderStoreKit2IntegrationTests: LoadShedderStoreKit1IntegrationTests
 
 }
 
+class LoadShedderStoreKit2JWSIntegrationTests: LoadShedderStoreKit1IntegrationTests {
+
+    override var usesStoreKit2JWS: Bool { return true }
+
+}
+
 class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override var apiKey: String { return Constants.loadShedderApiKey }

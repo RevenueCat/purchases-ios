@@ -22,6 +22,13 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
 }
 
+class StoreKit2JWSIntegrationTests: StoreKit1IntegrationTests {
+
+    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+    override var usesStoreKit2JWS: Bool { true }
+
+}
+
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKit2Setting: StoreKit2Setting {
@@ -298,6 +305,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let transaction = try XCTUnwrap(self.testSession.allTransactions().onlyElement)
 
         try self.testSession.approveAskToBuyTransaction(identifier: transaction.identifier)
+
+        // In JWS mode, transaction takes a bit longer to be processed after `approveAskToBuyTransaction`
+        // We need to wait so `restorePurchases` actually posts it.
+        if self.usesStoreKit2JWS {
+            try? await Task.sleep(nanoseconds: DispatchTimeInterval.milliseconds(500).nanoseconds)
+        }
 
         let customerInfo = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(customerInfo)
@@ -629,7 +642,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.purchaseMonthlyProduct()
 
         // 8. Verify transaction is posted as a purchase.
-        self.logger.verifyMessageWasLogged("Posting receipt (source: 'purchase')")
+        try await self.verifyReceiptIsEventuallyPosted()
+        self.logger.verifyMessageWasLogged("(source: 'purchase')")
     }
 
     func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
