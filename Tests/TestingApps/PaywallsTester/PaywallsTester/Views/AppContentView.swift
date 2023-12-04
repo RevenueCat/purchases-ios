@@ -158,8 +158,8 @@ struct AppContentView: View {
 
     #if !os(watchOS)
     private func presentPaywallViewController() {
-        let paywall = PaywallViewController(displayCloseButton: true)
-        paywall.modalPresentationStyle = .pageSheet
+        let paywall = PaywallFooterViewController()
+        paywall.modalPresentationStyle = .formSheet
 
         guard let rootController = UIApplication
             .shared
