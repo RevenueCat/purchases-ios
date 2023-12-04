@@ -1739,9 +1739,14 @@ private extension Purchases {
            self.systemInfo.originalAppPurchaseDate == nil {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 _ = Task<Void, Never> {
-                    let appTransaction = await self.transactionFetcher.appTransaction
-                    systemInfo.originalAppVersion = appTransaction?.originalApplicationVersion
-                    systemInfo.originalAppPurchaseDate = appTransaction?.originalPurchaseDate
+                    if let appTransaction = await self.transactionFetcher.appTransaction {
+                        systemInfo.originalAppVersion = appTransaction.originalApplicationVersion
+                        systemInfo.originalAppPurchaseDate = appTransaction.originalPurchaseDate
+                    } else {
+                        let receipt = try? await self.fetchReceipt(.onlyIfEmpty)
+                        systemInfo.originalAppVersion = receipt?.originalApplicationVersion
+                        systemInfo.originalAppPurchaseDate = nil
+                    }
                 }
             }
         }
