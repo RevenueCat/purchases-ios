@@ -17,7 +17,6 @@ import SwiftUI
 struct RemoteImage: View {
 
     @StateObject private var loader: ImageLoader
-    private let cache: URLCache
 
     let url: URL
     let aspectRatio: CGFloat?
@@ -27,7 +26,6 @@ struct RemoteImage: View {
         self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
-        self.cache = cache
         self._loader = StateObject(wrappedValue: ImageLoader(url: url, cache: cache))
     }
 

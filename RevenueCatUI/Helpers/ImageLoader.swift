@@ -24,9 +24,12 @@ class ImageLoader: ObservableObject {
     @Published var error: Error?
     private var cancellable: AnyCancellable?
     private let cache: URLCache
+    private let urlSessionConfiguration: URLSessionConfiguration
 
-    init(url: URL, cache: URLCache = .shared) {
+    init(url: URL, cache: URLCache) {
         self.cache = cache
+        self.urlSessionConfiguration = URLSessionConfiguration.default
+        urlSessionConfiguration.urlCache = cache
         load(url: url)
     }
 
