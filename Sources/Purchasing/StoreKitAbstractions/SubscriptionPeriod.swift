@@ -168,7 +168,7 @@ private extension SubscriptionPeriod {
         static let daysPerMonth: Decimal = 30
         static let daysPerYear: Decimal = 365
         static let weeksPerMonth: Decimal = daysPerYear / monthsPerYear / daysPerWeek
-        static let weeksPerYear: Decimal = 52.14
+        static let weeksPerYear: Decimal = daysPerYear / daysPerWeek
         static let monthsPerYear: Decimal = 12
     }
 
