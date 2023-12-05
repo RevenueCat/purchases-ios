@@ -32,6 +32,8 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController,
                                didFinishRestoringWith customerInfo: CustomerInfo) {}
 
+    func paywallViewControllerDismissed(_ controller: PaywallViewController) {}
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

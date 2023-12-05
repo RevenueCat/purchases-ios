@@ -85,6 +85,12 @@ public final class PaywallViewController: UIViewController {
         self.hostingController.view.frame = self.view.bounds
     }
 
+    public override func viewDidDisappear(_ animated: Bool) {
+        if isBeingDismissed {
+            self.delegate?.paywallViewControllerDismissed?(self)
+        }
+        super.viewDidDisappear(animated)
+    }
 }
 
 /// Delegate for ``PaywallViewController``.
@@ -111,6 +117,10 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewController:didFinishRestoringWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didFinishRestoringWith customerInfo: CustomerInfo)
+
+    /// Notifies that the ``PaywallViewController`` was dismissed.
+    @objc(paywallViewControllerDismissed:)
+    optional func paywallViewControllerDismissed(_ controller: PaywallViewController)
 
 }
 
