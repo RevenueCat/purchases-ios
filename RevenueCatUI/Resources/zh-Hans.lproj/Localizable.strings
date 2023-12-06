@@ -13,7 +13,7 @@
 "2 Month" = "2个月";
 "Monthly" = "每月";
 "Weekly" = "每周";
-"Lifetime" = "永久";
+"Lifetime" = "終身";
 "%d%% off" = "优惠%d%%";
 "Continue" = "继续";
 "Default_offer_details_with_intro_offer" = "试用期{{ sub_offer_duration }}，届满后{{ total_price_and_per_month }}。";
