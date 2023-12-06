@@ -325,7 +325,7 @@ private struct PackageButton: View {
         // Placeholder to make sure consistent layout
         self.offerText(firstRow: "12",
                        secondRow: Localization.localized(packageType: .monthly,
-                                                         locale: self.locale))
+                                                         locale: self.locale) ?? "Monthly")
         .hidden()
         .overlay {
             if let offerName = self.package.localization.offerName {

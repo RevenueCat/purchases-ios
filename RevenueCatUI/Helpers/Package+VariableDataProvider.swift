@@ -40,11 +40,8 @@ extension Package: VariableDataProvider {
     }
 
     func periodName(_ locale: Locale) -> String {
-        if packageType == .custom {
-            return self.identifier
-        }
         return Localization.localized(packageType: self.packageType,
-                                      locale: locale)
+                                      locale: locale) ?? self.identifier
     }
 
     func subscriptionDuration(_ locale: Locale) -> String? {
