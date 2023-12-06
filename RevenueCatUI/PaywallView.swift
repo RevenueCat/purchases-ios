@@ -309,7 +309,7 @@ struct LoadedOfferingPaywallView: View {
         if let dismiss = self.dismiss {
             NavigationView {
                 view
-                    .toolbar { Self.toolbar(dismiss) }
+                    .toolbar { self.toolbar(dismiss) }
             }
             .navigationViewStyle(.stack)
 
@@ -329,13 +329,18 @@ struct LoadedOfferingPaywallView: View {
         )
     }
 
-    private static func toolbar(_ dismiss: @escaping () -> Void) -> some ToolbarContent {
+    private func toolbar(_ dismiss: @escaping () -> Void) -> some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
             }
+            .disabled(self.purchaseHandler.actionInProgress)
+            .opacity(
+                self.purchaseHandler.actionInProgress
+                ? Constants.purchaseInProgressButtonOpacity
+                : 1)
         }
     }
 
