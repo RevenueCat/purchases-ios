@@ -150,6 +150,12 @@ internal enum TestData {
         storeProduct: Self.annualProduct.toStoreProduct(),
         offeringIdentifier: Self.offeringIdentifier
     )
+    static let customPackage = Package(
+        identifier: "Custom",
+        packageType: .custom,
+        storeProduct: Self.annualProduct.toStoreProduct(),
+        offeringIdentifier: Self.offeringIdentifier
+    )
 
     static let packageWithIntroOffer = Package(
         identifier: PackageType.monthly.identifier,
