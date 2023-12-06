@@ -135,6 +135,7 @@ class PackageVariablesTests: TestCase {
         expect(TestData.annualPackage.periodName(Self.english)) == "Annual"
         expect(TestData.lifetimePackage.periodName(Self.english)) == "Lifetime"
         expect(TestData.customPackage.periodName(Self.english)) == "Custom"
+        expect(TestData.unknownPackage.periodName(Self.english)) == "Unknown"
     }
 
     func testSpanishPeriodName() {
@@ -145,6 +146,8 @@ class PackageVariablesTests: TestCase {
         expect(TestData.annualPackage.periodName(Self.spanish)) == "Anual"
         expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Toda la vida"
         expect(TestData.customPackage.periodName(Self.spanish)) == "Custom"
+        expect(TestData.unknownPackage.periodName(Self.spanish)) == "Unknown"
+
     }
 
     func testEnglishIntroductoryOfferDuration() {
