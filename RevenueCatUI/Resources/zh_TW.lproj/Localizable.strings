@@ -13,7 +13,7 @@
 "2 Month" = "2個月";
 "Monthly" = "每月";
 "Weekly" = "每週";
-"Lifetime" = "永久";
+"Lifetime" = "終身";
 "%d%% off" = "優惠%d%%";
 "Continue" = "繼續";
 "Default_offer_details_with_intro_offer" = "開始{{ sub_offer_duration }}試用，然後{{ total_price_and_per_month }}。";
