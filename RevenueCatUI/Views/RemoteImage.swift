@@ -42,18 +42,17 @@ struct RemoteImage: View {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
                         .frame(maxWidth: self.maxWidth)
-                        .transition(Self.transition)
 
                 } else {
                     image
                         .resizable()
-                        .transition(Self.transition)
                 }
 
             case let .failure(error):
                 self.emptyView(error)
             }
         }
+        .transition(Self.transition)
         .task(id: self.url) {
             await self.loader.load(url: self.url)
         }
@@ -73,7 +72,6 @@ struct RemoteImage: View {
             }
         }
         .frame(maxWidth: self.maxWidth)
-        .transition(.opacity.animation(Constants.defaultAnimation))
         .overlay {
             Group {
                 if let error {
