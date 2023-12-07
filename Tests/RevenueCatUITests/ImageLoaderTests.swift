@@ -14,6 +14,7 @@
 import Nimble
 @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -81,13 +82,21 @@ class ImageLoaderTests: TestCase {
     }
 
     func testValidImage() async throws {
+        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
+            throw XCTSkip("API only available on iOS 16")
+        }
+
         let response = try Self.createValidResponse()
         self.urlSession.response = .success(response)
 
         await self.loader.load(url: Self.url)
 
+        let renderedImage = try XCTUnwrap(self.loader.result?.value?.getUIImage())
+        let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: response.0)))
+            .getUIImage())
+
         expect(self.loader.result).to(beSuccess())
-        expect(self.loader.result?.value?.pngData()) == UIImage(data: response.0)?.pngData()
+        expect(renderedImage.pngData()) == expectedImage.pngData()
         expect(self.urlSession.requestedImage) == Self.url
         expect(self.urlSession.cachePolicy) == .returnCacheDataElseLoad
     }
@@ -168,6 +177,8 @@ class ImageLoaderTests: TestCase {
 
 }
 
+// MARK: - Private
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private final class MockURLSession: URLSessionType {
 
@@ -211,6 +222,17 @@ private final class MockAsyncURLSession: NSObject, URLSessionType {
             self.completionSet = true
         }
         .get()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private extension Image {
+
+    @MainActor
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func getUIImage() -> UIImage? {
+        return ImageRenderer(content: self).uiImage
     }
 
 }
