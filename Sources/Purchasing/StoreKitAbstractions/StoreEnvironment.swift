@@ -63,7 +63,6 @@ extension StoreEnvironment {
     init?(sk2Transaction: SK2Transaction) {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             self.init(environment: sk2Transaction.environment)
-
         } else {
             #if VISION_OS
             self.init(environment: sk2Transaction.environment)
