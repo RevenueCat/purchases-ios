@@ -22,9 +22,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
 }
 
-class StoreKit2JWSIntegrationTests: StoreKit1IntegrationTests {
+class StoreKit2JWSIntegrationTests: StoreKit2IntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
     override var usesStoreKit2JWS: Bool { true }
 
 }
