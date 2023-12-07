@@ -188,10 +188,9 @@ extension StoreKit2TransactionFetcher {
                 }
             }
 
-            let statusBySubscriptionGroup = await withTaskGroup(
-                of: Optional<(String, [Product.SubscriptionInfo.Status])>.self,
-                returning: [String: [Product.SubscriptionInfo.Status]].self) { taskGroup in
-
+            let statusBySubscriptionGroup: [String: [Product.SubscriptionInfo.Status]] = await withTaskGroup(
+                of: Optional<(String, [Product.SubscriptionInfo.Status])>.self
+            ) { taskGroup in
                 for subscriptionGroup in subscriptionGroups {
                     taskGroup.addTask {
                         do {
@@ -203,13 +202,13 @@ extension StoreKit2TransactionFetcher {
                                     subscriptionGroupId: subscriptionGroup, error
                                 )
                             )
+                            return nil
                         }
-                        return nil
                     }
                 }
 
                 return await taskGroup.reduce(
-                    into: [String: [Product.SubscriptionInfo.Status]]()
+                    into: [:]
                 ) { result, value  in
                     if let value = value {
                         result[value.0] = value.1
