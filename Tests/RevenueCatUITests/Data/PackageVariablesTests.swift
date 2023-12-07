@@ -128,21 +128,25 @@ class PackageVariablesTests: TestCase {
     }
 
     func testEnglishPeriodName() {
-        expect(TestData.weeklyPackage.periodName(Self.english)) == "Weekly"
-        expect(TestData.monthlyPackage.periodName(Self.english)) == "Monthly"
-        expect(TestData.threeMonthPackage.periodName(Self.english)) == "3 Month"
-        expect(TestData.sixMonthPackage.periodName(Self.english)) == "6 Month"
-        expect(TestData.annualPackage.periodName(Self.english)) == "Annual"
-        expect(TestData.lifetimePackage.periodName(Self.english)) == "Lifetime"
+        expect(TestData.weeklyPackage.periodNameOrIdentifier(Self.english)) == "Weekly"
+        expect(TestData.monthlyPackage.periodNameOrIdentifier(Self.english)) == "Monthly"
+        expect(TestData.threeMonthPackage.periodNameOrIdentifier(Self.english)) == "3 Month"
+        expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.english)) == "6 Month"
+        expect(TestData.annualPackage.periodNameOrIdentifier(Self.english)) == "Annual"
+        expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.english)) == "Lifetime"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.english)) == "Custom"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.english)) == "Unknown"
     }
 
     func testSpanishPeriodName() {
-        expect(TestData.weeklyPackage.periodName(Self.spanish)) == "Semanalmente"
-        expect(TestData.monthlyPackage.periodName(Self.spanish)) == "Mensual"
-        expect(TestData.threeMonthPackage.periodName(Self.spanish)) == "3 meses"
-        expect(TestData.sixMonthPackage.periodName(Self.spanish)) == "6 meses"
-        expect(TestData.annualPackage.periodName(Self.spanish)) == "Anual"
-        expect(TestData.lifetimePackage.periodName(Self.spanish)) == "Toda la vida"
+        expect(TestData.weeklyPackage.periodNameOrIdentifier(Self.spanish)) == "Semanalmente"
+        expect(TestData.monthlyPackage.periodNameOrIdentifier(Self.spanish)) == "Mensual"
+        expect(TestData.threeMonthPackage.periodNameOrIdentifier(Self.spanish)) == "3 meses"
+        expect(TestData.sixMonthPackage.periodNameOrIdentifier(Self.spanish)) == "6 meses"
+        expect(TestData.annualPackage.periodNameOrIdentifier(Self.spanish)) == "Anual"
+        expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.spanish)) == "Toda la vida"
+        expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Custom"
+        expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Unknown"
     }
 
     func testEnglishIntroductoryOfferDuration() {

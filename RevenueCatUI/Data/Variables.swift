@@ -37,7 +37,7 @@ protocol VariableDataProvider {
     var localizedIntroductoryOfferPrice: String? { get }
     var productName: String { get }
 
-    func periodName(_ locale: Locale) -> String
+    func periodNameOrIdentifier(_ locale: Locale) -> String
     func subscriptionDuration(_ locale: Locale) -> String?
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
@@ -98,7 +98,7 @@ enum VariableHandler {
         case "price_per_period": return { (provider, _, locale) in provider.localizedPricePerPeriod(locale) }
         case "total_price_and_per_month": return { (provider, _, locale) in provider.localizedPriceAndPerMonth(locale) }
         case "product_name": return { (provider, _, _) in provider.productName }
-        case "sub_period": return { (provider, _, locale) in provider.periodName(locale) }
+        case "sub_period": return { (provider, _, locale) in provider.periodNameOrIdentifier(locale) }
         case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
         case "sub_price_per_week": return { (provider, _, _) in provider.localizedPricePerWeek }
         case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }

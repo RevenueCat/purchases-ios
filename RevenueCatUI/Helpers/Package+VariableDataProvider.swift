@@ -39,14 +39,14 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedTitle
     }
 
-    func periodName(_ locale: Locale) -> String {
+    func periodNameOrIdentifier(_ locale: Locale) -> String {
         return Localization.localized(packageType: self.packageType,
-                                      locale: locale)
+                                      locale: locale) ?? self.identifier
     }
 
     func subscriptionDuration(_ locale: Locale) -> String? {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.periodName(locale)
+            return self.periodNameOrIdentifier(locale)
         }
 
         return Localization.localizedDuration(for: period, locale: locale)
@@ -54,7 +54,7 @@ extension Package: VariableDataProvider {
 
     func normalizedSubscriptionDuration(_ locale: Locale) -> String? {
         guard let period = self.storeProduct.subscriptionPeriod else {
-            return self.periodName(locale)
+            return self.periodNameOrIdentifier(locale)
         }
 
         return Localization.localizedDuration(for: period.normalized, locale: locale)

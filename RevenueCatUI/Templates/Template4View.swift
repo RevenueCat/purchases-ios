@@ -323,24 +323,28 @@ private struct PackageButton: View {
     @ViewBuilder
     private var offerName: some View {
         // Placeholder to make sure consistent layout
-        self.offerText(firstRow: "12",
-                       secondRow: Localization.localized(packageType: .monthly,
-                                                         locale: self.locale))
+        self.offerText(Localization.localizedDuration(for: .init(value: 12, unit: .month),
+                                                      locale: self.locale))
         .hidden()
         .overlay {
             if let offerName = self.package.localization.offerName {
-                let components = offerName.split(separator: " ", maxSplits: 2)
-                if components.count == 2 {
-                    self.offerText(firstRow: String(components[0]),
-                                   secondRow: String(components[1]))
-                } else {
-                    self.offerText(firstRow: nil,
-                                   secondRow: offerName)
-                }
+                self.offerText(offerName)
             } else {
                 self.offerText(firstRow: nil,
                                secondRow: self.package.content.productName)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func offerText(_ text: String) -> some View {
+        let components = text.split(separator: " ", maxSplits: 2)
+        if components.count == 2 {
+            self.offerText(firstRow: String(components[0]),
+                           secondRow: String(components[1]))
+        } else {
+            self.offerText(firstRow: nil,
+                           secondRow: text)
         }
     }
 

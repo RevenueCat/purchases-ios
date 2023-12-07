@@ -75,7 +75,7 @@ class VariablesTests: TestCase {
     }
 
     func testPeriodName() {
-        self.provider.periodName = "Monthly"
+        self.provider.periodNameOrIdentifier = "Monthly"
         expect(self.process("{{ sub_period }}")) == "Monthly"
     }
 
@@ -280,15 +280,15 @@ private struct MockVariableProvider: VariableDataProvider {
     var localizedPriceAndPerMonth: String = ""
     var localizedPricePerPeriod: String = ""
     var productName: String = ""
-    var periodName: String = ""
+    var periodNameOrIdentifier: String = ""
     var subscriptionDuration: String?
     var normalizedSubscriptionDuration: String?
     var introductoryOfferDuration: String?
     var introductoryOfferPrice: String = ""
     var relativeDiscount: String?
 
-    func periodName(_ locale: Locale) -> String {
-        return self.periodName
+    func periodNameOrIdentifier(_ locale: Locale) -> String {
+        return self.periodNameOrIdentifier
     }
 
     func subscriptionDuration(_ locale: Locale) -> String? {

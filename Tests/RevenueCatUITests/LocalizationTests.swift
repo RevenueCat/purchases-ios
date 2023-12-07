@@ -269,8 +269,8 @@ class PackageTypeEnglishLocalizationTests: BaseLocalizationTests {
     }
 
     func testOtherValues() {
-        verify(.custom, "")
-        verify(.unknown, "")
+        verify(.custom, nil)
+        verify(.unknown, nil)
     }
 
 }
@@ -313,8 +313,8 @@ class PackageTypeSpanishLocalizationTests: BaseLocalizationTests {
     }
 
     func testOtherValues() {
-        verify(.custom, "")
-        verify(.unknown, "")
+        verify(.custom, nil)
+        verify(.unknown, nil)
     }
 }
 
@@ -335,8 +335,8 @@ class PackageTypeLocalizationWithOnlyLanguageTests: BaseLocalizationTests {
     }
 
     func testOtherValues() {
-        verify(.custom, "")
-        verify(.unknown, "")
+        verify(.custom, nil)
+        verify(.unknown, nil)
     }
 }
 
@@ -356,8 +356,8 @@ class PackageTypeOtherLanguageLocalizationTests: BaseLocalizationTests {
     }
 
     func testOtherValues() {
-        verify(.custom, "")
-        verify(.unknown, "")
+        verify(.custom, nil)
+        verify(.unknown, nil)
     }
 }
 
@@ -471,13 +471,17 @@ private extension BaseLocalizationTests {
 
     func verify(
         _ packageType: PackageType,
-        _ expected: String,
+        _ expected: String?,
         file: StaticString = #file,
         line: UInt = #line
     ) {
         let result = Localization.localized(packageType: packageType,
                                             locale: self.locale)
-        expect(file: file, line: line, result) == expected
+        if let expected {
+            expect(file: file, line: line, result) == expected
+        } else {
+            expect(file: file, line: line, result).to(beNil())
+        }
     }
 
     func verify(

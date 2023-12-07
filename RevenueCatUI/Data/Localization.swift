@@ -53,8 +53,8 @@ enum Localization {
     static func localized(
         packageType: PackageType,
         locale: Locale = .current
-    ) -> String {
-        guard let key = packageType.localizationKey else { return "" }
+    ) -> String? {
+        guard let key = packageType.localizationKey else { return nil }
 
         func value(locale: Locale, default: String?) -> String {
             Self
