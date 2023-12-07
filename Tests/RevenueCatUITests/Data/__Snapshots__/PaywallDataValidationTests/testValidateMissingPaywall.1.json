@@ -13,7 +13,7 @@
       }
     },
     "display_restore_purchases" : true,
-    "images" : {
+    "images_heic" : {
       "background" : "background.jpg",
       "header" : null,
       "icon" : "revenuecatui_default_paywall_app_icon"
