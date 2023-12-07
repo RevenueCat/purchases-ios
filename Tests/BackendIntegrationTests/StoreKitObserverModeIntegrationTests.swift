@@ -94,7 +94,9 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         // In JWS mode, transaction takes a bit longer to be processed after `buyProduct`
         // We need to wait so `restorePurchases` actually posts it.
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(2).nanoseconds)
+        if self.usesStoreKit2JWS {
+            try await self.waitUntilUnfinishedTransactions { $0 == 1 }
+        }
 
         let info = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(info)
