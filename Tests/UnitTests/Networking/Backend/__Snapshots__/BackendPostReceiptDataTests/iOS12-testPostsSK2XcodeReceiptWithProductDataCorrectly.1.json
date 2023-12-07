@@ -1,0 +1,38 @@
+{
+  "headers" : {
+    "Authorization" : "Bearer asharedsecret",
+    "content-type" : "application/json",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version" : "12345",
+    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
+    "X-Client-Version" : "17.0.0",
+    "X-Is-Sandbox" : "true",
+    "X-Observer-Mode-Enabled" : "false",
+    "X-Platform" : "iOS",
+    "X-Platform-Flavor" : "native",
+    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
+    "X-StoreKit2-Enabled" : "false",
+    "X-Version" : "4.0.0"
+  },
+  "request" : {
+    "body" : {
+      "app_user_id" : "user",
+      "attributes" : {
+        "$attConsentStatus" : {
+          "updated_at_ms" : 1678307200000,
+          "value" : "notDetermined"
+        }
+      },
+      "currency" : "USD",
+      "fetch_token" : "ewogICJidW5kbGVfaWQiIDogIjEyM19idW5kbGVfaWQiLAogICJlbnZpcm9ubWVudCIgOiAieGNvZGUiLAogICJvcmlnaW5hbF9hcHBsaWNhdGlvbl92ZXJzaW9uIiA6ICIxMjNfb3JpZ2luYWxfYXBwbGljYXRpb25fdmVyc2lvbiIsCiAgIm9yaWdpbmFsX3B1cmNoYXNlX2RhdGUiIDogIjE5NzAtMDEtMDFUMDA6MDI6MDNaIiwKICAic3Vic2NyaXB0aW9uX3N0YXR1cyIgOiB7CiAgICAiMTIzX3N1YnNjcmlwdGlvbl9ncm91cF9pZCIgOiBbCiAgICAgIHsKICAgICAgICAicmVuZXdhbF9pbmZvIiA6ICIxMjNfcmVuZXdhbF9pbmZvX2p3c190b2tlbiIsCiAgICAgICAgInN0YXRlIiA6IDEsCiAgICAgICAgInRyYW5zYWN0aW9uIiA6ICIxMjNfdHJhbnNhY3Rpb25fandzX3Rva2VuIgogICAgICB9CiAgICBdCiAgfSwKICAidHJhbnNhY3Rpb25zIiA6IFsKICAgICIxMjNfdHJhbnNhY3Rpb25fandzX3Rva2VuIgogIF0KfQ==",
+      "initiation_source" : "purchase",
+      "is_restore" : false,
+      "observer_mode" : true,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP"
+    },
+    "method" : "POST",
+    "url" : "https://api.revenuecat.com/v1/receipts"
+  }
+}
