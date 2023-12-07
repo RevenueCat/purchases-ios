@@ -30,8 +30,10 @@ final class ImageLoader: ObservableObject {
 
     }
 
+    typealias Value = Result<UIImage, Error>
+
     @Published
-    private(set) var result: Result<UIImage, Error>? {
+    private(set) var result: Value? {
         didSet {
             if let result {
                 Logger.verbose(Strings.image_result(result))
@@ -59,7 +61,7 @@ final class ImageLoader: ObservableObject {
 
     /// - Returns: `nil` if the Task was cancelled.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func loadImage(_ url: URL) async -> Result<UIImage, Error>? {
+    private func loadImage(_ url: URL) async -> Value? {
         do {
             let (data, response) = try await self
                 .urlSession
@@ -72,11 +74,16 @@ final class ImageLoader: ObservableObject {
                 return .failure(.badResponse(.init(.badServerResponse)))
             }
 
-            guard let image = UIImage(data: data) else {
-                return .failure(.invalidImage)
-            }
-
-            return .success(image)
+            return await Task<Value, Never>
+                .detached(priority: .utility) {
+                    // Load images in a background thread
+                    if let image = UIImage(data: data) {
+                        return .success(image)
+                    } else {
+                        return .failure(.invalidImage)
+                    }
+                }
+                .value
         } catch let error {
             return .failure(.responseError(error as NSError))
         }
