@@ -70,8 +70,8 @@
                 },
                 "config": {
                     "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
-                    "images": {
-                        "header": "header.jpg"
+                    "images_heic": {
+                        "header": "header.heic"
                     },
                     "colors": {
                         "light": {

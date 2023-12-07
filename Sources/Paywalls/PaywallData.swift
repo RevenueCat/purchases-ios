@@ -190,7 +190,16 @@ extension PaywallData {
         public var defaultPackage: String?
 
         /// The images for this template.
-        public var images: Images
+        public var images: Images {
+            get {
+                return Self.merge(source: self._imagesHeic, fallback: self._legacyImages)
+            }
+
+            set {
+                self._imagesHeic = newValue
+                self._legacyImages = nil
+            }
+        }
 
         /// Whether the background image will be blurred (in templates with one).
         public var blurredBackgroundImage: Bool {
@@ -232,13 +241,16 @@ extension PaywallData {
         ) {
             self.packages = packages
             self.defaultPackage = defaultPackage
-            self.images = images
+            self._imagesHeic = images
             self.colors = colors
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
         }
+
+        var _legacyImages: Images?
+        var _imagesHeic: Images?
 
         @DefaultDecodable.False
         var _blurredBackgroundImage: Bool
@@ -293,6 +305,14 @@ extension PaywallData.Configuration {
             self.icon = icon
         }
 
+    }
+
+    fileprivate static func merge(source: Images?, fallback: Images?) -> Images {
+        return .init(
+            header: source?.header ?? fallback?.header,
+            background: source?.background ?? fallback?.background,
+            icon: source?.icon ?? fallback?.icon
+        )
     }
 
 }
@@ -453,7 +473,8 @@ extension PaywallData.Configuration: Codable {
     private enum CodingKeys: String, CodingKey {
         case packages
         case defaultPackage
-        case images
+        case _legacyImages = "images"
+        case _imagesHeic = "imagesHeic"
         case _blurredBackgroundImage = "blurredBackgroundImage"
         case _displayRestorePurchases = "displayRestorePurchases"
         case _termsOfServiceURL = "tosUrl"

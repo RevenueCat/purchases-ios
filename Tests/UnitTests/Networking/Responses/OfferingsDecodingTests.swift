@@ -116,7 +116,7 @@ class OfferingsDecodingTests: BaseHTTPResponseTest {
 
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage).to(beNil())
-        expect(paywall.config.images.header) == "header.jpg"
+        expect(paywall.config.images.header) == "header.heic"
         expect(paywall.config.images.background).to(beNil())
         expect(paywall.config.images.icon).to(beNil())
 

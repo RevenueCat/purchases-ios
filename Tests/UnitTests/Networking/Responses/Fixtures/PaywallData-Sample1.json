@@ -39,10 +39,13 @@
     "config": {
         "packages": ["$rc_monthly", "$rc_annual", "custom_package"],
         "default_package": "$rc_annual",
+        "images_heic": {
+            "header": "header.heic",
+            "icon": "icon.heic"
+        },
         "images": {
             "header": "header.jpg",
-            "background": "background.jpg",
-            "icon": "icon.jpg"
+            "background": "background.jpg"
         },
         "blurred_background_image": true,
         "display_restore_purchases": false,

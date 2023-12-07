@@ -3,7 +3,7 @@
     "localized_strings": {},
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
-        "images": {},
+        "images_heic": {},
         "colors": {
             "light": {
                 "background": "#FFFFFF",

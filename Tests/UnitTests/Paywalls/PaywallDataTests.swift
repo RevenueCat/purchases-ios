@@ -26,9 +26,9 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.packages) == ["$rc_monthly", "$rc_annual", "custom_package"]
         expect(paywall.config.defaultPackage) == "$rc_annual"
         expect(paywall.config.images) == .init(
-            header: "header.jpg",
+            header: "header.heic",
             background: "background.jpg",
-            icon: "icon.jpg"
+            icon: "icon.heic"
         )
         expect(paywall.config.blurredBackgroundImage) == true
         expect(paywall.config.displayRestorePurchases) == false
@@ -85,6 +85,16 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.localizedConfiguration) == paywall.config(for: Locale.current)
 
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
+    }
+
+    func testModifyingImages() throws {
+        var paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        var expected = paywall.config.images
+
+        paywall.config.images.header = nil
+        expected.header = nil
+
+        expect(paywall.config.images) == expected
     }
 
     func testFindsLocaleWithOnlyLanguage() throws {

@@ -12,7 +12,7 @@
     },
     "config": {
         "packages": ["$rc_monthly", "$rc_annual"],
-        "images": {
+        "images_heic": {
             "header": "another_header.jpg"
         },
         "colors": {
