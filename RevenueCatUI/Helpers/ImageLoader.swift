@@ -5,11 +5,16 @@
 //  Created by Andrés Boedo on 11/29/23.
 //
 
-#if canImport(UIKit)
-
 import Foundation
 import RevenueCat
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
+import SwiftUI
 
 protocol URLSessionType {
 
@@ -30,7 +35,7 @@ final class ImageLoader: ObservableObject {
 
     }
 
-    typealias Value = Result<UIImage, Error>
+    typealias Value = Result<Image, Error>
 
     @Published
     private(set) var result: Value? {
@@ -80,15 +85,9 @@ final class ImageLoader: ObservableObject {
                 return .failure(.badResponse(.init(.badServerResponse)))
             }
 
+            // Load images in a background thread
             return await Task<Value, Never>
-                .detached(priority: .utility) {
-                    // Load images in a background thread
-                    if let image = UIImage(data: data) {
-                        return .success(image)
-                    } else {
-                        return .failure(.invalidImage)
-                    }
-                }
+                .detached(priority: .utility) { data.toImage() }
                 .value
         } catch let error {
             return .failure(.responseError(error as NSError))
@@ -99,4 +98,23 @@ final class ImageLoader: ObservableObject {
 
 extension URLSession: URLSessionType {}
 
-#endif
+private extension Data {
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+    func toImage() -> ImageLoader.Value {
+        #if os(macOS)
+        if let image = NSImage(data: self) {
+            return .success(.init(nsImage: image))
+        } else {
+            return .failure(.invalidImage)
+        }
+        #else
+        if let image = UIImage(data: self) {
+            return .success(.init(uiImage: image))
+        } else {
+            return .failure(.invalidImage)
+        }
+        #endif
+    }
+
+}

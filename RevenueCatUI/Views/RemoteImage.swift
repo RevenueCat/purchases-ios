@@ -33,11 +33,9 @@ struct RemoteImage: View {
         Group {
             switch self.loader.result {
             case .none:
-                self.emptyView(nil)
+                self.emptyView(error: nil)
 
             case let .success(image):
-                let image = Image(uiImage: image)
-
                 if let aspectRatio {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
@@ -49,7 +47,7 @@ struct RemoteImage: View {
                 }
 
             case let .failure(error):
-                self.emptyView(error)
+                self.emptyView(error: error)
             }
         }
         .transition(Self.transition)
@@ -59,7 +57,7 @@ struct RemoteImage: View {
     }
 
     @ViewBuilder
-    private func emptyView(_ error: Error?) -> some View {
+    private func emptyView(error: Error?) -> some View {
         let placeholderView = Rectangle()
             .hidden()
 
