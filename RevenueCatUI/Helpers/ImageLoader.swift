@@ -36,7 +36,7 @@ final class ImageLoader: ObservableObject {
     private(set) var result: Value? {
         didSet {
             if let result {
-                Logger.verbose(Strings.image_result(result))
+                Logger.verbose(Strings.image_result(result.map { _ in () }))
             }
         }
     }

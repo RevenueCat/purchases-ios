@@ -13,7 +13,6 @@
 
 import Foundation
 import RevenueCat
-import UIKit
 
 // swiftlint:disable identifier_name
 
@@ -34,7 +33,7 @@ enum Strings {
     case attempted_to_track_event_with_missing_data
 
     case image_starting_request(URL)
-    case image_result(Result<UIImage, ImageLoader.Error>)
+    case image_result(Result<(), ImageLoader.Error>)
 
 }
 
