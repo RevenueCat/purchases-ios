@@ -56,6 +56,8 @@ final class ImageLoader: ObservableObject {
     func load(url: URL) async {
         Logger.verbose(Strings.image_starting_request(url))
 
+        // Reset previous image before loading new one
+        self.result = nil
         self.result = await self.loadImage(url)
     }
 
@@ -67,7 +69,11 @@ final class ImageLoader: ObservableObject {
                 .urlSession
                 .data(for: .init(url: url, cachePolicy: .returnCacheDataElseLoad))
 
-            try? Task.checkCancellation()
+            do {
+                try Task.checkCancellation()
+            } catch {
+                return nil
+            }
 
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200 else {
