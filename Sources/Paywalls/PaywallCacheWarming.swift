@@ -45,10 +45,6 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.imageFetcher = imageFetcher
-
-        // SwiftUI's `AsyncImage` uses `URLSession.shared` for internal caching.
-        URLCache.shared.memoryCapacity = 50_000_000 // 50M
-        URLCache.shared.diskCapacity = 200_000_000 // 200MB
     }
 
     func warmUpEligibilityCache(offerings: Offerings) {
@@ -82,13 +78,30 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
 }
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension PaywallCacheWarming {
+
+    static let downloadSession: URLSession = {
+        return .init(
+            configuration: {
+                let configuration: URLSessionConfiguration = .default
+                configuration.urlCache = PaywallCacheWarming.urlCache
+                return configuration
+            }()
+        )
+    }()
+
+    private static let urlCache = URLCache(memoryCapacity: 50_000_000, // 50M
+                                           diskCapacity: 200_000_000) // 200MB
+}
+
 // MARK: -
 
-final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
+private final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func downloadImage(_ url: URL) async throws {
-        _ = try await URLSession.shared.data(from: url)
+        _ = try await PaywallCacheWarming.downloadSession.data(from: url)
     }
 
 }

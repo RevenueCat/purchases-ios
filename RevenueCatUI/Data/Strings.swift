@@ -13,9 +13,11 @@
 
 import Foundation
 import RevenueCat
+import UIKit
 
 // swiftlint:disable identifier_name
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 enum Strings {
 
     case package_not_subscription(Package)
@@ -31,8 +33,12 @@ enum Strings {
 
     case attempted_to_track_event_with_missing_data
 
+    case image_starting_request(URL)
+    case image_result(Result<UIImage, ImageLoader.Error>)
+
 }
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Strings: CustomStringConvertible {
 
     var description: String {
@@ -65,6 +71,17 @@ extension Strings: CustomStringConvertible {
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
+
+        case let .image_starting_request(url):
+            return "Starting request for image: '\(url)'"
+
+        case let .image_result(result):
+            switch result {
+            case .success:
+                return "Successfully loaded image"
+            case let .failure(error):
+                return "Failed loading image: \(error)"
+            }
         }
     }
 

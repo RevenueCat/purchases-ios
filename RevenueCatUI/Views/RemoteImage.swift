@@ -20,6 +20,9 @@ struct RemoteImage: View {
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
 
+    @StateObject
+    private var loader: ImageLoader = .init()
+
     init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
         self.url = url
         self.aspectRatio = aspectRatio
@@ -27,44 +30,61 @@ struct RemoteImage: View {
     }
 
     var body: some View {
-        AsyncImage(
-            url: self.url,
-            transaction: .init(animation: Constants.defaultAnimation)
-        ) { phase in
-            if let image = phase.image {
+        Group {
+            switch self.loader.result {
+            case .none:
+                self.emptyView(nil)
+
+            case let .success(image):
+                let image = Image(uiImage: image)
+
                 if let aspectRatio {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
                         .frame(maxWidth: self.maxWidth)
+                        .transition(Self.transition)
+
                 } else {
                     image
                         .resizable()
+                        .transition(Self.transition)
                 }
+
+            case let .failure(error):
+                self.emptyView(error)
+            }
+        }
+        .task(id: self.url) {
+            await self.loader.load(url: self.url)
+        }
+    }
+
+    @ViewBuilder
+    private func emptyView(_ error: Error?) -> some View {
+        let placeholderView = Rectangle()
+            .hidden()
+
+        Group {
+            if let aspectRatio {
+                placeholderView
+                    .aspectRatio(aspectRatio, contentMode: .fit)
             } else {
-                Group {
-                    if let aspectRatio {
-                        self.placeholderView
-                            .aspectRatio(aspectRatio, contentMode: .fit)
-                    } else {
-                        self.placeholderView
-                    }
-                }
-                .frame(maxWidth: self.maxWidth)
-                .overlay {
-                    if let error = phase.error {
-                        DebugErrorView("Error loading image from '\(self.url)': \(error)",
-                                       releaseBehavior: .emptyView)
+                placeholderView
+            }
+        }
+        .frame(maxWidth: self.maxWidth)
+        .transition(.opacity.animation(Constants.defaultAnimation))
+        .overlay {
+            Group {
+                if let error {
+                    DebugErrorView("Error loading image from '\(self.url)': \(error)", releaseBehavior: .emptyView)
                         .font(.footnote)
                         .textCase(.none)
-                    }
                 }
             }
         }
     }
 
-    private var placeholderView: some View {
-        Rectangle()
-            .hidden()
-    }
+    private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
 }

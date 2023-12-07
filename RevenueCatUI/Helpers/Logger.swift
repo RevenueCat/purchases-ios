@@ -17,18 +17,34 @@ import RevenueCat
 // Once we can use the `package` keyword it can use the internal `Logger`.
 enum Logger {
 
+    static func verbose(
+        _ text: CustomStringConvertible,
+        file: String = #file,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        Self.log(
+            text,
+            .verbose,
+            file: file,
+            function: function,
+            line: line
+        )
+
+    }
+
     static func debug(
         _ text: CustomStringConvertible,
         file: String = #file,
         function: String = #function,
         line: UInt = #line
     ) {
-        Purchases.verboseLogHandler(
+        Self.log(
+            text,
             .debug,
-            text.description,
-            file,
-            function,
-            line
+            file: file,
+            function: function,
+            line: line
         )
     }
 
@@ -38,8 +54,24 @@ enum Logger {
         function: String = #function,
         line: UInt = #line
     ) {
-        Purchases.verboseLogHandler(
+        Self.log(
+            text,
             .warn,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+
+    private static func log(
+        _ text: CustomStringConvertible,
+        _ level: LogLevel,
+        file: String = #file,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        Purchases.verboseLogHandler(
+            level,
             text.description,
             file,
             function,
