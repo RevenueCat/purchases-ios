@@ -129,9 +129,9 @@ class PaywallCacheWarmingTests: TestCase {
         ])
 
         let expectedURLs: Set<String> = [
-            "https://rc-paywalls.s3.amazonaws.com/header.jpg",
+            "https://rc-paywalls.s3.amazonaws.com/header.heic",
             "https://rc-paywalls.s3.amazonaws.com/background.jpg",
-            "https://rc-paywalls.s3.amazonaws.com/icon.jpg"
+            "https://rc-paywalls.s3.amazonaws.com/icon.heic"
         ]
 
         await self.cache.warmUpPaywallImagesCache(offerings: offerings)
