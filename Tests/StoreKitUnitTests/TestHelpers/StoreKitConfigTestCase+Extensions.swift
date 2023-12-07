@@ -99,7 +99,7 @@ extension StoreKitConfigTestCase {
         return StoreTransaction(
             sk2Transaction: result.underlyingTransaction,
             jwsRepresentation: result.jwsRepresentation,
-            environment: environment
+            environmentOverride: environment
         )
     }
 

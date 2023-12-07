@@ -139,10 +139,10 @@ extension StoreTransaction {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     internal convenience init(sk2Transaction: SK2Transaction,
                               jwsRepresentation: String,
-                              environment: StoreEnvironment? = nil) {
+                              environmentOverride: StoreEnvironment? = nil) {
         self.init(SK2StoreTransaction(sk2Transaction: sk2Transaction,
                                       jwsRepresentation: jwsRepresentation,
-                                      environment: environment))
+                                      environmentOverride: environmentOverride))
     }
 
     /// Returns the `SKPaymentTransaction` if this `StoreTransaction` represents a `SKPaymentTransaction`.

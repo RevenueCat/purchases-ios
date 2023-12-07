@@ -77,7 +77,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
 
         let transaction = StoreTransaction(sk2Transaction: sk2Transaction,
                                            jwsRepresentation: jwsRepresentation,
-                                           environment: .sandbox)
+                                           environmentOverride: .sandbox)
 
         // Can't use `===` because `SK2Transaction` is a `struct`
         expect(transaction.sk2Transaction) == sk2Transaction
