@@ -291,8 +291,8 @@ class PackageTypeGermanLocalizationTests: BaseLocalizationTests {
     }
 
     func testOtherValues() {
-        verify(.custom, "")
-        verify(.unknown, "")
+        verify(.custom, nil)
+        verify(.unknown, nil)
     }
 
 }
