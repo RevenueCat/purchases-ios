@@ -228,7 +228,7 @@ private struct LinkButton: View {
     }
 
     var body: some View {
-        #if canImport(WebKit)
+        #if canImport(WebKit) && !os(macOS)
         Button {
             self.displayLink = true
         } label: {
@@ -293,9 +293,8 @@ private struct LinkButton: View {
 
 }
 
-#if canImport(WebKit)
+#if canImport(WebKit) && !os(macOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
 @available(tvOS, unavailable)
 private struct WebView: UIViewRepresentable {
 
