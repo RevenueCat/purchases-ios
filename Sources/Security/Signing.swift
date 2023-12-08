@@ -272,9 +272,9 @@ extension Signing.SignatureParameters {
     var asData: Data {
         let nonce: Data = self.nonce ?? .init()
         let path: Data = self.path.relativePath.asData
+        let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let headerParametersHash: Data = HTTPRequest.headerParametersForSignatureHeader(headers: self.requestHeaders)?
         .asData ?? .init()
-        let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
         let requestDate: Data = String(self.requestDate).asData
         let etag: Data = (self.etag ?? "").asData
         let message: Data = self.message ?? .init()
@@ -282,8 +282,8 @@ extension Signing.SignatureParameters {
         return (
             nonce +
             path +
-            headerParametersHash +
             postParameterHash +
+            headerParametersHash +
             requestDate +
             etag +
             message
