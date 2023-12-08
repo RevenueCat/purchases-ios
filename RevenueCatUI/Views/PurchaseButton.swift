@@ -105,6 +105,9 @@ struct PurchaseButton: View {
                 transaction.animation = nil
             }
         }
+        #if targetEnvironment(macCatalyst)
+        .buttonStyle(.plain)
+        #endif
     }
 
     @ViewBuilder
