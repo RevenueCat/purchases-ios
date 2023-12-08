@@ -289,16 +289,18 @@ private struct LinkButton: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 private struct WebView: UIViewRepresentable {
+
     let url: URL
 
     func makeUIView(context: Context) -> WKWebView {
-        return WKWebView()
+        let view = WKWebView()
+        view.load(URLRequest(url: self.url))
+
+        return view
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        uiView.load(request)
-    }
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
 }
 
 // MARK: - Previews
