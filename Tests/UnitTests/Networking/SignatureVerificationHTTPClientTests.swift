@@ -266,6 +266,46 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         expect(headers.keys).toNot(contain(HTTPClient.RequestHeader.headerParametersForSignature.rawValue))
     }
 
+    func testPostRequestContainsBothHashHeaders() throws {
+        self.changeClient(.informational)
+
+        let body = BodyWithSignature(key1: "a", key2: "b")
+
+        let request = HTTPRequest(method: .post(body), path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        let post = try XCTUnwrap(headers?[HTTPClient.RequestHeader.postParameters.rawValue] as? String)
+        let header = try XCTUnwrap(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue] as? String)
+        expect(post) == "key1,key2:sha256:59b271ae1bbcb1d31d41929817f4b16fb439eb4f31520b5ad1d5ce98920a7138"
+        expect(header) == "X-Is-Sandbox:sha256:b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    }
+
+    func testDisableHeaderSignatureVerification() throws {
+        self.changeClient(.informational, disableHeaderSignatureVerification: true)
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        let headers: [String: String]? = waitUntilValue { completion in
+            stub(condition: isPath(request.path)) { request in
+                completion(request.allHTTPHeaderFields)
+                return .emptySuccessResponse()
+            }
+
+            self.client.perform(request) { (_: EmptyResponse) in }
+        }
+
+        expect(try XCTUnwrap(headers).keys)
+            .toNot(contain(HTTPClient.RequestHeader.headerParametersForSignature.rawValue))
+    }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -351,8 +391,77 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.parameters.message).to(beNil())
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingRequest.parameters.requestDate) == Self.date1.millisecondsSince1970
+        expect(signingRequest.parameters.requestHeaders.keys).to(contain(HTTPRequest.headersToSign.map(\.rawValue)))
         expect(signingRequest.signature) == Self.sampleSignature
         expect(signingRequest.publicKey).toNot(beNil())
+    }
+
+    func testValidSignatureForPostRequest() throws {
+        let responseContent = "response".asData
+        let requestBody = BodyWithSignature(key1: "a", key2: "b")
+
+        self.mockResponse(
+            signature: Self.sampleSignature,
+            requestDate: Self.date1,
+            body: responseContent,
+            statusCode: .success
+        )
+
+        self.signing.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
+                                                                   path: Self.path)
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.body) == responseContent
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.message) == responseContent
+        expect(signingRequest.parameters.nonce) == request.nonce
+        expect(signingRequest.parameters.requestDate) == Self.date1.millisecondsSince1970
+        expect(signingRequest.parameters.requestBody as? BodyWithSignature) == requestBody
+        expect(signingRequest.parameters.requestHeaders.keys).to(contain(HTTPRequest.headersToSign.map(\.rawValue)))
+        expect(signingRequest.signature) == Self.sampleSignature
+        expect(signingRequest.publicKey).toNot(beNil())
+    }
+
+    func testDisabledHeaderSignatureVerification() throws {
+        self.changeClient(.informational, disableHeaderSignatureVerification: true)
+
+        let responseContent = "response".asData
+        let requestBody = BodyWithSignature(key1: "a", key2: "b")
+
+        self.mockResponse(
+            signature: Self.sampleSignature,
+            requestDate: Self.date1,
+            body: responseContent,
+            statusCode: .success
+        )
+
+        self.signing.stubbedVerificationResult = true
+
+        let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
+                                                                   path: Self.path)
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+        expect(response?.value?.body) == responseContent
+
+        expect(self.signing.requests).to(haveCount(1))
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+
+        expect(signingRequest.parameters.requestHeaders).to(beEmpty())
     }
 
     func testIncorrectSignatureReturnsResponse() throws {
@@ -734,10 +843,12 @@ private extension BaseSignatureVerificationHTTPClientTests {
 
     final func changeClient(
         _ verificationMode: Configuration.EntitlementVerificationMode,
-        forceSignatureFailures: Bool = false
+        forceSignatureFailures: Bool = false,
+        disableHeaderSignatureVerification: Bool = false
     ) {
         self.createClient(Signing.verificationMode(with: verificationMode),
-                          forceSignatureFailures: forceSignatureFailures)
+                          forceSignatureFailures: forceSignatureFailures,
+                          disableHeaderSignatureVerification: disableHeaderSignatureVerification)
     }
 
     final func changeClientToEnforced(forceSignatureFailures: Bool = false) {
@@ -747,7 +858,8 @@ private extension BaseSignatureVerificationHTTPClientTests {
 
     private final func createClient(
         _ mode: Signing.ResponseVerificationMode,
-        forceSignatureFailures: Bool = false
+        forceSignatureFailures: Bool = false,
+        disableHeaderSignatureVerification: Bool = false
     ) {
         self.systemInfo = MockSystemInfo(
             platformInfo: nil,
@@ -755,7 +867,10 @@ private extension BaseSignatureVerificationHTTPClientTests {
             responseVerificationMode: mode,
             dangerousSettings: .init(
                 autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(forceSignatureFailures: forceSignatureFailures)
+                internalSettings: DangerousSettings.Internal(
+                    forceSignatureFailures: forceSignatureFailures,
+                    disableHeaderSignatureVerification: disableHeaderSignatureVerification
+                )
             )
         )
         self.client = self.createClient()

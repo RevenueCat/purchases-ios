@@ -86,7 +86,8 @@ class MockHTTPClient: HTTPClient {
         let call = Call(request: request,
                         headers: request.headers(with: self.authHeaders,
                                                  defaultHeaders: self.defaultHeaders,
-                                                 verificationMode: verificationMode))
+                                                 verificationMode: verificationMode,
+                                                 internalSettings: self.systemInfo.dangerousSettings.internalSettings))
 
         DispatchQueue.main.async {
             self.calls.append(call)

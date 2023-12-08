@@ -21,6 +21,7 @@ import Foundation
         #if DEBUG
         let forceServerErrors: Bool
         let forceSignatureFailures: Bool
+        let disableHeaderSignatureVerification: Bool
         let testReceiptIdentifier: String?
 
         init(
@@ -28,12 +29,14 @@ import Foundation
             usesStoreKit2JWS: Bool = false,
             forceServerErrors: Bool = false,
             forceSignatureFailures: Bool = false,
+            disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.usesStoreKit2JWS = usesStoreKit2JWS
             self.forceServerErrors = forceServerErrors
             self.forceSignatureFailures = forceSignatureFailures
+            self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
             self.testReceiptIdentifier = testReceiptIdentifier
         }
         #else
@@ -44,6 +47,7 @@ import Foundation
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
             self.usesStoreKit2JWS = usesStoreKit2JWS
         }
+
         #endif
 
         static let `default`: Self = .init()
@@ -134,9 +138,13 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Whether `HTTPClient` will fake invalid signatures.
     var forceSignatureFailures: Bool { get }
 
+    /// Used to verify that the backend signs correctly without this part of the signature.
+    var disableHeaderSignatureVerification: Bool { get }
+
     /// Allows defining the receipt identifier for `PostReceiptDataOperation`.
     /// This allows the backend to disambiguate between receipts created across separate test invocations.
     var testReceiptIdentifier: String? { get }
+
     #endif
 
 }
