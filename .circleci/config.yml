@@ -279,6 +279,23 @@ commands:
           command: |
               bundle exec fastlane update_carthage_commit
 
+  create-snapshot-pr-if-needed:
+    parameters:
+      version:
+        type: string
+      job:
+        type: string
+      condition:
+        type: boolean
+    steps:
+      - when:
+          condition: << parameters.condition >>
+          steps:
+            - setup-git-credentials
+            - run:
+                name: Run << parameters.job >>
+                command: bundle exec fastlane << parameters.job >> version:"<< parameters.version >>"
+
 jobs:
   spm-release-build-xcode-14:
     <<: *base-job
@@ -340,12 +357,10 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 13,OS=15.5
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-15"
+          job: "create_snapshots_repo_pr"
+          version: "revenuecatui-15"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -370,12 +385,10 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14,OS=16.4
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-16"
+          job: "create_snapshots_repo_pr"
+          version: "revenuecatui-16"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -403,12 +416,10 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_DEVICE: iPhone 15 Pro,OS=17.2
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshots_repo_pr version:"revenuecatui-17"
+          job: "create_snapshots_repo_pr"
+          version: "revenuecatui-17"
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecatui
@@ -455,12 +466,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-17"
+          job: "create_snapshot_pr"
+          version: "ios-17"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -484,12 +493,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-16"
+          job: "create_snapshot_pr"
+          version: "ios-16"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -511,12 +518,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-15"
+          job: "create_snapshot_pr"
+          version: "ios-15"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -576,12 +581,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-14"
+          job: "create_snapshot_pr"
+          version: "ios-14"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -605,12 +608,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-13"
+          job: "create_snapshot_pr"
+          version: "ios-13"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -634,12 +635,10 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
-      - when:
+      - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
-          steps:
-            - run:
-                name: Run create_snapshot_pr 
-                command: bundle exec fastlane create_snapshot_pr version:"ios-12"
+          job: "create_snapshot_pr"
+          version: "ios-12"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
