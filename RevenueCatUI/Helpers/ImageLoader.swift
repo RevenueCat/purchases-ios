@@ -86,7 +86,7 @@ final class ImageLoader: ObservableObject {
 
             // Load images in a background thread
             return await Task<Value, Never>
-                .detached(priority: .utility) { data.toImage() }
+                .detached(priority: .medium) { data.toImage() }
                 .value
         } catch let error {
             return .failure(.responseError(error as NSError))
