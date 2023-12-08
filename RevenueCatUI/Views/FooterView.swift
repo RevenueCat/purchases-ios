@@ -14,6 +14,10 @@
 import RevenueCat
 import SwiftUI
 
+#if canImport(WebKit)
+import WebKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
 
@@ -212,6 +216,9 @@ private struct LinkButton: View {
     @Environment(\.locale)
     private var locale
 
+    @State
+    private var displayLink = false
+
     let url: URL
     let titles: [String]
 
@@ -221,12 +228,44 @@ private struct LinkButton: View {
     }
 
     var body: some View {
+        #if canImport(WebKit) && !os(macOS)
+        Button {
+            self.displayLink = true
+        } label: {
+            self.content
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: self.$displayLink) {
+            NavigationView {
+                WebView(url: self.url)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .navigationTitle(self.titles.first ?? "")
+                    .toolbar {
+                        ToolbarItem(placement: .destructiveAction) {
+                            Button {
+                                self.displayLink = false
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+            }
+        }
+        #else
+        Link(destination: self.url) {
+            self.content
+        }
+        #endif
+    }
+
+    @ViewBuilder
+    private var content: some View {
         let bundle = Localization.localizedBundle(self.locale)
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             ViewThatFits {
                 ForEach(self.titles, id: \.self) { title in
-                    self.link(for: title, bundle: bundle)
+                    self.linkContent(for: title, bundle: bundle)
                 }
             }
             // Only use the largest label for accessibility
@@ -235,16 +274,13 @@ private struct LinkButton: View {
                 ?? ""
             )
         } else if let first = self.titles.first {
-            self.link(for: first, bundle: bundle)
+            self.linkContent(for: first, bundle: bundle)
         }
     }
 
-    private func link(for title: String, bundle: Bundle) -> some View {
-        Link(
-            Self.localizedString(title, bundle),
-            destination: self.url
-        )
-        .frame(minHeight: Constants.minimumButtonHeight)
+    private func linkContent(for title: String, bundle: Bundle) -> some View {
+        Text(Self.localizedString(title, bundle))
+            .frame(minHeight: Constants.minimumButtonHeight)
     }
 
     private static func localizedString(_ string: String, _ bundle: Bundle) -> String {
@@ -256,6 +292,25 @@ private struct LinkButton: View {
     }
 
 }
+
+#if canImport(WebKit) && !os(macOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(tvOS, unavailable)
+private struct WebView: UIViewRepresentable {
+
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView {
+        let view = WKWebView()
+        view.load(URLRequest(url: self.url))
+
+        return view
+    }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {}
+
+}
+#endif
 
 // MARK: - Previews
 
