@@ -213,6 +213,9 @@ private struct LinkButton: View {
     @Environment(\.locale)
     private var locale
 
+    @State
+    private var displayLink = false
+
     let url: URL
     let titles: [String]
 
@@ -222,12 +225,38 @@ private struct LinkButton: View {
     }
 
     var body: some View {
+        Button {
+            self.displayLink = true
+        } label: {
+            self.content
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: self.$displayLink) {
+            NavigationView {
+                WebView(url: self.url)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .navigationTitle(self.titles.first ?? "")
+                    .toolbar {
+                        ToolbarItem(placement: .destructiveAction) {
+                            Button {
+                                self.displayLink = false
+                            } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         let bundle = Localization.localizedBundle(self.locale)
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             ViewThatFits {
                 ForEach(self.titles, id: \.self) { title in
-                    self.link(for: title, bundle: bundle)
+                    self.linkContent(for: title, bundle: bundle)
                 }
             }
             // Only use the largest label for accessibility
@@ -236,15 +265,13 @@ private struct LinkButton: View {
                 ?? ""
             )
         } else if let first = self.titles.first {
-            self.link(for: first, bundle: bundle)
+            self.linkContent(for: first, bundle: bundle)
         }
     }
 
-    private func link(for title: String, bundle: Bundle) -> some View {
-        NavigationLink(destination: WebView(url: self.url)) {
-            Text(Self.localizedString(title, bundle))
-                .frame(minHeight: Constants.minimumButtonHeight)
-        }
+    private func linkContent(for title: String, bundle: Bundle) -> some View {
+        Text(Self.localizedString(title, bundle))
+            .frame(minHeight: Constants.minimumButtonHeight)
     }
 
     private static func localizedString(_ string: String, _ bundle: Bundle) -> String {
