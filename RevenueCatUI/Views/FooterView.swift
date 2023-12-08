@@ -228,7 +228,7 @@ private struct LinkButton: View {
     }
 
     var body: some View {
-        #if canImport(WebKit) && !os(macOS)
+        #if canImport(WebKit) && !os(macOS) && !targetEnvironment(macCatalyst)
         Button {
             self.displayLink = true
         } label: {
