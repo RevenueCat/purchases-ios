@@ -24,7 +24,7 @@ protocol URLSessionType {
 }
 
 @MainActor
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class ImageLoader: ObservableObject {
 
     enum Error: Swift.Error, Equatable {

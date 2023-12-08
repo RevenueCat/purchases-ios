@@ -16,7 +16,7 @@ import RevenueCat
 
 // swiftlint:disable identifier_name
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 enum Strings {
 
     case package_not_subscription(Package)
