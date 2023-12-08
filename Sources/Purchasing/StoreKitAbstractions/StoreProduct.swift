@@ -165,7 +165,8 @@ internal protocol StoreProductType: Sendable {
 
     /// Provides a `NumberFormatter`, useful for formatting the price for displaying.
     /// - Note: This creates a new formatter for every product, which can be slow.
-    /// - Returns: `nil` for StoreKit 2 backed products if the currency code could not be determined.
+    /// - Note: This will only be `nil` for StoreKit 2 backed products before iOS 16
+    /// if the currency code could not be determined. In every other instance, it will never be `nil`.
     var priceFormatter: NumberFormatter? { get }
 
     /// The period details for products that are subscriptions.
