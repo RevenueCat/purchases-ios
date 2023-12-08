@@ -13,7 +13,10 @@
 
 import RevenueCat
 import SwiftUI
+
+#if canImport(WebKit)
 import WebKit
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
@@ -225,6 +228,7 @@ private struct LinkButton: View {
     }
 
     var body: some View {
+        #if canImport(WebKit)
         Button {
             self.displayLink = true
         } label: {
@@ -247,6 +251,11 @@ private struct LinkButton: View {
                     }
             }
         }
+        #else
+        Link(destination: self.url) {
+            self.content
+        }
+        #endif
     }
 
     @ViewBuilder
@@ -284,8 +293,8 @@ private struct LinkButton: View {
 
 }
 
+#if canImport(WebKit)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 private struct WebView: UIViewRepresentable {
@@ -302,6 +311,7 @@ private struct WebView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
 }
+#endif
 
 // MARK: - Previews
 
