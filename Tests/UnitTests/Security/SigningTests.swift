@@ -33,9 +33,6 @@ class SigningTests: TestCase {
 
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
-        // TODO: remove
-        Logger.logLevel = .verbose
-
         self.signing = .init(apiKey: Self.apiKey, clock: TestClock(now: Self.mockDate))
     }
 
