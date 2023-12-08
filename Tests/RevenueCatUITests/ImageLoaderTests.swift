@@ -81,22 +81,24 @@ class ImageLoaderTests: TestCase {
         expect(self.loader.result?.error) == .invalidImage
     }
 
-    func testValidImage() async throws {
-        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
-            throw XCTSkip("API only available on iOS 16")
-        }
-
-        let response = try Self.createValidResponse()
+    func testValidRemoteImage() async throws {
+        let response = try Self.createValidResponse(httpResponse: true)
         self.urlSession.response = .success(response)
 
         await self.loader.load(url: Self.url)
 
-        let renderedImage = try XCTUnwrap(self.loader.result?.value?.getUIImage())
-        let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: response.0)))
-            .getUIImage())
+        try self.verifyLoadedImage(matches: response.0)
+        expect(self.urlSession.requestedImage) == Self.url
+        expect(self.urlSession.cachePolicy) == .returnCacheDataElseLoad
+    }
 
-        expect(self.loader.result).to(beSuccess())
-        expect(renderedImage.pngData()) == expectedImage.pngData()
+    func testValidLocalImage() async throws {
+        let response = try Self.createValidResponse(httpResponse: false)
+        self.urlSession.response = .success(response)
+
+        await self.loader.load(url: Self.url)
+
+        try self.verifyLoadedImage(matches: response.0)
         expect(self.urlSession.requestedImage) == Self.url
         expect(self.urlSession.cachePolicy) == .returnCacheDataElseLoad
     }
@@ -117,7 +119,7 @@ class ImageLoaderTests: TestCase {
             let completionSet = self.expectation(that: \.completionSet, on: session, willEqual: true)
             await self.fulfillment(of: [completionSet], timeout: 1)
 
-            session.completion!(.success(try Self.createValidResponse()))
+            session.completion!(.success(try Self.createValidResponse(httpResponse: true)))
             await self.fulfillment(of: [resultSet], timeout: 1)
         }
 
@@ -153,7 +155,7 @@ class ImageLoaderTests: TestCase {
     private static let url = URL(string: "https://assets.revenuecat.com/test")!
     private static let url2 = URL(string: "https://assets.revenuecat.com/test2")!
 
-    private static func createValidResponse() throws -> (Data, URLResponse) {
+    private static func createValidResponse(httpResponse: Bool) throws -> (Data, URLResponse) {
         let backgroundImage = try XCTUnwrap(
             PaywallData
                 .createDefault(with: [TestData.monthlyPackage], locale: .current)
@@ -162,17 +164,38 @@ class ImageLoaderTests: TestCase {
         // We don't want the test to make an actual request loading this
         expect(backgroundImage.scheme) == "file"
 
-        let imageData = try Data(contentsOf: backgroundImage)
+        let data = try Data(contentsOf: backgroundImage)
+        let response = httpResponse
+        ? HTTPURLResponse(
+            url: Self.url,
+            statusCode: HTTPStatusCode.success.rawValue,
+            httpVersion: nil,
+            headerFields: [:]
+        )!
+        : URLResponse(
+            url: Self.url,
+            mimeType: nil,
+            expectedContentLength: 0,
+            textEncodingName: nil
+        )
 
         return (
-            imageData,
-            HTTPURLResponse(
-                url: Self.url,
-                statusCode: HTTPStatusCode.success.rawValue,
-                httpVersion: nil,
-                headerFields: [:]
-            )!
+            data,
+            response
         )
+    }
+
+    private func verifyLoadedImage(matches data: Data) throws {
+        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
+            throw XCTSkip("API only available on iOS 16")
+        }
+
+        let renderedImage = try XCTUnwrap(self.loader.result?.value?.getUIImage())
+        let expectedImage = try XCTUnwrap(Image(uiImage: try XCTUnwrap(UIImage(data: data)))
+            .getUIImage())
+
+        expect(self.loader.result).to(beSuccess())
+        expect(renderedImage.pngData()) == expectedImage.pngData()
     }
 
 }

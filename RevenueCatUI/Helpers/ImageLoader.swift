@@ -80,8 +80,7 @@ final class ImageLoader: ObservableObject {
                 return nil
             }
 
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else {
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
                 return .failure(.badResponse(.init(.badServerResponse)))
             }
 
