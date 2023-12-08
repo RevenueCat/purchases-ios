@@ -505,6 +505,91 @@ class SigningTests: TestCase {
         ) == true
     }
 
+    func testVerifyKnownSignatureForGetRequestWithSignedHeaders() throws {
+        // swiftlint:disable line_length
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/$RCAnonymousID%3A6ca4535c42714f88abc99c563703f113' \
+        -X GET \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
+        -H 'X-Is-Sandbox: true' \
+        -H 'X-Headers-Hash: X-Is-Sandbox:sha256:b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b' \
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
+         */
+
+        let response = """
+        {"request_date":"2023-12-08T19:17:04Z","request_date_ms":1702063024731,"subscriber":{"entitlements":{},"first_seen":"2023-12-08T19:13:02Z","last_seen":"2023-12-08T19:13:02Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"$RCAnonymousID:6ca4535c42714f88abc99c563703f113","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        """
+        let expectedSignature = "x2qnlHOl5WuzGi4TbSUVHxzlKELRCfrRYG9XAiso7ucZTQAAYEZqbguA3X0YfCJqCKh2hnTLSdEr4R+t23xBlTxceWZu2TJjK3461UJKpUnrwXDv+tYo2K54IoS3/tsEr3VmB5ppKAq0P2CR7SwbsDPpxUlHBcl5/4XJvb/DHOnTKjIVd4WJ+57LLWvIV9sDHnj9XxiBez+p5cEjez1RtUis0XdCfAFXU8XfAq6ggiEJKX4F"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1702063024732
+
+        expect(
+            self.signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
+                    message: response.asData,
+                    requestHeaders: [
+                        "X-Is-Sandbox": "true"
+                    ],
+                    nonce: nonce,
+                    etag: "5f74102dd8cbfc5e",
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
+    func testVerifyKnownSignatureForPostRequestWithSignedHeadersAndPostBody() throws {
+        // swiftlint:disable line_length
+        /*
+         Signature retrieved with:
+        curl -v 'https://api.revenuecat.com/v1/subscribers/identify' \
+        -X POST \
+        -H 'X-Nonce: MTIzNDU2Nzg5MGFi' \
+        -H 'X-Is-Sandbox: true' \
+        -H 'X-Post-Params-Hash: app_user_id,new_app_user_id:sha256:6fa58b9e3bdb1ca187ac082d128c19f04da8711fe6b17873a48bc7ca37bbf95a' \
+        -H 'X-Headers-Hash: X-Is-Sandbox:sha256:b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b' \
+        -H 'Authorization: Bearer appl_fFVBVAoYujMZJnepIziGKVjnZBz' \
+        -H 'Content-Type: application/json' \
+         --data-raw '{"new_app_user_id":"F72BF276-CD70-4C27-BCD2-FC1EFD988FA3","app_user_id":"$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"}'
+         */
+
+        let response = """
+        {"request_date":"2023-12-08T19:18:10Z","request_date_ms":1702063090636,"subscriber":{"entitlements":{},"first_seen":"2023-07-07T17:34:01Z","last_seen":"2023-07-07T17:34:01Z","management_url":null,"non_subscriptions":{},"original_app_user_id":"F72BF276-CD70-4C27-BCD2-FC1EFD988FA3","original_application_version":null,"original_purchase_date":null,"other_purchases":{},"subscriptions":{}}}\n
+        """
+        let expectedSignature = "x2qnlHOl5WuzGi4TbSUVHxzlKELRCfrRYG9XAiso7ucZTQAAYEZqbguA3X0YfCJqCKh2hnTLSdEr4R+t23xBlTxceWZu2TJjK3461UJKpUnrwXDv+tYo2K54IoS3/tsEr3VmB+i9GyA6+bZcCIQxv54gcEO0K/tx7ai2lgy2faTaWCfgm5K4KTVDA952V45fI6g5oalGXyiUVh4xUgNMECnyI5REy0xZK62ekFRsksayX30O"
+        // swiftlint:enable line_length
+
+        let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
+        let requestDate: UInt64 = 1702063090637
+
+        expect(
+            self.signing.verify(
+                signature: expectedSignature,
+                with: .init(
+                    path: .logIn,
+                    message: response.asData,
+                    requestHeaders: [
+                        "X-Is-Sandbox": "true"
+                    ],
+                    requestBody: LogInOperation.Body(
+                        appUserID: "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
+                        newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
+                    ),
+                    nonce: nonce,
+                    etag: nil,
+                    requestDate: requestDate
+                ),
+                publicKey: Signing.loadPublicKey()
+            )
+        ) == true
+    }
+
     func testResponseVerificationWithNoProvidedKey() throws {
         let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
         let response = HTTPResponse<Data?>(httpStatusCode: .success, responseHeaders: [:], body: Data())
