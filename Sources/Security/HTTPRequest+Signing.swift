@@ -22,10 +22,9 @@ extension HTTPRequest {
             return nil
         }
 
-        let headersToSign = Self.headersToSign.map(\.rawValue)
-
-        if !headersToSign.isEmpty, let hash = Self.postParameterHash(headers) {
-            return Self.signatureHashHeader(keys: headersToSign, hash: hash)
+        if let hash = Self.postParameterHash(headers) {
+            return Self.signatureHashHeader(keys: Self.headersToSign.map(\.rawValue),
+                                            hash: hash)
         } else {
             return nil
         }
