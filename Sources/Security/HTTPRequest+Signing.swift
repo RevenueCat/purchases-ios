@@ -34,10 +34,7 @@ extension HTTPRequest {
     /// - Returns: `nil` if none of the requested headers are found
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private static func postParameterHash(_ headers: Headers) -> String? {
-        let headersToSign = Self.headersToSign.map(\.rawValue)
-        let values = headers
-            .filter { headersToSign.contains($0.key) }
-            .map(\.value)
+        let values = Self.headersToSign.compactMap { headers[$0.rawValue] }
 
         guard !values.isEmpty else { return nil }
 
