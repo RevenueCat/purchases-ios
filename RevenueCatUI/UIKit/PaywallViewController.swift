@@ -25,7 +25,7 @@ import UIKit
 public final class PaywallViewController: UIViewController {
 
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
-    public weak var delegate: PaywallViewControllerDelegate?
+    @objc public weak var delegate: PaywallViewControllerDelegate?
 
     private let offering: Offering?
     private let displayCloseButton: Bool
