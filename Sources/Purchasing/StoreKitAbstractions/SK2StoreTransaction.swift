@@ -20,8 +20,7 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     /// Used to override the default `Xcode` environment when running tests.
     init(sk2Transaction: SK2Transaction,
          jwsRepresentation: String,
-         environmentOverride: StoreEnvironment? = nil
-    ) {
+         environmentOverride: StoreEnvironment? = nil) {
         self.underlyingSK2Transaction = sk2Transaction
 
         self.productIdentifier = sk2Transaction.productID

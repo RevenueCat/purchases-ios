@@ -19,8 +19,6 @@ import XCTest
 @MainActor
 class StoreEnvironmentTests: TestCase {
 
-    // MARK: - StoreEnvironment
-
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func testFromAppStoreEnvironment() throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
