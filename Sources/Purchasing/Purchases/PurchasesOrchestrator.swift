@@ -1311,7 +1311,7 @@ private extension PurchasesOrchestrator {
                 return
             }
 
-            let receipt = await encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+            let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
