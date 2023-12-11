@@ -325,8 +325,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: SPM Release Build
+          name: SPM RevenueCat Release Build
           command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
   spm-revenuecat-ui-ios-15:
