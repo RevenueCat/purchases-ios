@@ -22,10 +22,14 @@ import UIKit
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewController)
-public final class PaywallViewController: UIViewController {
+public class PaywallViewController: UIViewController {
 
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public weak var delegate: PaywallViewControllerDelegate?
+
+    var mode: PaywallViewMode {
+        return .fullScreen
+    }
 
     private let offering: Offering?
     private let displayCloseButton: Bool
@@ -51,9 +55,12 @@ public final class PaywallViewController: UIViewController {
     }
 
     private lazy var hostingController: UIHostingController<some View> = {
-        let paywallView = self.offering
-            .map { PaywallView(offering: $0, displayCloseButton: self.displayCloseButton) }
-            ?? PaywallView(displayCloseButton: self.displayCloseButton)
+        let paywallView = PaywallView(offering: self.offering,
+                                      customerInfo: nil,
+                                      mode: self._mode,
+                                      displayCloseButton: self.displayCloseButton,
+                                      introEligibility: nil,
+                                      purchaseHandler: nil)
 
         let view = paywallView
             .onPurchaseCompleted { [weak self] transaction, customerInfo in
