@@ -1102,12 +1102,7 @@ private extension PurchasesOrchestrator {
                     return
                 }
 
-                let receipt: EncodedAppleReceipt
-                if transaction.environment == .xcode {
-                    receipt = .sk2receipt(await self.transactionFetcher.receipt)
-                } else {
-                    receipt = .jws(jwsRepresentation)
-                }
+                let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
@@ -1316,12 +1311,7 @@ private extension PurchasesOrchestrator {
                 return
             }
 
-            let receipt: EncodedAppleReceipt
-            if transaction.environment == .xcode {
-                receipt = .sk2receipt(await self.transactionFetcher.receipt)
-            } else {
-                receipt = .jws(jwsRepresentation)
-            }
+            let receipt = await encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
             self.handlePromotionalOffer(forProductDiscount: productDiscount,
                                         discountIdentifier: discountIdentifier,
@@ -1399,6 +1389,15 @@ private extension PurchasesOrchestrator {
 }
 
 private extension PurchasesOrchestrator {
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func encodedReceipt(transaction: StoreTransactionType, jwsRepresentation: String) async -> EncodedAppleReceipt {
+        if transaction.environment == .xcode {
+            return .sk2receipt(await self.transactionFetcher.receipt)
+        } else {
+            return .jws(jwsRepresentation)
+        }
+    }
 
     static func logPurchase(product: StoreProduct, package: Package?, offer: PromotionalOffer.SignedData? = nil) {
         let string: PurchaseStrings = {
