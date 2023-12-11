@@ -307,9 +307,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // In JWS mode, transaction takes a bit longer to be processed after `approveAskToBuyTransaction`
         // We need to wait so `restorePurchases` actually posts it.
-        if self.usesStoreKit2JWS {
-            try await self.waitUntilUnfinishedTransactions { $0 == 1 }
-        }
+        try await self.waitUntilUnfinishedTransactions { $0 == 1 }
 
         let customerInfo = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(customerInfo)
