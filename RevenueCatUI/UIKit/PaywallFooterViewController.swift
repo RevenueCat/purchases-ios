@@ -15,7 +15,6 @@
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
 import RevenueCat
-import SwiftUI
 import UIKit
 
 /// A view controller for displaying `PaywallData` for an `Offering` in a footer format.

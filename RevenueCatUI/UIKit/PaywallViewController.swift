@@ -57,7 +57,7 @@ public class PaywallViewController: UIViewController {
     private lazy var hostingController: UIHostingController<some View> = {
         let paywallView = PaywallView(offering: self.offering,
                                       customerInfo: nil,
-                                      mode: self._mode,
+                                      mode: self.mode,
                                       displayCloseButton: self.displayCloseButton,
                                       introEligibility: nil,
                                       purchaseHandler: nil)
