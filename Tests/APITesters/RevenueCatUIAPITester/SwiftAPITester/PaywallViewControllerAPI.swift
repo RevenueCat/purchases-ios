@@ -20,12 +20,13 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-func paywallFooterViewControllerAPI(_ delegate: FooterDelegate, _ offering: Offering?) {
+func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     let controller = PaywallFooterViewController()
     controller.delegate = delegate
 
-    let _: UIViewController = PaywallFooterViewController()
     let _: UIViewController = PaywallFooterViewController(offering: offering)
+    let _: UIViewController = PaywallFooterViewController(displayCloseButton: true)
+    let _: UIViewController = PaywallFooterViewController(offering: offering, displayCloseButton: true)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -47,21 +48,3 @@ final class Delegate: PaywallViewControllerDelegate {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class DelegateWithNoImplementations: PaywallViewControllerDelegate {}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-final class FooterDelegate: PaywallFooterViewControllerDelegate {
-
-    func paywallFooterViewController(_ controller: PaywallFooterViewController,
-                                     didFinishPurchasingWith customerInfo: CustomerInfo) {}
-
-    func paywallFooterViewController(_ controller: PaywallFooterViewController,
-                                     didFinishPurchasingWith customerInfo: CustomerInfo,
-                                     transaction: StoreTransaction?) {}
-
-    func paywallFooterViewController(_ controller: PaywallFooterViewController,
-                                     didFinishRestoringWith customerInfo: CustomerInfo) {}
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-final class FooterDelegateWithNoImplementations: PaywallFooterViewControllerDelegate {}
