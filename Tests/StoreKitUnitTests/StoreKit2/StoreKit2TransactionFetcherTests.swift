@@ -153,9 +153,9 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     func testGeneratesReceipt() async throws {
         _ = try await self.createTransaction(productID: Self.product1,
                                              finished: false)
-        _ = try await self.createTransaction(productID: Self.product2,
-                                             finished: false)
-        let receipt = await self.fetcher.receipt
+        let transaction = try await self.createTransaction(productID: Self.product2,
+                                                           finished: false)
+        let receipt = await self.fetcher.fetchReceipt(containing: transaction)
         expect(receipt.transactions).to(haveCount(2))
         expect(receipt.subscriptionStatusBySubscriptionGroupId).to(haveCount(2))
         expect(receipt.environment) == .xcode
