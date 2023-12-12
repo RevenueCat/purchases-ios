@@ -139,7 +139,7 @@ internal enum Async {
         repeat {
             retries += 1
             let (shouldRetry, result) = await value()
-            if shouldRetry {
+            if !shouldRetry {
                 return result
             } else {
                 lastValue = result

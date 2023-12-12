@@ -186,7 +186,7 @@ private extension ReceiptFetcher {
                     }.value
 
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
-                        return (true, (data, receiptURL))
+                        return (shouldRetry: false, (data, receiptURL))
                     } else {
                         Logger.appleWarning(Strings.receipt.local_receipt_missing_purchase(
                             receipt,
@@ -199,7 +199,7 @@ private extension ReceiptFetcher {
             }
 
             Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration.seconds))
-            return (false, (data, receiptURL))
+            return (shouldRetry: true, (data, receiptURL))
         }
     }
 

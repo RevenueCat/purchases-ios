@@ -173,12 +173,12 @@ extension StoreKit2TransactionFetcher {
         return await Async.retry {
             let verifiedTransactions = await verifiedTransactions
             if verifiedTransactions.contains(where: { $0.id == transaction.transactionIdentifier }) {
-                return  (true, verifiedTransactions)
+                return  (shouldRetry: false, verifiedTransactions)
             } else {
                 Logger.appleWarning(
                     Strings.storeKit.sk2_receipt_missing_purchase(transactionId: transaction.transactionIdentifier)
                 )
-                return  (false, verifiedTransactions)
+                return  (shouldRetry: true, verifiedTransactions)
             }
         }
     }
