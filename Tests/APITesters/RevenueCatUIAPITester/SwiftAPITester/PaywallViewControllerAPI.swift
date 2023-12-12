@@ -32,7 +32,7 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController,
                                didFinishRestoringWith customerInfo: CustomerInfo) {}
 
-    func paywallViewControllerDismissed(_ controller: PaywallViewController) {}
+    func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {}
 
 }
 

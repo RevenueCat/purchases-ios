@@ -86,8 +86,8 @@ public final class PaywallViewController: UIViewController {
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
-        if isBeingDismissed {
-            self.delegate?.paywallViewControllerDismissed?(self)
+        if self.isBeingDismissed {
+            self.delegate?.paywallViewControllerWasDismissed?(self)
         }
         super.viewDidDisappear(animated)
     }
@@ -120,7 +120,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 
     /// Notifies that the ``PaywallViewController`` was dismissed.
     @objc(paywallViewControllerDismissed:)
-    optional func paywallViewControllerDismissed(_ controller: PaywallViewController)
+    optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
 }
 
