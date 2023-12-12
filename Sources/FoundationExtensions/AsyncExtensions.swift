@@ -113,7 +113,7 @@ internal enum Async {
     }
 
     /// Runs the given block `maximumRetries` times at most, at `pollInterval` times until the
-    /// block returns a tuple where the first argument is true, and the second is the expected value.
+    /// block returns a tuple where the first argument `shouldRetry` is false, and the second is the expected value.
     /// After the maximum retries, returns the last seen value.
     ///
     /// Example:
@@ -121,9 +121,9 @@ internal enum Async {
     /// let receipt = await Async.retry {
     ///     let receipt = fetchReceipt()
     ///     if receipt.contains(transaction) {
-    ///         return (true, receipt)
+    ///         return (shouldRetry: false, receipt)
     ///     } else {
-    ///         return (false, receipt)
+    ///         return (shouldRetry: true, receipt)
     ///     }
     /// }
     /// ```
@@ -139,11 +139,11 @@ internal enum Async {
         repeat {
             retries += 1
             let (shouldRetry, result) = await value()
-            if !shouldRetry {
-                return result
-            } else {
+            if shouldRetry {
                 lastValue = result
                 try? await Task.sleep(nanoseconds: UInt64(pollInterval.nanoseconds))
+            } else {
+                return result
             }
         } while !(retries > maximumRetries)
 
