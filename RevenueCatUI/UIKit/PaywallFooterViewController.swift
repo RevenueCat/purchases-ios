@@ -18,7 +18,7 @@ import RevenueCat
 import UIKit
 
 /// A view controller for displaying `PaywallData` for an `Offering` in a footer format.
-/// This is used by the RevenueCathybrid SDKs in order to get a View of the footer.
+/// This is used by the RevenueCat hybrid SDKs in order to get a View of the footer.
 ///
 /// Consumers should normally use ``PaywallViewController`` instead.
 ///
@@ -31,6 +31,26 @@ public final class PaywallFooterViewController: PaywallViewController {
         return .footer
     }
 
+    /// Initialize a `PaywallFooterViewController` with an optional `Offering`.
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// `Offerings.current` will be used by default.
+    @objc
+    public init(offering: Offering? = nil) {
+        super.init(offering: offering, displayCloseButton: false)
+    }
+
+    @available(*, unavailable)
+    override init(
+        offering: Offering? = nil,
+        displayCloseButton: Bool = false
+    ) {
+        super.init(offering: offering, displayCloseButton: false)
+    }
+
+    // swiftlint:disable:next missing_docs
+    public required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
 
 #endif
