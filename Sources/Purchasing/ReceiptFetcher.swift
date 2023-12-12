@@ -176,14 +176,8 @@ private extension ReceiptFetcher {
         maximumRetries: Int,
         sleepDuration: DispatchTimeInterval
     ) async -> (Data, URL?) {
-        var retries = 0
-        var data: Data = .init()
-        var receiptURL: URL?
-
-        repeat {
-            retries += 1
-            (data, receiptURL) = await self.refreshReceipt()
-
+        return await Async.retry(maximumRetries: maximumRetries, pollInterval: sleepDuration) {
+            let (data, receiptURL) = await self.refreshReceipt()
             if !data.isEmpty {
                 do {
                     // Parse receipt in a background thread
@@ -192,7 +186,7 @@ private extension ReceiptFetcher {
                     }.value
 
                     if receipt.containsActivePurchase(forProductIdentifier: productIdentifier) {
-                        return (data, receiptURL)
+                        return (true, (data, receiptURL))
                     } else {
                         Logger.appleWarning(Strings.receipt.local_receipt_missing_purchase(
                             receipt,
@@ -205,10 +199,8 @@ private extension ReceiptFetcher {
             }
 
             Logger.debug(Strings.receipt.retrying_receipt_fetch_after(sleepDuration: sleepDuration.seconds))
-            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
-        } while retries <= maximumRetries && !Task.isCancelled
-
-        return (data, receiptURL)
+            return (false, (data, receiptURL))
+        }
     }
 
 }

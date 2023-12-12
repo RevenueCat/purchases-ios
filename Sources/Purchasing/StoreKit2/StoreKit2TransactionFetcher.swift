@@ -76,6 +76,7 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
+    /// Returns an `StoreKit2Receipt` making sure `transaction` is contained in it.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
         async let transactions = verifiedTransactions(containing: transaction)
@@ -162,27 +163,24 @@ extension StoreKit2TransactionFetcher {
         }
     }
 
+    /// Returns an an array of  all verified `StoreTransaction`s, making sure `transaction` is contained in it.
+    ///
+    /// When using SKTestSession / SK config files, a newly generated transaction may not appear immediately
+    /// in `Transaction.all`, so we need to retry and introduce a small synthetic delay to make sure it is.s
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func verifiedTransactions(containing transaction: StoreTransactionType) async -> [StoreTransaction] {
-        // A newly generated transaction might not appear immediately in Transaction.all
-        var retries = 0
-        let sleepDuration: DispatchTimeInterval = .milliseconds(300)
-        let maximumRetries = 5
+    private func verifiedTransactions(containing transaction: StoreTransactionType) async -> [StoreTransaction] {
 
-        repeat {
-            retries += 1
+        return await Async.retry {
             let verifiedTransactions = await verifiedTransactions
             if verifiedTransactions.contains(where: { $0.id == transaction.transactionIdentifier }) {
-                return verifiedTransactions
+                return  (true, verifiedTransactions)
             } else {
                 Logger.appleWarning(
                     Strings.storeKit.sk2_receipt_missing_purchase(transactionId: transaction.transactionIdentifier)
                 )
+                return  (false, verifiedTransactions)
             }
-            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
-        } while retries <= maximumRetries
-
-        return await verifiedTransactions
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
