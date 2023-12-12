@@ -1,5 +1,18 @@
-### Bugfixes
-* Improve pricePerYear price calculation precision (#3492) via Toni Rico (@tonidero)
-* Improve price per month accuracy for weekly subscriptions (#3480) via Andy Boedo (@aboedo)
-### Dependency Updates
-* Bump danger from 9.4.0 to 9.4.1 (#3485) via dependabot[bot] (@dependabot[bot])
+### RevenueCatUI
+* `Paywalls`: improve image caching (#3498) via NachoSoto (@NachoSoto)
+* `Paywalls`: change style of CTA button to be consistent with other platforms (#3507) via NachoSoto (@NachoSoto)
+* `Paywalls`: open footer links on Safari on Catalyst (#3508) via NachoSoto (@NachoSoto)
+* `Paywalls`: fix compilation on Xcode < 14.3 (#3513) via NachoSoto (@NachoSoto)
+* Fix typo in zh-Hans localization of RevenueCatUI (#3512) via Francis Feng (@francisfeng)
+* `Paywalls`: fix PaywallViewControllerDelegate access from Objective-C (#3510) via noncenz (@noncenz)
+* `Paywalls`: open Terms and Privacy Policy links in-app (#3475) via Andy Boedo (@aboedo)
+* `Paywalls`: fix empty description when using `custom` package type and `{{ sub_period }}` (#3495) via Andy Boedo (@aboedo)
+* `Paywalls`: use `HEIC` images (#3496) via NachoSoto (@NachoSoto)
+* Paywalls: disable the close button when an action is in progress (#3474) via Andy Boedo (@aboedo)
+* `Paywalls`: adjusted German translations (#3476) via Tensei (@tensei)
+* Paywalls: Improve Chinese localization (#3489) via Andy Boedo (@aboedo)
+### Other Changes
+* `CircleCI`: add git credentials to snapshot generation (#3506) via NachoSoto (@NachoSoto)
+* `StoreProduct`: improve `priceFormatter` documentation (#3500) via NachoSoto (@NachoSoto)
+* `Paywalls`: fix tests (#3499) via NachoSoto (@NachoSoto)
+* `Optimization`: changed `first` to `first(where:)` (#3467) via NachoSoto (@NachoSoto)
