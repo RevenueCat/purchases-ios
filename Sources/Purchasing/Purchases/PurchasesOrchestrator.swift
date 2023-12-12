@@ -1393,7 +1393,7 @@ private extension PurchasesOrchestrator {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func encodedReceipt(transaction: StoreTransactionType, jwsRepresentation: String) async -> EncodedAppleReceipt {
         if transaction.environment == .xcode {
-            return .sk2receipt(await self.transactionFetcher.receipt)
+            return .sk2receipt(await self.transactionFetcher.fetchReceipt(containing: transaction))
         } else {
             return .jws(jwsRepresentation)
         }

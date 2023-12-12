@@ -20,7 +20,7 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     var unfinishedVerifiedTransactions: [StoreTransaction] { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var receipt: StoreKit2Receipt { get async }
+    func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var hasPendingConsumablePurchase: Bool { get async }
@@ -77,27 +77,25 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var receipt: StoreKit2Receipt {
-        get async {
-            async let transactions = verifiedTransactionsJWS
-            async let subscriptionStatuses = subscriptionStatusBySubscriptionGroupId
-            async let appTransaction = appTransaction
+    func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
+        async let transactions = verifiedTransactions(containing: transaction)
+        async let subscriptionStatuses = subscriptionStatusBySubscriptionGroupId
+        async let appTransaction = appTransaction
 
-            return await .init(
-                environment: .xcode,
-                subscriptionStatusBySubscriptionGroupId: subscriptionStatuses.mapValues { statuses in
-                    statuses.map { status in
-                        return .init(state: .from(state: status.state),
-                                     renewalInfoJWSToken: status.renewalInfo.jwsRepresentation,
-                                     transactionJWSToken: status.transaction.jwsRepresentation)
-                    }
-                },
-                transactions: transactions,
-                bundleId: appTransaction?.bundleId ?? "",
-                originalApplicationVersion: appTransaction?.originalApplicationVersion,
-                originalPurchaseDate: appTransaction?.originalPurchaseDate
-            )
-        }
+        return await .init(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: subscriptionStatuses.mapValues { statuses in
+                statuses.map { status in
+                    return .init(state: .from(state: status.state),
+                                 renewalInfoJWSToken: status.renewalInfo.jwsRepresentation,
+                                 transactionJWSToken: status.transaction.jwsRepresentation)
+                }
+            },
+            transactions: transactions.compactMap(\.jwsRepresentation),
+            bundleId: appTransaction?.bundleId ?? "",
+            originalApplicationVersion: appTransaction?.originalApplicationVersion,
+            originalPurchaseDate: appTransaction?.originalPurchaseDate
+        )
     }
 
 }
@@ -156,12 +154,35 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.AppTransactio
 extension StoreKit2TransactionFetcher {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private var verifiedTransactionsJWS: [String] {
+    private var verifiedTransactions: [StoreTransaction] {
         get async {
             return await StoreKit.Transaction.all
-                .compactMap { $0.verifiedStoreTransaction?.jwsRepresentation }
+                .compactMap { $0.verifiedStoreTransaction }
                 .extractValues()
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func verifiedTransactions(containing transaction: StoreTransactionType) async -> [StoreTransaction] {
+        // A newly generated transaction might not appear immediately in Transaction.all
+        var retries = 0
+        let sleepDuration: DispatchTimeInterval = .milliseconds(300)
+        let maximumRetries = 5
+
+        repeat {
+            retries += 1
+            let verifiedTransactions = await verifiedTransactions
+            if verifiedTransactions.contains(where: { $0.id == transaction.transactionIdentifier }) {
+                return verifiedTransactions
+            } else {
+                Logger.appleWarning(
+                    Strings.storeKit.sk2_receipt_missing_purchase(transactionId: transaction.transactionIdentifier)
+                )
+            }
+            try? await Task.sleep(nanoseconds: UInt64(sleepDuration.nanoseconds))
+        } while retries <= maximumRetries
+
+        return await verifiedTransactions
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

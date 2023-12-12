@@ -50,10 +50,8 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    var receipt: StoreKit2Receipt {
-        get async {
-            return self.stubbedReceipt!
-        }
+    func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
+        return self.stubbedReceipt!
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
