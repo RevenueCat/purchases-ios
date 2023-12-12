@@ -1117,6 +1117,10 @@ public extension Purchases {
         await self.paywallEventsManager?.track(paywallEvent: paywallEvent)
     }
 
+    /// Used by `RevenueCatUI` to download and cache paywall images.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
+
 }
 
 // MARK: Configuring Purchases
