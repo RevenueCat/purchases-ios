@@ -82,7 +82,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 }
 
 class StoreKit2JWSObserverModeIntegrationTests: StoreKit2ObserverModeIntegrationTests {
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 }
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
@@ -125,7 +125,7 @@ class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWith
 }
 
 class StoreKit2JWSObserverModeWithExistingPurchasesTests: StoreKit2ObserverModeWithExistingPurchasesTests {
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 }
 
 /// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.

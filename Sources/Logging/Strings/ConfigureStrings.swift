@@ -37,6 +37,8 @@ enum ConfigureStrings {
 
     case response_verification_mode(Signing.ResponseVerificationMode)
 
+    case storekit_version(String)
+
     case delegate_set
 
     case purchase_instance_already_set
@@ -111,6 +113,8 @@ extension ConfigureStrings: LogMessage {
             case .enforced:
                 return "Purchases is configured with enforced response verification"
             }
+        case let .storekit_version(version):
+            return "Purchases is configured with StoreKit version \(version)"
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:

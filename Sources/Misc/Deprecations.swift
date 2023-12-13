@@ -119,6 +119,7 @@ public extension Purchases {
             platformInfo: nil,
             responseVerificationMode: .default,
             storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
+            storeKitVersion: .default,
             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
             networkTimeout: Configuration.networkTimeoutDefault,
             dangerousSettings: dangerousSettings,

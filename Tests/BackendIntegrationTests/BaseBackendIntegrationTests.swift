@@ -58,6 +58,7 @@ class BaseBackendIntegrationTests: TestCase {
     // MARK: - Overridable configuration
 
     class var storeKit2Setting: StoreKit2Setting { return .default }
+    class var storeKitVersion: StoreKitVersion { return .default }
     class var observerMode: Bool { return false }
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
@@ -79,6 +80,7 @@ class BaseBackendIntegrationTests: TestCase {
                             platformInfo: nil,
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKit2Setting: Self.storeKit2Setting,
+                            storeKitVersion: Self.storeKitVersion,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings,
@@ -237,7 +239,6 @@ private extension BaseBackendIntegrationTests {
 
 extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
 
-    var usesStoreKit2JWS: Bool { false }
     var forceServerErrors: Bool { return self.serverIsDown }
     var forceSignatureFailures: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }

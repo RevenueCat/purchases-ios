@@ -45,6 +45,7 @@ import Foundation
     let observerMode: Bool
     let userDefaults: UserDefaults?
     let storeKit2Setting: StoreKit2Setting
+    let storeKitVersion: StoreKitVersion
     let dangerousSettings: DangerousSettings?
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
@@ -61,6 +62,7 @@ import Foundation
         self.observerMode = builder.observerMode
         self.userDefaults = builder.userDefaults
         self.storeKit2Setting = builder.storeKit2Setting
+        self.storeKitVersion = builder.storeKitVersion
         self.dangerousSettings = builder.dangerousSettings
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
@@ -92,6 +94,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
+        private(set) var storeKitVersion: StoreKitVersion = .default
 
         /**
          * Create a new builder with your API key.
@@ -215,6 +218,27 @@ import Foundation
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
             self.responseVerificationMode = Signing.verificationMode(with: mode)
+            return self
+        }
+
+        /// Set ``StoreKitVersion``.
+        ///
+        /// Defaults to ``StoreKitVersion/default`` which lets the SDK select
+        /// the most appropriate version of StoreKit. Currently defaults to StoreKit 1.
+        ///
+        /// - Note: StoreKit 2 is only available on iOS 15+. StoreKit 1 will be used for previous iOS versions
+        /// regardless of this setting.
+        ///
+        /// ### Related Symbols
+        /// - ``StoreKitVersion``
+        @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
+            self.storeKitVersion = version
+            switch version {
+            case .storeKit1, .default:
+                self.storeKit2Setting = .init(useStoreKit2IfAvailable: false)
+            case .storeKit2:
+                self.storeKit2Setting = .init(useStoreKit2IfAvailable: true)
+            }
             return self
         }
 

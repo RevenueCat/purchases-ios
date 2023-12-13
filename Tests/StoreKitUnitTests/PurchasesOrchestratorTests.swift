@@ -118,14 +118,14 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     fileprivate func setUpSystemInfo(
         finishTransactions: Bool = true,
         storeKit2Setting: StoreKit2Setting = .default,
-        usesStoreKit2JWS: Bool = false
+        storeKitVersion: StoreKitVersion = .default
     ) {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3")
 
         self.systemInfo = .init(platformInfo: platformInfo,
                                 finishTransactions: finishTransactions,
                                 storeKit2Setting: storeKit2Setting,
-                                usesStoreKit2JWS: usesStoreKit2JWS)
+                                storeKitVersion: storeKitVersion)
         self.systemInfo.stubbedIsSandbox = true
     }
 
@@ -667,7 +667,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testGetSK2PromotionalOfferWorksIfThereIsATransaction() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -704,7 +704,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testGetSK2PromotionalOfferFailsWithIneligibleIfNoTransactionIsFound() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1524,7 +1524,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSyncPurchasesPostsJWSToken() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1545,7 +1545,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSyncPurchasesPostsSK2ReceiptInXcodeEnvironment() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1580,7 +1580,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasePostsJWSToken() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1605,7 +1605,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasePostsSK2ReceiptInXcodeEnvironment() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1644,7 +1644,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1661,7 +1661,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
@@ -1689,7 +1689,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSyncPurchasesPassesErrorOnFailure() async throws {
-        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 

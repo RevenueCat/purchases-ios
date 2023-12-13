@@ -37,7 +37,7 @@ class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
 class OfflineStoreKit2JWSIntegrationTests: OfflineStoreKit1IntegrationTests {
 
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 

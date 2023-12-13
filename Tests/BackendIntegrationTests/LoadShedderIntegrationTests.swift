@@ -27,7 +27,7 @@ class LoadShedderStoreKit2IntegrationTests: LoadShedderStoreKit1IntegrationTests
 
 class LoadShedderStoreKit2JWSIntegrationTests: LoadShedderStoreKit1IntegrationTests {
 
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 

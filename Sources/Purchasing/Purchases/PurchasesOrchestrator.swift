@@ -261,7 +261,7 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion == .storeKit2,
             #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.sk2PromotionalOffer(forProductDiscount: productDiscount,
                                      discountIdentifier: discountIdentifier,
@@ -1002,7 +1002,7 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion == .storeKit2,
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.syncPurchasesSK2(isRestore: isRestore,
                                   initiationSource: initiationSource,

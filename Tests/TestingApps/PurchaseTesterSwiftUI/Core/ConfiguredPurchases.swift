@@ -49,7 +49,7 @@ public final class ConfiguredPurchases {
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
                 #if DEBUG
-                .with(dangerousSettings: .init(autoSyncPurchases: true, internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: useStoreKit2)))
+                .with(storeKitVersion: .storeKit2)
                 #endif
                 .build()
         )

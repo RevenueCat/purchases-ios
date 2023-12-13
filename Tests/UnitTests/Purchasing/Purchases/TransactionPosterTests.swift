@@ -75,7 +75,7 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsReceiptIfJWSSettingEnabledButJWSTokenIsMissing() throws {
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
 
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
@@ -101,7 +101,7 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsJWS() throws {
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation)
 
@@ -130,7 +130,7 @@ class TransactionPosterTests: TestCase {
     func testHandlePurchasedTransactionSendsSK2Receipt() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation, environment: .xcode)
 
@@ -357,9 +357,9 @@ class TransactionPosterTests: TestCase {
 
 private extension TransactionPosterTests {
 
-    func setUp(observerMode: Bool, usesStoreKit2JWS: Bool = false) {
+    func setUp(observerMode: Bool, storeKitVersion: StoreKitVersion = .default) {
         self.operationDispatcher = .init()
-        self.systemInfo = .init(finishTransactions: !observerMode, usesStoreKit2JWS: usesStoreKit2JWS)
+        self.systemInfo = .init(finishTransactions: !observerMode, storeKitVersion: storeKitVersion)
         self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)

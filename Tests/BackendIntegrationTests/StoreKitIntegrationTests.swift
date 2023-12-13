@@ -24,7 +24,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
 class StoreKit2JWSIntegrationTests: StoreKit2IntegrationTests {
 
-    override var usesStoreKit2JWS: Bool { true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 

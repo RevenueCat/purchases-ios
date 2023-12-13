@@ -105,6 +105,7 @@ class HTTPClient {
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
+            "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.versionString)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]

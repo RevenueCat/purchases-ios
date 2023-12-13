@@ -266,6 +266,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      responseVerificationMode: Signing.ResponseVerificationMode,
                      storeKit2Setting: StoreKit2Setting = .default,
+                     storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
@@ -282,6 +283,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                     finishTransactions: !observerMode,
                                     operationDispatcher: operationDispatcher,
                                     storeKit2Setting: storeKit2Setting,
+                                    storeKitVersion: storeKitVersion,
                                     responseVerificationMode: responseVerificationMode,
                                     dangerousSettings: dangerousSettings)
 
@@ -560,6 +562,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator), fileName: nil)
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode), fileName: nil)
+        Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion.versionString), fileName: nil)
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
@@ -1161,6 +1164,7 @@ public extension Purchases {
                   platformInfo: configuration.platformInfo,
                   responseVerificationMode: configuration.responseVerificationMode,
                   storeKit2Setting: configuration.storeKit2Setting,
+                  storeKitVersion: configuration.storeKitVersion,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
@@ -1332,6 +1336,7 @@ public extension Purchases {
         platformInfo: PlatformInfo?,
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKit2Setting: StoreKit2Setting,
+        storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
@@ -1346,6 +1351,7 @@ public extension Purchases {
                   platformInfo: platformInfo,
                   responseVerificationMode: responseVerificationMode,
                   storeKit2Setting: storeKit2Setting,
+                  storeKitVersion: storeKitVersion,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
