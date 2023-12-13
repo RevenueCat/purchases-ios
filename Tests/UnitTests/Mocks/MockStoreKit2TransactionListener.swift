@@ -29,6 +29,8 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     // `StoreKit.Transaction` can't be stored directly as a property.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
     var mockTransaction: Box<StoreKit.Transaction?> = .init(nil)
+    var mockJWSToken: String = ""
+    var mockEnvironment: StoreEnvironment = .sandbox
 
     func set(delegate: StoreKit2TransactionListenerDelegate) {
         self.invokedDelegateSetter = true
@@ -61,7 +63,9 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
         let transaction: StoreTransaction? = self.mockTransaction.value.map {
-            StoreTransaction(sk2Transaction: $0, jwsRepresentation: "")
+            StoreTransaction(sk2Transaction: $0,
+                             jwsRepresentation: self.mockJWSToken,
+                             environmentOverride: self.mockEnvironment)
         }
 
         return (self.mockCancelled, transaction)

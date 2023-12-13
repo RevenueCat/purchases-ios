@@ -59,6 +59,20 @@ enum StoreKitStrings {
 
     case sk2_observing_transaction_updates
 
+    case sk2_unknown_environment(String)
+
+    case sk2_error_encoding_receipt(Error)
+
+    case sk2_error_fetching_app_transaction(Error)
+
+    case sk2_error_fetching_subscription_status(subscriptionGroupId: String, Error)
+
+    case sk2_app_transaction_unavailable
+
+    case sk2_unverified_transaction(identifier: String, Error)
+
+    case sk2_receipt_missing_purchase(transactionId: String)
+
     #if DEBUG
 
     case sk1_wrapper_notifying_delegate_of_existing_transactions(count: Int)
@@ -148,6 +162,27 @@ extension StoreKitStrings: LogMessage {
 
         case .sk2_observing_transaction_updates:
             return "Observing StoreKit.Transaction.updates"
+
+        case let .sk2_unknown_environment(environment):
+            return "Unrecognized StoreKit Environment: \(environment)"
+
+        case let .sk2_error_encoding_receipt(error):
+            return "Error encoding SK2 receipt: '\(error)'"
+
+        case let .sk2_error_fetching_app_transaction(error):
+            return "Error fetching AppTransaction: '\(error)'"
+
+        case let .sk2_error_fetching_subscription_status(subscriptionGroupId, error):
+            return "Error fetching status for subscription group with id '\(subscriptionGroupId)': '\(error)'"
+
+        case .sk2_app_transaction_unavailable:
+            return "Not fetching AppTransaction because it is not available"
+
+        case let .sk2_unverified_transaction(id, error):
+            return "Found unverified transaction with ID: '\(id)' Error: '\(error)'"
+
+        case let .sk2_receipt_missing_purchase(transactionId):
+            return "SK2 receipt is still missing transaction with id '\(transactionId)'"
 
         #if DEBUG
         case let .sk1_wrapper_notifying_delegate_of_existing_transactions(count):

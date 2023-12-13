@@ -43,6 +43,7 @@ public typealias SK2Transaction = StoreKit.Transaction
     @objc public var quantity: Int { self.transaction.quantity }
     @objc public var storefront: Storefront? { self.transaction.storefront }
     @objc internal var jwsRepresentation: String? { self.transaction.jwsRepresentation }
+    internal var environment: StoreEnvironment? { self.transaction.environment }
 
     var hasKnownPurchaseDate: Bool { return self.transaction.hasKnownPurchaseDate }
     var hasKnownTransactionIdentifier: Bool { self.transaction.hasKnownTransactionIdentifier }
@@ -117,6 +118,10 @@ internal protocol StoreTransactionType: Sendable {
     /// - Note: this is only available for StoreKit 2 transactions.
     var jwsRepresentation: String? { get }
 
+    /// The server environment where the receipt was generated.
+    /// - Note: this is only available for StoreKit 2 transactions.
+    var environment: StoreEnvironment? { get }
+
     /// Indicates to the App Store that the app delivered the purchased content
     /// or enabled the service to finish the transaction.
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void)
@@ -132,8 +137,12 @@ extension StoreTransaction {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    internal convenience init(sk2Transaction: SK2Transaction, jwsRepresentation: String) {
-        self.init(SK2StoreTransaction(sk2Transaction: sk2Transaction, jwsRepresentation: jwsRepresentation))
+    internal convenience init(sk2Transaction: SK2Transaction,
+                              jwsRepresentation: String,
+                              environmentOverride: StoreEnvironment? = nil) {
+        self.init(SK2StoreTransaction(sk2Transaction: sk2Transaction,
+                                      jwsRepresentation: jwsRepresentation,
+                                      environmentOverride: environmentOverride))
     }
 
     /// Returns the `SKPaymentTransaction` if this `StoreTransaction` represents a `SKPaymentTransaction`.

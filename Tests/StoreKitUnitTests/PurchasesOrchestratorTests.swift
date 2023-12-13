@@ -57,6 +57,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.purchasedProductsFetcher = .init()
         self.operationDispatcher = MockOperationDispatcher()
         self.receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: self.systemInfo)
+        self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
         self.receiptParser = MockReceiptParser()
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo)
         self.backend = MockBackend()
@@ -203,6 +204,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         return .init(
             productsManager: self.productsManager,
             receiptFetcher: self.receiptFetcher,
+            transactionFetcher: self.mockTransactionFetcher,
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
@@ -1521,7 +1523,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testSyncPurchasesPostsTheReceipt() async throws {
+    func testSyncPurchasesPostsJWSToken() async throws {
         self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
@@ -1537,7 +1539,108 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                      initiationSource: .purchase)
 
         expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation!)
         expect(customerInfo) == mockCustomerInfo
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSyncPurchasesPostsSK2ReceiptInXcodeEnvironment() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let transaction = try await createTransaction(finished: true, environment: .xcode)
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: [
+                "123_subscription_group_id": [
+                    .init(state: .subscribed,
+                          renewalInfoJWSToken: "123_renewal_info_jws_token",
+                          transactionJWSToken: "123_transaction_jws_token")
+                ]
+            ],
+            transactions: ["123_transaction_jws_token"],
+            bundleId: "123_bundle_id",
+            originalApplicationVersion: "123_original_application_version",
+            originalPurchaseDate: Date(timeIntervalSince1970: 123))
+        self.mockTransactionFetcher.stubbedReceipt = receipt
+        let product = try await self.fetchSk2StoreProduct()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
+
+        let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
+                                                                     isRestore: false,
+                                                                     initiationSource: .purchase)
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
+        expect(customerInfo) == mockCustomerInfo
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasePostsJWSToken() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        let transaction = try await self.simulateAnyPurchase()
+        mockListener.mockTransaction = .init(transaction.verifiedTransaction)
+        mockListener.mockJWSToken = transaction.jwsRepresentation
+
+        let product = try await fetchSk2Product()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+
+        expect(result.transaction) == transaction.verifiedStoreTransaction
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .jws(transaction.jwsRepresentation)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchasePostsSK2ReceiptInXcodeEnvironment() async throws {
+        self.setUpSystemInfo(storeKit2Setting: .enabledForCompatibleDevices, usesStoreKit2JWS: true)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        let mockListener = try XCTUnwrap(orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        let transaction = try await self.simulateAnyPurchase()
+        mockListener.mockTransaction = .init(transaction.verifiedTransaction)
+        mockListener.mockEnvironment = .xcode
+
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: [
+                "123_subscription_group_id": [
+                    .init(state: .subscribed,
+                          renewalInfoJWSToken: "123_renewal_info_jws_token",
+                          transactionJWSToken: "123_transaction_jws_token")
+                ]
+            ],
+            transactions: ["123_transaction_jws_token"],
+            bundleId: "123_bundle_id",
+            originalApplicationVersion: "123_original_application_version",
+            originalPurchaseDate: Date(timeIntervalSince1970: 123))
+        mockTransactionFetcher.stubbedReceipt = receipt
+
+        let product = try await fetchSk2Product()
+        self.productsManager.stubbedSk2StoreProductsResult = .success([product])
+        let result = try await orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+
+        expect(result.transaction) == transaction.verifiedStoreTransaction
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {

@@ -19,6 +19,7 @@ enum EncodedAppleReceipt: Equatable {
 
   case jws(String)
   case receipt(Data)
+  case sk2receipt(StoreKit2Receipt)
 
 }
 
@@ -29,7 +30,14 @@ extension EncodedAppleReceipt {
         case .jws(let jws):
             return jws
         case .receipt(let data):
-            return data.asFetchToken
+            return data.base64EncodedString()
+        case .sk2receipt(let receipt):
+            do {
+                return try receipt.prettyPrintedData.base64EncodedString()
+            } catch {
+                Logger.warn(Strings.storeKit.sk2_error_encoding_receipt(error))
+                return ""
+            }
         }
     }
 

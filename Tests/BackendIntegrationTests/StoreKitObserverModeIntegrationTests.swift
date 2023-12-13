@@ -81,12 +81,20 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
 }
 
+class StoreKit2JWSObserverModeIntegrationTests: StoreKit2ObserverModeIntegrationTests {
+    override var usesStoreKit2JWS: Bool { return true }
+}
+
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
 
     override class var storeKit2Setting: StoreKit2Setting { return .disabled }
 
     func testPurchaseOutsideTheAppPostsReceipt() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
+
+        // In JWS mode, transaction takes a bit longer to be processed after `buyProduct`
+        // We need to wait so `restorePurchases` actually posts it.
+        try await self.waitUntilUnfinishedTransactions { $0 == 1 }
 
         let info = try await self.purchases.restorePurchases()
         try await self.verifyEntitlementWentThrough(info)
@@ -114,6 +122,10 @@ class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWith
 
     override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
 
+}
+
+class StoreKit2JWSObserverModeWithExistingPurchasesTests: StoreKit2ObserverModeWithExistingPurchasesTests {
+    override var usesStoreKit2JWS: Bool { return true }
 }
 
 /// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.

@@ -30,6 +30,7 @@ enum ReceiptStrings {
     case unable_to_load_receipt(Error)
     case posting_receipt(AppleReceipt, initiationSource: String)
     case posting_jws(String, initiationSource: String)
+    case posting_sk2_receipt(String, initiationSource: String)
     case receipt_subscription_purchase_equals_expiration(
         productIdentifier: String,
         purchase: Date,
@@ -94,6 +95,9 @@ extension ReceiptStrings: LogMessage {
 
         case let .posting_jws(token, initiationSource):
             return "Posting JWS token (source: '\(initiationSource)'):\n\(token)"
+
+        case let .posting_sk2_receipt(receipt, initiationSource):
+            return "Posting StoreKit 2 receipt (source: '\(initiationSource)'):\n\(receipt)"
 
         case let .receipt_subscription_purchase_equals_expiration(
             productIdentifier,

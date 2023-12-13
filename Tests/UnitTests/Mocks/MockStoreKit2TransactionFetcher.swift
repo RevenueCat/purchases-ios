@@ -20,6 +20,7 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     private let _stubbedFirstVerifiedTransaction: Atomic<StoreTransaction?> = .init(nil)
     private let _stubbedFirstVerifiedAutoRenewableTransaction: Atomic<StoreTransaction?> = .init(nil)
     private let _stubbedHasPendingConsumablePurchase: Atomic<Bool> = false
+    private let _stubbedReceipt: Atomic<StoreKit2Receipt?> = .init(nil)
 
     var stubbedUnfinishedTransactions: [StoreTransaction] {
         get { return self._stubbedUnfinishedTransactions.value }
@@ -29,6 +30,11 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     var stubbedFirstVerifiedTransaction: StoreTransaction? {
         get { return self._stubbedFirstVerifiedTransaction.value }
         set { self._stubbedFirstVerifiedTransaction.value = newValue }
+    }
+
+    var stubbedReceipt: StoreKit2Receipt? {
+        get { return self._stubbedReceipt.value }
+        set { self._stubbedReceipt.value = newValue }
     }
 
     var stubbedFirstVerifiedAutoRenewableTransaction: StoreTransaction? {
@@ -41,6 +47,11 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         get async {
             return self.stubbedUnfinishedTransactions
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt {
+        return self.stubbedReceipt!
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

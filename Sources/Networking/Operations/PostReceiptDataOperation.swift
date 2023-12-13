@@ -197,6 +197,11 @@ private extension PostReceiptDataOperation {
                 content,
                 initiationSource: self.postData.initiationSource.rawValue
             ))
+        case .sk2receipt(let receipt):
+            self.log(Strings.receipt.posting_sk2_receipt(
+                (try? receipt.prettyPrintedJSON) ?? "",
+                initiationSource: self.postData.initiationSource.rawValue
+            ))
         case .receipt(let data):
             do {
                 let receipt = try PurchasesReceiptParser.default.parse(from: data)
@@ -332,6 +337,13 @@ private extension EncodedAppleReceipt {
             return content.asData.hashString
         case let .receipt(data):
             return data.hashString
+        case let .sk2receipt(receipt):
+            do {
+                return try receipt.prettyPrintedData.hashString
+            } catch {
+                Logger.warn(Strings.storeKit.sk2_error_encoding_receipt(error))
+                return ""
+            }
         }
     }
 

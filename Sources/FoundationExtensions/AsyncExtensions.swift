@@ -112,6 +112,44 @@ internal enum Async {
         }
     }
 
+    /// Runs the given block `maximumRetries` times at most, at `pollInterval` times until the
+    /// block returns a tuple where the first argument `shouldRetry` is false, and the second is the expected value.
+    /// After the maximum retries, returns the last seen value.
+    ///
+    /// Example:
+    /// ```swift
+    /// let receipt = await Async.retry {
+    ///     let receipt = fetchReceipt()
+    ///     if receipt.contains(transaction) {
+    ///         return (shouldRetry: false, receipt)
+    ///     } else {
+    ///         return (shouldRetry: true, receipt)
+    ///     }
+    /// }
+    /// ```
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    static func retry<T>(
+        maximumRetries: Int = 5,
+        pollInterval: DispatchTimeInterval = .milliseconds(300),
+        until value: @Sendable () async -> (shouldRetry: Bool, result: T)
+    ) async -> T {
+        var lastValue: T
+        var retries = 0
+
+        repeat {
+            retries += 1
+            let (shouldRetry, result) = await value()
+            if shouldRetry {
+                lastValue = result
+                try? await Task.sleep(nanoseconds: UInt64(pollInterval.nanoseconds))
+            } else {
+                return result
+            }
+        } while !(retries > maximumRetries)
+
+        return lastValue
+    }
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
