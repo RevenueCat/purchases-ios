@@ -31,8 +31,6 @@ public struct PaywallView: View {
 
     @Environment(\.locale)
     private var locale
-    @Environment(\.dismiss)
-    private var dismissAction
 
     @StateObject
     private var purchaseHandler: PurchaseHandler
@@ -136,7 +134,7 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    LoadingPaywallView(mode: self.mode, dismiss: self.dismiss)
+                    LoadingPaywallView(mode: self.mode, displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -182,7 +180,7 @@ public struct PaywallView: View {
             template: template,
             mode: self.mode,
             fonts: fonts,
-            dismiss: self.dismiss,
+            displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
             purchaseHandler: purchaseHandler
         )
@@ -198,10 +196,6 @@ public struct PaywallView: View {
         } else {
             paywallView
         }
-    }
-
-    private var dismiss: (() -> Void)? {
-        return self.displayCloseButton ? self.dismissAction.callAsFunction : nil
     }
 
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
@@ -244,7 +238,7 @@ struct LoadedOfferingPaywallView: View {
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
-    private let dismiss: (() -> Void)?
+    private let displayCloseButton: Bool
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -257,6 +251,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.dismiss)
+    private var dismiss
+
     init(
         offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,
@@ -264,7 +261,7 @@ struct LoadedOfferingPaywallView: View {
         template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
-        dismiss: (() -> Void)?,
+        displayCloseButton: Bool,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) {
@@ -274,7 +271,7 @@ struct LoadedOfferingPaywallView: View {
         self.template = template
         self.mode = mode
         self.fonts = fonts
-        self.dismiss = dismiss
+        self.displayCloseButton = displayCloseButton
         self._introEligibility = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
@@ -305,14 +302,19 @@ struct LoadedOfferingPaywallView: View {
             .disabled(self.purchaseHandler.actionInProgress)
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
+            .onChangeOf(self.purchaseHandler.purchased) { purchased in
+                if purchased {
+                    Logger.debug(Strings.dismissing_paywall)
+                    self.dismiss()
+                }
+            }
 
-        if let dismiss = self.dismiss {
+        if self.displayCloseButton {
             NavigationView {
                 view
-                    .toolbar { self.toolbar(dismiss) }
+                    .toolbar { self.toolbar }
             }
             .navigationViewStyle(.stack)
-
         } else {
             view
         }
@@ -329,10 +331,10 @@ struct LoadedOfferingPaywallView: View {
         )
     }
 
-    private func toolbar(_ dismiss: @escaping () -> Void) -> some ToolbarContent {
+    private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
-                dismiss()
+                self.dismiss()
             } label: {
                 Image(systemName: "xmark")
             }
@@ -340,7 +342,8 @@ struct LoadedOfferingPaywallView: View {
             .opacity(
                 self.purchaseHandler.actionInProgress
                 ? Constants.purchaseInProgressButtonOpacity
-                : 1)
+                : 1
+            )
         }
     }
 

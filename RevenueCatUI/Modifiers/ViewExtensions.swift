@@ -28,6 +28,29 @@ extension View {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    /// Wraps the 2 `onChange(of:)` implementations in iOS 17+ and below depending on what's available
+    @inlinable
+    @ViewBuilder
+    public func onChangeOf<V>(
+        _ value: V,
+        perform action: @escaping (_ newValue: V) -> Void
+    ) -> some View where V: Equatable {
+        #if swift(>=5.9)
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            self.onChange(of: value) { _, newValue in action(newValue) }
+        } else {
+            self.onChange(of: value) { newValue in action(newValue) }
+        }
+        #else
+        self.onChange(of: value) { _, newValue in action(newValue) }
+        #endif
+    }
+
+}
+
 // MARK: - Scrolling
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
