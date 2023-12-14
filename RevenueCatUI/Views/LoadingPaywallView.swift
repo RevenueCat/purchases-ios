@@ -24,7 +24,7 @@ import SwiftUI
 struct LoadingPaywallView: View {
 
     var mode: PaywallViewMode
-    var dismiss: (() -> Void)?
+    var displayCloseButton: Bool
 
     var shimmer: Bool = true
 
@@ -42,7 +42,7 @@ struct LoadingPaywallView: View {
             template: Self.template,
             mode: self.mode,
             fonts: DefaultPaywallFontProvider(),
-            dismiss: dismiss,
+            displayCloseButton: self.displayCloseButton,
             introEligibility: Self.introEligibility,
             purchaseHandler: Self.purchaseHandler
         )
@@ -232,7 +232,7 @@ struct LoadingPaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            LoadingPaywallView(mode: mode)
+            LoadingPaywallView(mode: mode, displayCloseButton: true)
                 .previewDisplayName("\(mode)")
         }
     }

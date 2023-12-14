@@ -189,13 +189,8 @@ struct Template4View: TemplateViewType {
                 }
             }
         }
-        #if swift(>=5.9) && os(visionOS)
-        .onChange(of: self.dynamicTypeSize) { _, _ in self.packageContentHeight = nil }
-        .onChange(of: self.containerWidth) { _, _ in self.packageContentHeight = nil }
-        #else
-        .onChange(of: self.dynamicTypeSize) { _ in self.packageContentHeight = nil }
-        .onChange(of: self.containerWidth) { _ in self.packageContentHeight = nil }
-        #endif
+        .onChangeOf(self.dynamicTypeSize) { _ in self.packageContentHeight = nil }
+        .onChangeOf(self.containerWidth) { _ in self.packageContentHeight = nil }
         .hidden()
     }
 
