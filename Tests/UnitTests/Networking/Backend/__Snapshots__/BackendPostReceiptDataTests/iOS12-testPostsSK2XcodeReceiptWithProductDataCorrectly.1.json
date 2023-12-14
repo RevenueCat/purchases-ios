@@ -1,7 +1,7 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
-    "content-type" : "application/json",
+    "content-type" : "application\/json",
     "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
@@ -33,6 +33,6 @@
       "store_country" : "ESP"
     },
     "method" : "POST",
-    "url" : "https://api.revenuecat.com/v1/receipts"
+    "url" : "https:\/\/api.revenuecat.com\/v1\/receipts"
   }
 }
