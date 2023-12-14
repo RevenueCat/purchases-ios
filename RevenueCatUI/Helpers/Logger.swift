@@ -70,6 +70,8 @@ enum Logger {
         function: String = #function,
         line: UInt = #line
     ) {
+        guard Purchases.logLevel <= level else { return }
+
         Purchases.verboseLogHandler(
             level,
             text.description,
