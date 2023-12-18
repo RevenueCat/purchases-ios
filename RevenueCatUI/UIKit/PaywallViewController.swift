@@ -119,7 +119,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
                                         didFinishRestoringWith customerInfo: CustomerInfo)
 
     /// Notifies that the ``PaywallViewController`` was dismissed.
-    @objc(paywallViewControllerDismissed:)
+    @objc(paywallViewControllerWasDismissed:)
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
 }
