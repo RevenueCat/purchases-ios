@@ -30,6 +30,11 @@ struct WatchTemplateView: TemplateViewType {
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
 
+    #if swift(>=5.9) || (!os(macOS) && !os(watchOS))
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
+    #endif
+
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject

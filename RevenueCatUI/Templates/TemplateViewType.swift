@@ -41,8 +41,8 @@ protocol TemplateViewType: SwiftUI.View {
     var configuration: TemplateViewConfiguration { get }
     var userInterfaceIdiom: UserInterfaceIdiom { get }
 
-    /// `UserInterfaceSizeClass` is only available for macOS with Xcode 15
-    #if swift(>=5.9) || !os(macOS)
+    /// `UserInterfaceSizeClass` is only available for macOS/watchOS with Xcode 15
+    #if swift(>=5.9) || (!os(macOS) && !os(watchOS))
     var verticalSizeClass: UserInterfaceSizeClass? { get }
     #endif
 
