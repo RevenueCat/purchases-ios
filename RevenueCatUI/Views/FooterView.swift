@@ -250,6 +250,7 @@ private struct LinkButton: View {
                         }
                     }
             }
+            .navigationViewStyle(.stack)
         }
         #else
         Link(destination: self.url) {
