@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto.
 
+// swiftlint:disable type_body_length
+
 import RevenueCat
 import SwiftUI
 
@@ -236,7 +238,6 @@ struct Template5View: TemplateViewType {
         FooterView(configuration: self.configuration,
                    purchaseHandler: self.purchaseHandler,
                    displayingAllPlans: self.$displayingAllPlans)
-        .matchedGeometryEffect(id: Geometry.footer, in: self.namespace)
     }
 
     @ViewBuilder
@@ -341,7 +342,6 @@ private extension Template5View {
         case features
         case packages
         case subscribeButton
-        case footer
     }
 
 }

@@ -52,7 +52,6 @@ struct Template3View: TemplateViewType {
             .padding(.top, self.defaultVerticalPaddingLength)
     }
 
-    // TODO: snapshots
     @ViewBuilder
     private var horizontalFullScreenContent: some View {
         VStack(spacing: 0) {
@@ -157,7 +156,6 @@ struct Template3View: TemplateViewType {
     private var footer: some View {
         FooterView(configuration: self.configuration,
                    purchaseHandler: self.purchaseHandler)
-        .matchedGeometryEffect(id: Geometry.footer, in: self.namespace)
     }
 
     // MARK: -
@@ -176,14 +174,12 @@ struct Template3View: TemplateViewType {
 @available(tvOS, unavailable)
 private extension Template3View {
 
-    // TODO: fix rotation animation
     enum Geometry: Hashable {
         case icon
         case title
         case features
         case offerDetails
         case purchaseButton
-        case footer
     }
 
 }
