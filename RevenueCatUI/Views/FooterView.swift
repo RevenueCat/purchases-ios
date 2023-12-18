@@ -280,6 +280,7 @@ private struct LinkButton: View {
 
     private func linkContent(for title: String, bundle: Bundle) -> some View {
         Text(Self.localizedString(title, bundle))
+            .multilineTextAlignment(.center)
             .frame(minHeight: Constants.minimumButtonHeight)
     }
 
