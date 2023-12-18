@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+// swiftlint:disable type_body_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 10.0, *)
 struct Template2View: TemplateViewType {
 
@@ -27,8 +29,11 @@ struct Template2View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
+
+    #if swift(>=5.9) || !os(macOS)
     @Environment(\.verticalSizeClass)
     var verticalSizeClass
+    #endif
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel

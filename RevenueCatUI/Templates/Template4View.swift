@@ -33,10 +33,13 @@ struct Template4View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
-    @Environment(\.verticalSizeClass)
-    var verticalSizeClass
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
+
+    #if swift(>=5.9) || !os(macOS)
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
+    #endif
 
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel

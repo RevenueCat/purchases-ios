@@ -29,11 +29,13 @@ struct Template5View: TemplateViewType {
 
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
-    @Environment(\.verticalSizeClass)
-    var verticalSizeClass
-
     @Environment(\.locale)
     var locale
+
+    #if swift(>=5.9) || !os(macOS)
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
+    #endif
 
     @Namespace
     private var namespace
