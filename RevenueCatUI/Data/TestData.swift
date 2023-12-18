@@ -235,11 +235,7 @@ internal enum TestData {
         paywall: .init(
             templateName: PaywallTemplate.template2.rawValue,
             config: .init(
-                packages: [
-                    PackageType.annual.identifier,
-                    PackageType.weekly.identifier,
-                    PackageType.monthly.identifier
-                ],
+                packages: [PackageType.annual.identifier, PackageType.monthly.identifier],
                 images: Self.images,
                 colors: .init(
                     light: .init(
@@ -387,8 +383,7 @@ internal enum TestData {
         paywall: .init(
             templateName: PaywallTemplate.template5.rawValue,
             config: .init(
-                packages: [PackageType.weekly.identifier,
-                           PackageType.annual.identifier,
+                packages: [PackageType.annual.identifier,
                            PackageType.monthly.identifier],
                 defaultPackage: PackageType.annual.identifier,
                 images: .init(
@@ -437,7 +432,7 @@ internal enum TestData {
             assetBaseURL: Self.paywallAssetBaseURL
         ),
         availablePackages: [TestData.monthlyPackage,
-                            TestData.weeklyPackage,
+                            TestData.sixMonthPackage,
                             TestData.annualPackage]
     )
 
