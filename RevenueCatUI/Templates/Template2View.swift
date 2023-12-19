@@ -30,7 +30,7 @@ struct Template2View: TemplateViewType {
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
 
-    #if swift(>=5.9) || (!os(macOS) && !os(watchOS))
+    #if swift(>=5.9) || (!os(macOS) && !os(watchOS) && !os(tvOS))
     @Environment(\.verticalSizeClass)
     var verticalSizeClass
     #endif

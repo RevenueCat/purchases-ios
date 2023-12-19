@@ -32,7 +32,7 @@ struct Template5View: TemplateViewType {
     @Environment(\.locale)
     var locale
 
-    #if swift(>=5.9) || (!os(macOS) && !os(watchOS))
+    #if swift(>=5.9) || (!os(macOS) && !os(watchOS) && !os(tvOS))
     @Environment(\.verticalSizeClass)
     var verticalSizeClass
     #endif

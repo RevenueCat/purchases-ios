@@ -30,7 +30,7 @@ struct WatchTemplateView: TemplateViewType {
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
 
-    #if swift(>=5.9) || (!os(macOS) && !os(watchOS))
+    #if swift(>=5.9)
     @Environment(\.verticalSizeClass)
     var verticalSizeClass
     #endif
