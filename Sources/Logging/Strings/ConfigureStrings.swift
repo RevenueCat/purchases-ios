@@ -37,7 +37,7 @@ enum ConfigureStrings {
 
     case response_verification_mode(Signing.ResponseVerificationMode)
 
-    case storekit_version(String)
+    case storekit_version(StoreKitVersion)
 
     case delegate_set
 
