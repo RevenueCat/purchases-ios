@@ -29,7 +29,7 @@ public enum StoreKitVersion: Int {
 public extension StoreKitVersion {
 
     /// Let RevenueCat use the most appropiate version of StoreKit
-    static var `default` = Self.storeKit1
+    static let `default` = Self.storeKit1
 
 }
 
