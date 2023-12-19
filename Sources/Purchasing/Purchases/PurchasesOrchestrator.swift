@@ -135,7 +135,7 @@ final class PurchasesOrchestrator {
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
 
         storeKit2StorefrontListener.delegate = self
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
 
@@ -153,7 +153,7 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
-            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+            if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
                 await storeKit2TransactionListener.listenForTransactions()
             }
         }

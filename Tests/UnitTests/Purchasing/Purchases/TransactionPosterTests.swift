@@ -74,7 +74,7 @@ class TransactionPosterTests: TestCase {
         expect(self.mockTransaction.finishInvoked) == true
     }
 
-    func testHandlePurchasedTransactionSendsReceiptIfJWSSettingEnabledButJWSTokenIsMissing() throws {
+    func testHandlePurchasedTransactionSendsReceiptIfStoreKit2EnabledButJWSTokenIsMissing() throws {
         self.setUp(observerMode: false, storeKitVersion: .storeKit2)
 
         let product = MockSK1Product(mockProductIdentifier: "product")

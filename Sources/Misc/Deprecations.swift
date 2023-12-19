@@ -73,7 +73,7 @@ public extension Purchases {
             appUserID: appUserID,
             observerMode: observerMode,
             userDefaults: userDefaults,
-            useStoreKit2IfAvailable: StoreKit2Setting.default.usesStoreKit2IfAvailable
+            useStoreKit2IfAvailable: StoreKitVersion.default == .storeKit2
         )
     }
 
@@ -118,8 +118,7 @@ public extension Purchases {
             userDefaults: userDefaults,
             platformInfo: nil,
             responseVerificationMode: .default,
-            storeKit2Setting: .init(useStoreKit2IfAvailable: useStoreKit2IfAvailable),
-            storeKitVersion: .default,
+            storeKitVersion: useStoreKit2IfAvailable ? .storeKit2 : .default,
             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
             networkTimeout: Configuration.networkTimeoutDefault,
             dangerousSettings: dangerousSettings,
@@ -404,24 +403,9 @@ extension CustomerInfo {
 
 public extension Configuration.Builder {
 
-    /// Set `storeKit2Setting`. If `true`, the SDK will use StoreKit 2 APIs internally. If disabled, it will use StoreKit 1 APIs instead.
-    /// - Parameter usesStoreKit2IfAvailable: enable StoreKit 2 on devices that support it.
-    /// Defaults to  `false`.
-    /// - Important: This configuration flag has been deprecated, and will be replaced by automatic remote configuration in the future.
-    /// However, apps using it should work correctly.
-    ///
-    @available(*, deprecated, message: """
-    RevenueCat currently uses StoreKit 1 for purchases, as its stability in production scenarios has
-    proven to be more performant than StoreKit 2.
-
-    We're collecting more data on the best approach, but StoreKit 1 vs StoreKit 2 is an implementation detail
-    that you shouldn't need to care about.
-
-    Simply remove this method call to let RevenueCat decide for you which StoreKit implementation to use.
-    """)
+    @available(*, deprecated, message: "Use .with(storeKitVersion:) to enable StoreKit 2")
     @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
-        self.storeKit2Setting = .init(useStoreKit2IfAvailable: usesStoreKit2IfAvailable)
-        return self
+        return self.with(storeKitVersion: usesStoreKit2IfAvailable ? .storeKit2 : StoreKitVersion.default)
     }
 
 }

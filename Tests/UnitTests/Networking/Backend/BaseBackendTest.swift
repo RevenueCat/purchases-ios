@@ -47,7 +47,6 @@ class BaseBackendTests: TestCase {
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
-            storeKit2Setting: .init(useStoreKit2IfAvailable: storeKitVersion == .storeKit2),
             storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings

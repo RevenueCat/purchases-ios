@@ -788,7 +788,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         let headerPresent: Atomic<Bool> = false
 
-        let enabled = self.systemInfo.storeKit2Setting.isEnabledAndAvailable.description
+        let enabled = self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable.description
 
         stub(condition: hasHeaderNamed("X-StoreKit2-Enabled",
                                        value: enabled)) { _ in

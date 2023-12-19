@@ -19,7 +19,6 @@ class MockSystemInfo: SystemInfo {
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
-                     storeKit2Setting: StoreKit2Setting = .default,
                      customEntitlementsComputation: Bool = false,
                      storeKitVersion: StoreKitVersion = .default,
                      clock: ClockType = TestClock()) {
@@ -29,7 +28,6 @@ class MockSystemInfo: SystemInfo {
         )
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
-                  storeKit2Setting: storeKit2Setting,
                   storeKitVersion: storeKitVersion,
                   dangerousSettings: dangerousSettings,
                   clock: clock)

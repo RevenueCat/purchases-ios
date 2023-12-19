@@ -151,7 +151,7 @@ private extension DebugViewModel.Configuration {
         return .init(
             observerMode: purchases.observerMode,
             sandbox: purchases.isSandbox,
-            storeKit2Enabled: purchases.storeKit2Setting.isEnabledAndAvailable,
+            storeKit2Enabled: purchases.isStoreKit2EnabledAndAvailable,
             offlineCustomerInfoSupport: purchases.offlineCustomerInfoEnabled,
             verificationMode: purchases.responseVerificationMode.display,
             receiptURL: purchases.receiptURL

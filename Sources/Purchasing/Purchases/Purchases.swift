@@ -265,7 +265,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      responseVerificationMode: Signing.ResponseVerificationMode,
-                     storeKit2Setting: StoreKit2Setting = .default,
                      storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
@@ -282,7 +281,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: !observerMode,
                                     operationDispatcher: operationDispatcher,
-                                    storeKit2Setting: storeKit2Setting,
                                     storeKitVersion: storeKitVersion,
                                     responseVerificationMode: responseVerificationMode,
                                     dangerousSettings: dangerousSettings)
@@ -311,7 +309,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
         )
 
-        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
             ? .right(.init())
             : .left(.init(
                 operationDispatcher: operationDispatcher,
@@ -550,7 +548,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
         }
         if systemInfo.observerMode {
@@ -1163,7 +1161,6 @@ public extension Purchases {
                   userDefaults: configuration.userDefaults,
                   platformInfo: configuration.platformInfo,
                   responseVerificationMode: configuration.responseVerificationMode,
-                  storeKit2Setting: configuration.storeKit2Setting,
                   storeKitVersion: configuration.storeKitVersion,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
@@ -1335,7 +1332,6 @@ public extension Purchases {
         applicationSupportDirectory: URL? = nil,
         platformInfo: PlatformInfo?,
         responseVerificationMode: Signing.ResponseVerificationMode,
-        storeKit2Setting: StoreKit2Setting,
         storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
@@ -1350,7 +1346,6 @@ public extension Purchases {
                   observerMode: observerMode,
                   platformInfo: platformInfo,
                   responseVerificationMode: responseVerificationMode,
-                  storeKit2Setting: storeKit2Setting,
                   storeKitVersion: storeKitVersion,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
@@ -1522,8 +1517,8 @@ internal extension Purchases {
         return self.paymentQueueWrapper.sk1Wrapper != nil
     }
 
-    var storeKit2Setting: StoreKit2Setting {
-        return self.systemInfo.storeKit2Setting
+    var isStoreKit2EnabledAndAvailable: Bool {
+        return self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
     }
 
     #if DEBUG

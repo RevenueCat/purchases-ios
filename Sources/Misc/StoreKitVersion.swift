@@ -24,9 +24,13 @@ public enum StoreKitVersion: Int {
 
     /// Always use StoreKit 2.
     case storeKit2
+}
+
+public extension StoreKitVersion {
 
     /// Let RevenueCat use the most appropiate version of StoreKit
-    case `default`
+    static var `default` = Self.storeKit1
+
 }
 
 extension StoreKitVersion {
@@ -43,7 +47,7 @@ extension StoreKitVersion {
     /// - Returns: `true` if and only if SK2 is enabled and it's available.
     var isStoreKit2EnabledAndAvailable: Bool {
         switch self {
-        case .storeKit1, .default: return false
+        case .storeKit1: return false
         case .storeKit2: return Self.isStoreKit2Available
         }
     }
@@ -52,11 +56,16 @@ extension StoreKitVersion {
 
 extension StoreKitVersion {
 
-    var versionString: String {
-        if self.isStoreKit2EnabledAndAvailable {
-            return "2"
-        } else {
+    var debugDescription: String {
+        switch self {
+        case .storeKit1:
             return "1"
+        case .storeKit2:
+            if self.isStoreKit2EnabledAndAvailable {
+                return "2"
+            } else {
+                return "1"
+            }
         }
     }
 

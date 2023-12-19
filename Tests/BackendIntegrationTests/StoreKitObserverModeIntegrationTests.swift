@@ -36,7 +36,7 @@ class BaseStoreKitObserverModeIntegrationTests: BaseStoreKitIntegrationTests {
 
 class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
     override func setUp() async throws {
         try await super.setUp()
@@ -81,13 +81,9 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
 }
 
-class StoreKit2JWSObserverModeIntegrationTests: StoreKit2ObserverModeIntegrationTests {
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-}
-
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     func testPurchaseOutsideTheAppPostsReceipt() async throws {
         try self.testSession.buyProduct(productIdentifier: Self.monthlyNoIntroProductID)
@@ -120,19 +116,15 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit2ObserverModeWithExistingPurchasesTests: StoreKit1ObserverModeWithExistingPurchasesTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
-
-}
-
-class StoreKit2JWSObserverModeWithExistingPurchasesTests: StoreKit2ObserverModeWithExistingPurchasesTests {
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
 }
 
 /// Purchases a product before configuring `Purchases` to verify behavior upon initialization in observer mode.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .disabled }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     // MARK: - Transactions observation
 
