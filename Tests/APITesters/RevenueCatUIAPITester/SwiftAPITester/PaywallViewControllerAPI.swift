@@ -25,8 +25,6 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?)
     controller.delegate = delegate
 
     let _: UIViewController = PaywallFooterViewController(offering: offering)
-    let _: UIViewController = PaywallFooterViewController(displayCloseButton: true)
-    let _: UIViewController = PaywallFooterViewController(offering: offering, displayCloseButton: true)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
