@@ -29,8 +29,6 @@ enum ConfigureStrings {
 
     case debug_enabled
 
-    case store_kit_2_enabled
-
     case observer_mode_enabled
 
     case observer_mode_with_storekit2
@@ -98,8 +96,6 @@ extension ConfigureStrings: LogMessage {
                 "with URL: \(url)"
         case .debug_enabled:
             return "Debug logging enabled"
-        case .store_kit_2_enabled:
-            return "StoreKit 2 support enabled"
         case .observer_mode_enabled:
             return "Purchases is configured in observer mode"
         case .observer_mode_with_storekit2:

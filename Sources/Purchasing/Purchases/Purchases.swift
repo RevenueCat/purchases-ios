@@ -548,9 +548,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
-        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
-            Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
-        }
         if systemInfo.observerMode {
             Logger.debug(Strings.configure.observer_mode_enabled, fileName: nil)
         }
