@@ -25,7 +25,7 @@ import UIKit
 public class PaywallViewController: UIViewController {
 
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
-    @objc public weak var delegate: PaywallViewControllerDelegate?
+    @objc public final weak var delegate: PaywallViewControllerDelegate?
 
     var mode: PaywallViewMode {
         return .fullScreen
