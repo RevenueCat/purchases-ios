@@ -17,12 +17,13 @@ import Foundation
 @objc(RCStoreKitVersion)
 public enum StoreKitVersion: Int {
 
-    /// Always use StoreKit 1. StoreKit 2 will be used (if available in the current device) only for certain APIs
-    /// that provide a better implementation. For example: intro eligibility, determining if a receipt has
-    /// purchases, managing subscriptions.
+    /// Always use StoreKit 1. 
     case storeKit1
 
-    /// Always use StoreKit 2.
+    /// Always use StoreKit 2 (StoreKit 1 will be used if StoreKit 2 is not available in the current device.)
+    ///
+    /// Make sure you have an In-App Purchase Key configured in your app.
+    /// Please see https://rev.cat/in-app-purchase-key-configuration for more info.
     case storeKit2
 }
 
