@@ -101,6 +101,8 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsJWS() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation)
