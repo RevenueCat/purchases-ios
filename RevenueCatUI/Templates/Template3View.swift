@@ -25,10 +25,18 @@ struct Template3View: TemplateViewType {
     @Environment(\.userInterfaceIdiom)
     var userInterfaceIdiom
 
+    #if swift(>=5.9) || (!os(macOS) && !os(watchOS) && !os(tvOS))
+    @Environment(\.verticalSizeClass)
+    var verticalSizeClass
+    #endif
+
     @EnvironmentObject
     private var introEligibilityViewModel: IntroEligibilityViewModel
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
+
+    @Namespace
+    private var namespace
 
     init(_ configuration: TemplateViewConfiguration) {
         self.configuration = configuration
@@ -36,48 +44,81 @@ struct Template3View: TemplateViewType {
     }
 
     var body: some View {
-        VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.isFullScreen {
-                if let url = self.configuration.iconImageURL {
-                    RemoteImage(url: url, aspectRatio: 1)
-                        .frame(width: self.iconSize, height: self.iconSize)
-                        .cornerRadius(8)
+        Group {
+            if self.shouldUseLandscapeLayout {
+                self.horizontalFullScreenContent
+            } else {
+                self.verticalContent
+            }
+        }
+            .defaultHorizontalPadding()
+            .padding(.top, self.defaultVerticalPaddingLength)
+    }
+
+    @ViewBuilder
+    private var horizontalFullScreenContent: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: self.defaultVerticalPaddingLength) {
+                VStack {
+                    self.headerIcon
+                        .padding(.bottom, self.defaultVerticalPaddingLength)
+                    self.title
                 }
 
-                Text(.init(self.localization.title))
-                    .font(self.font(for: .title))
-                    .foregroundStyle(self.configuration.colors.text1Color)
-                    .multilineTextAlignment(.center)
+                Spacer()
+
+                VStack {
+                    self.features
+                    Spacer()
+                    self.offerDetails
+                    self.purchaseButton
+                }
+            }
+
+            self.footer
+        }
+    }
+
+    @ViewBuilder
+    private var verticalContent: some View {
+        VStack(spacing: self.defaultVerticalPaddingLength) {
+            if self.configuration.mode.isFullScreen {
+                self.headerIcon
+
+                self.title
 
                 Spacer()
 
                 self.features
-                    .scrollableIfNecessary()
             }
 
             Spacer()
 
-            IntroEligibilityStateView(
-                display: .offerDetails,
-                localization: self.localization,
-                introEligibility: self.introEligibility,
-                foregroundColor: self.configuration.colors.text2Color
-            )
-            .multilineTextAlignment(.center)
-            .font(self.font(for: .subheadline))
-            .padding(.bottom)
+            self.offerDetails
+                .padding(.bottom)
 
-            PurchaseButton(
-                packages: self.configuration.packages,
-                selectedPackage: self.configuration.packages.default,
-                configuration: self.configuration
-            )
+            self.purchaseButton
 
-            FooterView(configuration: self.configuration,
-                       purchaseHandler: self.purchaseHandler)
+            self.footer
         }
-        .defaultHorizontalPadding()
-        .padding(.top, self.defaultVerticalPaddingLength)
+    }
+
+    @ViewBuilder
+    private var headerIcon: some View {
+        if let url = self.configuration.iconImageURL {
+            RemoteImage(url: url, aspectRatio: 1)
+                .frame(width: self.iconSize, height: self.iconSize)
+                .cornerRadius(8)
+                .matchedGeometryEffect(id: Geometry.icon, in: self.namespace)
+        }
+    }
+
+    private var title: some View {
+        Text(.init(self.localization.title))
+            .font(self.font(for: .title))
+            .foregroundStyle(self.configuration.colors.text1Color)
+            .multilineTextAlignment(.center)
+            .matchedGeometryEffect(id: Geometry.title, in: self.namespace)
     }
 
     private var features: some View {
@@ -90,7 +131,37 @@ struct Template3View: TemplateViewType {
             }
         }
         .defaultHorizontalPadding()
+        .scrollableIfNecessary()
+        .matchedGeometryEffect(id: Geometry.features, in: self.namespace)
     }
+
+    private var offerDetails: some View {
+        IntroEligibilityStateView(
+            display: .offerDetails,
+            localization: self.localization,
+            introEligibility: self.introEligibility,
+            foregroundColor: self.configuration.colors.text2Color
+        )
+        .multilineTextAlignment(.center)
+        .font(self.font(for: .subheadline))
+        .matchedGeometryEffect(id: Geometry.offerDetails, in: self.namespace)
+    }
+
+    private var purchaseButton: some View {
+        PurchaseButton(
+            packages: self.configuration.packages,
+            selectedPackage: self.configuration.packages.default,
+            configuration: self.configuration
+        )
+        .matchedGeometryEffect(id: Geometry.purchaseButton, in: self.namespace)
+    }
+
+    private var footer: some View {
+        FooterView(configuration: self.configuration,
+                   purchaseHandler: self.purchaseHandler)
+    }
+
+    // MARK: -
 
     private var introEligibility: IntroEligibilityStatus? {
         return self.introEligibilityViewModel.singleEligibility
@@ -98,6 +169,21 @@ struct Template3View: TemplateViewType {
 
     @ScaledMetric(relativeTo: .title)
     private var iconSize = 65
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+private extension Template3View {
+
+    enum Geometry: Hashable {
+        case icon
+        case title
+        case features
+        case offerDetails
+        case purchaseButton
+    }
 
 }
 
