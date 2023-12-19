@@ -803,6 +803,26 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         expect(headerPresent.value) == true
     }
 
+    func testPassesStoreKitVersionHeader() {
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        let headerPresent: Atomic<Bool> = false
+
+        let version = self.systemInfo.storeKitVersion.debugDescription
+
+        stub(condition: hasHeaderNamed("X-StoreKit-Version",
+                                       value: version)) { _ in
+            headerPresent.value = true
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        expect(headerPresent.value) == true
+    }
+
     #if os(macOS) || targetEnvironment(macCatalyst)
     func testAlwaysPassesAppleDeviceIdentifierWhenIsSandbox() {
         let request = HTTPRequest(method: .get, path: .mockPath)
