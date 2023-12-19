@@ -33,6 +33,17 @@ public extension StoreKitVersion {
 
 }
 
+extension StoreKitVersion: CustomDebugStringConvertible {
+
+    /// Returns a spurtring representation of the StoreKit version
+    public var debugDescription: String {
+        switch self {
+        case .storeKit1: return "1"
+        case .storeKit2: return "2"
+        }
+    }
+}
+
 extension StoreKitVersion {
 
     /// - Returns: `true` if SK2 is available in this device.
@@ -52,17 +63,17 @@ extension StoreKitVersion {
         }
     }
 
-    /// Returns a string representing the effective version of StoreKit used.
+    /// Returns the effective version of StoreKit used.
     /// This can be different from the configured version if StoreKit 2 is not available on the current device.
-    var effectiveVersion: String {
+    var effectiveVersion: StoreKitVersion {
         switch self {
         case .storeKit1:
-            return "1"
+            return .storeKit1
         case .storeKit2:
             if self.isStoreKit2EnabledAndAvailable {
-                return "2"
+                return .storeKit2
             } else {
-                return "1"
+                return .storeKit1
             }
         }
     }
