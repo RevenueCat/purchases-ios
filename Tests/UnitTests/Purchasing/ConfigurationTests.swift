@@ -62,7 +62,6 @@ class ConfigurationTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
-    @available(*, deprecated)
     func testObserverModeWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .with(observerMode: true)
@@ -98,7 +97,7 @@ class ConfigurationTests: TestCase {
             .with(usesStoreKit2IfAvailable: false)
             .build()
 
-        expect(configuration.storeKitVersion) == StoreKitVersion.default
+        expect(configuration.storeKitVersion) == .default
     }
 
 }

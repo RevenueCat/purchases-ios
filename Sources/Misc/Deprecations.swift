@@ -405,7 +405,7 @@ public extension Configuration.Builder {
 
     @available(*, deprecated, message: "Use .with(storeKitVersion:) to enable StoreKit 2")
     @objc func with(usesStoreKit2IfAvailable: Bool) -> Configuration.Builder {
-        return self.with(storeKitVersion: usesStoreKit2IfAvailable ? .storeKit2 : StoreKitVersion.default)
+        return self.with(storeKitVersion: usesStoreKit2IfAvailable ? .storeKit2 : .default)
     }
 
 }
