@@ -74,7 +74,7 @@ extension TemplateViewType {
         return Constants.defaultVerticalPaddingLength(self.userInterfaceIdiom)
     }
 
-    var isVerticalSizeCompact: Bool {
+    var shouldUseLandscapeLayout: Bool {
         #if os(tvOS)
         // tvOS never reports UserInterfaceSizeClass.compact
         // but for the purposes of template layouts, we consider landscape

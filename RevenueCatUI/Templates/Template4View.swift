@@ -68,7 +68,7 @@ struct Template4View: TemplateViewType {
                     #endif
             }
             .background {
-                if !self.isVerticalSizeCompact {
+                if !self.shouldUseLandscapeLayout {
                     TemplateBackgroundImageView(configuration: self.configuration)
                 }
             }

@@ -48,7 +48,7 @@ struct Template2View: TemplateViewType {
 
     var body: some View {
         Group {
-            if self.isVerticalSizeCompact {
+            if self.shouldUseLandscapeLayout {
                 self.horizontalContent
             } else {
                 self.verticalFullScreenContent
