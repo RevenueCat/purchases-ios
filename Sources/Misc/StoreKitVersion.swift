@@ -52,11 +52,9 @@ extension StoreKitVersion {
         }
     }
 
-}
-
-extension StoreKitVersion {
-
-    var debugDescription: String {
+    /// Returns a string representing the effective version of StoreKit used.
+    /// This can be different from the configured version if StoreKit 2 is not available on the current device.
+    var effectiveVersion: String {
         switch self {
         case .storeKit1:
             return "1"
