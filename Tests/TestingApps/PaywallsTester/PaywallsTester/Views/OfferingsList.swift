@@ -171,7 +171,7 @@ private struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode
-    var displayCloseButton: Bool = Self.defaultDisplayCloseButton
+    var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
 
     var body: some View {
         switch self.mode {
@@ -189,12 +189,6 @@ private struct PaywallPresenter: View {
         #endif
         }
     }
-
-    #if os(watchOS)
-    private static let defaultDisplayCloseButton = false
-    #else
-    private static let defaultDisplayCloseButton = true
-    #endif
 
 }
 

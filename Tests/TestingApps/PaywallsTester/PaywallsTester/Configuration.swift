@@ -19,6 +19,13 @@ final class Configuration: ObservableObject {
 
     static let entitlement = "pro"
 
+    #if os(watchOS)
+    // Sheets on watchOS add a close button automatically
+    static let defaultDisplayCloseButton = false
+    #else
+    static let defaultDisplayCloseButton = true
+    #endif
+
     enum Mode: Equatable {
         case custom, testing, demos, listOnly
     }
