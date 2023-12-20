@@ -82,6 +82,8 @@ struct Template5View: TemplateViewType {
                     .scrollableIfNecessary()
             }
 
+            Spacer()
+
             self.subscribeButton
 
             self.footerView
