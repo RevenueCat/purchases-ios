@@ -20,7 +20,7 @@ import XCTest
 class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 
     func testFetchProductsWithIdentifiersSK1() throws {
-        let manager = Self.createManager(.disabled)
+        let manager = Self.createManager(.storeKit1)
 
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(withIdentifiers: Set([Self.productID]), completion: completed)
@@ -44,7 +44,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let manager = Self.createManager(.enabledForCompatibleDevices)
+        let manager = Self.createManager(.storeKit2)
 
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(withIdentifiers: Set([Self.productID]), completion: completed)
@@ -64,7 +64,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
     }
 
     func testFetchCachedSK1Products() throws {
-        let manager = Self.createManager(.disabled)
+        let manager = Self.createManager(.storeKit1)
 
         _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(withIdentifiers: Set([Self.productID]), completion: completed)
@@ -96,7 +96,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let manager = Self.createManager(.enabledForCompatibleDevices)
+        let manager = Self.createManager(.storeKit2)
 
         _ = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(withIdentifiers: Set([Self.productID]), completion: completed)
@@ -128,13 +128,13 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension CachingProductsManagerIntegrationTests {
 
-    static func createManager(_ setting: StoreKit2Setting) -> ProductsManagerType {
+    static func createManager(_ storeKitVersion: StoreKitVersion) -> ProductsManagerType {
         return CachingProductsManager(
             manager:
                 ProductsManager(
                     systemInfo: MockSystemInfo(
                         finishTransactions: true,
-                        storeKit2Setting: setting
+                        storeKitVersion: storeKitVersion
                     ),
                     requestTimeout: Self.requestTimeout
                 )
