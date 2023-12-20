@@ -42,11 +42,13 @@ class BaseBackendTests: TestCase {
         self.createDependencies(dangerousSettings: self.dangerousSettings)
     }
 
-    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+    final func createDependencies(dangerousSettings: DangerousSettings? = nil,
+                                  storeKitVersion: StoreKitVersion = .default) {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
+            storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings
         )

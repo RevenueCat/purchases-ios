@@ -45,13 +45,10 @@ public final class ConfiguredPurchases {
 
         let purchases = Purchases.configure(
             with: .builder(withAPIKey: apiKey)
-                .with(usesStoreKit2IfAvailable: useStoreKit2)
                 .with(diagnosticsEnabled: true)
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
-                #if DEBUG
-                .with(dangerousSettings: .init(autoSyncPurchases: true, internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: useStoreKit2)))
-                #endif
+                .with(storeKitVersion: useStoreKit2 ? .storeKit2 : .storeKit1)
                 .build()
         )
 

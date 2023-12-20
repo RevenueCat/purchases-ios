@@ -45,7 +45,7 @@ class BasePurchasesTests: TestCase {
         self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
         self.clock = TestClock()
         self.systemInfo = MockSystemInfo(finishTransactions: true,
-                                         storeKit2Setting: self.storeKit2Setting,
+                                         storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
         self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: self.systemInfo.observerMode)
         self.deviceCache = MockDeviceCache(sandboxEnvironmentDetector: self.systemInfo,
@@ -201,7 +201,7 @@ class BasePurchasesTests: TestCase {
 
     private var paymentQueueWrapper: EitherPaymentQueueWrapper {
         // Note: this logic must match `Purchases`.
-        return self.systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        return self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
             ? .right(self.mockPaymentQueueWrapper)
             : .left(self.storeKit1Wrapper)
     }
@@ -244,7 +244,7 @@ class BasePurchasesTests: TestCase {
     func setUpPurchasesObserverModeOn() {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
-                                         storeKit2Setting: self.storeKit2Setting,
+                                         storeKitVersion: self.storeKitVersion,
                                          clock: self.clock)
         self.storeKit1Wrapper = MockStoreKit1Wrapper(observerMode: true)
         self.initializePurchasesInstance(appUserId: nil)
@@ -330,10 +330,10 @@ class BasePurchasesTests: TestCase {
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
     }
 
-    var storeKit2Setting: StoreKit2Setting {
+    var storeKitVersion: StoreKitVersion {
         // Even though the new default is StoreKit 2, most of the tests from this parent class
         // were written for SK1. Therefore we want to default to it being disabled.
-        return .enabledOnlyForOptimizations
+        return .storeKit1
     }
 
 }

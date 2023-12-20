@@ -23,6 +23,7 @@
                                            withStoreKit1Timeout: 1]
                                           withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
                                          withUsesStoreKit2IfAvailable:false]
+                                        withStoreKitVersion:RCStoreKitVersionStoreKit2]
                                         build];
 
     RCConfiguration *configDeprecated __unused = [[[builder withApiKey:@""] withObserverMode:true] build];
