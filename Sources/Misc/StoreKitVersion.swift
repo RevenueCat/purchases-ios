@@ -22,7 +22,7 @@ public enum StoreKitVersion: Int {
 
     /// Always use StoreKit 2 (StoreKit 1 will be used if StoreKit 2 is not available in the current device.)
     ///
-    /// Make sure you have an In-App Purchase Key configured in your app.
+    /// - Warning: Make sure you have an In-App Purchase Key configured in your app.
     /// Please see https://rev.cat/in-app-purchase-key-configuration for more info.
     case storeKit2 = 2
 
@@ -72,7 +72,7 @@ extension StoreKitVersion {
         case .storeKit1:
             return .storeKit1
         case .storeKit2:
-            if self.isStoreKit2EnabledAndAvailable {
+            if Self.isStoreKit2Available {
                 return .storeKit2
             } else {
                 return .storeKit1
