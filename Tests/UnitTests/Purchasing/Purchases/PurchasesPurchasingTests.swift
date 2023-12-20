@@ -985,7 +985,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
-                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -1010,7 +1010,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: true,
-                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -1158,8 +1158,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
 
     private func setUpPurchasesCustomEntitlementMode() {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
-                                         storeKit2Setting: .disabled,
-                                         customEntitlementsComputation: true)
+                                         customEntitlementsComputation: true,
+                                         storeKitVersion: .storeKit1)
         self.initializePurchasesInstance(appUserId: "user")
     }
 

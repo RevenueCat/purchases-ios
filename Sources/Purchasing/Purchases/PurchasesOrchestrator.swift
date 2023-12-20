@@ -135,7 +135,7 @@ final class PurchasesOrchestrator {
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
 
         storeKit2StorefrontListener.delegate = self
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
 
@@ -153,7 +153,7 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
-            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+            if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
                 await storeKit2TransactionListener.listenForTransactions()
             }
         }
@@ -261,7 +261,7 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
             #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.sk2PromotionalOffer(forProductDiscount: productDiscount,
                                      discountIdentifier: discountIdentifier,
@@ -1002,7 +1002,7 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.syncPurchasesSK2(isRestore: isRestore,
                                   initiationSource: initiationSource,
