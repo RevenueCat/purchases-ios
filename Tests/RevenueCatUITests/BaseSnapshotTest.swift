@@ -33,9 +33,15 @@ import XCTest
 @MainActor
 class BaseSnapshotTest: TestCase {
 
-    // swiftlint:disable:next unneeded_override
     override class func setUp() {
         super.setUp()
+
+        // See https://github.com/pointfreeco/swift-snapshot-testing/pull/702 and
+        // https://github.com/pointfreeco/swift-snapshot-testing/pull/666
+        expect(MTLCreateSystemDefaultDevice()).toNot(
+            beNil(),
+            description: "Metal is required for perceptuallyCompare, but not available on this machine."
+        )
 
         // Uncomment this line to manually record snapshots:
         // isRecording = true
