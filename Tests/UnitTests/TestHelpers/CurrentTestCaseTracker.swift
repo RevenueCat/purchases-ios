@@ -49,9 +49,12 @@ final class CurrentTestCaseTracker: NSObject, XCTestObservation {
 extension CurrentTestCaseTracker {
 
     static var osVersionAndTestName: String {
+        #if os(macOS)
+        return "macOS/\(Self.sanitizedTestName)"
+        #else
         let osVersionEquivalent = OSVersionEquivalent.current
-
         return "iOS\(osVersionEquivalent.rawValue)/\(Self.sanitizedTestName)"
+        #endif
     }
 
 }

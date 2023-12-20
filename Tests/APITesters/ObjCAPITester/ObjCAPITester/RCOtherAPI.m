@@ -6,7 +6,10 @@
 //
 
 @import RevenueCat;
+
+#if TARGET_OS_IPHONE
 @import UIKit;
+#endif
 
 #import "RCOtherAPI.h"
 

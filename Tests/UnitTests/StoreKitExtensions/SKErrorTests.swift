@@ -27,7 +27,7 @@ class SKErrorTests: BaseErrorTests {
     }
 
     func testStoreProblemError() {
-        let error: SKError = .init(.cloudServiceNetworkConnectionFailed)
+        let error: SKError = .init(.unknown)
 
         verifyPurchasesError(error,
                              expectedCode: .storeProblemError,
@@ -58,7 +58,11 @@ class SKErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
-    func testProductNotAvailableError() {
+    func testProductNotAvailableError() throws {
+        guard #available(iOS 11.0, macOS 10.15, *) else {
+            throw XCTSkip("Enum not available")
+        }
+
         let error: SKError = .init(.storeProductNotAvailable)
 
         verifyPurchasesError(error,

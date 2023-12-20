@@ -47,7 +47,14 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         let receipt = try self.parser.parse(from: data)
 
         expect(receipt.bundleId) == "com.revenuecat.StoreKitUnitTestsHostApp"
+        #if os(macOS)
+        expect(receipt.applicationVersion) == SystemInfo.frameworkVersion.replacingOccurrences(
+            of: "-SNAPSHOT",
+            with: ""
+        )
+        #else
         expect(receipt.applicationVersion) == "1"
+        #endif
         expect(receipt.originalApplicationVersion).to(beNil())
         expect(receipt.opaqueValue).toNot(beNil())
         expect(receipt.sha1Hash).toNot(beNil())

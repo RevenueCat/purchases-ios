@@ -69,7 +69,7 @@ class StoreKitErrorTests: BaseErrorTests {
 
     #if swift(>=5.6)
     func testNotEntitledError() throws {
-        guard #available(iOS 15.4, tvOS 15.4, watchOS 8.5, *) else {
+        guard #available(iOS 15.4, tvOS 15.4, watchOS 8.5, macOS 12.3, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 

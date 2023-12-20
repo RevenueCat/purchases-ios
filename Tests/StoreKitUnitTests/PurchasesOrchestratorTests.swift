@@ -369,7 +369,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     func testPurchaseSK1PackageWithSubscriberAttributesAndAdServicesToken() async throws {
-        try AvailabilityChecks.skipIfTVOrWatchOS()
+        try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
         try AvailabilityChecks.iOS14_3APIAvailableOrSkipTest()
 
         // Test for custom entitlement computation mode.
@@ -921,7 +921,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, *)
     func testPurchaseSK2PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try AvailabilityChecks.skipIfTVOrWatchOS()
+        try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -953,7 +953,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(watchOS, unavailable)
     func testPurchaseSK2PackagePostsAdServicesTokenAndAttributes() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try AvailabilityChecks.skipIfTVOrWatchOS()
+        try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
 
         // Test for custom entitlement computation mode.
         // Without that mode, the token is posted upon calling `enableAdServicesAttributionTokenCollection`

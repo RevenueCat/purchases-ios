@@ -13,7 +13,7 @@
 
 import SwiftUI
 
-#if os(watchOS) || os(tvOS)
+#if os(watchOS) || os(tvOS) || os(macOS)
 
 @main
 struct TestApp: App {
