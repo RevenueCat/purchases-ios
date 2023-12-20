@@ -41,10 +41,12 @@ extension EnvironmentValues {
         set { self[UserInterfaceIdiomEnvironmentKey.self] = newValue }
     }
 
+    #if DEBUG
     var isRunningSnapshots: Bool {
         get { self[RunningSnapshotsEnvironmentKey.self] }
         set { self[RunningSnapshotsEnvironmentKey.self] = newValue }
     }
+    #endif
 
 }
 
@@ -57,12 +59,14 @@ private struct UserInterfaceIdiomEnvironmentKey: EnvironmentKey {
 
 }
 
+#if DEBUG
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private struct RunningSnapshotsEnvironmentKey: EnvironmentKey {
 
     static var defaultValue: Bool = false
 
 }
+#endif
 
 // MARK: - UIKit
 
