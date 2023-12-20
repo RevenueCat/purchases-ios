@@ -21,15 +21,7 @@ import XCTest
 
 class LoadShedderStoreKit2IntegrationTests: LoadShedderStoreKit1IntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting {
-        return .enabledForCompatibleDevices
-    }
-
-}
-
-class LoadShedderStoreKit2JWSIntegrationTests: LoadShedderStoreKit1IntegrationTests {
-
-    override var usesStoreKit2JWS: Bool { return true }
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
 }
 
@@ -37,9 +29,7 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override var apiKey: String { return Constants.loadShedderApiKey }
 
-    override class var storeKit2Setting: StoreKit2Setting {
-        return .disabled
-    }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     override class var responseVerificationMode: Signing.ResponseVerificationMode {
         return Signing.enforcedVerificationMode()

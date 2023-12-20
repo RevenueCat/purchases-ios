@@ -61,7 +61,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-            self.systemInfo.storeKit2Setting.usesStoreKit2IfAvailable {
+           self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             Async.call(with: completion) {
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
