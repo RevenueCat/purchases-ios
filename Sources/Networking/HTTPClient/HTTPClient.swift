@@ -569,7 +569,7 @@ extension HTTPRequest {
            verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
-                with: defaultHeaders, 
+                with: defaultHeaders,
                 path: self.path
             )
 
