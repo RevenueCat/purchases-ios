@@ -148,8 +148,14 @@ extension HTTPClient {
         }
     }
 
-    static func headerParametersForSignatureHeader(with headers: RequestHeaders) -> RequestHeaders {
-        if let header = HTTPRequest.headerParametersForSignatureHeader(headers: headers) {
+    static func headerParametersForSignatureHeader(
+        with headers: RequestHeaders,
+        path: HTTPRequestPath
+    ) -> RequestHeaders {
+        if let header = HTTPRequest.headerParametersForSignatureHeader(
+            headers: headers,
+            path: path
+        ) {
             return [RequestHeader.headerParametersForSignature.rawValue: header]
         } else {
             return [:]
@@ -543,7 +549,10 @@ extension HTTPRequest {
         if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
            verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
-            result += HTTPClient.headerParametersForSignatureHeader(with: defaultHeaders)
+            result += HTTPClient.headerParametersForSignatureHeader(
+                with: defaultHeaders,
+                path: self.path
+            )
 
             if let body = self.requestBody {
                 result += HTTPClient.postParametersHeaderForSigning(with: body)
