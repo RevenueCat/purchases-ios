@@ -156,7 +156,7 @@ private let traits: UITraitCollection = .init(displayScale: 1)
 #endif
 
 private let perceptualPrecision: Float = 0.97
-private let timeout: DispatchTimeInterval = .seconds(5)
+private let timeout: DispatchTimeInterval = .seconds(3)
 private let pollInterval: DispatchTimeInterval = .milliseconds(100)
 
 // MARK: - Private
