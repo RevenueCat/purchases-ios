@@ -29,13 +29,13 @@ enum ConfigureStrings {
 
     case debug_enabled
 
-    case store_kit_2_enabled
-
     case observer_mode_enabled
 
     case observer_mode_with_storekit2
 
     case response_verification_mode(Signing.ResponseVerificationMode)
+
+    case storekit_version(StoreKitVersion)
 
     case delegate_set
 
@@ -96,8 +96,6 @@ extension ConfigureStrings: LogMessage {
                 "with URL: \(url)"
         case .debug_enabled:
             return "Debug logging enabled"
-        case .store_kit_2_enabled:
-            return "StoreKit 2 support enabled"
         case .observer_mode_enabled:
             return "Purchases is configured in observer mode"
         case .observer_mode_with_storekit2:
@@ -111,6 +109,8 @@ extension ConfigureStrings: LogMessage {
             case .enforced:
                 return "Purchases is configured with enforced response verification"
             }
+        case let .storekit_version(version):
+            return "Purchases is configured with StoreKit version \(version)"
         case .delegate_set:
             return "Delegate set"
         case .purchase_instance_already_set:
@@ -185,7 +185,7 @@ extension ConfigureStrings: LogMessage {
 
         case .sk2_required_for_swiftui_paywalls:
             return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
-            "transactions coming from SwiftUI paywalls. You must use `.with(usesStoreKit2IfAvailable: true)` " +
+            "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
         }
     }
