@@ -60,6 +60,7 @@ class BaseSnapshotTest: TestCase {
                            fonts: fonts,
                            introEligibility: introEligibility,
                            purchaseHandler: purchaseHandler)
+            .environment(\.isRunningSnapshots, true)
     }
 
     private static func skipTestIfNeeded() throws {
