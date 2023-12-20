@@ -28,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         Purchases.configure(
             with: Configuration.Builder(withAPIKey: Constants.apiKey)
-                .with(usesStoreKit2IfAvailable: true)
+                .with(storeKitVersion: .storeKit2)
                 .build()
         )
 
