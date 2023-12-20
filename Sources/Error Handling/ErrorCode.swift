@@ -128,9 +128,8 @@ extension ErrorCode: DescribableError {
             return "The receipt is in use by other subscriber."
         case .invalidAppleSubscriptionKeyError:
             return """
-                   Apple Subscription Key is invalid or not present. In order to provide subscription offers, you must
-                   first generate a subscription key.
-                   Please see https://docs.revenuecat.com/docs/ios-subscription-offers for more info.
+                   Apple In-App Purchase Key is invalid or not present. You must configure an In-App Purchase Key.
+                   Please see https://rev.cat/in-app-purchase-key-configuration for more info.
                    """
         case .ineligibleError:
             return "The User is ineligible for that action."
