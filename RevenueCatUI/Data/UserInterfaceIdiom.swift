@@ -34,13 +34,6 @@ extension UserInterfaceIdiom {
 }
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
-struct UserInterfaceIdiomEnvironmentKey: EnvironmentKey {
-
-    static var defaultValue: UserInterfaceIdiom = .default
-
-}
-
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension EnvironmentValues {
 
     var userInterfaceIdiom: UserInterfaceIdiom {
@@ -48,7 +41,32 @@ extension EnvironmentValues {
         set { self[UserInterfaceIdiomEnvironmentKey.self] = newValue }
     }
 
+    #if DEBUG
+    var isRunningSnapshots: Bool {
+        get { self[RunningSnapshotsEnvironmentKey.self] }
+        set { self[RunningSnapshotsEnvironmentKey.self] = newValue }
+    }
+    #endif
+
 }
+
+// MARK: -
+
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private struct UserInterfaceIdiomEnvironmentKey: EnvironmentKey {
+
+    static var defaultValue: UserInterfaceIdiom = .default
+
+}
+
+#if DEBUG
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+private struct RunningSnapshotsEnvironmentKey: EnvironmentKey {
+
+    static var defaultValue: Bool = false
+
+}
+#endif
 
 // MARK: - UIKit
 
