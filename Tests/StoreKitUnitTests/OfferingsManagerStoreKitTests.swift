@@ -23,7 +23,7 @@ class OfferingsManagerStoreKitTests: StoreKitConfigTestCase {
     let mockOperationDispatcher = MockOperationDispatcher()
     let mockSystemInfo = MockSystemInfo(platformInfo: .init(flavor: "iOS", version: "3.2.1"),
                                         finishTransactions: true,
-                                        storeKit2Setting: .enabledForCompatibleDevices)
+                                        storeKitVersion: .storeKit2)
     let mockBackend = MockBackend()
     var mockOfferings: MockOfferingsAPI!
     let mockOfferingsFactory = OfferingsFactory()
