@@ -84,7 +84,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       - run:
           name: Bundle install
           working_directory: << parameters.directory >>
@@ -93,7 +93,7 @@ commands:
               bundle config set --local path 'vendor/bundle'
               bundle install
       - save_cache:
-          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
   
@@ -107,7 +107,7 @@ commands:
           directory: << parameters.directory >>
       - restore_cache:
           keys:
-            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+            - homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
       - install-brew-dependency:
           dependency_name: 'xcbeautify'
       - install-brew-dependency:
@@ -116,7 +116,7 @@ commands:
       - install-brew-dependency:
           dependency_name: 'xcodes'
       - save_cache:
-          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}
+          key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
           paths:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
@@ -146,12 +146,12 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       - run:
           name: Bundle install
           command: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v1-rubydocker-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
 
@@ -702,10 +702,10 @@ jobs:
       # Bundler
       - restore_cache:
           keys:
-            - v2-gem-cache-{{ checksum "Gemfile.lock" }}
+            - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       - run: bundle install --clean --path vendor/bundle
       - save_cache:
-          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}
+          key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
       - update-spm-installation-commit
