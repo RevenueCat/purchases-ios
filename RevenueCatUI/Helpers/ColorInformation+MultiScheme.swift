@@ -21,9 +21,6 @@ extension PaywallData.Configuration.ColorInformation {
     /// - Returns: `PaywallData.Configuration.Colors` combining `light` and `dark` if they're available
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     var multiScheme: PaywallData.Configuration.Colors {
-        #if os(watchOS)
-        return self.dark ?? self.light
-        #else
         let light = self.light
         guard let dark = self.dark else {
             // With no dark information, simply use `light`.
@@ -31,7 +28,6 @@ extension PaywallData.Configuration.ColorInformation {
         }
 
         return .combine(light: light, dark: dark)
-        #endif
     }
 
 }
@@ -73,10 +69,15 @@ private extension PaywallColor {
 
 extension PaywallData.Configuration.ColorInformation {
 
-    /// - Returns: `light` colors for platforms that don't support dark mode.
+    /// - Returns: color for platforms that don't support changing light / dark mode.
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     var multiScheme: PaywallData.Configuration.Colors {
+        #if os(watchOS)
+        // watchOS uses "dark" appearance by default.
+        return self.dark ?? self.light
+        #else
         return self.light
+        #endif
     }
 
 }
