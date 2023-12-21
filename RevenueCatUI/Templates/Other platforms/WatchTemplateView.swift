@@ -48,6 +48,13 @@ struct WatchTemplateView: TemplateViewType {
     var body: some View {
         ScrollView {
             VStack(spacing: self.defaultVerticalPaddingLength) {
+                if let url = self.configuration.headerImageURL {
+                    RemoteImage(url: url, aspectRatio: Self.imageAspectRatio, maxWidth: .infinity)
+                        .clipped()
+                        .roundedCorner(Self.imageRoundedCorner, corners: [.bottomLeft, .bottomRight])
+                        .padding(.bottom)
+                }
+
                 Group {
                     Text(.init(self.selectedLocalization.title))
                         .font(self.font(for: .title3))
@@ -57,29 +64,35 @@ struct WatchTemplateView: TemplateViewType {
                         Text(.init(subtitle))
                             .font(self.font(for: .subheadline))
                     }
-                }
 
-                if let package = self.configuration.packages.singleIfNotMultiple {
-                    self.offerDetails(package: package, selected: false)
+                    if let package = self.configuration.packages.singleIfNotMultiple {
+                        self.offerDetails(package: package, selected: false)
+                            .padding(.top, self.defaultVerticalPaddingLength)
+                    }
+
+                    self.packages
                         .padding(.top, self.defaultVerticalPaddingLength)
+
+                    self.button
+
+                    FooterView(configuration: self.configuration,
+                               purchaseHandler: self.purchaseHandler)
                 }
-
-                self.packages
-                    .padding(.top, self.defaultVerticalPaddingLength)
-
-                self.button
-
-                FooterView(configuration: self.configuration,
-                           purchaseHandler: self.purchaseHandler)
+                .defaultHorizontalPadding()
             }
             .foregroundColor(self.configuration.colors.text1Color)
             .multilineTextAlignment(.center)
-            .defaultHorizontalPadding()
         }
         .animation(Constants.fastAnimation, value: self.selectedPackage)
         .background {
             TemplateBackgroundImageView(configuration: self.configuration)
         }
+        .edgesIgnoringSafeArea(.horizontal)
+        .edgesIgnoringSafeArea(
+            self.configuration.headerImageURL != nil
+            ? .top
+            : []
+        )
     }
 
     @ViewBuilder
@@ -212,6 +225,9 @@ struct WatchTemplateView: TemplateViewType {
     var selectedLocalization: ProcessedLocalizedConfiguration {
         return self.selectedPackage.localization
     }
+
+    private static let imageAspectRatio: CGFloat = 1.2
+    private static let imageRoundedCorner: CGFloat = 30
 
 }
 
