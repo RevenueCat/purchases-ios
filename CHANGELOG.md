@@ -1,4 +1,4 @@
-## 4.32.0-beta1
+## 4.32.0-beta.1
 ### StoreKit 2 Beta
 
 This beta introduces a new configuration option to enable full StoreKit 2 flow on the SDK and the RevenueCat backend.
