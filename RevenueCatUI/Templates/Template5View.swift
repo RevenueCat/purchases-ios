@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto.
 
-// swiftlint:disable type_body_length
+// swiftlint:disable type_body_length file_length
 
 import RevenueCat
 import SwiftUI
@@ -106,7 +106,11 @@ struct Template5View: TemplateViewType {
                 )
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
-                self.offerDetails(package: self.selectedPackage, selected: false)
+                self.offerDetails(
+                    package: self.selectedPackage,
+                    selected: false,
+                    alignment: .center
+                )
             }
 
             self.subscribeButton
@@ -294,13 +298,17 @@ struct Template5View: TemplateViewType {
         }
     }
 
-    private func offerDetails(package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
+    private func offerDetails(
+        package: TemplateViewConfiguration.Package,
+        selected: Bool,
+        alignment: Alignment = Self.packageButtonAlignment
+    ) -> some View {
         IntroEligibilityStateView(
             display: .offerDetails,
             localization: package.localization,
             introEligibility: self.introEligibility[package.content],
             foregroundColor: self.configuration.colors.text1Color,
-            alignment: Self.packageButtonAlignment
+            alignment: alignment
         )
         .fixedSize(horizontal: false, vertical: true)
         .font(self.font(for: .body))
