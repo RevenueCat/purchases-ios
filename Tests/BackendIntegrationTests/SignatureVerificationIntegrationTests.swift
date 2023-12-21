@@ -59,6 +59,12 @@ class InformationalSignatureVerificationIntegrationTests: BaseSignatureVerificat
         expect(info.entitlements.verification) == .verified
     }
 
+    func testHeaderVerificationIsNotDisabled() async throws {
+        _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+
+        self.logger.verifyMessageWasNotLogged("Disabling header parameter signature verification")
+    }
+
     func testCustomerInfo304ResponseWithValidSignature() async throws {
         // 1. Fetch user once
         _ = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -331,6 +337,23 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
                     description: "Unexpected error: \(error)"
                 )
         }
+    }
+
+}
+
+/// Header verification (see `HTTPRequest.headerParametersForSignatureHeader`) is enabled by default,
+/// but this helps verify that the backend is still signing correctly without it for older SDK versions.
+class SignatureVerificationWithoutHeaderHashIntegrationTests: EnforcedSignatureVerificationIntegrationTests {
+
+    override var disableHeaderSignatureVerification: Bool { return true }
+
+    override func tearDown() {
+        self.logger.verifyMessageWasLogged(
+            "Disabling header parameter signature verification",
+            level: .warn
+        )
+
+        super.tearDown()
     }
 
 }

@@ -47,6 +47,7 @@ enum NetworkStrings {
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest)
     case api_request_forcing_signature_failure(HTTPRequest)
+    case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
     #endif
 
 }
@@ -136,6 +137,9 @@ extension NetworkStrings: LogMessage {
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"
+
+        case let .api_request_disabling_header_parameter_signature_verification(request):
+            return "Disabling header parameter signature verification for '\(request.description)'"
         #endif
         }
     }

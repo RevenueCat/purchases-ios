@@ -80,9 +80,7 @@ extension HTTPRequest {
 
 }
 
-// MARK: - Private
-
-private extension HTTPRequest {
+extension HTTPRequest {
 
     /// Ordered list of header keys that will be included in the signature.
     static let headersToSign: [HTTPClient.RequestHeader] = [
@@ -90,6 +88,8 @@ private extension HTTPRequest {
     ]
 
 }
+
+// MARK: - Private
 
 private let postParameterHashingAlgorithmName = "sha256"
 private let fieldSeparator = Data(bytes: [0x00], count: 1)

@@ -1636,7 +1636,7 @@ extension BaseHTTPClientTests {
         }
     }
 
-    struct BodyWithSignature: HTTPRequestBody {
+    struct BodyWithSignature: HTTPRequestBody, Equatable {
         var key1: String
         var key2: String
 

@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 3/21/23.
 
+// swiftlint:disable type_name
+
 import Nimble
 @testable import RevenueCat
 import SnapshotTesting
@@ -89,6 +91,24 @@ class LoadShedderStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             timeout: .seconds(5),
             pollInterval: .milliseconds(100)
         )
+    }
+
+}
+
+/// Header verification (see `HTTPRequest.headerParametersForSignatureHeader`) is enabled by default,
+/// but this helps verify that the backend is still signing correctly without it for older SDK versions.
+/// See also `SignatureVerificationWithoutHeaderHashIntegrationTests`.
+class LoadShedderSignatureVerificationWithoutHeaderHashIntegrationTests: LoadShedderStoreKit1IntegrationTests {
+
+    override var disableHeaderSignatureVerification: Bool { return true }
+
+    override func tearDown() {
+        self.logger.verifyMessageWasLogged(
+            "Disabling header parameter signature verification",
+            level: .warn
+        )
+
+        super.tearDown()
     }
 
 }
