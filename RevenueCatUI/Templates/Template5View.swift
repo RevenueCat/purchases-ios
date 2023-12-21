@@ -67,6 +67,8 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     var horizontalContent: some View {
         VStack {
+            Spacer()
+
             HStack {
                 VStack {
                     self.title
