@@ -1,3 +1,33 @@
+## 4.32.0-beta.1
+### StoreKit 2 Beta
+
+This beta introduces a new configuration option to enable full StoreKit 2 flow on the SDK and the RevenueCat backend.
+
+We have been testing StoreKit 2 support in parallel to StoreKit 1 in our backend for a while and we believe it is ready for widespread use.
+
+If your app is currently using StoreKit 1, it is safe to update to StoreKit 2 and it's even possible to switch back to StoreKit 1 if needed. Switching to StoreKit 2 will not prevent purchases made with StoreKit 1 from being processed.
+
+In order to enable StoreKit 2, add `.with(storeKitVersion: .storeKit2)` to your RevenueCat configuration code:
+
+```
+Purchases.configure(with: .builder(withAPIKey: apiKey)
+    .with(storeKitVersion: .storeKit2)
+    .build()
+```
+
+If you were previously using the deprecated configuration option `.with(usesStoreKit2IfAvailable: true)`, we recommend you remove it and switch to the new supported method.
+
+⚠️ ⚠️ Important ⚠️ ⚠️
+
+In order to validate StoreKit 2 purchases, make sure you have an In-App Purchase Key configured in your app.
+
+Please see https://rev.cat/in-app-purchase-key-configuration for more info.
+
+🚧🚧 Limitations 🚧🚧
+
+- Observer Mode is not currently supported when using StoreKit 2.
+- The `originalApplicationVersion` and `originalPurchaseDate` properties in `CustomerInfo` are not supported in this first beta. Please do not update if your implementation relies on them being present.
+
 ## 4.31.8
 ### RevenueCatUI
 * `Paywalls`: remove unscrollable spacing in Template 5 (#3562) via NachoSoto (@NachoSoto)
@@ -1819,16 +1849,16 @@ _This version supports Xcode 14 beta 1_
 
 ## 4.1.0
 
-#### API updates: 
+#### API updates:
 
-- Added new method `checkTrialOrIntroDiscountEligibility(product:)`, which allows you to check for intro or discount eligibility for a single `StoreProduct`. 
+- Added new method `checkTrialOrIntroDiscountEligibility(product:)`, which allows you to check for intro or discount eligibility for a single `StoreProduct`.
     https://github.com/RevenueCat/purchases-ios/pull/1354
 
-- Added explicit parameter name for `checkTrialOrIntroDiscountEligibility(productIdentifiers:)`. 
-The existing method without the parameter name still work, but is now deprecated. Xcode will offer an auto fix-it for it. 
+- Added explicit parameter name for `checkTrialOrIntroDiscountEligibility(productIdentifiers:)`.
+The existing method without the parameter name still work, but is now deprecated. Xcode will offer an auto fix-it for it.
     https://github.com/RevenueCat/purchases-ios/pull/1362
 
-- Made `StoreProduct` initializers public so they can be used for testing. 
+- Made `StoreProduct` initializers public so they can be used for testing.
 
 #### Other:
 
@@ -1841,7 +1871,7 @@ The existing method without the parameter name still work, but is now deprecated
 
 ## 4.0.0
 
-RevenueCat iOS SDK v4 is here!! 
+RevenueCat iOS SDK v4 is here!!
 
 ![Dancing cats](https://media.giphy.com/media/lkbNG2zqzHZUA/giphy.gif)
 
@@ -1849,37 +1879,37 @@ RevenueCat iOS SDK v4 is here!!
 
 ### Migration Guide
 - See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
-**Note:** This release is based off of 4.0.0-rc.4. Developers migrating from that version shouldn't see any changes. 
+**Note:** This release is based off of 4.0.0-rc.4. Developers migrating from that version shouldn't see any changes.
 
 ### API changes:
-There have been a lot of changes since v3! 
+There have been a lot of changes since v3!
 
 Here are the highlights:
 
 #### Async / Await alternative APIs
-New `async / await` alternatives for all APIs that have completion blocks, as well as an `AsyncStream` for CustomerInfo. 
+New `async / await` alternatives for all APIs that have completion blocks, as well as an `AsyncStream` for CustomerInfo.
 
 #### New types and cleaned up naming
-New types that wrap StoreKit's native types, and we cleaned up the naming of other types and methods for a more consistent experience. 
+New types that wrap StoreKit's native types, and we cleaned up the naming of other types and methods for a more consistent experience.
 
 #### New APIs for Customer Support
 You can now use `showManageSubscriptions()` and `beginRefundRequest()` to help your users manage their subscriptions right from the app.
 
-#### Rewritten in Swift 
-We [rewrote the SDK in 100% Swift](https://www.revenuecat.com/blog/migrating-our-objective-c-sdk-to-swift). This made the code more uniform and easy to maintain, and helps us better support StoreKit 2. 
+#### Rewritten in Swift
+We [rewrote the SDK in 100% Swift](https://www.revenuecat.com/blog/migrating-our-objective-c-sdk-to-swift). This made the code more uniform and easy to maintain, and helps us better support StoreKit 2.
 
 #### StoreKit 2 Support [Beta]
-**[Experimental]** Introduced support for using StoreKit 2 under the hood for compatible devices. This is currently in beta phase, and disabled by default. 
-When enabled, StoreKit 2 APIs will be used under the hood for purchases in compatible devices. You can enable this by configuring the SDK passing `useStoreKit2IfAvailable: true`. 
-On devices that don't support StoreKit 2, StoreKit 1 will be used automatically instead. 
- 
+**[Experimental]** Introduced support for using StoreKit 2 under the hood for compatible devices. This is currently in beta phase, and disabled by default.
+When enabled, StoreKit 2 APIs will be used under the hood for purchases in compatible devices. You can enable this by configuring the SDK passing `useStoreKit2IfAvailable: true`.
+On devices that don't support StoreKit 2, StoreKit 1 will be used automatically instead.
+
 #### Full API changes list
 - See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 
-### Documentation: 
+### Documentation:
 
-We built a new Documentation site with Docc with cleaner and more detailed docs. 
-The new documentation can be found [here](https://revenuecat-docs.netlify.app/documentation/Revenuecat). 
+We built a new Documentation site with Docc with cleaner and more detailed docs.
+The new documentation can be found [here](https://revenuecat-docs.netlify.app/documentation/Revenuecat).
 
 ## 4.0.0-RC.4
 
@@ -1893,22 +1923,22 @@ RC 4 introduces the following updates:
 
 ### API changes:
 
-#### Breaking changes: 
-- Replaced `checkPromotionalDiscountEligibility` with `getPromotionalOffer`, which returns a `PromotionalOffer`. 
+#### Breaking changes:
+- Replaced `checkPromotionalDiscountEligibility` with `getPromotionalOffer`, which returns a `PromotionalOffer`.
 - Renamed `Purchases/purchase(package:discount:)` and its variants to `Purchases/purchase(package:promotionalOffer:)`. They now take a `PromotionalOffer` instead of a `StoreProductDiscount`.
-- [Objective-C only]: Updated type of `StoreProduct.price` and `StoreProductDiscount.price` from `NSDecimal` to the much more useful `NSDecimalNumber`. 
+- [Objective-C only]: Updated type of `StoreProduct.price` and `StoreProductDiscount.price` from `NSDecimal` to the much more useful `NSDecimalNumber`.
 
 #### Additions:
 - Added `StoreProduct.ProductType`, and `StoreProduct.ProductCategory`, which provide extra information about whether a product is a consumable, non-consumable, auto-renewable or non-auto-renewable subscription.
 - Added `currencyCode` to `StoreProduct` and `StoreProductDiscount`.
 - Added `localizedPriceString` to `StoreProductDiscount`.
 
-### Documentation: 
+### Documentation:
 
-- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
-- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat.
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK.
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 ### Changes from previous RC
@@ -1931,16 +1961,16 @@ RC 3 introduces the following updates:
 - Added `.noIntroOfferExists` as an `IntroEligibilityStatus`, for more granularity when checking for intro pricing eligibility.
 - Added `StoreProductDiscount.type`, which allows you to easily tell whether a discount represents a Promo Offer or an Intro Pricing.
 
-### Documentation: 
+### Documentation:
 
-- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
-- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+- Documentation can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat.
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK.
 
 ### Migration fixes
 
 - Fixed a few instances where Xcode's automatic migration tools wouldn't automatically suggest a fix-it for updated code.
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 ### Changes from previous RC
@@ -1965,16 +1995,16 @@ RC 2 introduces the following updates:
 If enabled, the SDK will use StoreKit 2 APIs for purchases under the hood.
 **This is currently in an experimental phase, and we don't recommend using it in production in this build.**
 
-### Documentation: 
+### Documentation:
 
-- Documentation is now using DocC and it can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat. 
-- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK. 
+- Documentation is now using DocC and it can be found in https://revenuecat-docs.netlify.app/documentation/Revenuecat.
+- We've made several improvements to docstrings and added a few landing pages for the most important sections of the SDK.
 
 ### Migration fixes
 
 - Fixed a few instances where Xcode's automatic migration tools wouldn't correctly update the code.
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 ### Changes from previous RC
@@ -1994,7 +2024,7 @@ RC 1 introduces the following updates:
 
 ### API changes:
 
-- `Purchases.paymentDiscount(forProductDiscount:product:completion:)` and `Purchases.paymentDiscount(forProductDiscount:product:)` have been removed. Now, instead of obtaining the `SKPaymentDiscount` from a `SKProductDiscount` to then call `purchase(package:discount:)`, you check eligibility for the promo offer by calling `checkPromotionalDiscountEligibility(forProductDiscount:product:)`, then get the `StoreProductDiscount` directly from the `StoreProduct` and pass that into `purchase(package:discount:)`. 
+- `Purchases.paymentDiscount(forProductDiscount:product:completion:)` and `Purchases.paymentDiscount(forProductDiscount:product:)` have been removed. Now, instead of obtaining the `SKPaymentDiscount` from a `SKProductDiscount` to then call `purchase(package:discount:)`, you check eligibility for the promo offer by calling `checkPromotionalDiscountEligibility(forProductDiscount:product:)`, then get the `StoreProductDiscount` directly from the `StoreProduct` and pass that into `purchase(package:discount:)`.
 
 - `StoreProduct` and `StoreProductDiscount`, replace `SKProduct` and `SKProductDiscount` in the following methods:
     - `Purchases.getProducts(_:completion:)`
@@ -2015,7 +2045,7 @@ RC 1 introduces the following updates:
 In addition to all of the changes from beta 10, [listed here.](https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.10/CHANGELOG.latest.md)
 
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 
@@ -2043,7 +2073,7 @@ In addition to all of the changes from Beta 9, [listed here.](
 https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.9/CHANGELOG.latest.md)
 
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 ## 4.0.0-beta.9
@@ -2060,8 +2090,8 @@ https://github.com/RevenueCat/purchases-ios/blob/4.0.0-beta.9/CHANGELOG.latest.m
 - `Package.product` has been replaced with `Package.storeProduct`. This is an abstraction of StoreKit 1's `SKProduct` and StoreKit 2's `StoreKit.Product`, but it also adds useful features like `pricePerMonth` and `priceFormatter`. The underlying objects from StoreKit are available through `StoreProduct.sk1Product` and `StoreProduct.sk2Product`.
 
 ### Xcode version requirements and updated deployment targets
-`purchases-ios` v4 requires using Xcode 13.2 or newer. 
-It also updates the minimum deployment targets for iOS, macOS and tvOS. 
+`purchases-ios` v4 requires using Xcode 13.2 or newer.
+It also updates the minimum deployment targets for iOS, macOS and tvOS.
 
 ##### Minimum deployment targets
 |  | v3 | v4 |
@@ -2075,7 +2105,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 - This beta introduces new methods that add functionality using StoreKit 2:
     - `showManageSuscriptions(completion:)`
     - `beginRefundRequest(forProduct:)`
-    - `beginRefundRequest(forEntitlement:)`. 
+    - `beginRefundRequest(forEntitlement:)`.
     - `beginRefundRequestForActiveEntitlement()`
  - `checkTrialOrIntroductoryPriceEligibility(productIdentifiers:completion:)` now uses StoreKit 2 if it's available, to make calculation more accurate and fast.
  - A new flag has been introduced to `setup`, `useStoreKit2IfAvailable` (defaults to `false`), to use StoreKit 2 APIs for purchases instead of StoreKit 1.
@@ -2085,7 +2115,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 
 ### New APIs:
 
-- `showManageSuscriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page. 
+- `showManageSuscriptions(completion:)`: Use this method to show the subscription management for the current user. Depending on where they made the purchase and their OS version, this might take them to the `managementURL`, or open the iOS Subscription Management page.
 - `beginRefundRequestForCurrentEntitlement`: Use this method to begin a refund request for the purchase that granted the current entitlement.
 - `beginRefundRequest(forProduct:)`: Use this method to begin a refund request for a purchase, specifying the product identifier.
 - `beginRefundRequest(forEntitlement:)`: Use this method to begin a refund request for a purchase, specifying the entitlement identifier.
@@ -2095,7 +2125,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ### Known issues:
 - Promotional offers and deferred purchases are not currently supported with StoreKit 2. If your app uses either of those, you should omit `useStoreKit2IfAvailable` in `setup` or set it to `false`.
 
-### Other changes: 
+### Other changes:
 - There are lots of under the hood improvements. If you see any issues we'd appreciate [bug reports](https://github.com/RevenueCat/purchases-ios/issues/new?assignees=&labels=bug&template=bug_report.md&title=)!
 
 ## 4.0.0-beta.8
@@ -2176,7 +2206,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     100% Swift framework + ObjC support.
 - See our [RevenueCat V4 API update doc](Sources/DocCDocumentation/DocCDocumentation.docc/V4_API_Migration_guide.md) for API updates.
 - Our API is now more consistent, `completionBlock` -> `completion` across Swift/ObjC
-- Fixed SPM warning relating to excluding `RequiresXcode13` 
+- Fixed SPM warning relating to excluding `RequiresXcode13`
 - Make parameter labels that were optional pre-migration optional again
 
 ## 4.0.0-beta.1
@@ -2204,7 +2234,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     https://github.com/RevenueCat/purchases-ios/pull/702
 
 ## 3.12.2
-- Fixed a bug where calling setDebugLogsEnabled(false) enables debug logs when it should not. 
+- Fixed a bug where calling setDebugLogsEnabled(false) enables debug logs when it should not.
     https://github.com/RevenueCat/purchases-ios/pull/663
 
 ## 3.12.1
@@ -2216,9 +2246,9 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 ### Identity V3:
 
 #### New methods
-- Introduces `logIn`, a new way of identifying users, which also returns whether a new user has been registered in the system. 
-`logIn` uses a new backend endpoint. 
-- Introduces `logOut`, a replacement for `reset`. 
+- Introduces `logIn`, a new way of identifying users, which also returns whether a new user has been registered in the system.
+`logIn` uses a new backend endpoint.
+- Introduces `logOut`, a replacement for `reset`.
 
 #### Deprecations
 - deprecates `createAlias` in favor of `logIn`
@@ -2231,7 +2261,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     https://github.com/RevenueCat/purchases-ios/pull/506
 
 
-### Other changes: 
+### Other changes:
 
 #### Public additions
 ##### SharedPurchases nullability
@@ -2278,13 +2308,13 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     https://github.com/RevenueCat/purchases-ios/pull/500
 
 ## 3.11.0
-- Exposes `ownershipType` in `EntitlementInfo`, which can be used to determine whether a given entitlement was shared by a family member or purchased directly by the user. 
+- Exposes `ownershipType` in `EntitlementInfo`, which can be used to determine whether a given entitlement was shared by a family member or purchased directly by the user.
     https://github.com/RevenueCat/purchases-ios/pull/483
 - Adds new `RCConfigurationError` type, which will be thrown when SDK configuration errors are detected.
     https://github.com/RevenueCat/purchases-ios/pull/494
 
 ## 3.10.7
-- Obfuscates calls to `AppTrackingTransparency` to prevent unnecessary rejections for kids apps when the framework isn't used at all. 
+- Obfuscates calls to `AppTrackingTransparency` to prevent unnecessary rejections for kids apps when the framework isn't used at all.
     https://github.com/RevenueCat/purchases-ios/pull/486
 
 ## 3.10.6
@@ -2326,7 +2356,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 - Enables improved logging prefixes so they're easier to locate.
     https://github.com/RevenueCat/purchases-ios/pull/441
     https://github.com/RevenueCat/purchases-ios/pull/443
-- Fixed issue with Prepare next version CI job, which was missing the install gems step. 
+- Fixed issue with Prepare next version CI job, which was missing the install gems step.
     https://github.com/RevenueCat/purchases-ios/pull/440
 
 ## 3.10.0
@@ -2445,7 +2475,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     https://github.com/RevenueCat/purchases-ios/pull/331
 - Prevent unnecessary receipt posts
     https://github.com/RevenueCat/purchases-ios/pull/323
-- Improved migration process for legacy Mac App Store apps moving to Universal Store 
+- Improved migration process for legacy Mac App Store apps moving to Universal Store
     https://github.com/RevenueCat/purchases-ios/pull/336
 - Added new SKError codes for Xcode 12
     https://github.com/RevenueCat/purchases-ios/pull/334
@@ -2454,7 +2484,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
     https://github.com/RevenueCat/purchases-ios/pull/329
 - Fixed an issue where cached purchaserInfo would be returned after invalidating purchaserInfo cache
     https://github.com/RevenueCat/purchases-ios/pull/333
-- Fix cocoapods and carthage release scripts 
+- Fix cocoapods and carthage release scripts
     https://github.com/RevenueCat/purchases-ios/pull/324
 - Fixed a bug where `checkIntroTrialEligibility` wouldn't return when calling it from an OS version that didn't support intro offers
     https://github.com/RevenueCat/purchases-ios/pull/343
@@ -2498,7 +2528,7 @@ It also updates the minimum deployment targets for iOS, macOS and tvOS.
 https://github.com/RevenueCat/purchases-ios/pull/288
 
 ## 3.5.1
-- Removes all references to ASIdentifierManager and advertisingIdentifier. This should help with some Kids apps being rejected 
+- Removes all references to ASIdentifierManager and advertisingIdentifier. This should help with some Kids apps being rejected
 https://github.com/RevenueCat/purchases-ios/pull/286
 - Fix for posting wrong duration P0D on consumables
 https://github.com/RevenueCat/purchases-ios/pull/289
@@ -2508,22 +2538,22 @@ https://github.com/RevenueCat/purchases-ios/pull/289
 https://github.com/RevenueCat/purchases-ios/pull/263
 - Fixed build warnings from Clang Static Analyzer
 https://github.com/RevenueCat/purchases-ios/pull/265
-- Added StoreKit Configuration files for local testing + new schemes configured to use them. 
+- Added StoreKit Configuration files for local testing + new schemes configured to use them.
 https://github.com/RevenueCat/purchases-ios/pull/267
 https://github.com/RevenueCat/purchases-ios/pull/270
 - Added GitHub Issue Templates
 https://github.com/RevenueCat/purchases-ios/pull/269
 
 ## 3.4.0
-- Added `proxyKey`, useful for kids category apps, so that they can set up a proxy to send requests through. **Do not use this** unless you've talked to RevenueCat support about it. 
+- Added `proxyKey`, useful for kids category apps, so that they can set up a proxy to send requests through. **Do not use this** unless you've talked to RevenueCat support about it.
 https://github.com/RevenueCat/purchases-ios/pull/258
-- Added `managementURL` to purchaserInfo. This provides an easy way for apps to create Manage Subscription buttons that will correctly redirect users to the corresponding subscription management page on all platforms. 
+- Added `managementURL` to purchaserInfo. This provides an easy way for apps to create Manage Subscription buttons that will correctly redirect users to the corresponding subscription management page on all platforms.
 https://github.com/RevenueCat/purchases-ios/pull/259
-- Extra fields sent to the post receipt endpoint: `normal_duration`, `intro_duration` and `trial_duration`. These will feed into the LTV model for more accurate LTV values. 
+- Extra fields sent to the post receipt endpoint: `normal_duration`, `intro_duration` and `trial_duration`. These will feed into the LTV model for more accurate LTV values.
 https://github.com/RevenueCat/purchases-ios/pull/256
-- Fixed a bug where if the `appUserID` was not found in `NSUserDefaults` and `createAlias` was called, the SDK would create an alias to `(null)`. 
+- Fixed a bug where if the `appUserID` was not found in `NSUserDefaults` and `createAlias` was called, the SDK would create an alias to `(null)`.
 https://github.com/RevenueCat/purchases-ios/pull/255
-- Added [mParticle](https://www.mparticle.com/) as an option for attribution. 
+- Added [mParticle](https://www.mparticle.com/) as an option for attribution.
 https://github.com/RevenueCat/purchases-ios/pull/251
 - Fixed build warnings for Mac Catalyst
 https://github.com/RevenueCat/purchases-ios/pull/247
@@ -2556,7 +2586,7 @@ https://github.com/RevenueCat/purchases-ios/pull/248
     https://github.com/RevenueCat/purchases-ios/pull/222
 - Fixes crash when payment.productIdentifier is nil
     https://github.com/RevenueCat/purchases-ios/pull/226
-- Updates invalidatePurchaserInfoCache docs 
+- Updates invalidatePurchaserInfoCache docs
     https://github.com/RevenueCat/purchases-ios/pull/223
 
 ## 3.2.2
@@ -2568,25 +2598,25 @@ https://github.com/RevenueCat/purchases-ios/pull/248
     https://github.com/RevenueCat/purchases-ios/pull/212
 
 ## 3.2.0
-- Added support for WatchOS and tvOS, fixed some issues with pre-processor macro checks on different platforms. 
+- Added support for WatchOS and tvOS, fixed some issues with pre-processor macro checks on different platforms.
     https://github.com/RevenueCat/purchases-ios/pull/183
 
 ## 3.1.2
-- Added an extra method, `setPushTokenString`, to be used by multi-platform SDKs that don't 
+- Added an extra method, `setPushTokenString`, to be used by multi-platform SDKs that don't
 have direct access to the push token as `NSData *`, but rather as `NSString *`.
     https://github.com/RevenueCat/purchases-ios/pull/208
 
 ## 3.1.1
-- small fixes to docs and release scripts: 
-    - the release script was referencing a fastlane lane that was under the group ios, 
+- small fixes to docs and release scripts:
+    - the release script was referencing a fastlane lane that was under the group ios,
     so it needs to be called with ios first
-    - the docs for setPushToken in RCPurchases.m say to pass an empty string or nil to erase data, 
+    - the docs for setPushToken in RCPurchases.m say to pass an empty string or nil to erase data,
     however since the param is of type NSData, you can't pass in an empty string.
-    
+
     https://github.com/RevenueCat/purchases-ios/pull/203
-    
+
 ## 3.1.0
-- Added Subscriber Attributes, which allow developers to store additional, structured information 
+- Added Subscriber Attributes, which allow developers to store additional, structured information
 for a user in RevenueCat. More info: // More info: https://docs.revenuecat.com/docs/user-attributes.
 https://github.com/RevenueCat/purchases-ios/pull/196
 - Fixed an issue where the completion block of `purchaserInfoWithCompletion` would get called more than once if cached information existed and was stale. https://github.com/RevenueCat/purchases-ios/pull/199
@@ -2601,7 +2631,7 @@ https://github.com/RevenueCat/purchases-ios/pull/196
 - Made sure we dispatch offerings, and purchaser info https://github.com/RevenueCat/purchases-ios/pull/146
 
 ## 3.0.2
-- Fixes an issue where Apple Search Ads attribution information would be sent even if the user hadn't clicked on 
+- Fixes an issue where Apple Search Ads attribution information would be sent even if the user hadn't clicked on
 a search ad.
 
 ## 3.0.1
