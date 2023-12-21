@@ -22,7 +22,6 @@
         "$attConsentStatus" : {
           "updated_at_ms" : 1678307200000,
           "value" : "notDetermined"
-          "value" : "authorized"
         }
       },
       "currency" : "USD",
