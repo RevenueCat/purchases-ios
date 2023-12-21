@@ -39,6 +39,7 @@ class DebugViewSwiftUITests: TestCase {
             observerMode: false,
             sandbox: true,
             storeKit2Enabled: true,
+            locale: .init(identifier: "en_US"),
             offlineCustomerInfoSupport: true,
             verificationMode: "Enforced",
             receiptURL: URL(string: "file://receipt")
