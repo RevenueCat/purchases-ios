@@ -14,7 +14,7 @@ Purchases.configure(with: .builder(withAPIKey: apiKey)
     .build()
 ```
 
-If you were previously using the deprecated configuration option `.with(usesStoreKit2IfAvailable: true)`, it is now a deprecated alias to the new method, so we strongly recommend you remove it and switch to the new one.
+If you were previously using the deprecated configuration option `.with(usesStoreKit2IfAvailable: true)`, we recommend you remove it and switch to the new supported method.
 
 ⚠️ ⚠️ Important ⚠️ ⚠️
 
