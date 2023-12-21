@@ -28,12 +28,6 @@ Please see https://rev.cat/in-app-purchase-key-configuration for more info.
 - Observer Mode is not currently supported when using StoreKit 2.
 - The `originalApplicationVersion` and `originalPurchaseDate` properties in `CustomerInfo` are not supported in this first beta. Please do not update if your implementation relies on them being present.
 
-### RevenueCatUI
-* `Paywalls`: add `PaywallFooterViewController` (#3486) via Toni Rico (@tonidero)
-* `Paywalls`: improve landscape support of all templates (#3471) via NachoSoto (@NachoSoto)
-* `Paywalls`: ensure footer links open in full-screen sheets (#3524) via NachoSoto (@NachoSoto)
-* `Paywalls`: improve `FooterView` text alignment (#3525) via NachoSoto (@NachoSoto)
-* Paywalls: Add dismissal method in `PaywallViewControllerDelegate` (#3493) via Toni Rico (@tonidero) via RevenueCat Git Bot (@RCGitBot)
 ## 4.31.5
 ### RevenueCatUI
 * `Paywalls`: add `PaywallFooterViewController` (#3486) via Toni Rico (@tonidero)
