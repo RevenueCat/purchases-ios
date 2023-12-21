@@ -131,7 +131,7 @@ struct AppContentView: View {
         }
         #endif
         .sheet(isPresented: self.$showingDefaultPaywall) {
-            PaywallView(displayCloseButton: true)
+            PaywallView(displayCloseButton: Configuration.defaultDisplayCloseButton)
         }
         .task(id: self.configuration.currentMode) {
             if Purchases.isConfigured {
@@ -158,7 +158,7 @@ struct AppContentView: View {
 
     #if !os(watchOS)
     private func presentPaywallViewController() {
-        let paywall = PaywallViewController(displayCloseButton: true)
+        let paywall = PaywallViewController(displayCloseButton: Configuration.defaultDisplayCloseButton)
         paywall.modalPresentationStyle = .pageSheet
 
         guard let rootController = UIApplication
