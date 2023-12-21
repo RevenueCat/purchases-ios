@@ -78,7 +78,7 @@ struct OfferingsList: View {
             Text(error.description)
 
         case .none:
-            ProgressView()
+            SwiftUI.ProgressView()
         }
     }
 

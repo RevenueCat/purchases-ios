@@ -132,6 +132,7 @@ internal struct DebugSummaryView: View {
                     LabeledContent("Observer mode", value: config.observerMode.description)
                     LabeledContent("Sandbox", value: config.sandbox.description)
                     LabeledContent("StoreKit 2", value: config.storeKit2Enabled ? "on" : "off")
+                    LabeledContent("Locale", value: config.locale.display)
                     LabeledContent("Offline Customer Info",
                                    value: config.offlineCustomerInfoSupport ? "enabled" : "disabled")
                     LabeledContent("Entitlement Verification Mode", value: config.verificationMode)
@@ -450,6 +451,16 @@ private struct DebugJSONView<Value: Encodable & Transferable>: View {
 
     private var json: String {
         return (try? self.value.prettyPrintedJSON) ?? "{}"
+    }
+
+}
+
+// MARK: - Locale
+
+private extension Locale {
+
+    var display: String {
+        return "\(self.identifier) (\(self.rc_currencyCode ?? "unknown"))"
     }
 
 }
