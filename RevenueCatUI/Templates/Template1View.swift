@@ -45,6 +45,11 @@ struct Template1View: TemplateViewType {
             self.scrollableContent
                 .scrollableIfNecessary()
                 .scrollBounceBehaviorBasedOnSize()
+                .edgesIgnoringSafeArea(
+                    self.shouldUseLandscapeLayout
+                    ? .horizontal
+                    : []
+                )
 
             Spacer()
 
@@ -106,7 +111,7 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var headerImage: some View {
         self.asyncImage
-            .modifier(CircleMaskModifier())
+            .modifier(CircleMaskModifier(landscape: self.shouldUseLandscapeLayout))
 
         Spacer()
     }
@@ -134,7 +139,9 @@ struct Template1View: TemplateViewType {
                 ? 2.8
                 : 2.0
         default:
-            return 1.2
+            return self.shouldUseLandscapeLayout
+                ? 5
+                : 1.2
         }
     }
 
@@ -144,6 +151,8 @@ struct Template1View: TemplateViewType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct CircleMaskModifier: ViewModifier {
+
+    var landscape: Bool
 
     @Environment(\.userInterfaceIdiom)
     private var userInterfaceIdiom
@@ -169,7 +178,10 @@ private struct CircleMaskModifier: ViewModifier {
     private var circleScale: CGFloat {
         switch self.userInterfaceIdiom {
         case .pad: return 7
-        default: return 3
+        default:
+            return self.landscape
+            ? 8
+            : 3
         }
     }
 

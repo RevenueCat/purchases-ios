@@ -30,6 +30,11 @@ class Template1ViewTests: BaseSnapshotTest {
             .snapshotTablet()
     }
 
+    func testLandscapePaywall() {
+        Self.createPaywall(offering: Self.offeringWithNoIntroOffer)
+            .snapshotLandscape()
+    }
+
     func testCustomFont() {
         Self.createPaywall(offering: Self.offeringWithNoIntroOffer,
                            fonts: Self.fonts)
