@@ -235,14 +235,23 @@ public extension StoreProduct {
     /// The price of the `introductoryPrice` formatted using ``priceFormatter``.
     /// - Returns: `nil` if there is no `introductoryPrice`.
     @objc var localizedIntroductoryPriceString: String? {
-        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *),
-              let formatter = self.priceFormatter,
-              let intro = self.introductoryDiscount
-        else {
-            return nil
-        }
+        guard #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) else { return nil }
+        return self.formattedString(for: self.introductoryDiscount?.priceDecimalNumber)
+    }
 
-        return formatter.string(from: intro.price as NSDecimalNumber)
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var localizedPricePerWeek: String? {
+        return self.formattedString(for: self.pricePerWeek)
+    }
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var localizedPricePerMonth: String? {
+        return self.formattedString(for: self.pricePerMonth)
+    }
+
+    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
+    @objc var localizedPricePerYear: String? {
+        return self.formattedString(for: self.pricePerYear)
     }
 
 }
@@ -315,5 +324,19 @@ public extension StoreProduct {
     @available(watchOS, unavailable, message: "Use localizedPriceString instead")
     @available(macOS, unavailable, message: "Use localizedPriceString instead")
     @objc var priceLocale: Locale { fatalError() }
+
+}
+
+private extension StoreProduct {
+
+    func formattedString(for price: NSDecimalNumber?) -> String? {
+        guard let formatter = self.priceFormatter,
+              let price = price
+        else {
+            return nil
+        }
+
+        return formatter.string(from: price as NSDecimalNumber)
+    }
 
 }
