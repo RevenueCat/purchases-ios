@@ -20,6 +20,10 @@ func checkStoreProductAPI() {
     // This is mainly for Objective-C
     let _: NSDecimalNumber = product.priceDecimalNumber
     let _: String = product.localizedPriceString
+    let _: String? = product.localizedPricePerWeek
+    let _: String? = product.localizedPricePerMonth
+    let _: String? = product.localizedPricePerYear
+
     let _: String = product.productIdentifier
     if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         let _: Bool = product.isFamilyShareable

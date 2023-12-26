@@ -19,6 +19,9 @@
     NSString *currencyCode __unused = product.currencyCode;
     NSDecimalNumber *price __unused = product.price;
     NSString *localizedPriceString __unused = product.localizedPriceString;
+    NSString *localizedPricePerWeek __unused = product.localizedPricePerWeek;
+    NSString *localizedPricePerMonth __unused = product.localizedPricePerMonth;
+    NSString *localizedPricePerYear __unused = product.localizedPricePerYear;
     NSString *productIdentifier __unused = product.productIdentifier;
     if (@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)) {
         BOOL isFamilyShareable  __unused = product.isFamilyShareable;
