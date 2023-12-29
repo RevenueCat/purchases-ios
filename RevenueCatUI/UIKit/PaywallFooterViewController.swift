@@ -51,6 +51,25 @@ public final class PaywallFooterViewController: PaywallViewController {
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    public override func loadView() {
+        super.loadView()
+
+        self.addChild(self.hostingController)
+        self.view.addSubview(self.hostingController.view)
+
+        NSLayoutConstraint.activate([
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+
+        self.hostingController.didMove(toParent: self)
+
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        hostingController.view.backgroundColor = .clear
+    }
+
 }
 
 #endif
