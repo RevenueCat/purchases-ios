@@ -285,21 +285,13 @@ struct Template5View: TemplateViewType {
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-        HStack {
-            Constants.checkmarkImage
-                .hidden(if: !selected)
-                .overlay {
-                    if selected {
-                        EmptyView()
-                    } else {
-                        Circle()
-                            .foregroundColor(self.configuration.colors.unselectedOutline)
-                    }
-                }
-                .foregroundColor(self.configuration.colors.selectedOutline)
-
-            Text(package.localization.offerName ?? package.content.productName)
-        }
+      HStack {
+        let systemName = selected ? "checkmark.circle.fill" : "circle.fill"
+        let color = selected ? self.configuration.colors.selectedOutline : self.configuration.colors.unselectedOutline
+        Image(systemName: systemName)
+          .foregroundColor(color)
+        Text(package.localization.offerName ?? package.content.productName)
+      }
     }
 
     private func offerDetails(
