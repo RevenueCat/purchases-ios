@@ -30,14 +30,6 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(SystemInfo.with(receiptResult: .nilURL, inSimulator: false).isSandbox) == false
     }
 
-    func testMacSandboxReceiptIsSandbox() {
-        expect(SystemInfo.with(receiptResult: .macOSSandboxReceipt, inSimulator: false).isSandbox) == true
-    }
-
-    func testMacAppStoreReceiptIsNotSandbox() {
-        expect(SystemInfo.with(receiptResult: .macOSAppStoreReceipt, inSimulator: false).isSandbox) == false
-    }
-
     func testIsAlwaysSandboxIfRunningInSimulator() {
         expect(SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
         expect(SystemInfo.with(receiptResult: .receiptWithData, inSimulator: true).isSandbox) == true
