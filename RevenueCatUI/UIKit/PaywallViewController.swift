@@ -58,7 +58,7 @@ public class PaywallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    lazy var hostingController: UIHostingController<some View> = {
+    private lazy var hostingController: UIHostingController<some View> = {
         let view = PaywallView(offering: self.offering,
                                customerInfo: nil,
                                mode: self.mode,
