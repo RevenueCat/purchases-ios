@@ -104,13 +104,6 @@ public class PaywallViewController: UIViewController {
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
         hostingController.view.backgroundColor = .clear
-
-    }
-
-    public override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-
-        self.hostingController.view.frame = self.view.bounds
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
