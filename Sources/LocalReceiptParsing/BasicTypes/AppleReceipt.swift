@@ -18,6 +18,23 @@ import Foundation
 /// - Seealso: [the official documentation](https://rev.cat/apple-receipt-fields).
 public struct AppleReceipt: Equatable {
 
+    /// The server environment the receipt belongs to.
+    enum Environment: String {
+        /// Apps downloaded from the App Store
+        case production = "Production"
+
+        /// Development build or downloaded from TestFlight
+        case sandbox = "ProductionSandbox"
+
+        /// StoreKit Testing in Xcode
+        case xcode = "Xcode"
+
+        /// Unknown environment
+        case unknown = "Unknown"
+    }
+
+    let environment: Environment
+
     /// The app's bundle identifier.
     /// This corresponds to the value of `CFBundleIdentifier` in the `Info.plist` file.
     /// Use this value to validate if the receipt was indeed generated for your app.
@@ -65,6 +82,7 @@ public struct AppleReceipt: Equatable {
 }
 
 extension AppleReceipt: Sendable {}
+extension AppleReceipt.Environment: Sendable {}
 
 // MARK: - Extensions
 
@@ -109,6 +127,7 @@ extension AppleReceipt {
 // MARK: - Conformances
 
 extension AppleReceipt: Codable {}
+extension AppleReceipt.Environment: Codable {}
 
 extension AppleReceipt: CustomDebugStringConvertible {
 
