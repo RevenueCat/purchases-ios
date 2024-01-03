@@ -31,10 +31,6 @@ public class PaywallViewController: UIViewController {
         return .fullScreen
     }
 
-    var shouldAddTopConstraint: Bool {
-        return true
-    }
-
     private let offering: Offering?
     private let displayCloseButton: Bool
 
@@ -86,24 +82,24 @@ public class PaywallViewController: UIViewController {
         self.addChild(self.hostingController)
         self.view.addSubview(self.hostingController.view)
         self.hostingController.didMove(toParent: self)
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        self.hostingController.view.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            self.hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            self.hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            self.hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
 
         // for footers we only want to tie to the sides and the bottom.
-        if self.mode != .footer && self.mode != .condensedFooter {
+        if self.mode == .fullScreen {
             NSLayoutConstraint.activate([
-                hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
+                self.hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
             ])
         }
 
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
-        hostingController.view.backgroundColor = .clear
+        self.hostingController.view.backgroundColor = .clear
     }
 
     public override func viewDidDisappear(_ animated: Bool) {
