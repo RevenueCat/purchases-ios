@@ -353,6 +353,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     private static let productID = "com.revenuecat.test_product"
 
     private static let validReceipt = AppleReceipt(
+        environment: .sandbox,
         bundleId: "bundle",
         applicationVersion: "1.0",
         originalApplicationVersion: nil,
@@ -380,6 +381,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     )
 
     private static let receiptWithoutPurchases = AppleReceipt(
+        environment: .sandbox,
         bundleId: "bundle",
         applicationVersion: "1.0",
         originalApplicationVersion: nil,

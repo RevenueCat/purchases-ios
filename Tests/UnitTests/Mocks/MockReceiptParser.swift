@@ -23,7 +23,8 @@ class MockReceiptParser: PurchasesReceiptParser {
 
     var stubbedParseResults: [Result<AppleReceipt, Error>] = [
         .success(
-            .init(bundleId: "com.revenuecat.test",
+            .init(environment: .sandbox,
+                  bundleId: "com.revenuecat.test",
                   applicationVersion: "5.6.7",
                   originalApplicationVersion: "3.4.5",
                   opaqueValue: Data(),

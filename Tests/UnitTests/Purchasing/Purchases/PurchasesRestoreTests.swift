@@ -98,6 +98,7 @@ class PurchasesRestoreTests: BasePurchasesTests {
 
         self.receiptFetcher.shouldReturnReceipt = true
         self.mockReceiptParser.stubbedParseResult = .init(
+            environment: .sandbox,
             bundleId: "",
             applicationVersion: "",
             originalApplicationVersion: nil,

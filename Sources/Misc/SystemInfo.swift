@@ -57,9 +57,13 @@ class SystemInfo {
     private static let _forceUniversalAppStore: Atomic<Bool> = false
     private static let _proxyURL: Atomic<URL?> = nil
 
-    lazy var isSandbox: Bool = {
+    private lazy var _isSandbox: Bool = {
         return self.sandboxEnvironmentDetector.isSandbox
     }()
+
+    var isSandbox: Bool {
+        return self._isSandbox
+    }
 
     var storefront: StorefrontType? {
         return self.storefrontProvider.currentStorefront

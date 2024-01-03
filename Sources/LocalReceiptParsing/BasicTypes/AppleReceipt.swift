@@ -18,8 +18,8 @@ import Foundation
 /// - Seealso: [the official documentation](https://rev.cat/apple-receipt-fields).
 public struct AppleReceipt: Equatable {
 
-    /// The server environment the receipt belongs to.
-    enum Environment: String {
+    /// The server environment a receipt belongs to.
+    public enum Environment: String {
         /// Apps downloaded from the App Store
         case production = "Production"
 
@@ -33,7 +33,8 @@ public struct AppleReceipt: Equatable {
         case unknown = "Unknown"
     }
 
-    let environment: Environment
+    /// The receipt's environment.
+    public let environment: Environment
 
     /// The app's bundle identifier.
     /// This corresponds to the value of `CFBundleIdentifier` in the `Info.plist` file.
