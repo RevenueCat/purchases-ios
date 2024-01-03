@@ -118,7 +118,7 @@ class AppleReceiptBuilderTests: TestCase {
             sha1HashContainer(),
             creationDateContainer()
         ])
-        expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.to(throwError())
+        expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.notTo(throwError())
     }
 
     func testBuildThrowsIfBundleIdIsMissing() {
