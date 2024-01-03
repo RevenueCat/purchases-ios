@@ -34,7 +34,7 @@ public struct AppleReceipt: Equatable {
     }
 
     /// The receipt's environment.
-    public let environment: Environment
+    public let environment: Environment?
 
     /// The app's bundle identifier.
     /// This corresponds to the value of `CFBundleIdentifier` in the `Info.plist` file.

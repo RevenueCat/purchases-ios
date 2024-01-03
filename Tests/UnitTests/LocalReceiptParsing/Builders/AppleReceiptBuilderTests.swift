@@ -8,6 +8,7 @@ class AppleReceiptBuilderTests: TestCase {
     var appleReceiptBuilder: AppleReceiptBuilder!
     var mockInAppPurchaseBuilder: MockInAppPurchaseBuilder!
 
+    let environment = "ProductionSandbox"
     let bundleId = "com.revenuecat.test"
     let applicationVersion = "3.2.1"
     let originalApplicationVersion = "1.2.2"
@@ -108,8 +109,21 @@ class AppleReceiptBuilderTests: TestCase {
         }
     }
 
+    func testBuildDoesntThrowIfEnvironmentIsMissing() {
+        let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            bundleIdContainer(),
+            appVersionContainer(),
+            originalAppVersionContainer(),
+            opaqueValueContainer(),
+            sha1HashContainer(),
+            creationDateContainer()
+        ])
+        expect { try self.appleReceiptBuilder.build(fromContainer: receiptContainer) }.to(throwError())
+    }
+
     func testBuildThrowsIfBundleIdIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             appVersionContainer(),
             originalAppVersionContainer(),
             opaqueValueContainer(),
@@ -121,6 +135,7 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildThrowsIfAppVersionIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             bundleIdContainer(),
             originalAppVersionContainer(),
             opaqueValueContainer(),
@@ -132,6 +147,7 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildDoesntThrowIfOriginalAppVersionIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             bundleIdContainer(),
             appVersionContainer(),
             opaqueValueContainer(),
@@ -143,6 +159,7 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildThrowsIfOpaqueValueIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             bundleIdContainer(),
             appVersionContainer(),
             originalAppVersionContainer(),
@@ -154,6 +171,7 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildThrowsIfSha1HashIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             bundleIdContainer(),
             appVersionContainer(),
             originalAppVersionContainer(),
@@ -165,6 +183,7 @@ class AppleReceiptBuilderTests: TestCase {
 
     func testBuildThrowsIfCreationDateIsMissing() {
         let receiptContainer = containerFactory.receiptContainerFromContainers(containers: [
+            environmentContainer(),
             bundleIdContainer(),
             appVersionContainer(),
             originalAppVersionContainer(),
@@ -224,5 +243,10 @@ private extension AppleReceiptBuilderTests {
     func bundleIdContainer() -> ASN1Container {
         containerFactory.receiptAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.bundleId,
                                                    bundleId)
+    }
+
+    func environmentContainer() -> ASN1Container {
+        containerFactory.receiptAttributeContainer(attributeType: AppleReceipt.Attribute.AttributeType.environment,
+                                                   environment)
     }
 }

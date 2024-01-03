@@ -101,8 +101,7 @@ class AppleReceiptBuilder {
             }
         }
 
-        guard let nonOptionalEnvironment = environment,
-            let nonOptionalBundleId = bundleId,
+        guard let nonOptionalBundleId = bundleId,
             let nonOptionalApplicationVersion = applicationVersion,
             let nonOptionalOpaqueValue = opaqueValue,
             let nonOptionalSha1Hash = sha1Hash,
@@ -110,7 +109,7 @@ class AppleReceiptBuilder {
             throw PurchasesReceiptParser.Error.receiptParsingError
         }
 
-        let receipt = AppleReceipt(environment: nonOptionalEnvironment,
+        let receipt = AppleReceipt(environment: environment,
                                    bundleId: nonOptionalBundleId,
                                    applicationVersion: nonOptionalApplicationVersion,
                                    originalApplicationVersion: originalApplicationVersion,
