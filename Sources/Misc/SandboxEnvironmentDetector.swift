@@ -25,10 +25,14 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
     private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
+    private let receiptParser: PurchasesReceiptParser
 
-    init(bundle: Bundle = .main, isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator) {
+    init(bundle: Bundle = .main,
+         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
+         receiptParser: PurchasesReceiptParser = PurchasesReceiptParser.default) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
+        self.receiptParser = receiptParser
     }
 
     var isSandbox: Bool {
@@ -41,11 +45,32 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         }
 
         #if os(macOS) || targetEnvironment(macCatalyst)
-            return !isMacAppStore
+            return !isProductionReceipt || !Self.isMacAppStore
         #else
             return path.contains("sandboxReceipt")
         #endif
     }
+
+    var isProductionReceipt: Bool {
+        do {
+            return try receiptParser.fetchAndParseLocalReceipt().environment == .production
+        } catch {
+            return false
+        }
+    }
+
+    #if DEBUG
+    // Mutable in tests so it can be overriden
+    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #else
+    static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    #endif
+
+}
+
+extension BundleSandboxEnvironmentDetector: Sendable {}
+
+private extension BundleSandboxEnvironmentDetector {
 
     /// Returns whether the bundle was signed for Mac App Store distribution by checking
     /// the existence of a specific extension (marker OID) on the code signing certificate.
@@ -59,7 +84,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     /// - https://github.com/objective-see/ProcInfo/blob/master/procInfo/Signing.m#L184-L247
     /// - https://gist.github.com/lukaskubanek/cbfcab29c0c93e0e9e0a16ab09586996#gistcomment-3993808
     #if os(macOS) || targetEnvironment(macCatalyst)
-    var isMacAppStore: Bool {
+    static var isMacAppStore: Bool {
         var status = noErr
 
         var code: SecStaticCode?
@@ -86,13 +111,4 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     }
     #endif
 
-    #if DEBUG
-    // Mutable in tests so it can be overriden
-    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #else
-    static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
-    #endif
-
 }
-
-extension BundleSandboxEnvironmentDetector: Sendable {}

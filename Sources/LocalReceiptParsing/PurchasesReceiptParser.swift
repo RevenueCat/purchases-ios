@@ -133,3 +133,30 @@ private extension PurchasesReceiptParser {
     #endif
 
 }
+
+internal extension PurchasesReceiptParser {
+
+    func fetchAndParseLocalReceipt(
+        reader: FileReader = DefaultFileReader(),
+        bundle: Bundle = .main
+    ) throws -> AppleReceipt {
+        return try self.parse(from: self.fetchLocalReceipt(reader, bundle))
+    }
+
+}
+
+private extension PurchasesReceiptParser {
+
+    func fetchLocalReceipt(_ reader: FileReader, _ bundle: Bundle) throws -> Data {
+        guard let url = bundle.appStoreReceiptURL else {
+            throw Error.receiptNotPresent
+        }
+
+        do {
+            return try reader.contents(of: url)
+        } catch {
+            throw Error.failedToLoadLocalReceipt(error)
+        }
+    }
+
+}
