@@ -55,6 +55,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         do {
             return try receiptParser.fetchAndParseLocalReceipt().environment == .production
         } catch {
+            Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
             return false
         }
     }
@@ -90,7 +91,10 @@ private extension BundleSandboxEnvironmentDetector {
         var code: SecStaticCode?
         status = SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &code)
 
-        guard status == noErr, let code = code else { return false }
+        guard status == noErr, let code = code else {
+            Logger.error(Strings.receipt.validating_bundle_signature)
+            return false
+        }
 
         var requirement: SecRequirement?
         status = SecRequirementCreateWithString(
@@ -99,7 +103,10 @@ private extension BundleSandboxEnvironmentDetector {
             &requirement
         )
 
-        guard status == noErr, let requirement = requirement else { return false }
+        guard status == noErr, let requirement = requirement else {
+            Logger.error(Strings.receipt.validating_bundle_signature)
+            return false
+        }
 
         status = SecStaticCodeCheckValidity(
             code,
