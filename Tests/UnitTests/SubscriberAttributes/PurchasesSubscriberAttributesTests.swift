@@ -813,7 +813,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
-        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSent) == true
+        // we're not using completion blocks, so this isn't guaranteed to be checked after it gets set
+        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSent).toEventually(beTrue())
         expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) == (
             [.adServices: token], self.mockIdentityManager.currentAppUserID
