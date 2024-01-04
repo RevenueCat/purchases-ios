@@ -794,7 +794,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let token = "token"
 
         self.mockAttributionFetcher.adServicesTokenToReturn = token
-        self.attribution.enableAdServicesAttributionTokenCollection()
+        // using automaticAdServicesAttributionTokenCollection because enableAdServicesAttributionTokenCollection
+        // automatically posts the token independently of purchases, which would make this test a false positive
+        self.attribution.automaticAdServicesAttributionTokenCollection = true
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }

@@ -25,13 +25,15 @@ import Foundation
  */
 @objc(RCAttribution) public final class Attribution: NSObject {
 
+    // internal for testing purposes
+    var automaticAdServicesAttributionTokenCollection: Bool = false
+
     private let subscriberAttributesManager: SubscriberAttributesManager
     private let currentUserProvider: CurrentUserProvider
     private let attributionPoster: AttributionPoster
     private let systemInfo: SystemInfo
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
-    private var automaticAdServicesAttributionTokenCollection: Bool = false
 
     weak var delegate: AttributionDelegate?
 
