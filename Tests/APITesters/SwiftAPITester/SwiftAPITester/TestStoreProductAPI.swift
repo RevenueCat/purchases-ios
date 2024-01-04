@@ -34,6 +34,9 @@ func checkTestStoreProductAPI() {
     testProduct.localizedTitle = localizedTitle
     testProduct.price = price
     testProduct.localizedPriceString = localizedPriceString
+    testProduct.localizedPricePerWeek = localizedPricePerWeek
+    testProduct.localizedPricePerMonth = localizedPricePerMonth
+    testProduct.localizedPricePerYear = localizedPricePerYear
     testProduct.productIdentifier = productIdentifier
     testProduct.productType = productType
     testProduct.localizedDescription = localizedDescription
