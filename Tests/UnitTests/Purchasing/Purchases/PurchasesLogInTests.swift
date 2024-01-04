@@ -251,29 +251,43 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInClearsTrialEligibilityCache() {
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache) == false
+        // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount).toEventually(equal(1))
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        let newAppUserID = "newAppUserID"
 
         waitUntil { completed in
-            self.purchases.logIn(Self.appUserID) { _, _, _ in completed() }
+            self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
+                // since we're using a mocked identity manager, we need to manually call
+                // customer info manager to update the customer info and trigger an actual
+                // call in the monitorChanges observation
+                self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
+                completed()
+            }
         }
 
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCache).toEventually(beTrue())
-        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount) == 1
+        expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount).toEventually(equal(2))
     }
 
     func testLogInClearsPurchasedProductsFetcherCache() {
-        expect(self.mockPurchasedProductsFetcher.invokedClearCache) == false
+        // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
+        expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount).toEventually(equal(1))
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        let newAppUserID = "newAppUserID"
 
         waitUntil { completed in
-            self.purchases.logIn(Self.appUserID) { _, _, _ in completed() }
+            self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
+                // since we're using a mocked identity manager, we need to manually call
+                // customer info manager to update the customer info and trigger an actual
+                // call in the monitorChanges observation
+                self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
+                completed()
+            }
         }
 
-        expect(self.mockPurchasedProductsFetcher.invokedClearCache).toEventually(beTrue())
-        expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount) == 1
+        expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount).toEventually(equal(2))
     }
 
 }
