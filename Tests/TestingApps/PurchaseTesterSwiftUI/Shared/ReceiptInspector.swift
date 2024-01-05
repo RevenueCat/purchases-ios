@@ -73,7 +73,8 @@ struct ReceiptInspectorView: View {
     func inspectReceipt() async {
         do {
             guard !encodedReceipt.isEmpty else { return }
-            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: encodedReceipt).debugDescription
+            let receiptWithoutForwardSlashes = encodedReceipt.replacingOccurrences(of: "\\", with: "")
+            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: receiptWithoutForwardSlashes).debugDescription
             verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt,
                                                                         sharedSecret: sharedSecret)
         } catch {
