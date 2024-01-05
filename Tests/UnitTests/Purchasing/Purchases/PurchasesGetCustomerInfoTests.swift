@@ -154,10 +154,14 @@ class PurchasesGetCustomerInfoTests: BasePurchasesTests {
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
 
         waitUntil { completed in
-            self.purchases.getCustomerInfo { (_, _) in completed() }
+            self.purchases.getCustomerInfo { (_, _) in
+                completed()
+            }
         }
 
-        expect(self.backend.getCustomerInfoCallCount) == 2
+        // need to use toEventually here because we fetch new customer info after calling completion
+        // for the customerInfo method
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(2))
     }
 
     func testGetCustomerInfoAfterInvalidatingDoesntReturnCachedVersion() throws {

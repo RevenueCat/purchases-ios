@@ -199,8 +199,7 @@ class PaywallEventsManagerTests: TestCase {
         let task1 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
         let task2 = Task<Int, Error> { [manager = self.manager!] in try await manager.flushEvents(count: 1) }
 
-        let result1 = try await task1.value
-        let result2 = try await task2.value
+        let (result1, result2) = try await (task1.value, task2.value)
 
         // Tasks aren't guaranteed to start in order.
         // We just care that one of them posted 1 event and the other 0.

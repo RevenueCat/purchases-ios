@@ -794,7 +794,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
         let token = "token"
 
         self.mockAttributionFetcher.adServicesTokenToReturn = token
-        self.attribution.enableAdServicesAttributionTokenCollection()
+        // using automaticAdServicesAttributionTokenCollection because enableAdServicesAttributionTokenCollection
+        // automatically posts the token independently of purchases, which would make this test a false positive
+        self.attribution.automaticAdServicesAttributionTokenCollection = true
 
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
@@ -811,7 +813,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockStoreKit1Wrapper.delegate?.storeKit1Wrapper(self.mockStoreKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.mockBackend.invokedPostReceiptData).toEventually(equal(true))
-        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSent) == true
+        // we're not using completion blocks, so this isn't guaranteed to be checked after it gets set
+        expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSent).toEventually(beTrue())
         expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentCount) == 1
         expect(self.mockDeviceCache.invokedSetLatestNetworkAndAdvertisingIdsSentParameters) == (
             [.adServices: token], self.mockIdentityManager.currentAppUserID
