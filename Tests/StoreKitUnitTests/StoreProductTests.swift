@@ -442,6 +442,15 @@ class StoreProductTests: StoreKitConfigTestCase {
         self.logger.verifyMessageWasLogged(Strings.storeKit.sk1_no_known_product_type, level: .debug)
     }
 
+    func testPricePerPeriod() async throws {
+        let sk1Fetcher = ProductsFetcherSK1(requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+
+        let storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
+        expect(storeProduct.localizedPricePerWeek) == "$1.14"
+        expect(storeProduct.localizedPricePerMonth) == "$4.99"
+        expect(storeProduct.localizedPricePerYear) == "$59.88"
+    }
+
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
