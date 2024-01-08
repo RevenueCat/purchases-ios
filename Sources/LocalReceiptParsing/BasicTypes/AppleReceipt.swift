@@ -18,21 +18,6 @@ import Foundation
 /// - Seealso: [the official documentation](https://rev.cat/apple-receipt-fields).
 public struct AppleReceipt: Equatable {
 
-    /// The server environment a receipt belongs to.
-    public enum Environment: String {
-        /// Apps downloaded from the App Store
-        case production = "Production"
-
-        /// Development build or downloaded from TestFlight
-        case sandbox = "ProductionSandbox"
-
-        /// StoreKit Testing in Xcode
-        case xcode = "Xcode"
-
-        /// Unknown environment
-        case unknown = "Unknown"
-    }
-
     /// The receipt's environment.
     public let environment: Environment?
 
@@ -79,6 +64,25 @@ public struct AppleReceipt: Equatable {
 
     /// Individual purchases contained in this receipt.
     public let inAppPurchases: [InAppPurchase]
+
+}
+
+extension AppleReceipt {
+
+    /// The server environment a receipt belongs to.
+    public enum Environment: String {
+        /// Apps downloaded from the App Store
+        case production = "Production"
+
+        /// Development build or downloaded from TestFlight
+        case sandbox = "ProductionSandbox"
+
+        /// StoreKit Testing in Xcode
+        case xcode = "Xcode"
+
+        /// Unknown environment
+        case unknown = "Unknown"
+    }
 
 }
 

@@ -45,19 +45,10 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         }
 
         #if os(macOS) || targetEnvironment(macCatalyst)
-            return !isProductionReceipt || !Self.isMacAppStore
+            return !self.isProductionReceipt || !Self.isMacAppStore
         #else
             return path.contains("sandboxReceipt")
         #endif
-    }
-
-    var isProductionReceipt: Bool {
-        do {
-            return try receiptParser.fetchAndParseLocalReceipt().environment == .production
-        } catch {
-            Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
-            return false
-        }
     }
 
     #if DEBUG
@@ -72,6 +63,15 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 extension BundleSandboxEnvironmentDetector: Sendable {}
 
 private extension BundleSandboxEnvironmentDetector {
+
+    var isProductionReceipt: Bool {
+        do {
+            return try receiptFetcher.fetchAndParseLocalReceipt().environment == .production
+        } catch {
+            Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
+            return false
+        }
+    }
 
     /// Returns whether the bundle was signed for Mac App Store distribution by checking
     /// the existence of a specific extension (marker OID) on the code signing certificate.
@@ -92,7 +92,7 @@ private extension BundleSandboxEnvironmentDetector {
         status = SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &code)
 
         guard status == noErr, let code = code else {
-            Logger.error(Strings.receipt.validating_bundle_signature)
+            Logger.error(Strings.receipt.error_validating_bundle_signature)
             return false
         }
 
@@ -104,7 +104,7 @@ private extension BundleSandboxEnvironmentDetector {
         )
 
         guard status == noErr, let requirement = requirement else {
-            Logger.error(Strings.receipt.validating_bundle_signature)
+            Logger.error(Strings.receipt.error_validating_bundle_signature)
             return false
         }
 

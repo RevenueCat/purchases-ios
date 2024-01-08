@@ -39,7 +39,7 @@ enum ReceiptStrings {
     case receipt_retrying_mechanism_not_available
     case local_receipt_missing_purchase(AppleReceipt, forProductIdentifier: String)
     case retrying_receipt_fetch_after(sleepDuration: TimeInterval)
-    case validating_bundle_signature
+    case error_validating_bundle_signature
 
 }
 
@@ -118,7 +118,7 @@ extension ReceiptStrings: LogMessage {
         case let .retrying_receipt_fetch_after(sleepDuration):
             return String(format: "Retrying receipt fetch after %2.f seconds", sleepDuration)
 
-        case .validating_bundle_signature:
+        case .error_validating_bundle_signature:
             return "Error validating app bundle signature."
         }
     }
