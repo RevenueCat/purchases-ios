@@ -1078,6 +1078,11 @@
 		4FDF10EC2A726291004F3680 /* SK1ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK1ProductFetcher.swift; sourceTree = "<group>"; };
 		4FDF10EF2A7262D8004F3680 /* SK2ProductFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SK2ProductFetcher.swift; sourceTree = "<group>"; };
 		4FE0685E2A5F54C500B8F56C /* PackageTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageTypeTests.swift; sourceTree = "<group>"; };
+		4FE3A57B2B4C6BB40006A7FC /* BackendIntegrationTests-CustomEntitlements.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-CustomEntitlements.xctestplan"; sourceTree = "<group>"; };
+		4FE3A57C2B4C6BB40006A7FC /* BackendIntegrationTests-Offline.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-Offline.xctestplan"; sourceTree = "<group>"; };
+		4FE3A57D2B4C6BB40006A7FC /* BackendIntegrationTests-SK1.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-SK1.xctestplan"; sourceTree = "<group>"; };
+		4FE3A57E2B4C6BB40006A7FC /* BackendIntegrationTests-Other.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-Other.xctestplan"; sourceTree = "<group>"; };
+		4FE3A57F2B4C6C560006A7FC /* BackendIntegrationTests-SK2.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-SK2.xctestplan"; sourceTree = "<group>"; };
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
 		4FE6FEE42AA940B700780B45 /* PaywallStoredEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallStoredEvent.swift; sourceTree = "<group>"; };
 		4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventStoreTests.swift; sourceTree = "<group>"; };
@@ -1104,7 +1109,7 @@
 		57057FF728B0048900995F21 /* TestLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandler.swift; sourceTree = "<group>"; };
 		57069A5328E3918400B86355 /* AsyncExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExtensions.swift; sourceTree = "<group>"; };
 		57069A5D28E398E100B86355 /* AsyncExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncExtensionsTests.swift; sourceTree = "<group>"; };
-		570814C128A308050018BAE3 /* BackendIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = BackendIntegrationTests.xctestplan; path = Tests/TestPlans/BackendIntegrationTests.xctestplan; sourceTree = "<group>"; };
+		570814C128A308050018BAE3 /* BackendIntegrationTests-All.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-All.xctestplan"; sourceTree = "<group>"; };
 		570896B227595C8100296F1C /* AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = AllTests.xctestplan; path = Tests/TestPlans/AllTests.xctestplan; sourceTree = "<group>"; };
 		570896B327595C8100296F1C /* RevenueCat.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = RevenueCat.xctestplan; path = Tests/TestPlans/RevenueCat.xctestplan; sourceTree = "<group>"; };
 		570896B427595C8100296F1C /* Coverage.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = Coverage.xctestplan; path = Tests/TestPlans/Coverage.xctestplan; sourceTree = "<group>"; };
@@ -1396,7 +1401,6 @@
 		B3CD0D8727F25E3E000793F5 /* BackendSubscriberAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendSubscriberAttributesTests.swift; sourceTree = "<group>"; };
 		B3D3C4712685784800CB3C21 /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-AllTests.xctestplan"; path = "Tests/TestPlans/CI-AllTests.xctestplan"; sourceTree = "<group>"; };
-		B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "CI-BackendIntegration.xctestplan"; path = "Tests/TestPlans/CI-BackendIntegration.xctestplan"; sourceTree = "<group>"; };
 		B3DDB55826854865008CCF23 /* PurchaseOwnershipType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseOwnershipType.swift; sourceTree = "<group>"; };
 		B3DF6A4F269524080030D57C /* IntroEligibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibility.swift; sourceTree = "<group>"; };
 		B3E26A4926BE0A8E003ACCF3 /* Error+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Error+Extensions.swift"; sourceTree = "<group>"; };
@@ -2395,6 +2399,19 @@
 			path = Events;
 			sourceTree = "<group>";
 		};
+		4FE3A57A2B4C6B1B0006A7FC /* BackendIntegrationTests */ = {
+			isa = PBXGroup;
+			children = (
+				570814C128A308050018BAE3 /* BackendIntegrationTests-All.xctestplan */,
+				4FE3A57B2B4C6BB40006A7FC /* BackendIntegrationTests-CustomEntitlements.xctestplan */,
+				4FE3A57C2B4C6BB40006A7FC /* BackendIntegrationTests-Offline.xctestplan */,
+				4FE3A57E2B4C6BB40006A7FC /* BackendIntegrationTests-Other.xctestplan */,
+				4FE3A57D2B4C6BB40006A7FC /* BackendIntegrationTests-SK1.xctestplan */,
+				4FE3A57F2B4C6C560006A7FC /* BackendIntegrationTests-SK2.xctestplan */,
+			);
+			path = BackendIntegrationTests;
+			sourceTree = "<group>";
+		};
 		4FE6FEE62AA940E300780B45 /* Events */ = {
 			isa = PBXGroup;
 			children = (
@@ -2583,9 +2600,8 @@
 			isa = PBXGroup;
 			children = (
 				570896B227595C8100296F1C /* AllTests.xctestplan */,
-				570814C128A308050018BAE3 /* BackendIntegrationTests.xctestplan */,
+				4FE3A57A2B4C6B1B0006A7FC /* BackendIntegrationTests */,
 				B3DB3EA5288627D7008EB151 /* CI-AllTests.xctestplan */,
-				B3DB3EA828862898008EB151 /* CI-BackendIntegration.xctestplan */,
 				57910CBD29C393A6006209D5 /* CI-RevenueCat.xctestplan */,
 				2C646C282A0EBD0300E5936E /* CI-Snapshots.xctestplan */,
 				4F520EF22B06C7A700DB6770 /* CI-RevenueCat-Snapshots.xctestplan */,

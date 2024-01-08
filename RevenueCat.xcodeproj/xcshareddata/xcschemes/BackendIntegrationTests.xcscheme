@@ -29,11 +29,23 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:Tests/TestPlans/BackendIntegrationTests.xctestplan"
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-All.xctestplan"
             default = "YES">
          </TestPlanReference>
          <TestPlanReference
-            reference = "container:Tests/TestPlans/CI-BackendIntegration.xctestplan">
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-SK1.xctestplan">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan">
          </TestPlanReference>
       </TestPlans>
       <Testables>
@@ -80,6 +92,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "2DE20B7E26409EB7004C597D"
+            BuildableName = "BackendIntegrationTestsHostApp.app"
+            BlueprintName = "BackendIntegrationTestsHostApp"
+            ReferencedContainer = "container:RevenueCat.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

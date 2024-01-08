@@ -37,17 +37,31 @@
   },
   "testTargets" : [
     {
+      "skippedTests" : [
+        "BaseBackendIntegrationTests",
+        "BaseOfflineStoreKitIntegrationTests",
+        "LoadShedderStoreKit1IntegrationTests",
+        "LoadShedderStoreKit2IntegrationTests",
+        "LoadShedderStoreKit2JWSIntegrationTests",
+        "OfflineStoreKit1IntegrationTests",
+        "OfflineStoreKit2IntegrationTests",
+        "OfflineStoreKit2JWSIntegrationTests",
+        "OfflineWithNoMappingStoreKitIntegrationTests",
+        "StoreKit1IntegrationTests",
+        "StoreKit1ObserverModeIntegrationTests",
+        "StoreKit1ObserverModeWithExistingPurchasesTests",
+        "StoreKit2IntegrationTests",
+        "StoreKit2JWSIntegrationTests",
+        "StoreKit2JWSObserverModeIntegrationTests",
+        "StoreKit2JWSObserverModeWithExistingPurchasesTests",
+        "StoreKit2ObserverModeIntegrationTests",
+        "StoreKit2ObserverModeWithExistingPurchasesTests",
+        "TestCase"
+      ],
       "target" : {
         "containerPath" : "container:RevenueCat.xcodeproj",
         "identifier" : "2DE20B6B264087FB004C597D",
         "name" : "BackendIntegrationTests"
-      }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "4F6BEE042A27B02400CD9322",
-        "name" : "BackendCustomEntitlementsIntegrationTests"
       }
     }
   ],
