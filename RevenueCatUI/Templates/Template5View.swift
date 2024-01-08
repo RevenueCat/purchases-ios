@@ -281,17 +281,24 @@ struct Template5View: TemplateViewType {
         RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
     }
 
+    @ViewBuilder
     private func packageButtonTitle(
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-      HStack {
-        let systemName = selected ? "checkmark.circle.fill" : "circle.fill"
-        let color = selected ? self.configuration.colors.selectedOutline : self.configuration.colors.unselectedOutline
-        Image(systemName: systemName)
-          .foregroundColor(color)
-        Text(package.localization.offerName ?? package.content.productName)
-      }
+        let systemName = selected
+            ? "checkmark.circle.fill"
+            : "circle.fill"
+        let color = selected
+            ? self.configuration.colors.selectedOutline
+            : self.configuration.colors.unselectedOutline
+
+        HStack {
+            Image(systemName: systemName)
+                .foregroundColor(color)
+
+            Text(package.localization.offerName ?? package.content.productName)
+        }
     }
 
     private func offerDetails(
