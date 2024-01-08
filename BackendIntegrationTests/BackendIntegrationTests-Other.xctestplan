@@ -28,8 +28,8 @@
     "maximumTestRepetitions" : 5,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DEAC2D926EFE46E006914ED",
-      "name" : "UnitTestsHostApp"
+      "identifier" : "2DE20B6B264087FB004C597D",
+      "name" : "BackendIntegrationTests"
     },
     "testExecutionOrdering" : "random",
     "testRepetitionMode" : "retryOnFailure",
