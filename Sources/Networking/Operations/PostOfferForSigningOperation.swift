@@ -40,11 +40,11 @@ class PostOfferForSigningOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.post(completion: completion)
     }
 
-    private func post(completion: @escaping () -> Void) {
+    private func post(completion: @escaping @Sendable () -> Void) {
         let request = HTTPRequest(
             method: .post(Body(appUserID: self.configuration.appUserID, data: self.postOfferData)),
             path: .postOfferForSigning

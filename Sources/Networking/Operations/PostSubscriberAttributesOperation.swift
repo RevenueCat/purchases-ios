@@ -29,11 +29,11 @@ class PostSubscriberAttributesOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable() -> Void) {
         post(completion: completion)
     }
 
-    private func post(completion: @escaping () -> Void) {
+    private func post(completion: @escaping @Sendable () -> Void) {
         guard self.subscriberAttributes.count > 0 else {
             Logger.warn(Strings.attribution.empty_subscriber_attributes)
             self.responseHandler?(.emptySubscriberAttributes())

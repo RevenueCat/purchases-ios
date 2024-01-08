@@ -58,4 +58,8 @@ extension OfferingsResponse.Offering.Package: Codable, Equatable {}
 extension OfferingsResponse.Offering: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
 
+// @unchecked becasue `metadata` contains `AnyDecodable`.
+extension OfferingsResponse.Offering: @unchecked Sendable {}
+extension OfferingsResponse: Sendable {}
+
 extension OfferingsResponse: HTTPResponseBody {}

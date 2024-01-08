@@ -38,3 +38,5 @@ extension Either {
     }
 
 }
+
+extension Either: Sendable where Left: Sendable, Right: Sendable {}

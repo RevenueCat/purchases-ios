@@ -34,6 +34,9 @@ enum CodableError: Error, CustomStringConvertible, LocalizedError {
 
 }
 
+// Unchecked because error data contains `Any`.
+extension CodableError: @unchecked Sendable {}
+
 extension Decoder {
 
     func valueNotFoundError(expectedType: Any.Type, message: String) -> CodableError {

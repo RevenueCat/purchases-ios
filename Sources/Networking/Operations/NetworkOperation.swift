@@ -14,9 +14,11 @@
 import Foundation
 
 /// A type that can construct a `CacheableNetworkOperation` and pre-compute a cache key.
-final class CacheableNetworkOperationFactory<T: CacheableNetworkOperation> {
+final class CacheableNetworkOperationFactory<T: CacheableNetworkOperation>: Sendable {
 
-    let creator: (_ cacheKey: String) -> T
+    typealias CreatorType = @Sendable (_ cacheKey: String) -> T
+
+    let creator: CreatorType
     let cacheKey: String
     var operationType: T.Type { T.self }
 
@@ -25,7 +27,7 @@ final class CacheableNetworkOperationFactory<T: CacheableNetworkOperation> {
      same type. Example: If you posted receipts two times in a row you'd have 2 operations. The cache key would be
      PostOperation + individualizedCacheKeyPart where individualizedCacheKeyPart is whatever you determine to be unique.
      */
-    init(_ creator: @escaping (_ cacheKey: String) -> T, individualizedCacheKeyPart: String) {
+    init(_ creator: @escaping CreatorType, individualizedCacheKeyPart: String) {
         self.creator = creator
         self.cacheKey = T.cacheKey(with: individualizedCacheKeyPart)
     }
@@ -146,7 +148,7 @@ class NetworkOperation: Operation {
     /// Overriden by subclasses to define the body of the operation
     /// - Important: this method may be called from any thread so it must be thread-safe.
     /// - Parameter completion: must be called when the operation has finished.
-    func begin(completion: @escaping () -> Void) {
+    func begin(completion: @escaping @Sendable () -> Void) {
         fatalError("Subclasses must override this method")
     }
 
@@ -195,7 +197,7 @@ protocol AppUserConfiguration {
 
 }
 
-protocol NetworkConfiguration {
+protocol NetworkConfiguration: Sendable {
 
     var httpClient: HTTPClient { get }
 

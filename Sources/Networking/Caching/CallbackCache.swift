@@ -69,7 +69,7 @@ extension CallbackCache: Sendable where T: Sendable {}
  For use with `CallbackCache`. We store a list of callback objects in the cache and the key used for the list of
  callbacks is provided by an object that conforms to `CacheKeyProviding`.
  */
-protocol CacheKeyProviding {
+protocol CacheKeyProviding: Sendable {
 
     var cacheKey: String { get }
 

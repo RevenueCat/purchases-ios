@@ -32,7 +32,7 @@ final class PostPaywallEventsOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         let request = HTTPRequest(method: .post(self.request), path: .postEvents)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in

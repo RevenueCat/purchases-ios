@@ -110,3 +110,6 @@ extension AnyEncodable: Decodable {
 }
 
 // swiftlint:enable cyclomatic_complexity
+
+// @unchecked because it contains `Any`, but this class is thread-safe.
+extension AnyEncodable: @unchecked Sendable {}

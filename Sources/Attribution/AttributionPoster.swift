@@ -21,7 +21,11 @@ final class AttributionPoster {
     private let attributionFetcher: AttributionFetcher
     private let subscriberAttributesManager: SubscriberAttributesManager
 
-    private static var postponedAttributionData: [AttributionData]?
+    private static let _postponedAttributionData: Atomic<[AttributionData]?> = nil
+    private static var postponedAttributionData: [AttributionData]? {
+        get { return self._postponedAttributionData.value }
+        set { self._postponedAttributionData.value = newValue }
+    }
 
     init(deviceCache: DeviceCache,
          currentUserProvider: CurrentUserProvider,
@@ -35,6 +39,7 @@ final class AttributionPoster {
         self.subscriberAttributesManager = subscriberAttributesManager
     }
 
+    @MainActor
     func post(attributionData data: [String: Any],
               fromNetwork network: AttributionNetwork,
               networkUserId: String?) {
@@ -175,9 +180,9 @@ final class AttributionPoster {
         }
 
         for attributionData in postponedAttributionData {
-            post(attributionData: attributionData.data,
-                 fromNetwork: attributionData.network,
-                 networkUserId: attributionData.networkUserId)
+            self.post(attributionData: attributionData.data,
+                      fromNetwork: attributionData.network,
+                      networkUserId: attributionData.networkUserId)
         }
 
         Self.postponedAttributionData = nil

@@ -248,7 +248,7 @@ private extension OfferingsManager {
         self.dispatchCompletionOnMainThreadIfPossible(completion, value: .failure(error))
     }
 
-    func dispatchCompletionOnMainThreadIfPossible<T>(
+    func dispatchCompletionOnMainThreadIfPossible<T: Sendable>(
         _ completion: (@MainActor @Sendable (T) -> Void)?,
         value: T
     ) {

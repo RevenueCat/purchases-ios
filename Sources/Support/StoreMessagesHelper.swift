@@ -13,7 +13,7 @@
 
 import StoreKit
 
-protocol StoreMessagesHelperType {
+protocol StoreMessagesHelperType: Sendable {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 

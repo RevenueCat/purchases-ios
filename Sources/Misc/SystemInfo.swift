@@ -237,6 +237,7 @@ extension SystemInfo {
 
 extension SystemInfo {
 
+    @MainActor
     static var applicationWillEnterForegroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS
             UIApplication.willEnterForegroundNotification
@@ -247,6 +248,7 @@ extension SystemInfo {
         #endif
     }
 
+    @MainActor
     static var applicationDidEnterBackgroundNotification: Notification.Name {
         #if os(iOS) || os(tvOS) || VISION_OS
             UIApplication.didEnterBackgroundNotification

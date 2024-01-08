@@ -13,8 +13,16 @@
 
 import Foundation
 
+/// A type that can create a `CustomerInfo` while offline.
+protocol OfflineCustomerInfoCreatorType: Sendable {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func create(for userID: String) async throws -> CustomerInfo
+
+}
+
 /// Holds the necessary dependencies to create a `CustomerInfo` while offline.
-class OfflineCustomerInfoCreator {
+final class OfflineCustomerInfoCreator: OfflineCustomerInfoCreatorType {
 
     typealias Creator = @Sendable ([PurchasedSK2Product],
                                    ProductEntitlementMapping,
@@ -91,6 +99,8 @@ class OfflineCustomerInfoCreator {
     }
 
 }
+
+extension OfflineCustomerInfoCreator: Sendable {}
 
 // MARK: - Errors
 

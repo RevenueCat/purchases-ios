@@ -13,7 +13,9 @@
 
 import Foundation
 
-class OfflineEntitlementsManager {
+protocol OfflineEntitlementsManagerType: Sendable {}
+
+final class OfflineEntitlementsManager: OfflineEntitlementsManagerType {
 
     private let deviceCache: DeviceCache
     private let operationDispatcher: OperationDispatcher
@@ -103,7 +105,7 @@ private extension OfflineEntitlementsManager {
 
 private extension OfflineEntitlementsManager {
 
-    func dispatchCompletionOnMainThreadIfPossible<Value, Error: Swift.Error>(
+    func dispatchCompletionOnMainThreadIfPossible<Value: Sendable, Error: Swift.Error>(
         _ completion: (@MainActor @Sendable (Result<Value, Error>) -> Void)?,
         result: Result<Value, Error>
     ) {

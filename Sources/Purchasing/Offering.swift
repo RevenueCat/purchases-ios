@@ -278,3 +278,6 @@ private extension Offering {
 private func valueOrEmpty<T: CustomStringConvertible>(_ value: T?) -> String {
     return value?.description ?? ""
 }
+
+// @unchecked because data contains `Any`.
+extension Offering.Metadata: @unchecked Sendable {}

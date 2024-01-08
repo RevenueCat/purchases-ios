@@ -69,3 +69,6 @@ extension CodableStrings: LogMessage {
     var category: String { return "codable" }
 
 }
+
+// @unchecked because some strings contain HTTP headers which contains Any.
+extension CodableStrings: @unchecked Sendable {}

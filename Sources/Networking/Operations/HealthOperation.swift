@@ -53,7 +53,7 @@ final class HealthOperation: CacheableNetworkOperation {
         super.init(configuration: Configuration(httpClient: httpClient), cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         let request: HTTPRequest = .init(method: .get, path: .health)
 
         self.httpClient.perform(

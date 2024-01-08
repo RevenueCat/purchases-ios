@@ -48,6 +48,8 @@ struct DefaultValue<Source: DefaultValueProvider> {
 extension DefaultValue: Equatable where Value: Equatable {}
 extension DefaultValue: Hashable where Value: Hashable {}
 
+extension DefaultValue: Sendable where Value: Sendable {}
+
 extension DefaultValue: Decodable where Value: Decodable {
 
     init(from decoder: Decoder) throws {
@@ -105,6 +107,8 @@ extension IgnoreEncodable: Encodable {
 extension IgnoreEncodable: Equatable where Value: Equatable {}
 extension IgnoreEncodable: Hashable where Value: Hashable {}
 
+extension IgnoreEncodable: Sendable where Value: Sendable {}
+
 extension KeyedEncodingContainer {
 
     mutating func encode<T>(_ value: IgnoreEncodable<T>, forKey key: K) throws {}
@@ -132,6 +136,8 @@ struct IgnoreDecodeErrors<Source: DefaultValueProvider> {
 
 extension IgnoreDecodeErrors: Equatable where Value: Equatable {}
 extension IgnoreDecodeErrors: Hashable where Value: Hashable {}
+
+extension IgnoreDecodeErrors: Sendable where Value: Sendable {}
 
 extension IgnoreDecodeErrors: Decodable where Value: Decodable {
 

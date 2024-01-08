@@ -36,7 +36,7 @@ class ReceiptFetcher {
         self.fileReader = fileReader
     }
 
-    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping (Data?, URL?) -> Void) {
+    func receiptData(refreshPolicy: ReceiptRefreshPolicy, completion: @escaping @Sendable (Data?, URL?) -> Void) {
         let receiptURL = self.receiptURL
 
         switch refreshPolicy {
@@ -151,7 +151,7 @@ private extension ReceiptFetcher {
         }
     }
 
-    func refreshReceipt(_ completion: @escaping (Data, URL?) -> Void) {
+    func refreshReceipt(_ completion: @escaping @Sendable (Data, URL?) -> Void) {
         self.lastReceiptRefreshRequest.value = self.systemInfo.clock.now
 
         self.requestFetcher.fetchReceiptData {

@@ -51,7 +51,11 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
     #if DEBUG
     // Mutable in tests so it can be overriden
-    static var `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
+    static var `default`: SandboxEnvironmentDetector {
+        get { self._default.value }
+        set { self._default.value = newValue }
+    }
+    static let _default: Atomic<SandboxEnvironmentDetector> = .init(BundleSandboxEnvironmentDetector())
     #else
     static let `default`: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector()
     #endif

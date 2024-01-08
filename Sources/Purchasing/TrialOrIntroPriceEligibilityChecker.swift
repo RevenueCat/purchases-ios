@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
+typealias ReceiveIntroEligibilityBlock = @Sendable ([String: IntroEligibility]) -> Void
 
 /// A type that can determine `IntroEligibility` for products.
 protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
@@ -130,7 +130,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 /// Default overload implementation that takes a single `StoreProductType`.
 extension TrialOrIntroPriceEligibilityCheckerType {
 
-    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
+    func checkEligibility(product: StoreProductType, completion: @escaping @Sendable (IntroEligibilityStatus) -> Void) {
         self.checkEligibility(productIdentifiers: [product.productIdentifier]) { eligibility in
             completion(eligibility[product.productIdentifier]?.status ?? .unknown)
         }

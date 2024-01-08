@@ -13,7 +13,7 @@
 
 import Foundation
 
-class CustomerInfoResponseHandler {
+final class CustomerInfoResponseHandler: Sendable {
 
     private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
@@ -53,9 +53,9 @@ class CustomerInfoResponseHandler {
             return
         }
 
-        _ = Task<Void, Never> {
+        _ = Task<Void, Never> { [userID = self.userID] in
             do {
-                completion(.success(try await offlineCreator.create(for: self.userID)))
+                completion(.success(try await offlineCreator.create(for: userID)))
             } catch {
                 Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
                 completion(result)

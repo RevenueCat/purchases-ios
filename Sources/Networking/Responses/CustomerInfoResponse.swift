@@ -144,6 +144,12 @@ extension CustomerInfoResponse: Codable {
 
 extension CustomerInfoResponse: Equatable, Hashable {}
 
+extension CustomerInfoResponse.Subscriber: Sendable {}
+
+// @unchecked because `rawData` contains `Any`.
+extension CustomerInfoResponse: @unchecked Sendable {}
+extension CustomerInfoResponse.Entitlement: @unchecked Sendable {}
+
 // MARK: - Extensions
 
 extension CustomerInfoResponse.Subscriber {

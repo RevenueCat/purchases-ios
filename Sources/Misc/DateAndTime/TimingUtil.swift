@@ -213,7 +213,7 @@ extension TimingUtil {
     static func measure<Value>(
         _ clock: ClockType = Clock.default,
         _ work: (@escaping @Sendable (Value) -> Void) -> Void,
-        result: @escaping (Value, Duration) -> Void
+        result: @escaping @Sendable (Value, Duration) -> Void
     ) {
         let start = clock.currentTime
 
@@ -239,12 +239,12 @@ extension TimingUtil {
     /// ```
     static func measureAndLogIfTooSlow<Value>(
         threshold: Duration,
-        message: CustomStringConvertible,
+        message: CustomStringConvertible & Sendable,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
         clock: ClockType = Clock.default,
         work: (@escaping @Sendable (Value) -> Void) -> Void,
-        result: @escaping (Value) -> Void
+        result: @escaping @Sendable (Value) -> Void
     ) {
         Self.measure(clock, work) { value, duration in
             Self.logIfRequired(duration: duration,
@@ -274,12 +274,12 @@ extension TimingUtil {
     /// ```
     static func measureAndLogIfTooSlow<Value>(
         threshold: Configuration.TimingThreshold,
-        message: CustomStringConvertible,
+        message: CustomStringConvertible & Sendable,
         level: LogLevel = .warn,
         intent: LogIntent = .appleWarning,
         clock: ClockType = Clock.default,
         work: (@escaping @Sendable (Value) -> Void) -> Void,
-        result: @escaping (Value) -> Void
+        result: @escaping @Sendable (Value) -> Void
     ) {
         Self.measureAndLogIfTooSlow(threshold: threshold.rawValue,
                                     message: message,

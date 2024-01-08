@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol HTTPRequestPath {
+protocol HTTPRequestPath: Sendable {
 
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }

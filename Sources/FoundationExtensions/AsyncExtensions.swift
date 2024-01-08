@@ -26,8 +26,8 @@ internal enum Async {
     /// }
     /// ```
     static func call<T>(
-        with completion: @escaping (Result<T, PublicError>) -> Void,
-        asyncMethod method: @escaping () async throws -> T
+        with completion: @escaping @Sendable (Result<T, PublicError>) -> Void,
+        asyncMethod method: @escaping @Sendable () async throws -> T
     ) {
         _ = Task<Void, Never> {
             do {
@@ -48,8 +48,8 @@ internal enum Async {
     /// }
     /// ```
     static func call<T>(
-        with completion: @escaping (Result<T, PurchasesError>) -> Void,
-        asyncMethod method: @escaping () async throws -> T
+        with completion: @escaping @Sendable (Result<T, PurchasesError>) -> Void,
+        asyncMethod method: @escaping @Sendable () async throws -> T
     ) {
         _ = Task<Void, Never> {
             do {
@@ -62,8 +62,8 @@ internal enum Async {
 
     /// Invokes an `async` non-throwing method and calls `completion` with the result.
     static func call<T>(
-        with completion: @escaping (T) -> Void,
-        asyncMethod method: @escaping () async -> T
+        with completion: @escaping @Sendable (T) -> Void,
+        asyncMethod method: @escaping @Sendable () async -> T
     ) {
         _ = Task<Void, Never> {
             completion(await method())

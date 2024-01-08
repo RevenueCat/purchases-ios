@@ -32,7 +32,7 @@ class GetIntroEligibilityOperation: NetworkOperation {
         super.init(configuration: configuration)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.getIntroEligibility(completion: completion)
     }
 
@@ -40,7 +40,7 @@ class GetIntroEligibilityOperation: NetworkOperation {
 
 private extension GetIntroEligibilityOperation {
 
-    func getIntroEligibility(completion: @escaping () -> Void) {
+    func getIntroEligibility(completion: @Sendable @escaping () -> Void) {
         guard self.productIdentifiers.count > 0 else {
             self.responseHandler([:], nil)
             completion()

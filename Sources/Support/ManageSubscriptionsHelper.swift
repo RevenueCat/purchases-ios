@@ -31,7 +31,7 @@ class ManageSubscriptionsHelper {
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    func showManageSubscriptions(completion: @escaping (Result<Void, PurchasesError>) -> Void) {
+    func showManageSubscriptions(completion: @escaping @Sendable (Result<Void, PurchasesError>) -> Void) {
         let currentAppUserID = self.currentUserProvider.currentAppUserID
         self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                               fetchPolicy: .cachedOrFetched) { @Sendable result in
@@ -79,7 +79,7 @@ extension ManageSubscriptionsHelper: @unchecked Sendable {}
 private extension ManageSubscriptionsHelper {
 
     func showAppleManageSubscriptions(managementURL: URL,
-                                      completion: @escaping (Result<Void, PurchasesError>) -> Void) {
+                                      completion: @escaping @Sendable (Result<Void, PurchasesError>) -> Void) {
 #if os(iOS) && !targetEnvironment(macCatalyst) || VISION_OS
         if #available(iOS 15.0, *),
            // showManageSubscriptions doesn't work on iOS apps running on Apple Silicon

@@ -39,6 +39,7 @@ class AttributionFetcher {
         self.systemInfo = systemInfo
     }
 
+    @MainActor
     var identifierForVendor: String? {
         return self.systemInfo.identifierForVendor
     }

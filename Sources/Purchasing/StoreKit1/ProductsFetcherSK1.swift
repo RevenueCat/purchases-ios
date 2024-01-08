@@ -190,7 +190,7 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
     /// - Returns (via callback): The product identifiers that were removed, or empty if there were not
     ///   cached products.
-    func clearCache(completion: ((Set<String>) -> Void)? = nil) {
+    func clearCache(completion: (@Sendable (Set<String>) -> Void)? = nil) {
         self.queue.async {
             let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
             if !cachedProductIdentifiers.isEmpty {

@@ -14,7 +14,7 @@
 import Foundation
 
 /// A type that can synchronously fetch `ProductEntitlementMapping`.
-protocol ProductEntitlementMappingFetcher {
+protocol ProductEntitlementMappingFetcher: Sendable {
 
     var productEntitlementMapping: ProductEntitlementMapping? { get }
 

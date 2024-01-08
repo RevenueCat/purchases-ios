@@ -85,7 +85,7 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
-    func logOut(completion: @escaping (PurchasesError?) -> Void) {
+    func logOut(completion: @escaping @Sendable (PurchasesError?) -> Void) {
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             self.performLogOut(completion: completion)
         }

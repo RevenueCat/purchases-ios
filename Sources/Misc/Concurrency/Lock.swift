@@ -26,7 +26,7 @@ internal final class Lock {
 
     }
 
-    private typealias UnderlyingType = NSLocking & Sendable
+    fileprivate typealias UnderlyingType = NSLocking & Sendable
 
     private let lock: UnderlyingType
     private init(_ lock: UnderlyingType) { self.lock = lock }
@@ -50,7 +50,7 @@ extension Lock: Sendable {}
 
 private extension Lock.LockType {
 
-    func create() -> NSLocking {
+    func create() -> Lock.UnderlyingType {
         return {
             switch self {
             case .recursive:

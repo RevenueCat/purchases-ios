@@ -16,6 +16,6 @@ import Foundation
 struct LogInCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
+    let completion: @Sendable (Result<(info: CustomerInfo, created: Bool), BackendError>) -> Void
 
 }

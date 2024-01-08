@@ -87,7 +87,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         if Logger.logLevel <= .debug {
             self.printReceiptData()
         }
@@ -95,7 +95,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         self.post(completion: completion)
     }
 
-    private func post(completion: @escaping () -> Void) {
+    private func post(completion: @escaping @Sendable () -> Void) {
         let request = HTTPRequest(method: .post(self.postData), path: .postReceiptData)
 
         self.httpClient.perform(

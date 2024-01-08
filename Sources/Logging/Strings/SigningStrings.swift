@@ -133,3 +133,6 @@ extension SigningStrings: LogMessage {
     var category: String { return "signing" }
 
 }
+
+// @unchecked because some strings contain HTTP headers which contains Any.
+extension SigningStrings: @unchecked Sendable {}

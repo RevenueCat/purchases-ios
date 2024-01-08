@@ -19,7 +19,7 @@ class HTTPClient {
 
     typealias RequestHeaders = HTTPRequest.Headers
     typealias ResponseHeaders = HTTPResponse<HTTPEmptyResponseBody>.Headers
-    typealias Completion<Value: HTTPResponseBody> = (VerifiedHTTPResponse<Value>.Result) -> Void
+    typealias Completion<Value: HTTPResponseBody> = @Sendable (VerifiedHTTPResponse<Value>.Result) -> Void
 
     let systemInfo: SystemInfo
     let timeout: TimeInterval

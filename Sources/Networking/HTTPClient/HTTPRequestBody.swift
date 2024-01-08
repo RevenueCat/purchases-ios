@@ -14,7 +14,7 @@
 import Foundation
 
 /// The content of an `HTTPRequest` for `HTTPRequest.Method.post`
-protocol HTTPRequestBody: Encodable {
+protocol HTTPRequestBody: Encodable, Sendable {
 
     /// The keys and values that will be included in the signature.
     /// - Note: this is not `[String: String]` because we need to preserve ordering.

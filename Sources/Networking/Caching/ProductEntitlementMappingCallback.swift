@@ -16,6 +16,6 @@ import Foundation
 struct ProductEntitlementMappingCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<ProductEntitlementMappingResponse, BackendError>) -> Void
+    let completion: @Sendable (Result<ProductEntitlementMappingResponse, BackendError>) -> Void
 
 }

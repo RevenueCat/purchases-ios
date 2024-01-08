@@ -53,3 +53,6 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
     }
 
 }
+
+// @unchecked because `HTTPRequestPath`'s conformance is in a separate file.
+extension HTTPRequest.PaywallPath: @unchecked Sendable {}

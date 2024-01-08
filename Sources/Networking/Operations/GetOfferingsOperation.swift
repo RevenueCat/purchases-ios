@@ -41,7 +41,7 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
 
-    override func begin(completion: @escaping () -> Void) {
+    override func begin(completion: @escaping @Sendable () -> Void) {
         self.getOfferings(completion: completion)
     }
 
@@ -49,7 +49,7 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
 
 private extension GetOfferingsOperation {
 
-    func getOfferings(completion: @escaping () -> Void) {
+    func getOfferings(completion: @escaping @Sendable () -> Void) {
         let appUserID = self.configuration.appUserID
 
         guard appUserID.isNotEmpty else {

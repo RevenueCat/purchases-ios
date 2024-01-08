@@ -29,6 +29,9 @@ internal struct PurchasesError: Error {
 
 }
 
+// @unchecked because `userInfo` contains `Any` (just like `NSError`).
+extension PurchasesError: @unchecked Sendable {}
+
 extension PurchasesError {
 
     /// Converts this error into an error that can be used in a public API.

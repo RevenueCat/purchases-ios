@@ -41,7 +41,7 @@ protocol LoggerType {
 }
 
 /// Contains a message that can be output by ``os.Logger``.
-protocol LogMessage: CustomStringConvertible {
+protocol LogMessage: CustomStringConvertible, Sendable {
 
     var description: String { get }
     var category: String { get }
