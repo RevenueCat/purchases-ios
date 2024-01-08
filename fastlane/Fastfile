@@ -595,7 +595,7 @@ platform :ios do
       output_types: 'junit',
       output_style: 'raw',
       result_bundle: true,
-      testplan: "CI-BackendIntegration",
+      testplan: options[:test_plan],
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios"
     )

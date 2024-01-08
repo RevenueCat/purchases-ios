@@ -296,6 +296,29 @@ commands:
                 name: Run << parameters.job >>
                 command: bundle exec fastlane << parameters.job >> version:"<< parameters.version >>"
 
+  run-backend-tests:
+    parameters:
+      test_plan:
+        type: string
+    steps:
+      - checkout
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: Run backend_integration Tests
+          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 14 (16.4)
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: BackendIntegrationTests
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
+
 jobs:
   spm-release-build-xcode-14:
     <<: *base-job
@@ -673,26 +696,35 @@ jobs:
           command: bundle exec fastlane build_visionos
           no_output_timeout: 30m
 
-  backend-integration-tests:
+  backend-integration-tests-SK1:
     <<: *base-job
     steps:
-      - checkout
-      - install-dependencies
-      - update-spm-installation-commit
-      - run:
-          name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: BackendIntegrationTests
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-SK1"
+
+  backend-integration-tests-SK2:
+    <<: *base-job
+    steps:
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-SK2"
+
+  backend-integration-tests-other:
+    <<: *base-job
+    steps:
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-Other"
+
+  backend-integration-tests-offline:
+    <<: *base-job
+    steps:
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-Offline"
+
+  backend-integration-tests-custom-entitlements:
+    <<: *base-job
+    steps:
+      - run-backend-tests:
+          test_plan: "BackendIntegrationTests-CustomEntitlements"
 
   release-checks:
     <<: *base-job
@@ -922,7 +954,7 @@ jobs:
           bundle_name: v3LoadShedderIntegration
       - run:
           name: Backend and LoadShedder integration tests
-          command: bundle exec fastlane backend_integration_tests
+          command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14 (16.4)
@@ -1075,12 +1107,35 @@ workflows:
           xcode_version: '14.3.0'
       - build-visionos:
           xcode_version: '15.1'
-      - backend-integration-tests:
+      - backend-integration-tests-SK1:
           xcode_version: '14.3.0'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
+      - backend-integration-tests-SK2:
+          xcode_version: '14.3.0'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
+      - backend-integration-tests-other:
+          xcode_version: '14.3.0'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
+      - backend-integration-tests-offline:
+          xcode_version: '14.3.0'
+          # These tests are flaky due to FB13133387 so we don't want the noise in every PR
+          <<: *release-branches-and-main
+      - backend-integration-tests-custom-entitlements:
+          xcode_version: '14.3.0'
+          filters:
+              branches:
+                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+                ignore: /pull\/[0-9]+/
+
   deploy:
     when:
       not:

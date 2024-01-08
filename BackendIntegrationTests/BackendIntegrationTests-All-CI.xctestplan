@@ -1,10 +1,10 @@
 {
   "configurations" : [
     {
-      "id" : "62C79EF4-8071-439C-B693-34F1E57211FC",
+      "id" : "2587274F-F57F-4216-A271-AC81B1E55A3D",
       "name" : "Configuration 1",
       "options" : {
-        "testTimeoutsEnabled" : true
+
       }
     }
   ],
@@ -12,12 +12,12 @@
     "codeCoverage" : false,
     "environmentVariableEntries" : [
       {
-        "key" : "RCMockAdServicesToken",
-        "value" : "G9i5hC8lQJeGOfmS+MFycll"
-      },
-      {
         "key" : "RCRunningTests",
         "value" : "1"
+      },
+      {
+        "key" : "RCMockAdServicesToken",
+        "value" : "G9i5hC8lQJeGOfmS+MFycll"
       },
       {
         "key" : "RCRunningIntegrationTests",
@@ -28,8 +28,8 @@
     "maximumTestRepetitions" : 5,
     "targetForVariableExpansion" : {
       "containerPath" : "container:RevenueCat.xcodeproj",
-      "identifier" : "2DEAC2D926EFE46E006914ED",
-      "name" : "UnitTestsHostApp"
+      "identifier" : "2DE20B7E26409EB7004C597D",
+      "name" : "BackendIntegrationTestsHostApp"
     },
     "testExecutionOrdering" : "random",
     "testRepetitionMode" : "retryOnFailure",
