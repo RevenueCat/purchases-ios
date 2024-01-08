@@ -751,6 +751,9 @@ jobs:
       - install-bundle-dependencies
       - trust-github-key
       - run:
+          name: Add CDN
+          command: bundle exec pod repo add trunk https://cdn.cocoapods.org/
+      - run:
           name: Pod repo update
           command: bundle exec pod repo update
       - run:
