@@ -281,22 +281,21 @@ struct Template5View: TemplateViewType {
         RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
     }
 
+    @ViewBuilder
     private func packageButtonTitle(
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
+        let image = selected
+            ? "checkmark.circle.fill"
+            : "circle.fill"
+        let color = selected
+            ? self.configuration.colors.selectedOutline
+            : self.configuration.colors.unselectedOutline
+
         HStack {
-            Constants.checkmarkImage
-                .hidden(if: !selected)
-                .overlay {
-                    if selected {
-                        EmptyView()
-                    } else {
-                        Circle()
-                            .foregroundColor(self.configuration.colors.unselectedOutline)
-                    }
-                }
-                .foregroundColor(self.configuration.colors.selectedOutline)
+            Image(systemName: image)
+                .foregroundColor(color)
 
             Text(package.localization.offerName ?? package.content.productName)
         }
