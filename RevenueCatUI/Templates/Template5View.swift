@@ -286,7 +286,7 @@ struct Template5View: TemplateViewType {
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-        let systemName = selected
+        let image = selected
             ? "checkmark.circle.fill"
             : "circle.fill"
         let color = selected
@@ -294,7 +294,7 @@ struct Template5View: TemplateViewType {
             : self.configuration.colors.unselectedOutline
 
         HStack {
-            Image(systemName: systemName)
+            Image(systemName: image)
                 .foregroundColor(color)
 
             Text(package.localization.offerName ?? package.content.productName)
