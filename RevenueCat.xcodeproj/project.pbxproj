@@ -1083,6 +1083,7 @@
 		4FE3A57D2B4C6BB40006A7FC /* BackendIntegrationTests-SK1.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-SK1.xctestplan"; sourceTree = "<group>"; };
 		4FE3A57E2B4C6BB40006A7FC /* BackendIntegrationTests-Other.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-Other.xctestplan"; sourceTree = "<group>"; };
 		4FE3A57F2B4C6C560006A7FC /* BackendIntegrationTests-SK2.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-SK2.xctestplan"; sourceTree = "<group>"; };
+		4FE3A58C2B4C7FB00006A7FC /* BackendIntegrationTests-All-CI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "BackendIntegrationTests-All-CI.xctestplan"; sourceTree = "<group>"; };
 		4FE6669E2A2F95A1004EEAFC /* PaywallExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallExtensions.swift; sourceTree = "<group>"; };
 		4FE6FEE42AA940B700780B45 /* PaywallStoredEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallStoredEvent.swift; sourceTree = "<group>"; };
 		4FE6FEE72AA940E300780B45 /* PaywallEventStoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallEventStoreTests.swift; sourceTree = "<group>"; };
@@ -2403,6 +2404,7 @@
 			isa = PBXGroup;
 			children = (
 				570814C128A308050018BAE3 /* BackendIntegrationTests-All.xctestplan */,
+				4FE3A58C2B4C7FB00006A7FC /* BackendIntegrationTests-All-CI.xctestplan */,
 				4FE3A57B2B4C6BB40006A7FC /* BackendIntegrationTests-CustomEntitlements.xctestplan */,
 				4FE3A57C2B4C6BB40006A7FC /* BackendIntegrationTests-Offline.xctestplan */,
 				4FE3A57E2B4C6BB40006A7FC /* BackendIntegrationTests-Other.xctestplan */,

@@ -47,6 +47,9 @@
          <TestPlanReference
             reference = "container:BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

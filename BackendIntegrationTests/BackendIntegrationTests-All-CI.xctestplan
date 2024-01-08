@@ -1,0 +1,55 @@
+{
+  "configurations" : [
+    {
+      "id" : "2587274F-F57F-4216-A271-AC81B1E55A3D",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "environmentVariableEntries" : [
+      {
+        "key" : "RCRunningTests",
+        "value" : "1"
+      },
+      {
+        "key" : "RCMockAdServicesToken",
+        "value" : "G9i5hC8lQJeGOfmS+MFycll"
+      },
+      {
+        "key" : "RCRunningIntegrationTests",
+        "value" : "1"
+      }
+    ],
+    "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestRepetitions" : 5,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RevenueCat.xcodeproj",
+      "identifier" : "2DE20B7E26409EB7004C597D",
+      "name" : "BackendIntegrationTestsHostApp"
+    },
+    "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure",
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "2DE20B6B264087FB004C597D",
+        "name" : "BackendIntegrationTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:RevenueCat.xcodeproj",
+        "identifier" : "4F6BEE042A27B02400CD9322",
+        "name" : "BackendCustomEntitlementsIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}

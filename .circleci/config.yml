@@ -954,7 +954,7 @@ jobs:
           bundle_name: v3LoadShedderIntegration
       - run:
           name: Backend and LoadShedder integration tests
-          command: bundle exec fastlane backend_integration_tests
+          command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: iPhone 14 (16.4)
