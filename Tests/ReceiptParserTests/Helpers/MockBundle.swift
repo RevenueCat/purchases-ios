@@ -17,20 +17,20 @@ final class MockBundle: Bundle {
 
     enum ReceiptURLResult {
 
-        case receiptWithData
+        case appStoreReceipt
         case emptyReceipt
         case sandboxReceipt
         case nilURL
 
     }
 
-    var receiptURLResult: ReceiptURLResult = .receiptWithData
+    var receiptURLResult: ReceiptURLResult = .appStoreReceipt
 
     override var appStoreReceiptURL: URL? {
         let testBundle = Bundle(for: Self.self)
 
         switch self.receiptURLResult {
-        case .receiptWithData:
+        case .appStoreReceipt:
             return testBundle
                 .url(forResource: Self.mockAppStoreReceiptFileName, withExtension: "txt")
         case .emptyReceipt:

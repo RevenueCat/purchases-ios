@@ -17,7 +17,7 @@ import XCTest
 
 class ReceiptParserFetchingTests: XCTestCase {
 
-    private let parser: PurchasesReceiptParser = .default
+    private let parser: LocalReceiptFetcher = .init()
     private var mockFileReader: MockFileReader!
     private var mockBundle: MockBundle!
 
@@ -96,7 +96,8 @@ private extension ReceiptParserFetchingTests {
 
     func fetchAndParse() throws -> AppleReceipt {
         return try self.parser.fetchAndParseLocalReceipt(reader: self.mockFileReader,
-                                                         bundle: self.mockBundle)
+                                                         bundle: self.mockBundle,
+                                                         receiptParser: .default)
     }
 
 }

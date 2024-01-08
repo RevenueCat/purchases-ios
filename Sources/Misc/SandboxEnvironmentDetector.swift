@@ -25,14 +25,14 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
     private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
-    private let receiptParser: PurchasesReceiptParser
+    private let receiptFetcher: LocalReceiptFetcherType
 
     init(bundle: Bundle = .main,
          isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
-         receiptParser: PurchasesReceiptParser = PurchasesReceiptParser.default) {
+         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher()) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
-        self.receiptParser = receiptParser
+        self.receiptFetcher = receiptFetcher
     }
 
     var isSandbox: Bool {

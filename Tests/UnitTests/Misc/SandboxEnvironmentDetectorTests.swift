@@ -16,24 +16,63 @@ import XCTest
 
 @testable import RevenueCat
 
-class SandboxEnvironmentDetectorTests: TestCase {
+final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
 
-    func testIsSandbox() {
-        expect(SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: false).isSandbox) == true
+    let mockReceipt: AppleReceipt
+    let failReceiptParsing: Bool
+
+    init(mockReceipt: AppleReceipt, failReceiptParsing: Bool) {
+        self.mockReceipt = mockReceipt
+        self.failReceiptParsing = failReceiptParsing
     }
 
-    func testIsNotSandbox() {
-        expect(SystemInfo.with(receiptResult: .receiptWithData, inSimulator: false).isSandbox) == false
+    func fetchAndParseLocalReceipt() throws -> RevenueCat.AppleReceipt {
+        if failReceiptParsing {
+            throw PurchasesReceiptParser.Error.receiptParsingError
+        }
+        return mockReceipt
+    }
+}
+
+class SandboxEnvironmentDetectorTests: TestCase {
+
+    func testIsSandboxIfReceiptURLIsSandbox() {
+        expect(SystemInfo.with(receiptURLResult: .sandboxReceipt).isSandbox) == true
+    }
+
+    func testIsNotSandboxIfReceiptURLIsAppStore() {
+        expect(SystemInfo.with(receiptURLResult: .appStoreReceipt).isSandbox) == false
     }
 
     func testIsNotSandboxIfNoReceiptURL() {
-        expect(SystemInfo.with(receiptResult: .nilURL, inSimulator: false).isSandbox) == false
+        expect(SystemInfo.with(receiptURLResult: .nilURL).isSandbox) == false
     }
 
     func testIsAlwaysSandboxIfRunningInSimulator() {
-        expect(SystemInfo.with(receiptResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
-        expect(SystemInfo.with(receiptResult: .receiptWithData, inSimulator: true).isSandbox) == true
-        expect(SystemInfo.with(receiptResult: .nilURL, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptURLResult: .sandboxReceipt, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptURLResult: .appStoreReceipt, inSimulator: true).isSandbox) == true
+        expect(SystemInfo.with(receiptURLResult: .nilURL, inSimulator: true).isSandbox) == true
+    }
+
+    func testIsNotSandboxIfReceiptIsProduction() throws {
+        try AvailabilityChecks.skipIfNotMacOS()
+
+        expect(SystemInfo.with(receiptEnvironment: .production).isSandbox) == false
+    }
+
+    func testIsSandboxIfReceiptIsNotProduction() throws {
+        try AvailabilityChecks.skipIfNotMacOS()
+
+        expect(SystemInfo.with(receiptEnvironment: .sandbox).isSandbox) == true
+    }
+
+    func testIsSandboxIfReceiptParsingFailsAndBundleSignatureIsNotMacAppStore() throws {
+        try AvailabilityChecks.skipIfNotMacOS()
+
+        expect(SystemInfo.with(
+            receiptEnvironment: .production,
+            failReceiptParsing: true
+        ).isSandbox) == true
     }
 
 }
@@ -41,13 +80,32 @@ class SandboxEnvironmentDetectorTests: TestCase {
 private extension SandboxEnvironmentDetector {
 
     static func with(
-        receiptResult result: MockBundle.ReceiptURLResult,
-        inSimulator: Bool
+        receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
+        inSimulator: Bool = false,
+        receiptEnvironment: AppleReceipt.Environment = .production,
+        failReceiptParsing: Bool = false
     ) -> SandboxEnvironmentDetector {
         let bundle = MockBundle()
         bundle.receiptURLResult = result
 
-        return BundleSandboxEnvironmentDetector(bundle: bundle, isRunningInSimulator: inSimulator)
+        let mockReceipt = AppleReceipt(
+            environment: receiptEnvironment,
+            bundleId: "bundle",
+            applicationVersion: "1.0",
+            originalApplicationVersion: nil,
+            opaqueValue: Data(),
+            sha1Hash: Data(),
+            creationDate: Date(),
+            expirationDate: nil,
+            inAppPurchases: []
+        )
+
+        return BundleSandboxEnvironmentDetector(
+            bundle: bundle,
+            isRunningInSimulator: inSimulator,
+            receiptFetcher: MockLocalReceiptFetcher(mockReceipt: mockReceipt,
+                                                    failReceiptParsing: failReceiptParsing)
+        )
     }
 
 }
