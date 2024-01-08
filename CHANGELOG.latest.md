@@ -1,13 +1,7 @@
 ### RevenueCatUI
-* `Paywalls`: add header image to `watchOS` paywalls (#3542) via NachoSoto (@NachoSoto)
-* `Paywalls`: improve template 5 landscape layout (#3534) via NachoSoto (@NachoSoto)
-* `Paywalls`: fix template 5 footer loading view alignment (#3537) via NachoSoto (@NachoSoto)
-* `Paywalls`: improve template 1 landscape layout (#3532) via NachoSoto (@NachoSoto)
-* `Paywalls`: fix `ColorInformation.multiScheme` on `watchOS` (#3530) via NachoSoto (@NachoSoto)
+* Paywalls: improve footer view UIKit support for hybrid SDKs (#3547) via Andy Boedo (@aboedo)
+### Dependency Updates
+* Bump fastlane from 2.218.0 to 2.219.0 (#3553) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane from 2.217.0 to 2.218.0 (#3550) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* `Trusted Entitlements`: tests for signature verification without header hash (#3505) via NachoSoto (@NachoSoto)
-* `.debugRevenueCatOverlay`: added `Locale` (#3539) via NachoSoto (@NachoSoto)
-* `Trusted Entitlements`: add support for signing request headers (#3424) via NachoSoto (@NachoSoto)
-* `CI`: Add architecture to cache keys (#3538) via Mark Villacampa (@MarkVillacampa)
-* `Paywalls Tester`: remove double close button (#3531) via NachoSoto (@NachoSoto)
-* Fix `RevenueCatUI` snapshot tests (#3526) via NachoSoto (@NachoSoto)
+* Tests: improve test flakiness (#3552) via Andy Boedo (@aboedo)
