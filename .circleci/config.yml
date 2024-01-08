@@ -751,6 +751,9 @@ jobs:
       - install-bundle-dependencies
       - trust-github-key
       - run:
+          name: Pod repo list
+          command: bundle exec pod repo list
+      - run:
           name: Deploy new version
           command: bundle exec fastlane push_revenuecat_pod
           no_output_timeout: 30m
