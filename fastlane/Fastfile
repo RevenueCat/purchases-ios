@@ -375,7 +375,7 @@ platform :ios do
 
   desc "Release to CocoaPods"
   lane :push_revenuecat_pod do |options|
-    pod_push(path: "RevenueCat.podspec", synchronous: true, bundle_exec: true)
+    pod_push(path: "RevenueCat.podspec", synchronous: true, use_bundle_exec: true)
   end
   
   desc "Release to CocoaPods"
