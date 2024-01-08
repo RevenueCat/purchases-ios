@@ -1173,6 +1173,39 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2IncludesAppUserIdIfUUID() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let uuid = UUID()
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: uuid.uuidString)
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        customerInfoManager.stubbedCustomerInfoResult = .success(.emptyInfo)
+        backend.stubbedPostReceiptResult = .success(.emptyInfo)
+
+        let product = try await fetchSk2Product()
+        let result = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        expect(result.transaction?.sk2Transaction?.appAccountToken).to(equal(uuid))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testPurchaseSK2DoesNotIncludeAppUserIdIfNotUUID() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "not_a_uuid")
+        self.setUpOrchestrator()
+        self.setUpStoreKit2Listener()
+
+        customerInfoManager.stubbedCachedCustomerInfoResult = mockCustomerInfo
+        backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await fetchSk2Product()
+        let result = try await self.orchestrator.purchase(sk2Product: product, package: nil, promotionalOffer: nil)
+        expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testStoreKit2TransactionListenerDelegate() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 

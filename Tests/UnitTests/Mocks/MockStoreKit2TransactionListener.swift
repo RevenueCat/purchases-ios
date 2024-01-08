@@ -63,10 +63,17 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        let transaction: StoreTransaction? = self.mockTransaction.value.map {
-            StoreTransaction(sk2Transaction: $0,
-                             jwsRepresentation: self.mockJWSToken,
-                             environmentOverride: self.mockEnvironment)
+        var transaction: StoreTransaction
+
+        if let mockTransaction = self.mockTransaction.value {
+            transaction = StoreTransaction(sk2Transaction: mockTransaction,
+                                           jwsRepresentation: self.mockJWSToken,
+                                           environmentOverride: self.mockEnvironment)
+        } else {
+            let result = purchaseResult.verificationResult!
+            transaction = StoreTransaction(sk2Transaction: result.underlyingTransaction,
+                                           jwsRepresentation: result.jwsRepresentation,
+                                           environmentOverride: self.mockEnvironment)
         }
 
         return (self.mockCancelled, transaction)
