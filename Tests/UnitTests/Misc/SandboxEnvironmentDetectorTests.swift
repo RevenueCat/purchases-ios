@@ -16,24 +16,6 @@ import XCTest
 
 @testable import RevenueCat
 
-final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
-
-    let mockReceipt: AppleReceipt
-    let failReceiptParsing: Bool
-
-    init(mockReceipt: AppleReceipt, failReceiptParsing: Bool) {
-        self.mockReceipt = mockReceipt
-        self.failReceiptParsing = failReceiptParsing
-    }
-
-    func fetchAndParseLocalReceipt() throws -> RevenueCat.AppleReceipt {
-        if failReceiptParsing {
-            throw PurchasesReceiptParser.Error.receiptParsingError
-        }
-        return mockReceipt
-    }
-}
-
 class SandboxEnvironmentDetectorTests: TestCase {
 
     func testIsSandboxIfReceiptURLIsSandbox() {
@@ -106,6 +88,25 @@ private extension SandboxEnvironmentDetector {
             receiptFetcher: MockLocalReceiptFetcher(mockReceipt: mockReceipt,
                                                     failReceiptParsing: failReceiptParsing)
         )
+    }
+
+}
+
+private final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
+
+    let mockReceipt: AppleReceipt
+    let failReceiptParsing: Bool
+
+    init(mockReceipt: AppleReceipt, failReceiptParsing: Bool) {
+        self.mockReceipt = mockReceipt
+        self.failReceiptParsing = failReceiptParsing
+    }
+
+    func fetchAndParseLocalReceipt() throws -> RevenueCat.AppleReceipt {
+        if failReceiptParsing {
+            throw PurchasesReceiptParser.Error.receiptParsingError
+        }
+        return self.mockReceipt
     }
 
 }

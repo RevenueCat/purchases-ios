@@ -64,6 +64,7 @@ extension BundleSandboxEnvironmentDetector: Sendable {}
 
 private extension BundleSandboxEnvironmentDetector {
 
+    #if os(macOS) || targetEnvironment(macCatalyst)
     var isProductionReceipt: Bool {
         do {
             return try receiptFetcher.fetchAndParseLocalReceipt().environment == .production
@@ -84,7 +85,7 @@ private extension BundleSandboxEnvironmentDetector {
     /// For more information, see the following references:
     /// - https://github.com/objective-see/ProcInfo/blob/master/procInfo/Signing.m#L184-L247
     /// - https://gist.github.com/lukaskubanek/cbfcab29c0c93e0e9e0a16ab09586996#gistcomment-3993808
-    #if os(macOS) || targetEnvironment(macCatalyst)
+
     static var isMacAppStore: Bool {
         var status = noErr
 

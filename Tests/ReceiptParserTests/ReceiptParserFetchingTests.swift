@@ -70,7 +70,7 @@ class ReceiptParserFetchingTests: XCTestCase {
     }
 
     func testParseReceipt() throws {
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
 
         let receiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)
         let data = try DefaultFileReader().contents(of: receiptURL)

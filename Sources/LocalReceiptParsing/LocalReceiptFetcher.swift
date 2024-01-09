@@ -14,7 +14,9 @@
 import Foundation
 
 internal protocol LocalReceiptFetcherType: Sendable {
+
     func fetchAndParseLocalReceipt() throws -> AppleReceipt
+
 }
 
 internal final class LocalReceiptFetcher: LocalReceiptFetcherType {
@@ -36,8 +38,7 @@ internal final class LocalReceiptFetcher: LocalReceiptFetcherType {
     func fetchAndParseLocalReceipt() throws -> AppleReceipt {
         return try self.fetchAndParseLocalReceipt(reader: DefaultFileReader(),
                                                   bundle: .main,
-                                                  receiptParser: .default
-                                                )
+                                                  receiptParser: .default)
     }
 
     internal func fetchAndParseLocalReceipt(
