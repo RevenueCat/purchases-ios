@@ -232,6 +232,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
     func testRequestWithHeaderParametersHash() throws {
         self.changeClient(.informational)
+        self.systemInfo.stubbedIsSandbox = true
 
         let request = HTTPRequest(method: .get, path: .mockPath)
 
@@ -268,6 +269,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
     func testPostRequestContainsBothHashHeaders() throws {
         self.changeClient(.informational)
+        self.systemInfo.stubbedIsSandbox = true
 
         let body = BodyWithSignature(key1: "a", key2: "b")
 
