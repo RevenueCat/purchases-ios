@@ -33,7 +33,7 @@ class AppleReceiptBuilder {
     /// - Throws: ``PurchasesReceiptParser/Error``
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> AppleReceipt {
-        var environment: AppleReceipt.Environment?
+        var environment: AppleReceipt.Environment = .unknown
         var bundleId: String?
         var applicationVersion: String?
         var originalApplicationVersion: String?
