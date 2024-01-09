@@ -941,6 +941,16 @@ platform :mac do
       test_plan = "CI-AllTests"
     end
 
+    # macOS tests require signing certificate
+    match(
+      readonly: true,
+      type: "development",
+      platform: "macos",
+      git_url: ENV["CERTS_REPO_URL"],
+      # This doesn't matter, we only need the certificates
+      app_identifier: "com.revenuecat.sampleapp"
+    )
+
     begin
       xcodebuild(
         workspace: 'RevenueCat.xcworkspace',
