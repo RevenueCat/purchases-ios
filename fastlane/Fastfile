@@ -961,7 +961,7 @@ platform :mac do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
         test: true,
-        xcargs: "-testPlan #{test_plan}"
+        xcargs: "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
