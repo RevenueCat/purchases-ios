@@ -67,7 +67,7 @@ private extension BundleSandboxEnvironmentDetector {
     #if os(macOS) || targetEnvironment(macCatalyst)
     var isProductionReceipt: Bool {
         do {
-            return try receiptFetcher.fetchAndParseLocalReceipt().environment == .production
+            return try self.receiptFetcher.fetchAndParseLocalReceipt().environment == .production
         } catch {
             Logger.error(Strings.receipt.parse_receipt_locally_error(error: error))
             return false
