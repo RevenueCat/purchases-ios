@@ -936,9 +936,9 @@ platform :mac do
   lane :test_macos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     if generate_snapshots
-      test_plan = "CI-RevenueCat-Snapshots"
+      test_plan = "CI-Snapshots"
     else
-      test_plan = "CI-RevenueCat"
+      test_plan = "CI-AllTests"
     end
 
     begin
