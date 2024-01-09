@@ -72,6 +72,9 @@ public class PaywallViewController: UIViewController {
                 guard let self = self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
+            .onSizeChange { [weak self] in
+                self?.delegate?.paywallViewControlleSizeDidChange?($0)
+            }
 
         return .init(rootView: view)
     }()
@@ -85,17 +88,11 @@ public class PaywallViewController: UIViewController {
         self.hostingController.view.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
+            self.hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
             self.hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             self.hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             self.hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-
-        // for footers we only want to tie to the sides and the bottom.
-        if self.mode == .fullScreen {
-            NSLayoutConstraint.activate([
-                self.hostingController.view.topAnchor.constraint(equalTo: view.topAnchor)
-            ])
-        }
 
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
@@ -138,6 +135,9 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     /// Notifies that the ``PaywallViewController`` was dismissed.
     @objc(paywallViewControllerWasDismissed:)
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
+
+    @objc(paywallViewControlleSizeDidChange:)
+    optional func paywallViewControlleSizeDidChange(_ size: CGSize)
 
 }
 
