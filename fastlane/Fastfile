@@ -947,9 +947,9 @@ platform :mac do
         scheme: 'RevenueCat',
         destination: "platform=macOS,arch=arm64",
         output_style: :basic,
-        result_bundle_path: 'fastlane/test_output/revenuecat.xcresult',
+        result_bundle_path: 'fastlane/test_output/xctest/macos/revenuecat.xcresult',
         report_formats: [:junit],
-        report_path: 'fastlane/test_output/revenuecat/tests.xml',
+        report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
         test: true,
         xcargs: "-testPlan #{test_plan}"
       )
