@@ -232,6 +232,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
     func testRequestWithHeaderParametersHash() throws {
         self.changeClient(.informational)
+        self.systemInfo.stubbedIsSandbox = true
 
         let request = HTTPRequest(method: .get, path: .mockPath)
 
