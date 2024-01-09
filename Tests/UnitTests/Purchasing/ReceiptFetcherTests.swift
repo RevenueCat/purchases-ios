@@ -105,7 +105,7 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     }
 
     func testReceiptDataWithRefreshPolicyOnlyIfEmptyDoesntRefreshIfTheresData() {
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
 
         let (receivedData, _) = self.receiptData(.onlyIfEmpty)
 
@@ -115,7 +115,7 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
     }
 
     func testReceiptDataWithRefreshPolicyAlwaysRefreshesEvenIfTheresData() {
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
 
         let (receivedData, _) = self.receiptData(.always)
 
@@ -332,7 +332,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     private func mock(receipts: [Result<AppleReceipt, PurchasesReceiptParser.Error>]) {
         precondition(!receipts.isEmpty)
 
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
         self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = receipts
             .compactMap { $0.value?.asData }
         self.mockReceiptParser.stubbedParseResults = receipts
@@ -341,7 +341,7 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     private func mockReceiptWithInvalidData() -> Data {
         let invalidData = Data(repeating: 0, count: 10)
 
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
         self.mockFileReader.mockedURLContents[self.mockBundle.appStoreReceiptURL!] = [invalidData]
         self.mockReceiptParser.stubbedParseResults = [
             .failure(.receiptParsingError)
