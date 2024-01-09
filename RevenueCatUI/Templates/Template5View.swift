@@ -142,9 +142,6 @@ struct Template5View: TemplateViewType {
             if self.configuration.mode.isFullScreen {
                 self.title
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
-                self.title
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 Spacer()
 
