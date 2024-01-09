@@ -18,6 +18,13 @@ import XCTest
 
 class SandboxEnvironmentDetectorTests: TestCase {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        // `macOS` sandbox detection does not rely on receipt path
+        try AvailabilityChecks.skipIfMacOS()
+    }
+
     func testIsSandboxIfReceiptURLIsSandbox() {
         expect(SystemInfo.with(receiptURLResult: .sandboxReceipt).isSandbox) == true
     }

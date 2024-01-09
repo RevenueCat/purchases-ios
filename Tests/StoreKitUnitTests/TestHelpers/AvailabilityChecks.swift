@@ -80,4 +80,10 @@ enum AvailabilityChecks {
         #endif
     }
 
+    static func skipIfMacOS() throws {
+        #if os(macOS) || targetEnvironment(macCatalyst)
+        throw XCTSkip("Test not for macOS")
+        #endif
+    }
+
 }
