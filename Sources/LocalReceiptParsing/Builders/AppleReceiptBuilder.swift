@@ -33,6 +33,7 @@ class AppleReceiptBuilder {
     /// - Throws: ``PurchasesReceiptParser/Error``
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func build(fromContainer container: ASN1Container) throws -> AppleReceipt {
+        var environment: AppleReceipt.Environment = .unknown
         var bundleId: String?
         var applicationVersion: String?
         var originalApplicationVersion: String?
@@ -70,6 +71,11 @@ class AppleReceiptBuilder {
             let payload = valueContainer.internalPayload
 
             switch attributeType {
+            case .environment:
+                let internalContainer = try containerBuilder.build(fromPayload: payload)
+                if let environmentString = internalContainer.internalPayload.toString() {
+                    environment = .init(rawValue: environmentString) ?? .unknown
+                }
             case .opaqueValue:
                 opaqueValue = payload.toData()
             case .sha1Hash:
@@ -103,7 +109,8 @@ class AppleReceiptBuilder {
             throw PurchasesReceiptParser.Error.receiptParsingError
         }
 
-        let receipt = AppleReceipt(bundleId: nonOptionalBundleId,
+        let receipt = AppleReceipt(environment: environment,
+                                   bundleId: nonOptionalBundleId,
                                    applicationVersion: nonOptionalApplicationVersion,
                                    originalApplicationVersion: originalApplicationVersion,
                                    opaqueValue: nonOptionalOpaqueValue,
@@ -129,7 +136,8 @@ extension AppleReceipt {
 
         enum AttributeType: Int {
 
-            case bundleId = 2,
+            case environment = 0,
+                 bundleId = 2,
                  applicationVersion = 3,
                  opaqueValue = 4,
                  sha1Hash = 5,

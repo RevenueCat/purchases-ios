@@ -7,13 +7,19 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ReceiptFetcher.swift
+//  LocalReceiptFetcher.swift
 //
-//  Created by Nacho Soto on 1/10/23.
+//  Created by Mark Villacampa on 8/1/24.
 
 import Foundation
 
-public extension PurchasesReceiptParser {
+internal protocol LocalReceiptFetcherType: Sendable {
+
+    func fetchAndParseLocalReceipt() throws -> AppleReceipt
+
+}
+
+internal final class LocalReceiptFetcher: LocalReceiptFetcherType {
 
     // Note: this is a simplified version of `ReceiptFetcher`
     // available for public use.
@@ -31,29 +37,31 @@ public extension PurchasesReceiptParser {
     /// - ``PurchasesReceiptParser/parse(from:)``
     func fetchAndParseLocalReceipt() throws -> AppleReceipt {
         return try self.fetchAndParseLocalReceipt(reader: DefaultFileReader(),
-                                                  bundle: .main)
+                                                  bundle: .main,
+                                                  receiptParser: .default)
     }
 
     internal func fetchAndParseLocalReceipt(
         reader: FileReader,
-        bundle: Bundle
+        bundle: Bundle,
+        receiptParser: PurchasesReceiptParser
     ) throws -> AppleReceipt {
-        return try self.parse(from: self.fetchReceipt(reader, bundle))
+        return try receiptParser.parse(from: self.fetchReceipt(reader, bundle))
     }
 
 }
 
-private extension PurchasesReceiptParser {
+private extension LocalReceiptFetcher {
 
     func fetchReceipt(_ reader: FileReader, _ bundle: Bundle) throws -> Data {
         guard let url = bundle.appStoreReceiptURL else {
-            throw Error.receiptNotPresent
+            throw PurchasesReceiptParser.Error.receiptNotPresent
         }
 
         do {
             return try reader.contents(of: url)
         } catch {
-            throw Error.failedToLoadLocalReceipt(error)
+            throw PurchasesReceiptParser.Error.failedToLoadLocalReceipt(error)
         }
     }
 

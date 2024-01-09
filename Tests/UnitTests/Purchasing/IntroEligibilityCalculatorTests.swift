@@ -311,6 +311,7 @@ private extension IntroEligibilityCalculatorTests {
         line: UInt = #line
     ) {
         let receipt = AppleReceipt(
+            environment: .sandbox,
             bundleId: "com.revenuecat.test",
             applicationVersion: "3.4.5",
             originalApplicationVersion: "3.2.1",
@@ -372,7 +373,8 @@ private extension IntroEligibilityCalculatorTests {
     }
 
     func mockReceipt() -> AppleReceipt {
-        return AppleReceipt(bundleId: "com.revenuecat.test",
+        return AppleReceipt(environment: .sandbox,
+                            bundleId: "com.revenuecat.test",
                             applicationVersion: "3.4.5",
                             originalApplicationVersion: "3.2.1",
                             opaqueValue: Data(),

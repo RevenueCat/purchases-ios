@@ -112,7 +112,7 @@ class StoreKitWorkaroundsReceiptURLTests: TestCase {
     }
 
     func testWatchOSReceiptURLIsUnchangedInProduction() throws {
-        self.mockBundle.receiptURLResult = .receiptWithData
+        self.mockBundle.receiptURLResult = .appStoreReceipt
         self.mockSystemInfo.stubbedIsSandbox = false
 
         let appStoreReceiptURL = try XCTUnwrap(self.mockBundle.appStoreReceiptURL)

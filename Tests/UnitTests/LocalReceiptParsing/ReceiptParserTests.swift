@@ -140,7 +140,8 @@ private extension ReceiptParserTests {
     }
 
     func mockAppleReceiptWithoutPurchases() -> AppleReceipt {
-        return AppleReceipt(bundleId: "com.revenuecat.testapp",
+        return AppleReceipt(environment: .sandbox,
+                            bundleId: "com.revenuecat.testapp",
                             applicationVersion: "3.2.3",
                             originalApplicationVersion: "3.1.1",
                             opaqueValue: Data(),
@@ -151,7 +152,8 @@ private extension ReceiptParserTests {
     }
 
     func mockAppleReceiptWithPurchases() -> AppleReceipt {
-        return AppleReceipt(bundleId: "com.revenuecat.testapp",
+        return AppleReceipt(environment: .sandbox,
+                            bundleId: "com.revenuecat.testapp",
                             applicationVersion: "3.2.3",
                             originalApplicationVersion: "3.1.1",
                             opaqueValue: Data(),

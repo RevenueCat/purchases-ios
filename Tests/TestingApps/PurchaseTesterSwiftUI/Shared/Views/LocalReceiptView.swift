@@ -84,6 +84,7 @@ private struct ReceiptDataView: View {
     init(receipt: AppleReceipt) {
         self.init(
             values: [
+                .init("Environment", receipt.environment.rawValue),
                 .init("Bundle", receipt.bundleId),
                 .init("App Version", receipt.applicationVersion),
                 .init("Creation", receipt.creationDate.formatted()),

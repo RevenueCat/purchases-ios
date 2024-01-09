@@ -218,6 +218,7 @@ private extension AppleReceiptTests {
         purchaseDates: [String: Date]
     ) -> AppleReceipt {
         return .init(
+            environment: .sandbox,
             bundleId: "com.revenuecat.test_app",
             applicationVersion: "1.0",
             originalApplicationVersion: nil,

@@ -18,4 +18,11 @@ public extension PurchasesReceiptParser {
     /// A default ``PurchasesReceiptParser`` configured for use.
     static let `default`: PurchasesReceiptParser = .init(logger: ReceiptParserLogger())
 
+    /// Fetches and parses the local receipt
+    /// - Returns: ``AppleReceipt`` of the parsed local receipt.
+    /// - Throws: ``PurchasesReceiptParser/Error`` if fetching or parsing failed.
+    func fetchAndParseLocalReceipt() throws -> AppleReceipt {
+        return try LocalReceiptFetcher().fetchAndParseLocalReceipt()
+    }
+
 }
