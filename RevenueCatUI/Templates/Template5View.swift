@@ -95,19 +95,21 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     var verticalFullScreenContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            if self.configuration.mode.isFullScreen {
-                self.headerImage
-            }
+            VStack(spacing: 0) {
+                if self.configuration.mode.isFullScreen {
+                    self.headerImage
+                }
 
-            self.scrollableContent
-                .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
-                .padding(
-                    .top,
-                    self.displayingAllPlans
-                    ? self.defaultVerticalPaddingLength
-                    // Compensate for additional padding on condensed mode + iPad
-                    : self.defaultVerticalPaddingLength.map { $0 * -1 }
-                )
+                self.scrollableContent
+                    .padding(
+                        .top,
+                        self.displayingAllPlans
+                        ? self.defaultVerticalPaddingLength
+                        // Compensate for additional padding on condensed mode + iPad
+                        : self.defaultVerticalPaddingLength.map { $0 * -1 }
+                    )
+                    .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
+            }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
                 self.offerDetails(
@@ -132,8 +134,6 @@ struct Template5View: TemplateViewType {
                         aspectRatio: self.headerAspectRatio,
                         maxWidth: .infinity)
             .clipped()
-
-            Spacer()
         }
     }
 
