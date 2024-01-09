@@ -489,12 +489,10 @@ jobs:
       - install-dependencies
       - run:
           name: Run tests
-          command: bundle exec fastlane test_ios skip_sk_tests:true
+          command: bundle exec fastlane mac test_macos
           no_output_timeout: 15m
-          environment:
-            SCAN_DEVICE: platform=macOS
       - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
+          directory: fastlane/test_output/xctest/macos
           bundle_name: RevenueCat
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
