@@ -44,7 +44,7 @@ extension TestClock {
     func advance(by interval: DispatchTimeInterval) {
         self.now = self.now.addingTimeInterval(interval.seconds)
 
-        if #available(iOS 13.0, tvOS 13.0, watchOS 6.2, *) {
+        if #available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *) {
             self.currentTime = self.currentTime.advanced(by: interval)
         } else {
             self.currentTime = .init(uptimeNanoseconds: self.currentTime.uptimeNanoseconds + interval.nanoseconds)

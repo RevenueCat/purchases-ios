@@ -480,6 +480,29 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
+  
+  run-test-macos:
+    <<: *base-job
+    resource_class: macos.m1.medium.gen1
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          name: Run tests
+          command: bundle exec fastlane mac test_macos
+          no_output_timeout: 15m
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/macos
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "macos"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output
           
   run-test-ios-17:
     <<: *base-job
@@ -1044,6 +1067,8 @@ workflows:
           xcode_version: '14.2.0'
       - run-test-ios-12:
           xcode_version: '14.2.0'
+      - run-test-macos:
+          xcode_version: '15.1'
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -1083,6 +1108,8 @@ workflows:
           xcode_version: '15.1'
       - spm-revenuecat-ui-watchos:
           xcode_version: '14.3.0'
+      - run-test-macos:
+          xcode_version: '15.1'
       - run-test-ios-17:
           xcode_version: '15.1'
       - run-test-ios-16:

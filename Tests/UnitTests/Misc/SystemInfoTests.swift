@@ -100,7 +100,7 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(true)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: true)
         )
 
         expect(info.identifierForVendor) == MacDevice.identifierForVendor?.uuidString
@@ -110,7 +110,7 @@ class SystemInfoTests: TestCase {
         let info = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
-            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(false)
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false)
         )
 
         expect(info.identifierForVendor).to(beNil())

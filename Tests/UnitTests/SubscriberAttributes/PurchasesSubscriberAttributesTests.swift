@@ -787,7 +787,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     @available(watchOS, unavailable)
     func testPostReceiptMarksAdServicesTokenSyncedIfBackendSuccessfullySynced() throws {
         try AvailabilityChecks.iOS14_3APIAvailableOrSkipTest()
-        try AvailabilityChecks.skipIfTVOrWatchOS()
+        try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
 
         self.setupPurchases()
 

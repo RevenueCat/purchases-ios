@@ -68,15 +68,21 @@ enum AvailabilityChecks {
         }
     }
 
-    static func skipIfTVOrWatchOS() throws {
-        #if os(watchOS) || os(tvOS)
-        throw XCTSkip("Test not for watchOS or tvOS")
+    static func skipIfTVOrWatchOSOrMacOS() throws {
+        #if os(watchOS) || os(tvOS) || os(macOS)
+        throw XCTSkip("Test not for watchOS or tvOS or macOS")
         #endif
     }
 
     static func skipIfNotMacOS() throws {
         #if !os(macOS) && !targetEnvironment(macCatalyst)
         throw XCTSkip("Test only for macOS and Catalyst")
+        #endif
+    }
+
+    static func skipIfMacOS() throws {
+        #if os(macOS) || targetEnvironment(macCatalyst)
+        throw XCTSkip("Test not for macOS")
         #endif
     }
 
