@@ -16,14 +16,9 @@ import XCTest
 
 @testable import RevenueCat
 
+#if !os(macOS)
+
 class SandboxEnvironmentDetectorTests: TestCase {
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        // `macOS` sandbox detection does not rely on receipt path
-        try AvailabilityChecks.skipIfMacOS()
-    }
 
     func testIsSandboxIfReceiptURLIsSandbox() {
         expect(SystemInfo.with(receiptURLResult: .sandboxReceipt).isSandbox) == true
@@ -43,34 +38,71 @@ class SandboxEnvironmentDetectorTests: TestCase {
         expect(SystemInfo.with(receiptURLResult: .nilURL, inSimulator: true).isSandbox) == true
     }
 
-    func testIsNotSandboxIfReceiptIsProduction() throws {
-        try AvailabilityChecks.skipIfNotMacOS()
+}
 
-        expect(SystemInfo.with(receiptEnvironment: .production).isSandbox) == false
+#else
+
+// `macOS` sandbox detection does not rely on receipt path
+class SandboxEnvironmentDetectorTests: TestCase {
+
+    func testIsNotSandboxIfReceiptIsProductionAndMAS() throws {
+        expect(
+            SystemInfo.with(
+                macAppStore: true,
+                receiptEnvironment: .production
+            ).isSandbox
+        ) == false
     }
 
-    func testIsSandboxIfReceiptIsNotProduction() throws {
-        try AvailabilityChecks.skipIfNotMacOS()
-
-        expect(SystemInfo.with(receiptEnvironment: .sandbox).isSandbox) == true
+    func testIsSandboxIfReceiptIsProductionAndNotMAS() throws {
+        expect(
+            SystemInfo.with(
+                macAppStore: false,
+                receiptEnvironment: .production
+            ).isSandbox
+        ) == true
     }
 
-    func testIsSandboxIfReceiptParsingFailsAndBundleSignatureIsNotMacAppStore() throws {
-        try AvailabilityChecks.skipIfNotMacOS()
+    func testIsSandboxIfReceiptIsNotProductionAndNotMAS() throws {
+        expect(
+            SystemInfo.with(
+                macAppStore: false,
+                receiptEnvironment: .sandbox
+            ).isSandbox
+        ) == true
+    }
 
-        expect(SystemInfo.with(
-            receiptEnvironment: .production,
-            failReceiptParsing: true
-        ).isSandbox) == true
+    func testIsSandboxIfReceiptIsNotProductionAndMAS() throws {
+        expect(
+            SystemInfo.with(
+                macAppStore: true,
+                receiptEnvironment: .sandbox
+            ).isSandbox
+        ) == true
+    }
+
+    func testIsSandboxIfReceiptParsingFailsAndBundleSignatureIsNotMAS() throws {
+        expect(
+            SystemInfo.with(
+                macAppStore: false,
+                receiptEnvironment: .production,
+                failReceiptParsing: true
+            ).isSandbox
+        ) == true
     }
 
 }
+
+#endif
+
+// MARK: - Private
 
 private extension SandboxEnvironmentDetector {
 
     static func with(
         receiptURLResult result: MockBundle.ReceiptURLResult = .appStoreReceipt,
         inSimulator: Bool = false,
+        macAppStore: Bool = false,
         receiptEnvironment: AppleReceipt.Environment = .production,
         failReceiptParsing: Bool = false
     ) -> SandboxEnvironmentDetector {
@@ -93,7 +125,8 @@ private extension SandboxEnvironmentDetector {
             bundle: bundle,
             isRunningInSimulator: inSimulator,
             receiptFetcher: MockLocalReceiptFetcher(mockReceipt: mockReceipt,
-                                                    failReceiptParsing: failReceiptParsing)
+                                                    failReceiptParsing: failReceiptParsing),
+            macAppStoreDetector: MockMacAppStoreDetector(isMacAppStore: macAppStore)
         )
     }
 
@@ -114,6 +147,16 @@ private final class MockLocalReceiptFetcher: LocalReceiptFetcherType {
             throw PurchasesReceiptParser.Error.receiptParsingError
         }
         return self.mockReceipt
+    }
+
+}
+
+private struct MockMacAppStoreDetector: MacAppStoreDetector {
+
+    let isMacAppStore: Bool
+
+    init(isMacAppStore: Bool) {
+        self.isMacAppStore = isMacAppStore
     }
 
 }
