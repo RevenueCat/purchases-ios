@@ -73,7 +73,8 @@ public class PaywallViewController: UIViewController {
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
             .onSizeChange { [weak self] in
-                self?.delegate?.paywallViewControlleSizeDidChange?($0)
+                guard let self = self else { return }
+                self.delegate?.paywallViewController?(self, didChangeSize: $0)
             }
 
         return .init(rootView: view)
@@ -136,8 +137,10 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerWasDismissed:)
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
-    @objc(paywallViewControlleSizeDidChange:)
-    optional func paywallViewControlleSizeDidChange(_ size: CGSize)
+    /// For internal use only.
+    @objc(paywallViewControlle:didChangeSize:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didChangeSize size: CGSize)
 
 }
 
