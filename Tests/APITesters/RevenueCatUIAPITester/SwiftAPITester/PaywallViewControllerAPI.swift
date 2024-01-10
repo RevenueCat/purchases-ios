@@ -43,7 +43,7 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {}
 
     func paywallViewController(_ controller: PaywallViewController,
-                               didChangeSize size: CGSize) {}
+                               didChangeSizeTo size: CGSize) {}
 
 }
 
