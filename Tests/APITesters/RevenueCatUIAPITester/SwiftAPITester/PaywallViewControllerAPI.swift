@@ -42,6 +42,9 @@ final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {}
 
+    func paywallViewController(_ controller: PaywallViewController,
+                               didChangeSize size: CGSize) {}
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
