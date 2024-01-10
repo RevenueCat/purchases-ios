@@ -26,13 +26,18 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
     private let bundle: Atomic<Bundle>
     private let isRunningInSimulator: Bool
     private let receiptFetcher: LocalReceiptFetcherType
+    private let macAppStoreDetector: MacAppStoreDetector?
 
-    init(bundle: Bundle = .main,
-         isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
-         receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher()) {
+    init(
+        bundle: Bundle = .main,
+        isRunningInSimulator: Bool = SystemInfo.isRunningInSimulator,
+        receiptFetcher: LocalReceiptFetcherType = LocalReceiptFetcher(),
+        macAppStoreDetector: MacAppStoreDetector? = nil
+    ) {
         self.bundle = .init(bundle)
         self.isRunningInSimulator = isRunningInSimulator
         self.receiptFetcher = receiptFetcher
+        self.macAppStoreDetector = macAppStoreDetector
     }
 
     var isSandbox: Bool {
@@ -45,7 +50,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         }
 
         #if os(macOS) || targetEnvironment(macCatalyst)
-            return !self.isProductionReceipt || !Self.isMacAppStore
+            return !self.isProductionReceipt || !self.isMacAppStore
         #else
             return path.contains("sandboxReceipt")
         #endif
@@ -62,9 +67,12 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
 
 extension BundleSandboxEnvironmentDetector: Sendable {}
 
+// MARK: -
+
+#if os(macOS) || targetEnvironment(macCatalyst)
+
 private extension BundleSandboxEnvironmentDetector {
 
-    #if os(macOS) || targetEnvironment(macCatalyst)
     var isProductionReceipt: Bool {
         do {
             return try self.receiptFetcher.fetchAndParseLocalReceipt().environment == .production
@@ -74,49 +82,11 @@ private extension BundleSandboxEnvironmentDetector {
         }
     }
 
-    /// Returns whether the bundle was signed for Mac App Store distribution by checking
-    /// the existence of a specific extension (marker OID) on the code signing certificate.
-    ///
-    /// This routine is inspired by the source code from ProcInfo, the underlying library
-    /// of the WhatsYourSign code signature checking tool developed by Objective-See. Initially,
-    /// it checked the common name but was changed to an extension check to make it more
-    /// future-proof.
-    ///
-    /// For more information, see the following references:
-    /// - https://github.com/objective-see/ProcInfo/blob/master/procInfo/Signing.m#L184-L247
-    /// - https://gist.github.com/lukaskubanek/cbfcab29c0c93e0e9e0a16ab09586996#gistcomment-3993808
-
-    static var isMacAppStore: Bool {
-        var status = noErr
-
-        var code: SecStaticCode?
-        status = SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &code)
-
-        guard status == noErr, let code = code else {
-            Logger.error(Strings.receipt.error_validating_bundle_signature)
-            return false
-        }
-
-        var requirement: SecRequirement?
-        status = SecRequirementCreateWithString(
-            "anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.9]" as CFString,
-            [], // default
-            &requirement
-        )
-
-        guard status == noErr, let requirement = requirement else {
-            Logger.error(Strings.receipt.error_validating_bundle_signature)
-            return false
-        }
-
-        status = SecStaticCodeCheckValidity(
-            code,
-            [], // default
-            requirement
-        )
-
-        return status == errSecSuccess
+    var isMacAppStore: Bool {
+        let detector = self.macAppStoreDetector ?? DefaultMacAppStoreDetector()
+        return detector.isMacAppStore
     }
-    #endif
 
 }
+
+#endif
