@@ -1,7 +1,9 @@
 ### RevenueCatUI
-* Paywalls: improve footer view UIKit support for hybrid SDKs (#3547) via Andy Boedo (@aboedo)
-### Dependency Updates
-* Bump fastlane from 2.218.0 to 2.219.0 (#3553) via dependabot[bot] (@dependabot[bot])
-* Bump fastlane from 2.217.0 to 2.218.0 (#3550) via dependabot[bot] (@dependabot[bot])
+* `Paywalls`: remove unscrollable spacing in Template 5 (#3562) via NachoSoto (@NachoSoto)
+* `Paywalls`: improve template 5 checkmark icon (#3559) via NachoSoto (@NachoSoto)
+### Bugfixes
+* Improve sandbox detector for macOS apps (#3549) via Mark Villacampa (@MarkVillacampa)
 ### Other Changes
-* Tests: improve test flakiness (#3552) via Andy Boedo (@aboedo)
+* `Paywalls`: new `PaywallViewControllerDelegate.paywallViewController(_:didChangeSizeTo:)` (#3563) via Cesar de la Vega (@vegaro)
+* `Tests`: running tests on `macOS` (#3533) via NachoSoto (@NachoSoto)
+* `Integration Tests`: split into separate jobs (#3560) via NachoSoto (@NachoSoto)
