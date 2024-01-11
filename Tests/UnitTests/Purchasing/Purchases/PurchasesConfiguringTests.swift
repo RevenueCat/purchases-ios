@@ -401,8 +401,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
-            storeKit2Setting: .enabledForCompatibleDevices,
-            usesStoreKit2JWS: true
+            storeKitVersion: .storeKit2
         )
 
         self.setupPurchases()
@@ -423,8 +422,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
-            storeKit2Setting: .enabledForCompatibleDevices,
-            usesStoreKit2JWS: true
+            storeKitVersion: .storeKit2
         )
         self.systemInfo.stubbedIsApplicationBackgrounded = true
 
@@ -446,8 +444,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
-            storeKit2Setting: .enabledForCompatibleDevices,
-            usesStoreKit2JWS: false
+            storeKitVersion: .storeKit2
         )
 
         self.setupPurchases()
