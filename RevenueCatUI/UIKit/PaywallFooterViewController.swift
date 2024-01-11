@@ -36,15 +36,20 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// `Offerings.current` will be used by default.
     @objc
     public init(offering: Offering? = nil) {
-        super.init(offering: offering, displayCloseButton: false)
+        super.init(offering: offering,
+                   fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false)
     }
 
     @available(*, unavailable)
     override init(
         offering: Offering? = nil,
+        fonts: PaywallFontProvider,
         displayCloseButton: Bool = false
     ) {
-        super.init(offering: offering, displayCloseButton: false)
+        super.init(offering: offering,
+                   fonts: fonts,
+                   displayCloseButton: false)
     }
 
     // swiftlint:disable:next missing_docs

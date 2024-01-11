@@ -32,6 +32,7 @@ public class PaywallViewController: UIViewController {
     }
 
     private let offering: Offering?
+    private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
 
     /// Initialize a `PaywallViewController` with an optional `Offering`.
@@ -39,11 +40,29 @@ public class PaywallViewController: UIViewController {
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     @objc
-    public init(
+    public convenience init(
         offering: Offering? = nil,
         displayCloseButton: Bool = false
     ) {
+        self.init(
+            offering: offering,
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton
+        )
+    }
+
+    /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// `Offerings.current` will be used by default.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    public init(
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider,
+        displayCloseButton: Bool = false
+    ) {
         self.offering = offering
+        self.fonts = fonts
         self.displayCloseButton = displayCloseButton
 
         super.init(nibName: nil, bundle: nil)
@@ -58,6 +77,7 @@ public class PaywallViewController: UIViewController {
         let view = PaywallView(offering: self.offering,
                                customerInfo: nil,
                                mode: self.mode,
+                               fonts: self.fonts,
                                displayCloseButton: self.displayCloseButton,
                                introEligibility: nil,
                                purchaseHandler: nil)
