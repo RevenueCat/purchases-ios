@@ -1730,7 +1730,7 @@ private extension Purchases {
     }
 
     func fetchAndCacheAppTransactionIfNeeded() {
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            self.systemInfo.originalAppVersion == nil,
            self.systemInfo.originalAppPurchaseDate == nil {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
