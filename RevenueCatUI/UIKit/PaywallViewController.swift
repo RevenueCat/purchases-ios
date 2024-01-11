@@ -138,7 +138,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
     /// For internal use only.
-    @objc(paywallViewControlle:didChangeSizeTo:)
+    @objc(paywallViewController:didChangeSizeTo:)
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didChangeSizeTo size: CGSize)
 
