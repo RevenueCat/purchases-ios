@@ -16,7 +16,10 @@
         "value" : "1"
       }
     ],
-    "testExecutionOrdering" : "random"
+    "maximumTestExecutionTimeAllowance" : 180,
+    "testExecutionOrdering" : "random",
+    "testRepetitionMode" : "retryOnFailure",
+    "testTimeoutsEnabled" : true
   },
   "testTargets" : [
     {
