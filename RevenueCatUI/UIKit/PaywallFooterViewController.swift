@@ -48,7 +48,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         displayCloseButton: Bool = false
     ) {
         super.init(offering: offering,
-                   fonts: DefaultPaywallFontProvider(),
+                   fonts: fonts,
                    displayCloseButton: false)
     }
 
