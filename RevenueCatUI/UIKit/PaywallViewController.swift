@@ -54,30 +54,8 @@ public class PaywallViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private lazy var hostingController: UIHostingController<some View> = {
-        let view = PaywallView(offering: self.offering,
-                               customerInfo: nil,
-                               mode: self.mode,
-                               displayCloseButton: self.displayCloseButton,
-                               introEligibility: nil,
-                               purchaseHandler: nil)
-            .onPurchaseCompleted { [weak self] transaction, customerInfo in
-                guard let self = self else { return }
-                self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
-                self.delegate?.paywallViewController?(self,
-                                                      didFinishPurchasingWith: customerInfo,
-                                                      transaction: transaction)
-            }
-            .onRestoreCompleted { [weak self] customerInfo in
-                guard let self = self else { return }
-                self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
-            }
-            .onSizeChange { [weak self] in
-                guard let self = self else { return }
-                self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
-            }
-
-        return .init(rootView: view)
+    private lazy var hostingController: UIViewController = {
+        self.createViewController()
     }()
 
     public override func loadView() {
@@ -89,13 +67,13 @@ public class PaywallViewController: UIViewController {
         self.hostingController.view.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            self.hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            self.hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            self.hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            self.hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            self.hostingController.view.topAnchor.constraint(equalTo: self.view.topAnchor),
+            self.hostingController.view.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+            self.hostingController.view.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            self.hostingController.view.trailingAnchor.constraint(equalTo: self.view.trailingAnchor)
         ])
 
-        // make the background of the container clear so that if there are cutouts, they don't get
+        // Make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
         self.hostingController.view.backgroundColor = .clear
     }
@@ -106,7 +84,40 @@ public class PaywallViewController: UIViewController {
         }
         super.viewDidDisappear(animated)
     }
+
+    // MARK: -
+
+    internal func createViewController() -> UIViewController {
+        return UIHostingController(rootView: self.createPaywallView())
+    }
+
+    internal final func createPaywallView() -> some View {
+        return PaywallView(offering: self.offering,
+                           customerInfo: nil,
+                           mode: self.mode,
+                           displayCloseButton: self.displayCloseButton,
+                           introEligibility: nil,
+                           purchaseHandler: nil)
+        .onPurchaseCompleted { [weak self] transaction, customerInfo in
+            guard let self = self else { return }
+            self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
+            self.delegate?.paywallViewController?(self,
+                                                  didFinishPurchasingWith: customerInfo,
+                                                  transaction: transaction)
+        }
+        .onRestoreCompleted { [weak self] customerInfo in
+            guard let self = self else { return }
+            self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
+        }
+        .onSizeChange { [weak self] in
+            guard let self = self else { return }
+            self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
+        }
+    }
+
 }
+
+// MARK: - Delegate
 
 /// Delegate for ``PaywallViewController``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
