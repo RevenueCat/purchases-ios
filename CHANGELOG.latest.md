@@ -1,9 +1,7 @@
 ### RevenueCatUI
-* `Paywalls`: remove unscrollable spacing in Template 5 (#3562) via NachoSoto (@NachoSoto)
-* `Paywalls`: improve template 5 checkmark icon (#3559) via NachoSoto (@NachoSoto)
-### Bugfixes
-* Improve sandbox detector for macOS apps (#3549) via Mark Villacampa (@MarkVillacampa)
+* `PaywallViewController`: add `PaywallFontProvider` parameter (#3567) via NachoSoto (@NachoSoto)
 ### Other Changes
-* `Paywalls`: new `PaywallViewControllerDelegate.paywallViewController(_:didChangeSizeTo:)` (#3563) via Cesar de la Vega (@vegaro)
-* `Tests`: running tests on `macOS` (#3533) via NachoSoto (@NachoSoto)
-* `Integration Tests`: split into separate jobs (#3560) via NachoSoto (@NachoSoto)
+* `Integration Tests`: run on iOS 17 (#3107) via NachoSoto (@NachoSoto)
+* `CI`: update to Xcode 15.2 (#3571) via NachoSoto (@NachoSoto)
+* `PaywallViewControllerDelegate`: fixed typo in `@objc` method name (#3569) via NachoSoto (@NachoSoto)
+* `SandboxEnvironmentDetector`: more tests for `macOS` (#3568) via NachoSoto (@NachoSoto)
