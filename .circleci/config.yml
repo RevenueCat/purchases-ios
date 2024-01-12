@@ -309,7 +309,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+            SCAN_DEVICE: iPhone 14 (17.2.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -721,6 +721,7 @@ jobs:
 
   backend-integration-tests-SK1:
     <<: *base-job
+    resource_class: macos.m1.medium.gen1
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
@@ -980,7 +981,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (16.4)
+            SCAN_DEVICE: iPhone 14 (17.2.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -1135,29 +1136,29 @@ workflows:
       - build-visionos:
           xcode_version: '15.2'
       - backend-integration-tests-SK1:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-SK2:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-other:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-offline:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           # These tests are flaky due to FB13133387 so we don't want the noise in every PR
           <<: *release-branches-and-main
       - backend-integration-tests-custom-entitlements:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
@@ -1256,7 +1257,7 @@ workflows:
         - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
     jobs:
       - loadshedder-integration-tests:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
   
   manual-trigger-bump:
     when:
