@@ -389,7 +389,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.mockPaymentQueueWrapper.delegate) === self.purchasesOrchestrator
     }
 
-    func testCachesAppTransactionIfInStoreKit2JWSMode() throws {
+    func testCachesAppTransactionIfInStoreKit2Mode() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let date = Date()
@@ -432,7 +432,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.systemInfo.originalAppPurchaseDate).to(beNil())
     }
 
-    func testDoesNotCacheAppTransactionIfNotInStoreKit2JWSMode() throws {
+    func testDoesNotCacheAppTransactionIfNotInStoreKit2Mode() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let date = Date()
@@ -444,7 +444,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
-            storeKitVersion: .storeKit2
+            storeKitVersion: .storeKit1
         )
 
         self.setupPurchases()
