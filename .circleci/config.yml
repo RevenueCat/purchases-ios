@@ -645,6 +645,8 @@ jobs:
 
   run-test-ios-13:
     <<: *base-job
+    # M1 unsupported
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies
@@ -672,6 +674,8 @@ jobs:
 
   run-test-ios-12:
     <<: *base-job
+    # M1 unsupported
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies
