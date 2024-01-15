@@ -46,7 +46,7 @@ struct StoreKit2Receipt: Equatable {
     }
 
     /// The server environment where the receipt was generated.
-    let environment: StoreEnvironment
+    let environment: StoreEnvironment?
 
     /// The current subscription status for each subscription group, including the renewal information.
     let subscriptionStatusBySubscriptionGroupId: [String: [SubscriptionStatus]]
@@ -57,11 +57,8 @@ struct StoreKit2Receipt: Equatable {
     /// The bundle identifier of the app.
     let bundleId: String
 
-    /// The app version that the user originally purchased from the App Store.
-    let originalApplicationVersion: String?
-
-    /// The date the user originally purchased the app from the App Store.
-    let originalPurchaseDate: Date?
+    /// JWS token for the app transaction of the user purchase of the app from the App Store.
+    let appTransactionJWSToken: String?
 
 }
 
@@ -108,8 +105,7 @@ extension StoreKit2Receipt: Codable {
         case subscriptionStatusBySubscriptionGroupId = "subscription_status"
         case transactions
         case bundleId = "bundle_id"
-        case originalApplicationVersion = "original_application_version"
-        case originalPurchaseDate = "original_purchase_date"
+        case appTransactionJWSToken = "app_transaction"
     }
 
 }

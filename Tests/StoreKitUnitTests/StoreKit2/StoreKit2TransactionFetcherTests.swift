@@ -162,13 +162,11 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             expect(receipt.bundleId) == Bundle.main.bundleIdentifier
-            expect(receipt.originalApplicationVersion).notTo(beEmpty())
-            expect(receipt.originalPurchaseDate).notTo(beNil())
+            expect(receipt.appTransactionJWSToken).notTo(beEmpty())
         } else {
             // AppTransaction is not available on iOS 15
             expect(receipt.bundleId).to(beEmpty())
-            expect(receipt.originalApplicationVersion).to(beNil())
-            expect(receipt.originalPurchaseDate).to(beNil())
+            expect(receipt.appTransactionJWSToken).to(beNil())
 
             self.logger.verifyMessageWasLogged(
                 Strings.storeKit.sk2_app_transaction_unavailable,

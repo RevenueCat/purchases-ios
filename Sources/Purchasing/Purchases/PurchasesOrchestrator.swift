@@ -1092,24 +1092,23 @@ private extension PurchasesOrchestrator {
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
                 let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
-                guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
-                    self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
-                                                          fetchPolicy: .cachedOrFetched) { result in
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion?(result.mapError(\.asPurchasesError))
-                        }
-                    }
-                    return
+                var receipt: EncodedAppleReceipt
+                var storefront: Storefront?
+
+                if let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation {
+                    receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+                    storefront = transaction.storefront
+                } else {
+                    receipt = .sk2receipt(await self.transactionFetcher.fetchAppTransactionReceipt())
+                    storefront = await Storefront.currentStorefront
                 }
 
-                let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
-
-                self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
+                self.createProductRequestData(with: transaction?.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
                         presentedOfferingID: nil,
                         unsyncedAttributes: unsyncedAttributes,
-                        storefront: transaction.storefront,
+                        storefront: storefront,
                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
                     )
 
@@ -1272,9 +1271,13 @@ private extension PurchasesOrchestrator {
     }
 
     func createProductRequestData(
-        with productIdentifier: String,
+        with productIdentifier: String?,
         completion: @escaping (ProductRequestData?) -> Void
     ) {
+        guard let productIdentifier = productIdentifier else {
+            completion(nil)
+            return
+        }
         self.productsManager.products(withIdentifiers: [productIdentifier]) { products in
             let result = products.value?.first.map {
                 ProductRequestData(with: $0, storefront: self.paymentQueueWrapper.currentStorefront)

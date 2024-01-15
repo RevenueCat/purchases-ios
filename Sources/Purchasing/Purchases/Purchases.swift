@@ -1731,17 +1731,11 @@ private extension Purchases {
 
     func fetchAndCacheAppTransactionIfNeeded() {
         if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
-           self.systemInfo.originalAppVersion == nil,
-           self.systemInfo.originalAppPurchaseDate == nil {
+           self.systemInfo.appTransactionJWT == nil {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 _ = Task<Void, Never> {
                     if let appTransaction = await self.transactionFetcher.appTransaction {
-                        systemInfo.originalAppVersion = appTransaction.originalApplicationVersion
-                        systemInfo.originalAppPurchaseDate = appTransaction.originalPurchaseDate
-                    } else {
-                        let receipt = try? await self.fetchReceipt(.onlyIfEmpty)
-                        systemInfo.originalAppVersion = receipt?.originalApplicationVersion
-                        systemInfo.originalAppPurchaseDate = nil
+                        systemInfo.appTransactionJWT = appTransaction.jwsRepresentation
                     }
                 }
             }

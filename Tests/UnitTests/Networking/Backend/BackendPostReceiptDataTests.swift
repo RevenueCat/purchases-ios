@@ -836,8 +836,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
         self.createDependencies(storeKitVersion: .storeKit2)
 
-        self.systemInfo.originalAppVersion = "1.2.3"
-        self.systemInfo.originalAppPurchaseDate = Date(timeIntervalSince1970: 123)
+        self.systemInfo.appTransactionJWT = "jws_token"
 
         httpClient.mock(
             requestPath: path,
@@ -1025,8 +1024,7 @@ private extension BaseBackendPostReceiptDataTests {
         ],
         transactions: ["123_transaction_jws_token"],
         bundleId: "123_bundle_id",
-        originalApplicationVersion: "123_original_application_version",
-        originalPurchaseDate: Date(timeIntervalSince1970: 123))
+        appTransactionJWSToken: "jws_token")
     )
 
     func postPaymentMode(paymentMode: StoreProductDiscount.PaymentMode) {

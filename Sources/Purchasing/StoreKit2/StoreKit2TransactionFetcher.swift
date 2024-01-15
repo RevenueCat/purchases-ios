@@ -23,6 +23,9 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     func fetchReceipt(containing transaction: StoreTransactionType) async -> StoreKit2Receipt
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func fetchAppTransactionReceipt() async -> StoreKit2Receipt
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var hasPendingConsumablePurchase: Bool { get async }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -96,8 +99,20 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
             },
             transactions: transactions.compactMap(\.jwsRepresentation),
             bundleId: appTransaction?.bundleId ?? "",
-            originalApplicationVersion: appTransaction?.originalApplicationVersion,
-            originalPurchaseDate: appTransaction?.originalPurchaseDate
+            appTransactionJWSToken: appTransaction?.jwsRepresentation
+        )
+    }
+
+    /// Returns an `StoreKit2Receipt` containing only the AppTransaction
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func fetchAppTransactionReceipt() async -> StoreKit2Receipt {
+        let appTransaction = await appTransaction
+        return .init(
+            environment: appTransaction?.environment,
+            subscriptionStatusBySubscriptionGroupId: [:],
+            transactions: [],
+            bundleId: appTransaction?.bundleId ?? "",
+            appTransactionJWSToken: appTransaction?.jwsRepresentation
         )
     }
 
@@ -161,7 +176,8 @@ extension StoreKit.VerificationResult where SignedType == StoreKit.AppTransactio
 
     var verifiedAppTransaction: SK2AppTransaction? {
         switch self {
-        case let .verified(transaction): return .init(appTransaction: transaction)
+        case let .verified(transaction): return .init(appTransaction: transaction,
+                                                      jwsRepresentation: self.jwsRepresentation)
         case let .unverified(transaction, error):
             Logger.warn(
                 Strings.storeKit.sk2_unverified_transaction(identifier: transaction.bundleID, error)

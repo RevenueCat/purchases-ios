@@ -127,12 +127,8 @@ class HTTPClient {
             headers["X-Custom-Entitlements-Computation"] = "\(true)"
         }
 
-        if let originalAppVersion = self.systemInfo.originalAppVersion {
-            headers["X-Original-App-Version"] = originalAppVersion
-        }
-
-        if let originalAppPurchaseDate = self.systemInfo.originalAppPurchaseDate {
-            headers["X-Original-App-Purchase-Date"] = ISO8601DateFormatter.default.string(from: originalAppPurchaseDate)
+        if let appTransactionJWT = self.systemInfo.appTransactionJWT {
+            headers["X-App-Transaction-JWT"] = appTransactionJWT
         }
 
         return headers

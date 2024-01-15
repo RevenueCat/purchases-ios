@@ -1551,8 +1551,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             ],
             transactions: ["123_transaction_jws_token"],
             bundleId: "123_bundle_id",
-            originalApplicationVersion: "123_original_application_version",
-            originalPurchaseDate: Date(timeIntervalSince1970: 123))
+            appTransactionJWSToken: "jws_token")
         self.mockTransactionFetcher.stubbedReceipt = receipt
         let product = try await self.fetchSk2StoreProduct()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
@@ -1616,8 +1615,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
             ],
             transactions: ["123_transaction_jws_token"],
             bundleId: "123_bundle_id",
-            originalApplicationVersion: "123_original_application_version",
-            originalPurchaseDate: Date(timeIntervalSince1970: 123))
+            appTransactionJWSToken: "jws_token")
         mockTransactionFetcher.stubbedReceipt = receipt
 
         let product = try await fetchSk2Product()
@@ -1632,20 +1630,32 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
-    func testSyncPurchasesDoesntPostAndReturnsCustomerInfoIfNoTransaction() async throws {
+    func testSyncPurchasesPostsAppTransactionReceiptIfNoTransaction() async throws {
         self.setUpSystemInfo(storeKitVersion: .storeKit2)
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
         self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = nil
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
+
+        let receipt = StoreKit2Receipt(
+            environment: .xcode,
+            subscriptionStatusBySubscriptionGroupId: [:],
+            transactions: [],
+            bundleId: "123_bundle_id",
+            appTransactionJWSToken: "jws_token")
+        self.mockTransactionFetcher.stubbedReceipt = receipt
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
                                                                      isRestore: false,
                                                                      initiationSource: .purchase)
-        expect(self.backend.invokedPostReceiptData).to(beFalse())
-        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
+
         expect(customerInfo) == mockCustomerInfo
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.productData).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .sk2receipt(receipt)
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingID).to(beNil())
+        expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .purchase
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

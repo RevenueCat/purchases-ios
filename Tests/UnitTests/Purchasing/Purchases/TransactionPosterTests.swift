@@ -154,8 +154,7 @@ class TransactionPosterTests: TestCase {
             ],
             transactions: ["123_transaction_jws_token"],
             bundleId: "123_bundle_id",
-            originalApplicationVersion: "123_original_application_version",
-            originalPurchaseDate: Date(timeIntervalSince1970: 123))
+            appTransactionJWSToken: "jws_token")
 
         self.receiptFetcher.shouldReturnReceipt = false
         self.transactionFetcher.stubbedReceipt = receipt

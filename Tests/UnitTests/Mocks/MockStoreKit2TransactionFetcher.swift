@@ -60,6 +60,10 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         return self.stubbedReceipt!
     }
 
+    func fetchAppTransactionReceipt() async -> RevenueCat.StoreKit2Receipt {
+        return self.stubbedReceipt!
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? {
         get async {

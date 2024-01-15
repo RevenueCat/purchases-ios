@@ -397,7 +397,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             bundleID: "bundle_id",
             originalApplicationVersion: "app_version",
             originalPurchaseDate: date,
-            environment: .xcode
+            environment: .xcode,
+            jwsRepresentation: "jws_representation"
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
@@ -406,8 +407,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.systemInfo.originalAppVersion) == "app_version"
-        expect(self.systemInfo.originalAppPurchaseDate) == date
+        expect(self.systemInfo.appTransactionJWT).toEventually(equal("jws_representation"))
     }
 
     func testDoesNotCacheAppTransactionIfInBackground() throws {
@@ -418,7 +418,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             bundleID: "bundle_id",
             originalApplicationVersion: "app_version",
             originalPurchaseDate: date,
-            environment: .xcode
+            environment: .xcode,
+            jwsRepresentation: "jws_representation"
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
@@ -428,8 +429,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.systemInfo.originalAppVersion).to(beNil())
-        expect(self.systemInfo.originalAppPurchaseDate).to(beNil())
+        expect(self.systemInfo.appTransactionJWT).to(beNil())
     }
 
     func testDoesNotCacheAppTransactionIfNotInStoreKit2Mode() throws {
@@ -440,7 +440,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             bundleID: "bundle_id",
             originalApplicationVersion: "app_version",
             originalPurchaseDate: date,
-            environment: .xcode
+            environment: .xcode,
+            jwsRepresentation: "jws_representation"
         )
         self.systemInfo = MockSystemInfo(
             finishTransactions: false,
@@ -449,8 +450,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         self.setupPurchases()
 
-        expect(self.systemInfo.originalAppVersion).to(beNil())
-        expect(self.systemInfo.originalAppPurchaseDate).to(beNil())
+        expect(self.systemInfo.appTransactionJWT).to(beNil())
     }
 
     // MARK: - Custom Entitlement Computation
