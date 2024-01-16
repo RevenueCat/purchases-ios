@@ -239,16 +239,31 @@ public extension StoreProduct {
         return self.formattedString(for: self.introductoryDiscount?.priceDecimalNumber)
     }
 
+    /// The formatted price per week using ``StoreProduct/priceFormatter``.
+    /// ### Related Symbols
+    /// - ``pricePerWeek``
+    /// - ``localizedPricePerMonth``
+    /// - ``localizedPricePerYear``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerWeek: String? {
         return self.formattedString(for: self.pricePerWeek)
     }
 
+    /// The formatted price per month using ``StoreProduct/priceFormatter``.
+    /// ### Related Symbols
+    /// - ``pricePerMonth``
+    /// - ``localizedPricePerWeek``
+    /// - ``localizedPricePerYear``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerMonth: String? {
         return self.formattedString(for: self.pricePerMonth)
     }
 
+    /// The formatted price per year using ``StoreProduct/priceFormatter``.
+    /// ### Related Symbols
+    /// - ``pricePerYear``
+    /// - ``localizedPricePerWeek``
+    /// - ``localizedPricePerMonth``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerYear: String? {
         return self.formattedString(for: self.pricePerYear)
