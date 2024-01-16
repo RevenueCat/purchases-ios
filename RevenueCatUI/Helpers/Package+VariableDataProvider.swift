@@ -24,11 +24,21 @@ extension Package: VariableDataProvider {
     }
 
     var localizedPricePerWeek: String {
-        return self.priceFormatter.string(from: self.pricePerWeek) ?? ""
+        guard let price = self.storeProduct.localizedPricePerWeek else {
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.localizedPriceString
+        }
+
+        return price
     }
 
     var localizedPricePerMonth: String {
-        return self.priceFormatter.string(from: self.pricePerMonth) ?? ""
+        guard let price = self.storeProduct.localizedPricePerMonth else {
+            Logger.warning(Strings.package_not_subscription(self))
+            return self.storeProduct.localizedPriceString
+        }
+
+        return price
     }
 
     var localizedIntroductoryOfferPrice: String? {
@@ -102,30 +112,6 @@ private extension Package {
 
     var isMonthly: Bool {
         return self.storeProduct.subscriptionPeriod == SubscriptionPeriod(value: 1, unit: .month)
-    }
-
-    var pricePerWeek: NSDecimalNumber {
-        guard let price = self.storeProduct.pricePerWeek else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.priceDecimalNumber
-        }
-
-        return price
-    }
-
-    var pricePerMonth: NSDecimalNumber {
-        guard let price = self.storeProduct.pricePerMonth else {
-            Logger.warning(Strings.package_not_subscription(self))
-            return self.storeProduct.priceDecimalNumber
-        }
-
-        return price
-    }
-
-    var priceFormatter: NumberFormatter {
-        // `priceFormatter` can only be `nil` for SK2 products
-        // with an unknown code, which should be rare.
-        return self.storeProduct.priceFormatter ?? .init()
     }
 
     func introDuration(_ locale: Locale) -> String? {
