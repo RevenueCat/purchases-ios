@@ -38,6 +38,7 @@ class PurchaseHandlerTests: TestCase {
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
+        expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == true
         expect(handler.actionInProgress) == false
@@ -47,7 +48,8 @@ class PurchaseHandlerTests: TestCase {
         let handler: PurchaseHandler = .cancelling()
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
-        expect(handler.purchaseResult).to(beNil())
+        expect(handler.purchaseResult?.userCancelled) == true
+        expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchased) == false
         expect(handler.actionInProgress) == false
     }

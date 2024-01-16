@@ -16,6 +16,7 @@ struct App: View {
     private var fonts: PaywallFontProvider
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
+    private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var paywallDismissed: () -> Void = {}
 
     var body: some View {
@@ -64,6 +65,11 @@ struct App: View {
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                    purchaseCancelled: self.purchaseCancelled,
+                                    restoreCompleted: self.purchaseOrRestoreCompleted,
+                                    onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(offering: nil) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(offering: self.offering) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
@@ -93,6 +99,17 @@ struct App: View {
                 false
             } purchaseCompleted: {
                 self.purchaseOrRestoreCompleted($0)
+            } restoreCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } onDismiss: {
+                self.paywallDismissed()
+            }
+            .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } purchaseCancelled: {
+                self.purchaseCancelled()
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
             } onDismiss: {
@@ -140,6 +157,7 @@ struct App: View {
         Text("")
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
+            .onPurchaseCancelled(self.purchaseCancelled)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
     }
 
