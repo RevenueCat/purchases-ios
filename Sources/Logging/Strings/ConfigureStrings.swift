@@ -189,7 +189,7 @@ extension ConfigureStrings: LogMessage {
             "when configuring the SDK."
 
         case .observer_mode_required:
-            return "Observer mode must be enabled. You must use `.with(observerMode: true)` when configuring the SDK."
+            return "Attempted to manually handle transactions with observer mode not enabled. You must use `.with(observerMode: true)` when configuring the SDK."
 
         case .sk2_required:
             return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` when configuring the SDK."
