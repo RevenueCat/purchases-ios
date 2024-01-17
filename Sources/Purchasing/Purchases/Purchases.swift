@@ -1105,7 +1105,7 @@ public extension Purchases {
     func handleObserverModeTransaction(
         purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
-        guard !self.systemInfo.observerMode else {
+        guard self.systemInfo.observerMode else {
             throw NewErrorUtils.observerModeNotEnabledError()
         }
         let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(

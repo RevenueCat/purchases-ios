@@ -44,13 +44,6 @@ protocol StoreKit2TransactionListenerType: Sendable {
         fromTransactionUpdate: Bool
     ) async throws -> StoreKit2TransactionListener.ResultData
 
-    /// - Throws: ``ErrorCode`` if the transaction fails to verify.
-    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
-    func handle(
-        transactionResult: StoreKit.VerificationResult<StoreKit.Transaction>,
-        fromTransactionUpdate: Bool
-    ) async throws -> StoreTransaction
-
 }
 
 /// Observes `StoreKit.Transaction.updates`, which receives:
@@ -142,6 +135,8 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         }
     }
 
+    /// - Throws: ``ErrorCode`` if the transaction fails to verify.
+    /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
         transactionResult: TransactionResult,
         fromTransactionUpdate: Bool

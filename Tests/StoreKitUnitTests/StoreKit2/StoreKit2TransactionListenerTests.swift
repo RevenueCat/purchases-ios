@@ -69,9 +69,9 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         expect(handle?.isCancelled) == true
     }
 
-    // MARK: - Purchase Result Tests
+    // MARK: -
 
-    func testVerifiedTransactoinInPurchaseResultReturnsOriginalTransaction() async throws {
+    func testVerifiedTransactionReturnsOriginalTransaction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let fakeTransaction = try await self.simulateAnyPurchase()
@@ -104,7 +104,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         }
     }
 
-    func testUnverifiedTransactionsInPurchaseResultReturnStoreProblemError() async throws {
+    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transaction = try await self.simulateAnyPurchase()
@@ -179,76 +179,6 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
             fail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.paymentPendingError))
-        }
-    }
-
-    // MARK: - Transaction Result Tests
-
-    func testVerifiedTransactionReturnsOriginalTransaction() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        let fakeTransaction = try await self.simulateAnyPurchase()
-
-        let transaction = try await self.listener.handle(transactionResult: fakeTransaction,
-                                                         fromTransactionUpdate: false)
-        expect(transaction.sk2Transaction) == fakeTransaction.underlyingTransaction
-    }
-
-    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        let transaction = try await self.simulateAnyPurchase()
-        let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
-        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
-
-        // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
-        // because neither of them accept `async`
-        do {
-            _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
-            XCTFail("Error expected")
-        } catch {
-            expect(error).to(matchError(ErrorCode.storeProblemError))
-        }
-    }
-
-    func testHandleTransactionDoesNotFinishTransaction() async throws {
-        let (_, result, _) = try await self.purchase()
-
-        let resultData = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
-        expect(resultData.sk2Transaction) == result.underlyingTransaction
-
-        try await self.verifyUnfinishedTransaction(withId: result.underlyingTransaction.id)
-    }
-
-    func testHandleTransactionResultDoesNotNotifyDelegate() async throws {
-        let result = try await self.purchase().verificationResult
-        _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
-
-        expect(self.delegate.invokedTransactionUpdated) == false
-    }
-
-    func testHandleTransactoinResultNotifiesDelegate() async throws {
-        let result = try await self.purchase().verificationResult
-        _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: true)
-
-        expect(self.delegate.invokedTransactionUpdated) == true
-    }
-
-    func testHandleUnverifiedTransaction() async throws {
-        let (_, _, transaction) = try await self.purchase()
-
-        let verificationError: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
-
-        do {
-            _ = try await self.listener.handle(
-                transactionResult: .unverified(transaction, verificationError), fromTransactionUpdate: false
-            )
-            fail("Expected error")
-        } catch {
-            expect(error).to(matchError(ErrorCode.storeProblemError))
-
-            let underlyingError = try XCTUnwrap((error as NSError).userInfo[NSUnderlyingErrorKey] as? NSError)
-            expect(underlyingError).to(matchError(verificationError))
         }
     }
 

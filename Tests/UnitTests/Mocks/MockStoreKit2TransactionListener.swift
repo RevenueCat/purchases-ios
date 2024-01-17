@@ -71,24 +71,6 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
         return (self.mockCancelled, transaction)
     }
-
-    func handle(
-        transactionResult: StoreKit.VerificationResult<StoreKit.Transaction>,
-        fromTransactionUpdate: Bool = false
-    ) async throws -> StoreTransaction {
-        self.invokedHandle = true
-        self.invokedHandleCount += 1
-
-        let transaction: StoreTransaction = self.mockTransaction.value.map {
-            StoreTransaction(sk2Transaction: $0,
-                             jwsRepresentation: self.mockJWSToken,
-                             environmentOverride: self.mockEnvironment)
-        } ?? StoreTransaction(sk2Transaction: transactionResult.underlyingTransaction,
-                              jwsRepresentation: self.mockJWSToken,
-                              environmentOverride: self.mockEnvironment)
-
-        return transaction
-    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
