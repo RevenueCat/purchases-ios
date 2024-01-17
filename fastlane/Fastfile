@@ -581,7 +581,10 @@ platform :ios do
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
-      include_debug_symbols: true
+      include_debug_symbols: true,
+      # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
+      # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
+      override_xcargs: true
     )
     
     # sh runs from the Fastfile's location, but other commands run from the project root.
