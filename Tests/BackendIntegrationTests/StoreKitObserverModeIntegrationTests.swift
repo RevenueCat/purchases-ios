@@ -51,7 +51,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        _ = try await Purchases.shared.processObserverModeTransaction(purchaseResult: result)
+        _ = try await Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
 
         try await asyncWait(
             description: "Entitlement didn't become active",
@@ -73,7 +73,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        _ = try await Purchases.shared.processObserverModeTransaction(productID: transaction.productID)
+        _ = try await Purchases.shared.handleObserverModeTransaction(productID: transaction.productID)
 
         try await asyncWait(
             description: "Entitlement didn't become active",

@@ -1102,7 +1102,7 @@ public extension Purchases {
 #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func processObserverModeTransaction(
+    func handleObserverModeTransaction(
         purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         let (userCancelled, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
@@ -1115,7 +1115,7 @@ public extension Purchases {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    @objc func processObserverModeTransaction(productID: String) async throws -> StoreTransaction? {
+    @objc func handleObserverModeTransaction(productID: String) async throws -> StoreTransaction? {
         guard let transaction = await StoreKit.Transaction.latest(for: productID) else {
             Logger.warn(Strings.purchase.sk2_observer_mode_missing_transaction_for_product(productID: productID))
             return nil
