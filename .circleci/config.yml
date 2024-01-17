@@ -1135,6 +1135,8 @@ workflows:
           <<: *release-branches-and-main
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
+      - release-checks:
+          xcode_version: '15.2'
       - build-visionos:
           xcode_version: '15.2'
       - backend-integration-tests-SK1:
