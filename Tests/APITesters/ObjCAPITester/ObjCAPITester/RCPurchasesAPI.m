@@ -164,9 +164,6 @@ BOOL isAnonymous;
     [p purchasePackage:pack withCompletion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
     [p restorePurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
-    if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)) {
-        [p handleObserverModeTransactionWithProductID:@"" completionHandler:^(RCStoreTransaction *t, NSError *error) {}];
-    }
 
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];

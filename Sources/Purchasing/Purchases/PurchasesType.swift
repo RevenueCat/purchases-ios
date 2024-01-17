@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 9/20/22.
 
 import Foundation
+import StoreKit
 
 // swiftlint:disable file_length
 
@@ -1007,6 +1008,32 @@ public protocol PurchasesSwiftType: AnyObject {
     func showStoreMessages(for types: Set<StoreMessageType>) async
 
     #endif
+
+    /**
+     * Use this method only if you already have your own IAP implementation using StoreKit 2 and want to use
+     * RevenueCat's backend. If you are using StoreKit 1 for your implementation, you do not need this method.
+     *
+     * You only need to use this method with *new* purchases. Subscription updates and observed automatically.
+     *
+     * #### Example:
+     *
+     * ```swift
+     * let result = try await product.purchase(options: options)
+     * Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
+     * ```
+     *
+     * - Note: You need to finish the transaction yourself after calling this method.
+     *
+     * - Parameter productID: The ID of the product that was just purchased
+     *
+     * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while handling the purchase.
+     *
+     * - Returns: A ``StoreTransaction`` if there was a transacton found and handled for the provided product ID.
+     */
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func handleObserverModeTransaction(
+        purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction?
 
 }
 

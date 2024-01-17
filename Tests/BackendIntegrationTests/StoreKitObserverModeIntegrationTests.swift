@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 12/15/22.
 
 import Foundation
-
+import Nimble
 @testable import RevenueCat
 import StoreKit
 import StoreKitTest
@@ -45,35 +45,13 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testObservingTransactionPurchaseResultUnlocksEntitlement() async throws {
+    func testObservingTransactionUnlocksEntitlement() async throws {
         let result = try await self.manager.purchaseProductFromStoreKit2()
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
         _ = try await Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
-
-        try await asyncWait(
-            description: "Entitlement didn't become active",
-            timeout: .seconds(5),
-            pollInterval: .milliseconds(500)
-        ) {
-            let entitlement = await self.purchasesDelegate
-                .customerInfo?
-                .entitlements[Self.entitlementIdentifier]
-
-            return entitlement?.isActive == true
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testObservingTransactionWithProductIDUnlocksEntitlement() async throws {
-        let result = try await self.manager.purchaseProductFromStoreKit2()
-        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
-
-        try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
-
-        _ = try await Purchases.shared.handleObserverModeTransaction(productID: transaction.productID)
 
         try await asyncWait(
             description: "Entitlement didn't become active",
@@ -99,6 +77,33 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
 
         try await self.verifyReceiptIsEventuallyPosted()
+    }
+
+}
+
+class StoreKit2ObserverModeDisabledIntegrationTests: StoreKit1ObserverModeIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override class var observerMode: Bool { false }
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
+        let result = try await self.manager.purchaseProductFromStoreKit2()
+        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
+
+        do {
+            _ = try await Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.observerModeNotEnabledError))
+        }
     }
 
 }
