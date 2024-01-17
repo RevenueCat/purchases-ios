@@ -753,7 +753,7 @@ jobs:
 
   release-checks:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See 
+    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
@@ -794,7 +794,7 @@ jobs:
 
   make-release:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See 
+    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
