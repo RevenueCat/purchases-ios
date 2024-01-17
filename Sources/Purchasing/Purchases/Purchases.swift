@@ -1107,7 +1107,12 @@ public extension Purchases {
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
             throw NewErrorUtils.configurationError(
-                message: Strings.configure.sk2_required_observer_mode.description
+                message: Strings.configure.observer_mode_required.description
+            ).asPublicError
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
             ).asPublicError
         }
         let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
