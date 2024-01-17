@@ -17,6 +17,9 @@ func checkTestStoreProductAPI() {
     let localizedTitle: String = testProduct.localizedTitle
     let price: Decimal = testProduct.price
     let localizedPriceString: String = testProduct.localizedPriceString
+    let localizedPricePerWeek: String? = testProduct.localizedPricePerWeek
+    let localizedPricePerMonth: String? = testProduct.localizedPricePerMonth
+    let localizedPricePerYear: String? = testProduct.localizedPricePerYear
     let productIdentifier: String = testProduct.productIdentifier
     let productType: StoreProduct.ProductType = testProduct.productType
     let localizedDescription: String = testProduct.localizedDescription
@@ -31,6 +34,9 @@ func checkTestStoreProductAPI() {
     testProduct.localizedTitle = localizedTitle
     testProduct.price = price
     testProduct.localizedPriceString = localizedPriceString
+    testProduct.localizedPricePerWeek = localizedPricePerWeek
+    testProduct.localizedPricePerMonth = localizedPricePerMonth
+    testProduct.localizedPricePerYear = localizedPricePerYear
     testProduct.productIdentifier = productIdentifier
     testProduct.productType = productType
     testProduct.localizedDescription = localizedDescription
