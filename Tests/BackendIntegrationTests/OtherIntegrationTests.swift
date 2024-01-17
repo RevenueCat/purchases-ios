@@ -45,7 +45,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 3. Request customer info multiple times in parallel
         await withThrowingTaskGroup(of: Void.self) {
             for _ in 0..<requestCount {
-                $0.addTask { _ = try await purchases.customerInfo() }
+                $0.addTask(priority: .background) { _ = try await purchases.customerInfo() }
             }
         }
 
@@ -114,7 +114,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
         // 1. Make sure any existing customer info requests finish
-        _ = try await purchases.customerInfo()
+        _ = try? await purchases.customerInfo(fetchPolicy: .fromCacheOnly)
 
         // 2. Verify only one CustomerInfo request was done
         try self.logger.verifyMessageWasLogged(
