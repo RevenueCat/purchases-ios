@@ -81,33 +81,6 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
 }
 
-class StoreKit2ObserverModeDisabledIntegrationTests: StoreKit1ObserverModeIntegrationTests {
-
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-
-    override class var observerMode: Bool { false }
-
-    override func setUp() async throws {
-        try await super.setUp()
-
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
-        let result = try await self.manager.purchaseProductFromStoreKit2()
-        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
-
-        do {
-            _ = try await Purchases.shared.handleObserverModeTransaction(result)
-            fail("Expected error")
-        } catch {
-            expect(error).to(matchError(ErrorCode.configurationError))
-        }
-    }
-
-}
-
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
@@ -208,6 +181,25 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
         // 4. Sync customer info
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
+    }
+
+}
+
+class StoreKit2NotEnabledObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionThrowsIfStoreKit2NotEnabled() async throws {
+        let manager = ObserverModeManager()
+        let result = try await manager.purchaseProductFromStoreKit2()
+
+        do {
+            _ = try await Purchases.shared.handleObserverModeTransaction(result)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
     }
 
 }
