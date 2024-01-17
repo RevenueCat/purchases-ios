@@ -69,9 +69,9 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         expect(handle?.isCancelled) == true
     }
 
-    // MARK: -
+    // MARK: - Purchase Result Tests
 
-    func testVerifiedTransactionReturnsOriginalTransaction() async throws {
+    func testVerifiedTransactoinInPurchaseResultReturnsOriginalTransaction() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let fakeTransaction = try await self.simulateAnyPurchase()
@@ -104,7 +104,7 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         }
     }
 
-    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
+    func testUnverifiedTransactionsInPurchaseResultReturnStoreProblemError() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transaction = try await self.simulateAnyPurchase()
@@ -149,13 +149,6 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         expect(self.delegate.invokedTransactionUpdated) == false
     }
 
-    func testHandlePurchaseResultNotifiesDelegate() async throws {
-        let result = try await self.purchase().result
-        await Purchases.shared.processObserverModeTransaction(result)
-
-        expect(self.delegate.invokedTransactionUpdated) == true
-    }
-
     func testHandleUnverifiedPurchase() async throws {
         let (_, _, transaction) = try await self.purchase()
 
@@ -189,101 +182,75 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         }
     }
 
-}
+    // MARK: - Transaction Result Tests
 
-// MARK: - Transaction.updates tests
+    func testVerifiedTransactionReturnsOriginalTransaction() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionListenerBaseTests {
+        let fakeTransaction = try await self.simulateAnyPurchase()
 
-    func testPurchasingInTheAppDoesNotNotifyDelegate() async throws {
-        await self.listener.listenForTransactions()
-
-        try await self.simulateAnyPurchase(finishTransaction: true)
-        try await self.verifyTransactionsWereNotUpdated()
+        let transaction = try await self.listener.handle(transactionResult: fakeTransaction,
+                                                         fromTransactionUpdate: false)
+        expect(transaction.sk2Transaction) == fakeTransaction.underlyingTransaction
     }
 
-    func testPurchasingOutsideTheAppNotifiesDelegate() async throws {
-        await self.listener.listenForTransactions()
+    func testUnverifiedTransactionsReturnStoreProblemError() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        try self.testSession.buyProduct(productIdentifier: Self.productID)
+        let transaction = try await self.simulateAnyPurchase()
+        let error: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
+        let result: StoreKit.VerificationResult<Transaction> = .unverified(transaction.underlyingTransaction, error)
 
-        try await asyncWait {
-            await self.delegate.invokedTransactionUpdated == true
+        // Note: can't use `expect().to(throwError)` or `XCTAssertThrowsError`
+        // because neither of them accept `async`
+        do {
+            _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
+            XCTFail("Error expected")
+        } catch {
+            expect(error).to(matchError(ErrorCode.storeProblemError))
         }
     }
 
-    func testNotifiesDelegateForExistingTransactions() async throws {
-        try self.testSession.buyProduct(productIdentifier: Self.productID)
+    func testHandleTransactionDoesNotFinishTransaction() async throws {
+        let (_, result, _) = try await self.purchase()
 
-        await self.listener.listenForTransactions()
+        let resultData = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
+        expect(resultData.sk2Transaction) == result.underlyingTransaction
 
-        try await asyncWait {
-            await self.delegate.invokedTransactionUpdated == true
+        try await self.verifyUnfinishedTransaction(withId: result.underlyingTransaction.id)
+    }
+
+    func testHandleTransactionResultDoesNotNotifyDelegate() async throws {
+        let result = try await self.purchase().verificationResult
+        _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: false)
+
+        expect(self.delegate.invokedTransactionUpdated) == false
+    }
+
+    func testHandleTransactoinResultNotifiesDelegate() async throws {
+        let result = try await self.purchase().verificationResult
+        _ = try await self.listener.handle(transactionResult: result, fromTransactionUpdate: true)
+
+        expect(self.delegate.invokedTransactionUpdated) == true
+    }
+
+    func testHandleUnverifiedTransaction() async throws {
+        let (_, _, transaction) = try await self.purchase()
+
+        let verificationError: StoreKit.VerificationResult<Transaction>.VerificationError = .invalidSignature
+
+        do {
+            _ = try await self.listener.handle(
+                transactionResult: .unverified(transaction, verificationError), fromTransactionUpdate: false
+            )
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.storeProblemError))
+
+            let underlyingError = try XCTUnwrap((error as NSError).userInfo[NSUnderlyingErrorKey] as? NSError)
+            expect(underlyingError).to(matchError(verificationError))
         }
     }
-
-    @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
-    func testNotifiesDelegateForRenewals() async throws {
-        try await self.simulateAnyPurchase(finishTransaction: true)
-
-        await self.listener.listenForTransactions()
-
-        try? self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
-
-        try await self.waitForTransactionUpdated()
-
-        expect(self.delegate.updatedTransactions)
-            .to(containElementSatisfying { transaction in
-                transaction.productIdentifier == Self.productID
-            })
-
-        self.logger.verifyMessageWasLogged(Strings.purchase.sk2_transactions_update_received_transaction(
-            productID: Self.productID
-        ))
-    }
-
-}
-
-// MARK: - Tests with custom stream
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListenerBaseTests {
-
-    override var updates: AsyncStream<TransactionResult> {
-        get async throws {
-            return MockAsyncSequence<TransactionResult>(with: [
-                .verified(try await self.createTransactionWithPurchase()),
-                .verified(try await self.createTransactionWithPurchase()),
-                .unverified(
-                    try await self.createTransactionWithPurchase(),
-                    .revokedCertificate
-                )
-            ])
-            .toAsyncStream()
-        }
-    }
-
-    func testHandlesAllVerifiedTransactions() async throws {
-        await self.listener.listenForTransactions()
-
-        try await asyncWait {
-            return await self.delegate.updatedTransactions.count == 2
-        }
-    }
-
-    func testHandlesTransactionsAsynchronously() async throws {
-        self.delegate.fakeHandlingDelay = .milliseconds(50)
-
-        await self.listener.listenForTransactions()
-
-        try await asyncWait {
-            return await self.delegate.updatedTransactions.count == 2
-        }
-
-        expect(self.delegate.receivedConcurrentRequest) == true
-    }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

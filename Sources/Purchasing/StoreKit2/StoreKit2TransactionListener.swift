@@ -44,6 +44,13 @@ protocol StoreKit2TransactionListenerType: Sendable {
         fromTransactionUpdate: Bool
     ) async throws -> StoreKit2TransactionListener.ResultData
 
+    /// - Returns: `nil` `CustomerInfo` if purchases were not synced
+    /// - Throws: Error if purchase was not completed successfully
+    func handle(
+        transactionResult: StoreKit.VerificationResult<StoreKit.Transaction>,
+        fromTransactionUpdate: Bool
+    ) async throws -> StoreTransaction
+
 }
 
 /// Observes `StoreKit.Transaction.updates`, which receives:
@@ -136,11 +143,6 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
             )
         }
     }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoreKit2TransactionListener {
 
     /// - Throws: ``ErrorCode`` if the transaction fails to verify.
     /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.

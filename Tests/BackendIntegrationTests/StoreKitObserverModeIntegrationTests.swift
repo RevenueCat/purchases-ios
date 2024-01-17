@@ -45,13 +45,35 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testPurchaseInDevicePostsReceipt() async throws {
+    func testObservingTransactionPurchaseResultUnlocksEntitlement() async throws {
         let result = try await self.manager.purchaseProductFromStoreKit2()
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        await Purchases.shared.processObserverModeTransaction(result)
+        _ = try await Purchases.shared.processObserverModeTransaction(purchaseResult: result)
+
+        try await asyncWait(
+            description: "Entitlement didn't become active",
+            timeout: .seconds(5),
+            pollInterval: .milliseconds(500)
+        ) {
+            let entitlement = await self.purchasesDelegate
+                .customerInfo?
+                .entitlements[Self.entitlementIdentifier]
+
+            return entitlement?.isActive == true
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionWithProductIDUnlocksEntitlement() async throws {
+        let result = try await self.manager.purchaseProductFromStoreKit2()
+        let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
+
+        try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
+
+        _ = try await Purchases.shared.processObserverModeTransaction(productID: transaction.productID)
 
         try await asyncWait(
             description: "Entitlement didn't become active",

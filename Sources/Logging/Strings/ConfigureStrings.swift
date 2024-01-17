@@ -31,8 +31,6 @@ enum ConfigureStrings {
 
     case observer_mode_enabled
 
-    case observer_mode_with_storekit2
-
     case response_verification_mode(Signing.ResponseVerificationMode)
 
     case storekit_version(StoreKitVersion)
@@ -98,8 +96,6 @@ extension ConfigureStrings: LogMessage {
             return "Debug logging enabled"
         case .observer_mode_enabled:
             return "Purchases is configured in observer mode"
-        case .observer_mode_with_storekit2:
-            return "Observer mode is not currently compatible with StoreKit 2"
         case let .response_verification_mode(mode):
             switch mode {
             case .disabled:

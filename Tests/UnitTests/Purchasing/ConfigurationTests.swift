@@ -31,50 +31,6 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validate(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
-    func testNoObserverModeWithStoreKit1() {
-        let configuration = Configuration.Builder(withAPIKey: "test").build()
-
-        expect(configuration.observerMode) == false
-        expect(configuration.storeKitVersion) == .storeKit1
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
-    }
-
-    func testNoObserverModeWithStoreKit2() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(storeKitVersion: .storeKit2)
-            .build()
-
-        expect(configuration.observerMode) == false
-        expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
-    }
-
-    func testObserverModeWithStoreKit1() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
-            .build()
-
-        expect(configuration.observerMode) == true
-        expect(configuration.storeKitVersion) == .storeKit1
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
-    }
-
-    func testObserverModeWithStoreKit2() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
-            .with(storeKitVersion: .storeKit2)
-            .build()
-
-        expect(configuration.observerMode) == true
-        expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
-                                           level: .warn)
-    }
-
     func testStoreKitVersionUsesStoreKit1ByDefault() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()
