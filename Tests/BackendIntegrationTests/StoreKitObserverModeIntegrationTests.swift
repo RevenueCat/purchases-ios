@@ -51,7 +51,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        _ = try await Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
+        _ = try await Purchases.shared.handleObserverModeTransaction(result)
 
         try await asyncWait(
             description: "Entitlement didn't become active",
@@ -99,7 +99,7 @@ class StoreKit2ObserverModeDisabledIntegrationTests: StoreKit1ObserverModeIntegr
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
 
         do {
-            _ = try await Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
+            _ = try await Purchases.shared.handleObserverModeTransaction(result)
             fail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.observerModeNotEnabledError))

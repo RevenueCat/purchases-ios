@@ -1019,7 +1019,7 @@ public protocol PurchasesSwiftType: AnyObject {
      *
      * ```swift
      * let result = try await product.purchase(options: options)
-     * Purchases.shared.handleObserverModeTransaction(purchaseResult: result)
+     * Purchases.shared.handleObserverModeTransaction(result)
      * ```
      *
      * - Note: You need to finish the transaction yourself after calling this method.
@@ -1035,7 +1035,7 @@ public protocol PurchasesSwiftType: AnyObject {
      */
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func handleObserverModeTransaction(
-        purchaseResult: StoreKit.Product.PurchaseResult
+        _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 
 }
