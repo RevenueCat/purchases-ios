@@ -251,6 +251,102 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
             expect(underlyingError).to(matchError(verificationError))
         }
     }
+
+}
+
+// MARK: - Transaction.updates tests
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionListenerBaseTests {
+
+    func testPurchasingInTheAppDoesNotNotifyDelegate() async throws {
+        await self.listener.listenForTransactions()
+
+        try await self.simulateAnyPurchase(finishTransaction: true)
+        try await self.verifyTransactionsWereNotUpdated()
+    }
+
+    func testPurchasingOutsideTheAppNotifiesDelegate() async throws {
+        await self.listener.listenForTransactions()
+
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        try await asyncWait {
+            await self.delegate.invokedTransactionUpdated == true
+        }
+    }
+
+    func testNotifiesDelegateForExistingTransactions() async throws {
+        try self.testSession.buyProduct(productIdentifier: Self.productID)
+
+        await self.listener.listenForTransactions()
+
+        try await asyncWait {
+            await self.delegate.invokedTransactionUpdated == true
+        }
+    }
+
+    @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
+    func testNotifiesDelegateForRenewals() async throws {
+        try await self.simulateAnyPurchase(finishTransaction: true)
+
+        await self.listener.listenForTransactions()
+
+        try? self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
+
+        try await self.waitForTransactionUpdated()
+
+        expect(self.delegate.updatedTransactions)
+            .to(containElementSatisfying { transaction in
+                transaction.productIdentifier == Self.productID
+            })
+
+        self.logger.verifyMessageWasLogged(Strings.purchase.sk2_transactions_update_received_transaction(
+            productID: Self.productID
+        ))
+    }
+
+}
+
+// MARK: - Tests with custom stream
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListenerBaseTests {
+
+    override var updates: AsyncStream<TransactionResult> {
+        get async throws {
+            return MockAsyncSequence<TransactionResult>(with: [
+                .verified(try await self.createTransactionWithPurchase()),
+                .verified(try await self.createTransactionWithPurchase()),
+                .unverified(
+                    try await self.createTransactionWithPurchase(),
+                    .revokedCertificate
+                )
+            ])
+            .toAsyncStream()
+        }
+    }
+
+    func testHandlesAllVerifiedTransactions() async throws {
+        await self.listener.listenForTransactions()
+
+        try await asyncWait {
+            return await self.delegate.updatedTransactions.count == 2
+        }
+    }
+
+    func testHandlesTransactionsAsynchronously() async throws {
+        self.delegate.fakeHandlingDelay = .milliseconds(50)
+
+        await self.listener.listenForTransactions()
+
+        try await asyncWait {
+            return await self.delegate.updatedTransactions.count == 2
+        }
+
+        expect(self.delegate.receivedConcurrentRequest) == true
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
