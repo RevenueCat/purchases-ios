@@ -134,6 +134,7 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
             )
         }
     }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
