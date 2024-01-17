@@ -73,6 +73,8 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
+    case sk2_required_observer_mode
+
 }
 
 extension ConfigureStrings: LogMessage {
@@ -183,6 +185,8 @@ extension ConfigureStrings: LogMessage {
             return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
             "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
+        case .sk2_required_observer_mode:
+            return "Observer mode must be enabled. You must use `.with(observerMode: true)` when configuring the SDK."
         }
     }
 

@@ -102,7 +102,7 @@ class StoreKit2ObserverModeDisabledIntegrationTests: StoreKit1ObserverModeIntegr
             _ = try await Purchases.shared.handleObserverModeTransaction(result)
             fail("Expected error")
         } catch {
-            expect(error).to(matchError(ErrorCode.observerModeNotEnabledError))
+            expect(error).to(matchError(ErrorCode.configurationError))
         }
     }
 

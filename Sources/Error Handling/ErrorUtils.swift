@@ -79,20 +79,6 @@ enum ErrorUtils {
     }
 
     /**
-     * Constructs an NSError with the ``ErrorCode/observerModeNotEnabledError`` code.
-     */
-    static func observerModeNotEnabledError(
-        error: Error? = nil,
-        fileName: String = #fileID, functionName: String = #function, line: UInt = #line
-    ) -> PurchasesError {
-        let errorCode = ErrorCode.observerModeNotEnabledError
-        return ErrorUtils.error(with: errorCode,
-                                message: errorCode.description,
-                                underlyingError: error,
-                                fileName: fileName, functionName: functionName, line: line)
-    }
-
-    /**
      * Maps a ``BackendErrorCode`` code to a ``ErrorCode``. code. Constructs an Error with the mapped code and adds a
      * `NSUnderlyingErrorKey` in the `NSError.userInfo` dictionary. The backend error code will be mapped using
      * ``BackendErrorCode/toPurchasesErrorCode()``.
@@ -698,8 +684,7 @@ private extension ErrorUtils {
                 .invalidPromotionalOfferError,
                 .offlineConnectionError,
                 .featureNotAvailableInCustomEntitlementsComputationMode,
-                .signatureVerificationFailed,
-                .observerModeNotEnabledError:
+                .signatureVerificationFailed:
                 Logger.error(
                     localizedDescription,
                     fileName: fileName,

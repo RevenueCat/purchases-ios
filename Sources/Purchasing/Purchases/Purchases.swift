@@ -1106,7 +1106,9 @@ public extension Purchases {
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
-            throw NewErrorUtils.observerModeNotEnabledError().asPublicError
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.sk2_required_observer_mode.description
+            ).asPublicError
         }
         let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
             purchaseResult: purchaseResult, fromTransactionUpdate: true)

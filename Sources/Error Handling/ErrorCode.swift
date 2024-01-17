@@ -60,7 +60,6 @@ import Foundation
     @objc(RCFeatureNotAvailableInCustomEntitlementsComputationMode)
     case featureNotAvailableInCustomEntitlementsComputationMode = 36
     @objc(RCSignatureVerificationFailed) case signatureVerificationFailed = 37
-    @objc(RCObserberModeNotEnabledError) case observerModeNotEnabledError = 38
 
     // swiftlint:enable missing_docs
 
@@ -181,8 +180,6 @@ extension ErrorCode: DescribableError {
             return "This feature is not available when utilizing the customEntitlementsComputation dangerousSetting."
         case .signatureVerificationFailed:
             return "Request failed signature verification. See https://rev.cat/trusted-entitlements for more info."
-        case .observerModeNotEnabledError:
-            return "Observer mode is not enabled. You must enable Observer Mode when initializing the SDKs."
 
         @unknown default:
             return "Something went wrong."
@@ -284,8 +281,6 @@ extension ErrorCode {
             return "FEATURE_NOT_AVAILABLE_IN_CUSTOM_ENTITLEMENTS_COMPUTATION_MODE_ERROR"
         case .signatureVerificationFailed:
             return "SIGNATURE_VERIFICATION_FAILED"
-        case .observerModeNotEnabledError:
-            return "OBSERVER_MODE_NOT_ENABLED"
         @unknown default:
             return "UNRECOGNIZED_ERROR"
         }
