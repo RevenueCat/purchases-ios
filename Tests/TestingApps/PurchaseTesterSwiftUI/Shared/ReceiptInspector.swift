@@ -73,8 +73,12 @@ struct ReceiptInspectorView: View {
     func inspectReceipt() async {
         do {
             guard !encodedReceipt.isEmpty else { return }
-            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: encodedReceipt).debugDescription
-            verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: encodedReceipt,
+            // in kibana, receipts get encoded with extra `\`s
+            let receiptWithoutForwardSlashes = encodedReceipt.replacingOccurrences(of: "\\", with: "")
+            // just in case you accidentally copied with extra double-quotations
+            let receiptWithoutQuotations = receiptWithoutForwardSlashes.replacingOccurrences(of: "\"", with: "")
+            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: receiptWithoutQuotations).debugDescription
+            verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: receiptWithoutQuotations,
                                                                         sharedSecret: sharedSecret)
         } catch {
             parsedReceipt = "Couldn't decode receipt. Error:\n\(error)"
