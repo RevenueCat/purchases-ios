@@ -1115,10 +1115,14 @@ public extension Purchases {
                 message: Strings.configure.sk2_required.description
             ).asPublicError
         }
-        let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
-            purchaseResult: purchaseResult, fromTransactionUpdate: true
-        )
-        return transaction
+        do {
+            let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
+                purchaseResult: purchaseResult, fromTransactionUpdate: true
+            )
+            return transaction
+        } catch {
+            throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+        }
     }
 
 }
