@@ -1,7 +1,9 @@
+### New Features
+* `StoreProduct`: add localized price per period strings (#3546) via Andy Boedo (@aboedo)
 ### RevenueCatUI
-* `PaywallViewController`: add `PaywallFontProvider` parameter (#3567) via NachoSoto (@NachoSoto)
+* `Paywalls`: new `.onPurchaseCancelled` and `paywallViewControllerDidCancelPurchase:` (#3578) via NachoSoto (@NachoSoto)
+* `Paywalls`: improve error display (#3577) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `0ddee10` to `e6ba247` (#3575) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* `Integration Tests`: run on iOS 17 (#3107) via NachoSoto (@NachoSoto)
-* `CI`: update to Xcode 15.2 (#3571) via NachoSoto (@NachoSoto)
-* `PaywallViewControllerDelegate`: fixed typo in `@objc` method name (#3569) via NachoSoto (@NachoSoto)
-* `SandboxEnvironmentDetector`: more tests for `macOS` (#3568) via NachoSoto (@NachoSoto)
+* `PurchaseTester`: improved `ReceiptInspector` so it accepts receipts with escape sequences (#3554) via Andy Boedo (@aboedo)
