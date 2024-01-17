@@ -1013,7 +1013,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * Use this method only if you already have your own IAP implementation using StoreKit 2 and want to use
      * RevenueCat's backend. If you are using StoreKit 1 for your implementation, you do not need this method.
      *
-     * You only need to use this method with *new* purchases. Subscription updates and observed automatically.
+     * You only need to use this method with *new* purchases. Subscription updates are observed automatically.
      *
      * #### Example:
      *
@@ -1024,7 +1024,7 @@ public protocol PurchasesSwiftType: AnyObject {
      *
      * - Note: You need to finish the transaction yourself after calling this method.
      *
-     * - Parameter productID: The ID of the product that was just purchased
+     * - Parameter purchaseResult: The ``StoreKit.Product.PurchaseResult`` of the product that was just purchased.
      *
      * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while handling the purchase.
      *
