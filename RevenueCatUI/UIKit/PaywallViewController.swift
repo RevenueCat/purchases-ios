@@ -82,18 +82,22 @@ public class PaywallViewController: UIViewController {
                                introEligibility: nil,
                                purchaseHandler: nil)
             .onPurchaseCompleted { [weak self] transaction, customerInfo in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
                 self.delegate?.paywallViewController?(self,
                                                       didFinishPurchasingWith: customerInfo,
                                                       transaction: transaction)
             }
+            .onPurchaseCancelled { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            }
             .onRestoreCompleted { [weak self] customerInfo in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
             }
             .onSizeChange { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
             }
 
@@ -143,6 +147,10 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didFinishPurchasingWith customerInfo: CustomerInfo,
                                         transaction: StoreTransaction?)
+
+    /// Notifies that a purchase has been cancelled in a ``PaywallViewController``.
+    @objc(paywallViewControllerDidCancelPurchase:)
+    optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
     /// Notifies that the restore operation has completed in a ``PaywallViewController``.
     ///

@@ -22,6 +22,12 @@ struct UpsellView: View {
         .padding()
         .presentPaywallIfNeeded(
             requiredEntitlementIdentifier: Configuration.entitlement,
+            purchaseCompleted: { _ in
+                print("Purchase completed")
+            },
+            purchaseCancelled: {
+                print("Purchase cancelled")
+            },
             onDismiss: {
                 print("Paywall dismissed")
             }

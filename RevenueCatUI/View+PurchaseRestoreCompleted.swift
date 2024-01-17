@@ -21,6 +21,9 @@ public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (Custo
 public typealias PurchaseCompletedHandler = @MainActor @Sendable (_ transaction: StoreTransaction?,
                                                                   _ customerInfo: CustomerInfo) -> Void
 
+/// A closure used for notifying of purchase cancellation.
+public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
@@ -79,6 +82,21 @@ extension View {
         return self.modifier(OnPurchaseCompletedModifier(handler: handler))
     }
 
+    /// Invokes the given closure when a purchase is cancelled.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onPurchaseCancelled {
+    ///         print("Purchase was cancelled")
+    ///     }
+    /// ```
+    public func onPurchaseCancelled(
+        _ handler: @escaping PurchaseCancelledHandler
+    ) -> some View {
+        return self.modifier(OnPurchaseCancelledModifier(handler: handler))
+    }
+
     /// Invokes the given closure when restore purchases is completed.
     /// The closure includes the `CustomerInfo` after the process is completed.
     /// Example:
@@ -129,8 +147,28 @@ private struct OnPurchaseCompletedModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
-                if let result {
+                if let result, !result.userCancelled {
                     self.handler(result.transaction, result.customerInfo)
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnPurchaseCancelledModifier: ViewModifier {
+
+    let handler: PurchaseCancelledHandler
+
+    init(handler: @escaping PurchaseCancelledHandler) {
+        self.handler = handler
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
+                if let result, result.userCancelled {
+                    self.handler()
                 }
             }
     }

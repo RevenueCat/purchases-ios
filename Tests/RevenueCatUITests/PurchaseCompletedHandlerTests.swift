@@ -41,7 +41,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             .addToHierarchy()
 
         Task {
-            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+            _ = try await handler.purchase(package: Self.package)
             purchased = true
         }
 
@@ -91,6 +91,56 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(result).toEventuallyNot(beNil())
         expect(result?.customerInfo) === TestData.customerInfo
         expect(result?.transaction).to(beNil())
+    }
+
+    func testOnPurchaseCancelled() throws {
+        let handler: PurchaseHandler = .cancelling()
+
+        var completed = false
+        var cancelled = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        )
+            .onPurchaseCancelled {
+                cancelled = true
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(cancelled) == true
+    }
+
+    func testOnPurchaseCancelledWithCompletion() throws {
+        var completed = false
+        var cancelled = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.purchaseHandler
+        )
+            .onPurchaseCancelled {
+                cancelled = true
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(cancelled) == false
     }
 
     func testOnRestoreCompleted() throws {

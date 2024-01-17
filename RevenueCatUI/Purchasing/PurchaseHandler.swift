@@ -72,19 +72,21 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
+        self.purchaseResult = nil
+
         withAnimation(Constants.fastAnimation) {
             self.actionInProgress = true
         }
         defer { self.actionInProgress = false }
 
         let result = try await self.purchases.purchase(package: package)
+        self.purchaseResult = result
 
         if result.userCancelled {
             self.trackCancelledPurchase()
         } else {
             withAnimation(Constants.defaultAnimation) {
                 self.purchased = true
-                self.purchaseResult = result
             }
         }
 
@@ -206,10 +208,12 @@ struct PurchasedResultPreferenceKey: PreferenceKey {
     struct PurchaseResult: Equatable {
         var transaction: StoreTransaction?
         var customerInfo: CustomerInfo
+        var userCancelled: Bool
 
         init(data: PurchaseResultData) {
             self.transaction = data.transaction
             self.customerInfo = data.customerInfo
+            self.userCancelled = data.userCancelled
         }
 
         init?(data: PurchaseResultData?) {
