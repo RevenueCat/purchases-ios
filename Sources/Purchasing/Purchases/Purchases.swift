@@ -1108,12 +1108,8 @@ public extension Purchases {
         guard !self.systemInfo.observerMode else {
             throw NewErrorUtils.observerModeNotEnabledError()
         }
-        let (userCancelled, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
+        let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
             purchaseResult: purchaseResult, fromTransactionUpdate: true)
-
-        if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
-            throw NewErrorUtils.purchaseCancelledError()
-        }
         return transaction
     }
 
