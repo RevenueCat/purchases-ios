@@ -53,17 +53,8 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         _ = try await Purchases.shared.handleObserverModeTransaction(result)
 
-        try await asyncWait(
-            description: "Entitlement didn't become active",
-            timeout: .seconds(5),
-            pollInterval: .milliseconds(500)
-        ) {
-            let entitlement = await self.purchasesDelegate
-                .customerInfo?
-                .entitlements[Self.entitlementIdentifier]
-
-            return entitlement?.isActive == true
-        }
+        let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
+        try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
