@@ -1045,7 +1045,7 @@ public protocol PurchasesSwiftType: AnyObject {
      *
      * - Warning: You need to finish the transaction yourself after calling this method.
      *
-     * - Parameter purchaseResult: The ``StoreKit.Product.PurchaseResult`` of the product that was just purchased.
+     * - Parameter purchaseResult: The `StoreKit.Product.PurchaseResult` of the product that was just purchased.
      *
      * - Throws: An error of type ``ErrorCode`` is thrown if a failure occurs while handling the purchase.
      *
