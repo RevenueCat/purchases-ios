@@ -73,7 +73,7 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
-    case observer_mode_required
+    case handle_transaction_observer_mode_required
 
     case sk2_required
 
@@ -190,7 +190,7 @@ extension ConfigureStrings: LogMessage {
             "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
 
-        case .observer_mode_required:
+        case .handle_transaction_observer_mode_required:
             return "Attempted to manually handle transactions with observer mode not enabled. " +
             "You must use `.with(observerMode: true)` when configuring the SDK."
 

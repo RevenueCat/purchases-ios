@@ -1022,7 +1022,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
      * guard let product = product else { return }
      * let result = try await product.purchase()
-     * // Let RevenueCat obserbe the transaction result
+     * // Let RevenueCat handle the transaction result
      * _ = try await Purchases.shared.handleObserverModeTransaction(result)
      * // Handle the result and finish the transaction
      * switch result {

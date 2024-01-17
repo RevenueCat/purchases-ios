@@ -37,7 +37,7 @@ protocol StoreKit2TransactionListenerType: Sendable {
 
     func set(delegate: StoreKit2TransactionListenerDelegate) async
 
-    /// - Throws: ``ErrorCode`` if purchase was not completed successfully
+    /// - Throws: ``PurchasesError`` if purchase was not completed successfully
     /// - Parameter fromTransactionUpdate: `true` only for transactions detected outside of a manual purchase flow.
     func handle(
         purchaseResult: StoreKit.Product.PurchaseResult,

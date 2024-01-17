@@ -86,7 +86,7 @@ enum PurchaseStrings {
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
-    case sk2_observer_mode_error_processing_transaction(error: Error)
+    case sk2_observer_mode_error_processing_transaction(Error)
 
 }
 
