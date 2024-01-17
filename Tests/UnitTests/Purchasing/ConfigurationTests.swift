@@ -56,4 +56,15 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .default
     }
 
+    func testObserverModeWithStoreKit2() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(observerMode: true)
+            .build()
+
+        expect(configuration.observerMode) == true
+        expect(configuration.storeKitVersion) == .storeKit2
+
+        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2)
+    }
+
 }
