@@ -555,7 +555,7 @@ jobs:
 
   run-test-ios-15:
     <<: *base-job
-    # Running on M1 makes these tests crash
+    # Fix-me: running on M1 makes these tests crash
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
@@ -753,6 +753,8 @@ jobs:
 
   release-checks:
     <<: *base-job
+    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See 
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
@@ -792,6 +794,8 @@ jobs:
 
   make-release:
     <<: *base-job
+    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See 
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
