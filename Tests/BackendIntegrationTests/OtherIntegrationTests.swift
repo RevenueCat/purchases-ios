@@ -32,8 +32,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     }
 
     func testGetCustomerInfoMultipleTimesInParallel() async throws {
-        let requestCount = 3
-
         let purchases = try self.purchases
 
         // 1. Make sure any existing customer info requests finish
@@ -42,18 +40,17 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         purchases.invalidateCustomerInfoCache()
         self.logger.clearMessages()
 
-        // 3. Request customer info multiple times in parallel
-        await withThrowingTaskGroup(of: Void.self) {
-            for _ in 0..<requestCount {
-                $0.addTask(priority: .background) { _ = try await purchases.customerInfo() }
-            }
-        }
+        async let info1 = purchases.customerInfo()
+        async let info2 = purchases.customerInfo()
+        async let info3 = purchases.customerInfo()
+
+        _ = try await (info1, info2, info3)
 
         // 4. Verify N-1 requests were de-duped
         self.logger.verifyMessageWasLogged(
             "Network operation 'GetCustomerInfoOperation' found with the same cache key",
             level: .debug,
-            expectedCount: requestCount - 1
+            expectedCount: 2
         )
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(
