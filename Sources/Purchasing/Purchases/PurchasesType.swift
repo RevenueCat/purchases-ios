@@ -1018,11 +1018,32 @@ public protocol PurchasesSwiftType: AnyObject {
      * #### Example:
      *
      * ```swift
-     * let result = try await product.purchase(options: options)
-     * Purchases.shared.handleObserverModeTransaction(result)
+     * // Fetch and purchase the product
+     * let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
+     * guard let product = product else { return }
+     * let result = try await product.purchase()
+     * // Let RevenueCat obserbe the transaction result
+     * _ = try await Purchases.shared.handleObserverModeTransaction(result)
+     * // Handle the result and finish the transaction
+     * switch result {
+     * case .success(let verification):
+     *     switch verification {
+     *     case .unverified(_, _):
+     *         break
+     *     case .verified(let transaction):
+     *         // If the purchase was successful and verified, finish the transaction
+     *         await transaction.finish()
+     *     }
+     * case .userCancelled:
+     *     break
+     * case .pending:
+     *     break
+     * @unknown default:
+     *     break
+     * }
      * ```
      *
-     * - Note: You need to finish the transaction yourself after calling this method.
+     * - Warning: You need to finish the transaction yourself after calling this method.
      *
      * - Parameter purchaseResult: The ``StoreKit.Product.PurchaseResult`` of the product that was just purchased.
      *

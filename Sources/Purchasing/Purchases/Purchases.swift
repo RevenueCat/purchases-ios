@@ -1116,7 +1116,8 @@ public extension Purchases {
             ).asPublicError
         }
         let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
-            purchaseResult: purchaseResult, fromTransactionUpdate: true)
+            purchaseResult: purchaseResult, fromTransactionUpdate: true
+        )
         return transaction
     }
 
