@@ -577,6 +577,7 @@ platform :ios do
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
