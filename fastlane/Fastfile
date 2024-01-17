@@ -571,7 +571,7 @@ platform :ios do
         'maccatalyst',
         'tvOS',
         'watchOS',
-        # Fixme: add xrOS
+        'visionOS'
       ]
 
     create_xcframework(
