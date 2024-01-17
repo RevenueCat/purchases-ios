@@ -1176,7 +1176,7 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-cocoapods:
           xcode_version: '14.3.0'
@@ -1212,7 +1212,7 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-tags
       - push-revenuecat-pod:
           xcode_version: '15.2'
