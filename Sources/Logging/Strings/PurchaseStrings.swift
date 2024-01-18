@@ -86,6 +86,7 @@ enum PurchaseStrings {
     case caching_presented_offering_identifier(offeringID: String, productID: String)
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
+    case sk2_observer_mode_error_processing_transaction(Error)
 
 }
 
@@ -329,6 +330,8 @@ extension PurchaseStrings: LogMessage {
         case .restorepurchases_called_with_allow_sharing_appstore_account_false:
             return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
+        case let .sk2_observer_mode_error_processing_transaction(error):
+            return "Obserber mode could not process transaction: \(error)"
         }
     }
 
