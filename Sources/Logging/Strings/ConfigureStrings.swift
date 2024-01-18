@@ -31,8 +31,6 @@ enum ConfigureStrings {
 
     case observer_mode_enabled
 
-    case observer_mode_with_storekit2
-
     case response_verification_mode(Signing.ResponseVerificationMode)
 
     case storekit_version(StoreKitVersion)
@@ -75,6 +73,12 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
+    case handle_transaction_observer_mode_required
+
+    case sk2_required
+
+    case observer_mode_with_storekit2
+
 }
 
 extension ConfigureStrings: LogMessage {
@@ -98,8 +102,6 @@ extension ConfigureStrings: LogMessage {
             return "Debug logging enabled"
         case .observer_mode_enabled:
             return "Purchases is configured in observer mode"
-        case .observer_mode_with_storekit2:
-            return "Observer mode is not currently compatible with StoreKit 2"
         case let .response_verification_mode(mode):
             switch mode {
             case .disabled:
@@ -187,6 +189,18 @@ extension ConfigureStrings: LogMessage {
             return "Purchases is not configured with StoreKit 2 enabled. This is required in order to detect " +
             "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
+
+        case .handle_transaction_observer_mode_required:
+            return "Attempted to manually handle transactions with observer mode not enabled. " +
+            "You must use `.with(observerMode: true)` when configuring the SDK."
+
+        case .sk2_required:
+            return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` " +
+            "when configuring the SDK."
+
+        case .observer_mode_with_storekit2:
+            return "StoreKit 2 Observer Mode is enabled. You must manually handle newly purchased transactions " +
+            "calling `Purchases.shared.handleObserverModeTransaction()`."
         }
     }
 
