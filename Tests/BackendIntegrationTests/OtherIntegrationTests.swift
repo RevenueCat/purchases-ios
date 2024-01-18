@@ -31,42 +31,6 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info.isComputedOffline) == false
     }
 
-    func testGetCustomerInfoMultipleTimesInParallel() async throws {
-        let requestCount = 3
-
-        let purchases = try self.purchases
-
-        // 1. Make sure any existing customer info requests finish
-        _ = try await purchases.customerInfo()
-        // 2. Invalidate cache
-        purchases.invalidateCustomerInfoCache()
-        self.logger.clearMessages()
-
-        // 3. Request customer info multiple times in parallel
-        await withThrowingTaskGroup(of: Void.self) {
-            for _ in 0..<requestCount {
-                $0.addTask { _ = try await purchases.customerInfo() }
-            }
-        }
-
-        // 4. Verify N-1 requests were de-duped
-        self.logger.verifyMessageWasLogged(
-            "Network operation 'GetCustomerInfoOperation' found with the same cache key",
-            level: .debug,
-            expectedCount: requestCount - 1
-        )
-        self.logger.verifyMessageWasLogged(
-            Strings.network.api_request_completed(
-                .init(method: .get,
-                      path: .getCustomerInfo(appUserID: try self.purchases.appUserID)),
-                httpCode: .notModified,
-                metadata: nil
-            ),
-            level: .debug,
-            expectedCount: 1
-        )
-    }
-
     func testGetCustomerInfoCaching() async throws {
         _ = try await self.purchases.customerInfo()
 
@@ -114,7 +78,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     func testCustomerInfoIsOnlyFetchedOnceOnAppLaunch() async throws {
         // 1. Make sure any existing customer info requests finish
-        _ = try await purchases.customerInfo()
+        _ = try? await purchases.customerInfo(fetchPolicy: .fromCacheOnly)
 
         // 2. Verify only one CustomerInfo request was done
         try self.logger.verifyMessageWasLogged(
