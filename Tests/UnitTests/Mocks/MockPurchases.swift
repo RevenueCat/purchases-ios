@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 10/10/22.
 
 @testable import RevenueCat
+import StoreKit
 
 final class MockPurchases {
 
@@ -454,6 +455,13 @@ extension MockPurchases: PurchasesSwiftType {
     func beginRefundRequestForActiveEntitlement(
         completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void
     ) {
+        self.unimplemented()
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func handleObserverModeTransaction(
+        _ purchaseResult: Product.PurchaseResult
+    ) async throws -> RevenueCat.StoreTransaction? {
         self.unimplemented()
     }
 
