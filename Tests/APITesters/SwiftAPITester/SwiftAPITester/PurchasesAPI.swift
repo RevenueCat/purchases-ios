@@ -263,6 +263,11 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
 
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let result = try await StoreKit.Product.products(for: [""]).first!.purchase()
+            let _: StoreTransaction? = try await purchases.handleObserverModeTransaction(result)
+        }
+
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
         #if os(iOS) || VISION_OS
