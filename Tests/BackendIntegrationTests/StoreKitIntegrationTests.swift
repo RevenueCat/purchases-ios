@@ -20,6 +20,19 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
+        let manager = ObserverModeManager()
+        let result = try await manager.purchaseProductFromStoreKit2()
+
+        do {
+            _ = try await Purchases.shared.handleObserverModeTransaction(result)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
+    }
+
 }
 
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
