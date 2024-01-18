@@ -31,29 +31,35 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validate(apiKey: "swRTCezdEzjnJSxdexDNJfcfiFrMXwqZ")) == .legacy
     }
 
-    func testStoreKitVersionUsesStoreKit1ByDefault() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .build()
+    func testNoObserverModeWithStoreKit1() {
+        let configuration = Configuration.Builder(withAPIKey: "test").build()
 
-        expect(configuration.storeKitVersion) == .default
+        expect(configuration.observerMode) == false
+        expect(configuration.storeKitVersion) == .storeKit1
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
-    @available(*, deprecated)
-    func testLegacyFlagSetsStoreKitVersionWhenStoreKit2Enabled() {
+    func testNoObserverModeWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(usesStoreKit2IfAvailable: true)
+            .with(storeKitVersion: .storeKit2)
             .build()
 
+        expect(configuration.observerMode) == false
         expect(configuration.storeKitVersion) == .storeKit2
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
-    @available(*, deprecated)
-    func testLegacyFlagSetsStoreKitVersionWhenStoreKit1Enabled() {
+    func testObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(usesStoreKit2IfAvailable: false)
+            .with(observerMode: true)
             .build()
 
-        expect(configuration.storeKitVersion) == .default
+        expect(configuration.observerMode) == true
+        expect(configuration.storeKitVersion) == .storeKit1
+
+        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
     func testObserverModeWithStoreKit2() {
@@ -65,7 +71,8 @@ class ConfigurationTests: TestCase {
         expect(configuration.observerMode) == true
         expect(configuration.storeKitVersion) == .storeKit2
 
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2)
+        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
+                                           level: .warn)
     }
 
 }
