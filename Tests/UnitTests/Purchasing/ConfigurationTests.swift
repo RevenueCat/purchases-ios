@@ -75,4 +75,29 @@ class ConfigurationTests: TestCase {
                                            level: .warn)
     }
 
+    func testStoreKitVersionUsesStoreKit1ByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+
+        expect(configuration.storeKitVersion) == .default
+    }
+
+    @available(*, deprecated)
+    func testLegacyFlagSetsStoreKitVersionWhenStoreKit2Enabled() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(usesStoreKit2IfAvailable: true)
+            .build()
+
+        expect(configuration.storeKitVersion) == .storeKit2
+    }
+
+    @available(*, deprecated)
+    func testLegacyFlagSetsStoreKitVersionWhenStoreKit1Enabled() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(usesStoreKit2IfAvailable: false)
+            .build()
+
+        expect(configuration.storeKitVersion) == .default
+    }
+
 }
