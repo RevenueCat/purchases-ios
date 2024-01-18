@@ -505,7 +505,7 @@ final class PurchasesOrchestrator {
         // `userCancelled` above comes from `StoreKitError.userCancelled`.
         // This detects if `Product.PurchaseResult.userCancelled` is true.
         let (userCancelled, transaction) = try await self.storeKit2TransactionListener
-            .handle(purchaseResult: result)
+            .handle(purchaseResult: result, fromTransactionUpdate: false)
 
         if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
             throw ErrorUtils.purchaseCancelledError()
