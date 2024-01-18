@@ -1180,6 +1180,30 @@ public extension Purchases {
 
 #endif
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func handleObserverModeTransaction(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction? {
+        guard self.systemInfo.observerMode else {
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.handle_transaction_observer_mode_required.description
+            ).asPublicError
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
+            ).asPublicError
+        }
+        do {
+            let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
+                purchaseResult: purchaseResult, fromTransactionUpdate: true
+            )
+            return transaction
+        } catch {
+            throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+        }
+    }
+
 }
 
 // swiftlint:enable missing_docs

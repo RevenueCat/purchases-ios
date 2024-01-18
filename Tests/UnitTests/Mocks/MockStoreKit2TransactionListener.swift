@@ -55,7 +55,8 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)]()
 
     func handle(
-        purchaseResult: StoreKit.Product.PurchaseResult
+        purchaseResult: StoreKit.Product.PurchaseResult,
+        fromTransactionUpdate: Bool = false
     ) async throws -> StoreKit2TransactionListener.ResultData {
         self.invokedHandle = true
         self.invokedHandleCount += 1
