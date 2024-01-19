@@ -7,3 +7,4 @@ tap "robotsandpencils/made"
 
 brew "swiftlint"
 brew "xcbeautify"
+brew "xcodes"
