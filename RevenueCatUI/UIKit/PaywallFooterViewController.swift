@@ -27,27 +27,31 @@ import UIKit
 @objc(RCPaywallFooterViewController)
 public final class PaywallFooterViewController: PaywallViewController {
 
-    override var mode: PaywallViewMode {
-        return .footer
-    }
-
     /// Initialize a `PaywallFooterViewController` with an optional `Offering`.
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     @objc
     public init(offering: Offering? = nil) {
-        super.init(offering: offering,
+        super.init(content: .optionalOffering(offering),
+                   fonts: DefaultPaywallFontProvider(),
+                   displayCloseButton: false)
+    }
+
+    /// Initialize a `PaywallFooterViewController` with an `Offering` identifier.
+    @objc
+    public init(offeringIdentifier: String) {
+        super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false)
     }
 
     @available(*, unavailable)
     override init(
-        offering: Offering? = nil,
+        content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false
     ) {
-        super.init(offering: offering,
+        super.init(content: content,
                    fonts: fonts,
                    displayCloseButton: false)
     }
@@ -56,6 +60,11 @@ public final class PaywallFooterViewController: PaywallViewController {
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    override class var mode: PaywallViewMode {
+        return .footer
+    }
+
 }
 
 #endif

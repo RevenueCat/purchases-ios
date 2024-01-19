@@ -88,7 +88,7 @@ extension View {
             .modifier(
                 PresentingPaywallFooterModifier(
                     configuration: .init(
-                        offering: offering,
+                        content: .optionalOffering(offering),
                         customerInfo: customerInfo,
                         mode: condensed ? .condensedFooter : .footer,
                         fonts: fonts,

@@ -18,11 +18,17 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
 
     let _: UIViewController = PaywallViewController(fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering)
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering")
     let _: UIViewController = PaywallViewController(displayCloseButton: true)
     let _: UIViewController = PaywallViewController(fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering, displayCloseButton: true)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
+                                                    fonts: fontProvider,
+                                                    displayCloseButton: true)
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", displayCloseButton: true)
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", fonts: fontProvider)
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
                                                     fonts: fontProvider,
                                                     displayCloseButton: true)
 }
@@ -33,6 +39,7 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?)
     controller.delegate = delegate
 
     let _: UIViewController = PaywallFooterViewController(offering: offering)
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering")
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

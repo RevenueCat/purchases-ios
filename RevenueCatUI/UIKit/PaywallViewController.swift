@@ -27,13 +27,7 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
-    var mode: PaywallViewMode {
-        return .fullScreen
-    }
-
-    private let offering: Offering?
-    private let fonts: PaywallFontProvider
-    private let displayCloseButton: Bool
+    private let configuration: PaywallViewConfiguration
 
     /// Initialize a `PaywallViewController` with an optional `Offering`.
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
@@ -56,14 +50,45 @@ public class PaywallViewController: UIViewController {
     /// `Offerings.current` will be used by default.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    public init(
+    public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false
     ) {
-        self.offering = offering
-        self.fonts = fonts
-        self.displayCloseButton = displayCloseButton
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton
+        )
+    }
+
+    /// Initialize a `PaywallViewController` with an offering identifier.
+    /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    public convenience init(
+        offeringIdentifier: String,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false
+    ) {
+        self.init(
+            content: .offeringIdentifier(offeringIdentifier),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton
+        )
+    }
+
+    init(
+        content: PaywallViewConfiguration.Content,
+        fonts: PaywallFontProvider,
+        displayCloseButton: Bool
+    ) {
+        self.configuration = .init(
+            content: content,
+            mode: Self.mode,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton
+        )
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -74,14 +99,7 @@ public class PaywallViewController: UIViewController {
     }
 
     private lazy var hostingController: UIHostingController<some View> = {
-        let view = PaywallView(
-            configuration: .init(
-                offering: self.offering,
-                mode: self.mode,
-                fonts: self.fonts,
-                displayCloseButton: self.displayCloseButton
-            )
-        )
+        let view = PaywallView(configuration: self.configuration)
             .onPurchaseCompleted { [weak self] transaction, customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
@@ -131,6 +149,11 @@ public class PaywallViewController: UIViewController {
         }
         super.viewDidDisappear(animated)
     }
+
+    class var mode: PaywallViewMode {
+        return .fullScreen
+    }
+
 }
 
 /// Delegate for ``PaywallViewController``.
