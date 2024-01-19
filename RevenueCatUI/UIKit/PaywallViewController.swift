@@ -77,12 +77,9 @@ public class PaywallViewController: UIViewController {
         let view = PaywallView(
             configuration: .init(
                 offering: self.offering,
-                customerInfo: nil,
                 mode: self.mode,
                 fonts: self.fonts,
-                displayCloseButton: self.displayCloseButton,
-                introEligibility: nil,
-                purchaseHandler: nil
+                displayCloseButton: self.displayCloseButton
             )
         )
             .onPurchaseCompleted { [weak self] transaction, customerInfo in
