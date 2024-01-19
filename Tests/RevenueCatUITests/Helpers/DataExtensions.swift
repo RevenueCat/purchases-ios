@@ -22,6 +22,19 @@ extension Offering {
         return self.map { $0?.with(localization: localization) }
     }
 
+    /// Creates a copy of the offering's paywall applying a modifier to its localization, if present.
+    func map(localization modifier: (inout PaywallData.LocalizedConfiguration) -> Void) -> Self {
+        return self.map { paywall in
+            if let paywall {
+                var localization = paywall.localizedConfiguration
+                modifier(&localization)
+                return paywall.with(localization: localization)
+            } else {
+                return nil
+            }
+        }
+    }
+
     /// Creates a copy of the offering's paywall with a new template name
     func with(templateName: String) -> Self {
         return self.map { $0?.with(templateName: templateName) }
