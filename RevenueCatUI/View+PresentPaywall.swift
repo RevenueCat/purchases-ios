@@ -179,12 +179,14 @@ private struct PresentingPaywallModifier: ViewModifier {
         content
             .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                 PaywallView(
-                    offering: self.offering,
-                    customerInfo: data.customerInfo,
-                    fonts: self.fontProvider,
-                    displayCloseButton: true,
-                    introEligibility: self.introEligibility,
-                    purchaseHandler: self.purchaseHandler
+                    configuration: .init(
+                        offering: self.offering,
+                        customerInfo: data.customerInfo,
+                        fonts: self.fontProvider,
+                        displayCloseButton: true,
+                        introEligibility: self.introEligibility,
+                        purchaseHandler: self.purchaseHandler
+                    )
                 )
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)

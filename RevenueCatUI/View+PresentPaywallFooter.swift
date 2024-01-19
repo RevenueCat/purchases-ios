@@ -85,43 +85,35 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
     ) -> some View {
         return self
-            .modifier(PresentingPaywallFooterModifier(
-                offering: offering,
-                customerInfo: customerInfo,
-                condensed: condensed,
-                purchaseCompleted: purchaseCompleted,
-                restoreCompleted: restoreCompleted,
-                fontProvider: fonts,
-                introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
-            ))
+            .modifier(
+                PresentingPaywallFooterModifier(
+                    configuration: .init(
+                        offering: offering,
+                        customerInfo: customerInfo,
+                        mode: condensed ? .condensedFooter : .footer,
+                        fonts: fonts,
+                        displayCloseButton: false,
+                        introEligibility: introEligibility,
+                        purchaseHandler: purchaseHandler
+                    ),
+                    purchaseCompleted: purchaseCompleted,
+                    restoreCompleted: restoreCompleted
+                )
+            )
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
-    let offering: Offering?
-    let customerInfo: CustomerInfo?
-    let condensed: Bool
-
+    let configuration: PaywallViewConfiguration
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let restoreCompleted: PurchaseOrRestoreCompletedHandler?
-    let fontProvider: PaywallFontProvider
-    let introEligibility: TrialOrIntroEligibilityChecker?
-    let purchaseHandler: PurchaseHandler?
 
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
-                PaywallView(
-                    offering: self.offering,
-                    customerInfo: self.customerInfo,
-                    mode: self.condensed ? .condensedFooter : .footer,
-                    fonts: self.fontProvider,
-                    introEligibility: self.introEligibility,
-                    purchaseHandler: self.purchaseHandler
-                )
+                PaywallView(configuration: self.configuration)
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)
                 }

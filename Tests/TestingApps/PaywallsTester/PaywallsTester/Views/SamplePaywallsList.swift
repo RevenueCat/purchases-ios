@@ -34,11 +34,15 @@ struct SamplePaywallsList: View {
         case let .template(template, mode):
             switch mode {
             case .fullScreen:
-                PaywallView(offering: Self.loader.offering(for: template),
-                            customerInfo: Self.loader.customerInfo,
-                            displayCloseButton: Self.displayCloseButton,
-                            introEligibility: Self.introEligibility,
-                            purchaseHandler: .default())
+                PaywallView(
+                    configuration: .init(
+                        offering: Self.loader.offering(for: template),
+                        customerInfo: Self.loader.customerInfo,
+                        displayCloseButton: Self.displayCloseButton,
+                        introEligibility: Self.introEligibility,
+                        purchaseHandler: .default()
+                    )
+                )
 
             #if !os(watchOS)
             case .footer, .condensedFooter:
@@ -51,12 +55,16 @@ struct SamplePaywallsList: View {
             }
 
         case let .customFont(template):
-            PaywallView(offering: Self.loader.offering(for: template),
-                        customerInfo: Self.loader.customerInfo,
-                        fonts: Self.customFontProvider,
-                        displayCloseButton: Self.displayCloseButton,
-                        introEligibility: Self.introEligibility,
-                        purchaseHandler: .default())
+            PaywallView(
+                configuration: .init(
+                    offering: Self.loader.offering(for: template),
+                    customerInfo: Self.loader.customerInfo,
+                    fonts: Self.customFontProvider,
+                    displayCloseButton: Self.displayCloseButton,
+                    introEligibility: Self.introEligibility,
+                    purchaseHandler: .default()
+                )
+            )
 
         #if !os(watchOS)
         case let .customPaywall(mode):
@@ -65,16 +73,24 @@ struct SamplePaywallsList: View {
         #endif
 
         case .missingPaywall:
-            PaywallView(offering: Self.loader.offeringWithDefaultPaywall(),
-                        customerInfo: Self.loader.customerInfo,
-                        introEligibility: Self.introEligibility,
-                        purchaseHandler: .default())
+            PaywallView(
+                configuration: .init(
+                    offering: Self.loader.offeringWithDefaultPaywall(),
+                    customerInfo: Self.loader.customerInfo,
+                    introEligibility: Self.introEligibility,
+                    purchaseHandler: .default()
+                )
+            )
 
         case .unrecognizedPaywall:
-            PaywallView(offering: Self.loader.offeringWithUnrecognizedPaywall(),
-                        customerInfo: Self.loader.customerInfo,
-                        introEligibility: Self.introEligibility,
-                        purchaseHandler: .default())
+            PaywallView(
+                configuration: .init(
+                    offering: Self.loader.offeringWithUnrecognizedPaywall(),
+                    customerInfo: Self.loader.customerInfo,
+                    introEligibility: Self.introEligibility,
+                    purchaseHandler: .default()
+                )
+            )
         }
     }
 
