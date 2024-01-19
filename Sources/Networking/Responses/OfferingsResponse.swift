@@ -38,6 +38,8 @@ struct OfferingsResponse {
 
     let currentOfferingId: String?
     let offerings: [Offering]
+    @DefaultDecodable.EmptyDictionary
+    var currentOfferingIdsByPlacement: [String: String]
 
 }
 

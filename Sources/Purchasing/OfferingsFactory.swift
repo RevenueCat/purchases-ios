@@ -31,6 +31,7 @@ class OfferingsFactory {
 
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
+                         currentOfferingIdsByPlacement: data.currentOfferingIdsByPlacement,
                          response: data)
     }
 
