@@ -498,6 +498,7 @@ private extension OfferingsManagerTests {
                 }
                 .dictionaryWithKeys(\.identifier),
             currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
+            currentOfferingIdsByPlacement: [:],
             response: MockData.anyBackendOfferingsResponse
         )
     }

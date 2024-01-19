@@ -45,18 +45,23 @@ import Foundation
         return all[currentOfferingID]
     }
 
+    
+    
     internal let response: OfferingsResponse
 
     private let currentOfferingID: String?
+    private let currentOfferingIdsByPlacement: [String: String]
 
     init(
         offerings: [String: Offering],
         currentOfferingID: String?,
+        currentOfferingIdsByPlacement: [String: String],
         response: OfferingsResponse
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
         self.response = response
+        self.currentOfferingIdsByPlacement = currentOfferingIdsByPlacement
     }
 
 }
@@ -92,5 +97,9 @@ public extension Offerings {
         description += "\tcurrentOffering=\(current?.description ?? "<none>")>"
         return description
     }
-
+    
+    @objc(getCurrentOfferingForPlacement:)
+    func getCurrentOffering(for placement: String) -> Offering? {
+        return self.currentOfferingIdsByPlacement[placement].flatMap { self.all[$0] }
+    }
 }

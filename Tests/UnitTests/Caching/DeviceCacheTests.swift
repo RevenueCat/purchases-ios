@@ -496,6 +496,7 @@ private extension DeviceCacheTests {
         return Offerings(
             offerings: [offeringIdentifier: offering],
             currentOfferingID: "base",
+            currentOfferingIdsByPlacement: [:],
             response: .init(currentOfferingId: "base", offerings: [offeringsData])
         )
     }
@@ -507,6 +508,7 @@ private extension Offerings {
     static let empty: Offerings = .init(
         offerings: [:],
         currentOfferingID: "",
+        currentOfferingIdsByPlacement: [:],
         response: .init(
             currentOfferingId: "",
             offerings: []

@@ -34,6 +34,7 @@ class PurchasesDiagnosticsTests: TestCase {
         self.purchases.mockedCustomerInfoResponse = .success(.emptyInfo)
         self.purchases.mockedOfferingsResponse = .success(.init(offerings: [:],
                                                                 currentOfferingID: nil,
+                                                                currentOfferingIdsByPlacement: [:],
                                                                 response: .init(currentOfferingId: nil, offerings: [])))
     }
 
