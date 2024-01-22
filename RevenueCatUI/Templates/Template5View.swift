@@ -223,12 +223,21 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     private func packageButton(_ package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
         VStack(alignment: Self.packageButtonAlignment.horizontal, spacing: 5) {
-            self.packageButtonTitle(package, selected: selected)
+            HStack(alignment: .top) {
+                self.packageButtonTitle(package, selected: selected)
+                    .defaultHorizontalPadding()
+                    .padding(.top, self.defaultVerticalPaddingLength)
+
+                Spacer(minLength: 0)
+
+                self.packageDiscountLabel(package, selected: selected)
+            }
 
             self.offerDetails(package: package, selected: selected)
+                .defaultHorizontalPadding()
+                .padding(.bottom, self.defaultVerticalPaddingLength)
         }
         .font(self.font(for: .body).weight(.medium))
-        .defaultPadding()
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: Self.packageButtonAlignment)
         .overlay {
@@ -239,10 +248,6 @@ struct Template5View: TemplateViewType {
                     : self.configuration.colors.unselectedOutline,
                     lineWidth: Constants.defaultPackageBorderWidth
                 )
-        }
-        .overlay(alignment: .topTrailing) {
-            self.packageDiscountLabel(package, selected: selected)
-                .padding(8)
         }
     }
 
@@ -276,6 +281,7 @@ struct Template5View: TemplateViewType {
                 )
                 .font(self.font(for: .caption))
                 .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+                .padding(8)
         }
     }
 
