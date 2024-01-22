@@ -22,6 +22,9 @@ enum PaywallError: Error {
     /// RevenueCat dashboard does not have a current offering configured.
     case noCurrentOffering
 
+    /// The selected offering was not found.
+    case offeringNotFound(identifier: String)
+
 }
 
 extension PaywallError: CustomNSError {
@@ -39,6 +42,9 @@ extension PaywallError: CustomNSError {
 
         case .noCurrentOffering:
             return "The RevenueCat dashboard does not have a current offering configured."
+
+        case let .offeringNotFound(identifier):
+            return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
         }
     }
 

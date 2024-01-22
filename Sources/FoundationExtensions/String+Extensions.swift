@@ -61,6 +61,17 @@ extension String {
 
 }
 
+// MARK: -
+
+internal extension Optional where Wrapped == String {
+
+    /// Returns `nil` if `self` is an empty string.
+    var notEmpty: String? {
+        return self.flatMap { $0.notEmpty }
+    }
+
+}
+
 private enum ROT13 {
 
     private static let key: [Character: Character] = {
