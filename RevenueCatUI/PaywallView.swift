@@ -59,12 +59,10 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false
     ) {
         self.init(
-            offering: nil,
-            customerInfo: nil,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            introEligibility: nil,
-            purchaseHandler: nil
+            configuration: .init(
+                fonts: fonts,
+                displayCloseButton: displayCloseButton
+            )
         )
     }
 
@@ -84,35 +82,26 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false
     ) {
         self.init(
-            offering: offering,
-            customerInfo: nil,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            introEligibility: nil,
-            purchaseHandler: nil
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton
+            )
         )
     }
 
-    init(
-        offering: Offering?,
-        customerInfo: CustomerInfo?,
-        mode: PaywallViewMode = .default,
-        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false,
-        introEligibility: TrialOrIntroEligibilityChecker?,
-        purchaseHandler: PurchaseHandler?
-    ) {
-        self._introEligibility = .init(wrappedValue: introEligibility ?? .default())
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+    init(configuration: PaywallViewConfiguration) {
+        self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
+        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default())
         self._offering = .init(
-            initialValue: offering ?? Self.loadCachedCurrentOfferingIfPossible()
+            initialValue: configuration.offering ?? Self.loadCachedCurrentOfferingIfPossible()
         )
         self._customerInfo = .init(
-            initialValue: customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
+            initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
-        self.mode = mode
-        self.fonts = fonts
-        self.displayCloseButton = displayCloseButton
+        self.mode = configuration.mode
+        self.fonts = configuration.fonts
+        self.displayCloseButton = configuration.displayCloseButton
     }
 
     // swiftlint:disable:next missing_docs
@@ -383,11 +372,13 @@ struct PaywallView_Previews: PreviewProvider {
         ForEach(Self.offerings, id: \.self) { offering in
             ForEach(Self.modes, id: \.self) { mode in
                 PaywallView(
-                    offering: offering,
-                    customerInfo: TestData.customerInfo,
-                    mode: mode,
-                    introEligibility: PreviewHelpers.introEligibilityChecker,
-                    purchaseHandler: PreviewHelpers.purchaseHandler
+                    configuration: .init(
+                        offering: offering,
+                        customerInfo: TestData.customerInfo,
+                        mode: mode,
+                        introEligibility: PreviewHelpers.introEligibilityChecker,
+                        purchaseHandler: PreviewHelpers.purchaseHandler
+                    )
                 )
                 .previewLayout(mode.layout)
                 .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")

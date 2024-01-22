@@ -60,12 +60,16 @@ class BaseSnapshotTest: TestCase {
         introEligibility: TrialOrIntroEligibilityChecker = BaseSnapshotTest.eligibleChecker,
         purchaseHandler: PurchaseHandler = BaseSnapshotTest.purchaseHandler
     ) -> some View {
-        return PaywallView(offering: offering,
-                           customerInfo: TestData.customerInfo,
-                           mode: mode,
-                           fonts: fonts,
-                           introEligibility: introEligibility,
-                           purchaseHandler: purchaseHandler)
+        return PaywallView(
+            configuration: .init(
+                offering: offering,
+                customerInfo: TestData.customerInfo,
+                mode: mode,
+                fonts: fonts,
+                introEligibility: introEligibility,
+                purchaseHandler: purchaseHandler
+            )
+        )
             .environment(\.isRunningSnapshots, true)
     }
 

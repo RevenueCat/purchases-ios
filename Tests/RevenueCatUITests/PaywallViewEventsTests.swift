@@ -137,11 +137,13 @@ private extension PaywallViewEventsTests {
 
     func createView() -> some View {
         PaywallView(
-            offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
-            mode: self.mode,
-            introEligibility: .producing(eligibility: .eligible),
-            purchaseHandler: self.handler
+            configuration: .init(
+                offering: Self.offering.withLocalImages,
+                customerInfo: TestData.customerInfo,
+                mode: self.mode,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: self.handler
+            )
         )
         .environment(\.colorScheme, self.scheme)
     }
