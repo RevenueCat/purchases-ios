@@ -164,6 +164,45 @@ class OfferingsTests: TestCase {
         expect(offeringB.availablePackages[safe: 1]?.identifier) == "custom_package"
         expect(offeringB.availablePackages[safe: 1]?.packageType) == .custom
     }
+    func testOfferingIdsByPlacement() throws {
+        let annualProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.annual")
+        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.monthly")
+        let customProduct = MockSK1Product(mockProductIdentifier: "com.myproduct.custom")
+        let products = [
+            "com.myproduct.annual": StoreProduct(sk1Product: annualProduct),
+            "com.myproduct.monthly": StoreProduct(sk1Product: monthlyProduct),
+            "com.myproduct.custom": StoreProduct(sk1Product: customProduct)
+        ]
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: products,
+                data: .init(
+                    currentOfferingId: "offering_a",
+                    offerings: [
+                        .init(identifier: "offering_a",
+                              description: "This is the base offering",
+                              packages: [
+                                .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
+                              ]),
+                        .init(identifier: "offering_b",
+                              description: "This is the base offering b",
+                              packages: [
+                                .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
+                                .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
+                              ])
+                    ],
+                    currentOfferingIdsByPlacement: .init(wrappedValue: ["placement_name": "offering_b"])
+                )
+            )
+        )
+
+        let offeringA = try XCTUnwrap(offerings["offering_a"])
+        let offeringB = try XCTUnwrap(offerings["offering_b"])
+        expect(offerings.current) === offeringA
+        expect(offerings.getCurrentOffering(for: "placement_name")) === offeringB
+        expect(offerings.getCurrentOffering(for: "unexisting_placement_name")).to(beNil())
+
+    }
 
     func testOfferingsWithMetadataIsCreated() throws {
         let metadata: [String: AnyDecodable] = [
