@@ -31,6 +31,9 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
                                                     fonts: fontProvider,
                                                     displayCloseButton: true)
+
+    controller.update(with: offering!)
+    controller.update(with: "offering_identifier")
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
