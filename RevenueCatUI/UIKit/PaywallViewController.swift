@@ -48,7 +48,7 @@ public class PaywallViewController: UIViewController {
     /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
-    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     public convenience init(
         offering: Offering? = nil,
@@ -64,7 +64,7 @@ public class PaywallViewController: UIViewController {
 
     /// Initialize a `PaywallViewController` with an offering identifier.
     /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
-    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
     public convenience init(
         offeringIdentifier: String,
