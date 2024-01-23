@@ -116,11 +116,13 @@ public class PaywallViewController: UIViewController {
     }
 
     /// - Warning: For internal use only
+    @objc(updateWithOffering:)
     public func update(with offering: Offering) {
         self.configuration.content = .offering(offering)
     }
 
     /// - Warning: For internal use only
+    @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
         self.configuration.content = .offeringIdentifier(offeringIdentifier)
     }
