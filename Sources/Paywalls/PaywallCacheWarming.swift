@@ -108,6 +108,17 @@ private final class DefaultPaywallImageFetcher: PaywallImageFetcherType {
 
 // MARK: - Extensions
 
+internal extension PaywallData {
+
+    /// - Returns: all image URLs contained in this paywall.
+    var allImageURLs: [URL] {
+        return self.config.images
+            .allImageNames
+            .map { self.assetBaseURL.appendingPathComponent($0) }
+    }
+
+}
+
 private extension Offerings {
 
     var offeringsToPreWarm: [Offering] {
@@ -149,16 +160,6 @@ private extension Offering {
                 .filter { packageTypes.contains($0.identifier) }
                 .map(\.storeProduct.productIdentifier)
         )
-    }
-
-}
-
-private extension PaywallData {
-
-    var allImageURLs: [URL] {
-        return self.config.images
-            .allImageNames
-            .map { self.assetBaseURL.appendingPathComponent($0) }
     }
 
 }
