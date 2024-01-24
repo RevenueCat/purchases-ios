@@ -210,8 +210,29 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 private extension PaywallViewController {
 
     func createHostingController() -> UIHostingController<PaywallContainerView> {
-        let controller = UIHostingController(rootView: PaywallContainerView(configuration: self.configuration,
-                                                                            controller: self))
+        let container = PaywallContainerView(
+            configuration: self.configuration,
+            purchaseCompleted: { [weak self] transaction, customerInfo in
+                guard let self else { return }
+                self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
+                self.delegate?.paywallViewController?(self,
+                                                      didFinishPurchasingWith: customerInfo,
+                                                      transaction: transaction)
+            },
+            purchaseCancelled: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidCancelPurchase?(self)},
+            restoreCompleted: { [weak self] customerInfo in
+                guard let self else { return }
+                self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
+            },
+            onSizeChange: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
+            }
+        )
+
+        let controller = UIHostingController(rootView: container)
 
         // make the background of the container clear so that if there are cutouts, they don't get
         // overridden by the hostingController's view's background.
@@ -227,29 +248,19 @@ private extension PaywallViewController {
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
-    var controller: PaywallViewController
+
+    let purchaseCompleted: PurchaseCompletedHandler
+    let purchaseCancelled: PurchaseCancelledHandler
+    let restoreCompleted: PurchaseOrRestoreCompletedHandler
+    let onSizeChange: (CGSize) -> Void
 
     var body: some View {
         PaywallView(configuration: self.configuration)
-            .onPurchaseCompleted { [weak controller = self.controller] transaction, customerInfo in
-                guard let controller else { return }
-                controller.delegate?.paywallViewController?(controller, didFinishPurchasingWith: customerInfo)
-                controller.delegate?.paywallViewController?(controller,
-                                                            didFinishPurchasingWith: customerInfo,
-                                                            transaction: transaction)
-            }
-            .onPurchaseCancelled { [weak controller = self.controller] in
-                guard let controller else { return }
-                controller.delegate?.paywallViewControllerDidCancelPurchase?(controller)
-            }
-            .onRestoreCompleted { [weak controller = self.controller] customerInfo in
-                guard let controller else { return }
-                controller.delegate?.paywallViewController?(controller, didFinishRestoringWith: customerInfo)
-            }
-            .onSizeChange { [weak controller = self.controller] in
-                guard let controller else { return }
-                controller.delegate?.paywallViewController?(controller, didChangeSizeTo: $0)
-            }
+            .onPurchaseCompleted(self.purchaseCompleted)
+            .onPurchaseCancelled(self.purchaseCancelled)
+            .onRestoreCompleted(self.restoreCompleted)
+            .onSizeChange(self.onSizeChange)
+
     }
 
 }
