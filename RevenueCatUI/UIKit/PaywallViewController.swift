@@ -29,6 +29,8 @@ public class PaywallViewController: UIViewController {
 
     private var configuration: PaywallViewConfiguration {
         didSet {
+            // Overriding the configuration requires re-creating the `HostingViewController`.
+            // This is used by some Hybrid SDKs that require modifying the content after creation.
             self.hostingController = self.createHostingController()
         }
     }
