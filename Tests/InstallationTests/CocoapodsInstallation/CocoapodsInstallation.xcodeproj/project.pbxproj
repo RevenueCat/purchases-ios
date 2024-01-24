@@ -18,6 +18,7 @@
 		2DC6CF222548A890009C7F3A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF212548A890009C7F3A /* main.m */; };
 		2DC6CF392548ACA5009C7F3A /* RCInstallationRunner.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF382548ACA5009C7F3A /* RCInstallationRunner.m */; };
 		2DC6CF792548D0B8009C7F3A /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2F7FA4343AA397E263E2F563 /* Pods_CocoapodsInstallation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7826321276AD259B421E5FF1 /* Pods_CocoapodsInstallation.framework */; };
 		4B945A094913BF8CB9316538 /* Pods_CocoapodsRevenueCatUIInstallationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 249E469175EA84C0DDB7979C /* Pods_CocoapodsRevenueCatUIInstallationTests.framework */; };
 		4F38109D2AF1BAA100441136 /* RCInstallationRunner.h in Headers */ = {isa = PBXBuildFile; fileRef = 2DC6CF372548ACA5009C7F3A /* RCInstallationRunner.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4F38109F2AF1BAA100441136 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DC6CF162548A88F009C7F3A /* ViewController.m */; };
@@ -30,8 +31,7 @@
 		4F3810A92AF1BAA100441136 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF1B2548A890009C7F3A /* Assets.xcassets */; };
 		4F3810AA2AF1BAA100441136 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2DC6CF182548A88F009C7F3A /* Main.storyboard */; };
 		4F3810B62AF1BAA500441136 /* InstallationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DC19153255F1B9D0039389A /* InstallationTests.swift */; };
-		510A1C991E467ADAB13389C7 /* Pods_CocoapodsInstallation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41C9DD9203D6C4C5C23D9DD2 /* Pods_CocoapodsInstallation.framework */; };
-		CAA41E24B747D737E520464C /* Pods_CocoapodsInstallationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A222C9A1BCB909725832EFC7 /* Pods_CocoapodsInstallationTests.framework */; };
+		D363B9499C9A2C3C3575796A /* Pods_CocoapodsInstallationTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D26DEF0C5AFE3BC541D8D50C /* Pods_CocoapodsInstallationTests.framework */; };
 		EFC8B347DAF2E16F6AEC80BD /* Pods_CocoapodsRevenueCatUIInstallation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81A7819A39ED096217FCAAE6 /* Pods_CocoapodsRevenueCatUIInstallation.framework */; };
 /* End PBXBuildFile section */
 
@@ -81,10 +81,12 @@
 		4F3810BD2AF1BAA500441136 /* CocoapodsRevenueCatUIInstallationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CocoapodsRevenueCatUIInstallationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		731208E8DEEF9EE67A14375C /* Pods-CocoapodsInstallationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsInstallationTests.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsInstallationTests/Pods-CocoapodsInstallationTests.release.xcconfig"; sourceTree = "<group>"; };
 		774ABE19B396EB5072BCAD9C /* Pods-CocoapodsRevenueCatUIInstallation.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsRevenueCatUIInstallation.debug.xcconfig"; path = "Target Support Files/Pods-CocoapodsRevenueCatUIInstallation/Pods-CocoapodsRevenueCatUIInstallation.debug.xcconfig"; sourceTree = "<group>"; };
+		7826321276AD259B421E5FF1 /* Pods_CocoapodsInstallation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsInstallation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81A7819A39ED096217FCAAE6 /* Pods_CocoapodsRevenueCatUIInstallation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsRevenueCatUIInstallation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A18EE1BB21A276284AEC82CB /* Pods-CocoapodsInstallation.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsInstallation.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsInstallation/Pods-CocoapodsInstallation.release.xcconfig"; sourceTree = "<group>"; };
 		BD361FD6A9202DCD29A1CAD8 /* Pods-CocoapodsRevenueCatUIInstallationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsRevenueCatUIInstallationTests.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsRevenueCatUIInstallationTests/Pods-CocoapodsRevenueCatUIInstallationTests.release.xcconfig"; sourceTree = "<group>"; };
 		C8F1BC25C94A83F5EE2FD8DC /* Pods-CocoapodsRevenueCatUIInstallation.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoapodsRevenueCatUIInstallation.release.xcconfig"; path = "Target Support Files/Pods-CocoapodsRevenueCatUIInstallation/Pods-CocoapodsRevenueCatUIInstallation.release.xcconfig"; sourceTree = "<group>"; };
+		D26DEF0C5AFE3BC541D8D50C /* Pods_CocoapodsInstallationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CocoapodsInstallationTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,7 +94,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				510A1C991E467ADAB13389C7 /* Pods_CocoapodsInstallation.framework in Frameworks */,
+				2F7FA4343AA397E263E2F563 /* Pods_CocoapodsInstallation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,7 +102,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CAA41E24B747D737E520464C /* Pods_CocoapodsInstallationTests.framework in Frameworks */,
+				D363B9499C9A2C3C3575796A /* Pods_CocoapodsInstallationTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +208,8 @@
 			children = (
 				81A7819A39ED096217FCAAE6 /* Pods_CocoapodsRevenueCatUIInstallation.framework */,
 				249E469175EA84C0DDB7979C /* Pods_CocoapodsRevenueCatUIInstallationTests.framework */,
+				7826321276AD259B421E5FF1 /* Pods_CocoapodsInstallation.framework */,
+				D26DEF0C5AFE3BC541D8D50C /* Pods_CocoapodsInstallationTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

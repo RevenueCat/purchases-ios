@@ -12,7 +12,7 @@ end
 
 target 'CocoapodsRevenueCatUIInstallation' do
   use_frameworks!
-  platform :ios, '15.0'
+  platform :ios, '11.0'
 
   pod 'RevenueCat', path: '../../../'
   pod 'RevenueCatUI', path: '../../../'
