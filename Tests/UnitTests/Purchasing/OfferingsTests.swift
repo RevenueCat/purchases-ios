@@ -199,8 +199,8 @@ class OfferingsTests: TestCase {
         let offeringA = try XCTUnwrap(offerings["offering_a"])
         let offeringB = try XCTUnwrap(offerings["offering_b"])
         expect(offerings.current) === offeringA
-        expect(offerings.getCurrentOffering(for: "placement_name")) === offeringB
-        expect(offerings.getCurrentOffering(for: "unexisting_placement_name")).to(beNil())
+        expect(offerings.getCurrentOffering(forPlacement: "placement_name")) === offeringB
+        expect(offerings.getCurrentOffering(forPlacement: "unexisting_placement_name")).to(beNil())
 
     }
 
