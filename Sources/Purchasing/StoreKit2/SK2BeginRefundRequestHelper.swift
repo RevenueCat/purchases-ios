@@ -16,11 +16,23 @@ import Foundation
 import StoreKit
 import UIKit
 
+@available(iOS 15.0, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+protocol SK2BeginRefundRequestHelperType: Sendable {
+
+    func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
+        Result<StoreKit.Transaction.RefundRequestStatus, Error>
+
+    func verifyTransaction(productID: String) async throws -> UInt64
+
+}
+
 /// Helper class responsible for calling into StoreKit2 and translating results/errors for consumption by RevenueCat.
 @available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-class SK2BeginRefundRequestHelper {
+final class SK2BeginRefundRequestHelper: SK2BeginRefundRequestHelperType {
 
     /// Calls `initiateSK2RefundRequest` and maps the result for consumption by `BeginRefundRequestHelper`
     @MainActor

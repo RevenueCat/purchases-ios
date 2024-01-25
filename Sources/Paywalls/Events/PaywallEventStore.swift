@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol PaywallEventStoreType {
+protocol PaywallEventStoreType: Sendable {
 
     /// Stores `event` into the store.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

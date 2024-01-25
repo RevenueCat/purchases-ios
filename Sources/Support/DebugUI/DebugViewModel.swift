@@ -59,6 +59,7 @@ final class DebugViewModel: ObservableObject {
         set { self._navigationPath = newValue }
     }
 
+    @MainActor
     func load() async {
         self.configuration = .loaded(.create())
 
@@ -68,11 +69,23 @@ final class DebugViewModel: ObservableObject {
         self.customerInfo = await .create { try await Purchases.shared.customerInfo() }
         self.currentAppUserID = Purchases.shared.appUserID
 
-        for await info in Purchases.shared.customerInfoStream {
-            self.customerInfo = .loaded(info)
-        }
+        await self.listenToCustomerInfoChanges()
         #endif
     }
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    // `nonisolated` required to work around Swift 5.10 issue.
+    // See https://github.com/RevenueCat/purchases-ios/pull/3599
+    nonisolated private func listenToCustomerInfoChanges() async {
+        for await info in Purchases.shared.customerInfoStream {
+            await self.updateCustomerInfo(info)
+        }
+    }
+
+    private func updateCustomerInfo(_ info: CustomerInfo) {
+        self.customerInfo = .loaded(info)
+    }
+    #endif
 
 }
 
