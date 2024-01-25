@@ -34,13 +34,6 @@ protocol SK2BeginRefundRequestHelperType: Sendable {
 @available(tvOS, unavailable)
 final class SK2BeginRefundRequestHelper: SK2BeginRefundRequestHelperType {
 
-    /// Calls `initiateSK2RefundRequest` and maps the result for consumption by `BeginRefundRequestHelper`
-    @MainActor
-    func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async throws -> RefundRequestStatus {
-        let sk2Result = await initiateSK2RefundRequest(transactionID: transactionID, windowScene: windowScene)
-        return try mapSk2Result(from: sk2Result)
-    }
-
     /* Checks with StoreKit2 that the given `productID` has an existing verified transaction, and maps the
      * result for consumption by `BeginRefundRequestHelper`.
      */
@@ -88,7 +81,21 @@ final class SK2BeginRefundRequestHelper: SK2BeginRefundRequestHelperType {
 @available(iOS 15.0, *)
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
-private extension SK2BeginRefundRequestHelper {
+extension SK2BeginRefundRequestHelperType {
+
+    /// Calls `initiateSK2RefundRequest` and maps the result for consumption by `BeginRefundRequestHelper`
+    @MainActor
+    func initiateRefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async throws -> RefundRequestStatus {
+        let sk2Result = await self.initiateSK2RefundRequest(transactionID: transactionID, windowScene: windowScene)
+        return try self.mapSk2Result(from: sk2Result)
+    }
+
+}
+
+@available(iOS 15.0, *)
+@available(watchOS, unavailable)
+@available(tvOS, unavailable)
+private extension SK2BeginRefundRequestHelperType {
 
     func getErrorMessage(from sk2Error: Error?) -> String {
         let details = sk2Error?.localizedDescription ?? "No extra info"
