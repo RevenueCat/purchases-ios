@@ -192,4 +192,33 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
     }
 
+    func testRequestPaywallImages() async throws {
+        let offering = try await XCTAsyncUnwrap(try await self.purchases.offerings().current)
+        let paywall = try XCTUnwrap(offering.paywall)
+        let images = paywall.allImageURLs
+
+        expect(images).toNot(beEmpty())
+
+        for imageURL in images {
+            let (data, response) = try await URLSession.shared.data(from: imageURL)
+            let urlResponse = try XCTUnwrap(response as? HTTPURLResponse)
+
+            expect(data)
+                .toNot(
+                    beEmpty(),
+                    description: "Found empty image: \(imageURL)"
+                )
+            expect(urlResponse.statusCode)
+                .to(
+                    equal(200),
+                    description: "Unexpected response for image: \(imageURL)"
+                )
+            expect(urlResponse.value(forHTTPHeaderField: "Content-Type"))
+                .to(
+                    equal("image/jpeg"),
+                    description: "Unexpected content type for image: \(imageURL)"
+                )
+        }
+    }
+
 }

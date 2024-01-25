@@ -34,6 +34,11 @@ class Template5ViewTests: BaseSnapshotTest {
             .snapshotLandscape()
     }
 
+    func testLargeProductNamePaywall() {
+        Self.createPaywall(offering: Self.offeringWithLargeProductNames.withLocalImages)
+            .snapshot(size: Self.fullScreenSize)
+    }
+
     func testCustomFont() {
         Self.createPaywall(offering: Self.offering.withLocalImages,
                            fonts: Self.fonts)
@@ -65,6 +70,10 @@ class Template5ViewTests: BaseSnapshotTest {
     }
 
     private static let offering = TestData.offeringWithTemplate5Paywall
+    private static let offeringWithLargeProductNames = TestData.offeringWithTemplate5Paywall
+        .map {
+            $0.offerName = "Very long product name: {{ product_name }} ({{ sub_period }})"
+        }
 
 }
 

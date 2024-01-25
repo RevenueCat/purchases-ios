@@ -139,7 +139,7 @@ extension View {
                 purchaseCancelled: purchaseCancelled,
                 restoreCompleted: restoreCompleted,
                 onDismiss: onDismiss,
-                offering: offering,
+                content: .optionalOffering(offering),
                 fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
                 introEligibility: introEligibility,
@@ -165,7 +165,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
     var onDismiss: (() -> Void)?
 
-    var offering: Offering?
+    var content: PaywallViewConfiguration.Content
     var fontProvider: PaywallFontProvider
 
     var customerInfoFetcher: View.CustomerInfoFetcher
@@ -179,12 +179,14 @@ private struct PresentingPaywallModifier: ViewModifier {
         content
             .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
                 PaywallView(
-                    offering: self.offering,
-                    customerInfo: data.customerInfo,
-                    fonts: self.fontProvider,
-                    displayCloseButton: true,
-                    introEligibility: self.introEligibility,
-                    purchaseHandler: self.purchaseHandler
+                    configuration: .init(
+                        content: self.content,
+                        customerInfo: data.customerInfo,
+                        fonts: self.fontProvider,
+                        displayCloseButton: true,
+                        introEligibility: self.introEligibility,
+                        purchaseHandler: self.purchaseHandler
+                    )
                 )
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)

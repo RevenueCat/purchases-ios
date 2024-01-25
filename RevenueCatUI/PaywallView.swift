@@ -25,6 +25,7 @@ import SwiftUI
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 public struct PaywallView: View {
 
+    private let contentToDisplay: PaywallViewConfiguration.Content
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
@@ -59,12 +60,10 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false
     ) {
         self.init(
-            offering: nil,
-            customerInfo: nil,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            introEligibility: nil,
-            purchaseHandler: nil
+            configuration: .init(
+                fonts: fonts,
+                displayCloseButton: displayCloseButton
+            )
         )
     }
 
@@ -84,35 +83,27 @@ public struct PaywallView: View {
         displayCloseButton: Bool = false
     ) {
         self.init(
-            offering: offering,
-            customerInfo: nil,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            introEligibility: nil,
-            purchaseHandler: nil
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton
+            )
         )
     }
 
-    init(
-        offering: Offering?,
-        customerInfo: CustomerInfo?,
-        mode: PaywallViewMode = .default,
-        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false,
-        introEligibility: TrialOrIntroEligibilityChecker?,
-        purchaseHandler: PurchaseHandler?
-    ) {
-        self._introEligibility = .init(wrappedValue: introEligibility ?? .default())
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+    init(configuration: PaywallViewConfiguration) {
+        self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
+        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default())
         self._offering = .init(
-            initialValue: offering ?? Self.loadCachedCurrentOfferingIfPossible()
+            initialValue: configuration.content.extractInitialOffering()
         )
         self._customerInfo = .init(
-            initialValue: customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
+            initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
-        self.mode = mode
-        self.fonts = fonts
-        self.displayCloseButton = displayCloseButton
+        self.contentToDisplay = configuration.content
+        self.mode = configuration.mode
+        self.fonts = configuration.fonts
+        self.displayCloseButton = configuration.displayCloseButton
     }
 
     // swiftlint:disable:next missing_docs
@@ -143,10 +134,7 @@ public struct PaywallView: View {
                                 }
 
                                 if self.offering == nil {
-                                    guard let offering = try await Purchases.shared.offerings().current else {
-                                        throw PaywallError.noCurrentOffering
-                                    }
-                                    self.offering = offering
+                                    self.offering = try await self.loadOffering()
                                 }
 
                                 if self.customerInfo == nil {
@@ -198,6 +186,8 @@ public struct PaywallView: View {
         }
     }
 
+    // MARK: -
+
     private static let transition: AnyTransition = .opacity.animation(Constants.defaultAnimation)
 
 }
@@ -215,7 +205,37 @@ private extension PaywallView {
         }
     }
 
-    static func loadCachedCurrentOfferingIfPossible() -> Offering? {
+    func loadOffering() async throws -> Offering {
+        switch self.contentToDisplay {
+        case let .offering(offering):
+            return offering
+
+        case .defaultOffering:
+            return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
+
+        case let .offeringIdentifier(identifier):
+            return try await Purchases.shared.offerings()
+                .offering(identifier: identifier)
+                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+        }
+    }
+
+}
+
+// MARK: -
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallViewConfiguration.Content {
+
+    func extractInitialOffering() -> Offering? {
+        switch self {
+        case let .offering(offering): return offering
+        case .defaultOffering: return Self.loadCachedCurrentOfferingIfPossible()
+        case .offeringIdentifier: return nil
+        }
+    }
+
+    private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
         if Purchases.isConfigured {
             return Purchases.shared.cachedOfferings?.current
         } else {
@@ -383,11 +403,13 @@ struct PaywallView_Previews: PreviewProvider {
         ForEach(Self.offerings, id: \.self) { offering in
             ForEach(Self.modes, id: \.self) { mode in
                 PaywallView(
-                    offering: offering,
-                    customerInfo: TestData.customerInfo,
-                    mode: mode,
-                    introEligibility: PreviewHelpers.introEligibilityChecker,
-                    purchaseHandler: PreviewHelpers.purchaseHandler
+                    configuration: .init(
+                        offering: offering,
+                        customerInfo: TestData.customerInfo,
+                        mode: mode,
+                        introEligibility: PreviewHelpers.introEligibilityChecker,
+                        purchaseHandler: PreviewHelpers.purchaseHandler
+                    )
                 )
                 .previewLayout(mode.layout)
                 .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")
