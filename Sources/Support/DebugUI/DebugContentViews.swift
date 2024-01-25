@@ -374,7 +374,7 @@ private struct DebugPackageView: View {
 
             Section("Purchasing") {
                 Button {
-                    _ = Task<Void, Never> {
+                    _ = Task<Void, Never> { @MainActor in
                         do {
                             self.purchasing = true
                             try await self.purchase()
@@ -407,6 +407,7 @@ private struct DebugPackageView: View {
             }
     }
 
+    @MainActor
     private func purchase() async throws {
         _ = try await Purchases.shared.purchase(package: self.package)
     }
