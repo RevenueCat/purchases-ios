@@ -21,41 +21,56 @@ import StoreKit
 @available(watchOS, unavailable)
 @available(tvOS, unavailable)
 @available(tvOS, unavailable)
-class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelper {
+final class MockSK2BeginRefundRequestHelper: SK2BeginRefundRequestHelperType {
 
-    var mockSK2Error: Error?
+    private let _mockSK2Error: Atomic<Error?> = .init(nil)
+    private let _sk2Status: Atomic<StoreKit.Transaction.RefundRequestStatus?> = .init(nil)
+    private let _transactionVerified: Atomic<Bool> = true
+    private let _refundRequestCalled: Atomic<Bool> = false
+    private let _verifyTransactionCalled: Atomic<Bool> = false
 
-    // We can't directly store instances of `StoreKit.Transaction.RefundRequestStatus`, since that causes
-    // linking issues in iOS < 15, even with @available checks correctly in place.
-    // https://openradar.appspot.com/radar?id=4970535809187840
-    // https://github.com/apple/swift/issues/58099
-    private var untypedSK2Status: Box<StoreKit.Transaction.RefundRequestStatus?> = .init(nil)
-    var mockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
-        get { return self.untypedSK2Status.value }
-        set { self.untypedSK2Status = .init(newValue) }
+    var mockSK2Error: Error? {
+        get { self._mockSK2Error.value }
+        set { self._mockSK2Error.value = newValue }
     }
 
-    var transactionVerified = true
-    var refundRequestCalled = false
-    var verifyTransactionCalled = false
+    var mockSK2Status: StoreKit.Transaction.RefundRequestStatus? {
+        get { return self._sk2Status.value }
+        set { self._sk2Status.value = newValue }
+    }
 
-    override func initiateSK2RefundRequest(transactionID: UInt64, windowScene: UIWindowScene) async ->
-        Result<StoreKit.Transaction.RefundRequestStatus, Error> {
-        refundRequestCalled = true
-        if let error = mockSK2Error {
+    var refundRequestCalled: Bool {
+        get { return self._refundRequestCalled.value }
+        set { self._refundRequestCalled.value = newValue }
+    }
+    var transactionVerified: Bool {
+        get { return self._transactionVerified.value }
+        set { self._transactionVerified.value = newValue }
+    }
+    var verifyTransactionCalled: Bool {
+        get { return self._verifyTransactionCalled.value }
+        set { self._verifyTransactionCalled.value = newValue }
+    }
+
+    func initiateSK2RefundRequest(
+        transactionID: UInt64, windowScene: UIWindowScene
+    ) async -> Result<StoreKit.Transaction.RefundRequestStatus, Error> {
+        self.refundRequestCalled = true
+
+        if let error = self.mockSK2Error {
             return .failure(error)
         } else {
-            return .success(mockSK2Status ?? StoreKit.Transaction.RefundRequestStatus.success)
+            return .success(self.mockSK2Status ?? .success)
         }
     }
 
-    override func verifyTransaction(productID: String) async throws -> UInt64 {
-        verifyTransactionCalled = true
-        if transactionVerified {
-            return UInt64()
+    func verifyTransaction(productID: String) async throws -> UInt64 {
+        self.verifyTransactionCalled = true
+
+        if self.transactionVerified {
+            return 0
         } else {
-            let message = "Test error"
-            throw ErrorUtils.beginRefundRequestError(withMessage: message)
+            throw ErrorUtils.beginRefundRequestError(withMessage: "Test error")
         }
     }
 

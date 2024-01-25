@@ -67,3 +67,7 @@ extension InternalAPI {
     }
 
 }
+
+// @unchecked because:
+// - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
+extension InternalAPI: @unchecked Sendable {}

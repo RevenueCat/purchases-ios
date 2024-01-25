@@ -31,10 +31,10 @@ class BeginRefundRequestHelper {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
-    var sk2Helper: SK2BeginRefundRequestHelper {
+    var sk2Helper: SK2BeginRefundRequestHelperType {
         get {
             // swiftlint:disable:next force_cast
-            return self._sk2Helper! as! SK2BeginRefundRequestHelper
+            return self._sk2Helper! as! SK2BeginRefundRequestHelperType
         }
 
         set {
@@ -71,9 +71,9 @@ class BeginRefundRequestHelper {
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
         let windowScene = try self.systemInfo.currentWindowScene
 
-        let transactionID = try await sk2Helper.verifyTransaction(productID: productID)
-        return try await sk2Helper.initiateRefundRequest(transactionID: transactionID,
-                                                         windowScene: windowScene)
+        let transactionID = try await self.sk2Helper.verifyTransaction(productID: productID)
+        return try await self.sk2Helper.initiateRefundRequest(transactionID: transactionID,
+                                                              windowScene: windowScene)
     }
 
     @available(iOS 15.0, *)
