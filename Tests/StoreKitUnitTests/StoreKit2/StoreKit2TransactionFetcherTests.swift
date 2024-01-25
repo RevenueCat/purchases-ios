@@ -17,12 +17,10 @@ import StoreKitTest
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-@MainActor
 class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
     private var fetcher: StoreKit2TransactionFetcher!
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

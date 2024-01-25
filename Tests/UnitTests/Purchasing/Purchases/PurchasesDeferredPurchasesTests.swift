@@ -62,12 +62,12 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
         expect(self.purchasesDelegate.makeDeferredPurchase).toNot(beNil())
         expect(self.storeKit1Wrapper.payment).to(beNil())
 
-        var completionCalled = false
+        let completionCalled: Atomic<Bool> = false
 
         let makeDeferredPurchase = try XCTUnwrap(self.purchasesDelegate.makeDeferredPurchase)
 
         makeDeferredPurchase { (_, _, _, _) in
-            completionCalled = true
+            completionCalled.value = true
         }
 
         let transaction = MockTransaction()
@@ -76,7 +76,7 @@ class PurchaseDeferredPurchasesTests: BasePurchasesTests {
         try self.storeKit1WrapperDelegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
 
         expect(self.storeKit1Wrapper.payment) === payment
-        expect(completionCalled).toEventually(beTrue())
+        expect(completionCalled.value).toEventually(beTrue())
     }
 
     func testCallsShouldAddPromoPaymentDelegateMethod() throws {

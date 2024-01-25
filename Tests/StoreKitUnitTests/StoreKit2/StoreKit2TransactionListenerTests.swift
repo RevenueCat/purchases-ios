@@ -19,7 +19,6 @@ import XCTest
 
 // swiftlint:disable type_name
 
-@MainActor
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2TransactionListenerBaseTests: StoreKitConfigTestCase {
 
@@ -201,8 +200,8 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
         try self.testSession.buyProduct(productIdentifier: Self.productID)
 
-        try await asyncWait {
-            await self.delegate.invokedTransactionUpdated == true
+        try await asyncWait { [delegate = self.delegate!] in
+            delegate.invokedTransactionUpdated == true
         }
     }
 
@@ -211,8 +210,8 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
         await self.listener.listenForTransactions()
 
-        try await asyncWait {
-            await self.delegate.invokedTransactionUpdated == true
+        try await asyncWait { [delegate = self.delegate!] in
+            delegate.invokedTransactionUpdated == true
         }
     }
 
@@ -260,8 +259,8 @@ class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListene
     func testHandlesAllVerifiedTransactions() async throws {
         await self.listener.listenForTransactions()
 
-        try await asyncWait {
-            return await self.delegate.updatedTransactions.count == 2
+        try await asyncWait { [delegate = self.delegate!] in
+            return delegate.updatedTransactions.count == 2
         }
     }
 
@@ -270,8 +269,8 @@ class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListene
 
         await self.listener.listenForTransactions()
 
-        try await asyncWait {
-            return await self.delegate.updatedTransactions.count == 2
+        try await asyncWait { [delegate = self.delegate!] in
+            return delegate.updatedTransactions.count == 2
         }
 
         expect(self.delegate.receivedConcurrentRequest) == true
@@ -320,8 +319,8 @@ private extension StoreKit2TransactionListenerBaseTests {
             pollInterval: .milliseconds(100),
             file: file,
             line: line
-        ) {
-            await self.delegate.invokedTransactionUpdated == true
+        ) { [delegate = self.delegate!] in
+            delegate.invokedTransactionUpdated == true
         }
     }
 

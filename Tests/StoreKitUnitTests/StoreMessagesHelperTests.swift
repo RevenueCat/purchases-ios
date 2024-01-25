@@ -147,7 +147,11 @@ private final class MockStoreMessage: StoreMessage {
 @available(iOS 16.0, *)
 private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
-    var stubbedMessages: [StoreMessage] = []
+    private let _stubbedMessages: Atomic<[StoreMessage]> = .init([])
+    var stubbedMessages: [StoreMessage] {
+        get { return self._stubbedMessages.value }
+        set { self._stubbedMessages.value = newValue }
+    }
 
     var messages: AsyncStream<StoreMessage> {
         MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()

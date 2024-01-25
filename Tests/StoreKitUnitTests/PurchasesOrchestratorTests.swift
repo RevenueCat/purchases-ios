@@ -1714,7 +1714,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension PurchasesOrchestratorTests {
 
-    @MainActor
     func fetchSk1Product() async throws -> SK1Product {
         return MockSK1Product(
             mockProductIdentifier: Self.productID,
@@ -1722,7 +1721,6 @@ private extension PurchasesOrchestratorTests {
         )
     }
 
-    @MainActor
     func fetchSk1StoreProduct() async throws -> SK1StoreProduct {
         return try await SK1StoreProduct(sk1Product: fetchSk1Product())
     }

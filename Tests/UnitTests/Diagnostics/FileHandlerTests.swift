@@ -16,13 +16,11 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@MainActor
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseFileHandlerTests: TestCase {
 
     fileprivate var handler: FileHandler!
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -31,7 +29,6 @@ class BaseFileHandlerTests: TestCase {
         self.handler = try Self.createWithTemporaryFile()
     }
 
-    @MainActor
     override func tearDown() async throws {
         self.handler = nil
 

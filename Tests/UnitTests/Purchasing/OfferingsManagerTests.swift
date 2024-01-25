@@ -16,7 +16,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-@MainActor
 class OfferingsManagerTests: TestCase {
 
     var mockDeviceCache: MockDeviceCache!
