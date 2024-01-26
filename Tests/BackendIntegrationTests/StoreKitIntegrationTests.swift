@@ -503,8 +503,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterPurchase() async throws {
-        if Self.storeKit2Setting == .enabledForCompatibleDevices {
-            XCTExpectFailure("This test currently does not pass with SK2 (see FB11889732)")
+        if Self.storeKit2Setting == .enabledForCompatibleDevices, #unavailable(iOS 17.4) {
+            XCTExpectFailure("This test does not pass with SK2 until iOS 17.4 (see FB11889732)")
         }
 
         let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
