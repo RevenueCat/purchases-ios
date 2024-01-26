@@ -1,3 +1,9 @@
+## 4.32.3
+### Bugfixes
+* `Xcode 15.3 beta 1`: fix compilation errors (#3599) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Xcode 15.3 beta 1`: fix warnings on tests (#3600) via NachoSoto (@NachoSoto)
+
 ## 4.32.2
 ### Other Changes
 * `PaywallViewController`: methods for reconfiguring paywall with new offering (#3592) via NachoSoto (@NachoSoto)
