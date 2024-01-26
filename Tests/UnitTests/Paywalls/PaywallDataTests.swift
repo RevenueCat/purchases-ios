@@ -88,6 +88,9 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testChineseLocalizations() throws {
+        // This logic only works on iOS 16+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         let paywall: PaywallData = try self.decodeFixture("PaywallData-chinese")
 
         let traditional = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hant")))
