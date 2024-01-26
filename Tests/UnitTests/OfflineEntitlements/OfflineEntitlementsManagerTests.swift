@@ -16,7 +16,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-@MainActor
 class BaseOfflineEntitlementsManagerTests: TestCase {
 
     let mockBackend = MockBackend()

@@ -18,13 +18,11 @@ import XCTest
 
 /// Addition to `CachingProductsManagerTests` but for SK2 requests
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-@MainActor
 class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
 
     private var mockManager: MockProductsManager!
     private var cachingManager: CachingProductsManager!
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -120,7 +118,9 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
         var tasks: [Task<Set<SK2StoreProduct>, Error>] = []
 
         for _ in 0..<5 {
-            tasks.append(Task { try await self.cachingManager.sk2Products(withIdentifiers: [Self.productID]) })
+            tasks.append(Task { [manager = self.cachingManager!] in
+                try await manager.sk2Products(withIdentifiers: [Self.productID])
+            })
         }
 
         for task in tasks {

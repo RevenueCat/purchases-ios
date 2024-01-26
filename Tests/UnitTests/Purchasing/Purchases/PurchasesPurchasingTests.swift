@@ -80,6 +80,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
+    @MainActor
     func testPurchaseCallbackIsInvokedWhenProcessingQueueTransactionForSameProduct() {
         // This documents a race condition that we can't detect in the implementation
         // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
@@ -117,6 +118,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callbackInvoked) == true
     }
 
+    @MainActor
     func testHandlesTransactionFromPurchaseAfterReviewingQueueUpdateForSameProductIdentifier() throws {
         // This documents a race condition that we can't detect in the implementation
         // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
@@ -181,6 +183,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == true
     }
 
+    @MainActor
     func testFinishesTransactionsIfSentToBackendCorrectly() throws {
         var finished = false
 
@@ -230,6 +233,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
+    @MainActor
     func testDoesntFinishTransactionIfComputingCustomerInfoOffline() throws {
         // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
         // but offline CustomerInfo isn't supported anyway.
@@ -240,8 +244,8 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         let productID = "com.product.id1"
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))
 
-        self.purchases.purchase(product: product) { (_, _, _, _) in
-            expect(self.storeKit1Wrapper.finishCalled) == false
+        self.purchases.purchase(product: product) { [wrapper = self.storeKit1Wrapper!] (_, _, _, _) in
+            expect(wrapper.finishCalled) == false
 
             finished = true
         }
@@ -286,6 +290,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
+    @MainActor
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() throws {
         var finished = false
 
@@ -341,6 +346,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
+    @MainActor
     func testNotifiesIfTransactionFailsFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: Error?
@@ -362,6 +368,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).toEventuallyNot(beNil())
     }
 
+    @MainActor
     func testCompletionBlockOnlyCalledOnce() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -384,6 +391,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callCount).toEventually(equal(1))
     }
 
+    @MainActor
     func testUserCancelledFalseIfPurchaseSuccessful() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -400,6 +408,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
+    @MainActor
     func testUnknownErrorCurrentlySubscribedIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -439,6 +448,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
     }
 
+    @MainActor
     func testUserCancelledTrueIfSK1PurchaseCancelled() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -506,6 +516,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(beNil())
     }
 
+    @MainActor
     func testDoNotSendEmptyReceiptWhenMakingPurchase() throws {
         self.receiptFetcher.shouldReturnReceipt = false
 
@@ -590,6 +601,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedObserverMode) == false
     }
 
+    @MainActor
     func testNotifiesIfTransactionIsDeferredFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: NSError?
@@ -610,6 +622,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
+    @MainActor
     func testPurchasingNilProductIdentifierRetrunsError() {
         let product = StoreProduct(sk1Product: SK1Product())
         var receivedError: Error?
@@ -658,6 +671,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
+    @MainActor
     func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() throws {
         var receivedError: NSError?
         var secondCompletionCalled = false
@@ -683,6 +697,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(beNil())
     }
 
+    @MainActor
     func testCallsDelegateAfterBackendResponse() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -729,6 +744,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
+    @MainActor
     func testCompletionBlockNotCalledForDifferentProducts() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         let otherProduct = MockSK1Product(mockProductIdentifier: "com.product.id2")
@@ -751,6 +767,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callCount).toEventually(equal(0))
     }
 
+    @MainActor
     func testCallingPurchaseWhileSameProductPendingIssuesError() {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -842,6 +859,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
+    @MainActor
     func testPaymentSheetCancelledErrorIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -1086,6 +1104,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
+    @MainActor
     func testCancelledErrorInCustomEntitlementComputationModeForSK1Purchase() throws {
         self.setUpPurchasesCustomEntitlementMode()
 

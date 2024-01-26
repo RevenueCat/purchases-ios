@@ -18,7 +18,6 @@ import XCTest
 // swiftlint:disable type_name
 
 @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
-@MainActor
 class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
     private typealias Result = [String: IntroEligibility]

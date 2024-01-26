@@ -255,7 +255,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             offlineCreator: .init(
                 purchasedProductsFetcher: self.fetcher,
                 productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
-                creator: self.factory.create
+                creator: { self.factory.create(products: $0, mapping: $1, userID: $2) }
             ),
             userID: self.userID
         )
@@ -333,7 +333,6 @@ private final class CustomerInfoFactory {
         userID: String
     )?
 
-    @Sendable
     func create(products: [PurchasedSK2Product], mapping: ProductEntitlementMapping, userID: String) -> CustomerInfo {
         guard let result = self.stubbedResult else {
             fatalError("Creation requested without stub")

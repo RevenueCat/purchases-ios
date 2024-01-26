@@ -3,8 +3,8 @@ import XCTest
 
 @testable import RevenueCat
 
-@MainActor
 class BaseCustomerInfoManagerTests: TestCase {
+
     static let appUserID = "app_user_id"
 
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
@@ -164,6 +164,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnMainThreadCount) == 1
     }
 
+    @MainActor
     func testFetchAndCacheCustomerInfoIfStaleOnlyRefreshesCacheOnce() {
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         var firstCompletionCalled = false
@@ -242,6 +243,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
+    @MainActor
     func testCustomerInfoFetchesIfNoCache() {
         let appUserID = "myUser"
 

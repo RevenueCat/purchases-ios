@@ -16,13 +16,11 @@ import Nimble
 import XCTest
 
 @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
-@MainActor
 class CachingProductsManagerTests: TestCase {
 
     private var mockManager: MockProductsManager!
     private var cachingManager: CachingProductsManager!
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -120,7 +118,11 @@ class CachingProductsManagerTests: TestCase {
         var tasks: [Task<Set<StoreProduct>, Error>] = []
 
         for _ in 0..<5 {
-            tasks.append(Task { try await self.cachingManager.products(withIdentifiers: [Self.productID]) })
+            tasks.append(
+                Task { [manager = self.cachingManager!] in
+                    try await manager.products(withIdentifiers: [Self.productID])
+                }
+            )
         }
 
         for task in tasks {
