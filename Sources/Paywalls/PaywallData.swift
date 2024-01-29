@@ -524,7 +524,7 @@ private extension Locale {
 
     func sharesLanguageCode(with other: Locale) -> Bool {
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return self.language.languageCode == other.language.languageCode
+            return self.language.isEquivalent(to: other.language)
         } else {
             return self.languageCode == other.languageCode
         }

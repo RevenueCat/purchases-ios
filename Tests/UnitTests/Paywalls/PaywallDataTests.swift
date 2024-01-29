@@ -87,6 +87,21 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
     }
 
+    func testChineseLocalizations() throws {
+        // This logic only works on iOS 16+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-chinese")
+
+        let traditional = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hant")))
+        let simplified = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hans")))
+        let taiwan = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-TW")))
+
+        expect(traditional.title) == "Traditional"
+        expect(simplified.title) == "Simplified"
+        expect(taiwan.title) == "Traditional"
+    }
+
     func testModifyingImages() throws {
         var paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
         var expected = paywall.config.images
