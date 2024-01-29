@@ -118,12 +118,12 @@ extension View {
                     }
                 }
             } else {
-                self.scrollable(if: enabled)
+                self
+                    .centeredContent(axis)
+                    .scrollable(if: enabled)
             }
         } else {
             self
-                .centeredContent(axis)
-                .scrollable(if: enabled)
         }
     }
 
