@@ -253,14 +253,14 @@ platform :ios do
     pod_lib_lint(
       verbose: true,
       podspec: 'RevenueCat.podspec',
-      platforms: "visionOS",
+      platforms: "visionos",
       fail_fast: true
     )
     pod_lib_lint(
       verbose: true,
       podspec: 'RevenueCatUI.podspec',
       include_podspecs: 'RevenueCat.podspec',
-      platforms: "visionOS",
+      platforms: "visionos",
       fail_fast: true
     )
 
