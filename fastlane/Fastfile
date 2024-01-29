@@ -259,6 +259,7 @@ platform :ios do
     pod_lib_lint(
       verbose: true,
       podspec: 'RevenueCatUI.podspec',
+      include_podspecs: 'RevenueCat.podspec',
       platforms: "visionOS",
       fail_fast: true
     )
