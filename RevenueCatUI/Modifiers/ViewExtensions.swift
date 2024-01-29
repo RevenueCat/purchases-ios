@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 7/13/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 import SwiftUI
 
@@ -53,7 +55,7 @@ extension View {
 
 // MARK: - Scrolling
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
     @ViewBuilder
@@ -83,7 +85,6 @@ extension View {
         #endif
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @ViewBuilder
     func scrollableIfNecessary(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
         if enabled {
@@ -102,6 +103,28 @@ extension View {
             self
         }
     }
+
+    /// Equivalent to `scrollableIfNecessary` except that it's always scrollable on iOS 15
+    /// to work around issues with that iOS 15 implementation in some instances.
+    @ViewBuilder
+    func scrollableIfNecessaryWhenAvailable(_ axis: Axis = .vertical, enabled: Bool = true) -> some View {
+        if enabled {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                ViewThatFits(in: axis.scrollViewAxis) {
+                    self
+
+                    ScrollView(axis.scrollViewAxis) {
+                        self
+                    }
+                }
+            } else {
+                self.scrollable(if: enabled)
+            }
+        } else {
+            self
+        }
+    }
+
 }
 
 // MARK: - Padding
