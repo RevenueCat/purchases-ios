@@ -122,6 +122,26 @@ extension View {
             }
         } else {
             self
+                .centeredContent(axis)
+                .scrollable(if: enabled)
+        }
+    }
+
+    @ViewBuilder
+    fileprivate func centeredContent(_ axis: Axis) -> some View {
+        switch axis {
+        case .horizontal:
+            HStack {
+                Spacer()
+                self
+                Spacer()
+            }
+        case .vertical:
+            VStack {
+                Spacer()
+                self
+                Spacer()
+            }
         }
     }
 
@@ -186,7 +206,8 @@ private struct ScrollableIfNecessaryModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         GeometryReader { geometry in
-            self.centeredContent(content)
+            content
+                .centeredContent(self.axis)
                 .background(
                     GeometryReader { contentGeometry in
                         Color.clear
@@ -202,24 +223,6 @@ private struct ScrollableIfNecessaryModifier: ViewModifier {
                 )
         }
         .scrollable(self.axis.scrollViewAxis, if: self.overflowing)
-    }
-
-    @ViewBuilder
-    private func centeredContent(_ content: Content) -> some View {
-        switch self.axis {
-        case .horizontal:
-            HStack {
-                Spacer()
-                content
-                Spacer()
-            }
-        case .vertical:
-            VStack {
-                Spacer()
-                content
-                Spacer()
-            }
-        }
     }
 
 }
