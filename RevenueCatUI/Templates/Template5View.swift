@@ -77,11 +77,11 @@ struct Template5View: TemplateViewType {
                     self.features
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
-                .scrollableIfNecessary()
+                .scrollableIfNecessaryWhenAvailable()
 
                 self.packages
                     .padding(.top, self.defaultVerticalPaddingLength)
-                    .scrollableIfNecessary()
+                    .scrollableIfNecessaryWhenAvailable()
             }
 
             Spacer()
@@ -108,7 +108,7 @@ struct Template5View: TemplateViewType {
                         // Compensate for additional padding on condensed mode + iPad
                         : self.defaultVerticalPaddingLength.map { $0 * -1 }
                     )
-                    .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
+                    .scrollableIfNecessaryWhenAvailable(enabled: self.configuration.mode.isFullScreen)
             }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
