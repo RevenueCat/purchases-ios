@@ -184,8 +184,6 @@ final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
     private var mockFileReader: MockFileReader!
 
     override func setUpWithError() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.mockFileReader = MockFileReader()
 
         try super.setUpWithError()

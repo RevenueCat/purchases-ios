@@ -235,10 +235,6 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
     @MainActor
     func testDoesntFinishTransactionIfComputingCustomerInfoOffline() throws {
-        // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
-        // but offline CustomerInfo isn't supported anyway.
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         var finished = false
 
         let productID = "com.product.id1"
@@ -484,8 +480,6 @@ class PurchasesPurchasingTests: BasePurchasesTests {
 
     @MainActor
     func testUserCancelledTrueIfSK1AsyncPurchaseCancelled() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
         var result: PurchaseResultData?
@@ -1140,8 +1134,6 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
 
     @MainActor
     func testThrowsUserCancelledErrorIfSK1AsyncPurchaseCancelledWithCustomEntitlementComputation() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.setUpPurchasesCustomEntitlementMode()
 
         var result: PurchaseResultData?

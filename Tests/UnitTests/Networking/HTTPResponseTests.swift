@@ -39,8 +39,6 @@ class HTTPResponseTests: TestCase {
     }
 
     func testResponseVerificationNotRequestedWithPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .postOfferForSigning)
@@ -60,8 +58,6 @@ class HTTPResponseTests: TestCase {
     }
 
     func testResponseVerificationFailedIfMissingSignature() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)

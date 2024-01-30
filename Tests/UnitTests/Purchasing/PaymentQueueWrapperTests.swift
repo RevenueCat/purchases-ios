@@ -27,8 +27,6 @@ class PaymentQueueWrapperTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.paymentQueue = MockPaymentQueue()
         self.wrapper = .init(paymentQueue: self.paymentQueue)
         self.delegate = WrapperDelegate()

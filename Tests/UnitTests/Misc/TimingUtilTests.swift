@@ -23,8 +23,6 @@ class TimingUtilAsyncTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.clock = TestClock()
     }
 

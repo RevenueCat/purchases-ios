@@ -28,7 +28,6 @@ import WatchKit
 ///     - `macCatalyst 15.2` maps to `.iOS15`
 enum OSVersionEquivalent: Int {
 
-    case iOS12 = 12
     case iOS13 = 13
     case iOS14 = 14
     case iOS15 = 15

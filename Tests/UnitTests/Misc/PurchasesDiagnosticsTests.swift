@@ -24,8 +24,6 @@ class PurchasesDiagnosticsTests: TestCase {
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.purchases = .init()
         self.diagnostics = .init(purchases: self.purchases)
 

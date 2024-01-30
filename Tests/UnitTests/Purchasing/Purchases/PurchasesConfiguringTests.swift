@@ -184,8 +184,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .disabled)
@@ -194,8 +192,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testEntitlementVerificationModeInformationalSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .informational)
@@ -206,8 +202,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     // Can't compile this test while `Configuration.EntitlementVerificationMode.enforced` is unavailable.
     /*
     func testEntitlementVerificationModeEnforcedSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .enforced)

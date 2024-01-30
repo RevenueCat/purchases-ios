@@ -23,8 +23,6 @@ class BaseFileHandlerTests: TestCase {
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.handler = try Self.createWithTemporaryFile()
     }
 

@@ -18,12 +18,6 @@ import XCTest
 
 class AsyncExtensionsTests: TestCase {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-    }
-
     func testPublicErrorResultReturningSuccess() {
         var result: Result<Int, PublicError>?
         let expected = Int.random(in: 0..<100)

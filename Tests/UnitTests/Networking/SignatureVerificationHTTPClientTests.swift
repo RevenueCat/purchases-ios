@@ -26,8 +26,6 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager>
     fileprivate var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         // Note: these tests use the real `ETagManager`
         self.userDefaultsSuiteName = UUID().uuidString
         self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!

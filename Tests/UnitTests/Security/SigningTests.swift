@@ -30,8 +30,6 @@ class SigningTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.signing = .init(apiKey: Self.apiKey, clock: TestClock(now: Self.mockDate))
     }
 

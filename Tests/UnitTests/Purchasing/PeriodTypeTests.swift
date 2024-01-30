@@ -17,13 +17,6 @@ import XCTest
 
 class PeriodTypeTests: TestCase {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        // iOS 12 does not allow decoding fragments (top-level objects)
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-    }
-
     func testCodable() throws {
         for type in PeriodType.allCases {
             expect(try type.encodeAndDecode()) == type

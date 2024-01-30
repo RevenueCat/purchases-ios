@@ -19,8 +19,6 @@ import XCTest
 class OperatorExtensionsAsyncNilCoalescingTests: TestCase { // swiftlint:disable:this type_name
 
     func testReturnsInput() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let input: Bool? = true
         let result = await input ??? (await self.provider())
 
@@ -28,8 +26,6 @@ class OperatorExtensionsAsyncNilCoalescingTests: TestCase { // swiftlint:disable
     }
 
     func testDoesNotThrowIfInputIsNotNil() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let input: Bool? = true
         let result = try await input ??? (try await self.throwError())
 
@@ -37,8 +33,6 @@ class OperatorExtensionsAsyncNilCoalescingTests: TestCase { // swiftlint:disable
     }
 
     func testReturnsDefaultValue() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let input: Bool? = nil
         let result = await input ??? (await self.provider())
 
@@ -46,8 +40,6 @@ class OperatorExtensionsAsyncNilCoalescingTests: TestCase { // swiftlint:disable
     }
 
     func testThrowsError() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let input: Bool? = nil
         do {
             _ = try await input ??? (await self.throwError())

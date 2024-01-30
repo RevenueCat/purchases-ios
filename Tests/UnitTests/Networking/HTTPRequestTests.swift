@@ -210,8 +210,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let existingNonce = Data.randomNonce()
         let request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
         let mode = Signing.enforcedVerificationMode()
@@ -225,8 +223,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
         let mode = Signing.enforcedVerificationMode()
 
@@ -234,8 +230,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
         let mode = Signing.enforcedVerificationMode()
 
@@ -243,8 +237,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
         let mode = Signing.enforcedVerificationMode()
 
@@ -252,8 +244,6 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
         let mode = Signing.verificationMode(with: .informational)
 

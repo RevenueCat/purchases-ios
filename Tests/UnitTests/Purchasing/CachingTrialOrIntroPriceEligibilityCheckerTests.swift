@@ -28,8 +28,6 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.mockChecker = .init()
         self.caching = .init(checker: self.mockChecker)
     }

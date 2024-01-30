@@ -56,8 +56,6 @@ class PurchasesGetProductsTests: BasePurchasesTests {
     }
 
     func testGetEligibilityForPackages() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let packages: [Package] = [
             .init(identifier: "package1",
                   packageType: .weekly,

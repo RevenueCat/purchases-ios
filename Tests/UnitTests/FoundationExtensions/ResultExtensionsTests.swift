@@ -72,8 +72,6 @@ class ResultExtensionsTests: TestCase {
     }
 
     func testInitWithThrowingAsyncBlockReturningValue() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let expectedValue: Int = .random(in: 0..<100)
 
         func asyncValue() async throws -> Int {
@@ -86,8 +84,6 @@ class ResultExtensionsTests: TestCase {
     }
 
     func testInitWithThrowingAsyncBlockThrowingError() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let expectedError: ErrorCode = .customerInfoError
 
         func asyncValue() async throws -> Int {

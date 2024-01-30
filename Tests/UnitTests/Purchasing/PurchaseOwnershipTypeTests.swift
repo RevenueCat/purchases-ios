@@ -17,13 +17,6 @@ import XCTest
 
 class PurchaseOwnershipTypeTests: TestCase {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        // iOS 12 does not allow decoding fragments (top-level objects)
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-    }
-
     func testCodable() throws {
         for type in PurchaseOwnershipType.allCases {
             expect(try type.encodeAndDecode()) == type

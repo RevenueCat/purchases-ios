@@ -64,14 +64,10 @@ class DataExtensionsTests: TestCase {
     }
 
     func testRandomNonceHasCorrectSize() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         expect(Data.randomNonce().count) == Data.nonceLength
     }
 
     func testRandomNonceIsRandom() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let random1 = Data.randomNonce()
         let random2 = Data.randomNonce()
 

@@ -25,9 +25,6 @@ class BaseCustomerInfoResponseHandlerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        // These tests are written using async for simplicity
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.fetcher = MockPurchasedProductsFetcher()
         self.factory = CustomerInfoFactory()
     }

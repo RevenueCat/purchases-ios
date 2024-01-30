@@ -135,8 +135,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     }
 
     func testGetCustomerInfoWithVerifiedResponse() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.validCustomerResponse, verificationResult: .verified)
@@ -151,8 +149,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     }
 
     func testGetCustomerInfoWithFailedVerification() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(statusCode: .success,
@@ -200,12 +196,6 @@ class BackendGetCustomerInfoSignatureTests: BaseBackendTests {
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
-    }
-
-    override func setUpWithError() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
-        try super.setUpWithError()
     }
 
     func testSendsNonceWhenEnabled() {
