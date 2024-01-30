@@ -477,7 +477,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
 }
 
-// iOS 13.0+ only because these tests are async
 class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
 
     private var mockRefreshedCustomerInfo: CustomerInfo!

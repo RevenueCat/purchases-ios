@@ -15,7 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 class CachingProductsManagerTests: TestCase {
 
     private var mockManager: MockProductsManager!
@@ -133,7 +132,6 @@ class CachingProductsManagerTests: TestCase {
 
 // MARK: - Private
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 private extension CachingProductsManagerTests {
 
     static let productID = "com.revenuecat.product_id"

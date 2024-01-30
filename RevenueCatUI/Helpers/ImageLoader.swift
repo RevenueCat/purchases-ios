@@ -98,7 +98,6 @@ extension URLSession: URLSessionType {}
 
 private extension Data {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func toImage() -> ImageLoader.Value {
         #if os(macOS)
         if let image = NSImage(data: self) {

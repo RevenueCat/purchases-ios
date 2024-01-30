@@ -22,14 +22,6 @@ class BasePurchasesTests: TestCase {
     private static let userDefaultsSuiteName = "TestDefaults"
 
     override func setUpWithError() throws {
-        #if swift(>=5.10)
-        // Apple replaced `XCTestCase.addTeardownBlock` with a Swift implementation
-        // which is no longer available on iOS 11/12.
-        guard #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *) else {
-            throw XCTSkip("addTeardownBlock is not available")
-        }
-        #endif
-
         try super.setUpWithError()
 
         // Some tests rely on the level being at least `.debug`

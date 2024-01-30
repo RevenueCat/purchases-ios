@@ -11,8 +11,6 @@
 //
 //  Created by Nacho Soto on 1/13/23.
 
-// swiftlint:disable file_length
-
 import CryptoKit
 import Foundation
 
@@ -141,7 +139,6 @@ final class Signing: SigningType {
     // MARK: -
 
     /// The actual algorithm used to verify signatures.
-    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
     fileprivate typealias Algorithm = Curve25519.Signing.PublicKey
 
     private static let publicKey = "UC1upXWg5QVmyOSwozp755xLqquBKjjU+di6U8QhMlM="
@@ -320,7 +317,6 @@ private final class BundleToken: NSObject {}
 
 private extension Signing {
 
-    @available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *)
     static func createPublicKey(with data: Data) throws -> PublicKey {
         return try Algorithm(rawRepresentation: data)
     }
@@ -330,8 +326,6 @@ private extension Signing {
         publicKey: Signing.PublicKey,
         clock: ClockType
     ) -> Signing.PublicKey? {
-        guard #available(iOS 13.0, macOS 10.15, watchOS 6.0, tvOS 13.0, *) else { return nil }
-
         let intermediatePublicKey = signature.component(.intermediatePublicKey)
         let intermediateKeyExpiration = signature.component(.intermediateKeyExpiration)
         let intermediateKeySignature = signature.component(.intermediateKeySignature)
