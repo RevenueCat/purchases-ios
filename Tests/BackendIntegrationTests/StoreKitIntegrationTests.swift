@@ -772,6 +772,47 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
         expect(transaction.offerID) == offer.discount.offerIdentifier
         expect(transaction.offerType) == .promotional
+        expect(transaction.appAccountToken?.uuidString) == user
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    func testPurchaseWithPromotionalOfferWithNonUUIDappUserId() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let user = "not_a_uuid.\(UUID().uuidString)"
+
+        let (_, created) = try await self.purchases.logIn(user)
+        expect(created) == true
+
+        let product = try await self.monthlyNoIntroProduct
+
+        // 1. Purchase subscription
+
+        var customerInfo = try await self.purchases.purchase(product: product).customerInfo
+        var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+
+        // 2. Expire subscription
+
+        try await self.expireSubscription(entitlement)
+        try await self.verifySubscriptionExpired()
+
+        // 3. Get eligible offer
+
+        let offer = try await XCTAsyncUnwrap(await product.eligiblePromotionalOffers().onlyElement)
+
+        // 4. Purchase with offer
+
+        customerInfo = try await self.purchases.purchase(product: product, promotionalOffer: offer).customerInfo
+
+        // 5. Verify offer was applied
+
+        entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        let transaction = try await Self.findTransaction(for: product.productIdentifier)
+
+        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
+        expect(transaction.offerID) == offer.discount.offerIdentifier
+        expect(transaction.offerType) == .promotional
+        expect(transaction.appAccountToken) == nil
     }
 
     func testCustomerInfoStream() async throws {

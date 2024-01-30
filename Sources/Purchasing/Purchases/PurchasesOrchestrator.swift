@@ -475,6 +475,13 @@ final class PurchasesOrchestrator {
                 .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
             ]
 
+            if let uuid = UUID(uuidString: self.appUserID) {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
+                )
+                options.insert(.appAccountToken(uuid))
+            }
+
             if let signedData = promotionalOffer {
                 Logger.debug(
                     Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
