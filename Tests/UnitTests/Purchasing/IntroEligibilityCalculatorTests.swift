@@ -3,7 +3,6 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 class IntroEligibilityCalculatorTests: TestCase {
 
     private var calculator: IntroEligibilityCalculator!
@@ -284,7 +283,6 @@ class IntroEligibilityCalculatorTests: TestCase {
     }
 }
 
-@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculatorTests {
 
     func testEligibility(

@@ -464,7 +464,6 @@ public protocol PurchasesType: AnyObject {
      * - ``StoreProduct/eligiblePromotionalOffers()``
      * - ``Purchases/promotionalOffer(forProductDiscount:product:)``
      */
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
@@ -510,7 +509,6 @@ public protocol PurchasesType: AnyObject {
      * If the purchase was not successful, there will be an `NSError`.
      * If the user cancelled, `userCancelled` will be `true`.
      */
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchasePackage:withPromotionalOffer:completion:)
     func purchase(package: Package,
                   promotionalOffer: PromotionalOffer,
@@ -649,7 +647,6 @@ public protocol PurchasesType: AnyObject {
      * - Parameter completion: A completion block that is called when the ``PromotionalOffer`` is returned.
      * If it was not successful, there will be an `Error`.
      */
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,

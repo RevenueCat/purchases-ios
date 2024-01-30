@@ -358,7 +358,6 @@ enum ErrorUtils {
         switch error {
         case let purchasesError as PurchasesError:
             return purchasesError
-        // This line crashes on iOS 12.x only (see https://github.com/RevenueCat/purchases-ios/pull/1982).
         case let convertible as PurchasesErrorConvertible:
             return convertible.asPurchasesError
         case let error as PublicError where error.domain == ErrorCode.errorDomain:

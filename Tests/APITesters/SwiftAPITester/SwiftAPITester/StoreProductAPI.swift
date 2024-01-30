@@ -28,20 +28,14 @@ func checkStoreProductAPI() {
     if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
         let _: Bool = product.isFamilyShareable
     }
-    if #available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *) {
-        let _: String? = product.subscriptionGroupIdentifier
-    }
+    let _: String? = product.subscriptionGroupIdentifier
     let _: NumberFormatter? = product.priceFormatter
-    if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *) {
-        let _: SubscriptionPeriod? = product.subscriptionPeriod
-        let _: StoreProductDiscount? = product.introductoryDiscount
-        let _: NSDecimalNumber? = product.pricePerWeek
-        let _: NSDecimalNumber? = product.pricePerMonth
-        let _: NSDecimalNumber? = product.pricePerYear
-    }
-    if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *) {
-        let _: [StoreProductDiscount] = product.discounts
-    }
+    let _: SubscriptionPeriod? = product.subscriptionPeriod
+    let _: StoreProductDiscount? = product.introductoryDiscount
+    let _: NSDecimalNumber? = product.pricePerWeek
+    let _: NSDecimalNumber? = product.pricePerMonth
+    let _: NSDecimalNumber? = product.pricePerYear
+    let _: [StoreProductDiscount] = product.discounts
 
     let _: String? = product.localizedIntroductoryPriceString
     let _: SK1Product? = product.sk1Product
