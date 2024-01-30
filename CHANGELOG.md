@@ -1,3 +1,6 @@
+## 4.33.0
+### New Features
+* `CocoaPods`: enabled `visionOS` (#3262) via NachoSoto (@NachoSoto)
 ## 4.32.4
 ### RevenueCatUI
 * `Paywalls`: fix template 5 scrolling on iOS 15 (#3608) via NachoSoto (@NachoSoto)
