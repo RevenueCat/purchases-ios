@@ -260,13 +260,4 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
-    func testAddNonceIfRequiredForOldVersions() throws {
-        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-            throw XCTSkip("Test only for older versions")
-        }
-
-        let request: HTTPRequest = .init(method: .get, path: .logIn)
-        expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
-    }
-
 }

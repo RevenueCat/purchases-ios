@@ -584,7 +584,6 @@ public protocol PurchasesType: AnyObject {
      * ### Related symbols
      * - ``Purchases/checkTrialOrIntroDiscountEligibility(product:)``
      */
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility]
 
     /**
@@ -636,7 +635,6 @@ public protocol PurchasesType: AnyObject {
      * ### Related symbols
      * - ``Purchases/checkTrialOrIntroDiscountEligibility(productIdentifiers:)``
      */
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus
 
     /**

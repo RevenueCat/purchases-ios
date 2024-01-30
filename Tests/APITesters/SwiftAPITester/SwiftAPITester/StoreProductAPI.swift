@@ -50,10 +50,8 @@ func checkStoreProductAPI() {
         let _: SK2Product? = product.sk2Product
     }
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        _ = Task<Void, Never> {
-            await checkStoreProductAsyncAPI()
-        }
+    _ = Task<Void, Never> {
+        await checkStoreProductAsyncAPI()
     }
 }
 

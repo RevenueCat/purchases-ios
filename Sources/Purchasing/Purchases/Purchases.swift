@@ -948,12 +948,10 @@ public extension Purchases {
                                                                   completion: completion)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
         let result = await self.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: packages.map(\.storeProduct.productIdentifier)
@@ -971,7 +969,6 @@ public extension Purchases {
         trialOrIntroPriceEligibilityChecker.checkEligibility(product: product, completion: completion)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }

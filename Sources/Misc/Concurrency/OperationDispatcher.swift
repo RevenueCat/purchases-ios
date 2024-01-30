@@ -79,14 +79,8 @@ class OperationDispatcher {
 extension OperationDispatcher {
 
     static func dispatchOnMainActor(_ block: @MainActor @escaping @Sendable () -> Void) {
-        if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
-            Task<Void, Never> { @MainActor in
-                block()
-            }
-        } else {
-            DispatchQueue.main.async { @Sendable in
-                block()
-            }
+        Task<Void, Never> { @MainActor in
+            block()
         }
     }
 

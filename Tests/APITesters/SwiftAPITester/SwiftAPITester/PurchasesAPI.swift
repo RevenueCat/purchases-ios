@@ -33,13 +33,11 @@ func checkPurchasesAPI() {
 
     let _: Attribution = purch.attribution
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        _ = Task<Void, Never> {
-            await checkAsyncMethods(purchases: purch)
-        }
-
-        checkNonAsyncMethods(purch)
+    _ = Task<Void, Never> {
+        await checkAsyncMethods(purchases: purch)
     }
+
+    checkNonAsyncMethods(purch)
 }
 
 var periodType: PeriodType!
