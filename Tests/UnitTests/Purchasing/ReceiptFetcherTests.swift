@@ -179,7 +179,6 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
 
     private var mockFileReader: MockFileReader!

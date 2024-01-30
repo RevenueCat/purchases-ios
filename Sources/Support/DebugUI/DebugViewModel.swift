@@ -135,7 +135,6 @@ enum LoadingState<Value, Error: Swift.Error> {
 
 extension LoadingState where Error == NSError {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func create(_ loader: @Sendable () async throws -> Value) async -> Self {
         do {
             return .loaded(try await loader())

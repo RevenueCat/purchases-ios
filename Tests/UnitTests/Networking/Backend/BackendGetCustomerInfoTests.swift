@@ -137,7 +137,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [path]
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testGetCustomerInfoWithVerifiedResponse() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -154,7 +153,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(customerInfo?.value?.entitlements.verification) == .verified
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testGetCustomerInfoWithFailedVerification() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -197,7 +195,6 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BackendGetCustomerInfoSignatureTests: BaseBackendTests {
 
     override var verificationMode: Configuration.EntitlementVerificationMode {

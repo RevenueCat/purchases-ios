@@ -16,7 +16,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseFileHandlerTests: TestCase {
 
     fileprivate var handler: FileHandler!
@@ -37,7 +36,6 @@ class BaseFileHandlerTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class FileHandlerTests: BaseFileHandlerTests {
 
     // MARK: - readFile
@@ -231,7 +229,6 @@ class ModernFileHandlerTests: BaseFileHandlerTests {
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseFileHandlerTests {
 
     func reCreateHandler() async throws {

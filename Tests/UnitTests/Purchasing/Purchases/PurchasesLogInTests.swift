@@ -186,7 +186,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
     // MARK: - StaticString appUserID
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testLogInWithStringDoesNotLogMessage() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -200,7 +199,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
                                               allowNoMessages: true)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testLogInWithStaticStringLogsMessage() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 

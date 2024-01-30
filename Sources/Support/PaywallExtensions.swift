@@ -153,12 +153,10 @@ private extension Offering {
             .map(\.product.productIdentifier)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var allProductIdentifiers: [String] {
         return self.products.map(\.productIdentifier)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private var products: some Sequence<StoreProduct> {
         return self.availablePackages.lazy.map(\.storeProduct)
     }

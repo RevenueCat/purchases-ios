@@ -29,7 +29,6 @@ extension HTTPRequestBody {
         return HTTPRequest.signatureHashHeader(keys: keys, hash: self.postParameterHash)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private var postParameterHash: String {
         return HTTPRequest.signingParameterHash(self.contentForSignature.map(\.value))
     }

@@ -1425,7 +1425,6 @@ private extension PurchasesOrchestrator {
 
 // MARK: - Async extensions
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(

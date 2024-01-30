@@ -71,7 +71,6 @@ class ResultExtensionsTests: TestCase {
         })
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testInitWithThrowingAsyncBlockReturningValue() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -86,7 +85,6 @@ class ResultExtensionsTests: TestCase {
         expect(result.value) == expectedValue
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testInitWithThrowingAsyncBlockThrowingError() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 

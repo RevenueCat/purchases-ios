@@ -77,7 +77,6 @@ extension Data {
 
 extension Data {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func randomNonce() -> Data {
         return Data(ChaChaPoly.Nonce())
     }
@@ -88,7 +87,6 @@ extension Data {
 
 // MARK: - Hashing
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension HashFunction {
 
     func toString() -> String {
@@ -105,13 +103,11 @@ private extension Data {
         _ md: UnsafeMutablePointer<UInt8>?
     ) -> UnsafeMutablePointer<UInt8>?
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func hashString<T: HashFunction>(with digest: inout T) -> String {
         digest.update(data: self)
         return digest.toString()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func hash<T: HashFunction>(with digest: inout T) -> Data {
         digest.update(data: self)
 

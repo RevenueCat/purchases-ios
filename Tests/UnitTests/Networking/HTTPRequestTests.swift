@@ -209,7 +209,6 @@ class HTTPRequestTests: TestCase {
         expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -225,7 +224,6 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -235,7 +233,6 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -245,7 +242,6 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -255,7 +251,6 @@ class HTTPRequestTests: TestCase {
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 

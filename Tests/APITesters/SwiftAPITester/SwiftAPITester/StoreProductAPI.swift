@@ -85,12 +85,10 @@ func checkProductType(_ type: StoreProduct.ProductType) {
     }
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func checkStoreProductAsyncAPI() async {
     let _: [PromotionalOffer] = await product.eligiblePromotionalOffers()
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 @available(*, deprecated) // Ignore deprecation warnings
 func checkDeprecatedAsyncAPI() async {
     let _: [PromotionalOffer] = await product.getEligiblePromotionalOffers()

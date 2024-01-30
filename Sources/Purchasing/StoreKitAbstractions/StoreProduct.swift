@@ -272,7 +272,6 @@ public extension StoreProduct {
 }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public extension StoreProduct {
     /// Finds the subset of ``discounts`` that's eligible for the current user.
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),

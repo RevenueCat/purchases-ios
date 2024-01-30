@@ -214,7 +214,6 @@ class CustomerInfoManager {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return AsyncStream(bufferingPolicy: .bufferingNewest(1)) { continuation in
             if let lastSentCustomerInfo = self.lastSentCustomerInfo {
@@ -287,7 +286,6 @@ class CustomerInfoManager {
 
 // MARK: - async extensions
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension CustomerInfoManager {
 
     func fetchAndCacheCustomerInfo(appUserID: String, isAppBackgrounded: Bool) async throws -> CustomerInfo {

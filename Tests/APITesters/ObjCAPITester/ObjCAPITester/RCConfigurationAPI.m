@@ -26,10 +26,8 @@
                                         withStoreKitVersion:RCStoreKitVersionStoreKit2]
                                         build];
 
-    if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {
-        RCConfiguration *config __unused = [[builder
-                                             withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]                                            build];
-    }
+    RCConfiguration *config __unused = [[builder
+                                         withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]                                            build];
 }
 
 @end

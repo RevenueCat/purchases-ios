@@ -591,7 +591,6 @@ extension HTTPRequest {
     }
 
     /// Add a nonce to the request
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private mutating func addRandomNonce() {
         self.nonce = Data.randomNonce()
     }

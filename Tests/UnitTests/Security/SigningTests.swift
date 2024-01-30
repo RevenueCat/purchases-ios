@@ -17,7 +17,6 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class SigningTests: TestCase {
 
     fileprivate typealias PrivateKey = Curve25519.Signing.PrivateKey
@@ -787,7 +786,6 @@ class SigningTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension SigningTests {
 
     static func createRandomKey() -> (PrivateKey, PublicKey) {
@@ -854,7 +852,6 @@ private extension Date {
 extension HTTPRequest {
 
     /// Creates an `HTTPRequest` with a `nonce`.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func createWithResponseVerification(method: Method, path: Path) -> Self {
         return .init(method: method, path: path, nonce: Data.randomNonce())
     }

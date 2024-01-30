@@ -80,7 +80,6 @@ class ReceiptFetcher {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func receiptData(refreshPolicy: ReceiptRefreshPolicy) async -> Data? {
         return await withCheckedContinuation { continuation in
             self.receiptData(refreshPolicy: refreshPolicy) { result, _ in
@@ -160,7 +159,6 @@ private extension ReceiptFetcher {
     }
 
     /// `async` version of `refreshReceipt(_:)`
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func refreshReceipt() async -> (Data, URL?) {
         await withCheckedContinuation { continuation in
             self.refreshReceipt {
@@ -169,7 +167,6 @@ private extension ReceiptFetcher {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     @MainActor
     private func refreshReceipt(
         untilProductIsFound productIdentifier: String,

@@ -19,7 +19,6 @@ import Foundation
 /// A type that can verify signatures.
 protocol SigningType {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func verify(
         signature: String,
         with parameters: Signing.SignatureParameters,
@@ -56,7 +55,6 @@ final class Signing: SigningType {
     }
 
     /// Parses the binary `key` and returns a `PublicKey`
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func loadPublicKey() -> PublicKey {
         func fail(_ error: CustomStringConvertible) -> Never {
             // This would crash the SDK, but the key is known at compile time
@@ -75,7 +73,6 @@ final class Signing: SigningType {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func verify(
         signature: String,
         with parameters: SignatureParameters,
@@ -125,7 +122,6 @@ final class Signing: SigningType {
         return isValid
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func verificationMode(
         with setting: Configuration.EntitlementVerificationMode
     ) -> ResponseVerificationMode {
@@ -138,7 +134,6 @@ final class Signing: SigningType {
 
     /// - Returns: `ResponseVerificationMode.enforced`
     /// This is useful while ``Configuration.EntitlementVerificationMode`` is unavailable.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func enforcedVerificationMode() -> ResponseVerificationMode {
         return .enforced(Self.loadPublicKey())
     }
@@ -200,7 +195,6 @@ protocol SigningPublicKey {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Signing.Algorithm: SigningPublicKey {}
 
 // MARK: - Internal implementation (visible for tests)
@@ -243,7 +237,6 @@ extension Signing {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Signing.SignatureParameters {
 
     init(

@@ -16,7 +16,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseCustomerInfoResponseHandlerTests: TestCase {
 
     fileprivate let userID = "nacho"
@@ -37,7 +36,6 @@ class BaseCustomerInfoResponseHandlerTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTests {
 
     func testHandleNormalResponse() async {
@@ -243,7 +241,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseCustomerInfoResponseHandlerTests {
 
     private struct MappingFetcher: ProductEntitlementMappingFetcher {
