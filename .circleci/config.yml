@@ -1215,12 +1215,12 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-tags
       - push-revenuecat-pod:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           requires:
             - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           requires:
             - make-release
             - push-revenuecat-pod
