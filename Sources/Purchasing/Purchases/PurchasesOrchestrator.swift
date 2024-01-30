@@ -466,6 +466,9 @@ final class PurchasesOrchestrator {
             ]
 
             if let uuid = UUID(uuidString: self.appUserID) {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
+                )
                 options.insert(.appAccountToken(uuid))
             }
 
