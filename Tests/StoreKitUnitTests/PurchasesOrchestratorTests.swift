@@ -1137,6 +1137,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
 
         let product = try await self.fetchSk2Product()
 

@@ -29,6 +29,7 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     // `StoreKit.Transaction` can't be stored directly as a property.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
     var mockTransaction: Box<StoreKit.Transaction?> = .init(nil)
+    var mockResult: Box<StoreKit.Product.PurchaseResult?> = .init(nil)
     var mockJWSToken: String = ""
     var mockEnvironment: StoreEnvironment = .sandbox
 
@@ -63,16 +64,21 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        var transaction: StoreTransaction
+        var transaction: StoreTransaction?
 
         if let mockTransaction = self.mockTransaction.value {
             transaction = StoreTransaction(sk2Transaction: mockTransaction,
                                            jwsRepresentation: self.mockJWSToken,
                                            environmentOverride: self.mockEnvironment)
-        } else {
-            let result = purchaseResult.verificationResult!
-            transaction = StoreTransaction(sk2Transaction: result.underlyingTransaction,
-                                           jwsRepresentation: result.jwsRepresentation,
+        } else if let mockResult  = self.mockResult.value {
+            if let verificationResult = mockResult.verificationResult {
+                transaction = StoreTransaction(sk2Transaction: verificationResult.underlyingTransaction,
+                                               jwsRepresentation: self.mockJWSToken,
+                                               environmentOverride: self.mockEnvironment)
+            }
+        } else if let parameterResult = purchaseResult.verificationResult {
+            transaction = StoreTransaction(sk2Transaction: parameterResult.underlyingTransaction,
+                                           jwsRepresentation: parameterResult.jwsRepresentation,
                                            environmentOverride: self.mockEnvironment)
         }
 
