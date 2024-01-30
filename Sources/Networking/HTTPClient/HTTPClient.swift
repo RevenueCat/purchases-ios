@@ -542,8 +542,7 @@ extension HTTPRequest {
 
         if result.nonce == nil,
            result.path.needsNonceForSigning,
-           verificationMode.isEnabled,
-           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+           verificationMode.isEnabled {
             result.addRandomNonce()
         }
 
@@ -566,8 +565,7 @@ extension HTTPRequest {
             result += HTTPClient.nonceHeader(with: nonce)
         }
 
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
-           verificationMode.isEnabled,
+        if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
                 with: defaultHeaders,

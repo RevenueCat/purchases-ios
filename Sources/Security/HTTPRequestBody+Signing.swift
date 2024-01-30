@@ -16,11 +16,6 @@ import Foundation
 extension HTTPRequestBody {
 
     var postParameterHeader: String? {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            // Signature verification is not available.
-            return nil
-        }
-
         let keys = self.keysToSign
         guard !keys.isEmpty else {
             return nil

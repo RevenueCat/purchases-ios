@@ -64,15 +64,10 @@ class ReceiptFetcher {
             }
 
         case let .retryUntilProductIsFound(productIdentifier, maximumRetries, sleepDuration):
-            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-                Async.call(with: completion) {
-                    await self.refreshReceipt(untilProductIsFound: productIdentifier,
-                                              maximumRetries: maximumRetries,
-                                              sleepDuration: sleepDuration)
-                }
-            } else {
-                Logger.warn(Strings.receipt.receipt_retrying_mechanism_not_available)
-                self.receiptData(refreshPolicy: .always, completion: completion)
+            Async.call(with: completion) {
+                await self.refreshReceipt(untilProductIsFound: productIdentifier,
+                                          maximumRetries: maximumRetries,
+                                          sleepDuration: sleepDuration)
             }
 
         case .never:

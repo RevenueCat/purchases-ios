@@ -257,6 +257,7 @@ public protocol PurchasesType: AnyObject {
      * This should be either hard coded in your application, from a file, or from a custom endpoint if you want
      * to be able to deploy new IAPs without an app update.
      */
+
     func products(_ productIdentifiers: [String]) async -> [StoreProduct]
 
     /**

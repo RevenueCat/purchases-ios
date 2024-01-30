@@ -68,10 +68,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         }
 
         expect(customerInfo).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(customerInfo?.value?.entitlements.verification) == .notRequested
-        }
+        expect(customerInfo?.value?.entitlements.verification) == .notRequested
     }
 
     func testHandlesGetCustomerInfoErrors() throws {

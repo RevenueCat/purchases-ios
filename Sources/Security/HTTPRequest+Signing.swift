@@ -20,11 +20,6 @@ extension HTTPRequest {
         headers: Headers,
         path: HTTPRequestPath
     ) -> String? {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            // Signature verification is not available.
-            return nil
-        }
-
         guard path.needsNonceForSigning else {
             // Static signatures cannot sign header parameters
             return nil

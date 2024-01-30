@@ -61,14 +61,12 @@ class PaymentQueueWrapper: NSObject, PaymentQueueWrapperType {
 
     weak var delegate: PaymentQueueWrapperDelegate? {
         didSet {
-            if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-                if self.delegate != nil {
-                    self.paymentQueue.delegate = self
-                    self.paymentQueue.add(self)
-                } else if self.delegate == nil, self.paymentQueue.delegate === self {
-                    self.paymentQueue.delegate = nil
-                    self.paymentQueue.remove(self)
-                }
+            if self.delegate != nil {
+                self.paymentQueue.delegate = self
+                self.paymentQueue.add(self)
+            } else if self.delegate == nil, self.paymentQueue.delegate === self {
+                self.paymentQueue.delegate = nil
+                self.paymentQueue.remove(self)
             }
         }
     }

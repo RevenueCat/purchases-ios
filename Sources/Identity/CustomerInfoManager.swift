@@ -442,10 +442,6 @@ private extension CustomerInfoManager {
 private extension CustomerInfo {
 
     var shouldCache: Bool {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            return true
-        }
-
         return self.entitlements.verification.shouldCache
     }
 

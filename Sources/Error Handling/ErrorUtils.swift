@@ -355,34 +355,16 @@ enum ErrorUtils {
             )
         }
 
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            switch error {
-            case let purchasesError as PurchasesError:
-                return purchasesError
-            // This line crashes on iOS 12.x only (see https://github.com/RevenueCat/purchases-ios/pull/1982).
-            case let convertible as PurchasesErrorConvertible:
-                return convertible.asPurchasesError
-            case let error as PublicError where error.domain == ErrorCode.errorDomain:
-                return handlePublicError(error)
-            default:
-                return createUnknownError()
-            }
-        } else {
-            switch error {
-            case let purchasesError as PurchasesError:
-                return purchasesError
-            // `as PurchasesErrorConvertible` crashes on iOS 12.x, so these explicit casts are a workaround.
-            // We can't guarantee that these are exhaustive, but at least this covers the most common cases,
-            // and the `default` below ensures that we don't crash for the rest.
-            case let backendError as BackendError:
-                return backendError.asPurchasesError
-            case let networkError as NetworkError:
-                return networkError.asPurchasesError
-            case let error as PublicError where error.domain == ErrorCode.errorDomain:
-                return handlePublicError(error)
-            default:
-                return createUnknownError()
-            }
+        switch error {
+        case let purchasesError as PurchasesError:
+            return purchasesError
+        // This line crashes on iOS 12.x only (see https://github.com/RevenueCat/purchases-ios/pull/1982).
+        case let convertible as PurchasesErrorConvertible:
+            return convertible.asPurchasesError
+        case let error as PublicError where error.domain == ErrorCode.errorDomain:
+            return handlePublicError(error)
+        default:
+            return createUnknownError()
         }
     }
 
