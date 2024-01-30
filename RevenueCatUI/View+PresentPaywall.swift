@@ -170,7 +170,33 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     var customerInfoFetcher: View.CustomerInfoFetcher
     var introEligibility: TrialOrIntroEligibilityChecker?
-    var purchaseHandler: PurchaseHandler?
+
+    init(
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseCancelled: PurchaseCancelledHandler?,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler?,
+        onDismiss: (() -> Void)?,
+        content: PaywallViewConfiguration.Content,
+        fontProvider: PaywallFontProvider,
+        customerInfoFetcher: @escaping View.CustomerInfoFetcher,
+        introEligibility: TrialOrIntroEligibilityChecker?,
+        purchaseHandler: PurchaseHandler?
+    ) {
+        self.shouldDisplay = shouldDisplay
+        self.purchaseCompleted = purchaseCompleted
+        self.purchaseCancelled = purchaseCancelled
+        self.restoreCompleted = restoreCompleted
+        self.onDismiss = onDismiss
+        self.content = content
+        self.fontProvider = fontProvider
+        self.customerInfoFetcher = customerInfoFetcher
+        self.introEligibility = introEligibility
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+    }
+
+    @StateObject
+    private var purchaseHandler: PurchaseHandler
 
     @State
     private var data: Data?
@@ -201,6 +227,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                         self.close()
                     }
                 }
+                .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
             }
             .task {
                 guard let info = try? await self.customerInfoFetcher() else { return }
