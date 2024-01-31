@@ -28,7 +28,6 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
-        expect(handler.restored) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -61,7 +60,12 @@ class PurchaseHandlerTests: TestCase {
 
         expect(result.info) === TestData.customerInfo
         expect(result.success) == false
-        expect(handler.restored) == true
+        expect(handler.restoredCustomerInfo).to(beNil())
+        expect(handler.purchaseResult).to(beNil())
+        expect(handler.actionInProgress) == false
+
+        handler.setRestored(TestData.customerInfo)
+
         expect(handler.restoredCustomerInfo) === TestData.customerInfo
         expect(handler.purchaseResult).to(beNil())
         expect(handler.actionInProgress) == false

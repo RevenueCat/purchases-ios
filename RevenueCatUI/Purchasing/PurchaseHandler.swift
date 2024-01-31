@@ -35,11 +35,7 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
-    /// Whether a restore was successfully completed.
-    @Published
-    fileprivate(set) var restored: Bool = false
-
-    /// When `restored` becomes `true`, this will include the `CustomerInfo` associated to it.
+    /// Set manually by `setRestored(:_)` once the user is notified that restoring was successful..
     @Published
     fileprivate(set) var restoredCustomerInfo: CustomerInfo?
 
@@ -95,6 +91,9 @@ extension PurchaseHandler {
 
     /// - Returns: `success` is `true` only when the resulting `CustomerInfo`
     /// had any transactions
+    /// - Note: `restoredCustomerInfo` will be not be set after this method,
+    /// instead `setRestored(_:)` must be manually called afterwards.
+    /// This allows the UI to display an alert before dismissing the paywall.
     @MainActor
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         self.actionInProgress = true
@@ -102,13 +101,13 @@ extension PurchaseHandler {
 
         let customerInfo = try await self.purchases.restorePurchases()
 
-        withAnimation(Constants.defaultAnimation) {
-            self.restored = true
-            self.restoredCustomerInfo = customerInfo
-        }
-
         return (info: customerInfo,
                 success: customerInfo.hasActiveSubscriptionsOrNonSubscriptions)
+    }
+
+    @MainActor
+    func setRestored(_ customerInfo: CustomerInfo) {
+        self.restoredCustomerInfo = customerInfo
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
