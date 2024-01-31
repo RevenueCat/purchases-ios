@@ -123,6 +123,9 @@ struct OfferingsList: View {
         }
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
         }
     }
 

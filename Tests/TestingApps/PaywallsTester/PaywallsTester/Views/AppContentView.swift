@@ -132,6 +132,9 @@ struct AppContentView: View {
         #endif
         .sheet(isPresented: self.$showingDefaultPaywall) {
             PaywallView(displayCloseButton: Configuration.defaultDisplayCloseButton)
+                .onRestoreCompleted { _ in
+                    self.showingDefaultPaywall = false
+                }
         }
         .task(id: self.configuration.currentMode) {
             if Purchases.isConfigured {
