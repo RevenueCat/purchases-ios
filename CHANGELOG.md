@@ -1,3 +1,9 @@
+## 4.33.1
+### RevenueCatUI
+* `Paywalls`: disable interactive `sheet` dismissal during purchases (#3613) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CircleCI`: push pods using Xcode 15 (#3614) via NachoSoto (@NachoSoto)
+
 ## 4.33.0
 ### New Features
 * `CocoaPods`: enabled `visionOS` (#3262) via NachoSoto (@NachoSoto)
