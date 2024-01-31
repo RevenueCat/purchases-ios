@@ -38,6 +38,8 @@ func checkCustomerInfoAPI() {
 
     let rawData: [String: Any] = customerInfo.rawData
 
+    let _: String = customerInfo.id
+
     print(customerInfo!, entitlementInfo, asubs, appis, led!, nst, oav!, opd!, rDate!, fSeen,
           oaud!, murl!, edfpi!, pdfpi!, exdf!, pdfe!, desc, rawData)
 }

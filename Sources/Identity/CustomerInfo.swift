@@ -306,6 +306,17 @@ extension CustomerInfo: HTTPResponseBody {
 
 }
 
+// MARK: -
+
+extension CustomerInfo: Identifiable {
+
+    // swiftlint:disable:next missing_docs
+    public var id: String {
+        return self.originalAppUserId
+    }
+
+}
+
 // MARK: - Private
 
 private extension CustomerInfo {
