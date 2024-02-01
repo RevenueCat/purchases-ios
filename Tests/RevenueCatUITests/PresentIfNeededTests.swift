@@ -72,6 +72,8 @@ class PresentIfNeededTests: TestCase {
 
         Task {
             _ = try await Self.purchaseHandler.restorePurchases()
+            // Simulates what `RestorePurchasesButton` does after dismissing the alert.
+            Self.purchaseHandler.setRestored(TestData.customerInfo)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))

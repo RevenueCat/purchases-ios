@@ -18,6 +18,8 @@ import SwiftUI
 import WebKit
 #endif
 
+// swiftlint:disable file_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FooterView: View {
 
@@ -180,13 +182,19 @@ private struct RestorePurchasesButton: View {
     let purchaseHandler: PurchaseHandler
 
     @State
-    private var displayRestoredAlert = false
+    private var restoredCustomerInfo: CustomerInfo?
 
     var body: some View {
         AsyncButton {
-            let success = try await self.purchaseHandler.restorePurchases().success
+            Logger.debug(Strings.restoring_purchases)
+
+            let (customerInfo, success) = try await self.purchaseHandler.restorePurchases()
+
             if success {
-                self.displayRestoredAlert = true
+                Logger.debug(Strings.restored_purchases)
+                self.restoredCustomerInfo = customerInfo
+            } else {
+                Logger.debug(Strings.restore_purchases_with_empty_result)
             }
         } label: {
             let largestText = Text("Restore purchases", bundle: .module)
@@ -203,8 +211,16 @@ private struct RestorePurchasesButton: View {
         }
         .frame(minHeight: Constants.minimumButtonHeight)
         .buttonStyle(.plain)
-        .alert(isPresented: self.$displayRestoredAlert) {
-            Alert(title: Text("Purchases restored successfully!", bundle: .module))
+        .alert(item: self.$restoredCustomerInfo) { customerInfo in
+            Alert(
+                title: Text("Purchases restored successfully!", bundle: .module),
+                dismissButton: .default(Text("OK", bundle: .module)) {
+                    Logger.debug(Strings.setting_restored_customer_info)
+
+                    self.restoredCustomerInfo = nil
+                    self.purchaseHandler.setRestored(customerInfo)
+                }
+            )
         }
     }
 
