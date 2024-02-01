@@ -33,7 +33,9 @@ extension View {
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -42,7 +44,9 @@ extension View {
             fonts: fonts,
             introEligibility: nil,
             purchaseCompleted: purchaseCompleted,
-            restoreCompleted: restoreCompleted
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
         )
     }
 
@@ -61,7 +65,9 @@ extension View {
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
@@ -70,7 +76,9 @@ extension View {
             fonts: fonts,
             introEligibility: nil,
             purchaseCompleted: purchaseCompleted,
-            restoreCompleted: restoreCompleted
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
         )
     }
 
@@ -82,7 +90,9 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self
             .modifier(
@@ -97,7 +107,9 @@ extension View {
                         purchaseHandler: purchaseHandler
                     ),
                     purchaseCompleted: purchaseCompleted,
-                    restoreCompleted: restoreCompleted
+                    restoreCompleted: restoreCompleted,
+                    purchaseFailure: purchaseFailure,
+                    restoreFailure: restoreFailure
                 )
             )
     }
@@ -109,6 +121,8 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
     let configuration: PaywallViewConfiguration
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let restoreCompleted: PurchaseOrRestoreCompletedHandler?
+    let purchaseFailure: PurchaseFailureHandler?
+    let restoreFailure: PurchaseFailureHandler?
 
     func body(content: Content) -> some View {
         content
@@ -119,6 +133,12 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
                 }
                 .onRestoreCompleted {
                     self.restoreCompleted?($0)
+                }
+                .onPurchaseFailure {
+                    self.purchaseFailure?($0)
+                }
+                .onRestoreFailure {
+                    self.restoreFailure?($0)
                 }
         }
     }

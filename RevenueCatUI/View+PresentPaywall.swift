@@ -48,6 +48,8 @@ extension View {
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -62,6 +64,8 @@ extension View {
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
             onDismiss: onDismiss
         )
     }
@@ -80,6 +84,10 @@ extension View {
     ///     } restoreCompleted: { customerInfo in
     ///         // If `entitlement_identifier` is active, paywall will dismiss automatically.
     ///         print("Purchases restored")
+    ///     } purchaseFailure: { error in
+    ///         print("Error purchasing: \(error)")
+    ///     } restoreFailure: { error in
+    ///         print("Error restoring purchases: \(error)")
     ///     } onDismiss: {
     ///         print("Paywall was dismissed either manually or automatically after a purchase.")
     ///     }
@@ -99,6 +107,8 @@ extension View {
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -108,6 +118,8 @@ extension View {
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
             onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
@@ -129,6 +141,8 @@ extension View {
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
         onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
@@ -138,6 +152,8 @@ extension View {
                 purchaseCompleted: purchaseCompleted,
                 purchaseCancelled: purchaseCancelled,
                 restoreCompleted: restoreCompleted,
+                purchaseFailure: purchaseFailure,
+                restoreFailure: restoreFailure,
                 onDismiss: onDismiss,
                 content: .optionalOffering(offering),
                 fontProvider: fonts,
@@ -163,6 +179,8 @@ private struct PresentingPaywallModifier: ViewModifier {
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
+    var purchaseFailure: PurchaseFailureHandler?
+    var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
     var content: PaywallViewConfiguration.Content
@@ -176,6 +194,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
+        purchaseFailure: PurchaseFailureHandler?,
+        restoreFailure: PurchaseFailureHandler?,
         onDismiss: (() -> Void)?,
         content: PaywallViewConfiguration.Content,
         fontProvider: PaywallFontProvider,
@@ -187,6 +207,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.purchaseCompleted = purchaseCompleted
         self.purchaseCancelled = purchaseCancelled
         self.restoreCompleted = restoreCompleted
+        self.purchaseFailure = purchaseFailure
+        self.restoreFailure = restoreFailure
         self.onDismiss = onDismiss
         self.content = content
         self.fontProvider = fontProvider
@@ -226,6 +248,12 @@ private struct PresentingPaywallModifier: ViewModifier {
                     if !self.shouldDisplay(customerInfo) {
                         self.close()
                     }
+                }
+                .onPurchaseFailure {
+                    self.purchaseFailure?($0)
+                }
+                .onRestoreFailure {
+                    self.restoreFailure?($0)
                 }
                 .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
             }

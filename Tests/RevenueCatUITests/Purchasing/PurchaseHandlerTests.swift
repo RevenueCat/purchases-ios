@@ -29,6 +29,8 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
         expect(handler.actionInProgress) == false
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.restoreError).to(beNil())
     }
 
     func testPurchaseSetsCustomerInfo() async throws {
@@ -53,9 +55,27 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
+    func testFailingPurchase() async throws {
+        let error: ErrorCode = .storeProblemError
+
+        let handler: PurchaseHandler = .failing(error)
+
+        do {
+            _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+            fail("Expected error")
+        } catch let thrownError {
+            expect(thrownError).to(matchError(error))
+        }
+
+        expect(handler.purchaseResult).to(beNil())
+        expect(handler.purchased) == false
+        expect(handler.actionInProgress) == false
+        expect(handler.purchaseError).to(matchError(error))
+        expect(handler.restoreError).to(beNil())
+    }
+
     func testRestorePurchases() async throws {
         let handler: PurchaseHandler = .mock()
-
         let result = try await handler.restorePurchases()
 
         expect(result.info) === TestData.customerInfo
@@ -85,6 +105,23 @@ class PurchaseHandlerTests: TestCase {
         let result = try await handler.restorePurchases()
         expect(result.info) === Self.customerInfoWithNonSubscriptions
         expect(result.success) == true
+    }
+
+    func testFailingRestore() async throws {
+        let error: ErrorCode = .storeProblemError
+        let handler: PurchaseHandler = .failing(error)
+
+        do {
+            _ = try await handler.restorePurchases()
+            fail("Expected error")
+        } catch let thrownError {
+            expect(thrownError).to(matchError(error))
+        }
+        expect(handler.purchaseResult).to(beNil())
+        expect(handler.purchased) == false
+        expect(handler.actionInProgress) == false
+        expect(handler.restoreError).to(matchError(error))
+        expect(handler.purchaseError).to(beNil())
     }
 
     func testCloseEventIsTrackedOnlyAfterImpressionAndOnlyOnce() async throws {
