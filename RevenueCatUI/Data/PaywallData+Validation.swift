@@ -26,7 +26,7 @@ extension Offering {
 
     enum PaywallValidationError: Swift.Error, Equatable {
 
-        case missingPaywall
+        case missingPaywall(Offering)
         case invalidTemplate(String)
         case invalidVariables(Set<String>)
         case invalidIcons(Set<String>)
@@ -58,7 +58,7 @@ extension Offering {
             // If `Offering` has no paywall, create a default one with all available packages.
             return (displayablePaywall: .createDefault(with: self.availablePackages, locale: locale),
                     PaywallData.defaultTemplate,
-                    error: .missingPaywall)
+                    error: .missingPaywall(self))
         }
     }
 
@@ -135,8 +135,8 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .missingPaywall:
-            return "Offering has no configured paywall."
+        case let .missingPaywall(offering):
+            return "Offering '\(offering.identifier)' has no configured paywall."
 
         case let .invalidTemplate(name):
             return "Template not recognized: \(name)."
