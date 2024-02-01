@@ -143,6 +143,27 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(cancelled) == false
     }
 
+    func testOnPurchaseFailure() throws {
+        var error: NSError?
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.failingHandler
+        )
+            .onPurchaseFailure {
+                error = $0
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await Self.failingHandler.purchase(package: Self.package)
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
     func testOnRestoreCompleted() throws {
         var customerInfo: CustomerInfo?
 
@@ -166,9 +187,33 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testOnRestoreFailure() throws {
+        var error: NSError?
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.failingHandler
+        )
+            .onRestoreFailure {
+                error = $0
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await Self.failingHandler.restorePurchases()
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
+    private static let failureError: Error = ErrorCode.storeProblemError
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

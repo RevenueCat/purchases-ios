@@ -46,6 +46,19 @@ extension PurchaseHandler {
             } restore: { $0 }
     }
 
+    /// - Returns: `PurchaseHandler` that throws `error` for purchases and restores.
+    static func failing(_ error: Error) -> Self {
+        return self.init(
+            purchases: MockPurchases { _ in
+                throw error
+            } restorePurchases: {
+                throw error
+            } trackEvent: { event in
+                Logger.debug("Tracking event: \(event)")
+            }
+        )
+    }
+
     /// Creates a copy of this `PurchaseHandler` with a delay.
     func with(delay seconds: TimeInterval) -> Self {
         return self.map { purchaseBlock in {

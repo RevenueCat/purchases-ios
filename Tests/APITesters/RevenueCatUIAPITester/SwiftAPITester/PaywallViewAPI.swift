@@ -17,6 +17,7 @@ struct App: View {
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
+    private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
     private var paywallDismissed: () -> Void = {}
 
     var body: some View {
@@ -115,6 +116,21 @@ struct App: View {
             } onDismiss: {
                 self.paywallDismissed()
             }
+            .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } purchaseCancelled: {
+                self.purchaseCancelled()
+            } restoreCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } purchaseFailure: {
+                self.failureHandler($0)
+            } restoreFailure: {
+                self.failureHandler($0)
+            } onDismiss: {
+                self.paywallDismissed()
+            }
     }
 
     @ViewBuilder
@@ -150,6 +166,11 @@ struct App: View {
             .paywallFooter(offering: offering, fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooter(offering: offering, fonts: self.fonts,
+                           purchaseCompleted: self.purchaseOrRestoreCompleted,
+                           restoreCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseFailure: self.failureHandler,
+                           restoreFailure: self.failureHandler)
     }
 
     @ViewBuilder
@@ -159,6 +180,13 @@ struct App: View {
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
+    }
+
+    @ViewBuilder
+    var checkOnFailures: some View {
+        Text("")
+            .onPurchaseFailure(self.failureHandler)
+            .onRestoreFailure(self.failureHandler)
     }
 
     private func fontProviders() {
