@@ -28,6 +28,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(beNil())
         expect(handler.restoreError).to(beNil())
@@ -42,6 +43,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == true
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -52,6 +54,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.userCancelled) == true
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchased) == false
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -69,9 +72,63 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(matchError(error))
         expect(handler.restoreError).to(beNil())
+    }
+
+    func testInProgressPropertiesDuringPurchase() async throws {
+        self.continueAfterFailure = false
+
+        let asyncHandler = AsyncPurchaseHandler()
+        let handler = asyncHandler.purchaseHandler!
+
+        let task = Task.detached {
+            _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+        }
+
+        try await asyncWait {
+            handler.actionInProgress && handler.purchaseInProgress
+        }
+
+        expect(handler.purchaseInProgress) == true
+        expect(handler.actionInProgress) == true
+
+        // Finish purchase
+        try asyncHandler.resume()
+
+        // Wait for purchase task to complete
+        _ = try await task.value
+
+        expect(handler.purchaseInProgress) == false
+        expect(handler.actionInProgress) == false
+    }
+
+    func testInProgressPropertiesDuringRestore() async throws {
+        self.continueAfterFailure = false
+
+        let asyncHandler = AsyncPurchaseHandler()
+        let handler = asyncHandler.purchaseHandler!
+
+        let task = Task.detached {
+            _ = try await handler.restorePurchases()
+        }
+
+        try await asyncWait {
+            handler.actionInProgress
+        }
+
+        expect(handler.actionInProgress) == true
+        expect(handler.purchaseInProgress) == false
+
+        // Finish rewstore
+        try asyncHandler.resume()
+
+        // Wait for restore task to complete
+        _ = try await task.value
+
+        expect(handler.actionInProgress) == false
     }
 
     func testRestorePurchases() async throws {
@@ -82,12 +139,14 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == false
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchaseResult).to(beNil())
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
 
         handler.setRestored(TestData.customerInfo)
 
         expect(handler.restoredCustomerInfo) === TestData.customerInfo
         expect(handler.purchaseResult).to(beNil())
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -119,6 +178,7 @@ class PurchaseHandlerTests: TestCase {
         }
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
+        expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.restoreError).to(matchError(error))
         expect(handler.purchaseError).to(beNil())
@@ -147,6 +207,50 @@ class PurchaseHandlerTests: TestCase {
         expect(result3) == false
 
     }
+}
+
+// MARK: - Private
+
+/// `PurchaseHandler` decorator that allows controlling when purchases / restores finish.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class AsyncPurchaseHandler {
+
+    var continuation: CheckedContinuation<Void, Never>?
+    private(set) var purchaseHandler: PurchaseHandler!
+
+    init() {
+        self.purchaseHandler = .init(
+            purchases: MockPurchases { [weak instance = self] _ in
+                let instance = try XCTUnwrap(instance)
+
+                await instance.createAndWaitForContinuation()
+
+                return (
+                    transaction: nil,
+                    customerInfo: TestData.customerInfo,
+                    userCancelled: false
+                )
+            } restorePurchases: { [weak instance = self] in
+                let instance = try XCTUnwrap(instance)
+                await instance.createAndWaitForContinuation()
+
+                return TestData.customerInfo
+            } trackEvent: { event in
+                Logger.debug("Tracking event: \(event)")
+            }
+        )
+    }
+
+    func resume() throws {
+        try XCTUnwrap(self.continuation).resume(returning: ())
+     }
+
+    private func createAndWaitForContinuation() async {
+        await withCheckedContinuation { [weak self] continuation in
+            self?.continuation = continuation
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

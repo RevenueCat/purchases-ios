@@ -32,6 +32,7 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
@@ -43,6 +44,7 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
@@ -64,6 +66,7 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
@@ -75,6 +78,7 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
@@ -89,6 +93,7 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
@@ -106,6 +111,7 @@ extension View {
                         introEligibility: introEligibility,
                         purchaseHandler: purchaseHandler
                     ),
+                    purchaseStarted: purchaseStarted,
                     purchaseCompleted: purchaseCompleted,
                     restoreCompleted: restoreCompleted,
                     purchaseFailure: purchaseFailure,
@@ -119,6 +125,7 @@ extension View {
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let configuration: PaywallViewConfiguration
+    let purchaseStarted: PurchaseStartedHandler?
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let restoreCompleted: PurchaseOrRestoreCompletedHandler?
     let purchaseFailure: PurchaseFailureHandler?
@@ -128,18 +135,21 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
         content
             .safeAreaInset(edge: .bottom) {
                 PaywallView(configuration: self.configuration)
-                .onPurchaseCompleted {
-                    self.purchaseCompleted?($0)
-                }
-                .onRestoreCompleted {
-                    self.restoreCompleted?($0)
-                }
-                .onPurchaseFailure {
-                    self.purchaseFailure?($0)
-                }
-                .onRestoreFailure {
-                    self.restoreFailure?($0)
-                }
+                    .onPurchaseStarted {
+                        self.purchaseStarted?()
+                    }
+                    .onPurchaseCompleted {
+                        self.purchaseCompleted?($0)
+                    }
+                    .onRestoreCompleted {
+                        self.restoreCompleted?($0)
+                    }
+                    .onPurchaseFailure {
+                        self.purchaseFailure?($0)
+                    }
+                    .onRestoreFailure {
+                        self.restoreFailure?($0)
+                    }
         }
     }
 }

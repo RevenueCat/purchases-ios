@@ -171,6 +171,10 @@ public class PaywallViewController: UIViewController {
 @objc(RCPaywallViewControllerDelegate)
 public protocol PaywallViewControllerDelegate: AnyObject {
 
+    /// Notifies that a purchase has started in a ``PaywallViewController``.
+    @objc(paywallViewControllerDidStartPurchase:)
+    optional func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController)
+
     /// Notifies that a purchase has completed in a ``PaywallViewController``.
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -224,6 +228,10 @@ private extension PaywallViewController {
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         let container = PaywallContainerView(
             configuration: self.configuration,
+            purchaseStarted: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidStartPurchase?(self)
+            },
             purchaseCompleted: { [weak self] transaction, customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
@@ -233,7 +241,8 @@ private extension PaywallViewController {
             },
             purchaseCancelled: { [weak self] in
                 guard let self else { return }
-                self.delegate?.paywallViewControllerDidCancelPurchase?(self)},
+                self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -269,6 +278,7 @@ private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
 
+    let purchaseStarted: PurchaseStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
@@ -278,6 +288,7 @@ private struct PaywallContainerView: View {
 
     var body: some View {
         PaywallView(configuration: self.configuration)
+            .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onRestoreCompleted(self.restoreCompleted)

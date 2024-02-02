@@ -29,6 +29,36 @@ class PresentIfNeededTests: TestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
+    func testPresentWithPurchaseStarted() throws {
+        self.continueAfterFailure = false
+
+        let handler = Self.purchaseHandler.with(delay: 3)
+        var started = false
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { _ in
+                return true
+            } purchaseStarted: {
+                started = true
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+        let task = Task.detached {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        defer {
+            task.cancel()
+            dispose()
+        }
+
+        expect(started).toEventually(beTrue())
+        task.cancel()
+    }
+
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 

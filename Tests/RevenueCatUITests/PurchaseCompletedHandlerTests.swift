@@ -23,6 +23,27 @@ import XCTest
 @MainActor
 class PurchaseCompletedHandlerTests: TestCase {
 
+    func testOnPurchaseStarted() throws {
+        var started = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.purchaseHandler
+        )
+            .onPurchaseStarted {
+                started = true
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+        }
+
+        expect(started).toEventually(beTrue())
+    }
+
     func testOnPurchaseCompletedWithCancellation() throws {
         let handler: PurchaseHandler = .cancelling()
 

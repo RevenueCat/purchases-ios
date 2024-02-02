@@ -15,6 +15,7 @@ struct App: View {
     private var offering: Offering
     private var fonts: PaywallFontProvider
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
+    private var purchaseStarted: PurchaseStartedHandler = { }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
@@ -67,6 +68,7 @@ struct App: View {
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseStarted: self.purchaseStarted,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseCancelled: self.purchaseCancelled,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
@@ -118,6 +120,8 @@ struct App: View {
             }
             .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in
                 false
+            } purchaseStarted: {
+                self.purchaseStarted()
             } purchaseCompleted: {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseCancelled: {
@@ -167,6 +171,7 @@ struct App: View {
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering, fonts: self.fonts,
+                           purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
@@ -176,6 +181,7 @@ struct App: View {
     @ViewBuilder
     var checkOnPurchaseAndRestoreCompleted: some View {
         Text("")
+            .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
