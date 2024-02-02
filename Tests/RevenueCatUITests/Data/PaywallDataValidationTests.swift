@@ -27,7 +27,7 @@ class PaywallDataValidationTests: TestCase {
         Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
         Self.snapshot(result.displayablePaywall)
 
-        expect(result.error) == .missingPaywall
+        expect(result.error) == .missingPaywall(offering)
     }
 
     func testValidateMissingPaywallWithSpanishLocalization() {
@@ -37,7 +37,7 @@ class PaywallDataValidationTests: TestCase {
         Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
         Self.snapshot(result.displayablePaywall)
 
-        expect(result.error) == .missingPaywall
+        expect(result.error) == .missingPaywall(offering)
     }
 
     func testValidateValidPaywall() {
