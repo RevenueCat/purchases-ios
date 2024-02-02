@@ -128,7 +128,7 @@ public class PaywallViewController: UIViewController {
     public func update(with offeringIdentifier: String) {
         self.configuration.content = .offeringIdentifier(offeringIdentifier)
     }
-    
+
     /// - Warning: For internal use only
     @objc(updateFontWithFontName:)
     public func updateFont(with fontName: String) {

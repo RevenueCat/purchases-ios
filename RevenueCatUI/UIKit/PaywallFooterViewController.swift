@@ -44,7 +44,7 @@ public final class PaywallFooterViewController: PaywallViewController {
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false)
     }
-    
+
     /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and custom `fontName`.
     /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
     @objc
