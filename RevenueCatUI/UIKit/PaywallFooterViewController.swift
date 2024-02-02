@@ -46,7 +46,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     }
     
     @objc
-    public init(offeringIdentifier: String, fontName: String){
+    public init(offeringIdentifier: String, fontName: String) {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false)
