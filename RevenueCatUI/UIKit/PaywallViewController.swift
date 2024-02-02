@@ -131,7 +131,7 @@ public class PaywallViewController: UIViewController {
     
     /// - Warning: For internal use only
     @objc(updateFontWithFontName:)
-    public func updateFont(with fontName: String){
+    public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
 
