@@ -45,7 +45,7 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?)
 
     let _: UIViewController = PaywallFooterViewController(offering: offering)
     let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering")
-    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName:"Papyrus")
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
