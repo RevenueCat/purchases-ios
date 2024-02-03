@@ -29,6 +29,26 @@ class PaywallFooterTests: TestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
+    func testPresentWithPurchaseStarted() throws {
+        var started = false
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: Self.purchaseHandler,
+                purchaseStarted: { started = true }
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.purchase(package: Self.package)
+        }
+
+        expect(started).toEventually(beTrue())
+    }
+
     func testPresentWithPurchaseHandler() throws {
         var customerInfo: CustomerInfo?
 

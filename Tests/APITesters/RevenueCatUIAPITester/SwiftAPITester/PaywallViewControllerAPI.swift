@@ -51,6 +51,8 @@ func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class Delegate: PaywallViewControllerDelegate {
 
+    func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController) {}
+
     func paywallViewController(_ controller: PaywallViewController,
                                didFinishPurchasingWith customerInfo: CustomerInfo) {}
 

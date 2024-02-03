@@ -23,6 +23,10 @@ final class PurchaseHandler: ObservableObject {
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
 
+    /// Whether a purchase is currently in progress
+    @Published
+    fileprivate(set) var purchaseInProgress: Bool = false
+
     /// Whether a purchase or restore is currently in progress
     @Published
     fileprivate(set) var actionInProgress: Bool = false
@@ -76,11 +80,15 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
+        self.purchaseInProgress = true
         self.purchaseResult = nil
         self.purchaseError = nil
 
         self.startAction()
-        defer { self.actionInProgress = false }
+        defer {
+            self.purchaseInProgress = false
+            self.actionInProgress = false
+        }
 
         do {
             let result = try await self.purchases.purchase(package: package)
@@ -226,6 +234,17 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 }
 
 // MARK: - Preference Keys
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PurchasedInProgressPreferenceKey: PreferenceKey {
+
+    static var defaultValue: Bool = false
+
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = nextValue()
+    }
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {

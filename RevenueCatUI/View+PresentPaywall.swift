@@ -45,6 +45,7 @@ extension View {
         requiredEntitlementIdentifier: String,
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -61,6 +62,7 @@ extension View {
                     .keys
                     .contains(requiredEntitlementIdentifier)
             },
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
@@ -77,6 +79,8 @@ extension View {
     ///    YourApp()
     ///      .presentPaywallIfNeeded {
     ///         !$0.entitlements.active.keys.contains("entitlement_identifier")
+    ///     } purchaseStarted: {
+    ///         print("Purchase started")
     ///     } purchaseCompleted: { customerInfo in
     ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
     ///     } purchaseCancelled: {
@@ -104,6 +108,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -115,6 +120,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             shouldDisplay: shouldDisplay,
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
@@ -138,6 +144,7 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
@@ -149,6 +156,7 @@ extension View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
+                purchaseStarted: purchaseStarted,
                 purchaseCompleted: purchaseCompleted,
                 purchaseCancelled: purchaseCancelled,
                 restoreCompleted: restoreCompleted,
@@ -176,6 +184,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
+    var purchaseStarted: PurchaseStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
@@ -191,6 +200,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     init(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseStarted: PurchaseStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
@@ -204,6 +214,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseHandler: PurchaseHandler?
     ) {
         self.shouldDisplay = shouldDisplay
+        self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
         self.purchaseCancelled = purchaseCancelled
         self.restoreCompleted = restoreCompleted
@@ -236,6 +247,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                         purchaseHandler: self.purchaseHandler
                     )
                 )
+                .onPurchaseStarted {
+                    self.purchaseStarted?()
+                }
                 .onPurchaseCompleted {
                     self.purchaseCompleted?($0)
                 }
