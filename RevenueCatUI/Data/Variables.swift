@@ -38,12 +38,16 @@ protocol VariableDataProvider {
     var productName: String { get }
 
     func periodNameOrIdentifier(_ locale: Locale) -> String
+    func periodNameAbbreviation(_ locale: Locale) -> String?
+    func periodLength(_ locale: Locale) -> String?
     func subscriptionDuration(_ locale: Locale) -> String?
     func normalizedSubscriptionDuration(_ locale: Locale) -> String?
     func introductoryOfferDuration(_ locale: Locale) -> String?
 
     func localizedPricePerPeriod(_ locale: Locale) -> String
+    func localizedPricePerPeriodFull(_ locale: Locale) -> String
     func localizedPriceAndPerMonth(_ locale: Locale) -> String
+    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String
     func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String?
 
 }
@@ -96,9 +100,15 @@ enum VariableHandler {
         case "app_name": return { (provider, _, _) in provider.applicationName }
         case "price": return { (provider, _, _) in provider.localizedPrice }
         case "price_per_period": return { (provider, _, locale) in provider.localizedPricePerPeriod(locale) }
+        case "price_per_period_full": return { (provider, _, locale) in provider.localizedPricePerPeriodFull(locale) }
         case "total_price_and_per_month": return { (provider, _, locale) in provider.localizedPriceAndPerMonth(locale) }
+        case "total_price_and_per_month_full": return { (provider, _, locale) in
+            provider.localizedPriceAndPerMonthFull(locale)
+        }
         case "product_name": return { (provider, _, _) in provider.productName }
         case "sub_period": return { (provider, _, locale) in provider.periodNameOrIdentifier(locale) }
+        case "sub_period_length": return { (provider, _, locale) in provider.periodLength(locale) }
+        case "sub_period_abbreviated": return { (provider, _, locale) in provider.periodNameAbbreviation(locale) }
         case "sub_price_per_month": return { (provider, _, _) in provider.localizedPricePerMonth }
         case "sub_price_per_week": return { (provider, _, _) in provider.localizedPricePerWeek }
         case "sub_duration": return { (provider, _, locale) in provider.subscriptionDuration(locale) }

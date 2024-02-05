@@ -35,6 +35,18 @@ enum Localization {
         ?? options.last!
     }
 
+    /// - Returns: an appropriate unabbreviated description for the given `unit`.
+    static func unitLocalizedString(
+        for period: SubscriptionPeriod,
+        locale: Locale = .current
+    ) -> String {
+        return self.unitLocalizedString(
+            for: period,
+            styles: Self.preferedFullStyles(for: locale),
+            locale: locale
+        ).first!
+    }
+
     static func localizedDuration(
         for subscriptionPeriod: SubscriptionPeriod,
         locale: Locale = .current
@@ -170,6 +182,12 @@ private extension Localization {
         case "de": return [.full]
         default: return [.full, .brief, .abbreviated]
         }
+    }
+
+    static func preferedFullStyles(for locale: Locale) -> [DateComponentsFormatter.UnitsStyle] {
+        // `.full` for all locales, but this allows customizing it
+        // if needed, like `preferedAbbreviationStyles`.
+        return [.full]
     }
 
     /// The order in which unit abbreviations are preferred.

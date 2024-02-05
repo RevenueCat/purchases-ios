@@ -83,6 +83,24 @@ class PackageVariablesTests: TestCase {
         == "٣.٩٩ درهم"
     }
 
+    func testEnglishLocalizedPricePerPeriodFull() {
+        expect(TestData.weeklyPackage.localizedPricePerPeriodFull(Self.english)) == "$1.99/week"
+        expect(TestData.monthlyPackage.localizedPricePerPeriodFull(Self.english)) == "$6.99/month"
+        expect(TestData.threeMonthPackage.localizedPricePerPeriodFull(Self.english)) == "$4.99/3months"
+        expect(TestData.sixMonthPackage.localizedPricePerPeriodFull(Self.english)) == "$7.99/6months"
+        expect(TestData.annualPackage.localizedPricePerPeriodFull(Self.english)) == "$53.99/year"
+        expect(TestData.lifetimePackage.localizedPricePerPeriodFull(Self.english)) == "$119.49"
+    }
+
+    func testSpanishLocalizedPricePerPeriodFull() {
+        expect(TestData.weeklyPackage.localizedPricePerPeriodFull(Self.spanish)) == "$1.99/semana"
+        expect(TestData.monthlyPackage.localizedPricePerPeriodFull(Self.spanish)) == "$6.99/mes"
+        expect(TestData.threeMonthPackage.localizedPricePerPeriodFull(Self.spanish)) == "$4.99/3meses"
+        expect(TestData.sixMonthPackage.localizedPricePerPeriodFull(Self.spanish)) == "$7.99/6meses"
+        expect(TestData.annualPackage.localizedPricePerPeriodFull(Self.spanish)) == "$53.99/año"
+        expect(TestData.lifetimePackage.localizedPricePerPeriodFull(Self.spanish)) == "$119.49"
+    }
+
     func testEnglishLocalizedPriceAndPerMonth() {
         expect(TestData.weeklyPackage.localizedPriceAndPerMonth(Self.english)) == "$1.99/wk ($8.64/mo)"
         expect(TestData.monthlyPackage.localizedPriceAndPerMonth(Self.english)) == "$6.99/mo"
@@ -118,6 +136,24 @@ class PackageVariablesTests: TestCase {
         == arabicPrice
     }
 
+    func testEnglishLocalizedPriceAndPerMonthFull() {
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.english)) == "$1.99/week ($8.64/month)"
+        expect(TestData.monthlyPackage.localizedPriceAndPerMonthFull(Self.english)) == "$6.99/month"
+        expect(TestData.threeMonthPackage.localizedPriceAndPerMonthFull(Self.english)) == "$4.99/3months ($1.66/month)"
+        expect(TestData.sixMonthPackage.localizedPriceAndPerMonthFull(Self.english)) == "$7.99/6months ($1.33/month)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.english)) == "$53.99/year ($4.49/month)"
+        expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.english)) == "$119.49"
+    }
+
+    func testSpanishLocalizedPriceAndPerMonthFull() {
+        expect(TestData.weeklyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$1.99/semana ($8.64/mes)"
+        expect(TestData.monthlyPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$6.99/mes"
+        expect(TestData.threeMonthPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$4.99/3meses ($1.66/mes)"
+        expect(TestData.sixMonthPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$7.99/6meses ($1.33/mes)"
+        expect(TestData.annualPackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$53.99/año ($4.49/mes)"
+        expect(TestData.lifetimePackage.localizedPriceAndPerMonthFull(Self.spanish)) == "$119.49"
+    }
+
     func testProductName() {
         expect(TestData.weeklyPackage.productName) == "Weekly"
         expect(TestData.monthlyPackage.productName) == "Monthly"
@@ -147,6 +183,50 @@ class PackageVariablesTests: TestCase {
         expect(TestData.lifetimePackage.periodNameOrIdentifier(Self.spanish)) == "Toda la vida"
         expect(TestData.customPackage.periodNameOrIdentifier(Self.spanish)) == "Custom"
         expect(TestData.unknownPackage.periodNameOrIdentifier(Self.spanish)) == "Unknown"
+    }
+
+    func testEnglishPeriodAbbreviation() {
+        expect(TestData.weeklyPackage.periodNameAbbreviation(Self.english)) == "wk"
+        expect(TestData.monthlyPackage.periodNameAbbreviation(Self.english)) == "mo"
+        expect(TestData.threeMonthPackage.periodNameAbbreviation(Self.english)) == "3mo"
+        expect(TestData.sixMonthPackage.periodNameAbbreviation(Self.english)) == "6mo"
+        expect(TestData.annualPackage.periodNameAbbreviation(Self.english)) == "yr"
+        expect(TestData.lifetimePackage.periodNameAbbreviation(Self.english)).to(beNil())
+        expect(TestData.customPackage.periodNameAbbreviation(Self.english)) == "yr"
+        expect(TestData.unknownPackage.periodNameAbbreviation(Self.english)) == "yr"
+    }
+
+    func testSpanishPeriodAbbreviation() {
+        expect(TestData.weeklyPackage.periodNameAbbreviation(Self.spanish)) == "sem"
+        expect(TestData.monthlyPackage.periodNameAbbreviation(Self.spanish)) == "m."
+        expect(TestData.threeMonthPackage.periodNameAbbreviation(Self.spanish)) == "3m"
+        expect(TestData.sixMonthPackage.periodNameAbbreviation(Self.spanish)) == "6m"
+        expect(TestData.annualPackage.periodNameAbbreviation(Self.spanish)) == "año"
+        expect(TestData.lifetimePackage.periodNameAbbreviation(Self.spanish)).to(beNil())
+        expect(TestData.customPackage.periodNameAbbreviation(Self.spanish)) == "año"
+        expect(TestData.unknownPackage.periodNameAbbreviation(Self.spanish)) == "año"
+    }
+
+    func testEnglishPeriodLength() {
+        expect(TestData.weeklyPackage.periodLength(Self.english)) == "week"
+        expect(TestData.monthlyPackage.periodLength(Self.english)) == "month"
+        expect(TestData.threeMonthPackage.periodLength(Self.english)) == "3months"
+        expect(TestData.sixMonthPackage.periodLength(Self.english)) == "6months"
+        expect(TestData.annualPackage.periodLength(Self.english)) == "year"
+        expect(TestData.lifetimePackage.periodLength(Self.english)).to(beNil())
+        expect(TestData.customPackage.periodLength(Self.english)) == "year"
+        expect(TestData.unknownPackage.periodLength(Self.english)) == "year"
+    }
+
+    func testSpanishPeriodLength() {
+        expect(TestData.weeklyPackage.periodLength(Self.spanish)) == "semana"
+        expect(TestData.monthlyPackage.periodLength(Self.spanish)) == "mes"
+        expect(TestData.threeMonthPackage.periodLength(Self.spanish)) == "3meses"
+        expect(TestData.sixMonthPackage.periodLength(Self.spanish)) == "6meses"
+        expect(TestData.annualPackage.periodLength(Self.spanish)) == "año"
+        expect(TestData.lifetimePackage.periodLength(Self.spanish)).to(beNil())
+        expect(TestData.customPackage.periodLength(Self.spanish)) == "año"
+        expect(TestData.unknownPackage.periodLength(Self.spanish)) == "año"
     }
 
     func testEnglishIntroductoryOfferDuration() {
