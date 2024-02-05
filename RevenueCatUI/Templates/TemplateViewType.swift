@@ -161,7 +161,11 @@ extension View {
 
     func adaptTemplateView(with configuration: TemplateViewConfiguration) -> some View {
         self
+        #if os(visionOS)
+            .background(Material.regular)
+        #else
             .background(configuration.backgroundView)
+        #endif
             .adjustColorScheme(with: configuration)
             .adjustSize(with: configuration.mode)
     }
