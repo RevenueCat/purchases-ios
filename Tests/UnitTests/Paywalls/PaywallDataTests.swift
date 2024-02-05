@@ -134,10 +134,10 @@ class PaywallDataTests: BaseHTTPResponseTest {
     }
 
     func testLocalesOrderedByPriority() {
-        expect(PaywallData.localesOrderedByPriority) == [
-            .init(identifier: "en_US"),
-            .init(identifier: "en-US"),
-            .init(identifier: "en")
+        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == [
+            "en_US",
+            "en-US",
+            "en"
         ]
     }
 
