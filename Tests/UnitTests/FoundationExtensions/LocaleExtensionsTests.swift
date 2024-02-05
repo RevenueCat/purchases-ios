@@ -22,8 +22,26 @@ class LocaleExtensionsTests: TestCase {
         expect(Locale(identifier: "en_US").rc_currencyCode) == "USD"
     }
 
-    func testMissingCurrenctCode() {
+    func testMissingCurrencyCode() {
         expect(Locale(identifier: "").rc_currencyCode).to(beNil())
+    }
+
+    func testLanguageCodeCode() {
+        expect(Locale(identifier: "en_US").rc_languageCode) == "en"
+        expect(Locale(identifier: "en-IN").rc_languageCode) == "en"
+        expect(Locale(identifier: "en").rc_languageCode) == "en"
+    }
+
+    func testMissingLanguageCode() {
+        expect(Locale(identifier: "").rc_languageCode).to(beNil())
+    }
+
+    func testRemovingRegion() {
+        expect(Locale(identifier: "en_US").removingRegion?.identifier) == "en"
+        expect(Locale(identifier: "en-IN").removingRegion?.identifier) == "en"
+        expect(Locale(identifier: "en_ES").removingRegion?.identifier) == "en"
+        expect(Locale(identifier: "en").removingRegion?.identifier) == "en"
+        expect(Locale(identifier: "").removingRegion).to(beNil())
     }
 
 }
