@@ -122,6 +122,25 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(esConfig.title) == "Tienda"
     }
 
+    func testLocalizedConfigurationFallsBackToLanguageWithDifferentRegion() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+            .init(identifier: "en_IN"),
+            .init(identifier: "en-IN"),
+            .init(identifier: "en-IN").removingRegion
+        ].compactMap { $0 }))
+        expect(enConfig.title) == "Paywall"
+    }
+
+    func testLocalesOrderedByPriority() {
+        expect(PaywallData.localesOrderedByPriority) == [
+            .init(identifier: "en_US"),
+            .init(identifier: "en-US"),
+            .init(identifier: "en")
+        ]
+    }
+
     func testDoesNotFindLocaleWithMissingLanguage() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
