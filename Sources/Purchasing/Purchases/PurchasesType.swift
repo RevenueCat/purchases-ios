@@ -1052,7 +1052,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * - Returns: A ``StoreTransaction`` if there was a transacton found and handled for the provided product ID.
      *
      * - Important: This should only be used if you have enabled observer mode during SDK configuration using 
-     * ``Configuration/Builder/with(observerMode:)``
+     * ``Configuration/Builder/with(observerMode:storeKitVersion:)``
      */
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func handleObserverModeTransaction(

@@ -131,12 +131,18 @@ import Foundation
          * Set `observerMode`.
          * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
          * RevenueCat's backend. Default is `false`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
+         * Default is `StoreKitVersion.storeKit1`.
          */
-        @objc public func with(observerMode: Bool) -> Configuration.Builder {
+        @objc public func with(
+            observerMode: Bool,
+            storeKitVersion: StoreKitVersion = .storeKit1
+        ) -> Configuration.Builder {
+            if self.storeKitVersion != StoreKitVersion.default {
+                Logger.warn(Strings.configure.observer_mode_with_storekit_version)
+            }
             self.observerMode = observerMode
+            self.storeKitVersion = storeKitVersion
             return self
         }
         /**
@@ -227,6 +233,9 @@ import Foundation
         /// ### Related Symbols
         /// - ``StoreKitVersion``
         @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
+            if self.observerMode {
+                Logger.warn(Strings.configure.observer_mode_with_storekit_version)
+            }
             self.storeKitVersion = version
             return self
         }

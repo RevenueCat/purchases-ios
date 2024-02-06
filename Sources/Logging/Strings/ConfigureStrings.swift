@@ -79,6 +79,8 @@ enum ConfigureStrings {
 
     case observer_mode_with_storekit2
 
+    case observer_mode_with_storekit_version
+
 }
 
 extension ConfigureStrings: LogMessage {
@@ -201,6 +203,10 @@ extension ConfigureStrings: LogMessage {
         case .observer_mode_with_storekit2:
             return "StoreKit 2 Observer Mode is enabled. You must manually handle newly purchased transactions " +
             "calling `Purchases.shared.handleObserverModeTransaction()`."
+
+        case .observer_mode_with_storekit_version:
+            return "Use `.with(observerMode: true, storeKitVersion: version)` instead of `.with(storeKitVersion:)` " +
+            "to select which StoreKit version to use when enabling Observer Mode."
         }
     }
 
