@@ -262,7 +262,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             case .sheet:
                 content
                     .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
-                        paywallView(data: data)
+                        self.paywallView(data: data)
                     }
             case .fullScreen:
                 content
