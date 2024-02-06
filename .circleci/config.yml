@@ -264,7 +264,6 @@ commands:
 
   update-spm-installation-commit:
     steps:
-      - install-dependencies
       - run:
           name: Update git commit in targets that use SPM for dependencies
           command: |
@@ -346,6 +345,7 @@ jobs:
           name: SPM Custom Entitlement Computation Build
           command: swift build --target RevenueCat_CustomEntitlementComputation
           no_output_timeout: 30m
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Custom Entitlement Computation API Tests
@@ -377,6 +377,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -401,6 +402,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -432,6 +434,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -460,6 +463,7 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -768,6 +772,7 @@ jobs:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Deployment checks
@@ -800,6 +805,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - install-dependencies
       - update-spm-installation-commit
       - run:
           name: Deploy new version
@@ -858,6 +864,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMInstallation/
@@ -869,6 +876,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/SPMCustomEntitlementComputationInstallation/
@@ -880,6 +888,7 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - install-dependencies
       - update-spm-installation-commit
       - install-dependencies:
           directory: Tests/InstallationTests/ReceiptParserInstallation/
