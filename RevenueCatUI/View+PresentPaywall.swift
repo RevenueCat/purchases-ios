@@ -16,7 +16,7 @@ import SwiftUI
 
 #if !os(macOS) && !os(tvOS)
 
-/// Presentation options to use with the View modifiers ``presentPaywallIfNeeded``.
+/// Presentation options to use with the View modifiers `.presentPaywallIfNeeded`.
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
