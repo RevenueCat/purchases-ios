@@ -267,7 +267,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
-                        paywallView(data: data)
+                        self.paywallView(data: data)
                     }
             }
         }
