@@ -81,13 +81,13 @@ extension View {
         return self.presentPaywallIfNeeded(
             offering: offering,
             fonts: fonts,
+            presentationMode: presentationMode,
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
                     .keys
                     .contains(requiredEntitlementIdentifier)
             },
-            presentationMode: presentationMode,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -137,8 +137,8 @@ extension View {
     public func presentPaywallIfNeeded(
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         presentationMode: PaywallPresentationMode = .default,
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -150,8 +150,8 @@ extension View {
         return self.presentPaywallIfNeeded(
             offering: offering,
             fonts: fonts,
-            shouldDisplay: shouldDisplay,
             presentationMode: presentationMode,
+            shouldDisplay: shouldDisplay,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -175,8 +175,8 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         presentationMode: PaywallPresentationMode = .default,
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
