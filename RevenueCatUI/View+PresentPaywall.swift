@@ -21,12 +21,20 @@ import SwiftUI
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
 public enum PaywallPresentationMode {
-    
+
+    /// Paywall presented using SwiftUI's `.sheet`.
+    case sheet
+
+    /// Paywall presented using SwiftUI's `.fullScreenCover`.
+    case fullScreen
+
+}
+
+extension PaywallPresentationMode {
+
+    // swiftlint:disable:next missing_docs
     public static let `default`: Self = .sheet
 
-    case sheet
-    case fullScreen
-    
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -51,8 +59,7 @@ extension View {
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
-    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
-    /// Defaults to `.sheet`.
+    /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -123,8 +130,7 @@ extension View {
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
-    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
-    /// Defaults to `.sheet`.
+    /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -264,7 +270,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     @State
     private var data: Data?
-    
+
     func body(content: Content) -> some View {
         Group {
             switch presentationMode {
@@ -282,19 +288,19 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .task {
             guard let info = try? await self.customerInfoFetcher() else { return }
-            
+
             Logger.debug(Strings.determining_whether_to_display_paywall)
-            
+
             if self.shouldDisplay(info) {
                 Logger.debug(Strings.displaying_paywall)
-                
+
                 self.data = .init(customerInfo: info)
             } else {
                 Logger.debug(Strings.not_displaying_paywall)
             }
         }
     }
-    
+
     private func paywallView(_ data: Data) -> some View {
         PaywallView(
             configuration: .init(
@@ -317,7 +323,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
-            
+
             if !self.shouldDisplay(customerInfo) {
                 self.close()
             }
