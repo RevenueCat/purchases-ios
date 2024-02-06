@@ -95,10 +95,8 @@ class StoreKitConfigTestCase: TestCase {
         super.tearDown()
     }
 
-    // `nonisolated` required to work around Swift 5.10 issue.
-    // See https://github.com/RevenueCat/purchases-ios/pull/3599
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private static nonisolated func listenToTransactionUpdates() async {
+    private static func listenToTransactionUpdates() async {
         // Silence warning in tests:
         // "Making a purchase without listening for transaction updates risks missing successful purchases.
         for await _ in Transaction.updates {}

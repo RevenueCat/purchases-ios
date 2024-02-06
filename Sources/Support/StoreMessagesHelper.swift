@@ -46,15 +46,13 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
 
     #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
 
-    // `nonisolated` required to work around Swift 5.10 issue.
-    // See https://github.com/RevenueCat/purchases-ios/pull/3599
-    nonisolated func deferMessagesIfNeeded() async throws {
+    func deferMessagesIfNeeded() async throws {
         guard !self.showStoreMessagesAutomatically else {
             return
         }
 
         for try await message in self.storeMessagesProvider.messages {
-            await self.add(message)
+            self.deferredMessages.append(message)
         }
     }
 
@@ -69,10 +67,6 @@ actor StoreMessagesHelper: StoreMessagesHelperType {
             }
         }
         self.deferredMessages.removeAll()
-    }
-
-    private func add(_ message: StoreMessage) {
-        self.deferredMessages.append(message)
     }
 
     #endif
