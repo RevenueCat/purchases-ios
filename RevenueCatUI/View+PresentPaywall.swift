@@ -21,6 +21,8 @@ import SwiftUI
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
 public enum PaywallPresentationMode {
+    
+    public static let `default`: Self = .sheet
 
     case sheet
     case fullScreen
@@ -130,7 +132,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        presentationMode: PaywallPresentationMode = .sheet,
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -168,7 +170,7 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        presentationMode: PaywallPresentationMode = .sheet,
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -269,12 +271,12 @@ private struct PresentingPaywallModifier: ViewModifier {
             case .sheet:
                 content
                     .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
-                        self.paywallView(data: data)
+                        self.paywallView(data)
                     }
             case .fullScreen:
                 content
                     .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
-                        self.paywallView(data: data)
+                        self.paywallView(data)
                     }
             }
         }
@@ -293,7 +295,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
     
-    private func paywallView(data: Data) -> some View {
+    private func paywallView(_ data: Data) -> some View {
         PaywallView(
             configuration: .init(
                 content: self.content,
