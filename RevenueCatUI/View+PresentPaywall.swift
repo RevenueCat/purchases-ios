@@ -16,6 +16,19 @@ import SwiftUI
 
 #if !os(macOS) && !os(tvOS)
 
+/// Presentation options to use with the [presentPaywallIfNeeded](x-source-tag://presentPaywallIfNeeded) View modifiers.
+///
+/// ### Related Articles
+/// [Documentation](https://rev.cat/paywalls)
+public enum PaywallPresentationMode {
+    
+    public static let `default`: Self = .sheet
+
+    case sheet
+    case fullScreen
+    
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
@@ -37,14 +50,19 @@ extension View {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
-    /// - Parameter fonts: An optional `PaywallFontProvider`.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
+    /// Defaults to `.sheet`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    ///
+    /// - Tag: presentPaywallIfNeeded
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -62,6 +80,7 @@ extension View {
                     .keys
                     .contains(requiredEntitlementIdentifier)
             },
+            presentationMode: presentationMode,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -103,11 +122,17 @@ extension View {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
-    /// - Parameter fonts: An optional `PaywallFontProvider`.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
+    /// Defaults to `.sheet`.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func presentPaywallIfNeeded(
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -120,6 +145,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             shouldDisplay: shouldDisplay,
+            presentationMode: presentationMode,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -144,6 +170,7 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -156,6 +183,7 @@ extension View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
+                presentationMode: presentationMode,
                 purchaseStarted: purchaseStarted,
                 purchaseCompleted: purchaseCompleted,
                 purchaseCancelled: purchaseCancelled,
@@ -184,6 +212,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
+    var presentationMode: PaywallPresentationMode
     var purchaseStarted: PurchaseStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
@@ -200,6 +229,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     init(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        presentationMode: PaywallPresentationMode,
         purchaseStarted: PurchaseStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
@@ -214,6 +244,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseHandler: PurchaseHandler?
     ) {
         self.shouldDisplay = shouldDisplay
+        self.presentationMode = presentationMode
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
         self.purchaseCancelled = purchaseCancelled
@@ -233,57 +264,71 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     @State
     private var data: Data?
-
+    
     func body(content: Content) -> some View {
-        content
-            .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
-                PaywallView(
-                    configuration: .init(
-                        content: self.content,
-                        customerInfo: data.customerInfo,
-                        fonts: self.fontProvider,
-                        displayCloseButton: true,
-                        introEligibility: self.introEligibility,
-                        purchaseHandler: self.purchaseHandler
-                    )
-                )
-                .onPurchaseStarted {
-                    self.purchaseStarted?()
-                }
-                .onPurchaseCompleted {
-                    self.purchaseCompleted?($0)
-                }
-                .onPurchaseCancelled {
-                    self.purchaseCancelled?()
-                }
-                .onRestoreCompleted { customerInfo in
-                    self.restoreCompleted?(customerInfo)
-
-                    if !self.shouldDisplay(customerInfo) {
-                        self.close()
+        Group {
+            switch presentationMode {
+            case .sheet:
+                content
+                    .sheet(item: self.$data, onDismiss: self.onDismiss) { data in
+                        self.paywallView(data)
                     }
-                }
-                .onPurchaseFailure {
-                    self.purchaseFailure?($0)
-                }
-                .onRestoreFailure {
-                    self.restoreFailure?($0)
-                }
-                .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
+            case .fullScreen:
+                content
+                    .fullScreenCover(item: self.$data, onDismiss: self.onDismiss) { data in
+                        self.paywallView(data)
+                    }
             }
-            .task {
-                guard let info = try? await self.customerInfoFetcher() else { return }
-
-                Logger.debug(Strings.determining_whether_to_display_paywall)
-
-                if self.shouldDisplay(info) {
-                    Logger.debug(Strings.displaying_paywall)
-
-                    self.data = .init(customerInfo: info)
-                } else {
-                    Logger.debug(Strings.not_displaying_paywall)
-                }
+        }
+        .task {
+            guard let info = try? await self.customerInfoFetcher() else { return }
+            
+            Logger.debug(Strings.determining_whether_to_display_paywall)
+            
+            if self.shouldDisplay(info) {
+                Logger.debug(Strings.displaying_paywall)
+                
+                self.data = .init(customerInfo: info)
+            } else {
+                Logger.debug(Strings.not_displaying_paywall)
             }
+        }
+    }
+    
+    private func paywallView(_ data: Data) -> some View {
+        PaywallView(
+            configuration: .init(
+                content: self.content,
+                customerInfo: data.customerInfo,
+                fonts: self.fontProvider,
+                displayCloseButton: true,
+                introEligibility: self.introEligibility,
+                purchaseHandler: self.purchaseHandler
+            )
+        )
+        .onPurchaseStarted {
+            self.purchaseStarted?()
+        }
+        .onPurchaseCompleted {
+            self.purchaseCompleted?($0)
+        }
+        .onPurchaseCancelled {
+            self.purchaseCancelled?()
+        }
+        .onRestoreCompleted { customerInfo in
+            self.restoreCompleted?(customerInfo)
+            
+            if !self.shouldDisplay(customerInfo) {
+                self.close()
+            }
+        }
+        .onPurchaseFailure {
+            self.purchaseFailure?($0)
+        }
+        .onRestoreFailure {
+            self.restoreFailure?($0)
+        }
+        .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
     private func close() {
