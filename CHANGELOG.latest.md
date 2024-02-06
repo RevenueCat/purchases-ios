@@ -1,3 +1,5 @@
+_This release is compatible with `Xcode 15.3 beta 2`_
+
 ### New Features
 * `NonSubscriptionTransaction`: expose `storeTransactionIdentifier` (#3639) via NachoSoto (@NachoSoto)
 ### RevenueCatUI
