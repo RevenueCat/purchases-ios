@@ -43,6 +43,8 @@ struct App: View {
     var checkPresentPaywallIfNeeded: some View {
         Text("")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .sheet)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .fullScreen)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: nil)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering)
@@ -81,6 +83,9 @@ struct App: View {
                 false
             } purchaseCompleted: {
                 self.purchaseOrRestoreCompleted($0)
+            }
+            .presentPaywallIfNeeded(presentationMode: .sheet) { (_: CustomerInfo) in
+                false
             }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
                 false
@@ -198,6 +203,13 @@ struct App: View {
     private func fontProviders() {
         let _: PaywallFontProvider = DefaultPaywallFontProvider()
         let _: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    }
+
+    private func presentationMode(_ mode: PaywallPresentationMode) {
+        switch mode {
+        case .sheet: break
+        case .fullScreen: break
+        }
     }
 
 }
