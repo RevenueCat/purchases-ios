@@ -16,7 +16,7 @@ import SwiftUI
 
 #if !os(macOS) && !os(tvOS)
 
-/// Presentation options to use with the View modifiers `.presentPaywallIfNeeded`.
+/// Presentation options to use with the [presentPaywallIfNeeded](x-source-tag://presentPaywallIfNeeded) View modifiers.
 ///
 /// ### Related Articles
 /// [Documentation](https://rev.cat/paywalls)
@@ -48,16 +48,19 @@ extension View {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
-    /// - Parameter fonts: An optional `PaywallFontProvider`.
-    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView``. Defaults to ``.sheet``.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
+    /// Defaults to `.sheet`.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    ///
+    /// - Tag: presentPaywallIfNeeded
     public func presentPaywallIfNeeded(
         requiredEntitlementIdentifier: String,
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        presentationMode: PaywallPresentationMode = .sheet,
+        presentationMode: PaywallPresentationMode = .default,
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -117,8 +120,12 @@ extension View {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
     /// that it will ignore the offering configured in an active experiment.
-    /// - Parameter fonts: An optional `PaywallFontProvider`.
-    /// - Parameter presentationMode: The desired presentation mode of the PaywallView. Defaults to ``.sheet``.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the ``PaywallView`` (``PaywallPresentationMode``).
+    /// Defaults to `.sheet`.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
     public func presentPaywallIfNeeded(
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
