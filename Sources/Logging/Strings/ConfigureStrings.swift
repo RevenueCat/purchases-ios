@@ -192,7 +192,7 @@ extension ConfigureStrings: LogMessage {
 
         case .handle_transaction_observer_mode_required:
             return "Attempted to manually handle transactions with observer mode not enabled. " +
-            "You must use `.with(observerMode: true)` when configuring the SDK."
+            "You must use `.with(observerMode: true, storeKitVersion: .storeKit2)` when configuring the SDK."
 
         case .sk2_required:
             return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` " +
@@ -201,6 +201,7 @@ extension ConfigureStrings: LogMessage {
         case .observer_mode_with_storekit2:
             return "StoreKit 2 Observer Mode is enabled. You must manually handle newly purchased transactions " +
             "calling `Purchases.shared.handleObserverModeTransaction()`."
+
         }
     }
 

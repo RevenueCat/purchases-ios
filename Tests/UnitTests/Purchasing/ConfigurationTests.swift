@@ -53,7 +53,7 @@ class ConfigurationTests: TestCase {
 
     func testObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
+            .with(observerMode: true, storeKitVersion: .storeKit1)
             .build()
 
         expect(configuration.observerMode) == true
@@ -64,8 +64,7 @@ class ConfigurationTests: TestCase {
 
     func testObserverModeWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
-            .with(storeKitVersion: .storeKit2)
+            .with(observerMode: true, storeKitVersion: .storeKit2)
             .build()
 
         expect(configuration.observerMode) == true
