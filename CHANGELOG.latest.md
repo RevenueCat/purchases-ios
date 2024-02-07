@@ -1,9 +1,12 @@
+_This release is compatible with `Xcode 15.3 beta 2`_
+
+### New Features
+* `NonSubscriptionTransaction`: expose `storeTransactionIdentifier` (#3639) via NachoSoto (@NachoSoto)
 ### RevenueCatUI
-* `Paywalls`: fix finding locales with different regions (#3633) via NachoSoto (@NachoSoto)
-* `Paywalls`: add 4 new variables (#3629) via NachoSoto (@NachoSoto)
-* `Paywalls`: new `.onPurchaseStarted` modifier (#3627) via NachoSoto (@NachoSoto)
-* `PaywallViewController`: expose `fontName` for `CustomFontProvider` (by @Jjastiny) (#3628) via NachoSoto (@NachoSoto)
+* `Paywalls`: new `presentationMode` parameter (by @Lascorbe) (#3638) via NachoSoto (@NachoSoto)
+### Bugfixes
+* Add explicit `visionOS` deployment target (#3642) via NachoSoto (@NachoSoto)
 ### Dependency Updates
-* Bump danger from 9.4.2 to 9.4.3 (#3630) via dependabot[bot] (@dependabot[bot])
+* Bump cocoapods from 1.15.0 to 1.15.1 (#3637) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* `Paywalls`: improve "offering has no configured paywall" error (#3625) via NachoSoto (@NachoSoto)
+* `Xcode 15.3 beta 2`: remove `nonisolated` workaround (#3640) via NachoSoto (@NachoSoto)
