@@ -212,7 +212,6 @@ import Foundation
         /// ### Related Symbols
         /// - ``Configuration/EntitlementVerificationMode``
         /// - ``VerificationResult``
-        @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
             self.responseVerificationMode = Signing.verificationMode(with: mode)
             return self

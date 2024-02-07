@@ -34,8 +34,6 @@ class StorefrontTests: StoreKitConfigTestCase {
 
     @MainActor
     func testCurrentStorefrontSK1() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         if #unavailable(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0) {
             let expectedStorefront = try XCTUnwrap(SKPaymentQueue.default().storefront)
             let currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)

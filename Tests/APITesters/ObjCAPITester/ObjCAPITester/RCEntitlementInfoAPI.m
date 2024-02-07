@@ -31,10 +31,7 @@
     NSDate *bida = [ri billingIssueDetectedAt];
     RCPurchaseOwnershipType ot = [ri ownershipType];
     NSDictionary<NSString *, id> *rawData = [ri rawData];
-
-    if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {
-        RCVerificationResult ver __unused = [ri verification];
-    }
+    RCVerificationResult ver __unused = [ri verification];
 
     NSLog(i, ia, iaae, iace, ri, wr, pt, lpd, opd, ed, s, pi, ppi, is, uda, bida, ot, rawData);
 }

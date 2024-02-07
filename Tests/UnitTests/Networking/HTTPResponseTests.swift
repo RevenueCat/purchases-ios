@@ -38,10 +38,7 @@ class HTTPResponseTests: TestCase {
         expect(verifiedResponse.verificationResult) == .notRequested
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testResponseVerificationNotRequestedWithPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .postOfferForSigning)
@@ -60,10 +57,7 @@ class HTTPResponseTests: TestCase {
         expect(verifiedResponse.verificationResult) == .notRequested
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testResponseVerificationFailedIfMissingSignature() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let key = Curve25519.Signing.PrivateKey().publicKey
 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)

@@ -133,7 +133,6 @@ private extension ProductsManager {
 extension ProductsManagerType {
 
     /// `async` overload for `products(withIdentifiers:)`
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await Async.call { completion in
             self.products(withIdentifiers: identifiers, completion: completion)
