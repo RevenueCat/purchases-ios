@@ -20,6 +20,7 @@ struct PaywallViewConfiguration {
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
+    var isDarkMode: Bool?
 
     init(
         content: Content,
@@ -28,7 +29,8 @@ struct PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil
+        purchaseHandler: PurchaseHandler? = nil,
+        isDarkMode: Bool? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -37,6 +39,7 @@ struct PaywallViewConfiguration {
         self.displayCloseButton = displayCloseButton
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
+        self.isDarkMode = isDarkMode
     }
 
 }
@@ -67,7 +70,8 @@ extension PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil
+        purchaseHandler: PurchaseHandler? = nil,
+        isDarkMode: Bool? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
@@ -76,7 +80,8 @@ extension PaywallViewConfiguration {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            isDarkMode: isDarkMode
         )
     }
 

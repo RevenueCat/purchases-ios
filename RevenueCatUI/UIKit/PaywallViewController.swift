@@ -134,6 +134,12 @@ public class PaywallViewController: UIViewController {
     public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
+    
+    /// - Warning: For internal use only
+    @objc(updateDarkMode:)
+    public func updateDarkMode(with isDarkMode: Bool) {
+        self.configuration.isDarkMode = isDarkMode
+    }
 
     // MARK: - Internal
 
