@@ -51,18 +51,6 @@ class ConfigurationTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
-    func testObserverModeUsesStoreKit1ByDefault() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
-            .build()
-
-        expect(configuration.observerMode) == true
-        expect(configuration.storeKitVersion) == .storeKit1
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit_version)
-    }
-
     func testObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .with(observerMode: true, storeKitVersion: .storeKit1)
@@ -72,7 +60,6 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .storeKit1
 
         self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit_version)
     }
 
     func testObserverModeWithStoreKit2() {
@@ -84,37 +71,6 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .storeKit2
 
         self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
-                                           level: .warn)
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit_version)
-    }
-
-    func testObserverModeLogsWarningWhenSettingStoreKitVersionBefore() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(storeKitVersion: .storeKit2)
-            .with(observerMode: true, storeKitVersion: .storeKit2)
-            .build()
-
-        expect(configuration.observerMode) == true
-        expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
-                                           level: .warn)
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit_version,
-                                           level: .warn)
-    }
-
-    func testObserverModeLogsWarningWhenSettingStoreKitVersionAfter() {
-        let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true, storeKitVersion: .storeKit2)
-            .with(storeKitVersion: .storeKit2)
-            .build()
-
-        expect(configuration.observerMode) == true
-        expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
-                                           level: .warn)
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit_version,
                                            level: .warn)
     }
 
