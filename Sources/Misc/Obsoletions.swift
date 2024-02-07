@@ -725,3 +725,19 @@ public extension Purchases {
     enum PeriodType {}
 
 }
+
+public extension Configuration.Builder {
+
+    @available(iOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
+               message: "Explicitly setting the StoreKit version is now required.")
+    @available(tvOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
+               message: "Explicitly setting the StoreKit version is now required.")
+    @available(watchOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
+               message: "Explicitly setting the StoreKit version is now required.")
+    @available(macOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
+               message: "Explicitly setting the StoreKit version is now required.")
+    @objc func with(observerMode: Bool) -> Configuration.Builder {
+        fatalError()
+    }
+
+}
