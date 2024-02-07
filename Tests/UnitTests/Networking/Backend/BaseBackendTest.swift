@@ -118,11 +118,7 @@ extension BaseBackendTests {
     }
 
     private var responseVerificationMode: Signing.ResponseVerificationMode {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return Signing.verificationMode(with: self.verificationMode)
-        } else {
-            return .disabled
-        }
+        return Signing.verificationMode(with: self.verificationMode)
     }
 
 }

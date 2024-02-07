@@ -173,14 +173,12 @@ BOOL isAnonymous;
     
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
-    if (@available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)) {
-        [p getPromotionalOfferForProductDiscount:stpd
-                                     withProduct:storeProduct
-                                  withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
-        [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-        [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
-    }
-    
+    [p getPromotionalOfferForProductDiscount:stpd
+                                 withProduct:storeProduct
+                              withCompletion:^(RCPromotionalOffer *offer, NSError *error) { }];
+    [p purchaseProduct:storeProduct withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+    [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
+
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 

@@ -19,10 +19,7 @@
     NSDictionary<NSString *, RCEntitlementInfo *> *activeInAnyEnvironment = ei.activeInAnyEnvironment;
     NSDictionary<NSString *, RCEntitlementInfo *> *activeInCurrentEnvironment = ei.activeInCurrentEnvironment;
     RCEntitlementInfo *e = [ei objectForKeyedSubscript:@""];
-
-    if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {
-        RCVerificationResult verification __unused = ei.verification;
-    }
+    RCVerificationResult verification __unused = ei.verification;
 
     NSLog(ei, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, e);
 }

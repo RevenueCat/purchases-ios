@@ -188,10 +188,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .disabled)
@@ -199,10 +196,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.publicKey).to(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeInformationalSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .informational)
@@ -212,10 +206,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // Can't compile this test while `Configuration.EntitlementVerificationMode.enforced` is unavailable.
     /*
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeEnforcedSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .enforced)

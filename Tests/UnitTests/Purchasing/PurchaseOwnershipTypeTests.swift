@@ -15,15 +15,7 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class PurchaseOwnershipTypeTests: TestCase {
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
-        // iOS 12 does not allow decoding fragments (top-level objects)
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-    }
 
     func testCodable() throws {
         for type in PurchaseOwnershipType.allCases {
