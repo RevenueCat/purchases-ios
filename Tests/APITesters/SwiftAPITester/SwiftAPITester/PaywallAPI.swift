@@ -145,9 +145,7 @@ func checkPaywallColor(_ color: PaywallColor) throws {
     let _: String = color.debugDescription
     let _: String = color.stringRepresentation
     #if canImport(SwiftUI)
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        let _: Color = color.underlyingColor
-    }
+    let _: Color = color.underlyingColor
     #endif
 }
 

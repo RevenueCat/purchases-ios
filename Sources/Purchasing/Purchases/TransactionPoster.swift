@@ -178,7 +178,6 @@ final class TransactionPoster: TransactionPosterType {
 }
 
 /// Async extension
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TransactionPosterType {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
