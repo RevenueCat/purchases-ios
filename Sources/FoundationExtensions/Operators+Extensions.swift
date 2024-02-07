@@ -15,7 +15,6 @@ infix operator ???
 
 /// Equivalent to `??` but allows an `async` default value.
 /// See https://github.com/apple/swift-evolution/blob/main/proposals/0296-async-await.md#future-directions
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 func ??? <T>(value: T?, defaultValue: @autoclosure () async throws -> T) async rethrows -> T {
     if let value = value {
         return value

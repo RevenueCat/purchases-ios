@@ -24,7 +24,6 @@ protocol URLSessionType {
 }
 
 @MainActor
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class ImageLoader: ObservableObject {
 
     enum Error: Swift.Error, Equatable {
@@ -99,7 +98,6 @@ extension URLSession: URLSessionType {}
 
 private extension Data {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
     func toImage() -> ImageLoader.Value {
         #if os(macOS)
         if let image = NSImage(data: self) {
