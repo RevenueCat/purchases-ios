@@ -14,7 +14,7 @@
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
     RCConfiguration *config __unused = [[[[[[[[[[[[builder withApiKey:@""]
-                                                 withObserverMode:false]
+                                                 withObserverMode:false storeKitVersion:RCStoreKitVersionStoreKit2]
                                                 withUserDefaults:NSUserDefaults.standardUserDefaults]
                                                withAppUserID:@""]
                                               withAppUserID:nil]
