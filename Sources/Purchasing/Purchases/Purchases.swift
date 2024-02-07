@@ -1377,7 +1377,6 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
-     * Observer mode is not compatible with StoreKit 2.
      */
     @_disfavoredOverload
     @available(*, deprecated, message: "Use configure(withAPIKey:appUserID:purchasesAreCompletedBy:) instead.")

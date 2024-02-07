@@ -147,25 +147,14 @@ import Foundation
          * Set `observerMode`.
          * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
          * RevenueCat's backend. Default is `false`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
-        @available(*, deprecated, message: "Use with(purchasesAreCompletedBy:) instead.")
-        @objc public func with(observerMode: Bool) -> Configuration.Builder {
-            self.purchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
-            return self
-        }
-        /**
-         * Set `purchasesAreCompletedBy`.
-         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and
-         * want to use only RevenueCat's backend. Default is `.revenueCat`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * `.myApp` is not compatible with StoreKit 2.
-         */
-        @objc public func with(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Configuration.Builder {
-            self.purchasesAreCompletedBy = purchasesAreCompletedBy
+        @objc public func with(
+            observerMode: Bool,
+            storeKitVersion: StoreKitVersion
+        ) -> Configuration.Builder {
+            self.observerMode = observerMode
+            self.storeKitVersion = storeKitVersion
             return self
         }
         /**
