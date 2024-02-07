@@ -12,11 +12,11 @@
 @implementation RCStoreKitVersionAPI
 
 + (void)checkAPI {
-    const __unused int version = RCStoreKitVersionStoreKit1;
+    const __unused RCStoreKitVersion version = RCStoreKitVersion1;
 
     switch (version) {
-        case RCStoreKitVersionStoreKit1:
-        case RCStoreKitVersionStoreKit2:
+        case RCStoreKitVersion1:
+        case RCStoreKitVersion2:
             break;
     }
 }
