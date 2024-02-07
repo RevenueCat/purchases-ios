@@ -103,7 +103,6 @@ extension PromotionalOffer.SignedData {
 
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     convenience init(sk1PaymentDiscount discount: SKPaymentDiscount) {
         self.init(identifier: discount.identifier,
                   keyIdentifier: discount.keyIdentifier,
@@ -112,7 +111,6 @@ extension PromotionalOffer.SignedData {
                   timestamp: discount.timestamp.intValue)
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     var sk1PromotionalOffer: SKPaymentDiscount {
         return SKPaymentDiscount(identifier: self.identifier,
                                  keyIdentifier: self.keyIdentifier,
