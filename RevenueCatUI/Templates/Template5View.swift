@@ -367,7 +367,6 @@ private extension Template5View {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension PaywallData.Configuration.Colors {
 
     var featureIcon: Color { self.accent1Color }

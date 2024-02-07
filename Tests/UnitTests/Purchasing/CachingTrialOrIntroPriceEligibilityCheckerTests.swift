@@ -17,7 +17,6 @@ import XCTest
 
 // swiftlint:disable type_name
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
     private typealias Result = [String: IntroEligibility]
@@ -27,8 +26,6 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.mockChecker = .init()
         self.caching = .init(checker: self.mockChecker)
@@ -212,7 +209,6 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
 // MARK: -
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 private extension CachingTrialOrIntroPriceEligibilityCheckerTests {
 
     static let productID1 = "com.revenuecat.product_1"
@@ -221,7 +217,6 @@ private extension CachingTrialOrIntroPriceEligibilityCheckerTests {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 private extension TrialOrIntroPriceEligibilityCheckerType {
 
     func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {

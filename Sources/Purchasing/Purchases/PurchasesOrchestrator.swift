@@ -256,7 +256,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: StoreProductType,
                           completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
@@ -317,7 +316,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData,
@@ -345,7 +343,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
                   promotionalOffer: PromotionalOffer.SignedData,
                   package: Package?,
@@ -761,8 +758,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
 
             let startPurchase: StartPurchaseBlock
 
-            if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *),
-               let discount = payment.paymentDiscount.map(PromotionalOffer.SignedData.init) {
+            if let discount = payment.paymentDiscount.map(PromotionalOffer.SignedData.init) {
                 startPurchase = { completion in
                     self.purchase(product: product,
                                   package: nil,
@@ -1436,7 +1432,6 @@ private extension PurchasesOrchestrator {
 
 // MARK: - Async extensions
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(
