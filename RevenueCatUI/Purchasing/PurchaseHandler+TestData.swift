@@ -76,7 +76,6 @@ extension PurchaseHandler {
 
 }
 
-@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
 extension Task where Success == Never, Failure == Never {
 
     static func sleep(seconds: TimeInterval) async {

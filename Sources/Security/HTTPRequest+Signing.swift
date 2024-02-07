@@ -20,11 +20,6 @@ extension HTTPRequest {
         headers: Headers,
         path: HTTPRequestPath
     ) -> String? {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
-            // Signature verification is not available.
-            return nil
-        }
-
         guard path.needsNonceForSigning else {
             // Static signatures cannot sign header parameters
             return nil
@@ -39,7 +34,6 @@ extension HTTPRequest {
     }
 
     /// - Returns: `nil` if none of the requested headers are found
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private static func postParameterHash(_ headers: Headers) -> String? {
         let values = Self.headersToSign.compactMap { headers[$0.rawValue] }
 
@@ -63,7 +57,6 @@ extension HTTPRequest {
         ].joined(separator: ":")
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func signingParameterHash(_ values: [String]) -> String {
         var sha256 = SHA256()
 
