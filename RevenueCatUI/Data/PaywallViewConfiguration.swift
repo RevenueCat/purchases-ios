@@ -8,6 +8,7 @@
 import Foundation
 
 import RevenueCat
+import UIKit
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -20,7 +21,7 @@ struct PaywallViewConfiguration {
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
-    var isDarkMode: Bool?
+    var uiUserInterfaceStyle: UIUserInterfaceStyle?
 
     init(
         content: Content,
@@ -30,7 +31,7 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        isDarkMode: Bool? = nil
+        uiUserInterfaceStyle: UIUserInterfaceStyle? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -39,7 +40,7 @@ struct PaywallViewConfiguration {
         self.displayCloseButton = displayCloseButton
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
-        self.isDarkMode = isDarkMode
+        self.uiUserInterfaceStyle = uiUserInterfaceStyle
     }
 
 }
@@ -71,7 +72,7 @@ extension PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
-        isDarkMode: Bool? = nil
+        uiUserInterfaceStyle: UIUserInterfaceStyle? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
@@ -81,7 +82,7 @@ extension PaywallViewConfiguration {
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
             purchaseHandler: purchaseHandler,
-            isDarkMode: isDarkMode
+            uiUserInterfaceStyle: uiUserInterfaceStyle
         )
     }
 

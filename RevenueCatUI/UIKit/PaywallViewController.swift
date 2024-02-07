@@ -136,9 +136,9 @@ public class PaywallViewController: UIViewController {
     }
     
     /// - Warning: For internal use only
-    @objc(updateDarkMode:)
-    public func updateDarkMode(with isDarkMode: Bool) {
-        self.configuration.isDarkMode = isDarkMode
+    @objc(updateUserInterface:)
+    public func updateUserInterface(with style: UIUserInterfaceStyle){
+        self.configuration.uiUserInterfaceStyle = style
     }
 
     // MARK: - Internal
@@ -307,8 +307,9 @@ private struct PaywallContainerView: View {
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-        if let isDarkMode = configuration.isDarkMode {
-            payWallView.environment(\.colorScheme, isDarkMode ? .dark : .light)
+        if let uiUserInterfaceStyle = configuration.uiUserInterfaceStyle,
+           let colorScheme = ColorScheme(uiUserInterfaceStyle){
+            payWallView.environment(\.colorScheme, colorScheme)
         } else {
             payWallView
         }
