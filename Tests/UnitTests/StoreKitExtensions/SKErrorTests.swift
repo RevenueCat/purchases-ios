@@ -70,7 +70,7 @@ class SKErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
-    @available(iOS 14.0, macOS 11.0, watchOS 6.2, *)
+    @available(iOS 14.0, macOS 11.0, watchOS 7.0, *)
     @available(tvOS, unavailable)
     func testUnsupportedPlatformError() throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
@@ -82,7 +82,7 @@ class SKErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
-    @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 6.2, *)
+    @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
     func testIneligibleForOfferError() throws {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
 
