@@ -14,7 +14,6 @@ func checkConfigurationAPI() {
         .with(apiKey: "")
         .with(appUserID: "")
         .with(appUserID: nil)
-        .with(observerMode: false)
         .with(observerMode: false, storeKitVersion: .storeKit1)
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())
