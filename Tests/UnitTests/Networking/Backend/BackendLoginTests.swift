@@ -195,10 +195,7 @@ class BackendLoginWithSignatureVerificationTests: BaseBackendLoginTests {
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.info.entitlements.verification) == .verified
-        }
+        expect(result?.value?.info.entitlements.verification) == .verified
     }
 
     func testLoginWithFailedVerification() {
@@ -217,10 +214,7 @@ class BackendLoginWithSignatureVerificationTests: BaseBackendLoginTests {
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.info.entitlements.verification) == .failed
-        }
+        expect(result?.value?.info.entitlements.verification) == .failed
     }
 
 }

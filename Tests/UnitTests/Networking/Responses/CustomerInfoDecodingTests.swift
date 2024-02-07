@@ -222,26 +222,17 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
         expect(try self.customerInfo.encodeAndDecode()) == self.customerInfo
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testDecodingDefaultsToEntitlementsNotValidated() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         expect(self.customerInfo.entitlements.verification) == .notRequested
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testVerificationIsEncoded() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let reencoded = try self.customerInfo.copy(with: .verified).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .verified
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testFailedVerificationIsEncoded() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let reencoded = try self.customerInfo.copy(with: .failed).encodeAndDecode()
 
         expect(reencoded.entitlements.verification) == .failed
