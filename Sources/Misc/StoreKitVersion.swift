@@ -17,13 +17,15 @@ import Foundation
 @objc(RCStoreKitVersion)
 public enum StoreKitVersion: Int {
 
-    /// Always use StoreKit 1. 
+    /// Always use StoreKit 1.
+    @objc(RCStoreKitVersion1)
     case storeKit1 = 1
 
     /// Always use StoreKit 2 (StoreKit 1 will be used if StoreKit 2 is not available in the current device.)
     ///
     /// - Warning: Make sure you have an In-App Purchase Key configured in your app.
     /// Please see https://rev.cat/in-app-purchase-key-configuration for more info.
+    @objc(RCStoreKitVersion2)
     case storeKit2 = 2
 
 }
