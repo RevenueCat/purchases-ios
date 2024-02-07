@@ -40,41 +40,31 @@ class MockSK1Product: SK1Product {
         return self.mockLocalizedTitle
     }
 
-    @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
     override var introductoryPrice: SKProductDiscount? {
         return mockDiscount
     }
 
     private var _mockDiscount: Any?
 
-    @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
     var mockDiscount: SKProductDiscount? {
         // swiftlint:disable:next force_cast
         get { return self._mockDiscount as! SKProductDiscount? }
         set { self._mockDiscount = newValue }
     }
 
-    @available(iOS 12.2, macCatalyst 13.0, tvOS 12.2, macOS 10.13.2, *)
     override var discounts: [SKProductDiscount] {
         return self.mockDiscount.map { [$0] } ?? []
     }
 
-    private lazy var _mockSubscriptionPeriod: Any? = {
-        if #available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *) {
-            return SKProductSubscriptionPeriod(numberOfUnits: 1, unit: .month)
-        } else {
-            return nil
-        }
+    private lazy var _mockSubscriptionPeriod: SKProductSubscriptionPeriod? = {
+        return .init(numberOfUnits: 1, unit: .month)
     }()
 
-    @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
     var mockSubscriptionPeriod: SKProductSubscriptionPeriod? {
-        // swiftlint:disable:next force_cast
-        get { self._mockSubscriptionPeriod as! SKProductSubscriptionPeriod? }
+        get { self._mockSubscriptionPeriod }
         set { self._mockSubscriptionPeriod = newValue }
     }
 
-    @available(iOS 11.2, macCatalyst 13.0, tvOS 11.2, macOS 10.13.2, *)
     override var subscriptionPeriod: SKProductSubscriptionPeriod? {
         return mockSubscriptionPeriod
     }
