@@ -23,11 +23,27 @@ public extension PaywallData {
 
     // Visible for testing
     internal func localizedConfiguration(for locales: [Locale]) -> LocalizedConfiguration {
-        return locales
+        Logger.verbose(Strings.paywalls.looking_up_localization(locales))
+
+        let result: (locale: Locale, config: LocalizedConfiguration)? = locales
             .lazy
-            .compactMap(self.config(for:))
+            .compactMap { locale in
+                self.config(for: locale)
+                    .map { (locale, $0) }
+            }
             .first { _ in true } // See https://github.com/apple/swift/issues/55374
-            ?? self.fallbackLocalizedConfiguration
+
+        if let result {
+            Logger.verbose(Strings.paywalls.found_localization(result.locale))
+
+            return result.config
+        } else {
+            let (locale, fallback) = self.fallbackLocalizedConfiguration
+
+            Logger.warn(Strings.paywalls.fallback_localization(localeIdentifier: locale))
+
+            return fallback
+        }
     }
 
     // Visible for testing
@@ -43,9 +59,9 @@ public extension PaywallData {
         return result
     }
 
-    private var fallbackLocalizedConfiguration: LocalizedConfiguration {
+    private var fallbackLocalizedConfiguration: (String, LocalizedConfiguration) {
         // This can't happen because `localization` has `@EnsureNonEmptyCollectionDecodable`.
-        guard let result = self.localization.first?.value else {
+        guard let result = self.localization.first else {
             fatalError("Corrupted data: localization is empty.")
         }
 
