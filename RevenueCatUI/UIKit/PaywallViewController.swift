@@ -308,8 +308,8 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
         if let isDarkMode = configuration.isDarkMode {
-            payWallView.environment(\.colorScheme, isDarkMode ? ColorScheme.dark : ColorScheme.light)
-        }else{
+            payWallView.environment(\.colorScheme, isDarkMode ? .dark : .light)
+        } else {
             payWallView
         }
     }
