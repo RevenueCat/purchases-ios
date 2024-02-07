@@ -56,9 +56,9 @@ Or view our iOS sample apps:
 
 | Platform | Minimum target |
 | --- | --- |
-| iOS | 11.0+ |
-| tvOS | 11.0+ |
-| macOS | 10.13+ |
+| iOS | 13.0+ |
+| tvOS | 13.0+ |
+| macOS | 10.15+ |
 | watchOS | 6.2+ |
 | visionOS | 1.0+ |
 
