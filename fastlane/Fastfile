@@ -253,20 +253,6 @@ platform :ios do
 
   desc "visionOS build"
   lane :build_visionos do |options|
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCatUI.podspec',
-      include_podspecs: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-
     build_release(
       platform: 'visionOS',
       scheme: 'RevenueCat'
@@ -575,16 +561,20 @@ platform :ios do
         'maccatalyst',
         'tvOS',
         'watchOS',
-        # Fixme: add xrOS
+        'visionOS'
       ]
 
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
-      include_debug_symbols: true
+      include_debug_symbols: true,
+      # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
+      # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
+      override_xcargs: true
     )
 
     # sh runs from the Fastfile's location, but other commands run from the project root.
@@ -1059,19 +1049,17 @@ def check_no_github_release_exists(version_number)
 end
 
 lane :check_pods do
-  # Note: see also `build_visionos`
-  # Fix-me: add `visionOS` when we start building with Xcode 15.1
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
 end
