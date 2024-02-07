@@ -1,4 +1,10 @@
 GIT
+  remote: https://github.com/RevenueCat/fastlane-plugin-create_xcframework
+  revision: 88a9a2d9d9de5d65ad5e57c5245da80315ec572b
+  specs:
+    fastlane-plugin-create_xcframework (1.1.2)
+
+GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
   revision: 8ec007234d81f7a17a09a7e9243983485fac84b2
   specs:
@@ -193,8 +199,7 @@ GEM
       word_wrap (~> 1.0.0)
       xcodeproj (>= 1.13.0, < 2.0.0)
       xcpretty (~> 0.3.0)
-      xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
-    fastlane-plugin-create_xcframework (1.1.2)
+      xcpretty-travis-formatter (>= 0.0.3)
     ffi (1.16.3)
     fourflusher (2.3.1)
     fuzzy_match (2.0.4)
@@ -346,7 +351,7 @@ DEPENDENCIES
   cocoapods-trunk
   danger
   fastlane
-  fastlane-plugin-create_xcframework
+  fastlane-plugin-create_xcframework!
   fastlane-plugin-revenuecat_internal!
   rest-client
 
