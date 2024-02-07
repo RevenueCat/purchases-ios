@@ -1,3 +1,9 @@
+## 4.36.1
+### Dependency Updates
+* Bump cocoapods from 1.15.1 to 1.15.2 (#3648) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `CircleCI`: remove duplicate `install-dependencies` (#3643) via NachoSoto (@NachoSoto)
+
 ## 4.36.0
 _This release is compatible with `Xcode 15.3 beta 2`_
 
