@@ -523,7 +523,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     private static func create(observerMode: Bool) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
-                .with(observerMode: observerMode)
+                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
         )
     }
 
