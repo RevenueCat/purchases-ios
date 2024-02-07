@@ -50,11 +50,13 @@ public extension PaywallData {
     /// - Returns: The list of locales that paywalls should try to search for.
     /// Includes `Locale.current` and `Locale.preferredLanguages`.
     internal static var localesOrderedByPriority: [Locale] {
-        var result = [.current] + Locale.preferredLocales
+        var result: [Locale] = [.current]
 
         if let withoutRegion = Locale.current.removingRegion {
             result.append(withoutRegion)
         }
+
+        result.append(contentsOf: Locale.preferredLocales)
 
         return result
     }
