@@ -123,7 +123,7 @@ public struct PaywallView: View {
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
-                        .transition(Self.transition)
+                    .transition(Self.transition)
                 } else {
                     LoadingPaywallView(mode: self.mode, displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
