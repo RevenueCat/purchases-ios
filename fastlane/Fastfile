@@ -86,7 +86,7 @@ platform :ios do
       repo_name: repo_name,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: changelog_latest_path,
-      upload_assets: ['RevenueCat.framework.zip', 'RevenueCat.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip']
     )
   end
 
@@ -227,7 +227,6 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
   end
@@ -382,7 +381,6 @@ platform :ios do
   desc "Create Carthage archive, export XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
@@ -991,20 +989,6 @@ end
 def check_no_github_release_exists(version_number)
   found_release_number = get_github_release(url: "revenuecat/purchases-ios", version: version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
-end
-
-def carthage_archive
-  load_spm_dependencies
-
-  Dir.chdir("..") do
-    # As of Carthage 0.38.0, we still can't archive xcframeworks directly.
-    # there are also some issues which prevent us from archiving frameworks directly, since
-    # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
-    # We use this script as a workaround until this is fixed.
-    # https://github.com/Carthage/Carthage/releases/0.38.0
-    sh("./scripts/carthage.sh", "build", "--no-skip-current")
-    sh("./scripts/carthage.sh", "archive", "RevenueCat")
-  end
 end
 
 lane :check_pods do
