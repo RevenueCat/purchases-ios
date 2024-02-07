@@ -29,7 +29,6 @@ public struct PaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
-    private let isDarkMode: Bool?
 
     @Environment(\.locale)
     private var locale
@@ -105,7 +104,6 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.isDarkMode = configuration.isDarkMode
     }
 
     // swiftlint:disable:next missing_docs
@@ -120,17 +118,12 @@ public struct PaywallView: View {
         VStack { // Necessary to work around FB12674350 and FB12787354
             if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
-                    let payWallView = self.paywallView(for: offering,
+                    self.paywallView(for: offering,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
                         .transition(Self.transition)
-                    if let isDarkMode = self.isDarkMode {
-                        payWallView.colorScheme(isDarkMode ? ColorScheme.dark : ColorScheme.light)
-                    }else{
-                        payWallView
-                    }
                 } else {
                     LoadingPaywallView(mode: self.mode, displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
@@ -177,8 +170,7 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
-            purchaseHandler: purchaseHandler,
-            isDarkMode: isDarkMode
+            purchaseHandler: purchaseHandler
         )
 
         if let error {
@@ -267,7 +259,6 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
-    private let isDarkMode: Bool?
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -292,8 +283,7 @@ struct LoadedOfferingPaywallView: View {
         fonts: PaywallFontProvider,
         displayCloseButton: Bool,
         introEligibility: TrialOrIntroEligibilityChecker,
-        purchaseHandler: PurchaseHandler,
-        isDarkMode: Bool? = nil
+        purchaseHandler: PurchaseHandler
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -306,7 +296,6 @@ struct LoadedOfferingPaywallView: View {
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
         self._purchaseHandler = .init(initialValue: purchaseHandler)
-        self.isDarkMode = isDarkMode
     }
 
     var body: some View {
@@ -364,7 +353,7 @@ struct LoadedOfferingPaywallView: View {
             sessionID: .init(),
             displayMode: self.mode,
             locale: .current,
-            darkMode: self.isDarkMode ?? (self.colorScheme == .dark)
+            darkMode: self.colorScheme == .dark
         )
     }
 

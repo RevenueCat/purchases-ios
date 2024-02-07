@@ -299,7 +299,7 @@ private struct PaywallContainerView: View {
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
-        PaywallView(configuration: self.configuration)
+        let payWallView = PaywallView(configuration: self.configuration)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
@@ -307,7 +307,11 @@ private struct PaywallContainerView: View {
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-
+        if let isDarkMode = configuration.isDarkMode {
+            payWallView.environment(\.colorScheme, isDarkMode ? ColorScheme.dark : ColorScheme.light)
+        }else{
+            payWallView
+        }
     }
 
 }
