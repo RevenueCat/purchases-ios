@@ -18,7 +18,6 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class PaymentQueueWrapperTests: TestCase {
 
     private var paymentQueue: MockPaymentQueue!
@@ -27,8 +26,6 @@ class PaymentQueueWrapperTests: TestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.paymentQueue = MockPaymentQueue()
         self.wrapper = .init(paymentQueue: self.paymentQueue)

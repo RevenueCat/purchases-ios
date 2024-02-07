@@ -72,7 +72,6 @@ extension Result where Success: OptionalType {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Result where Failure == Swift.Error {
 
     /// Equivalent to `Result.init(catching:)` but with an `async` closure.

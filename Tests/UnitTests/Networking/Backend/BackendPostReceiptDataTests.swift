@@ -925,10 +925,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .verified
-        }
+        expect(result?.value?.entitlements.verification) == .verified
     }
 
     func testGetsEntitlementsWithFailedVerification() {
@@ -956,10 +953,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
         }
 
         expect(result).to(beSuccess())
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(result?.value?.entitlements.verification) == .failed
-        }
+        expect(result?.value?.entitlements.verification) == .failed
     }
 
 }

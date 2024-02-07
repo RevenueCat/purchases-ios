@@ -16,7 +16,6 @@
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension View {
 
     @ViewBuilder
@@ -229,7 +228,6 @@ private struct ScrollableIfNecessaryModifier: ViewModifier {
 
 // MARK: - Size changes
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension View {
 
     /// Invokes the given closure whethever the view size changes.
@@ -287,7 +285,6 @@ extension View {
 
 #if canImport(UIKit)
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension View {
 
     @ViewBuilder
@@ -322,7 +319,6 @@ extension View {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private struct RoundedCorner: Shape {
 
     var radius: CGFloat
@@ -341,10 +337,8 @@ private struct RoundedCorner: Shape {
 
 // MARK: - Preference Keys
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private protocol ViewDimensionPreferenceKey: PreferenceKey where Value == CGFloat {}
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension ViewDimensionPreferenceKey {
 
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
@@ -385,7 +379,6 @@ private struct ViewSizePreferenceKey: PreferenceKey {
 
 // MARK: -
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension Axis {
 
     var scrollViewAxis: Axis.Set {

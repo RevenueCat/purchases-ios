@@ -22,14 +22,9 @@ func checkConfigurationAPI() {
         .with(storeKit1Timeout: 1)
         .with(platformInfo: Purchases.PlatformInfo(flavor: "", version: ""))
         .with(storeKitVersion: .default)
+        .with(entitlementVerificationMode: .informational)
 
     let _: Configuration = builder.build()
-
-    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-        let _: Configuration = builder
-            .with(entitlementVerificationMode: .informational)
-            .build()
-    }
 }
 
 @available(*, deprecated)

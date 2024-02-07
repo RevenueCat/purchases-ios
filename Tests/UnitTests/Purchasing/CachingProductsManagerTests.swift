@@ -15,7 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 class CachingProductsManagerTests: TestCase {
 
     private var mockManager: MockProductsManager!
@@ -23,10 +22,6 @@ class CachingProductsManagerTests: TestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-
-        // `CachingProductsManager` is available on iOS 12, but tests
-        // make use of `async` APIs for simplicity.
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
@@ -137,7 +132,6 @@ class CachingProductsManagerTests: TestCase {
 
 // MARK: - Private
 
-@available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
 private extension CachingProductsManagerTests {
 
     static let productID = "com.revenuecat.product_id"
