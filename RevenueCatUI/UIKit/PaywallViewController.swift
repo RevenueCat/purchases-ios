@@ -136,9 +136,9 @@ public class PaywallViewController: UIViewController {
     }
     
     /// - Warning: For internal use only
-    @objc(updateUserInterface:)
-    public func updateUserInterface(with style: UIUserInterfaceStyle){
-        self.configuration.uiUserInterfaceStyle = style
+    @objc(updateWithUserInterfaceStyle:)
+    public func update(with style: UIUserInterfaceStyle) {
+        self.hostingController?.overrideUserInterfaceStyle = style
     }
 
     // MARK: - Internal
@@ -240,6 +240,7 @@ private extension PaywallViewController {
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         let container = PaywallContainerView(
             configuration: self.configuration,
+            userInterfaceStyle: self.hostingController?.traitCollection.userInterfaceStyle,
             purchaseStarted: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -289,6 +290,7 @@ private extension PaywallViewController {
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
+    var userInterfaceStyle: UIUserInterfaceStyle?
 
     let purchaseStarted: PurchaseStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -307,8 +309,8 @@ private struct PaywallContainerView: View {
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-        if let uiUserInterfaceStyle = configuration.uiUserInterfaceStyle,
-           let colorScheme = ColorScheme(uiUserInterfaceStyle){
+        if let userInterfaceStyle = userInterfaceStyle,
+           let colorScheme = ColorScheme(userInterfaceStyle){
             payWallView.environment(\.colorScheme, colorScheme)
         } else {
             payWallView
