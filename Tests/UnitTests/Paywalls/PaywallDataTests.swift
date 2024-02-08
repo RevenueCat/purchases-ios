@@ -127,9 +127,18 @@ class PaywallDataTests: BaseHTTPResponseTest {
 
         let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
-            .init(identifier: "en-IN"),
-            .init(identifier: "en-IN").removingRegion
-        ].compactMap { $0 }))
+            .init(identifier: "en-IN")
+        ]))
+        expect(enConfig.title) == "Paywall"
+    }
+
+    func testLocalizedConfigurationLooksForCurrentLocaleWithoutRegionBeforePreferedLocales() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+            .init(identifier: "en_IN"),
+            .init(identifier: "es_ES")
+        ]))
         expect(enConfig.title) == "Paywall"
     }
 
@@ -139,14 +148,12 @@ class PaywallDataTests: BaseHTTPResponseTest {
         if #available(iOS 17.0, tvOS 17, watchOS 10, *) {
             expected = [
                 "en_US",
-                "en-US",
-                "en"
+                "en-US"
             ]
         } else {
             expected = [
                 "en_US",
                 // `Locale.preferredLanguages` returns `en` before iOS 17.
-                "en",
                 "en"
             ]
         }
