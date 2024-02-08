@@ -22,8 +22,11 @@ public extension PaywallData {
     }
 
     // Visible for testing
-    internal func localizedConfiguration(for locales: [Locale]) -> LocalizedConfiguration {
-        Logger.verbose(Strings.paywalls.looking_up_localization(locales))
+    internal func localizedConfiguration(for preferredLocales: [Locale]) -> LocalizedConfiguration {
+        let locales: [Locale] = preferredLocales.flatMap { [$0, $0.removingRegion].compactMap { $0 } }
+
+        Logger.verbose(Strings.paywalls.looking_up_localization(preferred: preferredLocales,
+                                                                search: locales))
 
         let result: (locale: Locale, config: LocalizedConfiguration)? = locales
             .lazy
@@ -50,15 +53,7 @@ public extension PaywallData {
     /// - Returns: The list of locales that paywalls should try to search for.
     /// Includes `Locale.current` and `Locale.preferredLanguages`.
     internal static var localesOrderedByPriority: [Locale] {
-        var result: [Locale] = [.current]
-
-        if let withoutRegion = Locale.current.removingRegion {
-            result.append(withoutRegion)
-        }
-
-        result.append(contentsOf: Locale.preferredLocales)
-
-        return result
+        return [.current] + Locale.preferredLocales
     }
 
     private var fallbackLocalizedConfiguration: (String, LocalizedConfiguration) {
