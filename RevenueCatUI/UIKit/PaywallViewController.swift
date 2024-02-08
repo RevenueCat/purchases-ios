@@ -240,7 +240,6 @@ private extension PaywallViewController {
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         let container = PaywallContainerView(
             configuration: self.configuration,
-            userInterfaceStyle: self.hostingController?.traitCollection.userInterfaceStyle,
             purchaseStarted: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -290,7 +289,6 @@ private extension PaywallViewController {
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
-    var userInterfaceStyle: UIUserInterfaceStyle?
 
     let purchaseStarted: PurchaseStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -301,7 +299,7 @@ private struct PaywallContainerView: View {
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
-        let payWallView = PaywallView(configuration: self.configuration)
+        PaywallView(configuration: self.configuration)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
@@ -309,12 +307,6 @@ private struct PaywallContainerView: View {
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-        if let userInterfaceStyle = userInterfaceStyle,
-           let colorScheme = ColorScheme(userInterfaceStyle){
-            payWallView.environment(\.colorScheme, colorScheme)
-        } else {
-            payWallView
-        }
     }
 
 }
