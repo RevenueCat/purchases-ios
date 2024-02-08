@@ -21,7 +21,6 @@ struct PaywallViewConfiguration {
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
-    var uiUserInterfaceStyle: UIUserInterfaceStyle?
 
     init(
         content: Content,
@@ -30,8 +29,7 @@ struct PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil,
-        uiUserInterfaceStyle: UIUserInterfaceStyle? = nil
+        purchaseHandler: PurchaseHandler? = nil
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -40,7 +38,6 @@ struct PaywallViewConfiguration {
         self.displayCloseButton = displayCloseButton
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
-        self.uiUserInterfaceStyle = uiUserInterfaceStyle
     }
 
 }
@@ -71,8 +68,7 @@ extension PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil,
-        uiUserInterfaceStyle: UIUserInterfaceStyle? = nil
+        purchaseHandler: PurchaseHandler? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
@@ -81,8 +77,7 @@ extension PaywallViewConfiguration {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler,
-            uiUserInterfaceStyle: uiUserInterfaceStyle
+            purchaseHandler: purchaseHandler
         )
     }
 
