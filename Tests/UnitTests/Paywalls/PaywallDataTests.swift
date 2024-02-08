@@ -128,7 +128,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
             .init(identifier: "en-IN")
-        ].compactMap { $0 }))
+        ]))
         expect(enConfig.title) == "Paywall"
     }
 
@@ -138,7 +138,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
         let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
             .init(identifier: "en_IN"),
             .init(identifier: "es_ES")
-        ].compactMap { $0 }))
+        ]))
         expect(enConfig.title) == "Paywall"
     }
 
