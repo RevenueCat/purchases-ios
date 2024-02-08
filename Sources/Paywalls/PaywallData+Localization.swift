@@ -23,6 +23,8 @@ public extension PaywallData {
 
     // Visible for testing
     internal func localizedConfiguration(for preferredLocales: [Locale]) -> LocalizedConfiguration {
+        // Allows us to search each locale in order of priority, both with the region and without.
+        // Example: [en_UK, es_ES] => [en_UK, en, es_ES, es]
         let locales: [Locale] = preferredLocales.flatMap { [$0, $0.removingRegion].compactMap { $0 } }
 
         Logger.verbose(Strings.paywalls.looking_up_localization(preferred: preferredLocales,
