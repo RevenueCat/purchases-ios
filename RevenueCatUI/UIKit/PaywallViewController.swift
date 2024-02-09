@@ -134,6 +134,12 @@ public class PaywallViewController: UIViewController {
     public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
+    
+    /// - Warning: For internal use only
+    @objc(updateWithUserInterfaceStyle:)
+    public func update(with style: UIUserInterfaceStyle) {
+        self.hostingController?.overrideUserInterfaceStyle = style
+    }
 
     // MARK: - Internal
 
@@ -301,7 +307,6 @@ private struct PaywallContainerView: View {
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
-
     }
 
 }
