@@ -134,10 +134,12 @@ public class PaywallViewController: UIViewController {
     public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
-    
-    /// - Warning: For internal use only
-    @objc(updateWithUserInterfaceStyle:)
-    public func update(with style: UIUserInterfaceStyle) {
+
+    /// Overrides the `UIUserInterfaceStyle` in the underlying paywall.
+    @objc(updateUserInterfaceStyle:)
+    public func updateStyle(style: UIUserInterfaceStyle) {
+        self.loadViewIfNeeded()
+
         self.hostingController?.overrideUserInterfaceStyle = style
     }
 
