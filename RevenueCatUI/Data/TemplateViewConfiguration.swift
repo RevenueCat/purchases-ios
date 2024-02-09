@@ -42,14 +42,6 @@ extension TemplateViewConfiguration {
 
     }
 
-    /// Whether a template displays 1 or multiple packages.
-    enum PackageSetting: Equatable {
-
-        case single
-        case multiple
-
-    }
-
     /// Describes the possible displayed packages in a paywall.
     /// See `create(with:filter:setting:)` for how to create these.
     enum PackageConfiguration: Equatable {
@@ -119,7 +111,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         filter: [String],
         default: String?,
         localization: PaywallData.LocalizedConfiguration,
-        setting: TemplateViewConfiguration.PackageSetting,
+        setting: TemplatePackageSetting,
         locale: Locale = .current
     ) throws -> Self {
         guard !packages.isEmpty else { throw TemplateError.noPackages }
