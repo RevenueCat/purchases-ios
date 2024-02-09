@@ -137,7 +137,9 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case .single:
             fail("Invalid result: \(result)")
-        case let .multiple(first, defaultPackage, packages):
+        case let .multiple(data):
+            let (first, defaultPackage, packages) = (data.first, data.default, data.all)
+
             expect(first.content) === TestData.annualPackage
             expect(defaultPackage.content) === TestData.monthlyPackage
 

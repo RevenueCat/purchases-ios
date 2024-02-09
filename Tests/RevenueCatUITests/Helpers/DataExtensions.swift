@@ -84,7 +84,7 @@ extension PaywallData {
     func with(templateName: String) -> Self {
         return .init(templateName: templateName,
                      config: self.config,
-                     localization: self.localizedConfiguration,
+                     localization: self.localizedConfiguration!,
                      assetBaseURL: self.assetBaseURL)
     }
 

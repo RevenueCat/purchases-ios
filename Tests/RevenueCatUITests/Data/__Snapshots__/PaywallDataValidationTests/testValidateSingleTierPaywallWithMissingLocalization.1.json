@@ -2,9 +2,6 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : true,
-    "color_overrides_by_tier" : {
-
-    },
     "colors" : {
       "light" : {
         "accent1" : "#007AFF",
@@ -16,9 +13,6 @@
       }
     },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
-
-    },
     "images_heic" : {
       "background" : "background.jpg",
       "header" : null,
@@ -29,9 +23,6 @@
       "$rc_annual"
     ],
     "privacy_url" : null,
-    "tiers" : [
-
-    ],
     "tos_url" : null
   },
   "localized_strings" : {
@@ -45,12 +36,8 @@
       "offer_details_with_intro_offer" : "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.",
       "offer_name" : null,
       "subtitle" : null,
-      "tier_name" : null,
       "title" : "{{ app_name }}"
     }
-  },
-  "localized_strings_by_tier" : {
-
   },
   "revision" : -1,
   "template_name" : "2"
