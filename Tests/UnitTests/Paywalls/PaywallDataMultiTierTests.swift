@@ -212,4 +212,31 @@ class PaywallDataMultiTierTests: BaseHTTPResponseTest {
         expect(premiumColors.dark?.accent3?.stringRepresentation) == "#606463"
     }
 
+    func testConfigForLocale() throws {
+        let localization = try XCTUnwrap(self.paywall.tiersLocalization(for: .init(identifier: "en_US")))
+        expect(Set(localization.keys)) == ["standard", "premium"]
+    }
+
+    func testEnglishLocalizedConfiguration() throws {
+        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+            .init(identifier: "en_UK"),
+            .init(identifier: "es_ES")
+        ]))
+
+        expect(Set(localization.keys)) == ["standard", "premium"]
+        expect(localization["standard"]?.tierName) == "Standard"
+        expect(localization["premium"]?.tierName) == "Premium"
+    }
+
+    func testSpanishLocalizedConfiguration() throws {
+        let localization = try XCTUnwrap(self.paywall.localizedConfigurationByTier(for: [
+            .init(identifier: "es_ES"),
+            .init(identifier: "en_UK")
+        ]))
+
+        expect(Set(localization.keys)) == ["standard", "premium"]
+        expect(localization["standard"]?.tierName) == "Estándar"
+        expect(localization["premium"]?.tierName) == "Premium"
+    }
+
 }

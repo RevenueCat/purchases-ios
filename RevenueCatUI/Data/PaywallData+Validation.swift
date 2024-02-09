@@ -89,6 +89,9 @@ private extension PaywallData {
             if let error = Self.validateLocalization(localization) {
                 return .failure(error)
             }
+
+        case .multiple:
+            break
         }
 
         return .success(template)

@@ -16,7 +16,7 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
-// swiftlint:disable file_length type_name
+// swiftlint:disable file_length type_name type_body_length
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class BaseTemplateViewConfigurationTests: TestCase {}
@@ -32,6 +32,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                 filter: [PackageType.monthly.identifier],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
+                localizationByTier: [:],
+                tiers: [],
                 setting: .single
             )
         }.to(throwError(TemplateError.noPackages))
@@ -45,9 +47,26 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                 filter: [],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
+                localizationByTier: [:],
+                tiers: [],
                 setting: .single
             )
         }.to(throwError(TemplateError.emptyPackageList))
+    }
+
+    func testCreateWithNoLocalization() {
+        expect {
+            try Config.create(
+                with: [TestData.monthlyPackage],
+                activelySubscribedProductIdentifiers: [],
+                filter: [PackageType.monthly.identifier],
+                default: nil,
+                localization: nil,
+                localizationByTier: [:],
+                tiers: [],
+                setting: .single
+            )
+        }.to(throwError(TemplateError.noLocalization))
     }
 
     func testCreateSinglePackage() throws {
@@ -57,6 +76,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .single
         )
 
@@ -66,7 +87,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(package.currentlySubscribed) == false
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
-        case .multiple:
+        case .multiple, .multiTier:
             fail("Invalid result: \(result)")
         }
     }
@@ -79,6 +100,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .single
         )
 
@@ -88,7 +111,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(package.currentlySubscribed) == true
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
-        case .multiple:
+        case .multiple, .multiTier:
             fail("Invalid result: \(result)")
         }
     }
@@ -100,6 +123,8 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             filter: [PackageType.lifetime.identifier],
             default: nil,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .single
         )
 
@@ -109,7 +134,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(package.currentlySubscribed) == false
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.lifetimePackage)
-        case .multiple:
+        case .multiple, .multiTier:
             fail("Invalid result: \(result)")
         }
     }
@@ -131,11 +156,13 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                      Self.consumable.identifier],
             default: PackageType.monthly.identifier,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .multiple
         )
 
         switch result {
-        case .single:
+        case .single, .multiTier:
             fail("Invalid result: \(result)")
         case let .multiple(data):
             let (first, defaultPackage, packages) = (data.first, data.default, data.all)
@@ -167,6 +194,237 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(consumable.content) === Self.consumable
             expect(consumable.currentlySubscribed) == false
             Self.verifyLocalizationWasProcessed(consumable.localization, for: Self.consumable)
+        }
+    }
+
+    func testCreateMultitierWithNoTiers() {
+        expect {
+            try Config.create(
+                with: [TestData.monthlyPackage],
+                activelySubscribedProductIdentifiers: [],
+                filter: [],
+                default: nil,
+                localization: nil,
+                localizationByTier: [
+                    "A": Self.localization
+                ],
+                tiers: [],
+                setting: .multiTier
+            )
+        }.to(throwError(TemplateError.noTiers))
+    }
+
+    func testCreateSingleTier() throws {
+        let tier: PaywallData.Tier = .init(
+            id: "standard",
+            packages: [TestData.monthlyPackage.identifier],
+            defaultPackage: TestData.monthlyPackage.identifier
+        )
+
+        let result = try Config.create(
+            with: [TestData.monthlyPackage],
+            activelySubscribedProductIdentifiers: [],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                tier.id: Self.localization2
+            ],
+            tiers: [
+               tier
+            ],
+            setting: .multiTier
+        )
+
+        switch result {
+        case .single, .multiple:
+            fail("Invalid result: \(result)")
+
+        case let .multiTier(firstTier, all, tierNames):
+            expect(all).to(haveCount(1))
+            expect(firstTier) == tier
+
+            let tierData = try XCTUnwrap(all[firstTier])
+
+            expect(tierData.default.content) === TestData.monthlyPackage
+            expect(tierData.all.map(\.content)) == [TestData.monthlyPackage]
+            expect(tierData.first.content) === TestData.monthlyPackage
+
+            let package = tierData.first
+            expect(package.currentlySubscribed) == false
+            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
+            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
+
+            expect(tierNames) == [
+                tier: "Premium"
+            ]
+        }
+    }
+
+    func testCreateMultiTierWithMissingLocalization() throws {
+        let tier: PaywallData.Tier = .init(
+            id: "standard",
+            packages: [TestData.monthlyPackage.identifier],
+            defaultPackage: TestData.monthlyPackage.identifier
+        )
+        expect {
+            try Config.create(
+                with: [TestData.monthlyPackage],
+                activelySubscribedProductIdentifiers: [],
+                filter: [],
+                default: nil,
+                localization: nil,
+                localizationByTier: [
+                    "wrong ID": Self.localization2
+                ],
+                tiers: [
+                    tier
+                ],
+                setting: .multiTier
+            )
+        }.to(throwError(TemplateError.missingLocalization(tier)))
+    }
+
+    // swiftlint:disable:next function_body_length
+    func testCreateMultipleTiers() throws {
+        let tiers: [PaywallData.Tier] = [
+            .init(
+                id: "standard",
+                packages: [
+                    TestData.monthlyPackage.identifier,
+                    TestData.annualPackage.identifier
+                ],
+                defaultPackage: TestData.annualPackage.identifier
+            ),
+            .init(
+                id: "premium",
+                packages: [
+                    TestData.weeklyPackage.identifier,
+                    TestData.lifetimePackage.identifier
+                ],
+                defaultPackage: TestData.lifetimePackage.identifier
+            )
+        ]
+        let result = try Config.create(
+            with: [
+                TestData.monthlyPackage,
+                TestData.annualPackage,
+                TestData.weeklyPackage,
+                TestData.lifetimePackage
+            ],
+            activelySubscribedProductIdentifiers: [
+                TestData.annualProduct.productIdentifier,
+                TestData.lifetimeProduct.productIdentifier
+            ],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                "standard": Self.localization,
+                "premium": Self.localization2
+            ],
+            tiers: tiers,
+            setting: .multiTier
+        )
+
+        switch result {
+        case .single, .multiple:
+            fail("Invalid result: \(result)")
+
+        case let .multiTier(firstTier, all, tierNames):
+            expect(all).to(haveCount(2))
+
+            expect(firstTier) == tiers.first
+
+            do {
+                let firstTier = try XCTUnwrap(all[tiers[0]])
+
+                let monthly = firstTier.all[0]
+                expect(monthly.content) === TestData.monthlyPackage
+                expect(monthly.currentlySubscribed) == false
+                expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
+                expect(monthly.localization.tierName).to(beNil())
+                Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
+
+                let annual = firstTier.all[1]
+                expect(annual.content) === TestData.annualPackage
+                expect(annual.currentlySubscribed) == true
+                expect(annual.discountRelativeToMostExpensivePerMonth)
+                    .to(beCloseTo(0.36, within: 0.01))
+                expect(annual.localization.tierName).to(beNil())
+                Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
+            }
+
+            do {
+                let secondTier = try XCTUnwrap(all[tiers[1]])
+
+                let weekly = secondTier.all[0]
+                expect(weekly.content) === TestData.weeklyPackage
+                expect(weekly.currentlySubscribed) == false
+                expect(weekly.discountRelativeToMostExpensivePerMonth).to(beNil())
+                expect(weekly.localization.tierName) == "Premium"
+                Self.verifyLocalizationWasProcessed(weekly.localization, for: TestData.weeklyPackage)
+
+                let lifetime = secondTier.all[1]
+                expect(lifetime.content) === TestData.lifetimePackage
+                expect(lifetime.currentlySubscribed) == true
+                expect(lifetime.discountRelativeToMostExpensivePerMonth).to(beNil())
+                expect(lifetime.localization.tierName) == "Premium"
+                Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
+            }
+
+            expect(tierNames) == [
+                tiers[0]: "",
+                tiers[1]: "Premium"
+            ]
+        }
+    }
+
+    func testCreateMultipleTiersWithDuplicateTierDoesNotCrash() throws {
+        let tier = PaywallData.Tier(
+            id: "standard",
+            packages: [
+                TestData.monthlyPackage.identifier,
+                TestData.annualPackage.identifier
+            ],
+            defaultPackage: TestData.monthlyPackage.identifier
+        )
+        let result = try Config.create(
+            with: [
+                TestData.monthlyPackage,
+                TestData.annualPackage
+            ],
+            activelySubscribedProductIdentifiers: [],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                "standard": Self.localization
+            ],
+            tiers: [tier, tier],
+            setting: .multiTier
+        )
+
+        switch result {
+        case .single, .multiple:
+            fail("Invalid result: \(result)")
+
+        case let .multiTier(firstTier, all, tierNames):
+            expect(all).to(haveCount(1))
+            expect(firstTier) == tier
+
+            expect(all[firstTier]?.default.content) === TestData.monthlyPackage
+            expect(all[firstTier]?.all.map(\.content)) == [TestData.monthlyPackage, TestData.annualPackage]
+            expect(all[firstTier]?.first.content) == TestData.monthlyPackage
+
+            let package = try XCTUnwrap(all[firstTier]?.first)
+            expect(package.currentlySubscribed) == false
+            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
+            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
+
+            expect(tierNames) == [
+                tier: ""
+            ]
         }
     }
 
@@ -262,6 +520,7 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
     fileprivate var multiPackageConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
     fileprivate var multiPackageConfigurationNoOfferDetails: TemplateViewConfiguration.PackageConfiguration!
 
+    // swiftlint:disable:next function_body_length
     override func setUpWithError() throws {
         try super.setUpWithError()
 
@@ -271,6 +530,8 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
             filter: [Self.package1.packageType.identifier],
             default: nil,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .single
         )
         self.multiPackageConfigurationSameText = try Config.create(
@@ -288,6 +549,8 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
                 "then {{ sub_price_per_month }} per month",
                 features: []
             ),
+            localizationByTier: [:],
+            tiers: [],
             setting: .multiple
         )
         self.multiPackageConfigurationDifferentText = try Config.create(
@@ -296,6 +559,8 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
             filter: Self.allPackages.map(\.packageType.identifier),
             default: nil,
             localization: Self.localization,
+            localizationByTier: [:],
+            tiers: [],
             setting: .multiple
         )
 
@@ -312,6 +577,8 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
                 offerDetails: nil,
                 features: []
             ),
+            localizationByTier: [:],
+            tiers: [],
             setting: .multiple
         )
     }
@@ -563,6 +830,17 @@ private extension BaseTemplateViewConfigurationTests {
         offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
         "then {{ sub_price_per_month }} per month",
         features: []
+    )
+    static let localization2: PaywallData.LocalizedConfiguration = .init(
+        title: "Title: {{ product_name }}",
+        subtitle: "Get access to all our educational content trusted by thousands of parents.",
+        callToAction: "Purchase for {{ price }}",
+        callToActionWithIntroOffer: nil,
+        offerDetails: "{{ sub_price_per_month }} per month",
+        offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+        "then {{ sub_price_per_month }} per month",
+        features: [],
+        tierName: "Premium"
     )
 
     static let package1 = TestData.monthlyPackage
