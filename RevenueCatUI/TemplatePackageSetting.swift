@@ -12,7 +12,6 @@ enum TemplatePackageSetting: Equatable {
 
     case single
     case multiple
-    case multiTier
 
 }
 
@@ -21,9 +20,6 @@ enum TemplateTierSetting: Equatable {
 
     /// Single-tier template.
     case single
-
-    /// Multi-tier template.
-    case multiple
 
 }
 
@@ -47,7 +43,6 @@ extension TemplatePackageSetting {
     var tierSetting: TemplateTierSetting {
         switch self {
         case .single, .multiple: return .single
-        case .multiTier: return .multiple
         }
     }
 
