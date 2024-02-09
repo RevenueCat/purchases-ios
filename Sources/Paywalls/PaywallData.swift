@@ -184,7 +184,10 @@ extension PaywallData {
     public struct Configuration {
 
         /// The list of package identifiers this paywall will display
-        public var packages: [String]
+        public var packages: [String] {
+            get { self._packages }
+            set { self._packages = newValue }
+        }
 
         /// The package to be selected by default.
         public var defaultPackage: String?
@@ -239,7 +242,7 @@ extension PaywallData {
             termsOfServiceURL: URL? = nil,
             privacyURL: URL? = nil
         ) {
-            self.packages = packages
+            self._packages = packages
             self.defaultPackage = defaultPackage
             self._imagesHeic = images
             self.colors = colors
@@ -248,6 +251,9 @@ extension PaywallData {
             self._termsOfServiceURL = termsOfServiceURL
             self._privacyURL = privacyURL
         }
+
+        @DefaultDecodable.EmptyArray
+        var _packages: [String]
 
         var _legacyImages: Images?
         var _imagesHeic: Images?
@@ -471,7 +477,7 @@ extension PaywallData.Configuration.Images: Codable {
 extension PaywallData.Configuration: Codable {
 
     private enum CodingKeys: String, CodingKey {
-        case packages
+        case _packages = "packages"
         case defaultPackage
         case _legacyImages = "images"
         case _imagesHeic = "imagesHeic"
