@@ -36,7 +36,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
     controller.update(with: offering!)
     controller.update(with: "offering_identifier")
     controller.updateFont(with: "Papyrus")
-    controller.updateStyle(style: UIUserInterfaceStyle.dark)
+    controller.updateStyle(UIUserInterfaceStyle.dark)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)

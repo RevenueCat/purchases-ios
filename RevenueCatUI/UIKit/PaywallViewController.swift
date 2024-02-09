@@ -137,7 +137,7 @@ public class PaywallViewController: UIViewController {
 
     /// Overrides the `UIUserInterfaceStyle` in the underlying paywall.
     @objc(updateUserInterfaceStyle:)
-    public func updateStyle(style: UIUserInterfaceStyle) {
+    public func updateStyle(_ style: UIUserInterfaceStyle) {
         self.loadViewIfNeeded()
 
         self.hostingController?.overrideUserInterfaceStyle = style
