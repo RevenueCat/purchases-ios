@@ -33,6 +33,8 @@ Pod::Spec.new do |s|
 
   s.resource_bundles = {
     'RevenueCat_RevenueCatUI' => [
+      # This is done automatically by SPM but must be added manually here:
+      'RevenueCatUI/Resources/*.lproj/*.strings',
        # Note: these have to match the values in Package.swift
        'RevenueCatUI/Resources/background.jpg',
        'RevenueCatUI/Resources/icons.xcassets',
