@@ -101,16 +101,18 @@ import SwiftUI
 // Helpful acessors
 extension PaywallData.Configuration.Colors {
 
-    var backgroundColor: Color { self.background.underlyingColor }
-    var text1Color: Color { self.text1.underlyingColor }
-    var text2Color: Color { self.text2?.underlyingColor ?? self.text1.underlyingColor }
+    var backgroundColor: Color { self.background?.underlyingColor ?? Self.defaultColor }
+    var text1Color: Color { self.text1?.underlyingColor ?? Self.defaultColor }
+    var text2Color: Color { self.text2?.underlyingColor ?? self.text1Color }
     var text3Color: Color { self.text3?.underlyingColor ?? self.text2Color }
-    var callToActionBackgroundColor: Color { self.callToActionBackground.underlyingColor }
-    var callToActionForegroundColor: Color { self.callToActionForeground.underlyingColor }
+    var callToActionBackgroundColor: Color { self.callToActionBackground?.underlyingColor ?? Self.defaultColor }
+    var callToActionForegroundColor: Color { self.callToActionForeground?.underlyingColor ?? Self.defaultColor }
     var callToActionSecondaryBackgroundColor: Color? { self.callToActionSecondaryBackground?.underlyingColor }
     var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
+
+    private static let defaultColor: Color = .clear
 
 }
 
