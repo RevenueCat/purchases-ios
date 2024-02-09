@@ -16,7 +16,9 @@ func checkPaywallData(_ data: PaywallData) {
     let templateName: String = data.templateName
     let config: PaywallData.Configuration = data.config
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
+    let _: [String: PaywallData.LocalizedConfiguration]? = data.tiersLocalization(for: Locale.current)
     let localization: PaywallData.LocalizedConfiguration? = data.localizedConfiguration
+    let _: [String: PaywallData.LocalizedConfiguration]? = data.localizedConfigurationByTier
     let assetBaseURL: URL = data.assetBaseURL
     let revision: Int = data.revision
 
