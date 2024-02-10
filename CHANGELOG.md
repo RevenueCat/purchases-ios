@@ -1,3 +1,7 @@
+## 4.36.2
+### RevenueCatUI
+* `Paywalls`: fix localization when installing through `CocoaPods` (#3670) via NachoSoto (@NachoSoto)
+
 ## 4.36.1
 ### RevenueCatUI
 * `Paywalls`: prioritize `Locale.current` over `Locale.preferredLocales` (#3657) via NachoSoto (@NachoSoto)
