@@ -977,7 +977,7 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
-  loadshedder-integration-tests:
+  integration-tests-all:
     <<: *base-job
     steps:
       - checkout
@@ -985,12 +985,6 @@ jobs:
       - trust-github-key
       - install-dependencies
       - update-spm-installation-commit
-      - run:
-          name: V3 LoadShedder integration tests
-          command: bundle exec fastlane v3_loadshedder_integration_tests
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: v3LoadShedderIntegration
       - run:
           name: Backend and LoadShedder integration tests
           command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
@@ -1005,6 +999,21 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
+
+  loadshedder-integration-tests-v3:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - update-spm-installation-commit
+      - run:
+          name: V3 LoadShedder integration tests
+          command: bundle exec fastlane v3_loadshedder_integration_tests
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: v3LoadShedderIntegration
   
   deploy-purchase-tester:
     <<: *base-job
@@ -1178,9 +1187,6 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-      - loadshedder-integration-tests:
-          xcode_version: '15.2'
-          <<: *release-branches
 
   deploy:
     when:
@@ -1274,7 +1280,9 @@ workflows:
         - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
     jobs:
-      - loadshedder-integration-tests:
+      - loadshedder-integration-tests-v3:
+          xcode_version: '15.2'
+      - integration-tests-all:
           xcode_version: '15.2'
   
   manual-trigger-bump:
