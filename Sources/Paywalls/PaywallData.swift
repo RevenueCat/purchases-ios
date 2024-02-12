@@ -40,7 +40,7 @@ public struct PaywallData {
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
-    @EnsureNonEmptyCollectionDecodable
+    @DefaultDecodable.EmptyDictionary
     internal private(set) var localization: [String: LocalizedConfiguration]
 
 }
