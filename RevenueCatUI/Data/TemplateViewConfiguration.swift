@@ -14,6 +14,8 @@
 import Foundation
 import RevenueCat
 
+// swiftlint:disable nesting
+
 /// The processed data necessary to render a `TemplateViewType`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TemplateViewConfiguration {
@@ -46,8 +48,14 @@ extension TemplateViewConfiguration {
     /// See `create(with:filter:setting:)` for how to create these.
     enum PackageConfiguration: Equatable {
 
+        struct MultiPackage: Equatable {
+            var first: Package
+            var `default`: Package
+            var all: [Package]
+        }
+
         case single(Package)
-        case multiple(first: Package, default: Package, all: [Package])
+        case multiple(MultiPackage)
 
     }
 
@@ -63,8 +71,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return package
-        case let .multiple(first, _, _):
-            return first
+        case let .multiple(data):
+            return data.first
         }
     }
 
@@ -80,8 +88,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return [package]
-        case let .multiple(_, _, packages):
-            return packages
+        case let .multiple(data):
+            return data.all
         }
     }
 
@@ -90,8 +98,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package):
             return package
-        case let .multiple(_, defaultPackage, _):
-            return defaultPackage
+        case let .multiple(data):
+            return data.default
         }
     }
 
@@ -102,25 +110,100 @@ extension TemplateViewConfiguration.PackageConfiguration {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension TemplateViewConfiguration.PackageConfiguration {
 
-    /// Creates a `PackageConfiguration` based on `setting`.
-    /// - Throws: `TemplateError`
+    private enum Parameters {
+
+        case singleTier(
+            filter: [String],
+            default: String?,
+            localization: PaywallData.LocalizedConfiguration,
+            multiPackage: Bool
+        )
+
+    }
+
     // swiftlint:disable:next function_parameter_count
     static func create(
         with packages: [RevenueCat.Package],
         activelySubscribedProductIdentifiers: Set<String>,
         filter: [String],
         default: String?,
-        localization: PaywallData.LocalizedConfiguration,
+        localization: PaywallData.LocalizedConfiguration?,
         setting: TemplatePackageSetting,
         locale: Locale = .current
     ) throws -> Self {
-        guard !packages.isEmpty else { throw TemplateError.noPackages }
-        guard !filter.isEmpty else { throw TemplateError.emptyPackageList }
+        let parameters: Parameters
 
+        switch setting.tierSetting {
+        case .single:
+            guard !packages.isEmpty else { throw TemplateError.noPackages }
+            guard !filter.isEmpty else { throw TemplateError.emptyPackageList }
+            guard let localization else { throw TemplateError.noLocalization }
+
+            parameters = .singleTier(
+                filter: filter,
+                default: `default`,
+                localization: localization,
+                multiPackage: setting == .multiple
+            )
+        }
+
+        return try Self.create(
+            with: packages,
+            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+            parameters: parameters,
+            locale: locale
+        )
+    }
+
+    /// Creates a `PackageConfiguration` based on `setting`.
+    /// - Throws: `TemplateError`
+    private static func create(
+        with packages: [RevenueCat.Package],
+        activelySubscribedProductIdentifiers: Set<String>,
+        parameters: Parameters,
+        locale: Locale
+    ) throws -> Self {
+        switch parameters {
+        case let .singleTier(filter, `default`, localization, multiPackage):
+            let filteredPackages = Self.processPackages(
+                from: packages,
+                filter: filter,
+                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                localization: localization,
+                locale: locale
+            )
+
+            guard let firstPackage = filteredPackages.first else {
+                throw TemplateError.couldNotFindAnyPackages(expectedTypes: filter)
+            }
+
+            if multiPackage {
+                let defaultPackage = filteredPackages
+                    .first { $0.content.identifier == `default` }
+                ?? firstPackage
+
+                return .multiple(.init(
+                    first: firstPackage,
+                    default: defaultPackage,
+                    all: filteredPackages
+                ))
+            } else {
+                return .single(firstPackage)
+            }
+        }
+    }
+
+    private static func processPackages(
+        from packages: [RevenueCat.Package],
+        filter: [String],
+        activelySubscribedProductIdentifiers: Set<String>,
+        localization: PaywallData.LocalizedConfiguration,
+        locale: Locale
+    ) -> [TemplateViewConfiguration.Package] {
         let filtered = TemplateViewConfiguration.filter(packages: packages, with: filter)
         let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: filtered)
 
-        let filteredPackages: [TemplateViewConfiguration.Package] = filtered
+        return filtered
             .map { package in
                 let discount = Self.discount(
                     from: package.storeProduct.pricePerMonth?.doubleValue,
@@ -140,23 +223,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
                     discountRelativeToMostExpensivePerMonth: discount
                 )
             }
-
-        guard let firstPackage = filteredPackages.first else {
-            throw TemplateError.couldNotFindAnyPackages(expectedTypes: filter)
-        }
-
-        switch setting {
-        case .single:
-            return .single(firstPackage)
-        case .multiple:
-            let defaultPackage = filteredPackages
-                .first { $0.content.identifier == `default` }
-                ?? firstPackage
-
-            return .multiple(first: firstPackage,
-                             default: defaultPackage,
-                             all: filteredPackages)
-        }
     }
 
     private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
