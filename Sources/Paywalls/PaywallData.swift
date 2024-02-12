@@ -357,17 +357,17 @@ extension PaywallData.Configuration {
     public struct Colors {
 
         /// Color for the background of the paywall.
-        public var background: PaywallColor
+        public var background: PaywallColor?
         /// Color for primary text element.
-        public var text1: PaywallColor
+        public var text1: PaywallColor?
         /// Color for secondary text element.
         public var text2: PaywallColor?
         /// Color for tertiary text element.
         public var text3: PaywallColor?
         /// Background color of the main call to action button.
-        public var callToActionBackground: PaywallColor
+        public var callToActionBackground: PaywallColor?
         /// Foreground color of the main call to action button.
-        public var callToActionForeground: PaywallColor
+        public var callToActionForeground: PaywallColor?
         /// If present, the CTA will create a vertical gradient from ``callToActionBackground`` to this color.
         public var callToActionSecondaryBackground: PaywallColor?
         /// Primary accent color.
@@ -381,12 +381,12 @@ extension PaywallData.Configuration {
 
         // swiftlint:disable:next missing_docs
         public init(
-            background: PaywallColor,
-            text1: PaywallColor,
+            background: PaywallColor?,
+            text1: PaywallColor?,
             text2: PaywallColor? = nil,
             text3: PaywallColor? = nil,
-            callToActionBackground: PaywallColor,
-            callToActionForeground: PaywallColor,
+            callToActionBackground: PaywallColor?,
+            callToActionForeground: PaywallColor?,
             callToActionSecondaryBackground: PaywallColor? = nil,
             accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil,
