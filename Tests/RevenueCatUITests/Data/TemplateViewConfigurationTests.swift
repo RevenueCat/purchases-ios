@@ -519,6 +519,27 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
     fileprivate var multiPackageConfigurationSameText: TemplateViewConfiguration.PackageConfiguration!
     fileprivate var multiPackageConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
     fileprivate var multiPackageConfigurationNoOfferDetails: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiTierConfigurationSameText: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiTierConfigurationDifferentText: TemplateViewConfiguration.PackageConfiguration!
+    fileprivate var multiTierConfigurationNoOfferDetails: TemplateViewConfiguration.PackageConfiguration!
+
+    fileprivate static let tiers: [PaywallData.Tier] = [
+        .init(
+            id: "basic",
+            packages: [
+                package1.identifier,
+                package2.identifier
+            ],
+            defaultPackage: package1.identifier
+        ),
+        .init(
+            id: "premum",
+            packages: [
+                package3.identifier
+            ],
+            defaultPackage: package3.identifier
+        )
+    ]
 
     // swiftlint:disable:next function_body_length
     override func setUpWithError() throws {
@@ -563,7 +584,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
             tiers: [],
             setting: .multiple
         )
-
         self.multiPackageConfigurationNoOfferDetails = try Config.create(
             with: Self.allPackages,
             activelySubscribedProductIdentifiers: [],
@@ -580,6 +600,78 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
             localizationByTier: [:],
             tiers: [],
             setting: .multiple
+        )
+
+        self.multiTierConfigurationSameText = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                Self.tiers[0].id: .init(
+                    title: "Title: {{ product_name }}",
+                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                    callToAction: "Start now",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                    offerDetails: "No trial",
+                    offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+                    "then {{ sub_price_per_month }} per month",
+                    features: []
+                ),
+                Self.tiers[1].id: .init(
+                    title: "Title: {{ product_name }}",
+                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                    callToAction: "Start now",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                    offerDetails: "No trial",
+                    offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, " +
+                    "then {{ sub_price_per_month }} per month",
+                    features: []
+                )
+            ],
+            tiers: Self.tiers,
+            setting: .multiTier
+        )
+        self.multiTierConfigurationDifferentText = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                Self.tiers[0].id: Self.localization,
+                Self.tiers[1].id: Self.localization
+            ],
+            tiers: Self.tiers,
+            setting: .multiTier
+        )
+        self.multiTierConfigurationNoOfferDetails = try Config.create(
+            with: Self.allPackages,
+            activelySubscribedProductIdentifiers: [],
+            filter: [],
+            default: nil,
+            localization: nil,
+            localizationByTier: [
+                Self.tiers[0].id: .init(
+                    title: "Title: {{ product_name }}",
+                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                    callToAction: "Start now",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                    offerDetails: nil,
+                    features: []
+                ),
+                Self.tiers[1].id: .init(
+                    title: "Title: {{ product_name }}",
+                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                    callToAction: "Start now",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} trial",
+                    offerDetails: nil,
+                    features: []
+                )
+            ],
+            tiers: Self.tiers,
+            setting: .multiTier
         )
     }
 
@@ -715,6 +807,98 @@ class TemplateViewConfigurationPackagesProduceDifferentLabelsTests: TemplateView
         )) == true
     }
 
+    // MARK: - Multi-tier
+
+    func testMultiTierSameTextUnknownEligibility() throws {
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == true
+    }
+
+    func testMultiTierSameTextNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == false
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testMultiTierSameTextWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiTierConfigurationSameText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testMultiTierDifferentTextUnknownEligibility() throws {
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == true
+    }
+
+    func testMultiTierDifferentTextNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
+    func testMultiTierDifferentTextWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiTierConfigurationDifferentText.packagesProduceDifferentLabels(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == true
+    }
+
 }
 
 // MARK: -
@@ -799,6 +983,53 @@ class TemplateViewConfigurationPackagesProduceAnyLabelTests: TemplateViewConfigu
             eligibility: eligibility
         )) == true
         expect(self.multiPackageConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    // MARK: - Multi-tier
+
+    func testMultiTierUnknownEligibility() throws {
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: [:]
+        )) == true
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: [:]
+        )) == false
+    }
+
+    func testMultiTierNotEligible() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .ineligible,
+            Self.package2: .ineligible,
+            Self.package3: .ineligible
+        ]
+
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .offerDetails,
+            eligibility: eligibility
+        )) == false
+    }
+
+    func testMultiTierWithSomeEligiblePackages() throws {
+        let eligibility: Eligibility = [
+            Self.package1: .eligible,
+            Self.package2: .ineligible,
+            Self.package3: .eligible
+        ]
+
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
+            for: .callToAction,
+            eligibility: eligibility
+        )) == true
+        expect(self.multiTierConfigurationNoOfferDetails.packagesProduceAnyLabel(
             for: .offerDetails,
             eligibility: eligibility
         )) == false
