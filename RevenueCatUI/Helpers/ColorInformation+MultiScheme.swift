@@ -101,18 +101,27 @@ import SwiftUI
 // Helpful acessors
 extension PaywallData.Configuration.Colors {
 
-    var backgroundColor: Color { self.background?.underlyingColor ?? Self.defaultColor }
-    var text1Color: Color { self.text1?.underlyingColor ?? Self.defaultColor }
+    var backgroundColor: Color { self.background?.underlyingColor ?? Self.defaultBackgroundColor }
+    var text1Color: Color { self.text1?.underlyingColor ?? Self.defaultForegroundColor }
     var text2Color: Color { self.text2?.underlyingColor ?? self.text1Color }
     var text3Color: Color { self.text3?.underlyingColor ?? self.text2Color }
-    var callToActionBackgroundColor: Color { self.callToActionBackground?.underlyingColor ?? Self.defaultColor }
-    var callToActionForegroundColor: Color { self.callToActionForeground?.underlyingColor ?? Self.defaultColor }
+    var callToActionBackgroundColor: Color {
+        self.callToActionBackground?.underlyingColor ?? Self.defaultBackgroundColor
+    }
+    var callToActionForegroundColor: Color {
+        self.callToActionForeground?.underlyingColor ?? Self.defaultForegroundColor
+    }
     var callToActionSecondaryBackgroundColor: Color? { self.callToActionSecondaryBackground?.underlyingColor }
     var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
 
-    private static let defaultColor: Color = .clear
+    #if canImport(UIKit)
+    private static let defaultBackgroundColor: Color = Color(UIColor.systemBackground)
+    #else
+    private static let defaultBackgroundColor: Color = .white
+    #endif
+    private static let defaultForegroundColor: Color = .primary
 
 }
 
