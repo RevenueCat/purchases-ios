@@ -20,6 +20,9 @@ enum TemplateError: Error {
     /// No packages available to create a paywall.
     case noPackages
 
+    /// Paywall with missing localization.
+    case noLocalization
+
     /// Paywall configuration contained no package types.
     case emptyPackageList
 
@@ -40,6 +43,9 @@ extension TemplateError: CustomNSError {
         switch self {
         case .noPackages:
             return "Attempted to display paywall with no packages."
+
+        case .noLocalization:
+            return "Couldn't find any localization for paywall."
 
         case .emptyPackageList:
             return "Paywall configuration contains no packages."
