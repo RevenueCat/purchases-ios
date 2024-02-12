@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 8/15/23.
 
 import Nimble
-import RevenueCat
+@testable import RevenueCat
 @testable import RevenueCatUI
 import SnapshotTesting
 import XCTest
@@ -22,12 +22,22 @@ class PaywallDataValidationTests: TestCase {
 
     func testValidateMissingPaywall() {
         let offering = TestData.offeringWithNoPaywall
-        let result = TestData.offeringWithNoPaywall.validatedPaywall(locale: TestData.locale)
+        let result = offering.validatedPaywall(locale: TestData.locale)
 
         Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
         Self.snapshot(result.displayablePaywall)
 
         expect(result.error) == .missingPaywall(offering)
+    }
+
+    func testValidateSingleTierPaywallWithMissingLocalization() {
+        let offering = Self.offeringWithSingleTierTemplateAndMissingLocalization
+        let result = offering.validatedPaywall(locale: TestData.locale)
+
+        Self.verifyPackages(in: result.displayablePaywall, match: offering.availablePackages)
+        Self.snapshot(result.displayablePaywall)
+
+        expect(result.error) == .missingLocalization
     }
 
     func testValidateMissingPaywallWithSpanishLocalization() {
@@ -171,5 +181,22 @@ private extension PaywallDataValidationTests {
             availablePackages: TestData.packages
         )
     }
+
+    static let offeringWithSingleTierTemplateAndMissingLocalization = Offering(
+        identifier: "offering",
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            templateName: PaywallTemplate.template1.rawValue,
+            config: .init(
+                packages: [],
+                images: .init(),
+                colors: .init(light: TestData.lightColors)
+            ),
+            localization: [:],
+            assetBaseURL: TestData.paywallAssetBaseURL
+        ),
+        availablePackages: TestData.packages
+    )
 
 }

@@ -170,7 +170,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testMissingCurrentLocaleLoadsAvailableLocale() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
 
-        let localization = paywall.localizedConfiguration
+        let localization = try XCTUnwrap(paywall.localizedConfiguration)
         expect(localization.callToAction) == "Comprar"
         expect(localization.title) == "Tienda"
     }
@@ -189,14 +189,6 @@ class PaywallDataTests: BaseHTTPResponseTest {
             expect(try mode.encodeAndDecode()) == mode
         }
     }
-
-    #if !os(watchOS)
-    func testMissingLocalizationFails() throws {
-        expect {
-            let _: PaywallData = try self.decodeFixture("PaywallData-missing_localization")
-        }.to(throwError())
-    }
-    #endif
 
 }
 

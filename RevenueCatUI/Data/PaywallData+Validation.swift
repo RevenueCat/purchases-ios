@@ -27,6 +27,7 @@ extension Offering {
     enum PaywallValidationError: Swift.Error, Equatable {
 
         case missingPaywall(Offering)
+        case missingLocalization
         case invalidTemplate(String)
         case invalidVariables(Set<String>)
         case invalidIcons(Set<String>)
@@ -75,17 +76,19 @@ private extension PaywallData {
 
     /// - Returns: `nil` if there are no validation errors.
     func validate() -> Result<PaywallTemplate, Error> {
-        if let error = Self.validateLocalization(self.localizedConfiguration) {
-            return .failure(error)
-        }
-
         guard let template = PaywallTemplate(rawValue: self.templateName) else {
             return .failure(.invalidTemplate(self.templateName))
         }
 
-        let invalidIcons = self.localizedConfiguration.validateIcons()
-        guard invalidIcons.isEmpty else {
-            return .failure(.invalidIcons(invalidIcons))
+        switch template.packageSetting.tierSetting {
+        case .single:
+            guard let localization = self.localizedConfiguration else {
+                return .failure(.missingLocalization)
+            }
+
+            if let error = Self.validateLocalization(localization) {
+                return .failure(error)
+            }
         }
 
         return .success(template)
@@ -101,9 +104,16 @@ private extension PaywallData {
                 .joined()
         )
 
-        return unrecognizedVariables.isEmpty
-        ? nil
-        : .invalidVariables(unrecognizedVariables)
+        guard unrecognizedVariables.isEmpty else {
+            return .invalidVariables(unrecognizedVariables)
+        }
+
+        let invalidIcons = localization.validateIcons()
+        guard invalidIcons.isEmpty else {
+            return .invalidIcons(invalidIcons)
+        }
+
+        return nil
     }
 
 }
@@ -139,6 +149,9 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
         switch self {
         case let .missingPaywall(offering):
             return "Offering '\(offering.identifier)' has no configured paywall."
+
+        case .missingLocalization:
+            return "Paywall has no localization."
 
         case let .invalidTemplate(name):
             return "Template not recognized: \(name)."
