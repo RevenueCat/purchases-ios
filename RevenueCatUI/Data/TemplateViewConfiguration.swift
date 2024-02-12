@@ -23,6 +23,8 @@ struct TemplateViewConfiguration {
     let mode: PaywallViewMode
     let packages: PackageConfiguration
     let configuration: PaywallData.Configuration
+    // TODO: add images
+    // TODO: we'll need colors per tier
     let colors: PaywallData.Configuration.Colors
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
@@ -54,6 +56,7 @@ extension TemplateViewConfiguration {
             var all: [Package]
         }
 
+        // TODO: colors here?
         case single(Package)
         case multiple(MultiPackage)
         case multiTier(

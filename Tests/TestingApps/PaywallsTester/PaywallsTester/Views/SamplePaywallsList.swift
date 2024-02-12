@@ -14,7 +14,7 @@ import SwiftUI
 struct SamplePaywallsList: View {
 
     @State
-    private var display: Display?
+    private var display: Display? = .template(.template7, .condensedFooter)
 
     var body: some View {
         NavigationView {

@@ -311,6 +311,7 @@ extension PaywallData {
 
         /// Creates a multi-tier ``PaywallData/Configuration``.
         public init(
+            // TODO: image/color override
             images: Images,
             colors: ColorInformation,
             tiers: [Tier],

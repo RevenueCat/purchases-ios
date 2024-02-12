@@ -30,10 +30,9 @@ final class Configuration: ObservableObject {
         case custom, testing, demos, listOnly
     }
 
-    #warning("Configure API key if you want to test paywalls from your dashboard")
     // Note: you can leave this empty to use the production server, or point to your own instance.
     private static let proxyURL = ""
-    private static let apiKey = ""
+    private static let apiKey = "appl_TFIZqBlauHeMhnqfNlWWFBjZwkf"
 
     // This is modified by CI:
     private static let apiKeyFromCIForTesting = ""
