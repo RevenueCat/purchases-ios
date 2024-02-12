@@ -1178,6 +1178,9 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
+      - loadshedder-integration-tests:
+          xcode_version: '15.2'
+          <<: *release-branches
 
   deploy:
     when:
