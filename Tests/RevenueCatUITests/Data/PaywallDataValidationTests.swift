@@ -56,6 +56,8 @@ class PaywallDataValidationTests: TestCase {
 
         expect(result.displayablePaywall) == offering.paywall
         expect(result.error).to(beNil())
+
+        Self.snapshot(result.displayablePaywall)
     }
 
     func testUnrecognizedTemplateNameGeneratesDefaultPaywall() {
@@ -193,7 +195,7 @@ private extension PaywallDataValidationTests {
                 images: .init(),
                 colors: .init(light: TestData.lightColors)
             ),
-            localization: [:],
+            localizationByTier: [:],
             assetBaseURL: TestData.paywallAssetBaseURL
         ),
         availablePackages: TestData.packages

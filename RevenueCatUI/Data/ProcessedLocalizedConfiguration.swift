@@ -26,6 +26,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
     var offerDetailsWithIntroOffer: String?
     var offerName: String?
     var features: [Feature]
+    var tierName: String?
 
     init(
         _ configuration: PaywallData.LocalizedConfiguration,
@@ -49,7 +50,8 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
                 .init(title: $0.title.processed(with: dataProvider, context: context, locale: locale),
                       content: $0.content?.processed(with: dataProvider, context: context, locale: locale),
                       iconID: $0.iconID)
-            }
+            },
+            tierName: configuration.tierName
         )
     }
 
@@ -61,7 +63,8 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         offerDetails: String?,
         offerDetailsWithIntroOffer: String?,
         offerName: String?,
-        features: [Feature]
+        features: [Feature],
+        tierName: String?
     ) {
         self.title = title
         self.subtitle = subtitle
@@ -71,6 +74,7 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
         self.offerName = offerName
         self.features = features
+        self.tierName = tierName
     }
 
 }
