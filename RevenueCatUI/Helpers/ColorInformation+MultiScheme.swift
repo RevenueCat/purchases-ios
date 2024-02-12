@@ -116,7 +116,7 @@ extension PaywallData.Configuration.Colors {
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !os(tvOS)
     private static let defaultBackgroundColor: Color = Color(UIColor.systemBackground)
     #else
     private static let defaultBackgroundColor: Color = .white
