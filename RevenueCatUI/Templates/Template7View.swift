@@ -76,6 +76,10 @@ struct Template7View: TemplateViewType {
             .foregroundColor(self.configuration.colors.text1Color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(Constants.fastAnimation, value: self.selectedPackage)
+            .notify(
+                selectedTier: self.selectedTier,
+                selectedPackage: self.selectedPackage
+            )
     }
 
     @ViewBuilder
