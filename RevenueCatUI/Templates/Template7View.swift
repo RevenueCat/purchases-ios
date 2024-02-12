@@ -180,6 +180,7 @@ struct Template7View: TemplateViewType {
             tiers: self.configuration.configuration.tiers,
             tierNames: self.tierNames,
             selectedTier: self.$selectedTier,
+            fonts: self.configuration.fonts,
             backgroundColor: self.configuration.colors.unselectedOutline,
             textColor: self.configuration.colors.text1Color,
             accentColor: self.configuration.colors.selectedTier
