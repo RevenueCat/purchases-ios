@@ -48,11 +48,13 @@ extension Offering {
                 return (paywall, template, nil)
 
             case let .failure(error):
-                // If there are any errors, create a default paywall
-                // with only the configured packages.
-                return (.createDefault(with: paywall.config.packages, locale: locale),
-                        PaywallData.defaultTemplate,
-                        error)
+                let paywall: PaywallData = paywall.config.packages.isEmpty
+                    ? .createDefault(with: self.availablePackages, locale: locale)
+                    : .createDefault(with: paywall.config.packages, locale: locale)
+
+                return (displayablePaywall: paywall,
+                        template: PaywallData.defaultTemplate,
+                        error: error)
             }
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
