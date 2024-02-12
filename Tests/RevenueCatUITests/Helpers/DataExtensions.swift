@@ -25,8 +25,7 @@ extension Offering {
     /// Creates a copy of the offering's paywall applying a modifier to its localization, if present.
     func map(localization modifier: (inout PaywallData.LocalizedConfiguration) -> Void) -> Self {
         return self.map { paywall in
-            if let paywall {
-                var localization = paywall.localizedConfiguration
+            if let paywall, var localization = paywall.localizedConfiguration {
                 modifier(&localization)
                 return paywall.with(localization: localization)
             } else {
@@ -85,7 +84,7 @@ extension PaywallData {
     func with(templateName: String) -> Self {
         return .init(templateName: templateName,
                      config: self.config,
-                     localization: self.localizedConfiguration,
+                     localization: self.localizedConfiguration!,
                      assetBaseURL: self.assetBaseURL)
     }
 
