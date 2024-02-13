@@ -69,6 +69,8 @@ final class SamplePaywallLoader {
             return Self.template4()
         case .template5:
             return Self.template5()
+        case .template7:
+            fatalError("Paywall not available yet")
         }
     }
 
