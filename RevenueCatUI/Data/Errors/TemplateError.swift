@@ -20,8 +20,14 @@ enum TemplateError: Error {
     /// No packages available to create a paywall.
     case noPackages
 
+    /// No tiers available for a multi-tier paywall.
+    case noTiers
+
     /// Paywall with missing localization.
     case noLocalization
+
+    /// Multi-tier paywall with missing localization.
+    case missingLocalization(PaywallData.Tier)
 
     /// Paywall configuration contained no package types.
     case emptyPackageList
@@ -44,8 +50,14 @@ extension TemplateError: CustomNSError {
         case .noPackages:
             return "Attempted to display paywall with no packages."
 
+        case .noTiers:
+            return "Attempted to display a multi-tier paywall with no tiers."
+
         case .noLocalization:
             return "Couldn't find any localization for paywall."
+
+        case let .missingLocalization(tier):
+            return "Couldn't find localization for tier '\(tier.id)'."
 
         case .emptyPackageList:
             return "Paywall configuration contains no packages."

@@ -466,6 +466,123 @@ enum TestData {
                             TestData.annualPackage]
     )
 
+    static let offeringWithTemplate7Paywall = Offering(
+        identifier: Self.offeringIdentifier,
+        serverDescription: "Offering",
+        metadata: [:],
+        paywall: .init(
+            // Fix-me: use PaywallTemplate.template7 when available
+            templateName: "7",
+            config: .init(
+                images: .init(
+                    header: "954459_1692992845.png"
+                ),
+                colors: .init(
+                    light: .init(
+                        background: "#ffffff",
+                        text1: "#000000",
+                        text2: "#adf5c5",
+                        text3: "#b15d5d",
+                        callToActionBackground: "#45c186",
+                        callToActionForeground: "#ffffff",
+                        accent1: "#A8EE76",
+                        accent2: "#7676801F",
+                        accent3: "#30A0F8"
+                    ),
+                    dark: .init(
+                        background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                        text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                        text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                        callToActionBackground: #colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1).asPaywallColor,
+                        callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                        accent1: #colorLiteral(red: 0.5568627715, green: 0.3529411852, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                        accent3: #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1).asPaywallColor
+                    )
+                ),
+                tiers: [
+                    .init(
+                        id: "basic",
+                        packages: [
+                            TestData.threeMonthPackage.identifier,
+                            TestData.lifetimePackage.identifier
+                        ],
+                        defaultPackage: TestData.threeMonthPackage.identifier
+                    ),
+                    .init(
+                        id: "standard",
+                        packages: [
+                            TestData.weeklyPackage.identifier,
+                            TestData.monthlyPackage.identifier
+                        ],
+                        defaultPackage: TestData.weeklyPackage.identifier
+                    ),
+                    .init(
+                        id: "premium",
+                        packages: [
+                            TestData.sixMonthPackage.identifier,
+                            TestData.annualPackage.identifier
+                        ],
+                        defaultPackage: TestData.annualPackage.identifier
+                    )
+                ],
+                termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!
+            ),
+            localizationByTier: [
+                "basic": .init(
+                    title: "Get started with our Basic plan",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
+                    "then {{ total_price_and_per_month }}",
+                    features: [
+                        .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
+                        .init(title: "Standard fonts", iconID: "tick"),
+                        .init(title: "2 templates", iconID: "tick")
+                    ],
+                    tierName: "Basic"
+                ),
+                "standard": .init(
+                    title: "Get started with our Standard plan",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
+                    "then {{ total_price_and_per_month }}",
+                    features: [
+                        .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
+                        .init(title: "Pro fonts and transition effects", iconID: "tick"),
+                        .init(title: "10+ templates", iconID: "tick")
+                    ],
+                    tierName: "Standard"
+                ),
+                "premium": .init(
+                    title: "Master the art of video editing",
+                    callToAction: "{{ price_per_period }}",
+                    callToActionWithIntroOffer: "Start your {{ sub_offer_duration }} free trial",
+                    offerDetails: "{{ total_price_and_per_month }}",
+                    offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
+                    "then {{ total_price_and_per_month }}",
+                    features: [
+                        .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
+                        .init(title: "Custom design tools and transition effects", iconID: "tick"),
+                        .init(title: "100+ exclusive templates", iconID: "tick")
+                    ],
+                    tierName: "Premium"
+                )
+            ],
+            assetBaseURL: Self.paywallAssetBaseURL
+        ),
+        availablePackages: [TestData.weeklyPackage,
+                            TestData.monthlyPackage,
+                            TestData.sixMonthPackage,
+                            TestData.threeMonthPackage,
+                            TestData.annualPackage,
+                            TestData.lifetimePackage]
+    )
+
     static let offeringWithNoPaywall = Offering(
         identifier: Self.offeringIdentifier,
         serverDescription: "Offering",
