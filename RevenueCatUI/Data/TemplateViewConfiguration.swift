@@ -56,6 +56,11 @@ extension TemplateViewConfiguration {
 
         case single(Package)
         case multiple(MultiPackage)
+        case multiTier(
+            firstTier: PaywallData.Tier,
+            all: [PaywallData.Tier: MultiPackage],
+            tierNames: [PaywallData.Tier: String]
+        )
 
     }
 
@@ -73,6 +78,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             return package
         case let .multiple(data):
             return data.first
+        case let .multiTier(firstTier, all, _):
+            return all[firstTier]!.first
         }
     }
 
@@ -80,6 +87,19 @@ extension TemplateViewConfiguration.PackageConfiguration {
         switch self {
         case let .single(package): return package
         case .multiple: return nil
+        case .multiTier: return nil
+        }
+    }
+
+    var multiTier: (
+        firstTier: PaywallData.Tier,
+        all: [PaywallData.Tier: MultiPackage],
+        tierNames: [PaywallData.Tier: String]
+    )? {
+        switch self {
+        case .single: return nil
+        case .multiple: return nil
+        case let .multiTier(first, all, names): return (first, all, names)
         }
     }
 
@@ -90,6 +110,9 @@ extension TemplateViewConfiguration.PackageConfiguration {
             return [package]
         case let .multiple(data):
             return data.all
+        case let .multiTier(_, allTiers, _):
+            return allTiers
+                .flatMap { $0.value.all }
         }
     }
 
@@ -100,6 +123,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
             return package
         case let .multiple(data):
             return data.default
+        case let .multiTier(firstTier, allTiers, _):
+            return allTiers[firstTier]!.default
         }
     }
 
@@ -118,6 +143,10 @@ extension TemplateViewConfiguration.PackageConfiguration {
             localization: PaywallData.LocalizedConfiguration,
             multiPackage: Bool
         )
+        case multiTier(
+            tiers: [PaywallData.Tier],
+            localization: [String: PaywallData.LocalizedConfiguration]
+        )
 
     }
 
@@ -128,6 +157,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
         filter: [String],
         default: String?,
         localization: PaywallData.LocalizedConfiguration?,
+        localizationByTier: [String: PaywallData.LocalizedConfiguration]?,
+        tiers: [PaywallData.Tier],
         setting: TemplatePackageSetting,
         locale: Locale = .current
     ) throws -> Self {
@@ -145,6 +176,11 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 localization: localization,
                 multiPackage: setting == .multiple
             )
+
+        case .multiple:
+            guard let localizationByTier else { throw TemplateError.noLocalization }
+
+            parameters = .multiTier(tiers: tiers, localization: localizationByTier)
         }
 
         return try Self.create(
@@ -157,6 +193,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
     /// Creates a `PackageConfiguration` based on `setting`.
     /// - Throws: `TemplateError`
+    // swiftlint:disable:next function_body_length
     private static func create(
         with packages: [RevenueCat.Package],
         activelySubscribedProductIdentifiers: Set<String>,
@@ -190,6 +227,53 @@ extension TemplateViewConfiguration.PackageConfiguration {
             } else {
                 return .single(firstPackage)
             }
+
+        case let .multiTier(tiers, localization):
+            let allTiers: [PaywallData.Tier: (package: MultiPackage, tierName: String)] = try Dictionary(
+                tiers.map { tier in
+                    guard let localization = localization[tier.id] else {
+                        throw TemplateError.missingLocalization(tier)
+                    }
+
+                    let filteredPackages = Self.processPackages(
+                        from: packages,
+                        filter: tier.packages,
+                        activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
+                        localization: localization,
+                        locale: locale
+                    )
+
+                    guard let firstPackage = filteredPackages.first else {
+                        throw TemplateError.couldNotFindAnyPackages(expectedTypes: tier.packages)
+                    }
+                    let defaultPackage = filteredPackages
+                        .first { $0.content.identifier == tier.defaultPackage }
+                    ?? firstPackage
+
+                    return (
+                        tier,
+                        (
+                            MultiPackage(
+                                first: firstPackage,
+                                default: defaultPackage,
+                                all: filteredPackages
+                            ),
+                            localization.tierName ?? ""
+                        )
+                    )
+                },
+                uniquingKeysWith: { _, new in new }
+            )
+
+            guard let firstTier = tiers.first else {
+                throw TemplateError.noTiers
+            }
+
+            return .multiTier(
+                firstTier: firstTier,
+                all: allTiers.mapValues { $0.package },
+                tierNames: allTiers.mapValues { $0.tierName }
+            )
         }
     }
 
