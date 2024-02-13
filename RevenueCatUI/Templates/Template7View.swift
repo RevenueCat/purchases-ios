@@ -176,6 +176,9 @@ struct Template7View: TemplateViewType {
 
                 Spacer()
             } else {
+                self.selectedTierView
+                    .hideFooterContent(self.configuration, hide: self.displayingAllPlans)
+
                 self.packagesAndTierSelector
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
@@ -199,6 +202,17 @@ struct Template7View: TemplateViewType {
                 self.selectedPackage = self.tiers[tier]!.default
             }
         }
+    }
+
+    private var selectedTierView: some View {
+        TierSelectorView(
+            tier: self.selectedTier,
+            name: self.tierNames[self.selectedTier]!,
+            fonts: self.configuration.fonts,
+            backgroundColor: self.currentColors.unselectedOutline,
+            textColor: self.currentColors.text1Color,
+            accentColor: self.currentColors.selectedTier
+        )
     }
 
     private var title: some View {
