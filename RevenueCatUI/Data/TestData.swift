@@ -441,8 +441,7 @@ internal enum TestData {
         serverDescription: "Offering",
         metadata: [:],
         paywall: .init(
-            // Fix-me: use PaywallTemplate.template7 when available
-            templateName: "7",
+            templateName: PaywallTemplate.template7.rawValue,
             config: .init(
                 images: .init(
                     header: "954459_1692992845.png"
