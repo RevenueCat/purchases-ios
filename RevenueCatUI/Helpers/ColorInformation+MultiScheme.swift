@@ -58,9 +58,15 @@ private extension PaywallColor {
 
     /// Creates a dynamic color for 2 ``ColorScheme``s from 2 optional colors.
     init?(light: PaywallColor?, dark: PaywallColor?) {
-        guard let light, let dark else { return nil }
-
-        self.init(light: light, dark: dark)
+        if let light, let dark {
+            self.init(light: light, dark: dark)
+        } else if let light {
+            self = light
+        } else if let dark {
+            self = dark
+        } else {
+            return nil
+        }
     }
 
 }
