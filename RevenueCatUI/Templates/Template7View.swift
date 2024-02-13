@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Template5View.swift
+//  Template7View.swift
 //
 //  Created by Nacho Soto.
 
@@ -17,9 +17,15 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct Template5View: TemplateViewType {
+struct Template7View: TemplateViewType {
 
     let configuration: TemplateViewConfiguration
+
+    private let tiers: [PaywallData.Tier: TemplateViewConfiguration.PackageConfiguration.MultiPackage]
+    private let tierNames: [PaywallData.Tier: String]
+
+    @State
+    private var selectedTier: PaywallData.Tier
 
     @State
     private var selectedPackage: TemplateViewConfiguration.Package
@@ -46,8 +52,16 @@ struct Template5View: TemplateViewType {
     private var purchaseHandler: PurchaseHandler
 
     init(_ configuration: TemplateViewConfiguration) {
-        self._selectedPackage = .init(initialValue: configuration.packages.default)
+        guard let (firstTier, allTiers, tierNames) = configuration.packages.multiTier else {
+            fatalError("Attempted to display a multi-tier template with invalid data: \(configuration.packages)")
+        }
+
+        self.tiers = allTiers
+        self.tierNames = tierNames
         self.configuration = configuration
+
+        self._selectedTier = .init(initialValue: firstTier)
+        self._selectedPackage = .init(initialValue: allTiers[firstTier]!.default)
         self._displayingAllPlans = .init(initialValue: configuration.mode.displayAllPlansByDefault)
     }
 
@@ -79,9 +93,12 @@ struct Template5View: TemplateViewType {
                 .padding(.top, self.defaultVerticalPaddingLength)
                 .scrollableIfNecessaryWhenAvailable()
 
-                self.packages
-                    .padding(.top, self.defaultVerticalPaddingLength)
-                    .scrollableIfNecessaryWhenAvailable()
+                VStack {
+                    self.tierSelectorView
+                    self.packages
+                }
+                .padding(.top, self.defaultVerticalPaddingLength)
+                .scrollableIfNecessaryWhenAvailable()
             }
 
             Spacer()
@@ -140,21 +157,17 @@ struct Template5View: TemplateViewType {
     private var scrollableContent: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
             if self.configuration.mode.isFullScreen {
-                Spacer()
-
                 self.title
-                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                self.tierSelectorView
 
                 Spacer()
 
-                self.features
-                    .defaultHorizontalPadding()
+                self.featuresAndPackages
 
                 Spacer()
-
-                self.packagesWithBottomSpacer
             } else {
-                self.packagesWithBottomSpacer
+                self.packagesAndTierSelector
                     .hideFooterContent(self.configuration,
                                        hide: !self.displayingAllPlans)
             }
@@ -162,17 +175,67 @@ struct Template5View: TemplateViewType {
         .frame(maxHeight: .infinity)
     }
 
+    private var tierSelectorView: some View {
+        TierSelectorView(
+            tiers: self.configuration.configuration.tiers,
+            tierNames: self.tierNames,
+            selectedTier: self.$selectedTier,
+            fonts: self.configuration.fonts,
+            backgroundColor: self.configuration.colors.unselectedOutline,
+            textColor: self.configuration.colors.text1Color,
+            accentColor: self.configuration.colors.selectedTier
+        )
+        .onChangeOf(self.selectedTier) { tier in
+            withAnimation(Constants.tierChangeAnimation) {
+                self.selectedPackage = self.tiers[tier]!.default
+            }
+        }
+    }
+
     private var title: some View {
-        Text(.init(self.selectedLocalization.title))
-            .font(self.font(for: .largeTitle).bold())
-            .defaultHorizontalPadding()
-            .matchedGeometryEffect(id: Geometry.title, in: self.namespace)
+        ConsistentPackageContentView(
+            packages: self.configuration.packages.all,
+            selected: self.selectedPackage
+        ) { package in
+            self.title(package: package)
+        }
+        .defaultHorizontalPadding()
+    }
+
+    private func title(package: TemplateViewConfiguration.Package) -> some View {
+        Text(.init(package.localization.title))
+            .font(self.font(for: .title).weight(.semibold))
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+    }
+
+    private var featuresAndPackages: some View {
+        ConsistentTierContentView(
+            tiers: self.tiers,
+            selected: self.selectedTier
+        ) { tier, packages in
+            VStack {
+                self.features(package: self.selectedPackage)
+
+                self.packages(for: tier, packages: packages.all)
+            }
+        }
+        .defaultHorizontalPadding()
+    }
+
+    private var features: some View {
+        ConsistentPackageContentView(
+            packages: self.configuration.packages.all,
+            selected: self.selectedPackage
+        ) { package in
+            self.features(package: package)
+        }
     }
 
     @ViewBuilder
-    private var features: some View {
+    private func features(package: TemplateViewConfiguration.Package) -> some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            ForEach(self.selectedLocalization.features, id: \.title) { feature in
+            ForEach(package.localization.features, id: \.title) { feature in
                 HStack {
                     Rectangle()
                         .foregroundStyle(.clear)
@@ -193,12 +256,24 @@ struct Template5View: TemplateViewType {
                 .accessibilityElement(children: .combine)
             }
         }
-        .matchedGeometryEffect(id: Geometry.features, in: self.namespace)
     }
 
     private var packages: some View {
+        ConsistentTierContentView(
+            tiers: self.tiers,
+            selected: self.selectedTier
+        ) { tier, packages in
+            self.packages(for: tier, packages: packages.all)
+        }
+        .defaultHorizontalPadding()
+    }
+
+    private func packages(
+        for tier: PaywallData.Tier,
+        packages: [TemplateViewConfiguration.Package]
+    ) -> some View {
         VStack(spacing: Constants.defaultPackageVerticalSpacing) {
-            ForEach(self.configuration.packages.all, id: \.content.id) { package in
+            ForEach(packages, id: \.content.id) { package in
                 let isSelected = self.selectedPackage.content === package.content
 
                 Button {
@@ -209,12 +284,13 @@ struct Template5View: TemplateViewType {
                 .buttonStyle(PackageButtonStyle())
             }
         }
-        .matchedGeometryEffect(id: Geometry.packages, in: self.namespace)
-        .defaultHorizontalPadding()
     }
 
     @ViewBuilder
-    private var packagesWithBottomSpacer: some View {
+    private var packagesAndTierSelector: some View {
+        self.tierSelectorView
+            .padding(.bottom)
+
         self.packages
 
         Spacer()
@@ -279,14 +355,14 @@ struct Template5View: TemplateViewType {
                     ? colors.selectedDiscountText
                     : colors.unselectedDiscountText
                 )
-                .font(self.font(for: .caption))
+                .font(self.font(for: .caption).weight(.semibold))
                 .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
                 .padding(8)
         }
     }
 
     private var roundedRectangle: some Shape {
-        RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+        RoundedRectangle(cornerRadius: Constants.defaultCornerRadius, style: .continuous)
     }
 
     @ViewBuilder
@@ -331,7 +407,6 @@ struct Template5View: TemplateViewType {
             selectedPackage: self.selectedPackage,
             configuration: self.configuration
         )
-        .matchedGeometryEffect(id: Geometry.subscribeButton, in: self.namespace)
     }
 
     // MARK: -
@@ -343,7 +418,6 @@ struct Template5View: TemplateViewType {
     @ScaledMetric(relativeTo: .body)
     private var iconSize = 25
 
-    private static let cornerRadius: CGFloat = Constants.defaultPackageCornerRadius
     private static let packageButtonAlignment: Alignment = .leading
 
     private var headerAspectRatio: CGFloat {
@@ -355,36 +429,16 @@ struct Template5View: TemplateViewType {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension Template5View {
-
-    enum Geometry: Hashable {
-        case title
-        case features
-        case packages
-        case subscribeButton
-    }
-
-}
-
+@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension PaywallData.Configuration.Colors {
 
-    var featureIcon: Color { self.accent1Color }
-    var selectedOutline: Color { self.accent2Color }
-    var unselectedOutline: Color { self.accent3Color }
+    var featureIcon: Color { self.accent3Color }
+    var selectedOutline: Color { self.accent3Color }
+    var unselectedOutline: Color { self.accent2Color }
     var selectedDiscountText: Color { self.text2Color }
     var unselectedDiscountText: Color { self.text3Color }
-
-}
-
-// MARK: - Extensions
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension Template5View {
-
-    var selectedLocalization: ProcessedLocalizedConfiguration {
-        return self.selectedPackage.localization
-    }
+    var selectedTier: Color { self.accent1Color }
+    var callToAction: Color { self.selectedTier }
 
 }
 
@@ -396,15 +450,15 @@ private extension Template5View {
 @available(watchOS, unavailable)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
-struct Template5View_Previews: PreviewProvider {
+struct Template7View_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             PreviewableTemplate(
-                offering: TestData.offeringWithTemplate5Paywall,
+                offering: TestData.offeringWithTemplate7Paywall,
                 mode: mode
             ) {
-                Template5View($0)
+                Template7View($0)
             }
         }
     }
