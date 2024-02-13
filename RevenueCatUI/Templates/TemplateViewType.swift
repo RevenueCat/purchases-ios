@@ -99,6 +99,8 @@ extension PaywallData {
                                       filter: self.config.packages,
                                       default: self.config.defaultPackage,
                                       localization: self.localizedConfiguration,
+                                      localizationByTier: self.localizedConfigurationByTier,
+                                      tiers: self.config.tiers,
                                       setting: template.packageSetting,
                                       locale: locale),
                 configuration: self.config,

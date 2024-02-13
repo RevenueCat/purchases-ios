@@ -184,6 +184,12 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(images.icon).to(beNil())
     }
 
+    func testMultiTierLocalizationIsNil() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        expect(paywall.localizedConfigurationByTier(for: [.init(identifier: "en_US")]))
+            .to(beNil())
+    }
+
     func testEncodePaywallViewMode() throws {
         for mode in PaywallViewMode.allCases {
             expect(try mode.encodeAndDecode()) == mode
