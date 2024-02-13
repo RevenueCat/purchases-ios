@@ -25,19 +25,26 @@ struct CustomPaywall: View {
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
 
+    @State
+    private var currentTierName: String?
+
     var body: some View {
         self.content
     }
 
     private var content: some View {
-        CustomPaywallContent()
-            .paywallFooter(offering: self.offering,
-                           customerInfo: self.customerInfo,
-                           condensed: self.condensed,
-                           fonts: DefaultPaywallFontProvider(),
-                           introEligibility: self.introEligibility ?? .default(),
-                           purchaseHandler: self.purchaseHandler ?? .default()
+        CustomPaywallContent(selectedTierName: self.currentTierName)
+            .paywallFooter(
+                offering: self.offering,
+                customerInfo: self.customerInfo,
+                condensed: self.condensed,
+                fonts: DefaultPaywallFontProvider(),
+                introEligibility: self.introEligibility ?? .default(),
+                purchaseHandler: self.purchaseHandler ?? .default()
             )
+            .onPaywallTierChange { _, name in
+                self.currentTierName = name
+            }
     }
 
 }

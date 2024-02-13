@@ -14,6 +14,8 @@ struct CustomPaywallContent: View {
     @State private var rotation: Double = 0.0
     @State private var starOpacity: Double = 1
 
+    var selectedTierName: String?
+
     var body: some View {
         self.content
             .scrollableIfNecessary(.vertical)
@@ -34,14 +36,21 @@ struct CustomPaywallContent: View {
                 .padding(.top, -60)
                 .padding(.bottom, -80)
 
-            HStack(spacing: 0) {
-                Text("Pawwall")
-                    .font(.system(.largeTitle, design: .rounded).bold())
-                    .foregroundColor(Marketing.color5)
-                    .padding(.leading)
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Group {
+                    Text("Pawwall")
+                        .foregroundColor(Marketing.color5)
 
-                Text("Pro")
-                    .font(.system(.largeTitle, design: .rounded).bold())
+                    Text("Pro")
+
+                    if let selectedTierName = self.selectedTierName {
+                        Text("(\(selectedTierName))")
+                            .font(.system(.title2, design: .rounded).bold())
+                            .foregroundColor(Marketing.color5)
+                    }
+                }
+                .font(.system(.largeTitle, design: .rounded).bold())
+                .padding(.leading)
 
                 Spacer(minLength: 0)
 
