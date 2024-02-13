@@ -138,7 +138,7 @@ extension PaywallData {
         case .template5:
             Template5View(configuration)
         case .template7:
-            fatalError("Template not ready yet")
+            Template7View(configuration)
         }
         #endif
     }
