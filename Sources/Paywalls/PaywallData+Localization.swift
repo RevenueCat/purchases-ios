@@ -22,12 +22,28 @@ public extension PaywallData {
         return self.localizedConfiguration(for: Self.localesOrderedByPriority)
     }
 
+    /// - Returns: the ``PaywallData/LocalizedConfiguration-swift.struct``  to be used
+    /// based on `Locale.current` or `Locale.preferredLocales`.
+    /// -  Returns: `[:]` for single-tier paywalls.
+    var localizedConfigurationByTier: [String: LocalizedConfiguration]? {
+        return self.localizedConfigurationByTier(for: Self.localesOrderedByPriority)
+    }
+
     // Visible for testing
     internal func localizedConfiguration(for preferredLocales: [Locale]) -> LocalizedConfiguration? {
         return Self.localizedConfiguration(
             for: preferredLocales,
             configForLocale: self.config(for:),
             fallbackLocalization: self.fallbackLocalizedConfiguration
+        )
+    }
+
+    // Visible for testing
+    internal func localizedConfigurationByTier(for preferredLocales: [Locale]) -> [String: LocalizedConfiguration]? {
+        return Self.localizedConfiguration(
+            for: preferredLocales,
+            configForLocale: self.tiersLocalization(for:),
+            fallbackLocalization: self.fallbackTiersLocalized
         )
     }
 
@@ -40,6 +56,10 @@ public extension PaywallData {
 
     private var fallbackLocalizedConfiguration: (String, LocalizedConfiguration)? {
         return self.localization.first
+    }
+
+    private var fallbackTiersLocalized: (String, [String: LocalizedConfiguration])? {
+        return self.localizationByTier.first
     }
 
 }
