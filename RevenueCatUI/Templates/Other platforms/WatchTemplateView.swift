@@ -98,9 +98,7 @@ struct WatchTemplateView: TemplateViewType {
 
         case .multiple:
             VStack(spacing: Self.packageSpacing) {
-                ForEach(self.configuration.packages.all, id: \.content.id) { package in
-                    self.packageButton(package)
-                }
+                self.packageList(self.configuration.packages.all)
             }
 
         case let .multiTier(_, tiers, tierNames):
@@ -109,14 +107,18 @@ struct WatchTemplateView: TemplateViewType {
                     Text(verbatim: "\(tierNames[tier]!)")
                         .font(self.font(for: .title3))
 
-                    ForEach(tiers[tier]!.all, id: \.content.id) { package in
-                        self.packageButton(package)
-                    }
+                    self.packageList(tiers[tier]!.all)
                 }
             }
         }
 
         Spacer()
+    }
+
+    private func packageList(_ packages: [TemplateViewConfiguration.Package]) -> some View {
+        ForEach(packages, id: \.content.id) { package in
+            self.packageButton(package)
+        }
     }
 
     @ViewBuilder
