@@ -427,6 +427,8 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
       - run:
+          condition: 
+            - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
 
