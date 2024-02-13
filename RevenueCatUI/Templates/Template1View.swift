@@ -111,6 +111,7 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var headerImage: some View {
         self.asyncImage
+            .clipped()
             .modifier(CircleMaskModifier(landscape: self.shouldUseLandscapeLayout))
 
         Spacer()
