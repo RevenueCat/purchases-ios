@@ -28,6 +28,9 @@ extension Offering {
 
         case missingPaywall(Offering)
         case missingLocalization
+        case missingTiers
+        case missingTier(PaywallData.Tier)
+        case missingTierName(PaywallData.Tier)
         case invalidTemplate(String)
         case invalidVariables(Set<String>)
         case invalidIcons(Set<String>)
@@ -60,7 +63,7 @@ extension Offering {
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
             return (displayablePaywall: .createDefault(with: self.availablePackages, locale: locale),
-                    PaywallData.defaultTemplate,
+                    template: PaywallData.defaultTemplate,
                     error: .missingPaywall(self))
         }
     }
@@ -82,19 +85,55 @@ private extension PaywallData {
 
         switch template.packageSetting.tierSetting {
         case .single:
-            guard let localization = self.localizedConfiguration else {
-                return .failure(.missingLocalization)
-            }
-
-            if let error = Self.validateLocalization(localization) {
+            if let error = self.validateSingleTier() {
                 return .failure(error)
             }
 
         case .multiple:
-            break
+            if let error = self.validateMultiTier() {
+                return .failure(error)
+            }
         }
 
         return .success(template)
+    }
+
+    private func validateSingleTier() -> Error? {
+        guard let localization = self.localizedConfiguration else {
+            return .missingLocalization
+        }
+
+        if let error = Self.validateLocalization(localization) {
+            return error
+        }
+
+        return nil
+    }
+
+    private func validateMultiTier() -> Error? {
+        guard let localized = self.localizedConfigurationByTier else {
+            return .missingLocalization
+        }
+
+        if self.config.tiers.isEmpty {
+            return .missingTiers
+        }
+
+        for tier in self.config.tiers {
+            guard let localization = localized[tier.id] else {
+                return .missingTier(tier)
+            }
+
+            if localization.tierName?.isEmpty != false {
+                return .missingTierName(tier)
+            }
+
+            if let error = Self.validateLocalization(localization) {
+                return error
+            }
+        }
+
+        return nil
     }
 
     /// Validates that all strings inside of `LocalizedConfiguration` contain no unrecognized variables.
@@ -155,6 +194,15 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
 
         case .missingLocalization:
             return "Paywall has no localization."
+
+        case .missingTiers:
+            return "Multi-tier paywall has no configured tiers."
+
+        case let .missingTier(tier):
+            return "Tier '\(tier.id)' is missing in localization."
+
+        case let .missingTierName(tier):
+            return "Tier '\(tier.id)' has no name."
 
         case let .invalidTemplate(name):
             return "Template not recognized: \(name)."
