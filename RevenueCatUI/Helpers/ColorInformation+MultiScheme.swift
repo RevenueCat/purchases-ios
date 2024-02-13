@@ -32,6 +32,24 @@ extension PaywallData.Configuration.ColorInformation {
 
 }
 
+extension PaywallData.Configuration {
+
+    @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+    var multiSchemeColorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors] {
+        let colors = self.colorsByTier
+
+        return .init(
+            uniqueKeysWithValues: self.tiers
+                .lazy
+                .compactMap { tier in
+                    guard let colors = colors[tier.id] else { return nil }
+                    return (tier, colors.multiScheme)
+                }
+        )
+    }
+
+}
+
 extension PaywallData.Configuration.Colors {
 
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)

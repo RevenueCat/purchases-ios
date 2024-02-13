@@ -73,7 +73,7 @@ struct Template7View: TemplateViewType {
                 self.verticalFullScreenContent
             }
         }
-            .foregroundColor(self.configuration.colors.text1Color)
+            .foregroundColor(self.currentColors.text1Color)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(Constants.fastAnimation, value: self.selectedPackage)
             .notify(
@@ -190,9 +190,9 @@ struct Template7View: TemplateViewType {
             tierNames: self.tierNames,
             selectedTier: self.$selectedTier,
             fonts: self.configuration.fonts,
-            backgroundColor: self.configuration.colors.unselectedOutline,
-            textColor: self.configuration.colors.text1Color,
-            accentColor: self.configuration.colors.selectedTier
+            backgroundColor: self.currentColors.unselectedOutline,
+            textColor: self.currentColors.text1Color,
+            accentColor: self.currentColors.selectedTier
         )
         .onChangeOf(self.selectedTier) { tier in
             withAnimation(Constants.tierChangeAnimation) {
@@ -251,7 +251,7 @@ struct Template7View: TemplateViewType {
                         .aspectRatio(1, contentMode: .fit)
                         .overlay {
                             if let icon = feature.icon {
-                                IconView(icon: icon, tint: self.configuration.colors.featureIcon)
+                                IconView(icon: icon, tint: self.currentColors.featureIcon)
                             }
                         }
                         .frame(width: self.iconSize, height: self.iconSize)
@@ -329,8 +329,8 @@ struct Template7View: TemplateViewType {
             self.roundedRectangle
                 .stroke(
                     selected
-                    ? self.configuration.colors.selectedOutline
-                    : self.configuration.colors.unselectedOutline,
+                    ? self.currentColors.selectedOutline
+                    : self.currentColors.unselectedOutline,
                     lineWidth: Constants.defaultPackageBorderWidth
                 )
         }
@@ -348,7 +348,7 @@ struct Template7View: TemplateViewType {
         selected: Bool
     ) -> some View {
         if let discount = package.discountRelativeToMostExpensivePerMonth {
-            let colors = self.configuration.colors
+            let colors = self.currentColors
 
             Text(Localization.localized(discount: discount, locale: self.locale))
                 .textCase(.uppercase)
@@ -383,8 +383,8 @@ struct Template7View: TemplateViewType {
             ? "checkmark.circle.fill"
             : "circle.fill"
         let color = selected
-            ? self.configuration.colors.selectedOutline
-            : self.configuration.colors.unselectedOutline
+            ? self.currentColors.selectedOutline
+            : self.currentColors.unselectedOutline
 
         HStack {
             Image(systemName: image)
@@ -403,7 +403,7 @@ struct Template7View: TemplateViewType {
             display: .offerDetails,
             localization: package.localization,
             introEligibility: self.introEligibility[package.content],
-            foregroundColor: self.configuration.colors.text1Color,
+            foregroundColor: self.currentColors.text1Color,
             alignment: alignment
         )
         .fixedSize(horizontal: false, vertical: true)
@@ -414,7 +414,8 @@ struct Template7View: TemplateViewType {
         PurchaseButton(
             packages: self.configuration.packages,
             selectedPackage: self.selectedPackage,
-            configuration: self.configuration
+            configuration: self.configuration,
+            selectedTier: self.selectedTier
         )
     }
 
@@ -422,6 +423,10 @@ struct Template7View: TemplateViewType {
 
     private var introEligibility: [Package: IntroEligibilityStatus] {
         return self.introEligibilityViewModel.allEligibility
+    }
+
+    private var currentColors: PaywallData.Configuration.Colors {
+        return self.configuration.colors(for: self.selectedTier)
     }
 
     @ScaledMetric(relativeTo: .body)
