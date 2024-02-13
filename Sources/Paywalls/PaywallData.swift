@@ -157,8 +157,22 @@ extension PaywallData {
     /// - Returns: ``PaywallData/LocalizedConfiguration-swift.struct`` for the given `Locale`, if found.
     /// - Note: this allows searching by `Locale` with only language code and missing region (like `en`, `es`, etc).
     public func config(for requiredLocale: Locale) -> LocalizedConfiguration? {
-        self.localization[requiredLocale.identifier] ??
-        self.localization.first { locale, _ in
+        return Self.config(for: requiredLocale, localizationByLocale: self.localization)
+    }
+
+    /// - Returns: ``PaywallData/LocalizedConfiguration-swift.struct`` for all tiers,
+    /// for the given `Locale`, if found.
+    /// - Note: this allows searching by `Locale` with only language code and missing region (like `en`, `es`, etc).
+    public func tiersLocalization(for requiredLocale: Locale) -> [String: LocalizedConfiguration]? {
+        return Self.config(for: requiredLocale, localizationByLocale: self.localizationByTier)
+    }
+
+    internal static func config<Value>(
+        for requiredLocale: Locale,
+        localizationByLocale: [String: Value]
+    ) -> Value? {
+        localizationByLocale[requiredLocale.identifier] ??
+        localizationByLocale.first { locale, _ in
             Locale(identifier: locale).sharesLanguageCode(with: requiredLocale)
         }?.value
     }
