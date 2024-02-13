@@ -146,11 +146,16 @@ struct Template7View: TemplateViewType {
 
     @ViewBuilder
     private var headerImage: some View {
-        if let header = self.configuration.headerImageURL {
-            RemoteImage(url: header,
-                        aspectRatio: self.headerAspectRatio,
-                        maxWidth: .infinity)
-            .clipped()
+        ConsistentTierContentView(
+            tiers: self.tiers,
+            selected: self.selectedTier
+        ) { tier, _ in
+            if let header = self.configuration.headerImageURL(for: tier) {
+                RemoteImage(url: header,
+                            aspectRatio: self.headerAspectRatio,
+                            maxWidth: .infinity)
+                .clipped()
+            }
         }
     }
 
