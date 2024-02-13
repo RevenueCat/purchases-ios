@@ -19,6 +19,7 @@ struct App: View {
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
+    private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
     private var paywallDismissed: () -> Void = {}
 
     var body: some View {
@@ -181,6 +182,7 @@ struct App: View {
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
+            .onPaywallTierChange(self.paywallTierChange)
     }
 
     @ViewBuilder
