@@ -31,6 +31,8 @@ enum Constants {
     static let defaultPackageCornerRadius: CGFloat = 16
     static let defaultPackageBorderWidth: CGFloat = 2
 
+    static let defaultPackageVerticalSpacing: CGFloat = 16
+
     static let purchaseInProgressButtonOpacity: CGFloat = 0.4
 
     /// For UI elements that wouldn't make sense to keep scaling up forever
