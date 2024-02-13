@@ -64,7 +64,8 @@
         "id" : "premium",
         "packages" : [
           "$rc_six_month",
-          "$rc_annual"
+          "$rc_annual",
+          "$rc_lifetime"
         ]
       }
     ],
@@ -86,10 +87,6 @@
           {
             "icon_id" : "tick",
             "title" : "Standard fonts"
-          },
-          {
-            "icon_id" : "tick",
-            "title" : "2 templates"
           }
         ],
         "offer_details" : "{{ total_price_and_per_month }}",

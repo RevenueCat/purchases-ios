@@ -16,6 +16,8 @@ struct TierSelectorView: View {
     private let namesByTierID: [String: String]
     private let selectedTier: Binding<PaywallData.Tier>
 
+    private let fonts: PaywallFontProvider
+
     private let backgroundColor: Color
     private let textColor: Color
     private let accentColor: Color
@@ -29,6 +31,7 @@ struct TierSelectorView: View {
         tiers: [PaywallData.Tier],
         namesByTierID: [String: String],
         selectedTier: Binding<PaywallData.Tier>,
+        fonts: PaywallFontProvider,
         backgroundColor: Color,
         textColor: Color,
         accentColor: Color
@@ -38,6 +41,7 @@ struct TierSelectorView: View {
         self.tiers = tiers
         self.namesByTierID = namesByTierID
         self.selectedTier = selectedTier
+        self.fonts = fonts
         self.backgroundColor = backgroundColor
         self.textColor = textColor
         self.accentColor = accentColor
@@ -123,7 +127,7 @@ struct TierSelectorView: View {
     private func tierNameLabel(_ tier: PaywallData.Tier, selected: Bool) -> some View {
         Text(self.namesByTierID[tier.id] ?? "")
             .foregroundStyle(self.textColor)
-            .font(.callout.weight(selected ? .semibold : .regular))
+            .font(self.fonts.font(for: .callout).weight(selected ? .semibold : .regular))
             .multilineTextAlignment(.center)
             .padding(.horizontal)
             .padding(.vertical, Padding.vertical)
@@ -168,6 +172,7 @@ extension TierSelectorView {
         tiers: [PaywallData.Tier],
         tierNames: [PaywallData.Tier: String],
         selectedTier: Binding<PaywallData.Tier>,
+        fonts: PaywallFontProvider,
         backgroundColor: Color,
         textColor: Color,
         accentColor: Color
@@ -178,6 +183,7 @@ extension TierSelectorView {
                 uniqueKeysWithValues: tierNames.map { ($0.id, $1) }
             ),
             selectedTier: selectedTier,
+            fonts: fonts,
             backgroundColor: backgroundColor,
             textColor: textColor,
             accentColor: accentColor
@@ -201,6 +207,7 @@ private struct TierSelectorPreview: View {
             tiers: Self.tiers,
             namesByTierID: Self.namesByTierID,
             selectedTier: self.$selectedTier,
+            fonts: DefaultPaywallFontProvider(),
             backgroundColor: #colorLiteral(red: 0.46, green: 0.46, blue: 0.5, alpha: 0.12).asPaywallColor.underlyingColor,
             textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor,
             accentColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor
