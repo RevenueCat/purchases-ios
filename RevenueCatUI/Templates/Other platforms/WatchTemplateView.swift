@@ -98,7 +98,7 @@ struct WatchTemplateView: TemplateViewType {
     @ViewBuilder
     private var packages: some View {
         if self.configuration.packages.all.count > 1 {
-            VStack(spacing: 8) {
+            VStack(spacing: Constants.defaultPackageVerticalSpacing / 2.0) {
                 ForEach(self.configuration.packages.all, id: \.content.id) { package in
                     let isSelected = self.selectedPackage.content === package.content
 

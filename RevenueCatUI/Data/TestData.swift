@@ -491,7 +491,8 @@ internal enum TestData {
                         id: "premium",
                         packages: [
                             TestData.sixMonthPackage.identifier,
-                            TestData.annualPackage.identifier
+                            TestData.annualPackage.identifier,
+                            TestData.lifetimePackage.identifier
                         ],
                         defaultPackage: TestData.annualPackage.identifier
                     )
@@ -508,8 +509,7 @@ internal enum TestData {
                     "then {{ total_price_and_per_month }}",
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
-                        .init(title: "Standard fonts", iconID: "tick"),
-                        .init(title: "2 templates", iconID: "tick")
+                        .init(title: "Standard fonts", iconID: "tick")
                     ],
                     tierName: "Basic"
                 ),
