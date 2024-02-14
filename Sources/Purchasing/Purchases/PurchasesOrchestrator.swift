@@ -545,7 +545,7 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext, 
+    func cachePresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext,
                                        productIdentifier: String) {
         self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = presentedOfferingContext }
     }
