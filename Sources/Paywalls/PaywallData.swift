@@ -238,16 +238,22 @@ extension PaywallData {
         }
 
         /// The images for each of the tiers.
-        public var imagesByTier: [String: Images] {
-            let images = self.images
+        public internal(set) var imagesByTier: [String: Images] {
+            get {
+                let images = self.images
 
-            return Set(self.tiers.map(\.id))
-                .dictionaryWithValues { tier in
-                    return Self.merge(
-                        source: self._imageOverridesByTier[tier],
-                        fallback: images
-                    )
-                }
+                return Set(self.tiers.map(\.id))
+                    .dictionaryWithValues { tier in
+                        return Self.merge(
+                            source: self._imageOverridesByTier[tier],
+                            fallback: images
+                        )
+                    }
+            }
+
+            set {
+                self._imageOverridesByTier = newValue
+            }
         }
 
         /// Whether the background image will be blurred (in templates with one).
