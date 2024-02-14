@@ -111,7 +111,7 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
     let accent2: PaywallColor? = config.accent2
     let accent3: PaywallColor? = config.accent3
 
-    _ = PaywallData.Configuration.Colors(
+    let _: PaywallData.Configuration.Colors = .init(
         background: background,
         text1: text1,
         text2: text2,
@@ -123,6 +123,8 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
         accent2: accent2,
         accent3: accent3
     )
+
+    let _: PaywallData.Configuration.Colors = .init()
 }
 
 func checkPaywallColorInformation(_ config: PaywallData.Configuration.ColorInformation) {

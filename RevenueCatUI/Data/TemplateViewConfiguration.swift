@@ -24,8 +24,18 @@ struct TemplateViewConfiguration {
     let packages: PackageConfiguration
     let configuration: PaywallData.Configuration
     let colors: PaywallData.Configuration.Colors
+    let colorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors]
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TemplateViewConfiguration {
+
+    func colors(for tier: PaywallData.Tier) -> PaywallData.Configuration.Colors {
+        return self.colorsByTier[tier] ?? self.colors
+    }
 
 }
 
