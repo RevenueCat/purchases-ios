@@ -65,12 +65,7 @@ struct WatchTemplateView: TemplateViewType {
                             .font(self.font(for: .subheadline))
                     }
 
-                    if let package = self.configuration.packages.singleIfNotMultiple {
-                        self.offerDetails(package: package, selected: false)
-                            .padding(.top, self.defaultVerticalPaddingLength)
-                    }
-
-                    self.packages
+                    self.packageDisplay
                         .padding(.top, self.defaultVerticalPaddingLength)
 
                     self.button
@@ -96,27 +91,50 @@ struct WatchTemplateView: TemplateViewType {
     }
 
     @ViewBuilder
-    private var packages: some View {
-        if self.configuration.packages.all.count > 1 {
-            VStack(spacing: Constants.defaultPackageVerticalSpacing / 2.0) {
-                ForEach(self.configuration.packages.all, id: \.content.id) { package in
-                    let isSelected = self.selectedPackage.content === package.content
+    private var packageDisplay: some View {
+        switch self.configuration.packages {
+        case let .single(package):
+            self.offerDetails(package: package, selected: false)
 
-                    Button {
-                        self.selectedPackage = package
-                    } label: {
-                        self.packageButton(package, selected: isSelected)
-                    }
-                    .buttonStyle(PackageButtonStyle())
-                }
+        case .multiple:
+            VStack(spacing: Self.packageSpacing) {
+                self.packageList(self.configuration.packages.all)
             }
 
-            Spacer()
+        case let .multiTier(_, tiers, tierNames):
+            VStack(spacing: Self.packageSpacing) {
+                ForEach(self.configuration.configuration.tiers) { tier in
+                    Text(verbatim: "\(tierNames[tier]!)")
+                        .font(self.font(for: .title3))
+
+                    self.packageList(tiers[tier]!.all)
+                }
+            }
+        }
+
+        Spacer()
+    }
+
+    private func packageList(_ packages: [TemplateViewConfiguration.Package]) -> some View {
+        ForEach(packages, id: \.content.id) { package in
+            self.packageButton(package)
         }
     }
 
     @ViewBuilder
-    private func packageButton(_ package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
+    private func packageButton(_ package: TemplateViewConfiguration.Package) -> some View {
+        let isSelected = self.selectedPackage.content === package.content
+
+        Button {
+            self.selectedPackage = package
+        } label: {
+            self.packageLabel(package, selected: isSelected)
+        }
+        .buttonStyle(PackageButtonStyle())
+    }
+
+    @ViewBuilder
+    private func packageLabel(_ package: TemplateViewConfiguration.Package, selected: Bool) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             self.packageButtonTitle(package, selected: selected)
                 .font(self.font(for: .body).weight(.medium))
@@ -228,6 +246,7 @@ struct WatchTemplateView: TemplateViewType {
 
     private static let imageAspectRatio: CGFloat = 1.2
     private static let imageRoundedCorner: CGFloat = 30
+    private static let packageSpacing: CGFloat = Constants.defaultPackageVerticalSpacing / 2.0
 
 }
 
@@ -240,13 +259,14 @@ struct WatchTemplateView: TemplateViewType {
 struct WatchTemplateView_Previews: PreviewProvider {
 
     static var previews: some View {
-        ForEach([
-            TestData.offeringWithIntroOffer,
-            TestData.offeringWithMultiPackagePaywall
-        ], id: \.self) { offering in
-            PreviewableTemplate(offering: offering) {
-                WatchTemplateView($0)
-            }
+        PreviewableTemplate(offering: TestData.offeringWithIntroOffer) {
+            WatchTemplateView($0)
+        }
+        PreviewableTemplate(offering: TestData.offeringWithMultiPackagePaywall) {
+            WatchTemplateView($0)
+        }
+        PreviewableTemplate(offering: TestData.offeringWithTemplate7Paywall) {
+            WatchTemplateView($0)
         }
     }
 
