@@ -31,7 +31,16 @@
     },
     "display_restore_purchases" : true,
     "image_overrides_by_tier" : {
-
+      "basic" : {
+        "background" : null,
+        "header" : "954459_1703109702.png",
+        "icon" : null
+      },
+      "premium" : {
+        "background" : null,
+        "header" : "954459_1701267532.jpeg",
+        "icon" : null
+      }
     },
     "images_heic" : {
       "background" : null,
