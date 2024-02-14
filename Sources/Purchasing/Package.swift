@@ -17,12 +17,12 @@ import Foundation
 ///
 /// Stores information about how a ``Package`` was presented.
 ///
-@objc(RCPresentedOfferingData) public final class PresentedOfferingData: NSObject {
+@objc(RCPresentedOfferingContext) public final class PresentedOfferingContext: NSObject {
 
     /// The identifier of the ``Offering`` containing this Package.
     @objc public let offeringIdentifier: String
 
-    /// Initialize a ``PresentedOfferingData``.
+    /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
         offeringIdentifier: String
@@ -32,7 +32,7 @@ import Foundation
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? PresentedOfferingData else { return false }
+        guard let other = object as? PresentedOfferingContext else { return false }
 
         return (
             self.offeringIdentifier == other.offeringIdentifier
@@ -59,7 +59,7 @@ import Foundation
     @objc public let storeProduct: StoreProduct
 
     ////  The information about the ``Offering`` containing this Package
-    @objc public let presentedOfferingData: PresentedOfferingData
+    @objc public let presentedOfferingContext: PresentedOfferingContext
 
     /// The price of this product using ``StoreProduct/priceFormatter``.
     @objc public var localizedPriceString: String {
@@ -83,7 +83,7 @@ import Foundation
         self.identifier = identifier
         self.packageType = packageType
         self.storeProduct = storeProduct
-        self.presentedOfferingData = PresentedOfferingData(offeringIdentifier: offeringIdentifier)
+        self.presentedOfferingContext = PresentedOfferingContext(offeringIdentifier: offeringIdentifier)
 
         super.init()
     }
@@ -94,12 +94,12 @@ import Foundation
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
-        presentedOfferingData: PresentedOfferingData
+        presentedOfferingContext: PresentedOfferingContext
     ) {
         self.identifier = identifier
         self.packageType = packageType
         self.storeProduct = storeProduct
-        self.presentedOfferingData = presentedOfferingData
+        self.presentedOfferingContext = presentedOfferingContext
 
         super.init()
     }
@@ -111,7 +111,7 @@ import Foundation
             self.identifier == other.identifier &&
             self.packageType == other.packageType &&
             self.storeProduct == other.storeProduct &&
-            self.presentedOfferingData == other.presentedOfferingData
+            self.presentedOfferingContext == other.presentedOfferingContext
         )
     }
 
@@ -120,7 +120,7 @@ import Foundation
         hasher.combine(self.identifier)
         hasher.combine(self.packageType)
         hasher.combine(self.storeProduct)
-        hasher.combine(self.presentedOfferingData.offeringIdentifier)
+        hasher.combine(self.presentedOfferingContext.offeringIdentifier)
 
         return hasher.finalize()
     }
@@ -151,7 +151,7 @@ import Foundation
 
     /// - Returns: the identifier of the ``Offering`` containing this Package.
     var offeringIdentifier: String {
-        return presentedOfferingData.offeringIdentifier
+        return presentedOfferingContext.offeringIdentifier
     }
 }
 
@@ -163,4 +163,4 @@ extension Package: Identifiable {
 }
 
 extension Package: Sendable {}
-extension PresentedOfferingData: Sendable {}
+extension PresentedOfferingContext: Sendable {}

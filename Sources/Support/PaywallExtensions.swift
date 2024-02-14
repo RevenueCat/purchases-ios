@@ -124,8 +124,8 @@ private extension View {
                     Logger.appleWarning(Strings.configure.sk2_required_for_swiftui_paywalls)
                 }
 
-                Purchases.shared.cachePresentedOfferingData(
-                    PresentedOfferingData(offeringIdentifier: offering.identifier),
+                Purchases.shared.cachePresentedOfferingContext(
+                    PresentedOfferingContext(offeringIdentifier: offering.identifier),
                     productIdentifier: product.id
                 )
             }

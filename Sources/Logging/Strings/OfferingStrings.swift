@@ -143,13 +143,13 @@ extension OfferingStrings: LogMessage {
 
         case let .unknown_package_type(package):
             return "Package '\(package.identifier)' in offering " +
-            "'\(package.presentedOfferingData.offeringIdentifier)' has an unknown duration." +
+            "'\(package.presentedOfferingContext.offeringIdentifier)' has an unknown duration." +
             "\nYou can reference this package by its identifier ('\(package.identifier)') directly." +
             "\nMore information: https://rev.cat/displaying-products"
 
         case let .custom_package_type(package):
             return "Package '\(package.identifier)' in offering " +
-            "'\(package.presentedOfferingData.offeringIdentifier)' has a custom duration." +
+            "'\(package.presentedOfferingContext.offeringIdentifier)' has a custom duration." +
             "\nYou can reference this package by its identifier ('\(package.identifier)') directly." +
             "\nMore information: https://rev.cat/displaying-products"
 

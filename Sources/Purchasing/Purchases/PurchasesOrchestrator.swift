@@ -42,7 +42,7 @@ final class PurchasesOrchestrator {
     @objc weak var delegate: PurchasesOrchestratorDelegate?
 
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
-    private let presentedOfferingIDsByProductID: Atomic<[String: PresentedOfferingData]> = .init([:])
+    private let presentedOfferingContextsByProductID: Atomic<[String: PresentedOfferingContext]> = .init([:])
     private let presentedPaywall: Atomic<PaywallEvent?> = nil
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
 
@@ -381,7 +381,7 @@ final class PurchasesOrchestrator {
 
         payment.applicationUsername = self.appUserID
 
-        self.cachePresentedOfferingIdentifier(package: package, productIdentifier: productIdentifier)
+        self.cachePresentedOfferingContext(package: package, productIdentifier: productIdentifier)
 
         self.productsManager.cache(StoreProduct(sk1Product: sk1Product))
 
@@ -476,7 +476,7 @@ final class PurchasesOrchestrator {
                 options.insert(try signedData.sk2PurchaseOption)
             }
 
-            self.cachePresentedOfferingIdentifier(package: package, productIdentifier: sk2Product.id)
+            self.cachePresentedOfferingContext(package: package, productIdentifier: sk2Product.id)
 
             result = try await self.purchase(sk2Product, options)
         } catch StoreKitError.userCancelled {
@@ -545,8 +545,8 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedOfferingData(_ presentedOfferingData: PresentedOfferingData, productIdentifier: String) {
-        self.presentedOfferingIDsByProductID.modify { $0[productIdentifier] = presentedOfferingData }
+    func cachePresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext, productIdentifier: String) {
+        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = presentedOfferingContext }
     }
 
     func track(paywallEvent: PaywallEvent) {
@@ -1229,9 +1229,9 @@ private extension PurchasesOrchestrator {
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 
-    func cachePresentedOfferingIdentifier(package: Package?, productIdentifier: String) {
+    func cachePresentedOfferingContext(package: Package?, productIdentifier: String) {
         if let package = package {
-            self.cachePresentedOfferingData(package.presentedOfferingData,
+            self.cachePresentedOfferingContext(package.presentedOfferingContext,
                                             productIdentifier: productIdentifier)
         }
     }
@@ -1246,13 +1246,13 @@ private extension PurchasesOrchestrator {
         self.presentedPaywall.value = nil
     }
 
-    func getAndRemovePresentedOfferingIdentifier(for productIdentifier: String) -> PresentedOfferingData? {
-        return self.presentedOfferingIDsByProductID.modify {
+    func getAndRemovePresentedOfferingIdentifier(for productIdentifier: String) -> PresentedOfferingContext? {
+        return self.presentedOfferingContextsByProductID.modify {
             $0.removeValue(forKey: productIdentifier)
         }
     }
 
-    func getAndRemovePresentedOfferingIdentifier(for transaction: StoreTransaction) -> PresentedOfferingData? {
+    func getAndRemovePresentedOfferingIdentifier(for transaction: StoreTransaction) -> PresentedOfferingContext? {
         return self.getAndRemovePresentedOfferingIdentifier(for: transaction.productIdentifier)
     }
 
