@@ -15,19 +15,26 @@ import Foundation
 import RevenueCat_CustomEntitlementComputation
 import StoreKit
 
-var pack: Package!
-func checkPackageAPI() {
-    let ident: String = pack.identifier
-    let pType: PackageType = pack.packageType
-    let prod: StoreProduct = pack.storeProduct
-    let lps: String = pack.localizedPriceString
-    let lips: String? = pack.localizedIntroductoryPriceString
-
-    print(pack!, ident, pType, prod, lps, lips!)
+func checkPackageAPI(pack: Package! = nil) {
+    let _: String = pack.identifier
+    let _: PackageType = pack.packageType
+    let _: StoreProduct = pack.storeProduct
+    let _: String = pack.offeringIdentifier
+    let _: PresentedOfferingContext = pack.presentedOfferingContext
+    let _: String = pack.localizedPriceString
+    let _: String? = pack.localizedIntroductoryPriceString
 }
 
-var packageType: PackageType!
-func checkPackageEnums() {
+private func checkCreatePackageAPI(product: StoreProduct) {
+    _ = Package(
+        identifier: "",
+        packageType: PackageType.annual,
+        storeProduct: product,
+        offeringIdentifier: ""
+    )
+}
+
+func checkPackageEnums(packageType: PackageType! = nil) {
     switch packageType! {
     case .custom,
          .lifetime,

@@ -17,6 +17,7 @@
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
 #import "RCPackageAPI.h"
+#import "RCPresentedOfferingContext.h"
 #import "RCPromotionalOfferAPI.h"
 #import "RCPurchasesAPI.h"
 #import "RCPurchasesErrorCodeAPI.h"
@@ -52,6 +53,8 @@ int main(int argc, const char * argv[]) {
 
         [RCPackageAPI checkAPI];
         [RCPackageAPI checkEnums];
+
+        [RCPresentOfferingContextAPI checkAPI];
 
         [RCPromotionalOfferAPI checkAPI];
 
