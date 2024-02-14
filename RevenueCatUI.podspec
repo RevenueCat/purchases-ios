@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatUI"
-  s.version          = "4.36.3"
+  s.version          = "4.37.0-SNAPSHOT"
   s.summary          = "UI library for RevenueCat paywalls."
 
   s.description      = <<-DESC
