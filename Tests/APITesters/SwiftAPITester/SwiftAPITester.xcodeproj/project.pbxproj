@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5B281C64AF00669657 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		2CA5383A2B7D42100037D96F /* PresentedOfferingContextAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */; };
 		2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
 		2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
@@ -58,6 +59,7 @@
 
 /* Begin PBXFileReference section */
 		2C396F5B281C64AF00669657 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = System/Library/Frameworks/AdServices.framework; sourceTree = SDKROOT; };
+		2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedOfferingContextAPI.swift; sourceTree = "<group>"; };
 		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitVersionAPI.swift; sourceTree = "<group>"; };
 		4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductAPI.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
 				4FF58AD12A5DDA5B00451B28 /* PaywallAPI.swift */,
+				2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */,
 				B3A4C833280DE72600D4AE17 /* PromotionalOfferAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
@@ -265,6 +268,7 @@
 				2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */,
 				2DD778EB270E23460079CBD4 /* ErrorCodesAPI.swift in Sources */,
 				2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */,
+				2CA5383A2B7D42100037D96F /* PresentedOfferingContextAPI.swift in Sources */,
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
 				B32554422825E5EA00DA62EA /* ConfigurationAPI.swift in Sources */,
 				4D30B3B32B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift in Sources */,

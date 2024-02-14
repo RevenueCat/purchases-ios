@@ -206,14 +206,14 @@ extension PurchaseStrings: LogMessage {
 
         case let .purchasing_product_from_package(product, package):
             return "Purchasing Product '\(product.productIdentifier)' from package " +
-            "in Offering '\(package.offeringIdentifier)'"
+            "in Offering '\(package.presentedOfferingContext.offeringIdentifier)'"
 
         case let .purchasing_product_with_offer(product, discount):
             return "Purchasing Product '\(product.productIdentifier)' with Offer '\(discount.identifier)'"
 
         case let .purchasing_product_from_package_with_offer(product, package, discount):
             return "Purchasing Product '\(product.productIdentifier)' from package in Offering " +
-            "'\(package.offeringIdentifier)' with Offer '\(discount.identifier)'"
+            "'\(package.presentedOfferingContext.offeringIdentifier)' with Offer '\(discount.identifier)'"
 
         case let .purchased_product(productIdentifier):
             return "Purchased product - '\(productIdentifier)'"
