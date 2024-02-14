@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 import StoreKit
 
 func checkPresentedOfferingContextAPI(context: PresentedOfferingContext! = nil) {
