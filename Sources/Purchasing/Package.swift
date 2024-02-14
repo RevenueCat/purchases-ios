@@ -91,7 +91,7 @@ import Foundation
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            offeringIdentifier: offeringIdentifier
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier)
         )
     }
 
