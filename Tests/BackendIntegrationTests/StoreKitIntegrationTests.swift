@@ -97,8 +97,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
         let package = try await self.monthlyPackage
 
-        try self.purchases.cachePresentedOfferingIdentifier(
-            package.offeringIdentifier,
+        try self.purchases.cachePresentedOfferingData(
+            PresentedOfferingData(offeringIdentifier: package.offeringIdentifier),
             productIdentifier: package.storeProduct.productIdentifier
         )
 
