@@ -27,7 +27,7 @@
     NSString *lps = p.localizedPriceString;
     NSString *lips = p.localizedIntroductoryPriceString;
 
-    NSLog(p, storeProduct, i, t, lps, lips);
+    NSLog(p, storeProduct, i, t, oid, lps, lips);
 
     RCPackage *package __unused = [[RCPackage alloc] initWithIdentifier:i
                                                             packageType:RCPackageTypeAnnual
