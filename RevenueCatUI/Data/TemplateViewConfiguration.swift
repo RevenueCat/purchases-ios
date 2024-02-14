@@ -83,14 +83,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
         }
     }
 
-    var singleIfNotMultiple: TemplateViewConfiguration.Package? {
-        switch self {
-        case let .single(package): return package
-        case .multiple: return nil
-        case .multiTier: return nil
-        }
-    }
-
     var multiTier: (
         firstTier: PaywallData.Tier,
         all: [PaywallData.Tier: MultiPackage],
