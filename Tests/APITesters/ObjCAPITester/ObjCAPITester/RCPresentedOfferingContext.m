@@ -13,12 +13,10 @@
 @implementation RCPresentOfferingContextAPI
 
 + (void)checkAPI {
-    RCPresentedOfferingContext *poc;
+    RCPresentedOfferingContext *poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@""];
     NSString *oid = poc.offeringIdentifier;
 
     NSLog(poc, oid);
-
-    RCPresentedOfferingContext *context = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:oid];
 }
 
 @end
