@@ -94,7 +94,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await verifyNoUnfinishedTransactions()
     }
 
-    func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
+    func testPurchasingPackageWithPresentedOfferingContext() async throws {
         let package = try await self.monthlyPackage
 
         try self.purchases.cachePresentedOfferingContext(
