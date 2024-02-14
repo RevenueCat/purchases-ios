@@ -81,6 +81,11 @@ extension PaywallData {
         copy.config.images = .init(header: "header.jpg",
                                    background: "background.jpg",
                                    icon: "header.jpg")
+        copy.config.imagesByTier = .init(
+            uniqueKeysWithValues: copy.config.tiers
+                .lazy
+                .map { ($0.id, copy.config.images) }
+            )
 
         return copy
     }
