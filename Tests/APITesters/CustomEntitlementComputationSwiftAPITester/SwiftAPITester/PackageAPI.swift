@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/26/21.
 
 import Foundation
-import RevenueCat
+import RevenueCat_CustomEntitlementComputation
 import StoreKit
 
 func checkPackageAPI(pack: Package! = nil) {
