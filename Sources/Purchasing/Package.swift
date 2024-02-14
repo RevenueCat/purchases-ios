@@ -38,6 +38,13 @@ import Foundation
             self.offeringIdentifier == other.offeringIdentifier
         )
     }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(self.offeringIdentifier)
+
+        return hasher.finalize()
+    }
 }
 
 ///
@@ -74,18 +81,18 @@ import Foundation
 
     /// Initialize a ``Package``.
     @objc
-    public init(
+    public convenience init(
         identifier: String,
         packageType: PackageType,
         storeProduct: StoreProduct,
         offeringIdentifier: String
     ) {
-        self.identifier = identifier
-        self.packageType = packageType
-        self.storeProduct = storeProduct
-        self.presentedOfferingContext = PresentedOfferingContext(offeringIdentifier: offeringIdentifier)
-
-        super.init()
+        self.init(
+            identifier: identifier,
+            packageType: packageType,
+            storeProduct: storeProduct,
+            offeringIdentifier: offeringIdentifier
+        )
     }
 
     /// Initialize a ``Package``.
@@ -120,7 +127,7 @@ import Foundation
         hasher.combine(self.identifier)
         hasher.combine(self.packageType)
         hasher.combine(self.storeProduct)
-        hasher.combine(self.presentedOfferingContext.offeringIdentifier)
+        hasher.combine(self.presentedOfferingContext)
 
         return hasher.finalize()
     }
@@ -151,7 +158,7 @@ import Foundation
 
     /// - Returns: the identifier of the ``Offering`` containing this Package.
     var offeringIdentifier: String {
-        return presentedOfferingContext.offeringIdentifier
+        return self.presentedOfferingContext.offeringIdentifier
     }
 }
 

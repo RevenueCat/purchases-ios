@@ -545,9 +545,8 @@ final class PurchasesOrchestrator {
         }
     }
 
-    func cachePresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext,
-                                       productIdentifier: String) {
-        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = presentedOfferingContext }
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
+        self.presentedOfferingContextsByProductID.modify { $0[productIdentifier] = context }
     }
 
     func track(paywallEvent: PaywallEvent) {
@@ -1174,13 +1173,13 @@ private extension PurchasesOrchestrator {
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
-        let offeringData = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
+        let offeringContext = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 appUserID: self.appUserID,
-                presentedOfferingID: offeringData?.offeringIdentifier,
+                presentedOfferingID: offeringContext?.offeringIdentifier,
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
