@@ -27,6 +27,26 @@ struct TierSelectorView: View {
     @Namespace
     private var namespace
 
+    /// Creates a `TierSelectorView` that only displays the currently selected tier.
+    init(
+        tier: PaywallData.Tier,
+        name: String,
+        fonts: PaywallFontProvider,
+        backgroundColor: Color,
+        textColor: Color,
+        accentColor: Color
+    ) {
+        self.init(
+            tiers: [tier],
+            tierNames: [tier: name],
+            selectedTier: .constant(tier),
+            fonts: fonts,
+            backgroundColor: backgroundColor,
+            textColor: textColor,
+            accentColor: accentColor
+        )
+    }
+
     init(
         tiers: [PaywallData.Tier],
         namesByTierID: [String: String],
@@ -55,9 +75,13 @@ struct TierSelectorView: View {
 
     var body: some View {
         self.buttons
-            .background { self.background }
+            .background {
+                self.background
+                    .hidden(if: self.isSingleTier)
+            }
             .defaultHorizontalPadding()
-            .fixedSize(horizontal: false, vertical: true)
+            .fixedSize(horizontal: self.isSingleTier, vertical: true)
+            .allowsHitTesting(!self.isSingleTier)
     }
 
     @ViewBuilder
@@ -152,6 +176,10 @@ struct TierSelectorView: View {
             .foregroundColor(self.backgroundColor)
     }
 
+    private var isSingleTier: Bool {
+        return self.tiers.count == 1
+    }
+
     // MARK: -
 
     private static let geometryEffectID = "background"
@@ -243,6 +271,18 @@ struct TierSelectorView_Previews: PreviewProvider {
         TierSelectorPreview()
             .environment(\.dynamicTypeSize, .xxLarge)
             .previewDisplayName("Large")
+
+        TierSelectorView(
+            tier: .init(id: "standard",
+                        packages: [],
+                        defaultPackage: ""),
+            name: "Standard",
+            fonts: DefaultPaywallFontProvider(),
+            backgroundColor: #colorLiteral(red: 0.46, green: 0.46, blue: 0.5, alpha: 0.12).asPaywallColor.underlyingColor,
+            textColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor.underlyingColor,
+            accentColor: #colorLiteral(red: 0.65, green: 0.93, blue: 0.46, alpha: 1).asPaywallColor.underlyingColor
+        )
+        .previewDisplayName("Current Tier")
     }
 
 }
