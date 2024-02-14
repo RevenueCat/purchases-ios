@@ -9,13 +9,10 @@ import Foundation
 import RevenueCat
 import StoreKit
 
-private var context: PresentedOfferingContext!
-func checkPresentedOfferingContextAPI() {
-    let oID: String = context.offeringIdentifier
-
-    print(context!, oID)
+func checkPresentedOfferingContextAPI(context: PresentedOfferingContext! = nil) {
+    let _: String = context.offeringIdentifier
 }
 
 private func checkCreatePresentedOfferingContextAPI() {
-    _ = PresentedOfferingContext(offeringIdentifier: "")
+    let _: PresentedOfferingContext = .init(offeringIdentifier: "")
 }
