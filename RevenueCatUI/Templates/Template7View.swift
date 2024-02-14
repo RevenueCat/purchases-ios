@@ -176,8 +176,10 @@ struct Template7View: TemplateViewType {
 
                 Spacer()
             } else {
-                self.selectedTierView
-                    .hideFooterContent(self.configuration, hide: self.displayingAllPlans)
+                if case .condensedFooter = self.configuration.mode {
+                    self.selectedTierView
+                        .hideFooterContent(self.configuration, hide: self.displayingAllPlans)
+                }
 
                 self.packagesAndTierSelector
                     .hideFooterContent(self.configuration,
