@@ -101,10 +101,10 @@ private extension PaywallData {
 
     static func url(
         for image: KeyPath<PaywallData.Configuration.Images, String?>,
-        in images: PaywallData.Configuration.Images,
+        in images: PaywallData.Configuration.Images?,
         assetBaseURL: URL
     ) -> URL? {
-        return images[keyPath: image].map { assetBaseURL.appendingPathComponent($0) }
+        return images?[keyPath: image].map { assetBaseURL.appendingPathComponent($0) }
     }
 
 }

@@ -443,6 +443,14 @@ private extension SamplePaywallLoader {
                 images: .init(
                     header: "954459_1692992845.png"
                 ),
+                imageOverridesByTier: [
+                    "basic": .init(
+                        header: "954459_1703109702.png"
+                    ),
+                    "premium": .init(
+                        header: "954459_1701267532.jpeg"
+                    )
+                ],
                 colors: .init(
                     light: .init(
                         background: "#ffffff",

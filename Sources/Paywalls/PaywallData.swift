@@ -307,6 +307,7 @@ extension PaywallData {
         /// Creates a multi-tier ``PaywallData/Configuration``.
         public init(
             images: Images,
+            imageOverridesByTier: [String: Images] = [:],
             colors: ColorInformation,
             tiers: [Tier],
             blurredBackgroundImage: Bool = false,
@@ -317,6 +318,7 @@ extension PaywallData {
             self._packages = []
             self.defaultPackage = nil
             self._imagesHeic = images
+            self._imageOverridesByTier = imageOverridesByTier
             self.colors = colors
             self._tiers = tiers
             self._blurredBackgroundImage = blurredBackgroundImage
