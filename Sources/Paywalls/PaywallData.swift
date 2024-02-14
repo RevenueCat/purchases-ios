@@ -322,6 +322,7 @@ extension PaywallData {
             images: Images,
             imageOverridesByTier: [String: Images] = [:],
             colors: ColorInformation,
+            colorOverridesByTier: [String: ColorInformation] = [:],
             tiers: [Tier],
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
@@ -333,6 +334,7 @@ extension PaywallData {
             self._imagesHeic = images
             self._imageOverridesByTier = imageOverridesByTier
             self.colors = colors
+            self._colorOverridesByTier = colorOverridesByTier
             self._tiers = tiers
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
@@ -486,12 +488,12 @@ extension PaywallData.Configuration {
 
         // swiftlint:disable:next missing_docs
         public init(
-            background: PaywallColor?,
-            text1: PaywallColor?,
+            background: PaywallColor? = nil,
+            text1: PaywallColor? = nil,
             text2: PaywallColor? = nil,
             text3: PaywallColor? = nil,
-            callToActionBackground: PaywallColor?,
-            callToActionForeground: PaywallColor?,
+            callToActionBackground: PaywallColor? = nil,
+            callToActionForeground: PaywallColor? = nil,
             callToActionSecondaryBackground: PaywallColor? = nil,
             accent1: PaywallColor? = nil,
             accent2: PaywallColor? = nil,

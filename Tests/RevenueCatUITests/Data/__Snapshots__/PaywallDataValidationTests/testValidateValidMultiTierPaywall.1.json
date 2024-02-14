@@ -3,26 +3,40 @@
   "config" : {
     "blurred_background_image" : false,
     "color_overrides_by_tier" : {
-
+      "basic" : {
+        "light" : {
+          "accent1" : "#2D7FC1",
+          "accent3" : "#100031",
+          "call_to_action_background" : "#42C1F7"
+        }
+      },
+      "premium" : {
+        "light" : {
+          "accent1" : "#77C344",
+          "accent3" : "#213711",
+          "call_to_action_background" : "#95D26B"
+        }
+      },
+      "standard" : {
+        "light" : {
+          "accent1" : "#CE0755",
+          "accent3" : "#310217",
+          "call_to_action_background" : "#DA407A"
+        }
+      }
     },
     "colors" : {
       "dark" : {
-        "accent1" : "#8E5AF7",
         "accent2" : "#CE0755",
-        "accent3" : "#E87AA4",
         "background" : "#000000",
-        "call_to_action_background" : "#32571A",
         "call_to_action_foreground" : "#88FF6A",
         "text1" : "#FFFFFF",
         "text2" : "#CDCDCD",
         "text3" : "#000000"
       },
       "light" : {
-        "accent1" : "#A8EE76",
         "accent2" : "#7676801F",
-        "accent3" : "#30A0F8",
         "background" : "#ffffff",
-        "call_to_action_background" : "#45c186",
         "call_to_action_foreground" : "#ffffff",
         "text1" : "#000000",
         "text2" : "#adf5c5",
@@ -73,8 +87,7 @@
         "id" : "premium",
         "packages" : [
           "$rc_six_month",
-          "$rc_annual",
-          "$rc_lifetime"
+          "$rc_annual"
         ]
       }
     ],
@@ -96,6 +109,10 @@
           {
             "icon_id" : "tick",
             "title" : "Standard fonts"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "2 templates"
           }
         ],
         "offer_details" : "{{ total_price_and_per_month }}",
