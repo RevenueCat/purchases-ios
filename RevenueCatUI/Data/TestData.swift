@@ -490,24 +490,41 @@ enum TestData {
                         text1: "#000000",
                         text2: "#adf5c5",
                         text3: "#b15d5d",
-                        callToActionBackground: "#45c186",
                         callToActionForeground: "#ffffff",
-                        accent1: "#A8EE76",
-                        accent2: "#7676801F",
-                        accent3: "#30A0F8"
+                        accent2: "#7676801F"
                     ),
                     dark: .init(
                         background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
                         text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
                         text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
                         text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
-                        callToActionBackground: #colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1).asPaywallColor,
                         callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
-                        accent1: #colorLiteral(red: 0.5568627715, green: 0.3529411852, blue: 0.9686274529, alpha: 1).asPaywallColor,
-                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
-                        accent3: #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1).asPaywallColor
+                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                     )
                 ),
+                colorOverridesByTier: [
+                    "basic": .init(
+                        light: .init(
+                            callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                            accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
+                            accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
+                        )
+                    ),
+                    "standard": .init(
+                        light: .init(
+                            callToActionBackground: #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1).asPaywallColor,
+                            accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                            accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
+                        )
+                    ),
+                    "premium": .init(
+                        light: .init(
+                            callToActionBackground: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).asPaywallColor,
+                            accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
+                            accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
+                        )
+                    )
+                ],
                 tiers: [
                     .init(
                         id: "basic",
@@ -529,8 +546,7 @@ enum TestData {
                         id: "premium",
                         packages: [
                             TestData.sixMonthPackage.identifier,
-                            TestData.annualPackage.identifier,
-                            TestData.lifetimePackage.identifier
+                            TestData.annualPackage.identifier
                         ],
                         defaultPackage: TestData.annualPackage.identifier
                     )
@@ -547,7 +563,8 @@ enum TestData {
                     "then {{ total_price_and_per_month }}",
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
-                        .init(title: "Standard fonts", iconID: "tick")
+                        .init(title: "Standard fonts", iconID: "tick"),
+                        .init(title: "2 templates", iconID: "tick")
                     ],
                     tierName: "Basic"
                 ),
