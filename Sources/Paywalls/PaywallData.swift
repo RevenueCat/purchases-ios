@@ -251,6 +251,8 @@ extension PaywallData {
                     }
             }
 
+            /// Internal `set`ter because it doesn't fully match the semantics of the getter.
+            /// Only meant for testing.
             set {
                 self._imageOverridesByTier = newValue
             }
