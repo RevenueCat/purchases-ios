@@ -35,7 +35,6 @@ class StoreKitConfigTestCase: TestCase {
     var testSession: SKTestSession!
     var userDefaults: UserDefaults!
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -84,9 +83,7 @@ class StoreKitConfigTestCase: TestCase {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             Self.transactionsObservation?.cancel()
             Self.transactionsObservation = Task {
-                // Silence warning in tests:
-                // "Making a purchase without listening for transaction updates risks missing successful purchases.
-                for await _ in Transaction.updates {}
+                await Self.listenToTransactionUpdates()
             }
         }
     }
@@ -96,6 +93,13 @@ class StoreKitConfigTestCase: TestCase {
         Self.transactionsObservation = nil
 
         super.tearDown()
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private static func listenToTransactionUpdates() async {
+        // Silence warning in tests:
+        // "Making a purchase without listening for transaction updates risks missing successful purchases.
+        for await _ in Transaction.updates {}
     }
 
 }

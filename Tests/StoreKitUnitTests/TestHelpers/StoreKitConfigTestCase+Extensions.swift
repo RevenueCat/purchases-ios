@@ -19,7 +19,6 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension StoreKitConfigTestCase {
 
-    @MainActor
     @_disfavoredOverload
     @discardableResult
     func simulateAnyPurchase(
@@ -39,7 +38,6 @@ extension StoreKitConfigTestCase {
     }
 
     /// - Returns: `SK2Transaction` ater the purchase succeeded.
-    @MainActor
     @discardableResult
     func simulateAnyPurchase(
         product: SK2Product? = nil,
@@ -63,24 +61,20 @@ extension StoreKitConfigTestCase {
     }
 
     /// - Returns: `SK2Transaction` after the purchase succeeded. This transaction is automatically finished.
-    @MainActor
     func createTransactionWithPurchase(product: SK2Product? = nil) async throws -> Transaction {
         return try await self.simulateAnyPurchase(product: product, finishTransaction: true).underlyingTransaction
     }
 
-    @MainActor
     func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
         let products: [SK2Product] = try await StoreKit.Product.products(for: [productID])
         return try XCTUnwrap(products.first)
     }
 
-    @MainActor
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func fetchSk2StoreProduct(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2StoreProduct {
         return SK2StoreProduct(sk2Product: try await self.fetchSk2Product(productID))
     }
 
-    @MainActor
     func createTransaction(
         productID: String? = nil,
         finished: Bool,

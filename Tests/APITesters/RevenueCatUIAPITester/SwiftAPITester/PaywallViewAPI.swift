@@ -15,8 +15,11 @@ struct App: View {
     private var offering: Offering
     private var fonts: PaywallFontProvider
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
+    private var purchaseStarted: PurchaseStartedHandler = { }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
+    private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
+    private var paywallTierChange: PaywallTierChangeHandler = { (_: PaywallData.Tier, _: String) in }
     private var paywallDismissed: () -> Void = {}
 
     var body: some View {
@@ -41,6 +44,8 @@ struct App: View {
     var checkPresentPaywallIfNeeded: some View {
         Text("")
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "")
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .sheet)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .fullScreen)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: nil)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering)
@@ -66,6 +71,7 @@ struct App: View {
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseStarted: self.purchaseStarted,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseCancelled: self.purchaseCancelled,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
@@ -78,6 +84,9 @@ struct App: View {
                 false
             } purchaseCompleted: {
                 self.purchaseOrRestoreCompleted($0)
+            }
+            .presentPaywallIfNeeded(presentationMode: .sheet) { (_: CustomerInfo) in
+                false
             }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in
                 false
@@ -112,6 +121,23 @@ struct App: View {
                 self.purchaseCancelled()
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
+            } onDismiss: {
+                self.paywallDismissed()
+            }
+            .presentPaywallIfNeeded(offering: self.offering, fonts: self.fonts) { (_: CustomerInfo) in
+                false
+            } purchaseStarted: {
+                self.purchaseStarted()
+            } purchaseCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } purchaseCancelled: {
+                self.purchaseCancelled()
+            } restoreCompleted: {
+                self.purchaseOrRestoreCompleted($0)
+            } purchaseFailure: {
+                self.failureHandler($0)
+            } restoreFailure: {
+                self.failureHandler($0)
             } onDismiss: {
                 self.paywallDismissed()
             }
@@ -150,20 +176,42 @@ struct App: View {
             .paywallFooter(offering: offering, fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooter(offering: offering, fonts: self.fonts,
+                           purchaseStarted: self.purchaseStarted,
+                           purchaseCompleted: self.purchaseOrRestoreCompleted,
+                           restoreCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseFailure: self.failureHandler,
+                           restoreFailure: self.failureHandler)
+            .onPaywallTierChange(self.paywallTierChange)
     }
 
     @ViewBuilder
     var checkOnPurchaseAndRestoreCompleted: some View {
         Text("")
+            .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
     }
 
+    @ViewBuilder
+    var checkOnFailures: some View {
+        Text("")
+            .onPurchaseFailure(self.failureHandler)
+            .onRestoreFailure(self.failureHandler)
+    }
+
     private func fontProviders() {
         let _: PaywallFontProvider = DefaultPaywallFontProvider()
         let _: PaywallFontProvider = CustomPaywallFontProvider(fontName: "Papyrus")
+    }
+
+    private func presentationMode(_ mode: PaywallPresentationMode) {
+        switch mode {
+        case .sheet: break
+        case .fullScreen: break
+        }
     }
 
 }

@@ -17,6 +17,7 @@
     NSString *pid __unused = transaction.productIdentifier;
     NSDate *pd __unused = transaction.purchaseDate;
     NSString *tid __unused = transaction.transactionIdentifier;
+    NSString *stid __unused = transaction.storeTransactionIdentifier;
 }
 
 @end

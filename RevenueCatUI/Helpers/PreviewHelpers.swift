@@ -49,7 +49,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
     @Environment(\.userInterfaceIdiom)
     private var interfaceIdiom
 
-    private let configuration: Result<TemplateViewConfiguration, Error>
+    private let configuration: Result<(PaywallTemplate, TemplateViewConfiguration), Error>
     private let presentInSheet: Bool
     private let creator: Creator
 
@@ -66,15 +66,17 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
         creator: @escaping Creator
     ) {
         let paywall = offering.paywall!
+        let template = PaywallTemplate(rawValue: paywall.templateName)!
 
         self.configuration = paywall.configuration(
             for: offering,
             activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-            template: PaywallTemplate(rawValue: paywall.templateName)!,
+            template: template,
             mode: mode,
             fonts: DefaultPaywallFontProvider(),
             locale: .current
-        )
+        ).map { (template, $0) }
+
         self.presentInSheet = presentInSheet
         self.creator = creator
     }
@@ -94,7 +96,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
     @ViewBuilder
     private var content: some View {
         switch self.configuration {
-        case let .success(configuration):
+        case let .success((template, configuration)):
             self.creator(configuration)
                 .environmentObject(self.introEligibilityViewModel)
                 .environmentObject(PreviewHelpers.purchaseHandler)
@@ -105,7 +107,7 @@ struct PreviewableTemplate<T: TemplateViewType>: View {
                         for: configuration.packages
                     )
                 }
-                .previewDisplayName("\(configuration.mode)")
+                .previewDisplayName("Template \(template.rawValue)-\(configuration.mode)")
                 .previewLayout(configuration.mode.layout)
 
         case let .failure(error):

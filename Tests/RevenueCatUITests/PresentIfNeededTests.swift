@@ -27,10 +27,36 @@ class PresentIfNeededTests: TestCase {
         try super.setUpWithError()
 
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+    }
 
-        if #available(iOS 17.0, *) {
-            try XCTSkipIf(true, "This test is currently not working on iOS 17")
+    func testPresentWithPurchaseStarted() throws {
+        self.continueAfterFailure = false
+
+        let handler = Self.purchaseHandler.with(delay: 3)
+        var started = false
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { _ in
+                return true
+            } purchaseStarted: {
+                started = true
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+        let task = Task.detached {
+            _ = try await handler.purchase(package: Self.package)
         }
+
+        defer {
+            task.cancel()
+            dispose()
+        }
+
+        expect(started).toEventually(beTrue())
+        task.cancel()
     }
 
     func testPresentWithPurchaseHandler() throws {
@@ -55,6 +81,28 @@ class PresentIfNeededTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testPresentWithPurchaseFailureHandler() throws {
+        var error: NSError?
+
+        try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: Self.failingHandler) { _ in
+                return true
+            } purchaseFailure: {
+                error = $0
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await Self.failingHandler.purchase(package: Self.package)
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
     func testPresentWithRestoreHandler() throws {
         var customerInfo: CustomerInfo?
 
@@ -72,14 +120,40 @@ class PresentIfNeededTests: TestCase {
 
         Task {
             _ = try await Self.purchaseHandler.restorePurchases()
+            // Simulates what `RestorePurchasesButton` does after dismissing the alert.
+            Self.purchaseHandler.setRestored(TestData.customerInfo)
         }
 
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
+    func testPresentWithRestoreFailureHandler() throws {
+        var error: NSError?
+
+        try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: Self.failingHandler) { _ in
+                return true
+            } restoreFailure: {
+                error = $0
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try? await Self.failingHandler.restorePurchases()
+        }
+
+        expect(error).toEventually(matchError(Self.failureError))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
+    private static let failureError: Error = ErrorCode.storeProblemError
 
 }
 

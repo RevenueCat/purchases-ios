@@ -129,6 +129,12 @@ public class PaywallViewController: UIViewController {
         self.configuration.content = .offeringIdentifier(offeringIdentifier)
     }
 
+    /// - Warning: For internal use only
+    @objc(updateFontWithFontName:)
+    public func updateFont(with fontName: String) {
+        self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
+    }
+
     // MARK: - Internal
 
     class var mode: PaywallViewMode {
@@ -171,6 +177,10 @@ public class PaywallViewController: UIViewController {
 @objc(RCPaywallViewControllerDelegate)
 public protocol PaywallViewControllerDelegate: AnyObject {
 
+    /// Notifies that a purchase has started in a ``PaywallViewController``.
+    @objc(paywallViewControllerDidStartPurchase:)
+    optional func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController)
+
     /// Notifies that a purchase has completed in a ``PaywallViewController``.
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -186,6 +196,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
+    @objc(paywallViewController:didFailPurchasingWithError:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didFailPurchasingWith error: NSError)
+
     /// Notifies that the restore operation has completed in a ``PaywallViewController``.
     ///
     /// - Warning: Receiving a ``CustomerInfo``does not imply that the user has any entitlements,
@@ -194,6 +209,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewController:didFinishRestoringWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didFinishRestoringWith customerInfo: CustomerInfo)
+
+    /// Notifies that the restore operation has failed in a ``PaywallViewController``.
+    @objc(paywallViewController:didFailRestoringWithError:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didFailRestoringWith error: NSError)
 
     /// Notifies that the ``PaywallViewController`` was dismissed.
     @objc(paywallViewControllerWasDismissed:)
@@ -214,6 +234,10 @@ private extension PaywallViewController {
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         let container = PaywallContainerView(
             configuration: self.configuration,
+            purchaseStarted: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidStartPurchase?(self)
+            },
             purchaseCompleted: { [weak self] transaction, customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishPurchasingWith: customerInfo)
@@ -223,10 +247,19 @@ private extension PaywallViewController {
             },
             purchaseCancelled: { [weak self] in
                 guard let self else { return }
-                self.delegate?.paywallViewControllerDidCancelPurchase?(self)},
+                self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
+            },
+            purchaseFailure: { [weak self] error in
+                guard let self else { return }
+                self.delegate?.paywallViewController?(self, didFailPurchasingWith: error)
+            },
+            restoreFailure: { [weak self] error in
+                guard let self else { return }
+                self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
             onSizeChange: { [weak self] in
                 guard let self else { return }
@@ -251,16 +284,22 @@ private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
 
+    let purchaseStarted: PurchaseStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
+    let purchaseFailure: PurchaseFailureHandler
+    let restoreFailure: PurchaseFailureHandler
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
         PaywallView(configuration: self.configuration)
+            .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onRestoreCompleted(self.restoreCompleted)
+            .onPurchaseFailure(self.purchaseFailure)
+            .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
 
     }

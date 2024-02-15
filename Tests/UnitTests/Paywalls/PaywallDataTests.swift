@@ -35,23 +35,23 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config.termsOfServiceURL) == URL(string: "https://revenuecat.com/tos")!
         expect(paywall.config.privacyURL) == URL(string: "https://revenuecat.com/privacy")!
 
-        expect(paywall.config.colors.light.background.stringRepresentation) == "#FF00AA"
-        expect(paywall.config.colors.light.text1.stringRepresentation) == "#FF00AA22"
+        expect(paywall.config.colors.light.background?.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.text1?.stringRepresentation) == "#FF00AA22"
         expect(paywall.config.colors.light.text2?.stringRepresentation) == "#FF00AA11"
         expect(paywall.config.colors.light.text3?.stringRepresentation) == "#FF00AA33"
-        expect(paywall.config.colors.light.callToActionBackground.stringRepresentation) == "#FF00AACC"
-        expect(paywall.config.colors.light.callToActionForeground.stringRepresentation) == "#FF00AA"
+        expect(paywall.config.colors.light.callToActionBackground?.stringRepresentation) == "#FF00AACC"
+        expect(paywall.config.colors.light.callToActionForeground?.stringRepresentation) == "#FF00AA"
         expect(paywall.config.colors.light.callToActionSecondaryBackground?.stringRepresentation) == "#FF00BB"
         expect(paywall.config.colors.light.accent1?.stringRepresentation) == "#FF0000"
         expect(paywall.config.colors.light.accent2?.stringRepresentation) == "#00FF00"
         expect(paywall.config.colors.light.accent3?.stringRepresentation) == "#0000FF"
 
-        expect(paywall.config.colors.dark?.background.stringRepresentation) == "#FF0000"
-        expect(paywall.config.colors.dark?.text1.stringRepresentation) == "#FF0011"
+        expect(paywall.config.colors.dark?.background?.stringRepresentation) == "#FF0000"
+        expect(paywall.config.colors.dark?.text1?.stringRepresentation) == "#FF0011"
         expect(paywall.config.colors.dark?.text2).to(beNil())
         expect(paywall.config.colors.dark?.text3).to(beNil())
-        expect(paywall.config.colors.dark?.callToActionBackground.stringRepresentation) == "#112233AA"
-        expect(paywall.config.colors.dark?.callToActionForeground.stringRepresentation) == "#AABBCC"
+        expect(paywall.config.colors.dark?.callToActionBackground?.stringRepresentation) == "#112233AA"
+        expect(paywall.config.colors.dark?.callToActionForeground?.stringRepresentation) == "#AABBCC"
         expect(paywall.config.colors.dark?.accent1?.stringRepresentation) == "#00FFFF"
         expect(paywall.config.colors.dark?.accent2?.stringRepresentation) == "#FF00FF"
         expect(paywall.config.colors.dark?.accent3).to(beNil())
@@ -87,6 +87,21 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(paywall.config(for: Locale(identifier: "gl_ES"))).to(beNil())
     }
 
+    func testChineseLocalizations() throws {
+        // This logic only works on iOS 16+
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-chinese")
+
+        let traditional = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hant")))
+        let simplified = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-Hans")))
+        let taiwan = try XCTUnwrap(paywall.config(for: Locale(identifier: "zh-TW")))
+
+        expect(traditional.title) == "Traditional"
+        expect(simplified.title) == "Simplified"
+        expect(taiwan.title) == "Traditional"
+    }
+
     func testModifyingImages() throws {
         var paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
         var expected = paywall.config.images
@@ -107,6 +122,45 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(esConfig.title) == "Tienda"
     }
 
+    func testLocalizedConfigurationFallsBackToLanguageWithDifferentRegion() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+            .init(identifier: "en_IN"),
+            .init(identifier: "en-IN")
+        ]))
+        expect(enConfig.title) == "Paywall"
+    }
+
+    func testLocalizedConfigurationLooksForCurrentLocaleWithoutRegionBeforePreferedLocales() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+
+        let enConfig = try XCTUnwrap(paywall.localizedConfiguration(for: [
+            .init(identifier: "en_IN"),
+            .init(identifier: "es_ES")
+        ]))
+        expect(enConfig.title) == "Paywall"
+    }
+
+    func testLocalesOrderedByPriority() throws {
+        let expected: [String]
+
+        if #available(iOS 17.0, tvOS 17, watchOS 10, *) {
+            expected = [
+                "en_US",
+                "en-US"
+            ]
+        } else {
+            expected = [
+                "en_US",
+                // `Locale.preferredLanguages` returns `en` before iOS 17.
+                "en"
+            ]
+        }
+
+        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == expected
+    }
+
     func testDoesNotFindLocaleWithMissingLanguage() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
 
@@ -116,7 +170,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testMissingCurrentLocaleLoadsAvailableLocale() throws {
         let paywall: PaywallData = try self.decodeFixture("PaywallData-missing_current_locale")
 
-        let localization = paywall.localizedConfiguration
+        let localization = try XCTUnwrap(paywall.localizedConfiguration)
         expect(localization.callToAction) == "Comprar"
         expect(localization.title) == "Tienda"
     }
@@ -130,22 +184,17 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(images.icon).to(beNil())
     }
 
-    func testEncodePaywallViewMode() throws {
-        // iOS 12 does not allow decoding fragments (top-level objects)
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+    func testMultiTierLocalizationIsNil() throws {
+        let paywall: PaywallData = try self.decodeFixture("PaywallData-Sample1")
+        expect(paywall.localizedConfigurationByTier(for: [.init(identifier: "en_US")]))
+            .to(beNil())
+    }
 
+    func testEncodePaywallViewMode() throws {
         for mode in PaywallViewMode.allCases {
             expect(try mode.encodeAndDecode()) == mode
         }
     }
-
-    #if !os(watchOS)
-    func testMissingLocalizationFails() throws {
-        expect {
-            let _: PaywallData = try self.decodeFixture("PaywallData-missing_localization")
-        }.to(throwError())
-    }
-    #endif
 
 }
 

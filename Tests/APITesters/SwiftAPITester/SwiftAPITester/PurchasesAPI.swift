@@ -33,13 +33,11 @@ func checkPurchasesAPI() {
 
     let _: Attribution = purch.attribution
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        _ = Task<Void, Never> {
-            await checkAsyncMethods(purchases: purch)
-        }
-
-        checkNonAsyncMethods(purch)
+    _ = Task<Void, Never> {
+        await checkAsyncMethods(purchases: purch)
     }
+
+    checkNonAsyncMethods(purch)
 }
 
 var periodType: PeriodType!
@@ -146,17 +144,14 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]()) { (_: [String: IntroEligibility]) in
     }
 
-    if #available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *) {
-        purchases.getPromotionalOffer(
-            forProductDiscount: discount,
-            product: storeProduct
-        ) { (_: PromotionalOffer?, _: Error?) in }
-        purchases.purchase(product: storeProduct,
-                           promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
-        purchases.purchase(package: pack,
-                           promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
-
-    }
+    purchases.getPromotionalOffer(
+        forProductDiscount: discount,
+        product: storeProduct
+    ) { (_: PromotionalOffer?, _: Error?) in }
+    purchases.purchase(product: storeProduct,
+                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    purchases.purchase(package: pack,
+                       promotionalOffer: offer) { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     purchases.invalidateCustomerInfoCache()
 
@@ -228,7 +223,6 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -262,6 +256,11 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: CustomerInfo = try await purchases.customerInfo(fetchPolicy: .default)
         let _: CustomerInfo = try await purchases.restorePurchases()
         let _: CustomerInfo = try await purchases.syncPurchases()
+
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let result = try await StoreKit.Product.products(for: [""]).first!.purchase()
+            let _: StoreTransaction? = try await purchases.handleObserverModeTransaction(result)
+        }
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
 
@@ -313,14 +312,12 @@ private func checkConfigure() -> Purchases! {
     return nil
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
     if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
         await purchases.track(paywallEvent: event)
     }
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 @available(*, deprecated) // Ignore deprecation warnings
 private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StoreProduct) async throws {
     let _: [PromotionalOffer] = await purchases.getEligiblePromotionalOffers(forProduct: stp)

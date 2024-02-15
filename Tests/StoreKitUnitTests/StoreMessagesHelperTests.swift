@@ -124,10 +124,12 @@ private extension StoreMessagesHelperTests {
 @available(iOS 16.0, *)
 private final class MockStoreMessage: StoreMessage {
 
-    let reason: Message.Reason
+    // The indirection prevents a runtime Swift crash on iOS 15
+    var reason: Message.Reason { self._reason.value }
+    private let _reason: Box<Message.Reason>
 
     init(reason: Message.Reason) {
-        self.reason = reason
+        self._reason = .init(reason)
     }
 
     private let _displayCalled: Atomic<Bool> = false
@@ -147,7 +149,11 @@ private final class MockStoreMessage: StoreMessage {
 @available(iOS 16.0, *)
 private final class MockStoreMessagesProvider: StoreMessagesProviderType {
 
-    var stubbedMessages: [StoreMessage] = []
+    private let _stubbedMessages: Atomic<[StoreMessage]> = .init([])
+    var stubbedMessages: [StoreMessage] {
+        get { return self._stubbedMessages.value }
+        set { self._stubbedMessages.value = newValue }
+    }
 
     var messages: AsyncStream<StoreMessage> {
         MockAsyncSequence(with: self.stubbedMessages).toAsyncStream()

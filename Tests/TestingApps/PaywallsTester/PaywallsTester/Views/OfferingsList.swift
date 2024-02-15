@@ -123,6 +123,9 @@ struct OfferingsList: View {
         }
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+                .onRestoreCompleted { _ in
+                    self.presentedPaywall = nil
+                }
         }
     }
 
@@ -169,25 +172,33 @@ struct OfferingsList: View {
 
 private struct PaywallPresenter: View {
 
+    @State
+    private var selectedTierName: String?
+
     var offering: Offering
     var mode: PaywallViewMode
     var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
 
     var body: some View {
-        switch self.mode {
-        case .fullScreen:
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+        Group {
+            switch self.mode {
+            case .fullScreen:
+                PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
 
-        #if !os(watchOS)
-        case .footer:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering)
+            #if !os(watchOS)
+            case .footer:
+                CustomPaywallContent(selectedTierName: self.selectedTierName)
+                    .paywallFooter(offering: self.offering)
 
-        case .condensedFooter:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering, condensed: true)
-        #endif
+            case .condensedFooter:
+                CustomPaywallContent(selectedTierName: self.selectedTierName)
+                    .paywallFooter(offering: self.offering, condensed: true)
+            #endif
+            }
         }
+        #if !os(watchOS)
+        .onPaywallTierChange { _, name in self.selectedTierName = name }
+        #endif
     }
 
 }

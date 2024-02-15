@@ -14,7 +14,6 @@
 import Foundation
 
 /// A wrapper that allows basic operations on a file, synchronized as an `actor`.
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 protocol FileHandlerType: Sendable {
 
     /// Returns an async sequence for every line in the file
@@ -32,7 +31,6 @@ protocol FileHandlerType: Sendable {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 actor FileHandler: FileHandlerType {
 
     private var fileHandle: FileHandle
@@ -139,7 +137,6 @@ actor FileHandler: FileHandlerType {
 
 // MARK: - Errors
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension FileHandler {
 
     enum Error: Swift.Error {
@@ -157,7 +154,6 @@ extension FileHandler {
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension FileHandler {
 
     func moveToBeginningOfFile() throws {
@@ -214,7 +210,6 @@ private extension FileHandler {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension FileHandle {
 
     convenience init(_ url: URL) throws {

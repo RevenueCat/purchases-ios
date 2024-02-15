@@ -32,7 +32,7 @@ class SystemInfo {
         set { self._forceUniversalAppStore.value = newValue }
     }
 
-    let storeKit2Setting: StoreKit2Setting
+    let storeKitVersion: StoreKitVersion
     let operationDispatcher: OperationDispatcher
     let platformFlavor: String
     let platformFlavorVersion: String?
@@ -70,7 +70,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "4.33.0-SNAPSHOT"
+        return "4.37.0-SNAPSHOT"
     }
 
     static var systemVersion: String {
@@ -128,7 +128,7 @@ class SystemInfo {
          bundle: Bundle = .main,
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
-         storeKit2Setting: StoreKit2Setting = .default,
+         storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          clock: ClockType = Clock.default) {
@@ -138,7 +138,7 @@ class SystemInfo {
 
         self._finishTransactions = .init(finishTransactions)
         self.operationDispatcher = operationDispatcher
-        self.storeKit2Setting = storeKit2Setting
+        self.storeKitVersion = storeKitVersion
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode

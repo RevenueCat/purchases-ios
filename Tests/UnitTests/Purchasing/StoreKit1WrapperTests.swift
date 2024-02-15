@@ -267,9 +267,6 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testPaymentWithProductAndDiscountReturnsCorrectPaymentWithDiscount() throws {
-        guard #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) else {
-            throw XCTSkip()
-        }
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
         let productId = "mySuperProduct"
@@ -283,9 +280,6 @@ class StoreKit1WrapperTests: TestCase, StoreKit1WrapperDelegate {
     }
 
     func testPaymentWithProductAndDiscountSetsSimulatesAskToBuyInSandbox() throws {
-        guard #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *) else {
-            throw XCTSkip()
-        }
         guard let wrapper = wrapper else { fatalError("wrapper is not initialized!") }
 
         let mockProduct = MockSK1Product(mockProductIdentifier: "mySuperProduct")

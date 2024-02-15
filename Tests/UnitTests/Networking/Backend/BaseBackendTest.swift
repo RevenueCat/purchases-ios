@@ -41,11 +41,13 @@ class BaseBackendTests: TestCase {
         self.createDependencies(dangerousSettings: self.dangerousSettings)
     }
 
-    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+    final func createDependencies(dangerousSettings: DangerousSettings? = nil,
+                                  storeKitVersion: StoreKitVersion = .default) {
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
+            storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings
         )
@@ -107,11 +109,7 @@ extension BaseBackendTests {
     }
 
     private var responseVerificationMode: Signing.ResponseVerificationMode {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return Signing.verificationMode(with: self.verificationMode)
-        } else {
-            return .disabled
-        }
+        return Signing.verificationMode(with: self.verificationMode)
     }
 
 }

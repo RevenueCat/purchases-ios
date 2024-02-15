@@ -80,6 +80,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == false
     }
 
+    @MainActor
     func testPurchaseCallbackIsInvokedWhenProcessingQueueTransactionForSameProduct() {
         // This documents a race condition that we can't detect in the implementation
         // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
@@ -117,6 +118,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callbackInvoked) == true
     }
 
+    @MainActor
     func testHandlesTransactionFromPurchaseAfterReviewingQueueUpdateForSameProductIdentifier() throws {
         // This documents a race condition that we can't detect in the implementation
         // where `PurchasesOrchestrator` can't tell the difference between `StoreKit 1` sending
@@ -181,6 +183,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedIsRestore) == true
     }
 
+    @MainActor
     func testFinishesTransactionsIfSentToBackendCorrectly() throws {
         var finished = false
 
@@ -230,18 +233,15 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
+    @MainActor
     func testDoesntFinishTransactionIfComputingCustomerInfoOffline() throws {
-        // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
-        // but offline CustomerInfo isn't supported anyway.
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         var finished = false
 
         let productID = "com.product.id1"
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: productID))
 
-        self.purchases.purchase(product: product) { (_, _, _, _) in
-            expect(self.storeKit1Wrapper.finishCalled) == false
+        self.purchases.purchase(product: product) { [wrapper = self.storeKit1Wrapper!] (_, _, _, _) in
+            expect(wrapper.finishCalled) == false
 
             finished = true
         }
@@ -286,6 +286,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
+    @MainActor
     func testAfterSendingFinishesFromBackendErrorIfAppropriate() throws {
         var finished = false
 
@@ -341,6 +342,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled) == false
     }
 
+    @MainActor
     func testNotifiesIfTransactionFailsFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: Error?
@@ -362,6 +364,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).toEventuallyNot(beNil())
     }
 
+    @MainActor
     func testCompletionBlockOnlyCalledOnce() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -384,6 +387,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callCount).toEventually(equal(1))
     }
 
+    @MainActor
     func testUserCancelledFalseIfPurchaseSuccessful() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -400,6 +404,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
+    @MainActor
     func testUnknownErrorCurrentlySubscribedIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -439,6 +444,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUnderlyingError?.code).toEventually(equal(unknownError.code))
     }
 
+    @MainActor
     func testUserCancelledTrueIfSK1PurchaseCancelled() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -473,10 +479,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     @MainActor
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testUserCancelledTrueIfSK1AsyncPurchaseCancelled() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
         var result: PurchaseResultData?
@@ -506,6 +509,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(beNil())
     }
 
+    @MainActor
     func testDoNotSendEmptyReceiptWhenMakingPurchase() throws {
         self.receiptFetcher.shouldReturnReceipt = false
 
@@ -590,6 +594,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.backend.postedObserverMode) == false
     }
 
+    @MainActor
     func testNotifiesIfTransactionIsDeferredFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedError: NSError?
@@ -610,6 +615,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError?.code).toEventually(equal(ErrorCode.paymentPendingError.rawValue))
     }
 
+    @MainActor
     func testPurchasingNilProductIdentifierRetrunsError() {
         let product = StoreProduct(sk1Product: SK1Product())
         var receivedError: Error?
@@ -658,6 +664,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beTrue())
     }
 
+    @MainActor
     func testPurchasingPackageDoesntThrowPurchaseAlreadyInProgressIfCallbackMakesANewPurchase() throws {
         var receivedError: NSError?
         var secondCompletionCalled = false
@@ -683,6 +690,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedError).to(beNil())
     }
 
+    @MainActor
     func testCallsDelegateAfterBackendResponse() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -729,6 +737,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(receivedUserCancelled).toEventually(beFalse())
     }
 
+    @MainActor
     func testCompletionBlockNotCalledForDifferentProducts() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         let otherProduct = MockSK1Product(mockProductIdentifier: "com.product.id2")
@@ -751,6 +760,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(callCount).toEventually(equal(0))
     }
 
+    @MainActor
     func testCallingPurchaseWhileSameProductPendingIssuesError() {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
 
@@ -842,6 +852,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(self.receiptFetcher.receiptDataReceivedRefreshPolicy) == .onlyIfEmpty
     }
 
+    @MainActor
     func testPaymentSheetCancelledErrorIsParsedCorrectly() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         var receivedUserCancelled: Bool?
@@ -899,26 +910,17 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             expect(self.backend.postedProductID).to(equal(product.productIdentifier))
             expect(self.backend.postedPrice).to(equal(product.price as Decimal))
 
-            if #available(iOS 11.2, tvOS 11.2, macOS 10.13.2, *) {
-                expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
-                expect(self.backend.postedIntroPrice).to(equal(product.introductoryDiscount?.price))
-            } else {
-                expect(self.backend.postedPaymentMode).to(beNil())
-                expect(self.backend.postedIntroPrice).to(beNil())
-            }
+            expect(self.backend.postedPaymentMode).to(equal(StoreProductDiscount.PaymentMode.payAsYouGo))
+            expect(self.backend.postedIntroPrice).to(equal(product.introductoryDiscount?.price))
 
-            if #available(iOS 12.0, tvOS 12.0, macOS 10.14, *) {
-                expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
-            }
+            expect(self.backend.postedSubscriptionGroup).to(equal(product.subscriptionGroupIdentifier))
+            expect(self.backend.postedDiscounts?.count).to(equal(1))
 
-            if #available(iOS 12.2, *) {
-                expect(self.backend.postedDiscounts?.count).to(equal(1))
-                let postedDiscount: StoreProductDiscount = self.backend.postedDiscounts![0]
-                expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
-                expect(postedDiscount.price).to(equal(1.99))
-                let expectedPaymentMode = StoreProductDiscount.PaymentMode.payAsYouGo.rawValue
-                expect(postedDiscount.paymentMode.rawValue).to(equal(expectedPaymentMode))
-            }
+            let postedDiscount: StoreProductDiscount = self.backend.postedDiscounts![0]
+            expect(postedDiscount.offerIdentifier).to(equal("discount_id"))
+            expect(postedDiscount.price).to(equal(1.99))
+            let expectedPaymentMode = StoreProductDiscount.PaymentMode.payAsYouGo.rawValue
+            expect(postedDiscount.paymentMode.rawValue).to(equal(expectedPaymentMode))
 
             expect(self.backend.postedCurrencyCode) == product.priceFormatter!.currencyCode
 
@@ -985,7 +987,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOffInObserverMode() throws {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
-                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -1010,7 +1012,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     func testDoesntPostTransactionsIfAutoSyncPurchasesSettingIsOff() throws {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: true,
-                                         storeKit2Setting: .enabledOnlyForOptimizations,
+                                         storeKitVersion: .storeKit1,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         self.initializePurchasesInstance(appUserId: nil)
 
@@ -1086,6 +1088,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.finishCalled).toEventually(beFalse())
     }
 
+    @MainActor
     func testCancelledErrorInCustomEntitlementComputationModeForSK1Purchase() throws {
         self.setUpPurchasesCustomEntitlementMode()
 
@@ -1121,10 +1124,7 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     @MainActor
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testThrowsUserCancelledErrorIfSK1AsyncPurchaseCancelledWithCustomEntitlementComputation() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.setUpPurchasesCustomEntitlementMode()
 
         var result: PurchaseResultData?
@@ -1158,8 +1158,8 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
 
     private func setUpPurchasesCustomEntitlementMode() {
         self.systemInfo = MockSystemInfo(finishTransactions: true,
-                                         storeKit2Setting: .disabled,
-                                         customEntitlementsComputation: true)
+                                         customEntitlementsComputation: true,
+                                         storeKitVersion: .storeKit1)
         self.initializePurchasesInstance(appUserId: "user")
     }
 

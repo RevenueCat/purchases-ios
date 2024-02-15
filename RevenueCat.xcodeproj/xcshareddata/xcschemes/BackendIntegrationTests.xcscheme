@@ -50,6 +50,9 @@
          <TestPlanReference
             reference = "container:BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan">
          </TestPlanReference>
+         <TestPlanReference
+            reference = "container:BackendIntegrationTests/BackendIntegrationTests-Shedder.xctestplan">
+         </TestPlanReference>
       </TestPlans>
       <Testables>
          <TestableReference

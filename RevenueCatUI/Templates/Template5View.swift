@@ -77,11 +77,11 @@ struct Template5View: TemplateViewType {
                     self.features
                 }
                 .padding(.top, self.defaultVerticalPaddingLength)
-                .scrollableIfNecessary()
+                .scrollableIfNecessaryWhenAvailable()
 
                 self.packages
                     .padding(.top, self.defaultVerticalPaddingLength)
-                    .scrollableIfNecessary()
+                    .scrollableIfNecessaryWhenAvailable()
             }
 
             Spacer()
@@ -108,7 +108,7 @@ struct Template5View: TemplateViewType {
                         // Compensate for additional padding on condensed mode + iPad
                         : self.defaultVerticalPaddingLength.map { $0 * -1 }
                     )
-                    .scrollableIfNecessary(enabled: self.configuration.mode.isFullScreen)
+                    .scrollableIfNecessaryWhenAvailable(enabled: self.configuration.mode.isFullScreen)
             }
 
             if self.configuration.mode.shouldDisplayInlineOfferDetails(displayingAllPlans: self.displayingAllPlans) {
@@ -197,7 +197,7 @@ struct Template5View: TemplateViewType {
     }
 
     private var packages: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Constants.defaultPackageVerticalSpacing) {
             ForEach(self.configuration.packages.all, id: \.content.id) { package in
                 let isSelected = self.selectedPackage.content === package.content
 
@@ -367,7 +367,6 @@ private extension Template5View {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 private extension PaywallData.Configuration.Colors {
 
     var featureIcon: Color { self.accent1Color }

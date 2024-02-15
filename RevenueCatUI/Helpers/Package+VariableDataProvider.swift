@@ -54,6 +54,22 @@ extension Package: VariableDataProvider {
                                       locale: locale) ?? self.identifier
     }
 
+    func periodNameAbbreviation(_ locale: Locale) -> String? {
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return nil
+        }
+
+        return Localization.abbreviatedUnitLocalizedString(for: period, locale: locale)
+    }
+
+    func periodLength(_ locale: Locale) -> String? {
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return nil
+        }
+
+        return Localization.unitLocalizedString(for: period, locale: locale)
+    }
+
     func subscriptionDuration(_ locale: Locale) -> String? {
         guard let period = self.storeProduct.subscriptionPeriod else {
             return self.periodNameOrIdentifier(locale)
@@ -83,6 +99,15 @@ extension Package: VariableDataProvider {
         return "\(self.localizedPrice)/\(unit)"
     }
 
+    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
+        guard let period = self.storeProduct.subscriptionPeriod else {
+            return self.localizedPrice
+        }
+
+        let unit = Localization.unitLocalizedString(for: period, locale: locale)
+        return "\(self.localizedPrice)/\(unit)"
+    }
+
     func localizedPriceAndPerMonth(_ locale: Locale) -> String {
         if !self.isSubscription || self.isMonthly {
             return self.localizedPricePerPeriod(locale)
@@ -90,6 +115,16 @@ extension Package: VariableDataProvider {
             let unit = Localization.abbreviatedUnitLocalizedString(for: .init(value: 1, unit: .month),
                                                                    locale: locale)
             return "\(self.localizedPricePerPeriod(locale)) (\(self.localizedPricePerMonth)/\(unit))"
+        }
+    }
+
+    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
+        if !self.isSubscription || self.isMonthly {
+            return self.localizedPricePerPeriodFull(locale)
+        } else {
+            let unit = Localization.unitLocalizedString(for: .init(value: 1, unit: .month),
+                                                        locale: locale)
+            return "\(self.localizedPricePerPeriodFull(locale)) (\(self.localizedPricePerMonth)/\(unit))"
         }
     }
 

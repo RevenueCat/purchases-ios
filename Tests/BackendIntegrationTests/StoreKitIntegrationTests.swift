@@ -18,21 +18,26 @@ import XCTest
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting { return .enabledForCompatibleDevices }
+    override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
 
-}
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
+        let manager = ObserverModeManager()
+        let result = try await manager.purchaseProductFromStoreKit2()
 
-class StoreKit2JWSIntegrationTests: StoreKit2IntegrationTests {
-
-    override var usesStoreKit2JWS: Bool { true }
+        do {
+            _ = try await Purchases.shared.handleObserverModeTransaction(result)
+            fail("Expected error")
+        } catch {
+            expect(error).to(matchError(ErrorCode.configurationError))
+        }
+    }
 
 }
 
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
-    override class var storeKit2Setting: StoreKit2Setting {
-        return .disabled
-    }
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
 
     func testIsSandbox() throws {
         try expect(self.purchases.isSandbox) == true
@@ -77,7 +82,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testPurchasingSK1ProductDoesNotLeaveUnfinishedSK2Transaction() async throws {
-        try XCTSkipIf(Self.storeKit2Setting.usesStoreKit2IfAvailable, "Test only for SK1")
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2, "Test only for SK1")
 
         func verifyNoUnfinishedTransactions() async {
             let unfinishedTransactions = await Transaction.unfinished.extractValues()
@@ -89,11 +94,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await verifyNoUnfinishedTransactions()
     }
 
-    func testPurchasingPackageWithPresentedOfferingIdentifier() async throws {
+    func testPurchasingPackageWithPresentedOfferingContext() async throws {
         let package = try await self.monthlyPackage
 
-        try self.purchases.cachePresentedOfferingIdentifier(
-            package.offeringIdentifier,
+        try self.purchases.cachePresentedOfferingContext(
+            PresentedOfferingContext(offeringIdentifier: package.offeringIdentifier),
             productIdentifier: package.storeProduct.productIdentifier
         )
 
@@ -503,8 +508,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroForDifferentProductInSameSubscriptionGroupAfterPurchase() async throws {
-        if Self.storeKit2Setting == .enabledForCompatibleDevices {
-            XCTExpectFailure("This test currently does not pass with SK2 (see FB11889732)")
+        if Self.storeKitVersion == .storeKit2, #unavailable(iOS 17.4) {
+            XCTExpectFailure("This test does not pass with SK2 until iOS 17.4 (see FB11889732)")
         }
 
         let productWithNoTrial = try await self.product(Self.group3MonthlyNoTrialProductID)
@@ -739,6 +744,47 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
         expect(transaction.offerID) == offer.discount.offerIdentifier
         expect(transaction.offerType) == .promotional
+        expect(transaction.appAccountToken?.uuidString) == user
+    }
+
+    @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
+    func testPurchaseWithPromotionalOfferWithNonUUIDappUserId() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let user = "not_a_uuid.\(UUID().uuidString)"
+
+        let (_, created) = try await self.purchases.logIn(user)
+        expect(created) == true
+
+        let product = try await self.monthlyNoIntroProduct
+
+        // 1. Purchase subscription
+
+        var customerInfo = try await self.purchases.purchase(product: product).customerInfo
+        var entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+
+        // 2. Expire subscription
+
+        try await self.expireSubscription(entitlement)
+        try await self.verifySubscriptionExpired()
+
+        // 3. Get eligible offer
+
+        let offer = try await XCTAsyncUnwrap(await product.eligiblePromotionalOffers().onlyElement)
+
+        // 4. Purchase with offer
+
+        customerInfo = try await self.purchases.purchase(product: product, promotionalOffer: offer).customerInfo
+
+        // 5. Verify offer was applied
+
+        entitlement = try await self.verifyEntitlementWentThrough(customerInfo)
+        let transaction = try await Self.findTransaction(for: product.productIdentifier)
+
+        expect(entitlement.latestPurchaseDate) != entitlement.originalPurchaseDate
+        expect(transaction.offerID) == offer.discount.offerIdentifier
+        expect(transaction.offerType) == .promotional
+        expect(transaction.appAccountToken) == nil
     }
 
     func testCustomerInfoStream() async throws {
@@ -784,7 +830,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 private extension BaseStoreKitIntegrationTests {
 
     func verifyReceiptIsPresentBeforeEligibilityChecking() async throws {
-        if Self.storeKit2Setting == .disabled {
+        if Self.storeKitVersion == .storeKit1 {
             // SK1 implementation relies on the receipt being loaded already.
             // See `TrialOrIntroPriceEligibilityChecker.sk1CheckEligibility`
             _ = try await self.purchases.restorePurchases()

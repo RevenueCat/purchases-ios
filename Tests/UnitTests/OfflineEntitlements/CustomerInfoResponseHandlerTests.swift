@@ -16,7 +16,6 @@ import Nimble
 import StoreKit
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseCustomerInfoResponseHandlerTests: TestCase {
 
     fileprivate let userID = "nacho"
@@ -26,9 +25,6 @@ class BaseCustomerInfoResponseHandlerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        // These tests are written using async for simplicity
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.fetcher = MockPurchasedProductsFetcher()
         self.factory = CustomerInfoFactory()
     }
@@ -37,7 +33,6 @@ class BaseCustomerInfoResponseHandlerTests: TestCase {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTests {
 
     func testHandleNormalResponse() async {
@@ -243,7 +238,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseCustomerInfoResponseHandlerTests {
 
     private struct MappingFetcher: ProductEntitlementMappingFetcher {
@@ -255,7 +249,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
             offlineCreator: .init(
                 purchasedProductsFetcher: self.fetcher,
                 productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
-                creator: self.factory.create
+                creator: { self.factory.create(products: $0, mapping: $1, userID: $2) }
             ),
             userID: self.userID
         )
@@ -333,7 +327,6 @@ private final class CustomerInfoFactory {
         userID: String
     )?
 
-    @Sendable
     func create(products: [PurchasedSK2Product], mapping: ProductEntitlementMapping, userID: String) -> CustomerInfo {
         guard let result = self.stubbedResult else {
             fatalError("Creation requested without stub")

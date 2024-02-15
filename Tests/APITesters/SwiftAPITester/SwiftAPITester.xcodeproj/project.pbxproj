@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C396F5C281C64AF00669657 /* AdServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C396F5B281C64AF00669657 /* AdServices.framework */; platformFilters = (ios, maccatalyst, macos, ); };
+		2CA5383A2B7D42100037D96F /* PresentedOfferingContextAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */; };
 		2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CA26EBE7EA007DDB75 /* AttributionNetworkAPI.swift */; };
 		2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CD26EBE7EA007DDB75 /* IntroEligibilityAPI.swift */; };
 		2DD778E6270E23460079CBD4 /* PurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */; };
@@ -19,6 +20,7 @@
 		2DD778ED270E23460079CBD4 /* OfferingAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C726EBE7EA007DDB75 /* OfferingAPI.swift */; };
 		2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
+		4D30B3B32B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */; };
 		4F1428A22A4A11D7006CD196 /* TestStoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */; };
 		4F1428A72A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */; };
 		4F6BEE752A27C77C00CD9322 /* OtherAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */; };
@@ -57,7 +59,9 @@
 
 /* Begin PBXFileReference section */
 		2C396F5B281C64AF00669657 /* AdServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdServices.framework; path = System/Library/Frameworks/AdServices.framework; sourceTree = SDKROOT; };
+		2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedOfferingContextAPI.swift; sourceTree = "<group>"; };
 		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitVersionAPI.swift; sourceTree = "<group>"; };
 		4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductAPI.swift; sourceTree = "<group>"; };
 		4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherAPI.swift; sourceTree = "<group>"; };
@@ -149,6 +153,7 @@
 				4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */,
 				A5D614C926EBE7EA007DDB75 /* PackageAPI.swift */,
 				4FF58AD12A5DDA5B00451B28 /* PaywallAPI.swift */,
+				2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */,
 				B3A4C833280DE72600D4AE17 /* PromotionalOfferAPI.swift */,
 				A5D614CE26EBE7EA007DDB75 /* PurchasesAPI.swift */,
 				A513AD33272B4C0100E0C1BA /* RefundRequestStatusAPI.swift */,
@@ -163,6 +168,7 @@
 				4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */,
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
 				5740FCD42996D7B800E049F9 /* VerificationResultAPI.swift */,
+				4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -262,8 +268,10 @@
 				2DD778E5270E23460079CBD4 /* IntroEligibilityAPI.swift in Sources */,
 				2DD778EB270E23460079CBD4 /* ErrorCodesAPI.swift in Sources */,
 				2DD778E4270E23460079CBD4 /* AttributionNetworkAPI.swift in Sources */,
+				2CA5383A2B7D42100037D96F /* PresentedOfferingContextAPI.swift in Sources */,
 				2DD778EC270E23460079CBD4 /* TransactionAPI.swift in Sources */,
 				B32554422825E5EA00DA62EA /* ConfigurationAPI.swift in Sources */,
+				4D30B3B32B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift in Sources */,
 				5738F40C27866DD00096D623 /* StoreProductDiscountAPI.swift in Sources */,
 				5740FCD52996D7B800E049F9 /* VerificationResultAPI.swift in Sources */,
 				5758EE582786542200B3B703 /* StoreTransactionAPI.swift in Sources */,
@@ -290,7 +298,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -304,7 +311,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
 		};
@@ -323,7 +329,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -337,7 +342,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
-				TVOS_DEPLOYMENT_TARGET = 12.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -391,7 +395,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -399,6 +404,9 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
 		};
@@ -445,13 +453,17 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
+				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
 		};

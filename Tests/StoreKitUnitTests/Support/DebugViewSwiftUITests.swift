@@ -18,7 +18,6 @@ import Nimble
 import SwiftUI
 import XCTest
 
-@MainActor
 @available(iOS 16.0, *)
 class DebugViewSwiftUITests: TestCase {
 
@@ -28,10 +27,12 @@ class DebugViewSwiftUITests: TestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
+    @MainActor
     func testLoadingState() {
         self.snapshot(.init(), width: 300, height: 400)
     }
 
+    @MainActor
     func testDebugView() throws {
         let model = DebugViewModel()
         model.configuration = .loaded(.init(

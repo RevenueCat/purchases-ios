@@ -32,7 +32,7 @@ public final class NonSubscriptionTransaction: NSObject {
     @objc public let transactionIdentifier: String
 
     /// The unique identifier for the transaction created by the Store.
-    @objc internal let storeTransactionIdentifier: String
+    @objc public let storeTransactionIdentifier: String
 
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,

@@ -141,13 +141,7 @@ import Foundation
 
         let allEntitlementsDescription = self.entitlements.all.mapValues { $0.description }
 
-        let verificationResult: String
-
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            verificationResult = self.entitlements.verification.debugDescription
-        } else {
-            verificationResult = "unknown"
-        }
+        let verificationResult = self.entitlements.verification.debugDescription
 
         return """
             <\(String(describing: CustomerInfo.self)):
@@ -302,6 +296,17 @@ extension CustomerInfo: HTTPResponseBody {
         var copy = self.data
         copy.response.requestDate = newRequestDate
         return .init(data: copy)
+    }
+
+}
+
+// MARK: -
+
+extension CustomerInfo: Identifiable {
+
+    // swiftlint:disable:next missing_docs
+    public var id: String {
+        return self.originalAppUserId
     }
 
 }

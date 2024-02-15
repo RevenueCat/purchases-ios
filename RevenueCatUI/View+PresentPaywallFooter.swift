@@ -16,6 +16,13 @@ import SwiftUI
 
 #if !os(watchOS) && !os(tvOS) && !os(macOS)
 
+/// A closure used for notifying of changes to the current tier.
+/// Useful when creating custom paywalls using `.paywallFooter`.
+public typealias PaywallTierChangeHandler = @MainActor @Sendable (
+    _ tier: PaywallData.Tier,
+    _ localizedName: String
+) -> Void
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
 
@@ -32,8 +39,11 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -41,8 +51,11 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
-            restoreCompleted: restoreCompleted
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
         )
     }
 
@@ -60,8 +73,11 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
@@ -69,8 +85,11 @@ extension View {
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
-            restoreCompleted: restoreCompleted
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure
         )
     }
 
@@ -81,8 +100,11 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
+        purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
-        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self
             .modifier(
@@ -96,32 +118,74 @@ extension View {
                         introEligibility: introEligibility,
                         purchaseHandler: purchaseHandler
                     ),
+                    purchaseStarted: purchaseStarted,
                     purchaseCompleted: purchaseCompleted,
-                    restoreCompleted: restoreCompleted
+                    restoreCompleted: restoreCompleted,
+                    purchaseFailure: purchaseFailure,
+                    restoreFailure: restoreFailure
                 )
             )
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+extension View {
+
+    /// Invokes the given closure when the user selects a `PaywallData.Tier` in a multi-tier paywall.
+    public func onPaywallTierChange(_ handler: @escaping PaywallTierChangeHandler) -> some View {
+        self
+            .modifier(PaywallTierChangeModifier(handler: handler))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let configuration: PaywallViewConfiguration
+    let purchaseStarted: PurchaseStartedHandler?
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let restoreCompleted: PurchaseOrRestoreCompletedHandler?
+    let purchaseFailure: PurchaseFailureHandler?
+    let restoreFailure: PurchaseFailureHandler?
 
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
                 PaywallView(configuration: self.configuration)
-                .onPurchaseCompleted {
-                    self.purchaseCompleted?($0)
-                }
-                .onRestoreCompleted {
-                    self.restoreCompleted?($0)
-                }
+                    .onPurchaseStarted {
+                        self.purchaseStarted?()
+                    }
+                    .onPurchaseCompleted {
+                        self.purchaseCompleted?($0)
+                    }
+                    .onRestoreCompleted {
+                        self.restoreCompleted?($0)
+                    }
+                    .onPurchaseFailure {
+                        self.purchaseFailure?($0)
+                    }
+                    .onRestoreFailure {
+                        self.restoreFailure?($0)
+                    }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallTierChangeModifier: ViewModifier {
+
+    let handler: PaywallTierChangeHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(PaywallCurrentTierPreferenceKey.self) { data in
+                if let data {
+                    self.handler(data.tier, data.localizedName)
+                }
+            }
+    }
+
 }
 
 #endif

@@ -16,7 +16,6 @@ import RevenueCat
 
 // swiftlint:disable identifier_name
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 enum Strings {
 
     case package_not_subscription(Package)
@@ -35,9 +34,13 @@ enum Strings {
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
 
+    case restoring_purchases
+    case restored_purchases
+    case restore_purchases_with_empty_result
+    case setting_restored_customer_info
+
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Strings: CustomStringConvertible {
 
     var description: String {
@@ -81,6 +84,18 @@ extension Strings: CustomStringConvertible {
             case let .failure(error):
                 return "Failed loading image: \(error)"
             }
+
+        case .restoring_purchases:
+            return "Restoring purchases"
+
+        case .restored_purchases:
+            return "Restored purchases successfully with unlocked subscriptions"
+
+        case .restore_purchases_with_empty_result:
+            return "Restored purchases successfully with no subscriptions"
+
+        case .setting_restored_customer_info:
+            return "Setting restored customer info"
         }
     }
 

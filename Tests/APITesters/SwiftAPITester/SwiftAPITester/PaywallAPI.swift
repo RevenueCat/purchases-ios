@@ -16,13 +16,15 @@ func checkPaywallData(_ data: PaywallData) {
     let templateName: String = data.templateName
     let config: PaywallData.Configuration = data.config
     let _: PaywallData.LocalizedConfiguration? = data.config(for: Locale.current)
-    let localization: PaywallData.LocalizedConfiguration = data.localizedConfiguration
+    let _: [String: PaywallData.LocalizedConfiguration]? = data.tiersLocalization(for: Locale.current)
+    let localization: PaywallData.LocalizedConfiguration? = data.localizedConfiguration
+    let _: [String: PaywallData.LocalizedConfiguration]? = data.localizedConfigurationByTier
     let assetBaseURL: URL = data.assetBaseURL
     let revision: Int = data.revision
 
     let _: PaywallData = .init(templateName: templateName,
                                config: config,
-                               localization: localization,
+                               localization: localization!,
                                assetBaseURL: assetBaseURL,
                                revision: revision)
 }
@@ -98,18 +100,18 @@ func checkPaywallImages(_ images: PaywallData.Configuration.Images) {
 }
 
 func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
-    let background: PaywallColor = config.background
-    let text1: PaywallColor = config.text1
+    let background: PaywallColor? = config.background
+    let text1: PaywallColor? = config.text1
     let text2: PaywallColor? = config.text2
     let text3: PaywallColor? = config.text3
-    let callToActionBackground: PaywallColor = config.callToActionBackground
-    let callToActionForeground: PaywallColor = config.callToActionForeground
+    let callToActionBackground: PaywallColor? = config.callToActionBackground
+    let callToActionForeground: PaywallColor? = config.callToActionForeground
     let callToActionSecondaryBackground: PaywallColor? = config.callToActionSecondaryBackground
     let accent1: PaywallColor? = config.accent1
     let accent2: PaywallColor? = config.accent2
     let accent3: PaywallColor? = config.accent3
 
-    _ = PaywallData.Configuration.Colors(
+    let _: PaywallData.Configuration.Colors = .init(
         background: background,
         text1: text1,
         text2: text2,
@@ -121,6 +123,8 @@ func checkPaywallColors(_ config: PaywallData.Configuration.Colors) {
         accent2: accent2,
         accent3: accent3
     )
+
+    let _: PaywallData.Configuration.Colors = .init()
 }
 
 func checkPaywallColorInformation(_ config: PaywallData.Configuration.ColorInformation) {
@@ -145,9 +149,7 @@ func checkPaywallColor(_ color: PaywallColor) throws {
     let _: String = color.debugDescription
     let _: String = color.stringRepresentation
     #if canImport(SwiftUI)
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        let _: Color = color.underlyingColor
-    }
+    let _: Color = color.underlyingColor
     #endif
 }
 

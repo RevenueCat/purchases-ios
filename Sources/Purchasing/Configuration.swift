@@ -44,7 +44,7 @@ import Foundation
     let appUserID: String?
     let observerMode: Bool
     let userDefaults: UserDefaults?
-    let storeKit2Setting: StoreKit2Setting
+    let storeKitVersion: StoreKitVersion
     let dangerousSettings: DangerousSettings?
     let networkTimeout: TimeInterval
     let storeKit1Timeout: TimeInterval
@@ -54,13 +54,13 @@ import Foundation
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
-        Self.verify(observerMode: builder.observerMode, storeKit2Setting: builder.storeKit2Setting)
+        Self.verify(observerMode: builder.observerMode, storeKitVersion: builder.storeKitVersion)
 
         self.apiKey = builder.apiKey
         self.appUserID = builder.appUserID
         self.observerMode = builder.observerMode
         self.userDefaults = builder.userDefaults
-        self.storeKit2Setting = builder.storeKit2Setting
+        self.storeKitVersion = builder.storeKitVersion
         self.dangerousSettings = builder.dangerousSettings
         self.storeKit1Timeout = builder.storeKit1Timeout
         self.networkTimeout = builder.networkTimeout
@@ -77,9 +77,6 @@ import Foundation
     /// The Builder for ```Configuration```.
     @objc(RCConfigurationBuilder) public class Builder: NSObject {
 
-        // made internal to access it in Deprecations.swift
-        var storeKit2Setting: StoreKit2Setting = .default
-
         private static let minimumTimeout: TimeInterval = 5
 
         private(set) var apiKey: String
@@ -92,6 +89,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
+        private(set) var storeKitVersion: StoreKitVersion = .default
 
         /**
          * Create a new builder with your API key.
@@ -133,12 +131,14 @@ import Foundation
          * Set `observerMode`.
          * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
          * RevenueCat's backend. Default is `false`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
-        @objc public func with(observerMode: Bool) -> Configuration.Builder {
+        @objc public func with(
+            observerMode: Bool,
+            storeKitVersion: StoreKitVersion
+        ) -> Configuration.Builder {
             self.observerMode = observerMode
+            self.storeKitVersion = storeKitVersion
             return self
         }
         /**
@@ -212,9 +212,23 @@ import Foundation
         /// ### Related Symbols
         /// - ``Configuration/EntitlementVerificationMode``
         /// - ``VerificationResult``
-        @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
             self.responseVerificationMode = Signing.verificationMode(with: mode)
+            return self
+        }
+
+        /// Set ``StoreKitVersion``.
+        ///
+        /// Defaults to ``StoreKitVersion/default`` which lets the SDK select
+        /// the most appropriate version of StoreKit. Currently defaults to StoreKit 1.
+        ///
+        /// - Note: StoreKit 2 is only available on iOS 15+. StoreKit 1 will be used for previous iOS versions
+        /// regardless of this setting.
+        ///
+        /// ### Related Symbols
+        /// - ``StoreKitVersion``
+        @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
+            self.storeKitVersion = version
             return self
         }
 
@@ -311,8 +325,8 @@ extension Configuration {
         }
     }
 
-    fileprivate static func verify(observerMode: Bool, storeKit2Setting: StoreKit2Setting) {
-        if observerMode, storeKit2Setting.usesStoreKit2IfAvailable {
+    fileprivate static func verify(observerMode: Bool, storeKitVersion: StoreKitVersion) {
+        if observerMode, storeKitVersion == .storeKit2 {
             Logger.warn(Strings.configure.observer_mode_with_storekit2)
         }
     }

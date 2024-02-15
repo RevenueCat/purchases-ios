@@ -178,7 +178,6 @@ final class TransactionPoster: TransactionPosterType {
 }
 
 /// Async extension
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TransactionPosterType {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
@@ -251,7 +250,7 @@ private extension TransactionPoster {
 
     func fetchEncodedReceipt(transaction: StoreTransactionType,
                              completion: @escaping (Result<EncodedAppleReceipt, BackendError>) -> Void) {
-        if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            let jwsRepresentation = transaction.jwsRepresentation {
             if transaction.environment == .xcode, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 _ = Task<Void, Never> {

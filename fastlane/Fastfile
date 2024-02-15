@@ -86,7 +86,7 @@ platform :ios do
       repo_name: repo_name,
       github_api_token: ENV["GITHUB_TOKEN"],
       changelog_latest_path: changelog_latest_path,
-      upload_assets: ['RevenueCat.framework.zip', 'RevenueCat.xcframework.zip']
+      upload_assets: ['RevenueCat.xcframework.zip']
     )
   end
 
@@ -227,7 +227,6 @@ platform :ios do
     version_number = current_version_number
     check_no_git_tag_exists(version_number)
     check_pods
-    carthage_archive
     export_xcframework
     check_no_github_release_exists(version_number)
   end
@@ -368,7 +367,6 @@ platform :ios do
   desc "Create Carthage archive, export XCFramework, and create GitHub release"
   lane :release do |options|
     version_number = current_version_number
-    carthage_archive
     export_xcframework
     github_release(version: version_number)
   end
@@ -559,16 +557,20 @@ platform :ios do
         'maccatalyst',
         'tvOS',
         'watchOS',
-        # Fixme: add xrOS
+        'visionOS'
       ]
 
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
-      include_debug_symbols: true
+      include_debug_symbols: true,
+      # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
+      # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
+      override_xcargs: true
     )
     
     # sh runs from the Fastfile's location, but other commands run from the project root.
@@ -973,32 +975,18 @@ def check_no_github_release_exists(version_number)
   raise "Release with version #{version_number} already exists!" unless found_release_number.nil?
 end
 
-def carthage_archive
-  load_spm_dependencies
-
-  Dir.chdir("..") do
-    # As of Carthage 0.38.0, we still can't archive xcframeworks directly.
-    # there are also some issues which prevent us from archiving frameworks directly, since
-    # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
-    # We use this script as a workaround until this is fixed.
-    # https://github.com/Carthage/Carthage/releases/0.38.0
-    sh("./scripts/carthage.sh", "build", "--no-skip-current")
-    sh("./scripts/carthage.sh", "archive", "RevenueCat")
-  end
-end
-
 lane :check_pods do
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCat.podspec', 
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   ) 
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
 end

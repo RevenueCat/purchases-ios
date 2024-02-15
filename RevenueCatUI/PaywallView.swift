@@ -301,10 +301,16 @@ struct LoadedOfferingPaywallView: View {
     var body: some View {
         // Note: preferences need to be applied after `.toolbar` call
         self.content
+            .preference(key: PurchasedInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseInProgress)
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(data: self.purchaseHandler.purchaseResult))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
     }
 
     @ViewBuilder
@@ -323,7 +329,7 @@ struct LoadedOfferingPaywallView: View {
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if purchased {
+                if self.mode.isFullScreen, purchased {
                     Logger.debug(Strings.dismissing_paywall)
                     self.dismiss()
                 }

@@ -3,8 +3,8 @@ import XCTest
 
 @testable import RevenueCat
 
-@MainActor
 class BaseCustomerInfoManagerTests: TestCase {
+
     static let appUserID = "app_user_id"
 
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
@@ -164,6 +164,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockOperationDispatcher.invokedDispatchAsyncOnMainThreadCount) == 1
     }
 
+    @MainActor
     func testFetchAndCacheCustomerInfoIfStaleOnlyRefreshesCacheOnce() {
         mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
         var firstCompletionCalled = false
@@ -242,6 +243,7 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
     }
 
+    @MainActor
     func testCustomerInfoFetchesIfNoCache() {
         let appUserID = "myUser"
 
@@ -400,9 +402,6 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
     }
 
     func testDoesNotCacheCustomerInfoWithLocalEntitlements() throws {
-        // Entitlement verification not available prior
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let appUserID = "myUser"
         let info = self.mockCustomerInfo.copy(with: .verifiedOnDevice)
 
@@ -478,16 +477,12 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
 }
 
-// iOS 13.0+ only because these tests are async
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
 
     private var mockRefreshedCustomerInfo: CustomerInfo!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.mockRefreshedCustomerInfo = try CustomerInfo(data: [
             "request_date": "2019-12-21T02:40:36Z",
@@ -504,8 +499,6 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
     // MARK: - CacheFetchPolicy.fromCacheOnly
 
     func testCustomerInfoFromCacheOnlyReturnsFromCacheWhenAvailable() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
 
         let result = try await self.customerInfoManager.customerInfo(appUserID: Self.appUserID,

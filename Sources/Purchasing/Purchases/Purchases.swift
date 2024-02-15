@@ -265,7 +265,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      observerMode: Bool = false,
                      platformInfo: PlatformInfo? = Purchases.platformInfo,
                      responseVerificationMode: Signing.ResponseVerificationMode,
-                     storeKit2Setting: StoreKit2Setting = .default,
+                     storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
@@ -281,7 +281,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let systemInfo = SystemInfo(platformInfo: platformInfo,
                                     finishTransactions: !observerMode,
                                     operationDispatcher: operationDispatcher,
-                                    storeKit2Setting: storeKit2Setting,
+                                    storeKitVersion: storeKitVersion,
                                     responseVerificationMode: responseVerificationMode,
                                     dangerousSettings: dangerousSettings)
 
@@ -309,7 +309,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
         )
 
-        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
+        let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
             ? .right(.init())
             : .left(.init(
                 operationDispatcher: operationDispatcher,
@@ -548,9 +548,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         Logger.debug(Strings.configure.debug_enabled, fileName: nil)
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            Logger.info(Strings.configure.store_kit_2_enabled, fileName: nil)
-        }
         if systemInfo.observerMode {
             Logger.debug(Strings.configure.observer_mode_enabled, fileName: nil)
         }
@@ -560,6 +557,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         Logger.debug(Strings.configure.is_simulator(SystemInfo.isRunningInSimulator), fileName: nil)
         Logger.user(Strings.configure.initial_app_user_id(isSet: appUserID != nil), fileName: nil)
         Logger.debug(Strings.configure.response_verification_mode(systemInfo.responseVerificationMode), fileName: nil)
+        Logger.debug(Strings.configure.storekit_version(systemInfo.storeKitVersion), fileName: nil)
 
         self.requestFetcher = requestFetcher
         self.receiptFetcher = receiptFetcher
@@ -703,7 +701,6 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings {
         return try await self.offerings(fetchPolicy: .default)
     }
@@ -712,7 +709,6 @@ public extension Purchases {
         return self.offeringsManager.cachedOfferings
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
@@ -750,7 +746,6 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         Logger.warn(Strings.identity.logging_in_with_static_string)
 
@@ -761,7 +756,6 @@ public extension Purchases {
     // This allows us to provide a compile-time warning to developers who accidentally 
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await self.logInAsync(appUserID)
     }
@@ -788,7 +782,6 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
     }
@@ -849,12 +842,10 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo {
         return try await self.customerInfo(fetchPolicy: .default)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         return try await self.customerInfoAsync(fetchPolicy: fetchPolicy)
     }
@@ -865,7 +856,6 @@ public extension Purchases {
 
     #endif
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var customerInfoStream: AsyncStream<CustomerInfo> {
         return self.customerInfoManager.customerInfoStream
     }
@@ -875,7 +865,6 @@ public extension Purchases {
         purchasesOrchestrator.products(withIdentifiers: productIdentifiers, completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         return await productsAsync(productIdentifiers)
     }
@@ -885,7 +874,6 @@ public extension Purchases {
         purchasesOrchestrator.purchase(product: product, package: nil, completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product)
     }
@@ -895,7 +883,6 @@ public extension Purchases {
         purchasesOrchestrator.purchase(product: package.storeProduct, package: package, completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package)
     }
@@ -906,7 +893,6 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restorePurchasesAsync()
     }
@@ -923,12 +909,10 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
         return try await syncPurchasesAsync()
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchaseProduct:withPromotionalOffer:completion:)
     func purchase(product: StoreProduct,
                   promotionalOffer: PromotionalOffer,
@@ -939,12 +923,10 @@ public extension Purchases {
                                        completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(product: product, promotionalOffer: promotionalOffer)
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     @objc(purchasePackage:withPromotionalOffer:completion:)
     func purchase(package: Package, promotionalOffer: PromotionalOffer, completion: @escaping PurchaseCompletedBlock) {
         purchasesOrchestrator.purchase(product: package.storeProduct,
@@ -953,7 +935,6 @@ public extension Purchases {
                                        completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData {
         return try await purchaseAsync(package: package, promotionalOffer: promotionalOffer)
     }
@@ -965,12 +946,10 @@ public extension Purchases {
                                                                   completion: completion)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
         let result = await self.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: packages.map(\.storeProduct.productIdentifier)
@@ -988,7 +967,6 @@ public extension Purchases {
         trialOrIntroPriceEligibilityChecker.checkEligibility(product: product, completion: completion)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
         return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
     }
@@ -1016,7 +994,6 @@ public extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    @available(iOS 12.2, macOS 10.14.4, macCatalyst 13.0, tvOS 12.2, watchOS 6.2, *)
     @objc(getPromotionalOfferForProductDiscount:withProduct:withCompletion:)
     func getPromotionalOffer(forProductDiscount discount: StoreProductDiscount,
                              product: StoreProduct,
@@ -1027,13 +1004,11 @@ public extension Purchases {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOffer(forProductDiscount discount: StoreProductDiscount,
                           product: StoreProduct) async throws -> PromotionalOffer {
         return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }
@@ -1103,6 +1078,30 @@ public extension Purchases {
 
 #endif
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func handleObserverModeTransaction(
+        _ purchaseResult: StoreKit.Product.PurchaseResult
+    ) async throws -> StoreTransaction? {
+        guard self.systemInfo.observerMode else {
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.handle_transaction_observer_mode_required.description
+            ).asPublicError
+        }
+        guard self.systemInfo.storeKitVersion == .storeKit2 else {
+            throw NewErrorUtils.configurationError(
+                message: Strings.configure.sk2_required.description
+            ).asPublicError
+        }
+        do {
+            let (_, transaction) = try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(
+                purchaseResult: purchaseResult, fromTransactionUpdate: true
+            )
+            return transaction
+        } catch {
+            throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+        }
+    }
+
 }
 
 // swiftlint:enable missing_docs
@@ -1145,7 +1144,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false)
+     *               .with(observerMode: false, storeKitVersion: .storeKit1)
      *               .with(appUserID: "<app_user_id>")
      *               .build()
      *      )
@@ -1160,7 +1159,7 @@ public extension Purchases {
                   userDefaults: configuration.userDefaults,
                   platformInfo: configuration.platformInfo,
                   responseVerificationMode: configuration.responseVerificationMode,
-                  storeKit2Setting: configuration.storeKit2Setting,
+                  storeKitVersion: configuration.storeKitVersion,
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
@@ -1185,7 +1184,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: .init(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false)
+     *               .with(observerMode: false, storeKitVersion: .storeKit1)
      *               .with(appUserID: "<app_user_id>")
      *      )
      * ```
@@ -1260,7 +1259,6 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
-     * Observer mode is not compatible with StoreKit 2.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:)
     @discardableResult static func configure(withAPIKey apiKey: String,
@@ -1270,7 +1268,7 @@ public extension Purchases {
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(observerMode: observerMode)
+                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
                 .build()
         )
     }
@@ -1331,7 +1329,7 @@ public extension Purchases {
         applicationSupportDirectory: URL? = nil,
         platformInfo: PlatformInfo?,
         responseVerificationMode: Signing.ResponseVerificationMode,
-        storeKit2Setting: StoreKit2Setting,
+        storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
@@ -1345,7 +1343,7 @@ public extension Purchases {
                   observerMode: observerMode,
                   platformInfo: platformInfo,
                   responseVerificationMode: responseVerificationMode,
-                  storeKit2Setting: storeKit2Setting,
+                  storeKitVersion: storeKitVersion,
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
@@ -1467,12 +1465,14 @@ extension Purchases: @unchecked Sendable {}
 extension Purchases {
 
     /// Used when purchasing through `SwiftUI` paywalls.
-    func cachePresentedOfferingIdentifier(_ identifier: String, productIdentifier: String) {
-        Logger.debug(Strings.purchase.caching_presented_offering_identifier(offeringID: identifier,
-                                                                            productID: productIdentifier))
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
+        Logger.debug(Strings.purchase.caching_presented_offering_identifier(
+            offeringID: context.offeringIdentifier,
+            productID: productIdentifier
+        ))
 
-        self.purchasesOrchestrator.cachePresentedOfferingIdentifier(
-            identifier,
+        self.purchasesOrchestrator.cachePresentedOfferingContext(
+            context,
             productIdentifier: productIdentifier
         )
     }
@@ -1481,7 +1481,6 @@ extension Purchases {
 
 extension Purchases: InternalPurchasesType {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     internal func healthRequest(signatureVerification: Bool) async throws {
         do {
             try await self.backend.healthRequest(signatureVerification: signatureVerification)
@@ -1516,8 +1515,8 @@ internal extension Purchases {
         return self.paymentQueueWrapper.sk1Wrapper != nil
     }
 
-    var storeKit2Setting: StoreKit2Setting {
-        return self.systemInfo.storeKit2Setting
+    var isStoreKit2EnabledAndAvailable: Bool {
+        return self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
     }
 
     #if DEBUG
@@ -1525,7 +1524,6 @@ internal extension Purchases {
     /// - Returns: the parsed `AppleReceipt`
     ///
     /// - Warning: this is only meant for integration tests, as a way to debug purchase failures.
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func fetchReceipt(_ policy: ReceiptRefreshPolicy) async throws -> AppleReceipt? {
         let receipt = await self.receiptFetcher.receiptData(refreshPolicy: policy)
 

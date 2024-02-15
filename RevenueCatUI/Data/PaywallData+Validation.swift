@@ -26,7 +26,11 @@ extension Offering {
 
     enum PaywallValidationError: Swift.Error, Equatable {
 
-        case missingPaywall
+        case missingPaywall(Offering)
+        case missingLocalization
+        case missingTiers
+        case missingTier(PaywallData.Tier)
+        case missingTierName(PaywallData.Tier)
         case invalidTemplate(String)
         case invalidVariables(Set<String>)
         case invalidIcons(Set<String>)
@@ -48,17 +52,19 @@ extension Offering {
                 return (paywall, template, nil)
 
             case let .failure(error):
-                // If there are any errors, create a default paywall
-                // with only the configured packages.
-                return (.createDefault(with: paywall.config.packages, locale: locale),
-                        PaywallData.defaultTemplate,
-                        error)
+                let paywall: PaywallData = paywall.config.packages.isEmpty
+                    ? .createDefault(with: self.availablePackages, locale: locale)
+                    : .createDefault(with: paywall.config.packages, locale: locale)
+
+                return (displayablePaywall: paywall,
+                        template: PaywallData.defaultTemplate,
+                        error: error)
             }
         } else {
             // If `Offering` has no paywall, create a default one with all available packages.
             return (displayablePaywall: .createDefault(with: self.availablePackages, locale: locale),
-                    PaywallData.defaultTemplate,
-                    error: .missingPaywall)
+                    template: PaywallData.defaultTemplate,
+                    error: .missingPaywall(self))
         }
     }
 
@@ -73,20 +79,61 @@ private extension PaywallData {
 
     /// - Returns: `nil` if there are no validation errors.
     func validate() -> Result<PaywallTemplate, Error> {
-        if let error = Self.validateLocalization(self.localizedConfiguration) {
-            return .failure(error)
-        }
-
         guard let template = PaywallTemplate(rawValue: self.templateName) else {
             return .failure(.invalidTemplate(self.templateName))
         }
 
-        let invalidIcons = self.localizedConfiguration.validateIcons()
-        guard invalidIcons.isEmpty else {
-            return .failure(.invalidIcons(invalidIcons))
+        switch template.packageSetting.tierSetting {
+        case .single:
+            if let error = self.validateSingleTier() {
+                return .failure(error)
+            }
+
+        case .multiple:
+            if let error = self.validateMultiTier() {
+                return .failure(error)
+            }
         }
 
         return .success(template)
+    }
+
+    private func validateSingleTier() -> Error? {
+        guard let localization = self.localizedConfiguration else {
+            return .missingLocalization
+        }
+
+        if let error = Self.validateLocalization(localization) {
+            return error
+        }
+
+        return nil
+    }
+
+    private func validateMultiTier() -> Error? {
+        guard let localized = self.localizedConfigurationByTier else {
+            return .missingLocalization
+        }
+
+        if self.config.tiers.isEmpty {
+            return .missingTiers
+        }
+
+        for tier in self.config.tiers {
+            guard let localization = localized[tier.id] else {
+                return .missingTier(tier)
+            }
+
+            if localization.tierName?.isEmpty != false {
+                return .missingTierName(tier)
+            }
+
+            if let error = Self.validateLocalization(localization) {
+                return error
+            }
+        }
+
+        return nil
     }
 
     /// Validates that all strings inside of `LocalizedConfiguration` contain no unrecognized variables.
@@ -99,9 +146,16 @@ private extension PaywallData {
                 .joined()
         )
 
-        return unrecognizedVariables.isEmpty
-        ? nil
-        : .invalidVariables(unrecognizedVariables)
+        guard unrecognizedVariables.isEmpty else {
+            return .invalidVariables(unrecognizedVariables)
+        }
+
+        let invalidIcons = localization.validateIcons()
+        guard invalidIcons.isEmpty else {
+            return .invalidIcons(invalidIcons)
+        }
+
+        return nil
     }
 
 }
@@ -135,8 +189,20 @@ extension Offering.PaywallValidationError: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case .missingPaywall:
-            return "Offering has no configured paywall."
+        case let .missingPaywall(offering):
+            return "Offering '\(offering.identifier)' has no configured paywall."
+
+        case .missingLocalization:
+            return "Paywall has no localization."
+
+        case .missingTiers:
+            return "Multi-tier paywall has no configured tiers."
+
+        case let .missingTier(tier):
+            return "Tier '\(tier.id)' is missing in localization."
+
+        case let .missingTierName(tier):
+            return "Tier '\(tier.id)' has no name."
 
         case let .invalidTemplate(name):
             return "Template not recognized: \(name)."

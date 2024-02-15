@@ -1,3 +1,82 @@
+## 4.36.3
+### RevenueCatUI
+* `Paywalls`: don't dismiss footer paywalls automatically (#3683) via NachoSoto (@NachoSoto)
+* `Paywalls`: fix `PaywallColor.init(light:dark:)` (#3685) via NachoSoto (@NachoSoto)
+* `Paywalls`: fix template 1 header overflow (#3678) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CI`: skip `RevenueCatUI` API tests when generating snapshots (#3680) via NachoSoto (@NachoSoto)
+* `Paywalls`: improve `PreviewableTemplate`'s display name (#3682) via NachoSoto (@NachoSoto)
+* `CI`: split load shedder integration tests (#3675) via NachoSoto (@NachoSoto)
+* Run load shedder integration tests on release branches (#3673) via Toni Rico (@tonidero)
+
+## 4.36.2
+### RevenueCatUI
+* `Paywalls`: fix localization when installing through `CocoaPods` (#3670) via NachoSoto (@NachoSoto)
+
+## 4.36.1
+### RevenueCatUI
+* `Paywalls`: prioritize `Locale.current` over `Locale.preferredLocales` (#3657) via NachoSoto (@NachoSoto)
+* `Paywalls`: add logs for localization lookup (#3649) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump cocoapods from 1.15.1 to 1.15.2 (#3648) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `Tests`: fix iOS 15 test crash (#3650) via NachoSoto (@NachoSoto)
+* `CircleCI`: remove duplicate `install-dependencies` (#3643) via NachoSoto (@NachoSoto)
+
+## 4.36.0
+_This release is compatible with `Xcode 15.3 beta 2`_
+
+### New Features
+* `NonSubscriptionTransaction`: expose `storeTransactionIdentifier` (#3639) via NachoSoto (@NachoSoto)
+### RevenueCatUI
+* `Paywalls`: new `presentationMode` parameter (by @Lascorbe) (#3638) via NachoSoto (@NachoSoto)
+### Bugfixes
+* Add explicit `visionOS` deployment target (#3642) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump cocoapods from 1.15.0 to 1.15.1 (#3637) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `Xcode 15.3 beta 2`: remove `nonisolated` workaround (#3640) via NachoSoto (@NachoSoto)
+
+## 4.35.0
+### RevenueCatUI
+* `Paywalls`: fix finding locales with different regions (#3633) via NachoSoto (@NachoSoto)
+* `Paywalls`: add 4 new variables (#3629) via NachoSoto (@NachoSoto)
+* `Paywalls`: new `.onPurchaseStarted` modifier (#3627) via NachoSoto (@NachoSoto)
+* `PaywallViewController`: expose `fontName` for `CustomFontProvider` (by @Jjastiny) (#3628) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump danger from 9.4.2 to 9.4.3 (#3630) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `Paywalls`: improve "offering has no configured paywall" error (#3625) via NachoSoto (@NachoSoto)
+
+## 4.34.0
+### New Features
+* `CustomerInfo`: conform to `Identifiable` (#3619) via NachoSoto (@NachoSoto)
+### RevenueCatUI
+* `Paywalls`: new `.onPurchaseFailure` and `.onRestoreFailure` modifiers (#3622) via NachoSoto (@NachoSoto)
+* `Paywalls`: `.onRestoreCompleted` is invoked after the restore dialog is dismissed (#3620) via NachoSoto (@NachoSoto)
+* `Paywalls`: disable interactive `sheet` dismissal during purchases (#3613) via NachoSoto (@NachoSoto)
+### Other Changes
+* `CircleCI`: push pods using Xcode 15 (#3614) via NachoSoto (@NachoSoto)
+
+## 4.33.0
+### New Features
+* `CocoaPods`: enabled `visionOS` (#3262) via NachoSoto (@NachoSoto)
+## 4.32.4
+### RevenueCatUI
+* `Paywalls`: fix template 5 scrolling on iOS 15 (#3608) via NachoSoto (@NachoSoto)
+* `Paywalls`: improve `PaywallData.config(for:)` disambiguation (#3605) via NachoSoto (@NachoSoto)
+### Dependency Updates
+* Bump cocoapods from 1.14.3 to 1.15.0 (#3607) via dependabot[bot] (@dependabot[bot])
+* Bump fastlane-plugin-revenuecat_internal from `e6ba247` to `9c82c7a` (#3606) via dependabot[bot] (@dependabot[bot])
+### Other Changes
+* `Integration Tests`: disable failure expectation on `iOS 17.4` (#3604) via NachoSoto (@NachoSoto)
+
+## 4.32.3
+### Bugfixes
+* `Xcode 15.3 beta 1`: fix compilation errors (#3599) via NachoSoto (@NachoSoto)
+### Other Changes
+* `Xcode 15.3 beta 1`: fix warnings on tests (#3600) via NachoSoto (@NachoSoto)
+
 ## 4.32.2
 ### Other Changes
 * `PaywallViewController`: methods for reconfiguring paywall with new offering (#3592) via NachoSoto (@NachoSoto)

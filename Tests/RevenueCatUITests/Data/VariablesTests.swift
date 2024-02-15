@@ -54,6 +54,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{ price_per_period }}")) == "$3.99/yr"
     }
 
+    func testPricePerPeriodFull() {
+        self.provider.localizedPricePerPeriodFull = "$3.99/year"
+        expect(self.process("{{ price_per_period_full }}")) == "$3.99/year"
+    }
+
     func testPricePerWeek() {
         self.provider.localizedPricePerWeek = "$3.99"
         expect(self.process("{{ sub_price_per_week }} per week")) == "$3.99 per week"
@@ -69,6 +74,11 @@ class VariablesTests: TestCase {
         expect(self.process("{{ total_price_and_per_month }}")) == self.provider.localizedPriceAndPerMonth
     }
 
+    func testTotalPriceAndPerMonthFull() {
+        self.provider.localizedPriceAndPerMonthFull = "$49.99/year ($4.16/month)"
+        expect(self.process("{{ total_price_and_per_month_full }}")) == self.provider.localizedPriceAndPerMonthFull
+    }
+
     func testProductName() {
         self.provider.productName = "MindSnacks"
         expect(self.process("Purchase {{ product_name }}")) == "Purchase MindSnacks"
@@ -77,6 +87,16 @@ class VariablesTests: TestCase {
     func testPeriodName() {
         self.provider.periodNameOrIdentifier = "Monthly"
         expect(self.process("{{ sub_period }}")) == "Monthly"
+    }
+
+    func testPeriodLength() {
+        self.provider.periodLength = "month"
+        expect(self.process("{{ sub_period_length }}")) == "month"
+    }
+
+    func testPeriodAbbreviation() {
+        self.provider.periodNameAbbreviation = "mo"
+        expect(self.process("{{ sub_period_abbreviated }}")) == "mo"
     }
 
     func testSubscriptionDuration() {
@@ -278,9 +298,13 @@ private struct MockVariableProvider: VariableDataProvider {
     var localizedPricePerWeek: String = ""
     var localizedPricePerMonth: String = ""
     var localizedPriceAndPerMonth: String = ""
+    var localizedPriceAndPerMonthFull: String = ""
     var localizedPricePerPeriod: String = ""
+    var localizedPricePerPeriodFull: String = ""
     var productName: String = ""
     var periodNameOrIdentifier: String = ""
+    var periodNameAbbreviation: String = ""
+    var periodLength: String = ""
     var subscriptionDuration: String?
     var normalizedSubscriptionDuration: String?
     var introductoryOfferDuration: String?
@@ -289,6 +313,14 @@ private struct MockVariableProvider: VariableDataProvider {
 
     func periodNameOrIdentifier(_ locale: Locale) -> String {
         return self.periodNameOrIdentifier
+    }
+
+    func periodNameAbbreviation(_ locale: Locale) -> String? {
+        return self.periodNameAbbreviation
+    }
+
+    func periodLength(_ locale: Locale) -> String? {
+        return self.periodLength
     }
 
     func subscriptionDuration(_ locale: Locale) -> String? {
@@ -307,8 +339,16 @@ private struct MockVariableProvider: VariableDataProvider {
         return self.localizedPricePerPeriod
     }
 
+    func localizedPricePerPeriodFull(_ locale: Locale) -> String {
+        return self.localizedPricePerPeriodFull
+    }
+
     func localizedPriceAndPerMonth(_ locale: Locale) -> String {
         return self.localizedPriceAndPerMonth
+    }
+
+    func localizedPriceAndPerMonthFull(_ locale: Locale) -> String {
+        return self.localizedPriceAndPerMonthFull
     }
 
     var localizedIntroductoryOfferPrice: String? {

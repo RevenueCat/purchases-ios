@@ -15,7 +15,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@MainActor
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 class PaywallCacheWarmingTests: TestCase {
 
@@ -132,6 +131,26 @@ class PaywallCacheWarmingTests: TestCase {
             "https://rc-paywalls.s3.amazonaws.com/header.heic",
             "https://rc-paywalls.s3.amazonaws.com/background.jpg",
             "https://rc-paywalls.s3.amazonaws.com/icon.heic"
+        ]
+
+        await self.cache.warmUpPaywallImagesCache(offerings: offerings)
+
+        expect(self.imageFetcher.images) == expectedURLs
+        expect(self.imageFetcher.imageDownloadRequestCount.value) == expectedURLs.count
+    }
+
+    func testWarmsUpImagesWithTierOverloads() async throws {
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: try Self.loadPaywall("PaywallData-multitier1"),
+                products: []
+            )
+        ])
+
+        let expectedURLs: Set<String> = [
+            "https://rc-paywalls.s3.amazonaws.com/954459_1703109702.png",
+            "https://rc-paywalls.s3.amazonaws.com/header.heic"
         ]
 
         await self.cache.warmUpPaywallImagesCache(offerings: offerings)

@@ -12,7 +12,6 @@ import XCTest
 
 @testable import RevenueCat
 
-@MainActor
 class StoreKitRequestFetcherTests: TestCase {
 
     private var fetcher: StoreKitRequestFetcher!
