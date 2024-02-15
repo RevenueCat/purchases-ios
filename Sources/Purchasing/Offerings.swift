@@ -48,18 +48,18 @@ import Foundation
     internal let response: OfferingsResponse
 
     private let currentOfferingID: String?
-    private let currentOfferingIdsByPlacement: [String: String]
+    private let placements: Placements?
 
     init(
         offerings: [String: Offering],
         currentOfferingID: String?,
-        currentOfferingIdsByPlacement: [String: String],
+        placements: Placements?,
         response: OfferingsResponse
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
         self.response = response
-        self.currentOfferingIdsByPlacement = currentOfferingIdsByPlacement
+        self.placements = placements
     }
 
 }
@@ -103,6 +103,21 @@ public extension Offerings {
      */
     @objc(getCurrentOfferingForPlacement:)
     func getCurrentOffering(forPlacement placement: String) -> Offering? {
-        return self.currentOfferingIdsByPlacement[placement].flatMap { self.all[$0] }
+        // TODO: log a debug message
+        guard let placements = self.placements else {
+            return nil
+        }
+        
+        let placementOffering = placements.currentOfferingIdsByPlacement[placement].flatMap { self.all[$0] }
+        let returnOffering: Offering?
+        
+        if placements.currentOfferingIdsByPlacement.keys.contains(placement){
+            returnOffering = placementOffering
+        } else {
+            let fallbackOffering = placements.fallbackOfferingId.flatMap { self.all[$0]}
+            returnOffering = placementOffering ?? fallbackOffering
+        }
+        
+        return returnOffering
     }
 }
