@@ -178,6 +178,7 @@ struct App: View {
             .paywallFooter(offering: offering, fonts: self.fonts,
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseCancelled: self.purchaseCancelled,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
