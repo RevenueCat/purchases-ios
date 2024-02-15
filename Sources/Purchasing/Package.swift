@@ -19,15 +19,19 @@ import Foundation
 ///
 @objc(RCPresentedOfferingContext) public final class PresentedOfferingContext: NSObject {
 
-    /// The identifier of the ``Offering`` containing this Package.
+    /// The identifier of the ``Offering`` containing this ``Package``.
     @objc public let offeringIdentifier: String
+    /// The identifier of the ``Placement`` this ``Package`` was obtained from.
+    @objc public let placementIdentifier: String?
 
     /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        placementIdentifier: String?
     ) {
         self.offeringIdentifier = offeringIdentifier
+        self.placementIdentifier = placementIdentifier
         super.init()
     }
 
@@ -91,7 +95,7 @@ import Foundation
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier)
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier, placementIdentifier: nil)
         )
     }
 

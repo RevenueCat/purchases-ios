@@ -102,22 +102,46 @@ public extension Offerings {
      e.g. `offerings.getCurrentOffering(forPlacement: "placement_id")`.
      */
     @objc(getCurrentOfferingForPlacement:)
-    func getCurrentOffering(forPlacement placement: String) -> Offering? {
+    func getCurrentOffering(forPlacement placementIdentifier: String) -> Offering? {
         // TODO: log a debug message
         guard let placements = self.placements else {
             return nil
         }
         
-        let placementOffering = placements.currentOfferingIdsByPlacement[placement].flatMap { self.all[$0] }
+        let placementOffering = placements.currentOfferingIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
         let returnOffering: Offering?
         
-        if placements.currentOfferingIdsByPlacement.keys.contains(placement){
+        if placements.currentOfferingIdsByPlacement.keys.contains(placementIdentifier){
             returnOffering = placementOffering
         } else {
             let fallbackOffering = placements.fallbackOfferingId.flatMap { self.all[$0]}
             returnOffering = placementOffering ?? fallbackOffering
         }
         
-        return returnOffering
+        return returnOffering?.copyWithPlacementIdentifier(placementIdentifier: placementIdentifier)
+    }
+}
+
+// TODO: MOVE THIS TO OFFERING FILE
+extension Offering {
+    internal func copyWithPlacementIdentifier(placementIdentifier: String?) -> Offering {
+        let updatedPackages = self.availablePackages.map{ pkg in
+            let newContext = PresentedOfferingContext(
+                offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
+                placementIdentifier: placementIdentifier
+            )
+            
+            return Package(identifier: pkg.identifier,
+                    packageType: pkg.packageType,
+                    storeProduct: pkg.storeProduct,
+                    presentedOfferingContext: newContext
+            )
+        }
+        return Offering(identifier: self.identifier,
+                        serverDescription: self.serverDescription,
+                        metadata: self.metadata,
+                        paywall: self.paywall,
+                        availablePackages: updatedPackages
+        )
     }
 }
