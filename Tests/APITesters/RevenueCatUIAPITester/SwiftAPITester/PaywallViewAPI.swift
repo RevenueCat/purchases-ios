@@ -18,6 +18,7 @@ struct App: View {
     private var purchaseStarted: PurchaseStartedHandler = { }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
+    private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
     private var paywallDismissed: () -> Void = {}
 
@@ -70,9 +71,21 @@ struct App: View {
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                    purchaseCancelled: self.purchaseCancelled
+                                    restoreCompleted: self.purchaseOrRestoreCompleted,
+                                    onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
                                     purchaseStarted: self.purchaseStarted,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseCancelled: self.purchaseCancelled,
+                                    restoreCompleted: self.purchaseOrRestoreCompleted,
+                                    onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
+                                    purchaseStarted: self.purchaseStarted,
+                                    purchaseCompleted: self.purchaseOrRestoreCompleted,
+                                    purchaseCancelled: self.purchaseCancelled,
+                                    restoreStarted: self.restoreStarted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(offering: nil) { (_: CustomerInfo) in false }
@@ -131,6 +144,8 @@ struct App: View {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseCancelled: {
                 self.purchaseCancelled()
+            } restoreStarted: {
+                self.restoreStarted()
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseFailure: {
@@ -179,6 +194,7 @@ struct App: View {
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
+                           restoreStarted: self.restoreStarted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
@@ -191,6 +207,7 @@ struct App: View {
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onRestoreStarted(self.onRestoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
     }
 

@@ -35,6 +35,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
@@ -48,6 +49,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure
@@ -71,6 +73,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
@@ -84,6 +87,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure
@@ -100,6 +104,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
@@ -119,8 +124,9 @@ extension View {
                     purchaseStarted: purchaseStarted,
                     purchaseCompleted: purchaseCompleted,
                     purchaseCancelled: purchaseCancelled,
-                    restoreCompleted: restoreCompleted,
                     purchaseFailure: purchaseFailure,
+                    restoreStarted: restoreStarted,
+                    restoreCompleted: restoreCompleted,
                     restoreFailure: restoreFailure
                 )
             )
@@ -131,11 +137,14 @@ extension View {
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let configuration: PaywallViewConfiguration
+
     let purchaseStarted: PurchaseStartedHandler?
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let purchaseCancelled: PurchaseCancelledHandler?
-    let restoreCompleted: PurchaseOrRestoreCompletedHandler?
     let purchaseFailure: PurchaseFailureHandler?
+
+    let restoreStarted: RestoreStartedHandler?
+    let restoreCompleted: PurchaseOrRestoreCompletedHandler?
     let restoreFailure: PurchaseFailureHandler?
 
     func body(content: Content) -> some View {
@@ -156,6 +165,9 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
                     }
                     .onPurchaseFailure {
                         self.purchaseFailure?($0)
+                    }
+                    .onRestoreStarted {
+                        self.restoreStarted?()
                     }
                     .onRestoreFailure {
                         self.restoreFailure?($0)

@@ -103,6 +103,36 @@ class PresentIfNeededTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testPresentWithRestoreStarted() throws {
+        self.continueAfterFailure = false
+
+        let handler = Self.purchaseHandler.with(delay: 3)
+        var started = false
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { _ in
+                return true
+            } restoreStarted: {
+                started = true
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+        let task = Task.detached {
+            _ = try await handler.restorePurchases()
+        }
+
+        defer {
+            task.cancel()
+            dispose()
+        }
+
+        expect(started).toEventually(beTrue())
+        task.cancel()
+    }
+
     func testPresentWithRestoreHandler() throws {
         var customerInfo: CustomerInfo?
 

@@ -1,5 +1,5 @@
 //
-//  LockedView.swift
+//  UpsellView.swift
 //  PaywallsTester
 //
 //  Created by Andrés Boedo on 9/28/23.
@@ -33,6 +33,15 @@ struct UpsellView: View {
             },
             onDismiss: {
                 print("Paywall dismissed")
+            },
+            onRestoreCompleted: { _ in
+                print("Restore completed")
+            },
+            onRestoreStarted: {
+                print("Restore started")
+            },
+            onRestoreFailure: {
+                print("Restore failed")
             }
         )
     }

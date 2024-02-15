@@ -201,6 +201,10 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didFailPurchasingWith error: NSError)
 
+    /// Notifies that a restore has started in a ``PaywallViewController``.
+    @objc(paywallViewControllerDidStartRestore:)
+    optional func paywallViewControllerDidStartRestore(_ controller: PaywallViewController)
+
     /// Notifies that the restore operation has completed in a ``PaywallViewController``.
     ///
     /// - Warning: Receiving a ``CustomerInfo``does not imply that the user has any entitlements,
@@ -257,6 +261,10 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFailPurchasingWith: error)
             },
+            restoreStarted: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidStartRestore?(self)
+            },
             restoreFailure: { [weak self] error in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
@@ -289,7 +297,9 @@ private struct PaywallContainerView: View {
     let purchaseCancelled: PurchaseCancelledHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
+    let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
+
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
@@ -297,8 +307,9 @@ private struct PaywallContainerView: View {
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
-            .onRestoreCompleted(self.restoreCompleted)
             .onPurchaseFailure(self.purchaseFailure)
+            .onRestoreStarted(self.restoreStarted)
+            .onRestoreCompleted(self.restoreCompleted)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
 

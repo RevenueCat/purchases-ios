@@ -39,6 +39,10 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
+    /// Whether a restore is currently in progress
+    @Published
+    fileprivate(set) var restoreInProgress: Bool = false
+
     /// Set manually by `setRestored(:_)` once the user is notified that restoring was successful..
     @Published
     fileprivate(set) var restoredCustomerInfo: CustomerInfo?
@@ -116,11 +120,15 @@ extension PurchaseHandler {
     /// This allows the UI to display an alert before dismissing the paywall.
     @MainActor
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+        self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
         self.startAction()
-        defer { self.actionInProgress = false }
+        defer {
+            self.restoreInProgress = false
+            self.actionInProgress = false
+        }
 
         do {
             let customerInfo = try await self.purchases.restorePurchases()
@@ -237,6 +245,17 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedInProgressPreferenceKey: PreferenceKey {
+
+    static var defaultValue: Bool = false
+
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct RestoreInProgressPreferenceKey: PreferenceKey {
 
     static var defaultValue: Bool = false
 

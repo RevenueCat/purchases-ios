@@ -65,6 +65,8 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController,
                                didFailPurchasingWith error: NSError) {}
 
+    func paywallViewControllerDidStartRestore(_ controller: PaywallViewController) {}
+
     func paywallViewController(_ controller: PaywallViewController,
                                didFinishRestoringWith customerInfo: CustomerInfo) {}
 

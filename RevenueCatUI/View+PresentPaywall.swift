@@ -73,6 +73,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
@@ -91,6 +92,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
@@ -116,6 +118,8 @@ extension View {
     ///         print("Purchases restored")
     ///     } purchaseFailure: { error in
     ///         print("Error purchasing: \(error)")
+    ///     } restoreStarted: {
+    ///         print("Restore started")
     ///     } restoreFailure: { error in
     ///         print("Error restoring purchases: \(error)")
     ///     } onDismiss: {
@@ -142,6 +146,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
@@ -155,6 +160,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
@@ -180,6 +186,7 @@ extension View {
         purchaseStarted: PurchaseStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
@@ -195,6 +202,7 @@ extension View {
                 purchaseCancelled: purchaseCancelled,
                 restoreCompleted: restoreCompleted,
                 purchaseFailure: purchaseFailure,
+                restoreStarted: restoreStarted,
                 restoreFailure: restoreFailure,
                 onDismiss: onDismiss,
                 content: .optionalOffering(offering),
@@ -224,6 +232,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseFailure: PurchaseFailureHandler?
+    var restoreStarted: RestoreStartedHandler?
     var restoreFailure: PurchaseFailureHandler?
     var onDismiss: (() -> Void)?
 
@@ -241,6 +250,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseFailure: PurchaseFailureHandler?,
+        restoreStarted: RestoreStartedHandler?,
         restoreFailure: PurchaseFailureHandler?,
         onDismiss: (() -> Void)?,
         content: PaywallViewConfiguration.Content,
@@ -254,6 +264,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
         self.purchaseCancelled = purchaseCancelled
+        self.restoreStarted = restoreStarted
         self.restoreCompleted = restoreCompleted
         self.purchaseFailure = purchaseFailure
         self.restoreFailure = restoreFailure
@@ -320,6 +331,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
         .onPurchaseCancelled {
             self.purchaseCancelled?()
+        }
+        .onRestoreStarted {
+            self.restoreStarted?()
         }
         .onRestoreCompleted { customerInfo in
             self.restoreCompleted?(customerInfo)
