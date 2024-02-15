@@ -31,7 +31,7 @@ class OfferingsFactory {
 
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
-                         currentOfferingIdsByPlacement: data.currentOfferingIdsByPlacement,
+                         placements: createPlacement(with: data.placements),
                          response: data)
     }
 
@@ -68,7 +68,17 @@ class OfferingsFactory {
                      product: product,
                      offeringIdentifier: offeringIdentifier)
     }
-
+    
+    func createPlacement(
+        with data: OfferingsResponse.Placements?
+    ) -> Placements? {
+        guard let data else {
+            return nil
+        }
+        
+        return .init(fallbackOfferingId: data.fallbackOfferingId,
+                     currentOfferingIdsByPlacement: data.currentOfferingIdsByPlacement)
+    }
 }
 
 // @unchecked because:
