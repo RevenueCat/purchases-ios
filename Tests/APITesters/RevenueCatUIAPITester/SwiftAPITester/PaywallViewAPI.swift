@@ -207,7 +207,7 @@ struct App: View {
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
-            .onRestoreStarted(self.onRestoreStarted)
+            .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
     }
 
