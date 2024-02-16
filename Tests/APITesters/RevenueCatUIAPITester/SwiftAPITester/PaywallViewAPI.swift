@@ -72,7 +72,7 @@ struct App: View {
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
-                                    purchaseCancelled: self.purchaseCancelled
+                                    purchaseCancelled: self.purchaseCancelled,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", offering: self.offering, fonts: self.fonts,
