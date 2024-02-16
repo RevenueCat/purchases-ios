@@ -115,7 +115,7 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 private extension View {
 
-    func handlePurchases(_ offering: Offering, test: String) -> some View {
+    func handlePurchases(_ offering: Offering) -> some View {
         return self
             .onInAppPurchaseStart { product in
                 guard Purchases.isConfigured else { return }
@@ -124,10 +124,18 @@ private extension View {
                     Logger.appleWarning(Strings.configure.sk2_required_for_swiftui_paywalls)
                 }
 
-//                Purchases.shared.cachePresentedOfferingContext(
-//                    .init(offeringIdentifier: offering.identifier),
-//                    productIdentifier: product.id
-//                )
+                // Find offering context from a matching package
+                let offeringContext = offering.availablePackages.first {
+                    $0.storeProduct.productIdentifier == product.id
+                }?.presentedOfferingContext
+
+                Purchases.shared.cachePresentedOfferingContext(
+                    offeringContext ?? .init(
+                        offeringIdentifier: offering.identifier,
+                        placementIdentifier: nil
+                    ),
+                    productIdentifier: product.id
+                )
             }
     }
 
