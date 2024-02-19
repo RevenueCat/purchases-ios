@@ -307,6 +307,8 @@ struct LoadedOfferingPaywallView: View {
                         value: .init(data: self.purchaseHandler.purchaseResult))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
             .preference(key: PurchaseErrorPreferenceKey.self,
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,

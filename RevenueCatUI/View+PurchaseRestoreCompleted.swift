@@ -30,6 +30,9 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
 
+/// A closure used for notifying of restore initiation.
+public typealias RestoreStartedHandler = @MainActor @Sendable () -> Void
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 extension View {
@@ -121,6 +124,26 @@ extension View {
         _ handler: @escaping PurchaseCancelledHandler
     ) -> some View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
+    }
+
+    /// Invokes the given closure when a restore begins.
+    /// Example:
+    /// ```swift
+    ///  @State
+    ///  var body: some View {
+    ///     PaywallView()
+    ///         .onRestoreStarted {
+    ///             print("Restore started")
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onRestoreStarted(
+        _ handler: @escaping RestoreStartedHandler
+    ) -> some View {
+        return self.modifier(OnRestoreStartedModifier(handler: handler))
     }
 
     /// Invokes the given closure when restore purchases is completed.
@@ -248,6 +271,22 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
+                    self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnRestoreStartedModifier: ViewModifier {
+
+    let handler: RestoreStartedHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(RestoreInProgressPreferenceKey.self) { inProgress in
+                if inProgress {
                     self.handler()
                 }
             }

@@ -29,6 +29,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
         expect(handler.purchaseInProgress) == false
+        expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(beNil())
         expect(handler.restoreError).to(beNil())
@@ -44,6 +45,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == true
         expect(handler.purchaseInProgress) == false
+        expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -55,6 +57,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchased) == false
         expect(handler.purchaseInProgress) == false
+        expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
     }
 
@@ -73,6 +76,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
         expect(handler.purchaseInProgress) == false
+        expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(matchError(error))
         expect(handler.restoreError).to(beNil())
@@ -94,6 +98,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.purchaseInProgress) == true
         expect(handler.actionInProgress) == true
+        expect(handler.restoreInProgress) == false
 
         // Finish purchase
         try asyncHandler.resume()
@@ -121,6 +126,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.actionInProgress) == true
         expect(handler.purchaseInProgress) == false
+        expect(handler.restoreInProgress) == true
 
         // Finish rewstore
         try asyncHandler.resume()
@@ -141,6 +147,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
+        expect(handler.restoreInProgress) == false
 
         handler.setRestored(TestData.customerInfo)
 
@@ -148,6 +155,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
+        expect(handler.restoreInProgress) == false
     }
 
     func testRestorePurchasesWithActiveSubscriptions() async throws {
@@ -180,6 +188,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchased) == false
         expect(handler.purchaseInProgress) == false
         expect(handler.actionInProgress) == false
+        expect(handler.restoreInProgress) == false
         expect(handler.restoreError).to(matchError(error))
         expect(handler.purchaseError).to(beNil())
     }

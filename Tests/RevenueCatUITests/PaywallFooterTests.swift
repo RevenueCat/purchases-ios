@@ -89,6 +89,26 @@ class PaywallFooterTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testPresentWithRestoreStarted() throws {
+        var started = false
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: Self.purchaseHandler,
+                restoreStarted: { started = true }
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.restorePurchases()
+        }
+
+        expect(started).toEventually(beTrue())
+    }
+
     func testPresentWithRestoreHandler() throws {
         var customerInfo: CustomerInfo?
 
