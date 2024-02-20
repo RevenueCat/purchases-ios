@@ -56,8 +56,6 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     purchaseCancelled: self.purchaseCancelled)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
-                                    restoreStarted: self.restoreStarted)
-            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     restoreCompleted: self.purchaseOrRestoreCompleted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     purchaseFailure: self.failureHandler)
@@ -82,9 +80,6 @@ struct App: View {
                                     purchaseCancelled: self.purchaseCancelled)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
-                                    restoreStarted: self.restoreStarted)
-            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
-                                    fonts: self.fonts,
                                     restoreCompleted: self.purchaseOrRestoreCompleted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
@@ -137,7 +132,6 @@ struct App: View {
                                     purchaseStarted: self.purchaseStarted,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseCancelled: self.purchaseCancelled,
-                                    restoreStarted: self.restoreStarted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseFailure: self.failureHandler,
                                     onDismiss: self.paywallDismissed)
@@ -148,7 +142,6 @@ struct App: View {
                                     purchaseStarted: nil,
                                     purchaseCompleted: nil,
                                     purchaseCancelled: nil,
-                                    restoreStarted: nil,
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
@@ -220,8 +213,6 @@ struct App: View {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseCancelled: {
                 self.purchaseCancelled()
-            } restoreStarted: {
-                self.restoreStarted()
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseFailure: {
@@ -240,7 +231,6 @@ struct App: View {
                                     purchaseStarted: nil,
                                     purchaseCompleted: nil,
                                     purchaseCancelled: nil,
-                                    restoreStarted: nil,
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
@@ -300,7 +290,6 @@ struct App: View {
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
-                           restoreStarted: self.restoreStarted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
@@ -309,7 +298,6 @@ struct App: View {
                            purchaseStarted: nil,
                            purchaseCompleted: nil,
                            purchaseCancelled: nil,
-                           restoreStarted: nil,
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
@@ -333,7 +321,6 @@ struct App: View {
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
-                           restoreStarted: self.restoreStarted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
@@ -345,8 +332,6 @@ struct App: View {
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering,
                            purchaseCancelled: self.purchaseCancelled)
-            .paywallFooter(offering: offering,
-                           restoreStarted: self.restoreStarted)
             .paywallFooter(offering: offering,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering,
@@ -372,7 +357,6 @@ struct App: View {
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
-                           restoreStarted: self.restoreStarted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
@@ -392,7 +376,6 @@ struct App: View {
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
-                           restoreStarted: self.restoreStarted,
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
@@ -402,7 +385,6 @@ struct App: View {
                            purchaseStarted: nil,
                            purchaseCompleted: nil,
                            purchaseCancelled: nil,
-                           restoreStarted: nil,
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
