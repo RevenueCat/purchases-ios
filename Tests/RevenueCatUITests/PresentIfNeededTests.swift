@@ -33,15 +33,15 @@ class PresentIfNeededTests: TestCase {
         self.continueAfterFailure = false
 
         let handler = Self.purchaseHandler.with(delay: 3)
-        var started = false
+        var packageBeingPurchased: Package?
 
         let dispose = try Text("")
             .presentPaywallIfNeeded(offering: Self.offering,
                                     introEligibility: .producing(eligibility: .eligible),
                                     purchaseHandler: handler) { _ in
                 return true
-            } purchaseStarted: {
-                started = true
+            } purchaseStarted: { aPackage in
+                packageBeingPurchased = aPackage
             } customerInfoFetcher: {
                 return TestData.customerInfo
             }
@@ -55,7 +55,7 @@ class PresentIfNeededTests: TestCase {
             dispose()
         }
 
-        expect(started).toEventually(beTrue())
+        expect(packageBeingPurchased).toEventuallyNot(beNil())
         task.cancel()
     }
 

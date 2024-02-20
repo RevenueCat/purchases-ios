@@ -181,6 +181,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidStartPurchase:)
     optional func paywallViewControllerDidStartPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that a purchase has started in a ``PaywallViewController``.
+    @objc(paywallViewController:didStartPurchaseWithPackage:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didStartPurchaseWith package: Package)
+
     /// Notifies that a purchase has completed in a ``PaywallViewController``.
     @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -238,9 +243,10 @@ private extension PaywallViewController {
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         let container = PaywallContainerView(
             configuration: self.configuration,
-            purchaseStarted: { [weak self] in
+            purchaseStarted: { [weak self] package in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
+                self.delegate?.paywallViewController?(self, didStartPurchaseWith: package)
             },
             purchaseCompleted: { [weak self] transaction, customerInfo in
                 guard let self else { return }
@@ -292,7 +298,7 @@ private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
 
-    let purchaseStarted: PurchaseStartedHandler
+    let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler

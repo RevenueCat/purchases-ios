@@ -301,8 +301,8 @@ struct LoadedOfferingPaywallView: View {
     var body: some View {
         // Note: preferences need to be applied after `.toolbar` call
         self.content
-            .preference(key: PurchasedInProgressPreferenceKey.self,
-                        value: self.purchaseHandler.purchaseInProgress)
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(data: self.purchaseHandler.purchaseResult))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,

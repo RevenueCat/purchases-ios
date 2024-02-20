@@ -24,6 +24,9 @@ public typealias PurchaseCompletedHandler = @MainActor @Sendable (_ transaction:
 /// A closure used for notifying of purchase initiation.
 public typealias PurchaseStartedHandler = @MainActor @Sendable () -> Void
 
+/// A closure used for notifying of purchase of a package initiation.
+public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ package: Package) -> Void
+
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
@@ -53,6 +56,28 @@ extension View {
     /// [Documentation](https://rev.cat/paywalls)
     public func onPurchaseStarted(
         _ handler: @escaping PurchaseStartedHandler
+    ) -> some View {
+        return self.modifier(OnPurchaseStartedModifier(handler: { _ in
+            handler()
+        }))
+    }
+
+    /// Invokes the given closure when a purchase of a package begins.
+    /// Example:
+    /// ```swift
+    ///  @State
+    ///  var body: some View {
+    ///     PaywallView()
+    ///         .onPurchaseStarted { package in
+    ///             print("Purchase started for package: \(package)")
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onPurchaseStarted(
+        _ handler: @escaping PurchaseOfPackageStartedHandler
     ) -> some View {
         return self.modifier(OnPurchaseStartedModifier(handler: handler))
     }
@@ -221,13 +246,13 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OnPurchaseStartedModifier: ViewModifier {
 
-    let handler: PurchaseStartedHandler
+    let handler: PurchaseOfPackageStartedHandler
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(PurchasedInProgressPreferenceKey.self) { inProgress in
-                if inProgress {
-                    self.handler()
+            .onPreferenceChange(PurchaseInProgressPreferenceKey.self) { package in
+                if let package {
+                    self.handler(package)
                 }
             }
     }

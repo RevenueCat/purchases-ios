@@ -38,7 +38,7 @@ class PaywallFooterTests: TestCase {
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
-                purchaseStarted: { started = true }
+                purchaseStarted: { package in started = true }
             )
             .addToHierarchy()
 
