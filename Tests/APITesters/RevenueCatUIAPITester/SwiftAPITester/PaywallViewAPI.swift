@@ -58,11 +58,11 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     restoreStarted: self.restoreStarted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
-                                    restoreCompleted: self.restoreCompleted)
+                                    restoreCompleted: self.purchaseOrRestoreCompleted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
-                                    purchaseFailure: self.purchaseFailure)
+                                    purchaseFailure: self.failureHandler)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
-                                    restoreFailure: self.restoreFailure)
+                                    restoreFailure: self.failureHandler)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     onDismiss: self.paywallDismissed)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
@@ -85,13 +85,13 @@ struct App: View {
                                     restoreStarted: self.restoreStarted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
-                                    restoreCompleted: self.restoreCompleted)
+                                    restoreCompleted: self.purchaseOrRestoreCompleted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
-                                    purchaseFailure: self.purchaseFailure)
+                                    purchaseFailure: self.failureHandler)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
-                                    restoreFailure: self.restoreFailure)
+                                    restoreFailure: self.failureHandler)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     onDismiss: self.paywallDismissed)
@@ -141,6 +141,18 @@ struct App: View {
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     purchaseFailure: self.failureHandler,
                                     onDismiss: self.paywallDismissed)
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
+                                    offering: self.offering,
+                                    fonts: self.fonts,
+                                    presentationMode: .fullScreen,
+                                    purchaseStarted: nil,
+                                    purchaseCompleted: nil,
+                                    purchaseCancelled: nil,
+                                    restoreStarted: nil,
+                                    restoreCompleted: nil,
+                                    purchaseFailure: nil,
+                                    restoreFailure: nil,
+                                    onDismiss: nil)
             .presentPaywallIfNeeded(offering: nil) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(offering: self.offering) { (_: CustomerInfo) in false }
             .presentPaywallIfNeeded(fonts: self.fonts) { (_: CustomerInfo) in false }
@@ -219,6 +231,20 @@ struct App: View {
             } onDismiss: {
                 self.paywallDismissed()
             }
+            .presentPaywallIfNeeded(offering: nil,
+                                    fonts: self.fonts,
+                                    presentationMode: .fullScreen,
+                                    shouldDisplay: { (_: CustomerInfo) in
+                                        false
+                                    },
+                                    purchaseStarted: nil,
+                                    purchaseCompleted: nil,
+                                    purchaseCancelled: nil,
+                                    restoreStarted: nil,
+                                    restoreCompleted: nil,
+                                    purchaseFailure: nil,
+                                    restoreFailure: nil,
+                                    onDismiss: nil)
     }
 
     @ViewBuilder
@@ -229,15 +255,15 @@ struct App: View {
             .paywallFooter(purchaseStarted: self.purchaseStarted)
             .paywallFooter(purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(purchaseCancelled: self.purchaseCancelled)
-            .paywallFooter(restoreCompleted: self.restoreCompleted)
-            .paywallFooter(purchaseFailure: self.purchaseFailure)
-            .paywallFooter(restoreFailure: self.restoreFailure)
+            .paywallFooter(restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooter(purchaseFailure: self.failureHandler)
+            .paywallFooter(restoreFailure: self.failureHandler)
             .paywallFooter(purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
-                           restoreCompleted: self.restoreCompleted,
-                           purchaseFailure: self.purchaseFailure,
-                           restoreFailure: self.restoreFailure)
+                           restoreCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseFailure: self.failureHandler,
+                           restoreFailure: self.failureHandler)
             .paywallFooter(fonts: self.fonts)
             .paywallFooter(purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
@@ -269,6 +295,24 @@ struct App: View {
                            fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
+            .paywallFooter(condensed: true,
+                           fonts: self.fonts,
+                           purchaseStarted: self.purchaseStarted,
+                           purchaseCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseCancelled: self.purchaseCancelled,
+                           restoreStarted: self.restoreStarted,
+                           restoreCompleted: self.purchaseOrRestoreCompleted,
+                           purchaseFailure: self.failureHandler,
+                           restoreFailure: self.failureHandler)
+            .paywallFooter(condensed: true,
+                           fonts: self.fonts,
+                           purchaseStarted: nil,
+                           purchaseCompleted: nil,
+                           purchaseCancelled: nil,
+                           restoreStarted: nil,
+                           restoreCompleted: nil,
+                           purchaseFailure: nil,
+                           restoreFailure: nil)
             .paywallFooter(offering: offering)
             .paywallFooter(offering: offering,
                            condensed: true)
@@ -304,11 +348,11 @@ struct App: View {
             .paywallFooter(offering: offering,
                            restoreStarted: self.restoreStarted)
             .paywallFooter(offering: offering,
-                           restoreCompleted: self.restoreCompleted)
+                           restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering,
-                           purchaseFailure: self.purchaseFailure)
+                           purchaseFailure: self.failureHandler)
             .paywallFooter(offering: offering,
-                           restoreFailure: self.restoreFailure)
+                           restoreFailure: self.failureHandler)
             .paywallFooter(offering: offering,
                            fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
@@ -352,6 +396,16 @@ struct App: View {
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
+            .paywallFooter(offering: offering,
+                           condensed: true,
+                           fonts: self.fonts,
+                           purchaseStarted: nil,
+                           purchaseCompleted: nil,
+                           purchaseCancelled: nil,
+                           restoreStarted: nil,
+                           restoreCompleted: nil,
+                           purchaseFailure: nil,
+                           restoreFailure: nil)
     }
 
     @ViewBuilder
