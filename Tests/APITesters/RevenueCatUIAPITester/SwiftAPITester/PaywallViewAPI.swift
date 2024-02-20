@@ -142,7 +142,6 @@ struct App: View {
                                     purchaseStarted: nil,
                                     purchaseCompleted: nil,
                                     purchaseCancelled: nil,
-                                    restoreStarted: nil,
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
@@ -214,8 +213,6 @@ struct App: View {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseCancelled: {
                 self.purchaseCancelled()
-            } restoreStarted: {
-                self.restoreStarted()
             } restoreCompleted: {
                 self.purchaseOrRestoreCompleted($0)
             } purchaseFailure: {
@@ -234,7 +231,6 @@ struct App: View {
                                     purchaseStarted: nil,
                                     purchaseCompleted: nil,
                                     purchaseCancelled: nil,
-                                    restoreStarted: nil,
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
@@ -302,7 +298,6 @@ struct App: View {
                            purchaseStarted: nil,
                            purchaseCompleted: nil,
                            purchaseCancelled: nil,
-                           restoreStarted: nil,
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
@@ -390,7 +385,6 @@ struct App: View {
                            purchaseStarted: nil,
                            purchaseCompleted: nil,
                            purchaseCancelled: nil,
-                           restoreStarted: nil,
                            restoreCompleted: nil,
                            purchaseFailure: nil,
                            restoreFailure: nil)
