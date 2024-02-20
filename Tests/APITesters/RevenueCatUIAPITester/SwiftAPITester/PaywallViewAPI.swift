@@ -294,7 +294,7 @@ struct App: View {
     var checkDeprecatedPaywallFooter: some View {
         Text("")
             .paywallFooter(purchaseStarted: self.purchaseStarted)
-            .paywallFooter(condensed: true, 
+            .paywallFooter(condensed: true,
                            purchaseStarted: self.purchaseStarted)
             .paywallFooter(condensed: true,
                            fonts: self.fonts,
