@@ -49,7 +49,6 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", fonts: self.fonts)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .sheet)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", presentationMode: .fullScreen)
-
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     purchaseStarted: self.purchaseStarted)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
@@ -66,11 +65,9 @@ struct App: View {
                                     restoreFailure: self.restoreFailure)
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     onDismiss: self.paywallDismissed)
-
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     offering: self.offering,
                                     fonts: self.fonts)
-
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     purchaseStarted: self.purchaseStarted)
@@ -98,7 +95,6 @@ struct App: View {
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     onDismiss: self.paywallDismissed)
-
             .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
@@ -109,7 +105,7 @@ struct App: View {
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
-            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", 
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     fonts: self.fonts,
                                     purchaseStarted: self.purchaseStarted,
                                     purchaseCompleted: self.purchaseOrRestoreCompleted,
@@ -135,7 +131,7 @@ struct App: View {
                                     purchaseCancelled: self.purchaseCancelled,
                                     restoreCompleted: self.purchaseOrRestoreCompleted,
                                     onDismiss: self.paywallDismissed)
-            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "", 
+            .presentPaywallIfNeeded(requiredEntitlementIdentifier: "",
                                     offering: self.offering,
                                     fonts: self.fonts,
                                     purchaseStarted: self.purchaseStarted,
@@ -236,25 +232,21 @@ struct App: View {
             .paywallFooter(restoreCompleted: self.restoreCompleted)
             .paywallFooter(purchaseFailure: self.purchaseFailure)
             .paywallFooter(restoreFailure: self.restoreFailure)
-
-            .paywallFooter(purchaseStarted: self.purchaseStarted, 
+            .paywallFooter(purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            purchaseCancelled: self.purchaseCancelled,
                            restoreCompleted: self.restoreCompleted,
                            purchaseFailure: self.purchaseFailure,
                            restoreFailure: self.restoreFailure)
-
-
             .paywallFooter(fonts: self.fonts)
             .paywallFooter(purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(fonts: self.fonts, purchaseCompleted: self.purchaseOrRestoreCompleted)
-
             .paywallFooter(condensed: true)
             .paywallFooter(condensed: true, fonts: self.fonts)
             .paywallFooter(condensed: true, purchaseStarted: self.purchaseStarted)
             .paywallFooter(condensed: true, purchaseStarted: nil)
             .paywallFooter(condensed: true, purchaseCompleted: self.purchaseOrRestoreCompleted)
-            .paywallFooter(condensed: true, 
+            .paywallFooter(condensed: true,
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(condensed: true,
@@ -263,12 +255,11 @@ struct App: View {
             .paywallFooter(condensed: true,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
-
             .paywallFooter(condensed: true,
                            fonts: self.fonts,
                            purchaseStarted: self.purchaseStarted)
             .paywallFooter(condensed: true,
-                           fonts: self.fonts, 
+                           fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(condensed: true,
                            fonts: self.fonts,
@@ -278,11 +269,10 @@ struct App: View {
                            fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
-
             .paywallFooter(offering: offering)
             .paywallFooter(offering: offering,
                            condensed: true)
-            .paywallFooter(offering: offering, 
+            .paywallFooter(offering: offering,
                            condensed: true,
                            fonts: self.fonts)
             .paywallFooter(offering: offering,
@@ -291,7 +281,7 @@ struct App: View {
             .paywallFooter(offering: offering,
                            condensed: true,
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
-            .paywallFooter(offering: offering, 
+            .paywallFooter(offering: offering,
                            condensed: true,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering,
@@ -303,8 +293,7 @@ struct App: View {
                            restoreCompleted: self.purchaseOrRestoreCompleted,
                            purchaseFailure: self.failureHandler,
                            restoreFailure: self.failureHandler)
-
-            .paywallFooter(offering: offering, 
+            .paywallFooter(offering: offering,
                            fonts: self.fonts)
             .paywallFooter(offering: offering,
                            purchaseStarted: self.purchaseStarted)
@@ -320,7 +309,7 @@ struct App: View {
                            purchaseFailure: self.purchaseFailure)
             .paywallFooter(offering: offering,
                            restoreFailure: self.restoreFailure)
-            .paywallFooter(offering: offering, 
+            .paywallFooter(offering: offering,
                            fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted)
             .paywallFooter(offering: offering,
@@ -334,7 +323,7 @@ struct App: View {
                            fonts: self.fonts,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
                            restoreCompleted: self.purchaseOrRestoreCompleted)
-            .paywallFooter(offering: offering, 
+            .paywallFooter(offering: offering,
                            fonts: self.fonts,
                            purchaseStarted: self.purchaseStarted,
                            purchaseCompleted: self.purchaseOrRestoreCompleted,
