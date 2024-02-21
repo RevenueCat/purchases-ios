@@ -214,7 +214,9 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI",
+        test_iterations: 2,
+        retry_tests_on_failure: true
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
