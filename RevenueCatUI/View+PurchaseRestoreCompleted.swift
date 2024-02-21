@@ -22,6 +22,11 @@ public typealias PurchaseCompletedHandler = @MainActor @Sendable (_ transaction:
                                                                   _ customerInfo: CustomerInfo) -> Void
 
 /// A closure used for notifying of purchase initiation.
+@available(iOS, deprecated: 1, renamed: "PurchaseOfPackageStartedHandler")
+@available(tvOS, deprecated: 1, renamed: "PurchaseOfPackageStartedHandler")
+@available(watchOS, deprecated: 1, renamed: "PurchaseOfPackageStartedHandler")
+@available(macOS, deprecated: 1, renamed: "PurchaseOfPackageStartedHandler")
+@available(macCatalyst, deprecated: 1, renamed: "PurchaseOfPackageStartedHandler")
 public typealias PurchaseStartedHandler = @MainActor @Sendable () -> Void
 
 /// A closure used for notifying of purchase of a package initiation.
@@ -54,6 +59,11 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(iOS, deprecated: 1, renamed: "onPurchaseStarted(handler:)")
+    @available(tvOS, deprecated: 1, renamed: "onPurchaseStarted(handler:)")
+    @available(watchOS, deprecated: 1, renamed: "onPurchaseStarted(handler:)")
+    @available(macOS, deprecated: 1, renamed: "onPurchaseStarted(handler:)")
+    @available(macCatalyst, deprecated: 1, renamed: "onPurchaseStarted(handler:)")
     public func onPurchaseStarted(
         _ handler: @escaping PurchaseStartedHandler
     ) -> some View {
