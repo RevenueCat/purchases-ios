@@ -17,7 +17,9 @@ files_with_version_number = {
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
-  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
+  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
+  './scripts/docs/v5_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v5_api_migration_guide']
 }
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
@@ -756,8 +758,7 @@ platform :ios do
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
 
-        docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
-        docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/v4_api_migration_guide.html")
+        docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
         # clone docs repo
         Dir.mktmpdir do |docs_repo_clone_dir|
           Dir.chdir(docs_repo_clone_dir) do
@@ -766,17 +767,14 @@ platform :ios do
               # copy docs generated in the previous step into the docs folder
               # and push the changes
               docs_destination_folder = "docs/#{version_number}"
-              index_destination_path = "docs/index.html"
-              migration_guide_destination_path = "docs/v4_api_migration_guide.html"
               FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              FileUtils.cp docs_index_path, index_destination_path
-              FileUtils.cp docs_migration_guide_path, migration_guide_destination_path
+              docs_files.each do |file|
+                FileUtils.cp file, "docs/"
+              end
 
               # using sh instead of fastlane commands because fastlane would run
               # from the repo root
-              sh("git", "add", docs_destination_folder)
-              sh("git", "add", index_destination_path)
-              sh("git", "add", migration_guide_destination_path)
+              sh("git", "add", "docs/*.html")
               sh("git", "commit", "-m", "Update documentation for #{version_number}")
               sh("git", "push")
             end
