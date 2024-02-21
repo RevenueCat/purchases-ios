@@ -15,6 +15,7 @@ struct App: View {
     private var offering: Offering
     private var fonts: PaywallFontProvider
     private var purchaseOrRestoreCompleted: PurchaseOrRestoreCompletedHandler = { (_: CustomerInfo) in }
+    @available(*, deprecated) // Ignore deprecation warnings
     private var purchaseStarted: PurchaseStartedHandler = { }
     private var purchaseOfPackageStarted: PurchaseOfPackageStartedHandler = { (_: Package) in }
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
@@ -540,9 +541,15 @@ struct App: View {
     }
 
     @ViewBuilder
-    var checkOnPurchaseAndRestoreCompleted: some View {
+    @available(*, deprecated) // Ignore deprecation warnings
+    var checkDeprecatedPaywallViewModifiers: some View {
         Text("")
             .onPurchaseStarted(self.purchaseStarted)
+    }
+
+    @ViewBuilder
+    var checkPaywallViewModifiers: some View {
+        Text("")
             .onPurchaseStarted(self.purchaseOfPackageStarted)
             .onPurchaseCompleted(self.purchaseOrRestoreCompleted)
             .onPurchaseCompleted(self.purchaseCompleted)
