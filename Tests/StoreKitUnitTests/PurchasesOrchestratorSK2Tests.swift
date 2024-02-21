@@ -101,6 +101,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
     }
 
+    func testPurchaseWithPromotionalOfferPostsReceiptIfSuccessful() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        throw XCTSkip("Purchasing with a promo offer in SK2 using a StoreKit Config file returns an unknown error")
+    }
+
     func testPurchaseWithInvalidPromotionalOfferSignatureFails() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
