@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchasesOrchestratorTests.swift
+//  BasePurchasesOrchestratorTests.swift
 //
 //  Created by Andrés Boedo on 1/9/21.
 
