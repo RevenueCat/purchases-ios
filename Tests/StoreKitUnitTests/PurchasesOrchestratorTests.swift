@@ -37,10 +37,10 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws
 
+    #if !os(tvOS) && !os(watchOS)
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
     func testPurchasePostsAdServicesTokenAndSubscriberAttributes() async throws
+    #endif
 
     // MARK: - Promotional Offers
 

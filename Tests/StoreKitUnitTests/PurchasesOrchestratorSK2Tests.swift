@@ -323,8 +323,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.aadAttributionToken).to(beNil())
     }
 
-    @available(tvOS, unavailable)
-    @available(watchOS, unavailable)
+    #if !os(tvOS) && !os(watchOS)
     func testPurchasePostsAdServicesTokenAndSubscriberAttributes() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
@@ -367,6 +366,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.aadAttributionToken) == token
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.unsyncedAttributes) == attributes
     }
+    #endif
 
     // MARK: - Promotional Offers
 
