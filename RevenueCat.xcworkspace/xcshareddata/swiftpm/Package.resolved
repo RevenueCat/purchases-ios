@@ -21,16 +21,25 @@
     {
       "identity" : "nimble",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:Quick/Nimble.git",
+      "location" : "https://github.com/quick/nimble",
       "state" : {
         "revision" : "1f3bde57bde12f5e7b07909848c071e9b73d6edc",
         "version" : "10.0.0"
       }
     },
     {
+      "identity" : "ohhttpstubs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AliSoftware/OHHTTPStubs.git",
+      "state" : {
+        "revision" : "12f19662426d0434d6c330c6974d53e2eb10ecd9",
+        "version" : "9.1.0"
+      }
+    },
+    {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:pointfreeco/swift-snapshot-testing.git",
+      "location" : "https://github.com/pointfreeco/swift-snapshot-testing",
       "state" : {
         "revision" : "26ed3a2b4a2df47917ca9b790a57f91285b923fb",
         "version" : "1.12.0"
