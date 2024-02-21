@@ -1,9 +1,6 @@
-### RevenueCatUI
-* `Paywalls`: don't dismiss footer paywalls automatically (#3683) via NachoSoto (@NachoSoto)
-* `Paywalls`: fix `PaywallColor.init(light:dark:)` (#3685) via NachoSoto (@NachoSoto)
-* `Paywalls`: fix template 1 header overflow (#3678) via NachoSoto (@NachoSoto)
+### New Features
+* `Paywalls`: new `.onRestoreStarted` modifier (#3694) via Cesar de la Vega (@vegaro)
 ### Other Changes
-* `CI`: skip `RevenueCatUI` API tests when generating snapshots (#3680) via NachoSoto (@NachoSoto)
-* `Paywalls`: improve `PreviewableTemplate`'s display name (#3682) via NachoSoto (@NachoSoto)
-* `CI`: split load shedder integration tests (#3675) via NachoSoto (@NachoSoto)
-* Run load shedder integration tests on release branches (#3673) via Toni Rico (@tonidero)
+* Remove `restoreStarted` from extensions (#3698) via Cesar de la Vega (@vegaro)
+* Add more Paywalls API tests (#3697) via Cesar de la Vega (@vegaro)
+* `Paywalls`: Add `purchaseCancelled` parameter to `paywallFooter` modifier (#3692) via Toni Rico (@tonidero)
