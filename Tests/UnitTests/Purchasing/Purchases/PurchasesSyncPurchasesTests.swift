@@ -145,8 +145,9 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(.emptyInfo)
         self.purchases.syncPurchases(completion: nil)
-        expect(self.backend.postReceiptDataCalled).to(beTrue())
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
     }
 
     @available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *)

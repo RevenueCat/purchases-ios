@@ -92,13 +92,15 @@ class BasePurchasesTests: TestCase {
                                        attributionPoster: self.attributionPoster,
                                        systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
-        self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
-                                                       operationDispatcher: self.mockOperationDispatcher,
-                                                       deviceCache: self.deviceCache,
-                                                       backend: self.backend,
-                                                       transactionFetcher: self.mockTransactionFetcher,
-                                                       transactionPoster: self.transactionPoster,
-                                                       systemInfo: self.systemInfo)
+        self.customerInfoManager = MockCustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.deviceCache,
+            backend: self.backend,
+            transactionFetcher: self.mockTransactionFetcher,
+            transactionPoster: self.transactionPoster,
+            systemInfo: self.systemInfo
+        )
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
                                                          systemInfo: self.systemInfo,
@@ -163,7 +165,7 @@ class BasePurchasesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!
-    var customerInfoManager: CustomerInfoManager!
+    var customerInfoManager: MockCustomerInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
