@@ -1105,7 +1105,7 @@ private extension PurchasesOrchestrator {
 
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
-                let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
+                let transaction = await self.transactionFetcher.firstVerifiedTransaction
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                     self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                                           fetchPolicy: .cachedOrFetched) { result in
