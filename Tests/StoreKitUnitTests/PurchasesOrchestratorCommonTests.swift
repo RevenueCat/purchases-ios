@@ -18,7 +18,9 @@ import StoreKit
 import XCTest
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
-class PurchasesOrchestratorCommonTests: PurchasesOrchestratorTestCase {
+class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
+
+    // MARK: - TestStoreProduct
 
     func testPurchasingTestProductFails() async throws {
         let error = await withCheckedContinuation { continuation in
@@ -48,7 +50,9 @@ class PurchasesOrchestratorCommonTests: PurchasesOrchestratorTestCase {
         expect(error).to(matchError(ErrorCode.productNotAvailableForPurchaseError))
     }
 
-#if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+    #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS
+
+    // MARK: - showManageSubscription
 
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)
@@ -64,6 +68,8 @@ class PurchasesOrchestratorCommonTests: PurchasesOrchestratorTestCase {
 
         expect(receivedError).to(matchError(ErrorCode.customerInfoError))
     }
+
+    // MARK: - RefundRequest
 
     @available(iOS 15.0, macCatalyst 15.0, *)
     @available(watchOS, unavailable)
@@ -153,7 +159,9 @@ class PurchasesOrchestratorCommonTests: PurchasesOrchestratorTestCase {
         }
     }
 
-#endif
+    #endif
+
+    // MARK: - allowSharingAppStoreAccount
 
     func testRestorePurchasesDoesNotLogWarningIfAllowSharingAppStoreAccountIsNotDefined() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo

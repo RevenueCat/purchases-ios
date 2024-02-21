@@ -41,8 +41,14 @@ class BaseBackendTests: TestCase {
         self.createDependencies(dangerousSettings: self.dangerousSettings)
     }
 
-    final func createDependencies(dangerousSettings: DangerousSettings? = nil,
-                                  storeKitVersion: StoreKitVersion = .default) {
+    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+        // Need to force StoreKit 1 because we use iOS 13 snapshots
+        // for watchOS tests which contain StoreKit 1 headers
+        #if os(watchOS)
+        let storeKitVersion = StoreKitVersion.storeKit1
+        #else
+        let storeKitVersion = StoreKitVersion.default
+        #endif
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,

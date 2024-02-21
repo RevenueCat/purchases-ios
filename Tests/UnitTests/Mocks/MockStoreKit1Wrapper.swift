@@ -16,6 +16,7 @@ class MockStoreKit1Wrapper: StoreKit1Wrapper {
 
     var mockAddPaymentTransactionState: SKPaymentTransactionState = .purchasing
     var mockCallUpdatedTransactionInstantly = false
+    var mockTransactionError: NSError?
 
     override func add(_ newPayment: SKPayment) {
         payment = newPayment
@@ -25,6 +26,7 @@ class MockStoreKit1Wrapper: StoreKit1Wrapper {
             let transaction = MockTransaction()
             transaction.mockPayment = newPayment
             transaction.mockState = mockAddPaymentTransactionState
+            transaction.mockError = mockTransactionError
             delegate?.storeKit1Wrapper(self, updatedTransaction: transaction)
         }
     }
