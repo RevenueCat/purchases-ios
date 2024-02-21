@@ -17,6 +17,7 @@ class MockOfferingsFactory: OfferingsFactory {
         if emptyOfferings {
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
+                             currentOfferingIdsByPlacement: [:],
                              response: .init(currentOfferingId: "base", offerings: []))
         }
         if nilOfferings {
@@ -40,6 +41,7 @@ class MockOfferingsFactory: OfferingsFactory {
                     ]
                 )],
             currentOfferingID: "base",
+            currentOfferingIdsByPlacement: [:],
             response: .init(currentOfferingId: "base", offerings: [
                 .init(identifier: "base", description: "This is the base offering",
                       packages: [

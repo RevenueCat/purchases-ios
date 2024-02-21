@@ -15,6 +15,7 @@
 + (void)checkAPI {
     RCOfferings *o;
     RCOffering *of = o.current;
+    of = [o getCurrentOfferingForPlacement:@""];
     NSDictionary<NSString *, RCOffering *> *a = o.all;
     of = [o offeringWithIdentifier:nil];
     of = [o offeringWithIdentifier:@""];
