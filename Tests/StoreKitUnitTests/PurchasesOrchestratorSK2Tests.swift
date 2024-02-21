@@ -402,6 +402,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testGetPromotionalOfferFailsWithIneligibleIfNoTransactionIsFound() async throws {
+        // Non-renewable transactions do not count towards eligibility
+        let transaction = try await createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
+
         self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = nil
 
         let product = try await self.fetchSk2Product()
@@ -585,9 +589,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     // MARK: - Sync Purchases
 
-    func testSyncPurchasesPostsReceipt() async throws {
-        let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
+    func verifySyncPurchases(transaction: StoreTransaction) async throws {
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
         let product = try await self.fetchSk2StoreProduct()
         self.productsManager.stubbedSk2StoreProductsResult = .success([product])
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
@@ -601,9 +604,29 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
+    func testSyncPurchasesPostsReceipt() async throws {
+        let transaction = try await createTransaction(finished: true)
+        try await verifySyncPurchases(transaction: transaction)
+    }
+
+    func testSyncPurchasesPostsReceiptWithNonConsumableTransaction() async throws {
+        let transaction = try await createTransaction(productID: Self.nonConsumableProductId, finished: true)
+        try await verifySyncPurchases(transaction: transaction)
+    }
+
+    func testSyncPurchasesPostsReceiptWithConsumableTransaction() async throws {
+        let transaction = try await createTransaction(productID: Self.consumableProductId, finished: true)
+        try await verifySyncPurchases(transaction: transaction)
+    }
+
+    func testSyncPurchasesPostsReceiptWithNonRenewableTransaction() async throws {
+        let transaction = try await createTransaction(productID: Self.nonRenewableProductId, finished: true)
+        try await verifySyncPurchases(transaction: transaction)
+    }
+
     func testSyncPurchasesSK2PostsReceiptInXcodeEnvironment() async throws {
         let transaction = try await createTransaction(finished: true, environment: .xcode)
-        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
         let receipt = StoreKit2Receipt(
             environment: .xcode,
             subscriptionStatusBySubscriptionGroupId: [
@@ -632,7 +655,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSyncPurchasesDoesntPostReceiptAndReturnsCustomerInfoIfNoTransaction() async throws {
-        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = nil
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
         self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
@@ -645,7 +668,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     func testSyncPurchasesCallsSuccessDelegateMethod() async throws {
         let transaction = try await createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
 
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
@@ -658,7 +681,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     func testSyncPurchasesPassesErrorOnFailure() async throws {
         let transaction = try await self.createTransaction(finished: true)
-        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
+        self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = transaction
 
         let expectedError: BackendError = .missingAppUserID()
 
