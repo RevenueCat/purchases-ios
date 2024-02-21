@@ -119,15 +119,13 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let product = try await fetchSk1Product()
-        let storeProduct = StoreProduct(sk1Product: product)
-
         let offer = PromotionalOffer.SignedData(identifier: "",
                                                 keyIdentifier: "",
                                                 nonce: UUID(),
                                                 signature: "",
                                                 timestamp: 0)
 
-        _ = await withCheckedContinuation { continuation in
+        let (transaction, customerInfo, error, userCancelled)  = await withCheckedContinuation { continuation in
             orchestrator.purchase(sk1Product: product,
                                   promotionalOffer: offer,
                                   package: nil,
@@ -136,6 +134,11 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
+        expect(transaction).toNot(beNil())
+        expect(transaction?.sk1Transaction?.payment.paymentDiscount).toNot(beNil())
+        expect(customerInfo) == mockCustomerInfo
+        expect(error).to(beNil())
+        expect(userCancelled) == false
         expect(self.backend.invokedPostReceiptDataCount) == 1
         expect(self.backend.invokedPostReceiptDataParameters?.productData).toNot(beNil())
     }
@@ -160,6 +163,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
         expect(transaction).toNot(beNil())
+        expect(transaction?.sk1Transaction?.payment.paymentDiscount).toNot(beNil())
         expect(customerInfo).to(beNil())
         expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
         expect(userCancelled) == false
@@ -550,7 +554,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - TransactionListenerDelegate
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testDoesNotListenForSK2TransactionsWithSK2Disabled() throws {
+    func testSK1DoesNotListenForSK2Transactions() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()

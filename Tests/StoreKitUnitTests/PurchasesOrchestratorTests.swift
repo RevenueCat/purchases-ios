@@ -25,6 +25,8 @@ protocol PurchasesOrchestratorTests {
 
     func testPurchaseDoesNotPostReceiptIfPurchaseFailed() async throws
 
+    func testPurchaseWithPromotionalOfferPostsReceiptIfSuccessful() async throws
+
     func testPurchaseWithInvalidPromotionalOfferSignatureFails() async throws
 
     // MARK: - Paywalls

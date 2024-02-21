@@ -124,9 +124,27 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
     }
 
+    func testPurchaseCancelled() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
+
+        let product = try await self.fetchSk2Product()
+
+        let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
+                                                                                          package: nil,
+                                                                                          promotionalOffer: nil)
+
+        expect(transaction).to(beNil())
+        expect(customerInfo) == self.mockCustomerInfo
+        expect(cancelled) == false
+        expect(self.backend.invokedPostReceiptData) == false
+    }
+
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
-    func testPurchaseCancelledWithSimulatedError() async throws {
+    func testPurchaseSK2CancelledWithSimulatedError() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
@@ -159,24 +177,6 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
     #endif
-
-    func testPurchaseCancelled() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
-        self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
-
-        let product = try await self.fetchSk2Product()
-
-        let (transaction, customerInfo, cancelled) = try await self.orchestrator.purchase(sk2Product: product,
-                                                                                          package: nil,
-                                                                                          promotionalOffer: nil)
-
-        expect(transaction).to(beNil())
-        expect(customerInfo) == self.mockCustomerInfo
-        expect(cancelled) == false
-        expect(self.backend.invokedPostReceiptData) == false
-    }
 
     // MARK: - Purchasing, StoreKit 2 only
 
@@ -559,7 +559,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.source.initiationSource) == .queue
     }
 
-    func testListensForSK2TransactionsWithSK2Enabled() throws {
+    func testSK2ListensForSK2Transactions() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()
