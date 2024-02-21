@@ -18,6 +18,12 @@ import XCTest
 
 class StoreKitVersionTests: TestCase {
 
+    func testDefaultIsStoreKit2() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        expect(StoreKitVersion.default) == .storeKit2
+    }
+
     func testVersionStringIsStoreKit1IfStoreKit2EnabledButNotAvailable() throws {
         try AvailabilityChecks.iOS15APINotAvailableOrSkipTest()
 

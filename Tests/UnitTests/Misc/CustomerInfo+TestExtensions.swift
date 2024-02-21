@@ -38,7 +38,8 @@ extension CustomerInfo {
             "original_app_user_id": "app_user_id",
             "subscriptions": [:] as [String: Any],
             "other_purchases": [:] as [String: Any],
-            "original_application_version": "1.0"
+            "original_application_version": "1.0",
+            "original_purchase_date": "2019-07-17T00:05:54Z"
         ] as [String: Any]
     ])
 
