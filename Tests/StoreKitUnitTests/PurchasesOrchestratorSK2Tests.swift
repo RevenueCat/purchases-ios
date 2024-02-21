@@ -426,6 +426,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testGetPromotionalOfferFailsWithIneligibleIfBackendReturnsIneligible() async throws {
+        let transaction = try await createTransaction(finished: true)
+        self.mockTransactionFetcher.stubbedFirstVerifiedAutoRenewableTransaction = transaction
         self.offerings.stubbedPostOfferCompletionResult = .failure(
             .networkError(
                 .errorResponse(
@@ -456,6 +458,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             fail("Expected error")
         } catch let purchasesError as PurchasesError {
             expect(purchasesError.error).to(matchError(ErrorCode.ineligibleError))
+            expect(self.offerings.invokedPostOfferCount) == 1
+            expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
+            expect(self.offerings.invokedPostOfferParameters?.data?.serialized()) == transaction.jwsRepresentation
         } catch {
             fail("Unexpected error: \(error)")
         }
