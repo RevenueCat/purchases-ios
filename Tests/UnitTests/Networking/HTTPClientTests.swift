@@ -815,7 +815,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
 
         let headerPresent: Atomic<Bool> = false
 
-        let version = self.systemInfo.storeKitVersion.debugDescription
+        let version = self.systemInfo.storeKitVersion.effectiveVersion.debugDescription
 
         stub(condition: hasHeaderNamed("X-StoreKit-Version",
                                        value: version)) { _ in
