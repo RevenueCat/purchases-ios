@@ -74,8 +74,8 @@ class MockCustomerInfoManager: CustomerInfoManager {
                                completion: CustomerInfoCompletion?) {
         self.invokedCustomerInfo = true
         self.invokedCustomerInfoCount += 1
-        self.invokedCustomerInfoParameters = (appUserID, fetchPolicy, nil)
-        self.invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, nil))
+        self.invokedCustomerInfoParameters = (appUserID, fetchPolicy, completion)
+        self.invokedCustomerInfoParametersList.append((appUserID, fetchPolicy, completion))
 
         OperationDispatcher.dispatchOnMainActor {
             completion?(self.stubbedCustomerInfoResult)

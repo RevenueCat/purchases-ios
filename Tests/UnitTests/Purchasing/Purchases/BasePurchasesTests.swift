@@ -92,7 +92,7 @@ class BasePurchasesTests: TestCase {
                                        attributionPoster: self.attributionPoster,
                                        systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
-        self.customerInfoManager = MockCustomerInfoManager(
+        self.customerInfoManager = CustomerInfoManager(
             offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
             operationDispatcher: self.mockOperationDispatcher,
             deviceCache: self.deviceCache,
@@ -165,7 +165,7 @@ class BasePurchasesTests: TestCase {
     var mockTransactionsManager: MockTransactionsManager!
     var attributionFetcher: MockAttributionFetcher!
     var attributionPoster: AttributionPoster!
-    var customerInfoManager: MockCustomerInfoManager!
+    var customerInfoManager: CustomerInfoManager!
     var mockOfferingsManager: MockOfferingsManager!
     var mockOfflineEntitlementsManager: MockOfflineEntitlementsManager!
     var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!

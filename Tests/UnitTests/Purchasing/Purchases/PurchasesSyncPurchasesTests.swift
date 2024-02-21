@@ -141,13 +141,13 @@ class PurchasesSyncPurchasesTests: BasePurchasesTests {
     func testSyncPurchasesPostsTheReceiptIfAutoSyncPurchasesSettingIsOff() {
         self.systemInfo = MockSystemInfo(platformInfo: nil,
                                          finishTransactions: false,
+                                         storeKitVersion: self.storeKitVersion,
                                          dangerousSettings: DangerousSettings(autoSyncPurchases: false))
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
 
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(.emptyInfo)
         self.purchases.syncPurchases(completion: nil)
-        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
+        expect(self.backend.postReceiptDataCalled).to(beTrue())
     }
 
     @available(iOS 14.0, macOS 14.0, tvOS 14.0, watchOS 7.0, *)
