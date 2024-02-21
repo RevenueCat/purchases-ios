@@ -516,6 +516,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testGetPromotionalOfferFailsWithIneligibleIfBackendReturnsIneligible() async throws {
+        self.receiptParser.stubbedReceiptHasTransactionsResult = true
         self.offerings.stubbedPostOfferCompletionResult = .failure(
             .networkError(
                 .errorResponse(
@@ -546,6 +547,8 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
             fail("Expected error")
         } catch let purchasesError as PurchasesError {
             expect(purchasesError.error).to(matchError(ErrorCode.ineligibleError))
+            expect(self.offerings.invokedPostOfferCount) == 1
+            expect(self.offerings.invokedPostOfferParameters?.offerIdentifier) == storeProductDiscount.offerIdentifier
         } catch {
             fail("Unexpected error: \(error)")
         }
@@ -592,7 +595,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
-    func testSyncPurchasesPostsReceiptIfNoTransactionsAndEmptyOriginalPurchaseDate() async throws {
+    func testSyncPurchasesSK1PostsReceiptIfNoTransactionsAndEmptyOriginalPurchaseDate() async throws {
         self.customerInfoManager.stubbedCachedCustomerInfoResult = try .init(data: [
             "request_date": "2019-08-16T10:30:42Z",
             "subscriber": [
@@ -600,8 +603,10 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
                 "original_app_user_id": "app_user_id",
                 "subscriptions": [:] as [String: Any],
                 "other_purchases": [:] as [String: Any],
-                "original_application_version": "1.0"
-            ] as [String: Any]
+                "original_application_version": "1.0",
+                // Explicitly setting nil original_purchase_date
+                "original_purchase_date": nil
+            ] as [String: Any?]
         ])
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
         self.receiptParser.stubbedReceiptHasTransactionsResult = false
