@@ -37,12 +37,72 @@ extension PaywallPresentationMode {
 
 }
 
+// swiftlint:disable file_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable, message: "RevenueCatUI does not support macOS yet")
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 extension View {
 
     typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
+
+    // swiftlint:disable line_length
+    /// Presents a ``PaywallView`` if the given entitlement identifier is not active
+    /// in the current environment for the current `CustomerInfo`.
+    /// ```swift
+    /// var body: some View {
+    ///    YourApp()
+    ///      .presentPaywallIfNeeded(requiredEntitlementIdentifier: "pro")
+    /// }
+    /// ```
+    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
+    /// the paywall won't be displayed.
+    ///
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
+    /// that it will ignore the offering configured in an active experiment.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    ///
+    /// - Tag: presentPaywallIfNeeded
+    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(requiredEntitlementIdentifier:offering:fonts:presentationMode:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    // swiftlint:enable line_length
+    public func presentPaywallIfNeeded(
+        requiredEntitlementIdentifier: String,
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
+        purchaseStarted: @escaping PurchaseStartedHandler,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        return self.presentPaywallIfNeeded(
+            requiredEntitlementIdentifier: requiredEntitlementIdentifier,
+            offering: offering,
+            fonts: fonts,
+            presentationMode: presentationMode,
+            purchaseStarted: { _ in
+                purchaseStarted()
+            },
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: nil,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
+            onDismiss: onDismiss
+        )
+    }
 
     /// Presents a ``PaywallView`` if the given entitlement identifier is not active
     /// in the current environment for the current `CustomerInfo`.
@@ -70,9 +130,10 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
-        purchaseStarted: PurchaseStartedHandler? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
@@ -98,6 +159,7 @@ extension View {
         )
     }
 
+    // swiftlint:disable line_length
     /// Presents a ``PaywallView`` based a given condition.
     /// Example:
     /// ```swift
@@ -134,14 +196,97 @@ extension View {
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
+    @available(iOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(tvOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(watchOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macOS, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    @available(macCatalyst, deprecated: 1, renamed: "presentPaywallIfNeeded(offering:fonts:presentationMode:shouldDisplay:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:onDismiss:)")
+    // swiftlint:enable line_length
     public func presentPaywallIfNeeded(
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        purchaseStarted: PurchaseStartedHandler? = nil,
+        purchaseStarted: @escaping PurchaseStartedHandler,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        return self.presentPaywallIfNeeded(
+            offering: offering,
+            fonts: fonts,
+            presentationMode: presentationMode,
+            shouldDisplay: shouldDisplay,
+            purchaseStarted: { _ in
+                purchaseStarted()
+            },
+            purchaseCompleted: purchaseCompleted,
+            purchaseCancelled: purchaseCancelled,
+            restoreStarted: nil,
+            restoreCompleted: restoreCompleted,
+            purchaseFailure: purchaseFailure,
+            restoreFailure: restoreFailure,
+            onDismiss: onDismiss,
+            customerInfoFetcher: {
+                guard Purchases.isConfigured else {
+                    throw PaywallError.purchasesNotConfigured
+                }
+
+                return try await Purchases.shared.customerInfo()
+            }
+        )
+    }
+
+    /// Presents a ``PaywallView`` based a given condition.
+    /// Example:
+    /// ```swift
+    /// var body: some View {
+    ///    YourApp()
+    ///      .presentPaywallIfNeeded {
+    ///         !$0.entitlements.active.keys.contains("entitlement_identifier")
+    ///     } purchaseStarted: { package in
+    ///         print("Purchase started \(package)")
+    ///     } purchaseCompleted: { customerInfo in
+    ///         print("Customer info unlocked entitlement: \(customerInfo.entitlements)")
+    ///     } purchaseCancelled: {
+    ///         print("Purchase was cancelled")
+    ///     } restoreStarted: {
+    ///         print("Restore started")
+    ///     } restoreCompleted: { customerInfo in
+    ///         // If `entitlement_identifier` is active, paywall will dismiss automatically.
+    ///         print("Purchases restored")
+    ///     } purchaseFailure: { error in
+    ///         print("Error purchasing: \(error)")
+    ///     } restoreFailure: { error in
+    ///         print("Error restoring purchases: \(error)")
+    ///     } onDismiss: {
+    ///         print("Paywall was dismissed either manually or automatically after a purchase.")
+    ///     }
+    /// }
+    /// ```
+    /// - Note: If loading the `CustomerInfo` fails (for example, if Internet is offline),
+    /// the paywall won't be displayed.
+    ///
+    /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
+    /// If `nil` (the default), `Offerings.current` will be used. Note that specifying this parameter means
+    /// that it will ignore the offering configured in an active experiment.
+    /// - Parameter fonts: An optional ``PaywallFontProvider``.
+    /// - Parameter presentationMode: The desired presentation mode of the paywall. Defaults to `.sheet`.
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func presentPaywallIfNeeded(
+        offering: Offering? = nil,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        presentationMode: PaywallPresentationMode = .default,
+        shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
+        purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
+        purchaseCancelled: PurchaseCancelledHandler? = nil,
+        restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
@@ -155,7 +300,7 @@ extension View {
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
-            restoreStarted: nil,
+            restoreStarted: restoreStarted,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
@@ -178,7 +323,7 @@ extension View {
         purchaseHandler: PurchaseHandler? = nil,
         presentationMode: PaywallPresentationMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
-        purchaseStarted: PurchaseStartedHandler? = nil,
+        purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
@@ -222,7 +367,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var presentationMode: PaywallPresentationMode
-    var purchaseStarted: PurchaseStartedHandler?
+    var purchaseStarted: PurchaseOfPackageStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     var purchaseCancelled: PurchaseCancelledHandler?
     var restoreCompleted: PurchaseOrRestoreCompletedHandler?
@@ -240,7 +385,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     init(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         presentationMode: PaywallPresentationMode,
-        purchaseStarted: PurchaseStartedHandler?,
+        purchaseStarted: PurchaseOfPackageStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
         purchaseCancelled: PurchaseCancelledHandler?,
         restoreCompleted: PurchaseOrRestoreCompletedHandler?,
@@ -319,7 +464,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             )
         )
         .onPurchaseStarted {
-            self.purchaseStarted?()
+            self.purchaseStarted?($0)
         }
         .onPurchaseCompleted {
             self.purchaseCompleted?($0)

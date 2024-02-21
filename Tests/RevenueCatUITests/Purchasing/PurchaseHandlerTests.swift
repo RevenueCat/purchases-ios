@@ -28,7 +28,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult).to(beNil())
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == false
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(beNil())
@@ -44,7 +44,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.userCancelled) == false
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchased) == true
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
     }
@@ -56,7 +56,7 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseResult?.userCancelled) == true
         expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
         expect(handler.purchased) == false
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
     }
@@ -75,7 +75,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(matchError(error))
@@ -93,10 +93,10 @@ class PurchaseHandlerTests: TestCase {
         }
 
         try await asyncWait {
-            handler.actionInProgress && handler.purchaseInProgress
+            handler.actionInProgress && handler.packageBeingPurchased != nil
         }
 
-        expect(handler.purchaseInProgress) == true
+        expect(handler.packageBeingPurchased) == TestData.packageWithIntroOffer
         expect(handler.actionInProgress) == true
         expect(handler.restoreInProgress) == false
 
@@ -106,7 +106,7 @@ class PurchaseHandlerTests: TestCase {
         // Wait for purchase task to complete
         _ = try await task.value
 
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
     }
 
@@ -125,10 +125,10 @@ class PurchaseHandlerTests: TestCase {
         }
 
         expect(handler.actionInProgress) == true
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == true
 
-        // Finish rewstore
+        // Finish restore
         try asyncHandler.resume()
 
         // Wait for restore task to complete
@@ -145,7 +145,7 @@ class PurchaseHandlerTests: TestCase {
         expect(result.success) == false
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
 
@@ -153,7 +153,7 @@ class PurchaseHandlerTests: TestCase {
 
         expect(handler.restoredCustomerInfo) === TestData.customerInfo
         expect(handler.purchaseResult).to(beNil())
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
     }
@@ -186,7 +186,7 @@ class PurchaseHandlerTests: TestCase {
         }
         expect(handler.purchaseResult).to(beNil())
         expect(handler.purchased) == false
-        expect(handler.purchaseInProgress) == false
+        expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.actionInProgress) == false
         expect(handler.restoreInProgress) == false
         expect(handler.restoreError).to(matchError(error))

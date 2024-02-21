@@ -25,6 +25,7 @@ class PurchaseCompletedHandlerTests: TestCase {
 
     func testOnPurchaseStarted() throws {
         var started = false
+        var packageBeingPurchased: Package?
 
         try PaywallView(
             offering: Self.offering.withLocalImages,
@@ -35,6 +36,9 @@ class PurchaseCompletedHandlerTests: TestCase {
             .onPurchaseStarted {
                 started = true
             }
+            .onPurchaseStarted { package in
+                packageBeingPurchased = package
+            }
             .addToHierarchy()
 
         Task {
@@ -42,6 +46,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         }
 
         expect(started).toEventually(beTrue())
+        expect(packageBeingPurchased).toEventuallyNot(beNil())
     }
 
     func testOnPurchaseCompletedWithCancellation() throws {

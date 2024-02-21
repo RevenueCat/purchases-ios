@@ -30,7 +30,7 @@ class PaywallFooterTests: TestCase {
     }
 
     func testPresentWithPurchaseStarted() throws {
-        var started = false
+        var packageBeingPurchased: Package?
 
         try Text("")
             .paywallFooter(
@@ -38,7 +38,7 @@ class PaywallFooterTests: TestCase {
                 customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
-                purchaseStarted: { started = true }
+                purchaseStarted: { package in packageBeingPurchased = package }
             )
             .addToHierarchy()
 
@@ -46,7 +46,7 @@ class PaywallFooterTests: TestCase {
             _ = try await Self.purchaseHandler.purchase(package: Self.package)
         }
 
-        expect(started).toEventually(beTrue())
+        expect(packageBeingPurchased).toEventually(be(Self.package))
     }
 
     func testPresentWithPurchaseHandler() throws {
