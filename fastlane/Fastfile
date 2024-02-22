@@ -763,6 +763,7 @@ platform :ios do
 
               # using sh instead of fastlane commands because fastlane would run
               # from the repo root
+              sh("git", "add", docs_destination_folder)
               sh("git", "add", "docs/*.html")
               sh("git", "commit", "-m", "Update documentation for #{version_number}")
               sh("git", "push")
