@@ -37,20 +37,33 @@ class OfferingsManager {
         self.productsManager = productsManager
     }
 
-    func offerings(
+    private func fetchFromNetwork(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        guard let memoryCachedOfferings = self.cachedOfferings else {
-            Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
+        Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.updateOfferingsCache(appUserID: appUserID,
-                                          isAppBackgrounded: isAppBackgrounded,
-                                          fetchPolicy: fetchPolicy,
-                                          completion: completion)
-            }
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.updateOfferingsCache(appUserID: appUserID,
+                                      isAppBackgrounded: isAppBackgrounded,
+                                      fetchPolicy: fetchPolicy,
+                                      completion: completion)
+        }
+    }
+
+    func offerings(
+        appUserID: String,
+        fetchPolicy: FetchPolicy = .default,
+        fetchCurrent: Bool = false,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
+        guard !fetchCurrent else {
+            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
+            return
+        }
+        guard let memoryCachedOfferings = self.cachedOfferings else {
+            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
             return
         }
 

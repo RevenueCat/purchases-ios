@@ -256,6 +256,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
+    private var lastSyncAttributesAndRefreshOfferingsTimestamp: Date?
 
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
@@ -696,9 +697,10 @@ public extension Purchases {
 
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
+        fetchCurrent: Bool = false,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
-        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { @Sendable result in
+        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy, fetchCurrent: fetchCurrent) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -715,6 +717,18 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
+    }
+
+    @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        if let lastSync = self.lastSyncAttributesAndRefreshOfferingsTimestamp, Date().timeIntervalSince(lastSync) < 60 {
+            let userInfo: [NSError.UserInfoKey: Any] = [:]
+            completion(nil, PurchasesError.init(error: .syncingAttributesRateLimitReached, userInfo: userInfo).asPublicError)
+            return
+        }
+        self.syncSubscriberAttributes(completion: {
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.lastSyncAttributesAndRefreshOfferingsTimestamp = Date()
+        })
     }
 
 }
