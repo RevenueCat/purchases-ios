@@ -723,6 +723,7 @@ platform :ios do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
 
     version_number = current_version_number
+    is_prerelease = Gem::Version.new(version_number).prerelease?
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
@@ -771,13 +772,19 @@ platform :ios do
               index_destination_path = "docs/index.html"
               migration_guide_destination_path = "docs/v4_api_migration_guide.html"
               FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              FileUtils.cp docs_index_path, index_destination_path
+              if is_prerelease
+                UI.message("Skipped updating index.html since it's a prerelease.")
+              else
+                FileUtils.cp docs_index_path, index_destination_path
+              end
               FileUtils.cp docs_migration_guide_path, migration_guide_destination_path
 
               # using sh instead of fastlane commands because fastlane would run
               # from the repo root
               sh("git", "add", docs_destination_folder)
-              sh("git", "add", index_destination_path)
+              if !is_prerelease
+                sh("git", "add", index_destination_path)
+              end
               sh("git", "add", migration_guide_destination_path)
               sh("git", "commit", "-m", "Update documentation for #{version_number}")
               sh("git", "push")
