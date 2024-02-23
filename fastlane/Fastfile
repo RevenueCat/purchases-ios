@@ -12,15 +12,22 @@
 
 default_platform(:ios)
 
+def current_version_number
+  File.read("#{File.dirname(__FILE__)}/../.version").strip
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
-  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
   './scripts/docs/v5_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v5_api_migration_guide']
 }
+is_prerelease = Gem::Version.new(current_version_number).prerelease?
+if !is_prerelease
+  files_with_version_number['./scripts/docs/index.html'] = ['purchases-ios-docs/{x}/documentation/revenuecat']
+end
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
   './Sources/Info.plist' => PLIST_VERSION_PATTERNS,
@@ -998,10 +1005,6 @@ lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
-end
-
-def current_version_number
-  File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
 # Snapshots
