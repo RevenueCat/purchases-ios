@@ -15,14 +15,14 @@ import Foundation
 
 @objc(RCPlacements) public final class Placements: NSObject {
     let fallbackOfferingId: String?
-    let currentOfferingIdsByPlacement: [String: String]
+    let offeringIdsByPlacement: [String: String]
     
     init(
         fallbackOfferingId: String?,
-        currentOfferingIdsByPlacement: [String: String]
+        offeringIdsByPlacement: [String: String]
     ) {
         self.fallbackOfferingId = fallbackOfferingId
-        self.currentOfferingIdsByPlacement = currentOfferingIdsByPlacement
+        self.offeringIdsByPlacement = offeringIdsByPlacement
     }
 }
 

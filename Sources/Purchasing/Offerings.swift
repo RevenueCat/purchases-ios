@@ -107,17 +107,15 @@ public extension Offerings {
         guard let placements = self.placements else {
             return nil
         }
-        
-        let placementOffering = placements.currentOfferingIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
+        let placementOffering = placements.offeringIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
         let returnOffering: Offering?
         
-        if placements.currentOfferingIdsByPlacement.keys.contains(placementIdentifier){
+        if placements.offeringIdsByPlacement.keys.contains(placementIdentifier){
             returnOffering = placementOffering
         } else {
             let fallbackOffering = placements.fallbackOfferingId.flatMap { self.all[$0]}
             returnOffering = placementOffering ?? fallbackOffering
         }
-        
         return returnOffering?.copyWithPlacementIdentifier(placementIdentifier: placementIdentifier)
     }
 }

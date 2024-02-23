@@ -19,12 +19,14 @@ struct HomeView: View {
     @State var offerings: [RevenueCat.Offering] = []
     
     @State private var debugOverlayVisible = false
-    @State private var showingAlert = false
+    @State private var showLoginPrompt = false
     @State private var newAppUserID: String = ""
+    @State private var showPlacementPrompt = false
+    @State private var newPlacementID: String = ""
+    @State private var placementOffering: Offering? = nil
     @State private var cacheFetchPolicy: CacheFetchPolicy = .default
 
     @State private var error: Error?
-    
     private var content: some View {
         VStack(alignment: .leading) {
             CustomerInfoHeaderView(debugOverlayVisible: self.$debugOverlayVisible) { action in
@@ -47,6 +49,11 @@ struct HomeView: View {
                 }
                 
                 Section("Functions") {
+                    Button {
+                        self.showPlacementPrompt = true
+                    } label: {
+                        Text("Find Placement")
+                    }
                     Button {
                         Task<Void, Never> {
                             do {
@@ -152,7 +159,7 @@ struct HomeView: View {
             message: { Text($0.subtitle) }
         )
         .navigationTitle("PurchaseTester")
-        .textFieldAlert(isShowing: self.$showingAlert, title: "App User ID", fields: [("User ID", "ID of your user", self.$newAppUserID)]) {
+        .textFieldAlert(isShowing: self.$showLoginPrompt, title: "App User ID", fields: [("User ID", "ID of your user", self.$newAppUserID)]) {
             guard !self.newAppUserID.isEmpty else {
                 return
             }
@@ -168,7 +175,29 @@ struct HomeView: View {
                 }
             }
         }
+        .textFieldAlert(isShowing: self.$showPlacementPrompt, title: "Placement", fields: [("Placement Name", "ID of your placement", self.$newPlacementID)]) {
+            guard !self.newPlacementID.isEmpty else {
+                return
+            }
+            
+            Task<Void, Never> {
+                do {
+                    let offerings = try await Purchases.shared.offerings()
+                    self.placementOffering = offerings.getCurrentOffering(forPlacement: newPlacementID)
+                    
+                } catch {
+                    
+                    self.error = error
+                }
+            }
+        }
+        .sheet(item: self.$placementOffering) {
+            OfferingDetailView(offering: $0)
+        }
     }
+
+
+
 
     var body: some View {
         #if DEBUG && !os(visionOS) && !os(watchOS)
@@ -197,7 +226,7 @@ struct HomeView: View {
     
     private func showLogin() {
         self.newAppUserID = ""
-        self.showingAlert = true
+        self.showLoginPrompt = true
     }
     
     private func logOut() async {
