@@ -77,7 +77,7 @@ class OfferingsFactory {
         }
         
         return .init(fallbackOfferingId: data.fallbackOfferingId,
-                     currentOfferingIdsByPlacement: data.currentOfferingIdsByPlacement)
+                     offeringIdsByPlacement: data.offeringIdsByPlacement)
     }
 }
 

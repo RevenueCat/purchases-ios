@@ -875,6 +875,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
+        
         let storefront = await self.storefront(from: transaction)
         let subscriberAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
@@ -1170,13 +1171,14 @@ private extension PurchasesOrchestrator {
     func handlePurchasedTransaction(_ purchasedTransaction: StoreTransaction,
                                     storefront: StorefrontType?,
                                     restored: Bool) {
-        let offeringContext = self.getAndRemovePresentedOfferingIdentifier(for: purchasedTransaction)
+        let offeringContext = self.getAndRemovePresentedOfferingContext(for: purchasedTransaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 appUserID: self.appUserID,
                 presentedOfferingID: offeringContext?.offeringIdentifier,
+                presentedPlacementID: offeringContext?.placementIdentifier,
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
@@ -1243,14 +1245,14 @@ private extension PurchasesOrchestrator {
         self.presentedPaywall.value = nil
     }
 
-    func getAndRemovePresentedOfferingIdentifier(for productIdentifier: String) -> PresentedOfferingContext? {
+    func getAndRemovePresentedOfferingContext(for productIdentifier: String) -> PresentedOfferingContext? {
         return self.presentedOfferingContextsByProductID.modify {
             $0.removeValue(forKey: productIdentifier)
         }
     }
 
-    func getAndRemovePresentedOfferingIdentifier(for transaction: StoreTransaction) -> PresentedOfferingContext? {
-        return self.getAndRemovePresentedOfferingIdentifier(for: transaction.productIdentifier)
+    func getAndRemovePresentedOfferingContext(for transaction: StoreTransaction) -> PresentedOfferingContext? {
+        return self.getAndRemovePresentedOfferingContext(for: transaction.productIdentifier)
     }
 
     func getAndRemovePresentedPaywall() -> PaywallEvent? {
@@ -1427,7 +1429,7 @@ extension PurchasesOrchestrator {
         _ initiationSource: ProductRequestData.InitiationSource
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
-        let offeringData = self.getAndRemovePresentedOfferingIdentifier(for: transaction)
+        let offeringData = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
