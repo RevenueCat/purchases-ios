@@ -91,6 +91,7 @@ final class TransactionPoster: TransactionPosterType {
             productID: transaction.productIdentifier,
             transactionDate: transaction.purchaseDate,
             offeringID: data.presentedOfferingID,
+            placementID: data.presentedPlacementID,
             paywallSessionID: data.presentedPaywall?.data.sessionIdentifier
         ))
 
