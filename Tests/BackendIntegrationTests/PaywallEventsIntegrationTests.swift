@@ -126,7 +126,8 @@ private extension PaywallEventsIntegrationTests {
                 transactionID: transaction.transactionIdentifier,
                 productID: self.package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: self.package.offeringIdentifier,
+                offeringID: self.package.presentedOfferingContext.offeringIdentifier,
+                placementID: self.package.presentedOfferingContext.placementIdentifier,
                 paywallSessionID: sessionID
             )
         )

@@ -193,7 +193,8 @@ class OfferingsTests: TestCase {
                                 .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
                               ])
                     ],
-                    placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: ["placement_name": "offering_b"]))
+                    placements: .init(fallbackOfferingId: "",
+                                      offeringIdsByPlacement: .init(wrappedValue: ["placement_name": "offering_b"]))
                 )
             )
         )
@@ -201,7 +202,7 @@ class OfferingsTests: TestCase {
         let offeringA = try XCTUnwrap(offerings["offering_a"])
         let offeringB = try XCTUnwrap(offerings["offering_b"])
         expect(offerings.current) === offeringA
-        expect(offerings.getCurrentOffering(forPlacement: "placement_name")) === offeringB
+        expect(offerings.getCurrentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
         expect(offerings.getCurrentOffering(forPlacement: "unexisting_placement_name")).to(beNil())
 
     }
