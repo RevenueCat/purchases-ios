@@ -314,6 +314,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+        completion?()
 
         return -1
     }
