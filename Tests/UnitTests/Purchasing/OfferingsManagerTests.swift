@@ -159,7 +159,8 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "", offerings: [])
+            .init(currentOfferingId: "", offerings: [],
+                  placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:])))
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -209,7 +210,8 @@ extension OfferingsManagerTests {
     func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "", offerings: [])
+            .init(currentOfferingId: "", offerings: [],
+                  placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:])))
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -460,8 +462,10 @@ private extension OfferingsManagerTests {
                       description: "This is the base offering",
                       packages: [
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                      ])
-            ]
+                      ]),
+                
+            ],
+            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
         )
         static let backendOfferingsResponseWithUnknownProducts: OfferingsResponse = .init(
             currentOfferingId: "base",
@@ -472,7 +476,8 @@ private extension OfferingsManagerTests {
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
                         .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
                       ])
-            ]
+            ],
+            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
         )
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
@@ -498,8 +503,7 @@ private extension OfferingsManagerTests {
                 }
                 .dictionaryWithKeys(\.identifier),
             currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
-            currentOfferingIdsByPlacement: [
-                "placement_id": MockData.anyBackendOfferingsResponse.offerings[0].identifier],
+            placements: Placements(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
             response: MockData.anyBackendOfferingsResponse
         )
     }

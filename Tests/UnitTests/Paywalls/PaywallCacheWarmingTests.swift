@@ -190,7 +190,7 @@ private extension PaywallCacheWarmingTests {
         return .init(
             offerings: Set(offerings).dictionaryWithKeys(\.identifier),
             currentOfferingID: Self.offeringIdentifier,
-            currentOfferingIdsByPlacement: [:],
+            placements: nil,
             response: offeringsResponse
         )
     }
