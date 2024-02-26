@@ -141,6 +141,19 @@ struct HomeView: View {
                         Text("Begin Refund For Active Entitlement")
                     }
                     #endif
+
+                    Button {
+                        Purchases.shared.syncAttributesAndOfferingsIfNeeded { offerings, error in
+                            if let error {
+                                print("🚀 Info 💁‍♂️ - Error: \(error)")
+                                self.error = error
+                            } else if let offerings {
+                                setOfferings(offerings: offerings)
+                            }
+                        }
+                    } label: {
+                        Text("Sync Attributes and Fetch Offerings")
+                    }
                 }
             }
             .task {
@@ -212,12 +225,21 @@ struct HomeView: View {
         #endif
     }
     
+    private func setOfferings(offerings: Offerings) {
+        self.offerings = Array(offerings.all.values).sorted(by: { a, b in
+            return b.identifier > a.identifier
+        }).sorted(by: { a, b in
+            guard let identifier = offerings.current?.identifier else {
+                return false
+            }
+            return a.identifier == identifier
+        })
+    }
+
     private func fetchData() async {
         do {
             let offerings = try await Purchases.shared.offerings()
-            self.offerings = Array(offerings.all.values).sorted(by: { a, b in
-                return b.identifier > a.identifier
-            })
+            setOfferings(offerings: offerings)
         } catch {
             print("🚀 Info 💁‍♂️ - Error: \(error)")
             self.error = error
