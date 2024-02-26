@@ -26,9 +26,11 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedOfferingsCount = 0
     var invokedOfferingsParameters: (appUserID: String,
                                      fetchPolicy: FetchPolicy,
+                                     fetchCurrent: Bool,
                                      completion: OfferingsCompletion?)?
     var invokedOfferingsParametersList = [(appUserID: String,
                                            fetchPolicy: FetchPolicy,
+                                           fetchCurrent: Bool,
                                            completion: OfferingsCompletion??)]()
     var stubbedOfferingsCompletionResult: Result<Offerings, Error> = .failure(
         .configurationError("Stub not setup", underlyingError: nil)
@@ -36,11 +38,12 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
 
     override func offerings(appUserID: String,
                             fetchPolicy: FetchPolicy,
+                            fetchCurrent: Bool = false,
                             completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
         self.invokedOfferings = true
         self.invokedOfferingsCount += 1
-        self.invokedOfferingsParameters = (appUserID, fetchPolicy, completion)
-        self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, completion))
+        self.invokedOfferingsParameters = (appUserID, fetchPolicy, fetchCurrent, completion)
+        self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, fetchCurrent, completion))
 
         OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
             completion?(result)

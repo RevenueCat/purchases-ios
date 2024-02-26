@@ -721,9 +721,9 @@ public extension Purchases {
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
         if let lastSync = self.lastSyncAttributesAndRefreshOfferingsTimestamp, Date().timeIntervalSince(lastSync) < 60 {
-            let userInfo: [NSError.UserInfoKey: Any] = [:]
-            completion(nil, PurchasesError.init(error: .syncingAttributesRateLimitReached, userInfo: userInfo).asPublicError)
+            self.getOfferings(fetchPolicy: .default, completion: completion)
             return
+
         }
         self.syncSubscriberAttributes(completion: {
             self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)

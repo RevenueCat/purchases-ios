@@ -390,6 +390,29 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
     }
 
+    func testOfferingsForAppUserIdForcesNetworkRequestWhenFetchCurrentIsTrue() throws {
+        // given
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
+        self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
+
+        // when
+        let result = waitUntilValue { completed in
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchCurrent: true) {
+                completed($0)
+            }
+        }
+
+        // then
+        expect(result).to(beSuccess())
+        expect(result?.value) !== MockData.sampleOfferings
+        expect(result?.value?["base"]).toNot(beNil())
+        expect(result?.value?["base"]!.monthly).toNot(beNil())
+        expect(result?.value?["base"]!.monthly?.storeProduct).toNot(beNil())
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
+        expect(self.mockDeviceCache.cacheOfferingsCount) == 1
+    }
+
     func testReturnsOfferingsFromDiskCacheIfNetworkRequestWithServerDown() throws {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
