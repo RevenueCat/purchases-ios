@@ -109,8 +109,7 @@ public extension Offerings {
         }
         let placementOffering = placements.offeringIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
         let returnOffering: Offering?
-        
-        if placements.offeringIdsByPlacement.keys.contains(placementIdentifier){
+        if placements.offeringIdsByPlacement.keys.contains(placementIdentifier) {
             returnOffering = placementOffering
         } else {
             let fallbackOffering = placements.fallbackOfferingId.flatMap { self.all[$0]}
@@ -123,16 +122,15 @@ public extension Offerings {
 // TODO: MOVE THIS TO OFFERING FILE
 extension Offering {
     internal func copyWithPlacementIdentifier(placementIdentifier: String?) -> Offering {
-        let updatedPackages = self.availablePackages.map{ pkg in
+        let updatedPackages = self.availablePackages.map { pkg in
             let newContext = PresentedOfferingContext(
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
                 placementIdentifier: placementIdentifier
             )
-            
             return Package(identifier: pkg.identifier,
-                    packageType: pkg.packageType,
-                    storeProduct: pkg.storeProduct,
-                    presentedOfferingContext: newContext
+                           packageType: pkg.packageType,
+                           storeProduct: pkg.storeProduct,
+                           presentedOfferingContext: newContext
             )
         }
         return Offering(identifier: self.identifier,

@@ -113,7 +113,8 @@ class OfferingsTests: TestCase {
                           packages: [
                             .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
                           ])
-                ]
+                ],
+                placements: nil
             )
         )
 
@@ -146,7 +147,8 @@ class OfferingsTests: TestCase {
                                 .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly"),
                                 .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
                               ])
-                    ]
+                    ],
+                    placements: nil
                 )
             )
         )
@@ -191,7 +193,7 @@ class OfferingsTests: TestCase {
                                 .init(identifier: "custom_package", platformProductIdentifier: "com.myproduct.custom")
                               ])
                     ],
-                    currentOfferingIdsByPlacement: .init(wrappedValue: ["placement_name": "offering_b"])
+                    placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: ["placement_name": "offering_b"]))
                 )
             )
         )
@@ -252,7 +254,8 @@ class OfferingsTests: TestCase {
                               packages: [
                                 .init(identifier: "$rc_monthly", platformProductIdentifier: "com.myproduct.monthly")
                               ])
-                    ]
+                    ],
+                    placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
                 )
             )
         )
@@ -376,7 +379,8 @@ class OfferingsTests: TestCase {
                       packages: [
                         .init(identifier: "$rc_six_month", platformProductIdentifier: "com.myproduct.annual")
                       ])
-            ]
+            ],
+            placements: nil
         )
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: storeProductsByID, data: response)
@@ -415,7 +419,8 @@ private extension OfferingsTests {
                               packages: [
                                 .init(identifier: identifier, platformProductIdentifier: productIdentifier)
                               ])
-                    ]
+                    ],
+                    placements: nil
                 )
             )
         )

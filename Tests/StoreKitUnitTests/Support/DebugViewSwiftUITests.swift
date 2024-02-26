@@ -51,7 +51,7 @@ class DebugViewSwiftUITests: TestCase {
         model.offerings = .loaded(.init(
             offerings: [:],
             currentOfferingID: nil,
-            offeringIdsByPlacement: [:],
+            placements: Placements(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
             response: .mockResponse
         ))
 
