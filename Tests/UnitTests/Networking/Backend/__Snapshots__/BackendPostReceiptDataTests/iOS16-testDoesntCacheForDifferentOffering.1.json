@@ -26,9 +26,9 @@
       },
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "queue",
-      "is_restore" : true,
-      "observer_mode" : false,
-      "presented_offering_identifier" : "offering_a"
+      "is_restore" : false,
+      "observer_mode" : true,
+      "presented_offering_identifier" : "a_offering"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"

@@ -24,11 +24,11 @@
           "value" : "authorized"
         }
       },
-      "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
+      "fetch_token" : "YW4gYXdlc29tZWVyIHJlY2VpcHQ=",
       "initiation_source" : "queue",
       "is_restore" : true,
       "observer_mode" : false,
-      "presented_offering_identifier" : "offering_a"
+      "presented_offering_identifier" : "offering_b"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"
