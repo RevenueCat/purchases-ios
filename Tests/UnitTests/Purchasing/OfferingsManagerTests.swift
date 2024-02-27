@@ -502,7 +502,7 @@ private extension OfferingsManagerTests {
                 }
                 .dictionaryWithKeys(\.identifier),
             currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
-            placements: Placements(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
+            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
             response: MockData.anyBackendOfferingsResponse
         )
     }

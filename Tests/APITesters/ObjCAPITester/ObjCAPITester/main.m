@@ -17,7 +17,7 @@
 #import "RCOfferingAPI.h"
 #import "RCOfferingsAPI.h"
 #import "RCPackageAPI.h"
-#import "RCPresentedOfferingContext.h"
+#import "RCPresentedOfferingContextAPI.h"
 #import "RCPromotionalOfferAPI.h"
 #import "RCPurchasesAPI.h"
 #import "RCPurchasesErrorCodeAPI.h"

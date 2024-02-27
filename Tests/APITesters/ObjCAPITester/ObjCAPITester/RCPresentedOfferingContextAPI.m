@@ -13,8 +13,8 @@
 @implementation RCPresentOfferingContextAPI
 
 + (void)checkAPI {
-    RCPresentedOfferingContext *poc1 = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil];
-    RCPresentedOfferingContext *poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:@""];
+    RCPresentedOfferingContext *poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil];
+    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:@""];
     NSString *oid = poc.offeringIdentifier;
     NSString *pid = poc.placementIdentifier;
 

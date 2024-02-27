@@ -881,7 +881,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
-            presentedOfferingID: nil,
+            presentedOfferingContext: nil,
             unsyncedAttributes: subscriberAttributes,
             aadAttributionToken: adServicesToken,
             storefront: storefront,
@@ -1061,7 +1061,7 @@ private extension PurchasesOrchestrator {
                     self.createProductRequestData(with: receiptData) { productRequestData in
                         let transactionData: PurchasedTransactionData = .init(
                             appUserID: currentAppUserID,
-                            presentedOfferingID: nil,
+                            presentedOfferingContext: nil,
                             unsyncedAttributes: unsyncedAttributes,
                             storefront: productRequestData?.storefront,
                             source: .init(isRestore: isRestore, initiationSource: initiationSource)
@@ -1108,7 +1108,7 @@ private extension PurchasesOrchestrator {
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: unsyncedAttributes,
                         storefront: transaction.storefront,
                         source: .init(isRestore: isRestore, initiationSource: initiationSource)
@@ -1177,8 +1177,7 @@ private extension PurchasesOrchestrator {
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             let transactionData: PurchasedTransactionData = .init(
                 appUserID: self.appUserID,
-                presentedOfferingID: offeringContext?.offeringIdentifier,
-                presentedPlacementID: offeringContext?.placementIdentifier,
+                presentedOfferingContext: offeringContext,
                 presentedPaywall: paywall,
                 unsyncedAttributes: unsyncedAttributes,
                 aadAttributionToken: adServicesToken,
@@ -1429,13 +1428,13 @@ extension PurchasesOrchestrator {
         _ initiationSource: ProductRequestData.InitiationSource
     ) async throws -> CustomerInfo {
         let storefront = await Storefront.currentStorefront
-        let offeringData = self.getAndRemovePresentedOfferingContext(for: transaction)
+        let offeringContext = self.getAndRemovePresentedOfferingContext(for: transaction)
         let paywall = self.getAndRemovePresentedPaywall()
         let unsyncedAttributes = self.unsyncedAttributes
         let adServicesToken = await self.attribution.unsyncedAdServicesToken
         let transactionData: PurchasedTransactionData = .init(
             appUserID: self.appUserID,
-            presentedOfferingID: offeringData?.offeringIdentifier,
+            presentedOfferingContext: offeringContext,
             presentedPaywall: paywall,
             unsyncedAttributes: unsyncedAttributes,
             aadAttributionToken: adServicesToken,
