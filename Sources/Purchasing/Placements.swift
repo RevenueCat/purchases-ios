@@ -13,10 +13,10 @@
 
 import Foundation
 
-@objc(RCPlacements) public final class Placements: NSObject {
+internal final class Placements: NSObject {
     let fallbackOfferingId: String?
     let offeringIdsByPlacement: [String: String]
-    
+
     init(
         fallbackOfferingId: String?,
         offeringIdsByPlacement: [String: String]

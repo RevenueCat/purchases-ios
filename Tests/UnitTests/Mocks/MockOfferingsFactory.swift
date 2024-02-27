@@ -48,7 +48,7 @@ class MockOfferingsFactory: OfferingsFactory {
                         .init(identifier: "", platformProductIdentifier: "$rc_monthly")
                       ])
             ], placements: nil)
-            
+
         )
     }
 }
@@ -62,7 +62,7 @@ extension OfferingsResponse {
                   description: "This is the base offering",
                   packages: [
                     .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
-                  ]),
+                  ])
         ], placements: nil
     )
 

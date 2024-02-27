@@ -68,14 +68,14 @@ class OfferingsFactory {
                      product: product,
                      offeringIdentifier: offeringIdentifier)
     }
-    
+
     func createPlacement(
         with data: OfferingsResponse.Placements?
     ) -> Placements? {
         guard let data else {
             return nil
         }
-        
+
         return .init(fallbackOfferingId: data.fallbackOfferingId,
                      offeringIdsByPlacement: data.offeringIdsByPlacement)
     }
