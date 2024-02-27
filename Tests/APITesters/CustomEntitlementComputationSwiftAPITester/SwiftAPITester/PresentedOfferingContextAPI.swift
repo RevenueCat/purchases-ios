@@ -11,8 +11,10 @@ import StoreKit
 
 func checkPresentedOfferingContextAPI(context: PresentedOfferingContext! = nil) {
     let _: String = context.offeringIdentifier
+    let _: String? = context.placementIdentifier
 }
 
 private func checkCreatePresentedOfferingContextAPI() {
+    let _: PresentedOfferingContext = .init(offeringIdentifier: "")
     let _: PresentedOfferingContext = .init(offeringIdentifier: "", placementIdentifier: "")
 }
