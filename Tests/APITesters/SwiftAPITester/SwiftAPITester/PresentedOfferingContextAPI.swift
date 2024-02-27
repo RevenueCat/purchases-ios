@@ -14,5 +14,5 @@ func checkPresentedOfferingContextAPI(context: PresentedOfferingContext! = nil) 
 }
 
 private func checkCreatePresentedOfferingContextAPI() {
-    let _: PresentedOfferingContext = .init(offeringIdentifier: "")
+    let _: PresentedOfferingContext = .init(offeringIdentifier: "", placementIdentifier: "")
 }

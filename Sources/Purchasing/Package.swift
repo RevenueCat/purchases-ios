@@ -27,7 +27,7 @@ import Foundation
 
     /// Initialize a ``PresentedOfferingContext``.
     @objc
-    init(
+    public init(
         offeringIdentifier: String,
         placementIdentifier: String? = nil
     ) {
