@@ -378,6 +378,34 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testPostsReceiptDataWithPresentedOfferingContext() {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let completionCalled: Atomic<Int> = .init(0)
+        let isRestore = false
+        let observerMode = true
+
+        backend.post(receipt: Self.receipt,
+                     productData: nil,
+                     transactionData: .init(
+                        appUserID: Self.userID,
+                        presentedOfferingID: "a_offering",
+                        presentedPlacementID: "a_placement",
+                        unsyncedAttributes: nil,
+                        storefront: nil,
+                        source: .init(isRestore: isRestore, initiationSource: .queue)
+                     ),
+                     observerMode: observerMode,
+                     completion: { _ in
+            completionCalled.value += 1
+        })
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testPostsReceiptDataWithPresentedPaywall() throws {
         self.httpClient.mock(
             requestPath: .postReceiptData,
