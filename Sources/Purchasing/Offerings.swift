@@ -141,12 +141,14 @@ private extension Offering {
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
                 placementIdentifier: placementIdentifier
             )
+
             return Package(identifier: pkg.identifier,
                            packageType: pkg.packageType,
                            storeProduct: pkg.storeProduct,
                            presentedOfferingContext: newContext
             )
         }
+
         return Offering(identifier: self.identifier,
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,
