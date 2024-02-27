@@ -107,13 +107,13 @@ public extension Offerings {
             return nil
         }
 
-        let placementOffering = placements.offeringIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
         let returnOffering: Offering?
-
-        if placements.offeringIdsByPlacement.keys.contains(placementIdentifier) {
-            returnOffering = placementOffering
+        if let explicitOfferingId: String? = placements.offeringIdsByPlacement[placementIdentifier] {
+            // Don't use fallback since placement id was explicity set in the dictionary
+            returnOffering = explicitOfferingId.flatMap { self.all[$0] }
         } else {
-            returnOffering = placementOffering ?? placements.fallbackOfferingId.flatMap { self.all[$0]}
+            // Use fallback since the placement didn't exist
+            returnOffering =  placements.fallbackOfferingId.flatMap { self.all[$0]}
         }
 
         return returnOffering?.copyWith(placementIdentifier: placementIdentifier)
