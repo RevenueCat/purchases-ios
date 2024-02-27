@@ -15,11 +15,11 @@ import Foundation
 
 internal final class Placements: NSObject {
     let fallbackOfferingId: String?
-    let offeringIdsByPlacement: [String: String]
+    let offeringIdsByPlacement: [String: String?]
 
     init(
         fallbackOfferingId: String?,
-        offeringIdsByPlacement: [String: String]
+        offeringIdsByPlacement: [String: String?]
     ) {
         self.fallbackOfferingId = fallbackOfferingId
         self.offeringIdsByPlacement = offeringIdsByPlacement

@@ -38,7 +38,7 @@ struct OfferingsResponse {
     struct Placements {
         let fallbackOfferingId: String?
         @DefaultDecodable.EmptyDictionary
-        var offeringIdsByPlacement: [String: String]
+        var offeringIdsByPlacement: [String: String?]
     }
     let currentOfferingId: String?
     let offerings: [Offering]

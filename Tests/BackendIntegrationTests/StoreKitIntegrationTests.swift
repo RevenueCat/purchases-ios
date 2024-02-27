@@ -90,11 +90,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await verifyNoUnfinishedTransactions()
     }
 
-    func testPurchasingPackageWithPresentedkt() async throws {
+    func testPurchasingPackageWithPresentedOfferingContext() async throws {
         let package = try await self.monthlyPackage
 
         try self.purchases.cachePresentedOfferingContext(
-            PresentedOfferingContext(offeringIdentifier: package.offeringIdentifier),
+            PresentedOfferingContext(
+                offeringIdentifier: package.offeringIdentifier,
+                placementIdentifier: "a_placement"
+            ),
             productIdentifier: package.storeProduct.productIdentifier
         )
 
