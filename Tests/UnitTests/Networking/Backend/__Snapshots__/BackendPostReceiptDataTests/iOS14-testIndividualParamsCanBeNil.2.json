@@ -24,11 +24,14 @@
           "value" : "authorized"
         }
       },
+      "currency" : "UYU",
       "fetch_token" : "YW4gYXdlc29tZSByZWNlaXB0",
       "initiation_source" : "queue",
       "is_restore" : false,
-      "observer_mode" : true,
-      "presented_offering_identifier" : "a_offering"
+      "observer_mode" : false,
+      "price" : "15.99",
+      "product_id" : "product_id",
+      "store_country" : "ESP"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/receipts"
