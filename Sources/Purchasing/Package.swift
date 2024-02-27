@@ -21,8 +21,9 @@ import Foundation
 
     /// The identifier of the ``Offering`` containing this ``Package``.
     @objc public let offeringIdentifier: String
-    /// The identifier of the ``Placement`` this ``Package`` was obtained from.
-    @objc public let placementIdentifier: String?
+
+    /// The placement identifier this ``Package`` was obtained from.
+    internal let placementIdentifier: String?
 
     /// Initialize a ``PresentedOfferingContext``.
     @objc
@@ -95,7 +96,8 @@ import Foundation
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier, placementIdentifier: nil)
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier,
+                                                               placementIdentifier: nil)
         )
     }
 

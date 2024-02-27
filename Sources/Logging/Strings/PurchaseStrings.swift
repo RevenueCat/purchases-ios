@@ -307,14 +307,19 @@ extension PurchaseStrings: LogMessage {
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
 
-        case let .transaction_poster_handling_transaction(transactionID, productID, date, offeringID, placementID, paywallSessionID):
+        case let .transaction_poster_handling_transaction(transactionID,
+                                                          productID,
+                                                          date,
+                                                          offeringID,
+                                                          placementID,
+                                                          paywallSessionID):
             var message = "TransactionPoster: handling transaction '\(transactionID)' " +
             "for product '\(productID)' (date: \(date))"
 
             if let offeringIdentifier = offeringID {
                 message += " in Offering '\(offeringIdentifier)'"
             }
-            
+
             if let placementIdentifier = placementID {
                 message += " with Placement '\(placementIdentifier)'"
             }
