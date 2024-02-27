@@ -29,11 +29,19 @@ import Foundation
     @objc
     public init(
         offeringIdentifier: String,
-        placementIdentifier: String? = nil
+        placementIdentifier: String?
     ) {
         self.offeringIdentifier = offeringIdentifier
         self.placementIdentifier = placementIdentifier
         super.init()
+    }
+
+    /// Initialize a ``PresentedOfferingContext``.
+    @objc
+    public convenience init(
+        offeringIdentifier: String
+    ) {
+        self.init(offeringIdentifier: offeringIdentifier, placementIdentifier: nil)
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

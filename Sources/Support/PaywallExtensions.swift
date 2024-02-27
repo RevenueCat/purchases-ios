@@ -124,7 +124,9 @@ private extension View {
                     Logger.appleWarning(Strings.configure.sk2_required_for_swiftui_paywalls)
                 }
 
-                // Find offering context from a matching package
+                // Find offering context from a matching package.
+                // Packages could have the same product but each product has the same offering
+                // context so that is okay if that happens.
                 let offeringContext = offering.availablePackages.first {
                     $0.storeProduct.productIdentifier == product.id
                 }?.presentedOfferingContext
