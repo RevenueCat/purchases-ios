@@ -76,7 +76,7 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
         expect(parameters.transaction as? StoreTransaction) === transaction
         expect(parameters.data.appUserID) == Self.userID
-        expect(parameters.data.presentedOfferingID).to(beNil())
+        expect(parameters.data.presentedOfferingContext?.offeringIdentifier).to(beNil())
         expect(parameters.data.unsyncedAttributes).to(beEmpty())
         expect(parameters.data.source.isRestore) == false
         expect(parameters.data.source.initiationSource) == .queue

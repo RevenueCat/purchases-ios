@@ -470,7 +470,7 @@ extension BasePurchasesTests {
                 self.postedDiscounts = productData.discounts
             }
 
-            self.postedOfferingIdentifier = transactionData.presentedOfferingID
+            self.postedOfferingIdentifier = transactionData.presentedOfferingContext?.offeringIdentifier
             self.postedObserverMode = observerMode
             self.postedInitiationSource = transactionData.source.initiationSource
 

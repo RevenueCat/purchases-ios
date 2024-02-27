@@ -25,8 +25,7 @@ struct PurchaseSource: Equatable {
 struct PurchasedTransactionData {
 
     var appUserID: String
-    var presentedOfferingID: String?
-    var presentedPlacementID: String?
+    var presentedOfferingContext: PresentedOfferingContext?
     var presentedPaywall: PaywallEvent?
     var unsyncedAttributes: SubscriberAttribute.Dictionary?
     var aadAttributionToken: String?
@@ -90,8 +89,8 @@ final class TransactionPoster: TransactionPosterType {
             transactionID: transaction.transactionIdentifier,
             productID: transaction.productIdentifier,
             transactionDate: transaction.purchaseDate,
-            offeringID: data.presentedOfferingID,
-            placementID: data.presentedPlacementID,
+            offeringID: data.presentedOfferingContext?.offeringIdentifier,
+            placementID: data.presentedOfferingContext?.placementIdentifier,
             paywallSessionID: data.presentedPaywall?.data.sessionIdentifier
         ))
 
