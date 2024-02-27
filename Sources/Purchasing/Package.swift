@@ -25,15 +25,19 @@ import Foundation
     /// The placement identifier this ``Package`` was obtained from.
     internal let placementIdentifier: String?
 
-    /// Initialize a ``PresentedOfferingContext``.
-    @objc
-    public init(
+    internal init(
         offeringIdentifier: String,
-        placementIdentifier: String?
+        placementIdentifier: String? = nil
     ) {
         self.offeringIdentifier = offeringIdentifier
         self.placementIdentifier = placementIdentifier
         super.init()
+    }
+
+    /// Initialize a ``PresentedOfferingContext``.
+    @objc
+    convenience public init(offeringIdentifier: String) {
+        self.init(offeringIdentifier: offeringIdentifier)
     }
 
     public override func isEqual(_ object: Any?) -> Bool {

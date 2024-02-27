@@ -103,25 +103,25 @@ public extension Offerings {
      */
     @objc(getCurrentOfferingForPlacement:)
     func getCurrentOffering(forPlacement placementIdentifier: String) -> Offering? {
-        // TODO: log a debug message
         guard let placements = self.placements else {
             return nil
         }
+
         let placementOffering = placements.offeringIdsByPlacement[placementIdentifier].flatMap { self.all[$0] }
         let returnOffering: Offering?
+
         if placements.offeringIdsByPlacement.keys.contains(placementIdentifier) {
             returnOffering = placementOffering
         } else {
-            let fallbackOffering = placements.fallbackOfferingId.flatMap { self.all[$0]}
-            returnOffering = placementOffering ?? fallbackOffering
+            returnOffering = placementOffering ?? placements.fallbackOfferingId.flatMap { self.all[$0]}
         }
-        return returnOffering?.copyWithPlacementIdentifier(placementIdentifier: placementIdentifier)
+
+        return returnOffering?.copyWith(placementIdentifier: placementIdentifier)
     }
 }
 
-// TODO: MOVE THIS TO OFFERING FILE
-extension Offering {
-    internal func copyWithPlacementIdentifier(placementIdentifier: String?) -> Offering {
+private extension Offering {
+    func copyWith(placementIdentifier: String?) -> Offering {
         let updatedPackages = self.availablePackages.map { pkg in
             let newContext = PresentedOfferingContext(
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
