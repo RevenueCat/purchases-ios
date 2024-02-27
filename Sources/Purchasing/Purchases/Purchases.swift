@@ -700,7 +700,9 @@ public extension Purchases {
         fetchCurrent: Bool = false,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
-        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy, fetchCurrent: fetchCurrent) { @Sendable result in
+        self.offeringsManager.offerings(appUserID: self.appUserID,
+                                        fetchPolicy: fetchPolicy,
+                                        fetchCurrent: fetchCurrent) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }

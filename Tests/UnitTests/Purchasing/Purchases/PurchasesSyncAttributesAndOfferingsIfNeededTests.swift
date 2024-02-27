@@ -17,7 +17,7 @@ import XCTest
 
 @testable import RevenueCat
 
-class PurchasesSyncAttributesAndOfferingsIfNeededTests: BasePurchasesTests {
+class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
 
     func testAttributesSyncedAndOfferingsFetched() throws {
         self.setupPurchases()
@@ -27,7 +27,7 @@ class PurchasesSyncAttributesAndOfferingsIfNeededTests: BasePurchasesTests {
         )
 
         let result: Offerings? = waitUntilValue { completed in
-            self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { offerings, error in
+            self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { offerings, _ in
                 completed(offerings)
             })
         }

@@ -14,6 +14,8 @@
 import Foundation
 import StoreKit
 
+// swiftlint:disable file_length
+
 class OfferingsManager {
 
     private let deviceCache: DeviceCache
@@ -36,7 +38,6 @@ class OfferingsManager {
         self.offeringsFactory = offeringsFactory
         self.productsManager = productsManager
     }
-
 
     func offerings(
         appUserID: String,
