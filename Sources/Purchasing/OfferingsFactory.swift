@@ -71,7 +71,7 @@ class OfferingsFactory {
 
     func createPlacement(
         with data: OfferingsResponse.Placements?
-    ) -> Placements? {
+    ) -> Offerings.Placements? {
         guard let data else {
             return nil
         }

@@ -28,6 +28,19 @@ import Foundation
  */
 @objc(RCOfferings) public final class Offerings: NSObject {
 
+    internal final class Placements: NSObject {
+        let fallbackOfferingId: String?
+        let offeringIdsByPlacement: [String: String?]
+
+        init(
+            fallbackOfferingId: String?,
+            offeringIdsByPlacement: [String: String?]
+        ) {
+            self.fallbackOfferingId = fallbackOfferingId
+            self.offeringIdsByPlacement = offeringIdsByPlacement
+        }
+    }
+
     /**
      Dictionary of all Offerings (``Offering``) objects keyed by their identifier. This dictionary can also be accessed
      by using an index subscript on ``Offerings``, e.g. `offerings["offering_id"]`. To access the current offering use
@@ -64,6 +77,7 @@ import Foundation
 
 }
 
+extension Offerings.Placements: Sendable {}
 extension Offerings: Sendable {}
 
 public extension Offerings {
