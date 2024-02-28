@@ -253,6 +253,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
+        case presentedPlacementIdentifier
+        case appliedTargetingRule
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
 
@@ -272,6 +274,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         }
 
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
+        try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
+        try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
 
         try container.encodeIfPresent(
@@ -298,6 +302,17 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+
+    }
+
+}
+
+extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case revision
+        case ruleId
 
     }
 
