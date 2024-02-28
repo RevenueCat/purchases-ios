@@ -28,7 +28,7 @@
 
 + (void)checkTargetContextAPI {
     RCTargetingContext *tc = [[RCTargetingContext alloc] initWithRevision:1 ruleId:@""];
-    NSInteger r = tc.revsion;
+    NSInteger r = tc.revision;
     NSString *rid = tc.ruleId;
 
     NSLog(tc, r, rid);
