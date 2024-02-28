@@ -163,6 +163,12 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func syncAttributesAndOfferingsIfNeeded(
+        completion: @escaping (RevenueCat.Offerings?, RevenueCat.PublicError?) -> Void
+    ) {
+        self.unimplemented()
+    }
+
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         self.unimplemented()

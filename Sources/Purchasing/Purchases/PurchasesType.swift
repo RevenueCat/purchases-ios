@@ -849,6 +849,21 @@ public protocol PurchasesType: AnyObject {
      */
     var attribution: Attribution { get }
 
+    /**
+     * Syncs subscriber attributes and then fetches the configured offerings for this user. This method is intended to
+     * be called when using Targeting Rules with Custom Attributes. Any subscriber attributes should be set before
+     * calling this method to ensure the returned offerings are applied with the latest subscriber attributes.
+     *
+     * This method is rate limited to 5 calls per minute. It will log a warning and return offerings cache when reached.
+     *
+     * - Parameter completion: A completion block called when attributes are synced and offerings are available.
+     * Called immediately with cached offerings if rate limit reached. ``Offerings`` will be `nil` if an error occurred.
+     *
+     * #### Related Articles
+     * -  [Targeting](https://docs.revenuecat.com/docs/targeting)
+     */
+    @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void)
+
     // MARK: - Deprecated
 
     // swiftlint:disable missing_docs

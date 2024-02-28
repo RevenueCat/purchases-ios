@@ -721,18 +721,6 @@ public extension Purchases {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
 
-    @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
-        if let lastSync = self.lastSyncAttributesAndRefreshOfferingsTimestamp, Date().timeIntervalSince(lastSync) < 60 {
-            self.getOfferings(fetchPolicy: .default, completion: completion)
-            return
-
-        }
-        self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
-            self.lastSyncAttributesAndRefreshOfferingsTimestamp = Date()
-        })
-    }
-
 }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -807,6 +795,18 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
+    }
+
+    @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        if let lastSync = self.lastSyncAttributesAndRefreshOfferingsTimestamp, Date().timeIntervalSince(lastSync) < 60 {
+            self.getOfferings(fetchPolicy: .default, completion: completion)
+            return
+
+        }
+        self.syncSubscriberAttributes(completion: {
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.lastSyncAttributesAndRefreshOfferingsTimestamp = Date()
+        })
     }
 
 }
