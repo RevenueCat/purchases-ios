@@ -35,10 +35,14 @@ struct OfferingsResponse {
         var metadata: [String: AnyDecodable]
 
     }
-
+    struct Placements {
+        let fallbackOfferingId: String?
+        @DefaultDecodable.EmptyDictionary
+        var offeringIdsByPlacement: [String: String?]
+    }
     let currentOfferingId: String?
     let offerings: [Offering]
-
+    let placements: Placements?
 }
 
 extension OfferingsResponse {
@@ -56,6 +60,7 @@ extension OfferingsResponse {
 
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
 extension OfferingsResponse.Offering: Codable, Equatable {}
+extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
 
 extension OfferingsResponse: HTTPResponseBody {}

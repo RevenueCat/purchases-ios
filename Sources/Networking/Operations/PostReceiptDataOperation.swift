@@ -124,6 +124,7 @@ extension PostReceiptDataOperation {
         let isRestore: Bool
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
+        let presentedPlacementIdentifier: String?
         let paywall: Paywall?
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
@@ -160,7 +161,8 @@ extension PostReceiptDataOperation.PostData {
             receipt: receipt,
             isRestore: data.source.isRestore,
             productData: productData,
-            presentedOfferingIdentifier: data.presentedOfferingID,
+            presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
+            presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
             paywall: data.paywall,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,

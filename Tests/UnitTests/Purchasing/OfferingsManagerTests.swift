@@ -159,7 +159,8 @@ extension OfferingsManagerTests {
     func testOfferingsForAppUserIDReturnsConfigurationErrorIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "", offerings: [])
+            .init(currentOfferingId: "", offerings: [],
+                  placements: nil)
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -209,7 +210,8 @@ extension OfferingsManagerTests {
     func testOfferingsLogsErrorInformationIfBackendReturnsEmpty() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
-            .init(currentOfferingId: "", offerings: [])
+            .init(currentOfferingId: "", offerings: [],
+                  placements: nil)
         )
         self.mockOfferingsFactory.emptyOfferings = true
 
@@ -461,7 +463,8 @@ private extension OfferingsManagerTests {
                       packages: [
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
                       ])
-            ]
+            ],
+            placements: nil
         )
         static let backendOfferingsResponseWithUnknownProducts: OfferingsResponse = .init(
             currentOfferingId: "base",
@@ -472,7 +475,8 @@ private extension OfferingsManagerTests {
                         .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial"),
                         .init(identifier: "$rc_yearly", platformProductIdentifier: "yearly_freetrial")
                       ])
-            ]
+            ],
+            placements: nil
         )
         static let unexpectedBackendResponseError: BackendError = .unexpectedBackendResponse(
             .customerInfoNil
@@ -498,6 +502,7 @@ private extension OfferingsManagerTests {
                 }
                 .dictionaryWithKeys(\.identifier),
             currentOfferingID: MockData.anyBackendOfferingsResponse.currentOfferingId,
+            placements: nil,
             response: MockData.anyBackendOfferingsResponse
         )
     }

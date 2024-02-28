@@ -28,6 +28,19 @@ import Foundation
  */
 @objc(RCOfferings) public final class Offerings: NSObject {
 
+    internal final class Placements: NSObject {
+        let fallbackOfferingId: String?
+        let offeringIdsByPlacement: [String: String?]
+
+        init(
+            fallbackOfferingId: String?,
+            offeringIdsByPlacement: [String: String?]
+        ) {
+            self.fallbackOfferingId = fallbackOfferingId
+            self.offeringIdsByPlacement = offeringIdsByPlacement
+        }
+    }
+
     /**
      Dictionary of all Offerings (``Offering``) objects keyed by their identifier. This dictionary can also be accessed
      by using an index subscript on ``Offerings``, e.g. `offerings["offering_id"]`. To access the current offering use
@@ -48,19 +61,23 @@ import Foundation
     internal let response: OfferingsResponse
 
     private let currentOfferingID: String?
+    private let placements: Placements?
 
     init(
         offerings: [String: Offering],
         currentOfferingID: String?,
+        placements: Placements?,
         response: OfferingsResponse
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
         self.response = response
+        self.placements = placements
     }
 
 }
 
+extension Offerings.Placements: Sendable {}
 extension Offerings: Sendable {}
 
 public extension Offerings {
@@ -93,4 +110,50 @@ public extension Offerings {
         return description
     }
 
+    /**
+     Retrieves a current offering for a placement identifier, use this to access offerings defined by targeting
+     placements configured in the RevenueCat dashboard, 
+     e.g. `offerings.currentOffering(forPlacement: "placement_id")`.
+     */
+    @objc(currentOfferingForPlacement:)
+    func currentOffering(forPlacement placementIdentifier: String) -> Offering? {
+        guard let placements = self.placements else {
+            return nil
+        }
+
+        let returnOffering: Offering?
+        if let explicitOfferingId: String? = placements.offeringIdsByPlacement[placementIdentifier] {
+            // Don't use fallback since placement id was explicity set in the dictionary
+            returnOffering = explicitOfferingId.flatMap { self.all[$0] }
+        } else {
+            // Use fallback since the placement didn't exist
+            returnOffering =  placements.fallbackOfferingId.flatMap { self.all[$0]}
+        }
+
+        return returnOffering?.copyWith(placementIdentifier: placementIdentifier)
+    }
+}
+
+private extension Offering {
+    func copyWith(placementIdentifier: String?) -> Offering {
+        let updatedPackages = self.availablePackages.map { pkg in
+            let newContext = PresentedOfferingContext(
+                offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
+                placementIdentifier: placementIdentifier
+            )
+
+            return Package(identifier: pkg.identifier,
+                           packageType: pkg.packageType,
+                           storeProduct: pkg.storeProduct,
+                           presentedOfferingContext: newContext
+            )
+        }
+
+        return Offering(identifier: self.identifier,
+                        serverDescription: self.serverDescription,
+                        metadata: self.metadata,
+                        paywall: self.paywall,
+                        availablePackages: updatedPackages
+        )
+    }
 }

@@ -483,7 +483,8 @@ private extension DeviceCacheTests {
                      "platform_product_identifier": "com.myproduct.annual"},
                     {"identifier": "$rc_six_month",
                      "platform_product_identifier": "com.myproduct.sixMonth"}
-                ]
+                ],
+                "current_offering_ids_by_placement": {"placement_identifier": "\(offeringIdentifier)"},
             }
         """
         let offeringsData: OfferingsResponse.Offering = try JSONDecoder.default.decode(
@@ -496,8 +497,11 @@ private extension DeviceCacheTests {
         return Offerings(
             offerings: [offeringIdentifier: offering],
             currentOfferingID: "base",
-            response: .init(currentOfferingId: "base", offerings: [offeringsData])
-        )
+            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
+            response: .init(currentOfferingId: "base",
+                            offerings: [offeringsData],
+                            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
+        ))
     }
 
 }
@@ -507,9 +511,11 @@ private extension Offerings {
     static let empty: Offerings = .init(
         offerings: [:],
         currentOfferingID: "",
+        placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
         response: .init(
             currentOfferingId: "",
-            offerings: []
+            offerings: [],
+            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
         )
     )
 

@@ -19,16 +19,29 @@ import Foundation
 ///
 @objc(RCPresentedOfferingContext) public final class PresentedOfferingContext: NSObject {
 
-    /// The identifier of the ``Offering`` containing this Package.
+    /// The identifier of the ``Offering`` containing this ``Package``.
     @objc public let offeringIdentifier: String
+
+    /// The placement identifier this ``Package`` was obtained from.
+    @objc public let placementIdentifier: String?
 
     /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        placementIdentifier: String?
     ) {
         self.offeringIdentifier = offeringIdentifier
+        self.placementIdentifier = placementIdentifier
         super.init()
+    }
+
+    /// Initialize a ``PresentedOfferingContext``.
+    @objc
+    public convenience init(
+        offeringIdentifier: String
+    ) {
+        self.init(offeringIdentifier: offeringIdentifier, placementIdentifier: nil)
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -91,7 +104,8 @@ import Foundation
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier)
+            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier,
+                                                               placementIdentifier: nil)
         )
     }
 

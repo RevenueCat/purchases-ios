@@ -65,7 +65,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
+                offeringID: package.presentedOfferingContext.offeringIdentifier,
+                placementID: package.presentedOfferingContext.placementIdentifier,
                 paywallSessionID: nil
             )
         )
@@ -93,7 +94,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let package = try await self.monthlyPackage
 
         try self.purchases.cachePresentedOfferingContext(
-            PresentedOfferingContext(offeringIdentifier: package.offeringIdentifier),
+            PresentedOfferingContext(
+                offeringIdentifier: package.offeringIdentifier,
+                placementIdentifier: "a_placement"
+            ),
             productIdentifier: package.storeProduct.productIdentifier
         )
 
@@ -104,7 +108,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 transactionID: transaction.transactionIdentifier,
                 productID: package.storeProduct.productIdentifier,
                 transactionDate: transaction.purchaseDate,
-                offeringID: package.offeringIdentifier,
+                offeringID: package.presentedOfferingContext.offeringIdentifier,
+                placementID: package.presentedOfferingContext.placementIdentifier,
                 paywallSessionID: nil
             )
         )

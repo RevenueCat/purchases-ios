@@ -439,7 +439,7 @@ private func match(_ data: PurchasedTransactionData) -> Nimble.Predicate<Purchas
     return .init {
         let other = try $0.evaluate()
         let matches = (other?.appUserID == data.appUserID &&
-                       other?.presentedOfferingID == data.presentedOfferingID &&
+                       other?.presentedOfferingContext == data.presentedOfferingContext &&
                        other?.source == data.source &&
                        other?.unsyncedAttributes == data.unsyncedAttributes)
 

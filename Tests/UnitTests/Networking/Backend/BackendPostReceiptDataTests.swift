@@ -43,7 +43,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -74,7 +74,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -108,7 +108,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: .createMockProductData(),
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -137,7 +137,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -150,7 +150,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -180,7 +180,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -194,7 +194,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: !isRestore, initiationSource: .queue)
@@ -223,7 +223,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -237,7 +237,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -266,7 +266,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -281,7 +281,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: productData,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -310,7 +310,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: "offering_a",
+                        presentedOfferingContext: .init(offeringIdentifier: "offering_a"),
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -324,7 +324,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: "offering_b",
+                        presentedOfferingContext: .init(offeringIdentifier: "offering_b"),
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -364,7 +364,52 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: offeringIdentifier,
+                                 presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+                                 unsyncedAttributes: nil,
+                                 storefront: nil,
+                                 source: .init(isRestore: false, initiationSource: .purchase)
+                              ),
+                              observerMode: false,
+                              completion: { _ in
+                completed()
+            })
+        }
+
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testPostsReceiptDataWithPresentedOfferingContext() throws {
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let productIdentifier = "a_great_product"
+        let offeringIdentifier = "a_offering"
+        let placementIdentifier = "a_placement"
+        let price: Decimal = 10.98
+        let group = "sub_group"
+
+        let currencyCode = "BFD"
+
+        let context = PresentedOfferingContext(
+            offeringIdentifier: offeringIdentifier,
+            placementIdentifier: placementIdentifier
+        )
+
+        let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
+                                                                     paymentMode: nil,
+                                                                     currencyCode: currencyCode,
+                                                                     price: price,
+                                                                     subscriptionGroup: group)
+
+        waitUntil { completed in
+            self.backend.post(receipt: Self.receipt,
+                              productData: productData,
+                              transactionData: .init(
+                                 appUserID: Self.userID,
+                                 presentedOfferingContext: context,
+                                 presentedPaywall: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -415,7 +460,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: offeringIdentifier,
+                                 presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
                                  presentedPaywall: .impression(paywallEventCreationData, paywallEventData),
                                  unsyncedAttributes: nil,
                                  storefront: nil,
@@ -444,7 +489,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
@@ -540,7 +585,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: false, initiationSource: .queue)
@@ -580,7 +625,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -607,7 +652,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: true, initiationSource: .queue)
@@ -636,7 +681,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -659,7 +704,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: productData,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -705,7 +750,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
@@ -733,7 +778,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: nil,
+                        presentedOfferingContext: nil,
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -747,7 +792,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                      productData: nil,
                      transactionData: .init(
                         appUserID: Self.userID,
-                        presentedOfferingID: "offering_a",
+                        presentedOfferingContext: .init(offeringIdentifier: "offering_a"),
                         unsyncedAttributes: nil,
                         storefront: nil,
                         source: .init(isRestore: isRestore, initiationSource: .queue)
@@ -778,7 +823,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -813,7 +858,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: .createMockProductData(),
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -848,7 +893,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -879,7 +924,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: isRestore, initiationSource: .purchase)
@@ -913,7 +958,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -944,7 +989,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .purchase)
@@ -988,7 +1033,7 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
                               productData: nil,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
@@ -1032,7 +1077,7 @@ private extension BaseBackendPostReceiptDataTests {
                               productData: productData,
                               transactionData: .init(
                                  appUserID: Self.userID,
-                                 presentedOfferingID: nil,
+                                 presentedOfferingContext: nil,
                                  unsyncedAttributes: nil,
                                  storefront: nil,
                                  source: .init(isRestore: false, initiationSource: .queue)
