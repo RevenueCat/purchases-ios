@@ -395,7 +395,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let context = PresentedOfferingContext(
             offeringIdentifier: offeringIdentifier,
             placementIdentifier: placementIdentifier,
-            targetingContext: nil
+            targetingContext: .init(revision: 1, ruleId: "abc123")
         )
 
         let productData: ProductRequestData = .createMockProductData(productIdentifier: productIdentifier,
