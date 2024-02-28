@@ -18,7 +18,8 @@ class MockOfferingsFactory: OfferingsFactory {
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
                              placements: nil,
-                             response: .init(currentOfferingId: "base", 
+                             targeting: nil,
+                             response: .init(currentOfferingId: "base",
                                              offerings: [],
                                              placements: nil,
                                              targeting: nil))
@@ -45,6 +46,7 @@ class MockOfferingsFactory: OfferingsFactory {
                 )],
             currentOfferingID: "base",
             placements: nil,
+            targeting: nil,
             response: .init(currentOfferingId: "base", offerings: [
                 .init(identifier: "base", description: "This is the base offering",
                       packages: [

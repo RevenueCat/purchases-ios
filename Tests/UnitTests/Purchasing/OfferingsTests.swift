@@ -296,13 +296,20 @@ class OfferingsTests: TestCase {
         )
 
         let offeringA = try XCTUnwrap(offerings["offering_a"])
-        expect(offerings.current) === offeringA
+
+        // Current offering should have targeting context
+        expect(offerings.current!.identifier) == offeringA.identifier
         expect(
             offerings.current!.availablePackages.first!.presentedOfferingContext.targetingContext!.revision
         ) == 1
         expect(
             offerings.current!.availablePackages.first!.presentedOfferingContext.targetingContext!.ruleId
         ) == "abc123"
+
+        // Offering accessed directly (even if same as current) should not have targeting context
+        expect(
+            offerings.all.values.first!.availablePackages.first!.presentedOfferingContext.targetingContext
+        ).to(beNil())
     }
 
     func testOfferingsWithMetadataIsCreated() throws {
