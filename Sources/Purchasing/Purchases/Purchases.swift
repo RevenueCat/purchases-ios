@@ -256,7 +256,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
-    private var lastSyncAttributesAndRefreshOfferingsTimestamp: Date?
+
+    private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
 
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
@@ -798,14 +799,19 @@ public extension Purchases {
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
-        if let lastSync = self.lastSyncAttributesAndRefreshOfferingsTimestamp, Date().timeIntervalSince(lastSync) < 60 {
+        guard syncAttributesAndOfferingsIfNeededRateLimiter.shouldProceed() else {
+            Logger.warn(
+                Strings.identity.sync_attributes_and_offerings_rate_limit_reached(
+                    maxCalls: syncAttributesAndOfferingsIfNeededRateLimiter.maxCalls,
+                    period: Int(syncAttributesAndOfferingsIfNeededRateLimiter.period)
+                )
+            )
             self.getOfferings(fetchPolicy: .default, completion: completion)
             return
-
         }
+
         self.syncSubscriberAttributes(completion: {
             self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
-            self.lastSyncAttributesAndRefreshOfferingsTimestamp = Date()
         })
     }
 
