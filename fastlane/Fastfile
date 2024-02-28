@@ -612,8 +612,7 @@ platform :ios do
       result_bundle: true,
       testplan: options[:test_plan],
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios",
-      xcargs: "-retry-tests-on-failure -test-iterations 2"
+      output_directory: "fastlane/test_output/xctest/ios"
     )
   end
 
