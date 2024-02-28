@@ -135,11 +135,17 @@ public extension Offerings {
 }
 
 private extension Offering {
-    func copyWith(placementIdentifier: String?) -> Offering {
+    func copyWith(
+        placementIdentifier: String? = nil,
+        targetingContext: PresentedOfferingContext.TargetingContext? = nil
+    ) -> Offering {
         let updatedPackages = self.availablePackages.map { pkg in
+            let oldContext = pkg.presentedOfferingContext
+
             let newContext = PresentedOfferingContext(
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
-                placementIdentifier: placementIdentifier
+                placementIdentifier: placementIdentifier ?? oldContext.placementIdentifier,
+                targetingContext: targetingContext ?? oldContext.targetingContext
             )
 
             return Package(identifier: pkg.identifier,

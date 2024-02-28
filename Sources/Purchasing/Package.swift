@@ -19,20 +19,43 @@ import Foundation
 ///
 @objc(RCPresentedOfferingContext) public final class PresentedOfferingContext: NSObject {
 
+    ///
+    /// Stores information a targeting rule
+    ///
+    @objc(RCTargetingContext) public final class TargetingContext: NSObject {
+        /// The revision of the targeting used to obtain this object.
+        let revision: Int
+
+        /// The rule id from the targeting used to obtain this object.
+        let ruleId: String
+
+        /// Initializes a ``TargetingContext``
+        @objc
+        public init(revision: Int, ruleId: String) {
+            self.revision = revision
+            self.ruleId = ruleId
+        }
+    }
+
     /// The identifier of the ``Offering`` containing this ``Package``.
     @objc public let offeringIdentifier: String
 
     /// The placement identifier this ``Package`` was obtained from.
     @objc public let placementIdentifier: String?
 
+    /// The targeting rule this ``Package`` was obtained from.
+    @objc public let targetingContext: TargetingContext?
+
     /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
         offeringIdentifier: String,
-        placementIdentifier: String?
+        placementIdentifier: String?,
+        targetingContext: TargetingContext?
     ) {
         self.offeringIdentifier = offeringIdentifier
         self.placementIdentifier = placementIdentifier
+        self.targetingContext = targetingContext
         super.init()
     }
 
@@ -41,7 +64,7 @@ import Foundation
     public convenience init(
         offeringIdentifier: String
     ) {
-        self.init(offeringIdentifier: offeringIdentifier, placementIdentifier: nil)
+        self.init(offeringIdentifier: offeringIdentifier, placementIdentifier: nil, targetingContext: nil)
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
@@ -104,8 +127,7 @@ import Foundation
             identifier: identifier,
             packageType: packageType,
             storeProduct: storeProduct,
-            presentedOfferingContext: PresentedOfferingContext(offeringIdentifier: offeringIdentifier,
-                                                               placementIdentifier: nil)
+            presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier)
         )
     }
 
@@ -185,3 +207,4 @@ extension Package: Identifiable {
 
 extension Package: Sendable {}
 extension PresentedOfferingContext: Sendable {}
+extension PresentedOfferingContext.TargetingContext: Sendable {}

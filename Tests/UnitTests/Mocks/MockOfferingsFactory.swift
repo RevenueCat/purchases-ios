@@ -18,7 +18,10 @@ class MockOfferingsFactory: OfferingsFactory {
             return Offerings(offerings: [:],
                              currentOfferingID: "base",
                              placements: nil,
-                             response: .init(currentOfferingId: "base", offerings: [], placements: nil))
+                             response: .init(currentOfferingId: "base", 
+                                             offerings: [],
+                                             placements: nil,
+                                             targeting: nil))
         }
         if nilOfferings {
             return nil
@@ -47,7 +50,7 @@ class MockOfferingsFactory: OfferingsFactory {
                       packages: [
                         .init(identifier: "", platformProductIdentifier: "$rc_monthly")
                       ])
-            ], placements: nil)
+            ], placements: nil, targeting: nil)
 
         )
     }
@@ -63,7 +66,9 @@ extension OfferingsResponse {
                   packages: [
                     .init(identifier: "$rc_monthly", platformProductIdentifier: "monthly_freetrial")
                   ])
-        ], placements: nil
+        ],
+        placements: nil,
+        targeting: nil
     )
 
 }

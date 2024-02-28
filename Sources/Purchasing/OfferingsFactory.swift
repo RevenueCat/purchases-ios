@@ -21,7 +21,9 @@ class OfferingsFactory {
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
-                createOffering(from: storeProductsByID, offering: offeringData)
+                createOffering(from: storeProductsByID, 
+                               offering: offeringData,
+                               targeting: data.targeting)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -37,10 +39,14 @@ class OfferingsFactory {
 
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
-        offering: OfferingsResponse.Offering
+        offering: OfferingsResponse.Offering,
+        targeting: OfferingsResponse.Targeting? = nil
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
-            createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
+            createPackage(with: package, 
+                          productsByID: storeProductsByID,
+                          offeringIdentifier: offering.identifier,
+                          targeting: targeting)
         }
 
         guard !availablePackages.isEmpty else {
@@ -58,7 +64,8 @@ class OfferingsFactory {
     func createPackage(
         with data: OfferingsResponse.Offering.Package,
         productsByID: [String: StoreProduct],
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        targeting: OfferingsResponse.Targeting? = nil
     ) -> Package? {
         guard let product = productsByID[data.platformProductIdentifier] else {
             return nil
@@ -66,7 +73,8 @@ class OfferingsFactory {
 
         return .init(package: data,
                      product: product,
-                     offeringIdentifier: offeringIdentifier)
+                     offeringIdentifier: offeringIdentifier,
+                     targeting: targeting)
     }
 
     func createPlacement(
@@ -92,12 +100,20 @@ private extension Package {
     convenience init(
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
-        offeringIdentifier: String
+        offeringIdentifier: String,
+        targeting: OfferingsResponse.Targeting?
     ) {
+        let targetingContext = targeting.flatMap {
+            PresentedOfferingContext.TargetingContext(revision: $0.revision, ruleId: $0.ruleId)
+        }
+
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  offeringIdentifier: offeringIdentifier)
+                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier,
+                                                  placementIdentifier: nil,
+                                                  targetingContext: targetingContext)
+        )
     }
 
 }
