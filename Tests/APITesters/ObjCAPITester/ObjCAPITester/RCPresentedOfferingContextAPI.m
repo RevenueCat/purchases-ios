@@ -26,4 +26,12 @@
     NSLog(poc, oid, pid, pitc);
 }
 
++ (void)checkTargetContextAPI {
+    RCTargetingContext *tc = [[RCTargetingContext alloc] initWithRevision:1 ruleId:@""];
+    NSString *r = tc.revision;
+    NSString *rid = tc.ruleId;
+
+    NSLog(tc, r, rid);
+}
+
 @end

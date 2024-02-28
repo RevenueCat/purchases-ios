@@ -21,3 +21,12 @@ private func checkCreatePresentedOfferingContextAPI() {
                                             placementIdentifier: "",
                                             targetingContext: .init(revision: 1, ruleId: ""))
 }
+
+func checkTargetingContextAPI(context: PresentedOfferingContext.TargetingContext! = nil) {
+    let _: Int = context.revision
+    let _: String? = context.ruleId
+}
+
+private func checkTargetingContextAPI() {
+    let _: PresentedOfferingContext.TargetingContext = .init(revision: 1, ruleId: "")
+}

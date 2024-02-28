@@ -24,10 +24,10 @@ import Foundation
     ///
     @objc(RCTargetingContext) public final class TargetingContext: NSObject {
         /// The revision of the targeting used to obtain this object.
-        let revision: Int
+        public let revision: Int
 
         /// The rule id from the targeting used to obtain this object.
-        let ruleId: String
+        public let ruleId: String
 
         /// Initializes a ``TargetingContext``
         @objc
