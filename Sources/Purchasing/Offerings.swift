@@ -153,6 +153,10 @@ private extension Offering {
         placementIdentifier: String? = nil,
         targeting: Offerings.Targeting? = nil
     ) -> Offering {
+        if placementIdentifier == nil && targeting == nil {
+            return self
+        }
+
         let updatedPackages = self.availablePackages.map { pkg in
             let oldContext = pkg.presentedOfferingContext
 
