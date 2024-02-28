@@ -18,6 +18,10 @@
   "request" : {
     "body" : {
       "app_user_id" : "user",
+      "applied_targeting_rule" : {
+        "revision" : 1,
+        "rule_id" : "abc123"
+      },
       "attributes" : {
         "$attConsentStatus" : {
           "updated_at_ms" : 1678307200000,
@@ -30,6 +34,7 @@
       "is_restore" : false,
       "observer_mode" : false,
       "presented_offering_identifier" : "a_offering",
+      "presented_placement_identifier" : "a_placement",
       "price" : "10.98",
       "product_id" : "a_great_product",
       "store_country" : "ESP",
