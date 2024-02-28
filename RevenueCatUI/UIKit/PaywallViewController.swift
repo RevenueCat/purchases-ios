@@ -130,6 +130,12 @@ public class PaywallViewController: UIViewController {
     }
 
     /// - Warning: For internal use only
+    @objc(updateWithDisplayCloseButton:)
+    public func update(with displayCloseButton: Bool) {
+        self.configuration.displayCloseButton = displayCloseButton
+    }
+
+    /// - Warning: For internal use only
     @objc(updateFontWithFontName:)
     public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
