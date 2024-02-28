@@ -602,6 +602,7 @@ platform :ios do
 
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
+    fetch_snapshots
     replace_api_key_integration_tests
     scan(
       scheme: "BackendIntegrationTests",
