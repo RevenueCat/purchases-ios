@@ -21,9 +21,7 @@ class OfferingsFactory {
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
-                createOffering(from: storeProductsByID, 
-                               offering: offeringData,
-                               targeting: data.targeting)
+                createOffering(from: storeProductsByID, offering: offeringData)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -34,19 +32,16 @@ class OfferingsFactory {
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
+                         targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
                          response: data)
     }
 
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
-        offering: OfferingsResponse.Offering,
-        targeting: OfferingsResponse.Targeting? = nil
+        offering: OfferingsResponse.Offering
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
-            createPackage(with: package, 
-                          productsByID: storeProductsByID,
-                          offeringIdentifier: offering.identifier,
-                          targeting: targeting)
+            createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
         }
 
         guard !availablePackages.isEmpty else {
@@ -64,8 +59,7 @@ class OfferingsFactory {
     func createPackage(
         with data: OfferingsResponse.Offering.Package,
         productsByID: [String: StoreProduct],
-        offeringIdentifier: String,
-        targeting: OfferingsResponse.Targeting? = nil
+        offeringIdentifier: String
     ) -> Package? {
         guard let product = productsByID[data.platformProductIdentifier] else {
             return nil
@@ -73,8 +67,7 @@ class OfferingsFactory {
 
         return .init(package: data,
                      product: product,
-                     offeringIdentifier: offeringIdentifier,
-                     targeting: targeting)
+                     offeringIdentifier: offeringIdentifier)
     }
 
     func createPlacement(
@@ -100,20 +93,12 @@ private extension Package {
     convenience init(
         package: OfferingsResponse.Offering.Package,
         product: StoreProduct,
-        offeringIdentifier: String,
-        targeting: OfferingsResponse.Targeting?
+        offeringIdentifier: String
     ) {
-        let targetingContext = targeting.flatMap {
-            PresentedOfferingContext.TargetingContext(revision: $0.revision, ruleId: $0.ruleId)
-        }
-
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier,
-                                                  placementIdentifier: nil,
-                                                  targetingContext: targetingContext)
-        )
+                  offeringIdentifier: offeringIdentifier)
     }
 
 }

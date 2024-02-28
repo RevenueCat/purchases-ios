@@ -498,6 +498,7 @@ private extension DeviceCacheTests {
             offerings: [offeringIdentifier: offering],
             currentOfferingID: "base",
             placements: nil,
+            targeting: nil,
             response: .init(currentOfferingId: "base",
                             offerings: [offeringsData],
                             placements: nil,
@@ -513,6 +514,7 @@ private extension Offerings {
         offerings: [:],
         currentOfferingID: "",
         placements: nil,
+        targeting: nil,
         response: .init(
             currentOfferingId: "",
             offerings: [],

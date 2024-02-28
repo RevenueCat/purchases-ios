@@ -41,6 +41,16 @@ import Foundation
         }
     }
 
+    internal final class Targeting: NSObject {
+        let revision: Int
+        let ruleId: String
+
+        init(revision: Int, ruleId: String) {
+            self.revision = revision
+            self.ruleId = ruleId
+        }
+    }
+
     /**
      Dictionary of all Offerings (``Offering``) objects keyed by their identifier. This dictionary can also be accessed
      by using an index subscript on ``Offerings``, e.g. `offerings["offering_id"]`. To access the current offering use
@@ -55,29 +65,33 @@ import Foundation
         guard let currentOfferingID = currentOfferingID else {
             return nil
         }
-        return all[currentOfferingID]
+        return all[currentOfferingID]?.copyWith(targeting: self.targeting)
     }
 
     internal let response: OfferingsResponse
 
     private let currentOfferingID: String?
     private let placements: Placements?
+    private let targeting: Targeting?
 
     init(
         offerings: [String: Offering],
         currentOfferingID: String?,
         placements: Placements?,
+        targeting: Targeting?,
         response: OfferingsResponse
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
-        self.response = response
         self.placements = placements
+        self.targeting = targeting
+        self.response = response
     }
 
 }
 
 extension Offerings.Placements: Sendable {}
+extension Offerings.Targeting: Sendable {}
 extension Offerings: Sendable {}
 
 public extension Offerings {
@@ -137,7 +151,7 @@ public extension Offerings {
 private extension Offering {
     func copyWith(
         placementIdentifier: String? = nil,
-        targetingContext: PresentedOfferingContext.TargetingContext? = nil
+        targeting: Offerings.Targeting? = nil
     ) -> Offering {
         let updatedPackages = self.availablePackages.map { pkg in
             let oldContext = pkg.presentedOfferingContext
@@ -145,7 +159,8 @@ private extension Offering {
             let newContext = PresentedOfferingContext(
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
                 placementIdentifier: placementIdentifier ?? oldContext.placementIdentifier,
-                targetingContext: targetingContext ?? oldContext.targetingContext
+                targetingContext: targeting.flatMap { .init(revision: $0.revision,
+                                                            ruleId: $0.ruleId) } ?? oldContext.targetingContext
             )
 
             return Package(identifier: pkg.identifier,
