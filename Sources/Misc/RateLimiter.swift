@@ -14,25 +14,33 @@
 import Foundation
 
 internal class RateLimiter {
-    private var timestamps: [Date] = []
+    private var timestamps: [Date?]
+    private var index: Int = 0
+    private let maxCallsInclusive: Int
 
     let maxCalls: Int
-    let period: TimeInterval // Period in seconds
+    let period: TimeInterval
 
     init(maxCalls: Int, period: TimeInterval) {
         self.maxCalls = maxCalls
+        self.maxCallsInclusive = self.maxCalls + 1
         self.period = period
+
+        self.timestamps = Array(repeating: nil, count: maxCallsInclusive)
     }
 
     func shouldProceed() -> Bool {
         let now = Date()
-        timestamps = timestamps.filter { now.timeIntervalSince($0) <= period }
+        let oldestIndex = (index + 1) % maxCallsInclusive
+        let oldestTimestamp = timestamps[oldestIndex]
 
-        if timestamps.count < maxCalls {
-            timestamps.append(now)
-            return true
-        } else {
+        // Check if the oldest timestamp is outside the rate limiting period or if it's nil
+        if let oldestTimestamp = oldestTimestamp, now.timeIntervalSince(oldestTimestamp) <= period {
             return false
+        } else {
+            timestamps[index] = now
+            index = oldestIndex
+            return true
         }
     }
 }
