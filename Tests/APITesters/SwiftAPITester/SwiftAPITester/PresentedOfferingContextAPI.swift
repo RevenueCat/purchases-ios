@@ -12,6 +12,7 @@ import StoreKit
 func checkPresentedOfferingContextAPI(context: PresentedOfferingContext! = nil) {
     let _: String = context.offeringIdentifier
     let _: String? = context.placementIdentifier
+    let _: PresentedOfferingContext.TargetingContext? = context.targetingContext
 }
 
 private func checkCreatePresentedOfferingContextAPI() {
