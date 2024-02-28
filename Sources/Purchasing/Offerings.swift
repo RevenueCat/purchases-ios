@@ -28,27 +28,14 @@ import Foundation
  */
 @objc(RCOfferings) public final class Offerings: NSObject {
 
-    internal final class Placements: NSObject {
+    internal struct Placements {
         let fallbackOfferingId: String?
         let offeringIdsByPlacement: [String: String?]
-
-        init(
-            fallbackOfferingId: String?,
-            offeringIdsByPlacement: [String: String?]
-        ) {
-            self.fallbackOfferingId = fallbackOfferingId
-            self.offeringIdsByPlacement = offeringIdsByPlacement
-        }
     }
 
-    internal final class Targeting: NSObject {
+    internal struct Targeting {
         let revision: Int
         let ruleId: String
-
-        init(revision: Int, ruleId: String) {
-            self.revision = revision
-            self.ruleId = ruleId
-        }
     }
 
     /**
