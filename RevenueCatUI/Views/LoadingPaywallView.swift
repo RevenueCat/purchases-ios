@@ -25,6 +25,7 @@ struct LoadingPaywallView: View {
 
     var mode: PaywallViewMode
     var displayCloseButton: Bool
+    var shouldAutomaticallyDismiss: Bool
 
     var shimmer: Bool = true
 
@@ -44,7 +45,8 @@ struct LoadingPaywallView: View {
             fonts: DefaultPaywallFontProvider(),
             displayCloseButton: self.displayCloseButton,
             introEligibility: Self.introEligibility,
-            purchaseHandler: Self.purchaseHandler
+            purchaseHandler: Self.purchaseHandler,
+            shouldAutomaticallyDismiss: self.shouldAutomaticallyDismiss
         )
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
@@ -232,7 +234,7 @@ struct LoadingPaywallView_Previews: PreviewProvider {
 
     static var previews: some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            LoadingPaywallView(mode: mode, displayCloseButton: true)
+            LoadingPaywallView(mode: mode, displayCloseButton: true, shouldAutomaticallyDismiss: true)
                 .previewDisplayName("\(mode)")
         }
     }

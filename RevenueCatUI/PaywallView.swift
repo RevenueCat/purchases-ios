@@ -29,6 +29,7 @@ public struct PaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
+    private let shouldAutomaticallyDismiss: Bool
 
     @Environment(\.locale)
     private var locale
@@ -104,6 +105,7 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
+        self.shouldAutomaticallyDismiss = configuration.shouldAutomaticallyDismiss
     }
 
     // swiftlint:disable:next missing_docs
@@ -122,10 +124,13 @@ public struct PaywallView: View {
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
-                                     purchaseHandler: self.purchaseHandler)
+                                     purchaseHandler: self.purchaseHandler,
+                                     shouldAutomaticallyDismiss: self.shouldAutomaticallyDismiss)
                     .transition(Self.transition)
                 } else {
-                    LoadingPaywallView(mode: self.mode, displayCloseButton: self.displayCloseButton)
+                    LoadingPaywallView(mode: self.mode,
+                                       displayCloseButton: self.displayCloseButton,
+                                       shouldAutomaticallyDismiss: self.shouldAutomaticallyDismiss)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -157,7 +162,8 @@ public struct PaywallView: View {
         activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        shouldAutomaticallyDismiss: Bool
     ) -> some View {
         let (paywall, template, error) = offering.validatedPaywall(locale: self.locale)
 
@@ -170,7 +176,8 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: self.displayCloseButton,
             introEligibility: checker,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            shouldAutomaticallyDismiss: shouldAutomaticallyDismiss
         )
 
         if let error {
@@ -259,6 +266,7 @@ struct LoadedOfferingPaywallView: View {
     private let mode: PaywallViewMode
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
+    private let shouldAutomaticallyDismiss: Bool
 
     @StateObject
     private var introEligibility: IntroEligibilityViewModel
@@ -267,6 +275,9 @@ struct LoadedOfferingPaywallView: View {
 
     @Environment(\.locale)
     private var locale
+
+    @Environment(\.onRequestedDismissal)
+    private var onRequestedDismissal: (() -> Void)?
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -283,7 +294,8 @@ struct LoadedOfferingPaywallView: View {
         fonts: PaywallFontProvider,
         displayCloseButton: Bool,
         introEligibility: TrialOrIntroEligibilityChecker,
-        purchaseHandler: PurchaseHandler
+        purchaseHandler: PurchaseHandler,
+        shouldAutomaticallyDismiss: Bool
     ) {
         self.offering = offering
         self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
@@ -292,6 +304,7 @@ struct LoadedOfferingPaywallView: View {
         self.mode = mode
         self.fonts = fonts
         self.displayCloseButton = displayCloseButton
+        self.shouldAutomaticallyDismiss = shouldAutomaticallyDismiss
         self._introEligibility = .init(
             wrappedValue: .init(introEligibilityChecker: introEligibility)
         )
@@ -333,7 +346,11 @@ struct LoadedOfferingPaywallView: View {
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
                 if self.mode.isFullScreen, purchased {
                     Logger.debug(Strings.dismissing_paywall)
-                    self.dismiss()
+                    if shouldAutomaticallyDismiss {
+                        self.dismiss()
+                    } else {
+                        self.onRequestedDismissal?()
+                    }
                 }
             }
 
@@ -362,7 +379,11 @@ struct LoadedOfferingPaywallView: View {
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
-                self.dismiss()
+                if shouldAutomaticallyDismiss {
+                    self.dismiss()
+                } else {
+                    self.onRequestedDismissal?()
+                }
             } label: {
                 Image(systemName: "xmark")
             }

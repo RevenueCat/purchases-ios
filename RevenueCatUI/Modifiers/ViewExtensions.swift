@@ -383,6 +383,31 @@ private struct ViewSizePreferenceKey: PreferenceKey {
 
 }
 
+// MARK: Environment keys
+
+/// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
+struct RequestedDismissalKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var onRequestedDismissal: (() -> Void)? {
+        get { self[RequestedDismissalKey.self] }
+        set { self[RequestedDismissalKey.self] = newValue }
+    }
+}
+
+// MARK: onRequestedDismissal
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+    func onRequestedDismissal(_ action: @escaping (() -> Void)) -> some View {
+        self.environment(\.onRequestedDismissal, action)
+    }
+}
+
+
 // MARK: -
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)

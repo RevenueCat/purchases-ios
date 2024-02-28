@@ -141,6 +141,12 @@ public class PaywallViewController: UIViewController {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
 
+    /// - Warning: For internal use only
+    @objc(updateWithAutomaticallyDismiss:)
+    public func updateAutomaticallyDismiss(with automaticallyDismiss: Bool) {
+        self.configuration.shouldAutomaticallyDismiss = automaticallyDismiss
+    }
+
     // MARK: - Internal
 
     class var mode: PaywallViewMode {
@@ -234,6 +240,13 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerWasDismissed:)
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
+    /// Notifies that the ``PaywallViewController`` has to be dismissed.
+    /// - After close button is pressed if it's present
+    /// - After a successful purchase
+    /// Only called if the shouldAutomaticallyDismiss configuration option is set to false (true by default).
+    @objc(paywallViewControllerRequestedDismissal:)
+    optional func paywallViewControllerRequestedDismissal(_ controller: PaywallViewController)
+
     /// For internal use only.
     @objc(paywallViewController:didChangeSizeTo:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -281,6 +294,10 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
+            requestedDismissal: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerRequestedDismissal?(self)
+            },
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
@@ -311,6 +328,7 @@ private struct PaywallContainerView: View {
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
+    var requestedDismissal: () -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -324,6 +342,7 @@ private struct PaywallContainerView: View {
             .onRestoreCompleted(self.restoreCompleted)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
+            .onRequestedDismissal(self.requestedDismissal)
 
     }
 

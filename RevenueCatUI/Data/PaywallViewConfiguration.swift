@@ -20,6 +20,7 @@ struct PaywallViewConfiguration {
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
+    var shouldAutomaticallyDismiss: Bool = true
 
     init(
         content: Content,
