@@ -38,7 +38,8 @@ class PurchasesDiagnosticsTests: TestCase {
                   placements: nil,
                   response: .init(currentOfferingId: nil,
                                   offerings: [],
-                                  placements: nil))
+                                  placements: nil,
+                                  targeting: nil))
         )
     }
 

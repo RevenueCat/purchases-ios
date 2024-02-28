@@ -125,6 +125,7 @@ extension PostReceiptDataOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let presentedPlacementIdentifier: String?
+        let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
@@ -142,6 +143,13 @@ extension PostReceiptDataOperation {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+
+    }
+
+    struct AppliedTargetingRule {
+
+        var revision: Int
+        var ruleId: String
 
     }
 
@@ -163,6 +171,9 @@ extension PostReceiptDataOperation.PostData {
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
+            appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
+                .init(revision: $0.revision, ruleId: $0.ruleId)
+            },
             paywall: data.paywall,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,

@@ -133,8 +133,7 @@ private extension View {
 
                 Purchases.shared.cachePresentedOfferingContext(
                     offeringContext ?? .init(
-                        offeringIdentifier: offering.identifier,
-                        placementIdentifier: nil
+                        offeringIdentifier: offering.identifier
                     ),
                     productIdentifier: product.id
                 )

@@ -14,8 +14,11 @@
 
 + (void)checkAPI {
     RCPresentedOfferingContext *poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@""];
-    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil];
-    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:@""];
+    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil targetingContext:nil];
+    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" 
+                                                     placementIdentifier:@""
+                                                        targetingContext:[[RCTargetingContext alloc] initWithRevision:1 
+                                                                                                               ruleId:@""]];
     NSString *oid = poc.offeringIdentifier;
     NSString *pid = poc.placementIdentifier;
 
