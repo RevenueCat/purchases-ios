@@ -191,6 +191,7 @@ private extension PaywallCacheWarmingTests {
             offerings: Set(offerings).dictionaryWithKeys(\.identifier),
             currentOfferingID: Self.offeringIdentifier,
             placements: nil,
+            targeting: nil,
             response: offeringsResponse
         )
     }

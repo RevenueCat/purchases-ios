@@ -125,6 +125,7 @@ extension PostReceiptDataOperation {
         let productData: ProductRequestData?
         let presentedOfferingIdentifier: String?
         let presentedPlacementIdentifier: String?
+        let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
         let observerMode: Bool
         let initiationSource: ProductRequestData.InitiationSource
@@ -142,6 +143,13 @@ extension PostReceiptDataOperation {
         var displayMode: PaywallViewMode
         var darkMode: Bool
         var localeIdentifier: String
+
+    }
+
+    struct AppliedTargetingRule {
+
+        var revision: Int
+        var ruleId: String
 
     }
 
@@ -163,6 +171,9 @@ extension PostReceiptDataOperation.PostData {
             productData: productData,
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
+            appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
+                .init(revision: $0.revision, ruleId: $0.ruleId)
+            },
             paywall: data.paywall,
             observerMode: observerMode,
             initiationSource: data.source.initiationSource,
@@ -242,6 +253,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case attributes
         case aadAttributionToken
         case presentedOfferingIdentifier
+        case presentedPlacementIdentifier
+        case appliedTargetingRule
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
 
@@ -261,6 +274,8 @@ extension PostReceiptDataOperation.PostData: Encodable {
         }
 
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
+        try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
+        try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
 
         try container.encodeIfPresent(
@@ -287,6 +302,17 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case displayMode
         case darkMode
         case localeIdentifier = "locale"
+
+    }
+
+}
+
+extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case revision
+        case ruleId
 
     }
 

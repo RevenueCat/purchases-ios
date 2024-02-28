@@ -32,6 +32,7 @@ class OfferingsFactory {
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
+                         targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
                          response: data)
     }
 

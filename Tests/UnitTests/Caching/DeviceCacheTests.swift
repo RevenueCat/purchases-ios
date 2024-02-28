@@ -497,11 +497,13 @@ private extension DeviceCacheTests {
         return Offerings(
             offerings: [offeringIdentifier: offering],
             currentOfferingID: "base",
-            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
+            placements: nil,
+            targeting: nil,
             response: .init(currentOfferingId: "base",
                             offerings: [offeringsData],
-                            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
-        ))
+                            placements: nil,
+                            targeting: nil)
+        )
     }
 
 }
@@ -511,11 +513,13 @@ private extension Offerings {
     static let empty: Offerings = .init(
         offerings: [:],
         currentOfferingID: "",
-        placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: [:]),
+        placements: nil,
+        targeting: nil,
         response: .init(
             currentOfferingId: "",
             offerings: [],
-            placements: .init(fallbackOfferingId: "", offeringIdsByPlacement: .init(wrappedValue: [:]))
+            placements: nil,
+            targeting: nil
         )
     )
 

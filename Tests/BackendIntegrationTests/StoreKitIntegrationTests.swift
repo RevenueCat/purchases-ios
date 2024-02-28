@@ -96,7 +96,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try self.purchases.cachePresentedOfferingContext(
             PresentedOfferingContext(
                 offeringIdentifier: package.offeringIdentifier,
-                placementIdentifier: "a_placement"
+                placementIdentifier: "a_placement",
+                targetingContext: nil
             ),
             productIdentifier: package.storeProduct.productIdentifier
         )

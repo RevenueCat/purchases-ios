@@ -28,17 +28,14 @@ import Foundation
  */
 @objc(RCOfferings) public final class Offerings: NSObject {
 
-    internal final class Placements: NSObject {
+    internal struct Placements {
         let fallbackOfferingId: String?
         let offeringIdsByPlacement: [String: String?]
+    }
 
-        init(
-            fallbackOfferingId: String?,
-            offeringIdsByPlacement: [String: String?]
-        ) {
-            self.fallbackOfferingId = fallbackOfferingId
-            self.offeringIdsByPlacement = offeringIdsByPlacement
-        }
+    internal struct Targeting {
+        let revision: Int
+        let ruleId: String
     }
 
     /**
@@ -55,29 +52,33 @@ import Foundation
         guard let currentOfferingID = currentOfferingID else {
             return nil
         }
-        return all[currentOfferingID]
+        return all[currentOfferingID]?.copyWith(targeting: self.targeting)
     }
 
     internal let response: OfferingsResponse
 
     private let currentOfferingID: String?
     private let placements: Placements?
+    private let targeting: Targeting?
 
     init(
         offerings: [String: Offering],
         currentOfferingID: String?,
         placements: Placements?,
+        targeting: Targeting?,
         response: OfferingsResponse
     ) {
         self.all = offerings
         self.currentOfferingID = currentOfferingID
-        self.response = response
         self.placements = placements
+        self.targeting = targeting
+        self.response = response
     }
 
 }
 
 extension Offerings.Placements: Sendable {}
+extension Offerings.Targeting: Sendable {}
 extension Offerings: Sendable {}
 
 public extension Offerings {
@@ -135,11 +136,22 @@ public extension Offerings {
 }
 
 private extension Offering {
-    func copyWith(placementIdentifier: String?) -> Offering {
+    func copyWith(
+        placementIdentifier: String? = nil,
+        targeting: Offerings.Targeting? = nil
+    ) -> Offering {
+        if placementIdentifier == nil && targeting == nil {
+            return self
+        }
+
         let updatedPackages = self.availablePackages.map { pkg in
+            let oldContext = pkg.presentedOfferingContext
+
             let newContext = PresentedOfferingContext(
                 offeringIdentifier: pkg.presentedOfferingContext.offeringIdentifier,
-                placementIdentifier: placementIdentifier
+                placementIdentifier: placementIdentifier ?? oldContext.placementIdentifier,
+                targetingContext: targeting.flatMap { .init(revision: $0.revision,
+                                                            ruleId: $0.ruleId) } ?? oldContext.targetingContext
             )
 
             return Package(identifier: pkg.identifier,

@@ -14,12 +14,24 @@
 
 + (void)checkAPI {
     RCPresentedOfferingContext *poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@""];
-    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil];
-    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:@""];
+    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" placementIdentifier:nil targetingContext:nil];
+    poc = [[RCPresentedOfferingContext alloc] initWithOfferingIdentifier:@"" 
+                                                     placementIdentifier:@""
+                                                        targetingContext:[[RCTargetingContext alloc] initWithRevision:1 
+                                                                                                               ruleId:@""]];
     NSString *oid = poc.offeringIdentifier;
     NSString *pid = poc.placementIdentifier;
+    RCTargetingContext *pitc = poc.targetingContext;
 
-    NSLog(poc, oid, pid);
+    NSLog(poc, oid, pid, pitc);
+}
+
++ (void)checkTargetContextAPI {
+    RCTargetingContext *tc = [[RCTargetingContext alloc] initWithRevision:1 ruleId:@""];
+    NSInteger r = tc.revision;
+    NSString *rid = tc.ruleId;
+
+    NSLog(tc, r, rid);
 }
 
 @end
