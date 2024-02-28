@@ -183,8 +183,8 @@ struct HomeView: View {
             Task<Void, Never> {
                 do {
                     let offerings = try await Purchases.shared.offerings()
-                    self.placementOffering = offerings.getCurrentOffering(forPlacement: newPlacementID)
-                    
+                    self.placementOffering = offerings.currentOffering(forPlacement: newPlacementID)
+
                 } catch {
                     
                     self.error = error

@@ -17,7 +17,7 @@ import RevenueCat
 var offs: Offerings!
 func checkOfferingsAPI() {
     var off: Offering? = offs.current
-    off = offs.getCurrentOffering(forPlacement: "")
+    off = offs.currentOffering(forPlacement: "")
     let all: [String: Offering] = offs.all
     off = offs.offering(identifier: nil)
     off = offs.offering(identifier: "")

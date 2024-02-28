@@ -113,10 +113,10 @@ public extension Offerings {
     /**
      Retrieves a current offering for a placement identifier, use this to access offerings defined by targeting
      placements configured in the RevenueCat dashboard, 
-     e.g. `offerings.getCurrentOffering(forPlacement: "placement_id")`.
+     e.g. `offerings.currentOffering(forPlacement: "placement_id")`.
      */
-    @objc(getCurrentOfferingForPlacement:)
-    func getCurrentOffering(forPlacement placementIdentifier: String) -> Offering? {
+    @objc(currentOfferingForPlacement:)
+    func currentOffering(forPlacement placementIdentifier: String) -> Offering? {
         guard let placements = self.placements else {
             return nil
         }

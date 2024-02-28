@@ -213,9 +213,9 @@ class OfferingsTests: TestCase {
         let offeringB = try XCTUnwrap(offerings["offering_b"])
         let offeringC = try XCTUnwrap(offerings["offering_c"])
         expect(offerings.current) === offeringA
-        expect(offerings.getCurrentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
-        expect(offerings.getCurrentOffering(forPlacement: "placement_name_with_nil")).to(beNil())
-        expect(offerings.getCurrentOffering(
+        expect(offerings.currentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
+        expect(offerings.currentOffering(forPlacement: "placement_name_with_nil")).to(beNil())
+        expect(offerings.currentOffering(
             forPlacement: "unexisting_placement_name")!.identifier
         ) == offeringC.identifier
     }
@@ -259,9 +259,9 @@ class OfferingsTests: TestCase {
         let offeringA = try XCTUnwrap(offerings["offering_a"])
         let offeringB = try XCTUnwrap(offerings["offering_b"])
         expect(offerings.current) === offeringA
-        expect(offerings.getCurrentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
-        expect(offerings.getCurrentOffering(forPlacement: "placement_name_with_nil")).to(beNil())
-        expect(offerings.getCurrentOffering(forPlacement: "unexisting_placement_name")).to(beNil())
+        expect(offerings.currentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
+        expect(offerings.currentOffering(forPlacement: "placement_name_with_nil")).to(beNil())
+        expect(offerings.currentOffering(forPlacement: "unexisting_placement_name")).to(beNil())
     }
 
     func testOfferingsWithMetadataIsCreated() throws {
