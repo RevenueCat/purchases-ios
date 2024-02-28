@@ -21,8 +21,9 @@
                                                                                                                ruleId:@""]];
     NSString *oid = poc.offeringIdentifier;
     NSString *pid = poc.placementIdentifier;
+    RCTargetingContext *pitc = poc.targetingContext;
 
-    NSLog(poc, oid, pid);
+    NSLog(poc, oid, pid, pitc);
 }
 
 @end
