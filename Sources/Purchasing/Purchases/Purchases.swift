@@ -257,6 +257,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
 
+    private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
+
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
                      appUserID: String?,
@@ -696,9 +698,12 @@ public extension Purchases {
 
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
+        fetchCurrent: Bool = false,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
-        self.offeringsManager.offerings(appUserID: self.appUserID, fetchPolicy: fetchPolicy) { @Sendable result in
+        self.offeringsManager.offerings(appUserID: self.appUserID,
+                                        fetchPolicy: fetchPolicy,
+                                        fetchCurrent: fetchCurrent) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -791,6 +796,23 @@ public extension Purchases {
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
+    }
+
+    @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        guard syncAttributesAndOfferingsIfNeededRateLimiter.shouldProceed() else {
+            Logger.warn(
+                Strings.identity.sync_attributes_and_offerings_rate_limit_reached(
+                    maxCalls: syncAttributesAndOfferingsIfNeededRateLimiter.maxCalls,
+                    period: Int(syncAttributesAndOfferingsIfNeededRateLimiter.period)
+                )
+            )
+            self.getOfferings(fetchPolicy: .default, completion: completion)
+            return
+        }
+
+        self.syncSubscriberAttributes(completion: {
+            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+        })
     }
 
 }
