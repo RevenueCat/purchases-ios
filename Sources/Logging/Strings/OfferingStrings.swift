@@ -142,14 +142,14 @@ extension OfferingStrings: LogMessage {
             return "Empty Product titles are not supported. Found in product with identifier: \(identifier)"
 
         case let .unknown_package_type(package):
-            return "Package '\(package.identifier)' in offering '\(package.offeringIdentifier)' " +
-            "has an unknown duration." +
+            return "Package '\(package.identifier)' in offering " +
+            "'\(package.presentedOfferingContext.offeringIdentifier)' has an unknown duration." +
             "\nYou can reference this package by its identifier ('\(package.identifier)') directly." +
             "\nMore information: https://rev.cat/displaying-products"
 
         case let .custom_package_type(package):
-            return "Package '\(package.identifier)' in offering '\(package.offeringIdentifier)' " +
-            "has a custom duration." +
+            return "Package '\(package.identifier)' in offering " +
+            "'\(package.presentedOfferingContext.offeringIdentifier)' has a custom duration." +
             "\nYou can reference this package by its identifier ('\(package.identifier)') directly." +
             "\nMore information: https://rev.cat/displaying-products"
 

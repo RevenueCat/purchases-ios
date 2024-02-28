@@ -1467,12 +1467,14 @@ extension Purchases: @unchecked Sendable {}
 extension Purchases {
 
     /// Used when purchasing through `SwiftUI` paywalls.
-    func cachePresentedOfferingIdentifier(_ identifier: String, productIdentifier: String) {
-        Logger.debug(Strings.purchase.caching_presented_offering_identifier(offeringID: identifier,
-                                                                            productID: productIdentifier))
+    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String) {
+        Logger.debug(Strings.purchase.caching_presented_offering_identifier(
+            offeringID: context.offeringIdentifier,
+            productID: productIdentifier
+        ))
 
-        self.purchasesOrchestrator.cachePresentedOfferingIdentifier(
-            identifier,
+        self.purchasesOrchestrator.cachePresentedOfferingContext(
+            context,
             productIdentifier: productIdentifier
         )
     }

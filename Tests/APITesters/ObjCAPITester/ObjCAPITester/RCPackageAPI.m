@@ -24,10 +24,11 @@
     NSString *i = p.identifier;
     RCPackageType t = p.packageType;
     NSString *oid = p.offeringIdentifier;
+    RCPresentedOfferingContext *poc = p.presentedOfferingContext;
     NSString *lps = p.localizedPriceString;
     NSString *lips = p.localizedIntroductoryPriceString;
 
-    NSLog(p, storeProduct, i, t, lps, lips);
+    NSLog(p, storeProduct, i, t, oid, poc, lps, lips);
 
     RCPackage *package __unused = [[RCPackage alloc] initWithIdentifier:i
                                                             packageType:RCPackageTypeAnnual
