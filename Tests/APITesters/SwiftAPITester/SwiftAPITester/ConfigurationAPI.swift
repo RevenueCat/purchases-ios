@@ -12,7 +12,6 @@ func checkConfigurationAPI() {
     let builder = Configuration
         .builder(withAPIKey: "")
         .with(apiKey: "")
-        .with(appUserID: "")
         .with(appUserID: nil)
         .with(observerMode: true)
         .with(userDefaults: UserDefaults.standard)
@@ -35,4 +34,5 @@ func checkConfigurationAPI() {
 func checkDeprecatedConfiguration(_ builder: Configuration.Builder) {
     _ = builder
         .with(usesStoreKit2IfAvailable: false)
+        .with(appUserID: "")
 }

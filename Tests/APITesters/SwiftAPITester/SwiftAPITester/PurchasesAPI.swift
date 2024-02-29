@@ -176,7 +176,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
 
 private func checkIdentity(purchases: Purchases) {
     purchases.logOut { (_: CustomerInfo?, _: Error?) in }
-    purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 }
 
 private func checkPurchasesSupportAPI(purchases: Purchases) {
@@ -236,7 +235,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
     let offer: PromotionalOffer! = nil
 
     do {
-        let _: (CustomerInfo, Bool) = try await purchases.logIn("")
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(
             productIdentifiers: [String]()
@@ -303,11 +301,7 @@ private func checkConfigure() -> Purchases! {
         .build())
 
     Purchases.configure(withAPIKey: "")
-
     Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "")
-
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
 
     return nil
@@ -330,6 +324,7 @@ private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StorePro
         forProductDiscount: discount,
         product: stp
     )
+    let _: (CustomerInfo, Bool) = try await purchases.logIn("")
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
@@ -343,10 +338,14 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
+    purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
+
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
+    Purchases.configure(withAPIKey: "", appUserID: "")
+    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
     Purchases.configure(withAPIKey: "",
                         appUserID: nil,
                         observerMode: true,
