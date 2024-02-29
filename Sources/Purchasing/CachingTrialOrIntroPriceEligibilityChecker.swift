@@ -61,7 +61,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
 
         // Note: this can suffer from race conditions, but the only downside is performing concurrent requests
         // multiple times instead of returning the cached result on the second one.
-        // It's a fine compromise to keep this implementaton simpler.
+        // It's a fine compromise to keep this implementation simpler.
         let cached = self.cache.value.filter { uniqueProductIdentifiers.contains($0.key) }
 
         if !cached.isEmpty {
