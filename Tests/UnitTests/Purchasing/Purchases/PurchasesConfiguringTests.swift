@@ -66,17 +66,20 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithAppUserID() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "")
         expect(Purchases.shared) === purchases
     }
 
+    @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == false
     }
 
+    @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverModeDisabled() {
         let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
         expect(Purchases.shared) === purchases
@@ -109,6 +112,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.appUserID) == Self.appUserID
     }
 
+    @available(*, deprecated)
     func testUserIdIsSetToAnonymousWhenConfiguringWithEmptyUserID() {
         self.deviceCache.userIDStoredInCache = nil
 
@@ -163,6 +167,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.appUserID) == Self.appUserID
     }
 
+    @available(*, deprecated)
     func testStaticUserIdSringLogsMessage() {
         _ = Purchases.configure(
             with: .init(withAPIKey: "")

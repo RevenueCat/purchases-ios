@@ -123,6 +123,11 @@ import Foundation
             return self
         }
 
+        @available(*, deprecated, message: """
+        The appUserID passed to logIn is a constant string known at compile time.
+        This is likely a programmer error. This ID is used to identify the current user.
+        See https://docs.revenuecat.com/docs/user-ids for more information.
+        """)
         // swiftlint:disable:next missing_docs
         public func with(appUserID: StaticString) -> Configuration.Builder {
             Logger.warn(Strings.identity.logging_in_with_static_string)

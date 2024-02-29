@@ -201,6 +201,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    @available(*, deprecated)
     func testLogInWithStaticStringLogsMessage() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
@@ -225,6 +226,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
+    @available(*, deprecated)
     func testCompletionBlockLogInWithStaticStringLogsMessage() {
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
