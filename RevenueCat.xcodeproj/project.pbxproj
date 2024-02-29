@@ -212,6 +212,9 @@
 		4DBF1F362B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DBF1F352B4D572400D52354 /* LocalReceiptFetcher.swift */; };
 		4DBF1F372B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DBF1F352B4D572400D52354 /* LocalReceiptFetcher.swift */; };
 		4DC546272AD44BBE005CDB35 /* EncodedAppleReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DC546262AD44BBE005CDB35 /* EncodedAppleReceipt.swift */; };
+		4DFF0D732B90A83800BBBE71 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4DFF0D722B90A83800BBBE71 /* SnapshotTesting */; };
+		4DFF0D752B90A84000BBBE71 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4DFF0D742B90A84000BBBE71 /* SnapshotTesting */; };
+		4DFF0D792B90A84A00BBBE71 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4DFF0D782B90A84A00BBBE71 /* SnapshotTesting */; };
 		4F0201C42A13C85500091612 /* Assertions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0201C32A13C85500091612 /* Assertions.swift */; };
 		4F05876F2A5DE03F00E9A834 /* PaywallDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F05876E2A5DE03F00E9A834 /* PaywallDataTests.swift */; };
 		4F062D322A85A11600A8A613 /* PaywallData+Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F062D312A85A11600A8A613 /* PaywallData+Localization.swift */; };
@@ -313,7 +316,6 @@
 		4FC883822AA7A2BD00A3DE03 /* ProcessInfo+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC883802AA7A2BD00A3DE03 /* ProcessInfo+Extensions.swift */; };
 		4FC972172A712DCC008593DE /* CachingProductsManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC972162A712DCC008593DE /* CachingProductsManagerTests.swift */; };
 		4FCBA84F2A15391B004134BD /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
-		4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 4FCBA8502A153940004134BD /* SnapshotTesting */; };
 		4FCEEA5E2A379B80002C2112 /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCEEA5D2A379B80002C2112 /* DebugViewController.swift */; };
 		4FD291BE2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */; };
 		4FD3688B2AA7C12600F63354 /* PaywallEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FD3688A2AA7C12600F63354 /* PaywallEvent.swift */; };
@@ -458,7 +460,6 @@
 		576C8A9227D27DDD0058FA6E /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
 		576C8AB927D2996C0058FA6E /* CurrentTestCaseTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575A17AA2773A59300AA6F22 /* CurrentTestCaseTracker.swift */; };
 		576C8ABC27D2997C0058FA6E /* SnapshotTesting+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8A9127D27DDD0058FA6E /* SnapshotTesting+Extensions.swift */; };
-		576C8ABE27D299860058FA6E /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 576C8ABD27D299860058FA6E /* SnapshotTesting */; };
 		576C8AD927D2BCB90058FA6E /* HTTPRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576C8AD827D2BCB90058FA6E /* HTTPRequestTests.swift */; };
 		5774F9B62805E6CC00997128 /* CustomerInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5774F9B52805E6CC00997128 /* CustomerInfoResponse.swift */; };
 		5774F9BE2805E71100997128 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = 5774F9BD2805E71100997128 /* Fixtures */; };
@@ -572,7 +573,6 @@
 		57DE80AF28075D77008D6C6F /* OSVersionEquivalent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */; };
 		57DE80BE28077010008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
-		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
 		57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E415EA2846962500EA5460 /* PurchasesSyncPurchasesTests.swift */; };
 		57E415EF284697A300EA5460 /* PurchasesDeferredPurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E415EE284697A300EA5460 /* PurchasesDeferredPurchasesTests.swift */; };
@@ -1456,7 +1456,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				576C8ABE27D299860058FA6E /* SnapshotTesting in Frameworks */,
+				4DFF0D792B90A84A00BBBE71 /* SnapshotTesting in Frameworks */,
 				2D803F6926F149E70069D717 /* RevenueCat.framework in Frameworks */,
 				2D9C5ED726F281750057FC45 /* OHHTTPStubsSwift in Frameworks */,
 				2D9C5ED526F281750057FC45 /* OHHTTPStubs in Frameworks */,
@@ -1477,7 +1477,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */,
+				4DFF0D732B90A83800BBBE71 /* SnapshotTesting in Frameworks */,
 				B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */,
 				2D9C5ED326F2816F0057FC45 /* OHHTTPStubsSwift in Frameworks */,
 				2D9C5ED126F2816F0057FC45 /* OHHTTPStubs in Frameworks */,
@@ -1490,7 +1490,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D803F6626F144BF0069D717 /* Nimble in Frameworks */,
-				4FCBA8512A153940004134BD /* SnapshotTesting in Frameworks */,
+				4DFF0D752B90A84000BBBE71 /* SnapshotTesting in Frameworks */,
 				2DA85A8C26DEA7FB00F1136D /* RevenueCat.framework in Frameworks */,
 				2DE20B7626408807004C597D /* StoreKitTest.framework in Frameworks */,
 			);
@@ -2911,6 +2911,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4DFF0D772B90A84700BBBE71 /* PBXTargetDependency */,
 				2DAC5F7726F13C9800C5258F /* PBXTargetDependency */,
 				2D803F6B26F150190069D717 /* PBXTargetDependency */,
 			);
@@ -2919,7 +2920,7 @@
 				2D803F6726F144C40069D717 /* Nimble */,
 				2D9C5ED426F281750057FC45 /* OHHTTPStubs */,
 				2D9C5ED626F281750057FC45 /* OHHTTPStubsSwift */,
-				576C8ABD27D299860058FA6E /* SnapshotTesting */,
+				4DFF0D782B90A84A00BBBE71 /* SnapshotTesting */,
 			);
 			productName = StoreKitUnitTests;
 			productReference = 2DAC5F7226F13C9800C5258F /* StoreKitUnitTests.xctest */;
@@ -2957,6 +2958,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4DFF0D712B90A83200BBBE71 /* PBXTargetDependency */,
 				2DC5622124EC63430031F69B /* PBXTargetDependency */,
 				2DFF6C55270CA11400ECAFAB /* PBXTargetDependency */,
 			);
@@ -2965,7 +2967,7 @@
 				2D803F6226F144830069D717 /* Nimble */,
 				2D9C5ED026F2816F0057FC45 /* OHHTTPStubs */,
 				2D9C5ED226F2816F0057FC45 /* OHHTTPStubsSwift */,
-				57E0473A277260DE0082FE91 /* SnapshotTesting */,
+				4DFF0D722B90A83800BBBE71 /* SnapshotTesting */,
 			);
 			productName = PurchasesTests;
 			productReference = 2DC5621E24EC63430031F69B /* UnitTests.xctest */;
@@ -2982,13 +2984,14 @@
 			buildRules = (
 			);
 			dependencies = (
+				4DFF0D522B90A4F300BBBE71 /* PBXTargetDependency */,
 				2D803F6D26F150200069D717 /* PBXTargetDependency */,
 				2DE20B8F26409EC0004C597D /* PBXTargetDependency */,
 			);
 			name = BackendIntegrationTests;
 			packageProductDependencies = (
 				2D803F6526F144BF0069D717 /* Nimble */,
-				4FCBA8502A153940004134BD /* SnapshotTesting */,
+				4DFF0D742B90A84000BBBE71 /* SnapshotTesting */,
 			);
 			productName = BackendIntegrationTests;
 			productReference = 2DE20B6C264087FB004C597D /* BackendIntegrationTests.xctest */;
@@ -3145,7 +3148,7 @@
 			packageReferences = (
 				2D803F6126F144830069D717 /* XCRemoteSwiftPackageReference "nimble" */,
 				2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */,
-				57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			productRefGroup = 352629FF1F7C4B9100C04F2C /* Products */;
 			projectDirPath = "";
@@ -4071,6 +4074,18 @@
 			target = 2DEAC2D926EFE46E006914ED /* UnitTestsHostApp */;
 			targetProxy = 2DFF6C54270CA11400ECAFAB /* PBXContainerItemProxy */;
 		};
+		4DFF0D522B90A4F300BBBE71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 4DFF0D512B90A4F300BBBE71 /* SnapshotTesting */;
+		};
+		4DFF0D712B90A83200BBBE71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 4DFF0D702B90A83200BBBE71 /* SnapshotTesting */;
+		};
+		4DFF0D772B90A84700BBBE71 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 4DFF0D762B90A84700BBBE71 /* SnapshotTesting */;
+		};
 		4F6BEE072A27B02400CD9322 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2DE20B7E26409EB7004C597D /* BackendIntegrationTestsHostApp */;
@@ -4893,6 +4908,22 @@
 				minimumVersion = 9.0.0;
 			};
 		};
+		4DFF0D4E2B90A4D200BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MarkVillacampa/swift-snapshot-testing";
+			requirement = {
+				branch = "1.12.0-fix-test-observer";
+				kind = branch;
+			};
+		};
+		4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MarkVillacampa/swift-snapshot-testing";
+			requirement = {
+				branch = "1.12.0-fix-test-observer";
+				kind = branch;
+			};
+		};
 		4F6BEE0A2A27B02400CD9322 /* XCRemoteSwiftPackageReference "nimble" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/quick/nimble";
@@ -4923,14 +4954,6 @@
 			requirement = {
 				kind = upToNextMinorVersion;
 				minimumVersion = 10.0.0;
-			};
-		};
-		57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.11.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -4971,6 +4994,36 @@
 			package = 2D9C5ECB26F2815E0057FC45 /* XCRemoteSwiftPackageReference "OHHTTPStubs" */;
 			productName = OHHTTPStubsSwift;
 		};
+		4DFF0D512B90A4F300BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D4E2B90A4D200BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4DFF0D702B90A83200BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4DFF0D722B90A83800BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4DFF0D742B90A84000BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4DFF0D762B90A84700BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		4DFF0D782B90A84A00BBBE71 /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4DFF0D6F2B90A82900BBBE71 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
 		4F6BEE092A27B02400CD9322 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4F6BEE0A2A27B02400CD9322 /* XCRemoteSwiftPackageReference "nimble" */;
@@ -4986,25 +5039,10 @@
 			package = 4F6BEE0E2A27B02400CD9322 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat_CustomEntitlementComputation;
 		};
-		4FCBA8502A153940004134BD /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
-		};
 		5759B335296DF65D002472D5 /* Nimble */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 5759B336296DF65D002472D5 /* XCRemoteSwiftPackageReference "nimble" */;
 			productName = Nimble;
-		};
-		576C8ABD27D299860058FA6E /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
-		};
-		57E0473A277260DE0082FE91 /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 57E04739277260DE0082FE91 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTesting;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
