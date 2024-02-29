@@ -407,7 +407,6 @@ extension View {
     }
 }
 
-
 // MARK: -
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
