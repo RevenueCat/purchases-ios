@@ -39,7 +39,7 @@
     {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/MarkVillacampa/swift-snapshot-testing",
+      "location" : "https://github.com/RevenueCat/swift-snapshot-testing",
       "state" : {
         "branch" : "1.12.0-fix-test-observer",
         "revision" : "e789e15dae01529a40bcc20f727bd73b285ead1c"
