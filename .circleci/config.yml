@@ -59,7 +59,7 @@ aliases:
       branches:
         only: main
   non-patch-release-branches: &non-patch-release-branches
-    filters: 
+    filters:
       tags:
         ignore: /.*/
       branches:
@@ -99,7 +99,7 @@ commands:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
-  
+
   install-dependencies:
     parameters:
       directory:
@@ -122,7 +122,7 @@ commands:
             - /usr/local/Cellar/swiftlint/
             - /usr/local/Cellar/xcbeautify/
             - /Users/$USER/Library/Caches/Homebrew/
-  
+
   install-brew-dependency:
     parameters:
       dependency_name:
@@ -308,7 +308,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (17.2.0)
+            SCAN_DEVICE: iPhone 14 (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -359,7 +359,7 @@ jobs:
           name: SPM Receipt Parser
           command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
-  
+
   spm-xcode-14-1:
     <<: *base-job
     steps:
@@ -427,7 +427,7 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
       - run:
-          condition: 
+          condition:
             - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
           name: RevenueCatUI API Tests
           command: bundle exec fastlane build_revenuecatui_api_tester
@@ -447,7 +447,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro,OS=17.2
+            SCAN_DEVICE: iPhone 15 Pro,OS=17.4
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -460,7 +460,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-          
+
   spm-revenuecat-ui-watchos:
     <<: *base-job
     steps:
@@ -483,7 +483,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-  
+
   run-test-macos:
     <<: *base-job
     steps:
@@ -505,7 +505,7 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-          
+
   run-test-ios-17:
     <<: *base-job
     steps:
@@ -516,7 +516,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.2.0)
+            SCAN_DEVICE: iPhone 15 (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -992,7 +992,7 @@ jobs:
           command: bundle exec fastlane backend_integration_tests test_plan:"BackendIntegrationTests-All-CI"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (17.2.0)
+            SCAN_DEVICE: iPhone 14 (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -1016,7 +1016,7 @@ jobs:
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: v3LoadShedderIntegration
-  
+
   deploy-purchase-tester:
     <<: *base-job
     steps:
@@ -1083,7 +1083,7 @@ workflows:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-17:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -1095,7 +1095,7 @@ workflows:
       - run-test-ios-12:
           xcode_version: '14.2.0'
       - run-test-macos:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -1105,8 +1105,8 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
-  
+          xcode_version: '15.3'
+
   build-test:
     when:
       and:
@@ -1120,7 +1120,7 @@ workflows:
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
       - spm-release-build-xcode-15:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build:
@@ -1132,13 +1132,13 @@ workflows:
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - spm-revenuecat-ui-watchos:
           xcode_version: '14.3.0'
       - run-test-macos:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - run-test-ios-17:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
@@ -1160,31 +1160,31 @@ workflows:
       - build-tv-watch-and-macos:
           xcode_version: '14.3.0'
       - build-visionos:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - backend-integration-tests-SK1:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-SK2:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-other:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-offline:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           # These tests are flaky due to FB13133387 so we don't want the noise in every PR
           <<: *release-branches-and-main
       - backend-integration-tests-custom-entitlements:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
@@ -1235,12 +1235,12 @@ workflows:
           xcode_version: '14.3.0'
           <<: *release-tags
       - push-revenuecat-pod:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           requires:
             - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
           requires:
             - make-release
             - push-revenuecat-pod
@@ -1283,10 +1283,10 @@ workflows:
         - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
     jobs:
       - loadshedder-integration-tests-v3:
-          xcode_version: '15.2'
+          xcode_version: '15.3'
       - integration-tests-all:
-          xcode_version: '15.2'
-  
+          xcode_version: '15.3'
+
   manual-trigger-bump:
     when:
       equal: [ bump, << pipeline.parameters.action >> ]
