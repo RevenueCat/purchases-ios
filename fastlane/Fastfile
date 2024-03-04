@@ -612,7 +612,8 @@ platform :ios do
       result_bundle: true,
       testplan: options[:test_plan],
       configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
+      output_directory: "fastlane/test_output/xctest/ios",
+      number_of_retries: 5
     )
   end
 
