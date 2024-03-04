@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/fastlane/fastlane.git
-  revision: e1d2b8e6d41d7f91c861f418390141f7894396b8
+  revision: bcc7c6e59e7e8c593a422018e2f50f092c7d8170
   branch: scan-retry-method
   specs:
     fastlane (2.219.0)
