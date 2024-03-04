@@ -42,7 +42,8 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
 
     @MainActor
     func testReceiptParserParsesEmptyReceipt() async throws {
-        let data = try await XCTAsyncUnwrap(await self.receiptFetcher.receiptData(refreshPolicy: .always))
+        let receiptData = await self.receiptFetcher.receiptData(refreshPolicy: .always)
+        let data = try XCTUnwrap(receiptData)
 
         let receipt = try self.parser.parse(from: data)
 

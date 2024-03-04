@@ -23,7 +23,6 @@ import XCTest
 @testable import RevenueCat
 #endif
 
-@MainActor
 class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 
     private(set) var testSession: SKTestSession!
