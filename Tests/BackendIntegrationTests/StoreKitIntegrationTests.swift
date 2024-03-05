@@ -223,8 +223,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
-    // Flaky
     func testPurchaseFailuresAreReportedCorrectly() async throws {
+        // Flaky/failing
         guard self.usesStoreKit2JWS else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -355,8 +355,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoPurchases(currentCustomerInfo)
     }
 
-    // Flaky
     func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
+        // Flaky/failing
         guard self.usesStoreKit2JWS else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -391,8 +391,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoPurchases(currentCustomerInfo)
     }
 
-    // Flaky
     func testUserCanMakePurchaseAfterTransferBlocked() async throws {
+        // Flaky/failing
         guard self.usesStoreKit2JWS else {
             throw XCTSkip("Required API is not available for this test.")
         }
@@ -624,8 +624,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
-    // FLAKY
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+        // Flaky/failing
         guard self.usesStoreKit2JWS else {
             throw XCTSkip("Required API is not available for this test.")
         }
