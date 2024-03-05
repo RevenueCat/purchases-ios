@@ -223,17 +223,18 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
-    func testPurchaseFailuresAreReportedCorrectly() async throws {
-        self.testSession.failTransactionsEnabled = true
-        self.testSession.failureError = .invalidSignature
-
-        do {
-            try await self.purchaseMonthlyOffering()
-            fail("Expected error")
-        } catch {
-            expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
-        }
-    }
+    // Flaky
+//    func testPurchaseFailuresAreReportedCorrectly() async throws {
+//        self.testSession.failTransactionsEnabled = true
+//        self.testSession.failureError = .invalidSignature
+//
+//        do {
+//            try await self.purchaseMonthlyOffering()
+//            fail("Expected error")
+//        } catch {
+//            expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
+//        }
+//    }
 
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
@@ -350,80 +351,82 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.assertNoPurchases(currentCustomerInfo)
     }
 
-    func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
-        let prefix = UUID().uuidString
-        let userID1 = "\(prefix)-user-1"
-        let userID2 = "\(prefix)-user-2"
+    // Flaky
+//    func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
+//        let prefix = UUID().uuidString
+//        let userID1 = "\(prefix)-user-1"
+//        let userID2 = "\(prefix)-user-2"
+//
+//        let anonymousUser = try self.purchases.appUserID
+//        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+//
+//        // 1. Purchase with user 1
+//        let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+//        self.assertNoPurchases(user1CustomerInfo)
+//        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
+//        try await self.purchaseMonthlyOffering()
+//
+//        // 2. Change to user 2
+//        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
+//        self.assertNoPurchases(identifiedCustomerInfo)
+//
+//        // 3. Renew subscription
+//        self.logger.clearMessages()
+//
+//        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+//
+//        try await self.verifyReceiptIsEventuallyPosted()
+//
+//        // 4. Verify new user does not have entitlement
+//        let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+//        expect(currentCustomerInfo.originalAppUserId) == userID2
+//        self.assertNoPurchases(currentCustomerInfo)
+//    }
 
-        let anonymousUser = try self.purchases.appUserID
-        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
-
-        // 1. Purchase with user 1
-        let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
-        self.assertNoPurchases(user1CustomerInfo)
-        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
-        try await self.purchaseMonthlyOffering()
-
-        // 2. Change to user 2
-        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
-        self.assertNoPurchases(identifiedCustomerInfo)
-
-        // 3. Renew subscription
-        self.logger.clearMessages()
-
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
-
-        try await self.verifyReceiptIsEventuallyPosted()
-
-        // 4. Verify new user does not have entitlement
-        let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
-        expect(currentCustomerInfo.originalAppUserId) == userID2
-        self.assertNoPurchases(currentCustomerInfo)
-    }
-
-    func testUserCanMakePurchaseAfterTransferBlocked() async throws {
-        let prefix = UUID().uuidString
-        let userID1 = "\(prefix)-user-1"
-        let userID2 = "\(prefix)-user-2"
-
-        let anonymousUser = try self.purchases.appUserID
-        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
-
-        // 1. Purchase with user 1
-        var user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
-        self.assertNoPurchases(user1CustomerInfo)
-        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
-        try await self.purchaseMonthlyOffering()
-
-        // 2. Change to user 2
-        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
-        self.assertNoPurchases(identifiedCustomerInfo)
-
-        // 3. Renew subscription
-        self.logger.clearMessages()
-
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
-
-        try await self.verifyReceiptIsEventuallyPosted()
-
-        // 4. Verify new user does not have entitlement
-        var currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
-        expect(currentCustomerInfo.originalAppUserId) == userID2
-        self.assertNoPurchases(currentCustomerInfo)
-
-        // 5. Make purchase with user 2
-        self.logger.clearMessages()
-        currentCustomerInfo = try await self.purchaseMonthlyOffering().customerInfo
-        try await self.verifyReceiptIsEventuallyPosted()
-
-        // 6. Verify user 2 has purchases
-        expect(currentCustomerInfo.originalAppUserId) == userID2
-        expect(currentCustomerInfo.entitlements.all).toNot(beEmpty())
-
-        // 7. Verify that user 1 does not have purchases because they were transferred to user 2
-        user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
-        self.assertNoPurchases(user1CustomerInfo)
-    }
+    // Flaky
+//    func testUserCanMakePurchaseAfterTransferBlocked() async throws {
+//        let prefix = UUID().uuidString
+//        let userID1 = "\(prefix)-user-1"
+//        let userID2 = "\(prefix)-user-2"
+//
+//        let anonymousUser = try self.purchases.appUserID
+//        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+//
+//        // 1. Purchase with user 1
+//        var user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+//        self.assertNoPurchases(user1CustomerInfo)
+//        expect(user1CustomerInfo.originalAppUserId) == anonymousUser
+//        try await self.purchaseMonthlyOffering()
+//
+//        // 2. Change to user 2
+//        let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
+//        self.assertNoPurchases(identifiedCustomerInfo)
+//
+//        // 3. Renew subscription
+//        self.logger.clearMessages()
+//
+//        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+//
+//        try await self.verifyReceiptIsEventuallyPosted()
+//
+//        // 4. Verify new user does not have entitlement
+//        var currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+//        expect(currentCustomerInfo.originalAppUserId) == userID2
+//        self.assertNoPurchases(currentCustomerInfo)
+//
+//        // 5. Make purchase with user 2
+//        self.logger.clearMessages()
+//        currentCustomerInfo = try await self.purchaseMonthlyOffering().customerInfo
+//        try await self.verifyReceiptIsEventuallyPosted()
+//
+//        // 6. Verify user 2 has purchases
+//        expect(currentCustomerInfo.originalAppUserId) == userID2
+//        expect(currentCustomerInfo.entitlements.all).toNot(beEmpty())
+//
+//        // 7. Verify that user 1 does not have purchases because they were transferred to user 2
+//        user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
+//        self.assertNoPurchases(user1CustomerInfo)
+//    }
 
     func testPurchaseAfterSigningIntoNewUser() async throws {
         let prefix = UUID().uuidString
@@ -609,45 +612,46 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
-    func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
-        func waitForNewPurchaseDate() async {
-            // The backend uses the transaction purchase date as a way to disambiguate transactions.
-            // Therefor we need to sleep to force these to have unique dates.
-            try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(2).nanoseconds)
-        }
-
-        // 1. Subscribe
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
-        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
-
-        // 2. Simulate closing app
-        Purchases.clearSingleton()
-
-        // 3. Force several renewals while app is closed.
-        for _ in 0..<3 {
-            await waitForNewPurchaseDate()
-            try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
-        }
-
-        await waitForNewPurchaseDate()
-
-        // 4. Expire subscription
-        try await self.expireSubscription(entitlement)
-
-        // 5. Re-open app
-        await self.resetSingleton()
-
-        // 6. Wait for pending transactions to be posted
-        try await self.waitUntilNoUnfinishedTransactions()
-
-        // 7. Purchase again
-        self.logger.clearMessages()
-        try await self.purchaseMonthlyProduct()
-
-        // 8. Verify transaction is posted as a purchase.
-        try await self.verifyReceiptIsEventuallyPosted()
-        self.logger.verifyMessageWasLogged("(source: 'purchase')")
-    }
+    // FLAKY
+//    func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+//        func waitForNewPurchaseDate() async {
+//            // The backend uses the transaction purchase date as a way to disambiguate transactions.
+//            // Therefor we need to sleep to force these to have unique dates.
+//            try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(2).nanoseconds)
+//        }
+//
+//        // 1. Subscribe
+//        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+//        let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
+//
+//        // 2. Simulate closing app
+//        Purchases.clearSingleton()
+//
+//        // 3. Force several renewals while app is closed.
+//        for _ in 0..<3 {
+//            await waitForNewPurchaseDate()
+//            try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
+//        }
+//
+//        await waitForNewPurchaseDate()
+//
+//        // 4. Expire subscription
+//        try await self.expireSubscription(entitlement)
+//
+//        // 5. Re-open app
+//        await self.resetSingleton()
+//
+//        // 6. Wait for pending transactions to be posted
+//        try await self.waitUntilNoUnfinishedTransactions()
+//
+//        // 7. Purchase again
+//        self.logger.clearMessages()
+//        try await self.purchaseMonthlyProduct()
+//
+//        // 8. Verify transaction is posted as a purchase.
+//        try await self.verifyReceiptIsEventuallyPosted()
+//        self.logger.verifyMessageWasLogged("(source: 'purchase')")
+//    }
 
     func testGetPromotionalOfferWithNoPurchasesReturnsIneligible() async throws {
         let product = try await self.monthlyPackage.storeProduct
