@@ -59,6 +59,9 @@
         "StoreKit1IntegrationTests",
         "StoreKit1ObserverModeIntegrationTests",
         "StoreKit1ObserverModeWithExistingPurchasesTests",
+        "StoreKit2JWSIntegrationTests",
+        "StoreKit2JWSObserverModeIntegrationTests",
+        "StoreKit2JWSObserverModeWithExistingPurchasesTests",
         "SubscriberAttributesManagerIntegrationTests",
         "TestCase"
       ],
