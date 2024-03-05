@@ -58,7 +58,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
             timeout: .seconds(5),
             pollInterval: .milliseconds(500)
         ) {
-            let entitlement = await self.purchasesDelegate
+            let entitlement = self.purchasesDelegate
                 .customerInfo?
                 .entitlements[Self.entitlementIdentifier]
 
@@ -108,7 +108,7 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
             timeout: .seconds(4),
             pollInterval: .milliseconds(100)
         ) {
-            await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
+            self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
         }
 
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
@@ -142,11 +142,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
         super.setUp()
 
         Self.transactionsObservation?.cancel()
-        Self.transactionsObservation = Task {
-            // Silence warning in tests:
-            // "Making a purchase without listening for transaction updates risks missing successful purchases.
-            for await _ in Transaction.updates {}
-        }
+        Self.transactionsObservation = Self.listenToTransactionUpdates()
     }
 
     override class func tearDown() {
@@ -155,6 +151,18 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
 
         super.tearDown()
     }
+
+    // `nonisolated` required to work around Swift 5.10 issue.
+    // See https://github.com/RevenueCat/purchases-ios/pull/3599
+    private nonisolated static func listenToTransactionUpdates() -> Task<Void, Never> {
+        return Task {
+            // Silence warning in tests:
+            // "Making a purchase without listening for transaction updates risks missing successful purchases.
+            for await _ in Transaction.updates {}
+        }
+    }
+
+    // MARK: -
 
     override func setUp() async throws {
         // Not calling `super.setUp` so each test can

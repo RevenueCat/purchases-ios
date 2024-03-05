@@ -35,7 +35,6 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 
 }
 
-@MainActor
 class BaseBackendIntegrationTests: TestCase {
 
     private var userDefaults: UserDefaults!
@@ -87,7 +86,6 @@ class BaseBackendIntegrationTests: TestCase {
 
     // MARK: -
 
-    @MainActor
     override func setUp() async throws {
         try await super.setUp()
 
@@ -247,3 +245,6 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     final func serverUp() { self.serverIsDown = false }
 
 }
+
+// `InternalDangerousSettingsType` requires this type to be Sendable
+extension BaseBackendIntegrationTests: @unchecked Sendable {}
