@@ -7,6 +7,4 @@
 ### Bugfixes
 *  Mark methods with StaticString for appUserID as deprecated (#3739) via Mark Villacampa (@MarkVillacampa)
 ### Other Changes
-* Revert "`Xcode 15.3`: fix warnings on Integration Tests" (#3744) via Josh Holtz (@joshdholtz)
-* `Xcode 15.3`: fix warnings on Integration Tests (#3603) via NachoSoto (@NachoSoto)
 * [EXTERNAL] Spelling typo fix to comment (#3713) via @vdeaugustine (#3740) via Mark Villacampa (@MarkVillacampa)
