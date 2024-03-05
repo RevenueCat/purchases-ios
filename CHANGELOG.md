@@ -1,3 +1,15 @@
+## 4.38.0
+### New Features
+* Paywalls: add `updateWithDisplayCloseButton` to `PaywallViewController` (#3708) via Cesar de la Vega (@vegaro)
+* New `syncAttributesAndOfferingsIfNeeded` method (#3709) via Burdock (@lburdock)
+* Add targeting to `PresentedOfferingContext` (#3730) via Josh Holtz (@joshdholtz)
+* Add `currentOffering(forPlacement: String)` to `Offerings` (#3707) via Guido Torres (@guido732)
+* New `Package.presentedOfferingContext` (#3712) via Josh Holtz (@joshdholtz)
+### Bugfixes
+*  Mark methods with StaticString for appUserID as deprecated (#3739) via Mark Villacampa (@MarkVillacampa)
+### Other Changes
+* [EXTERNAL] Spelling typo fix to comment (#3713) via @vdeaugustine (#3740) via Mark Villacampa (@MarkVillacampa)
+
 ## 4.37.0
 ### New Features
 * `Paywalls`: new `.onPurchaseStarted(package)` modifier (#3693) via Cesar de la Vega (@vegaro)

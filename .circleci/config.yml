@@ -902,6 +902,11 @@ jobs:
     steps:
       - checkout
       - trust-github-key
+      - run:
+          name: Upgrade Carthage
+          command: |
+            brew update
+            brew upgrade carthage
       - update-carthage-installation-commit
       # Carthage
       - run:
