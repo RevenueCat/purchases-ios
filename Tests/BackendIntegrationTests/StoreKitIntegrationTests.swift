@@ -22,8 +22,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
 }
 
-// This setting is not public to developers, however, we will
-// continue testing what we can
 class StoreKit2JWSIntegrationTests: StoreKit2IntegrationTests {
 
     override var usesStoreKit2JWS: Bool { true }
@@ -226,11 +224,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchaseFailuresAreReportedCorrectly() async throws {
-        // Flaky/failing - can skip because not available publicly
-        guard self.usesStoreKit2JWS else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         self.testSession.failTransactionsEnabled = true
         self.testSession.failureError = .invalidSignature
 
@@ -358,11 +351,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
-        // Flaky/failing - can skip because not available publicly
-        guard self.usesStoreKit2JWS else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
@@ -394,11 +382,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testUserCanMakePurchaseAfterTransferBlocked() async throws {
-        // Flaky/failing - can skip because not available publicly
-        guard self.usesStoreKit2JWS else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
@@ -627,11 +610,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
-        // Flaky/failing - can skip because not available publicly
-        guard self.usesStoreKit2JWS else {
-            throw XCTSkip("Required API is not available for this test.")
-        }
-
         func waitForNewPurchaseDate() async {
             // The backend uses the transaction purchase date as a way to disambiguate transactions.
             // Therefor we need to sleep to force these to have unique dates.
