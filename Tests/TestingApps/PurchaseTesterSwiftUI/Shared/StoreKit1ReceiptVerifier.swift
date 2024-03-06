@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ReceiptVerifier {
+struct StoreKit1ReceiptVerifier {
 
     private static let errorMessagesByCode = [
         21000: "The App Store could not read the JSON object you provided.",

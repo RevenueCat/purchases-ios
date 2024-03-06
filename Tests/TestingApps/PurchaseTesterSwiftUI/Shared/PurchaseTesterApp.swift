@@ -90,7 +90,7 @@ struct PurchaseTesterApp: App {
             }
         }
         .menuBarExtraStyle(.window)
-        .defaultSize(width: 800, height: 1000)
+        .defaultSize(width: 1200, height: 1000)
         #endif
 
     }
