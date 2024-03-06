@@ -77,11 +77,12 @@ struct ReceiptInspectorView: View {
             let receiptWithoutForwardSlashes = encodedReceipt.replacingOccurrences(of: "\\", with: "")
             // just in case you accidentally copied with extra double-quotations
             let receiptWithoutQuotations = receiptWithoutForwardSlashes.replacingOccurrences(of: "\"", with: "")
-            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: receiptWithoutQuotations).debugDescription
+            parsedReceipt = try PurchasesReceiptParser.default.parse(base64String: receiptWithoutQuotations).prettyPrinted
             verifyReceiptResult = await ReceiptVerifier().verifyReceipt(base64Encoded: receiptWithoutQuotations,
                                                                         sharedSecret: sharedSecret)
         } catch {
             parsedReceipt = "Couldn't decode receipt. Error:\n\(error)"
+            verifyReceiptResult = ""
         }
     }
 }

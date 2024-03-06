@@ -141,4 +141,9 @@ extension AppleReceipt: CustomDebugStringConvertible {
         return (try? self.encodedJSON) ?? "<null>"
     }
 
+    /// swiftlint:disable:next missing_docs
+    public var prettyPrinted: String {
+        return (try? self.prettyPrintedJSON) ?? "<null>"
+    }
+
 }
