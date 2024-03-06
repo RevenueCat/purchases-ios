@@ -207,7 +207,7 @@ import Foundation
         ///
         /// The result of the verification can be obtained from ``EntitlementInfos/verification`` or
         /// ``EntitlementInfo/verification``.
-        /// 
+        ///
         /// - Note: This feature requires iOS 13+.
         /// - Warning:  When changing from ``Configuration/EntitlementVerificationMode/disabled``
         /// to ``Configuration/EntitlementVerificationMode/informational``
@@ -240,7 +240,7 @@ import Foundation
         /// Set ``StoreKitVersion``.
         ///
         /// Defaults to ``StoreKitVersion/default`` which lets the SDK select
-        /// the most appropriate version of StoreKit. Currently defaults to StoreKit 1.
+        /// the most appropriate version of StoreKit. Currently defaults to StoreKit 2.
         ///
         /// - Note: StoreKit 2 is only available on iOS 15+. StoreKit 1 will be used for previous iOS versions
         /// regardless of this setting.
@@ -298,7 +298,7 @@ extension Configuration {
         ///
         /// If verification fails, this will be indicated with ``VerificationResult/failed``
         /// but parsing will not fail.
-        /// 
+        ///
         /// This can be useful if you want to handle validation failures but still grant access.
         case informational = 1
 
