@@ -22,6 +22,7 @@ import SwiftUI
 @available(tvOS, unavailable)
 @MainActor
 struct LoadingPaywallView: View {
+    @State private var opacity = 1.0
 
     var mode: PaywallViewMode
     var displayCloseButton: Bool
@@ -55,6 +56,13 @@ struct LoadingPaywallView: View {
                 blurred: true,
                 ignoreSafeArea: self.mode.shouldDisplayBackground
             )
+        }
+        // fade in when loading for the first time
+        .overlay(Self.defaultPaywall.config.colors.multiScheme.backgroundColor.opacity(opacity))
+        .onAppear {
+            withAnimation(.easeOut(duration: 1)) {
+                opacity = 0
+            }
         }
     }
 
