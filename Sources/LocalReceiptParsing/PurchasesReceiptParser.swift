@@ -48,7 +48,7 @@ public class PurchasesReceiptParser: NSObject {
         let asn1Container = try self.containerBuilder.build(fromPayload: ArraySlice(receiptData))
         guard let receiptASN1Container = try self.findASN1Container(withObjectId: ASN1ObjectIdentifier.data,
                                                                     inContainer: asn1Container) else {
-            self.logger.error(ReceiptStrings.data_object_identifer_not_found_receipt)
+            self.logger.error(ReceiptStrings.data_object_identifier_not_found_receipt)
             throw Error.dataObjectIdentifierMissing
         }
 
