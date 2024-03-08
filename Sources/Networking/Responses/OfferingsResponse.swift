@@ -43,8 +43,15 @@ struct OfferingsResponse {
     }
 
     struct Targeting {
+
+        struct CustomAttributes {
+            let salt: String
+            let keys: [String]
+        }
+
         let revision: Int
         let ruleId: String
+        let customAttributes: CustomAttributes?
     }
 
     let currentOfferingId: String?
@@ -69,6 +76,7 @@ extension OfferingsResponse {
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
 extension OfferingsResponse.Offering: Codable, Equatable {}
 extension OfferingsResponse.Placements: Codable, Equatable {}
+extension OfferingsResponse.Targeting.CustomAttributes: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}
 

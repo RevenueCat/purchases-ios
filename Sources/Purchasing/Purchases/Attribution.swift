@@ -32,6 +32,7 @@ import Foundation
     private let currentUserProvider: CurrentUserProvider
     private let attributionPoster: AttributionPoster
     private let systemInfo: SystemInfo
+    private let customAttributesManager: CustomAttributesManager
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
@@ -40,11 +41,13 @@ import Foundation
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
          attributionPoster: AttributionPoster,
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         customAttributesManager: CustomAttributesManager) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
         self.attributionPoster = attributionPoster
         self.systemInfo = systemInfo
+        self.customAttributesManager = customAttributesManager
 
         super.init()
 
@@ -80,6 +83,16 @@ public extension Attribution {
         return !self.systemInfo.dangerousSettings.customEntitlementComputation
     }
 
+}
+
+internal extension Attribution {
+    func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        self.customAttributesManager.syncAttributesAndOfferingsIfNeeded(
+            appUserID: currentUserProvider.currentAppUserID,
+            attribution: self,
+            subscriberAttributionsManager: self.subscriberAttributesManager,
+            completion: completion)
+    }
 }
 
 #if !CUSTOM_ENTITLEMENTS_COMPUTATION
@@ -388,11 +401,25 @@ extension Attribution: @unchecked Sendable {}
 
 extension Attribution: SubscriberAttributesManagerDelegate {
 
+    func subscriberAttributesManagerSetAttribute(
+        _ manager: SubscriberAttributesManager,
+        key: String,
+        value: String?,
+        forUserID userID: String
+    ) {
+        self.customAttributesManager.syncCustomAttributesAndOfferingsIfNeeded(
+            appUserID: appUserID,
+            attribution: self,
+            subscriberAttributionsManager: self.subscriberAttributesManager
+        )
+    }
+
     func subscriberAttributesManager(
         _ manager: SubscriberAttributesManager,
         didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
         forUserID userID: String
     ) {
+        // TODO: Do stuff here
         self.delegate?.attribution(didFinishSyncingAttributes: attributes, forUserID: userID)
     }
 
@@ -442,6 +469,7 @@ extension Attribution {
     func syncAttributesForAllUsers(currentAppUserID: String,
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
+        // TODO: Add logic here to also sync custom attributes
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                                                    syncedAttribute: syncedAttribute,
                                                                    completion: completion)

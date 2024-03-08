@@ -34,8 +34,14 @@ import Foundation
     }
 
     internal struct Targeting {
+        internal struct CustomAttributes {
+            let salt: String
+            let keys: [String]
+        }
+
         let revision: Int
         let ruleId: String
+        let customAttributes: CustomAttributes?
     }
 
     /**
@@ -59,7 +65,7 @@ import Foundation
 
     private let currentOfferingID: String?
     private let placements: Placements?
-    private let targeting: Targeting?
+    internal let targeting: Targeting?
 
     init(
         offerings: [String: Offering],

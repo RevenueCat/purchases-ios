@@ -263,6 +263,10 @@ private extension SubscriberAttributesManager {
 
     func setAttribute(key: String, value: String?, appUserID: String) {
         storeAttributeLocallyIfNeeded(key: key, value: value, appUserID: appUserID)
+        self.delegate?.subscriberAttributesManagerSetAttribute(self, 
+                                                               key: key,
+                                                               value: value,
+                                                               forUserID: appUserID)
     }
 
     func syncAttributes(attributes: SubscriberAttribute.Dictionary,
@@ -306,6 +310,11 @@ extension SubscriberAttributesManager: @unchecked Sendable {}
 // MARK: -
 
 protocol SubscriberAttributesManagerDelegate: AnyObject, Sendable {
+
+    func subscriberAttributesManagerSetAttribute(_ manager: SubscriberAttributesManager,
+                                                 key: String,
+                                                 value: String?,
+                                                 forUserID userID: String)
 
     func subscriberAttributesManager(_ manager: SubscriberAttributesManager,
                                      didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
