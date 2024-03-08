@@ -42,16 +42,22 @@ class OfferingsManager {
     func offerings(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
-        fetchCurrent: Bool = false,
+        fetchBehavior: FetchBehavior = .cachedOrFetched,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        guard !fetchCurrent else {
-            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
+        if case .fetchCurrent = fetchBehavior {
+            self.fetchFromNetwork(appUserID: appUserID,
+                                  fetchPolicy: fetchPolicy,
+                                  fetchBehavior: fetchBehavior,
+                                  completion: completion)
             return
         }
 
         guard let memoryCachedOfferings = self.cachedOfferings else {
-            self.fetchFromNetwork(appUserID: appUserID, fetchPolicy: fetchPolicy, completion: completion)
+            self.fetchFromNetwork(appUserID: appUserID,
+                                  fetchPolicy: fetchPolicy,
+                                  fetchBehavior: fetchBehavior,
+                                  completion: completion)
             return
         }
 
@@ -63,6 +69,7 @@ class OfferingsManager {
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
+                                          fetchReason: fetchBehavior.fetchReason,
                                           completion: nil)
             }
         }
@@ -76,9 +83,12 @@ class OfferingsManager {
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy = .default,
+        fetchReason: String?,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
-        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
+        self.backend.offerings.getOfferings(appUserID: appUserID,
+                                            isAppBackgrounded: isAppBackgrounded,
+                                            fetchReason: fetchReason) { result in
             switch result {
             case let .success(response):
                 self.handleOfferingsBackendResult(with: response,
@@ -135,6 +145,7 @@ private extension OfferingsManager {
     func fetchFromNetwork(
         appUserID: String,
         fetchPolicy: FetchPolicy = .default,
+        fetchBehavior: FetchBehavior,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         Logger.debug(Strings.offering.no_cached_offerings_fetching_from_network)
@@ -143,6 +154,7 @@ private extension OfferingsManager {
             self.updateOfferingsCache(appUserID: appUserID,
                                       isAppBackgrounded: isAppBackgrounded,
                                       fetchPolicy: fetchPolicy,
+                                      fetchReason: fetchBehavior.fetchReason,
                                       completion: completion)
         }
     }
@@ -287,6 +299,32 @@ extension OfferingsManager {
 
         static let `default`: Self = .ignoreNotFoundProducts
 
+    }
+
+    /// Determines the behavior when fetching `Offerings`
+    internal enum FetchBehavior {
+
+        /// Returns values from the cache, or throws an error if not available.
+        case cachedOrFetched
+
+        /// Always fetch the most up-to-date data.
+        case fetchCurrent(reason: FetchReason)
+
+        static let `default`: Self = .cachedOrFetched
+
+        var fetchReason: String? {
+            switch self {
+            case .cachedOrFetched:
+                return nil
+            case .fetchCurrent(reason: let reason):
+                return reason.rawValue
+            }
+        }
+    }
+
+    internal enum FetchReason: String {
+        case manualSyncCustomAttributes = "custom_attributes_sync_manual"
+        case automaticSyncCustomAttributes = "custom_attributes_sync_automatic"
     }
 
 }

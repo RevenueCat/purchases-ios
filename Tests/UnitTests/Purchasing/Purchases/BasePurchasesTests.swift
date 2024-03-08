@@ -375,6 +375,7 @@ extension BasePurchasesTests {
 
         override func getOfferings(appUserID: String,
                                    isAppBackgrounded: Bool,
+                                   fetchReason: String?,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {

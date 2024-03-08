@@ -10,6 +10,7 @@ import Foundation
 class CustomAttributesManager {
     private let manualRateLimiter = RateLimiter(maxCalls: 5, period: 60)
     private let automaticRateLimiter = RateLimiter(maxCalls: 5, period: 60)
+    private let automaticThrottler = Throttler(delayInSeconds: 2)
 
     let offeringsManager: OfferingsManager
 
@@ -30,7 +31,10 @@ class CustomAttributesManager {
                     period: Int(manualRateLimiter.period)
                 )
             )
-            self.getOfferings(appUserID: appUserID, fetchPolicy: .default, completion: completion)
+            self.getOfferings(appUserID: appUserID,
+                              fetchPolicy: .default,
+                              fetchBehavior: .cachedOrFetched,
+                              completion: completion)
             return
         }
 
@@ -38,8 +42,12 @@ class CustomAttributesManager {
             appUserID: appUserID,
             attribution: attribution,
             completion: {
-            self.getOfferings(appUserID: appUserID, fetchPolicy: .default, fetchCurrent: true, completion: completion)
+                self.getOfferings(appUserID: appUserID,
+                                  fetchPolicy: .default,
+                                  fetchBehavior: .fetchCurrent(reason: .manualSyncCustomAttributes),
+                                  completion: completion)
         })
+
     }
 
     func syncCustomAttributesAndOfferingsIfNeeded(
@@ -64,15 +72,40 @@ class CustomAttributesManager {
                 return
             }
 
-            self.syncAttributesAndOfferingsIfNeeded(
-                appUserID: appUserID,
-                attribution: attribution,
-                subscriberAttributionsManager: subscriberAttributionsManager) { _, _ in
-
-                }
+            automaticThrottler.throttle {
+                self.syncSubscriberAttributes(
+                    appUserID: appUserID,
+                    attribution: attribution,
+                    completion: {
+                        self.getOfferings(appUserID: appUserID,
+                                          fetchPolicy: .default,
+                                          fetchBehavior: .fetchCurrent(reason: .automaticSyncCustomAttributes),
+                                          completion: { _, _ in })
+                })
+            }
         }
     }
 
+}
+
+private class Throttler {
+    private var workItem: DispatchWorkItem?
+    private let queue: DispatchQueue
+    private let delayInSeconds: Double
+
+    init(delayInSeconds: Double, queue: DispatchQueue = DispatchQueue.main) {
+        self.delayInSeconds = delayInSeconds
+        self.queue = queue
+    }
+
+    func throttle(_ block: @escaping () -> Void) {
+        workItem?.cancel()
+
+        let task = DispatchWorkItem { block() }
+        self.workItem = task
+
+        queue.asyncAfter(deadline: .now() + delayInSeconds, execute: task)
+    }
 }
 
 private extension CustomAttributesManager {
@@ -102,12 +135,12 @@ private extension CustomAttributesManager {
     func getOfferings(
         appUserID: String,
         fetchPolicy: OfferingsManager.FetchPolicy,
-        fetchCurrent: Bool = false,
+        fetchBehavior: OfferingsManager.FetchBehavior,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
         self.offeringsManager.offerings(appUserID: appUserID,
                                         fetchPolicy: fetchPolicy,
-                                        fetchCurrent: fetchCurrent) { @Sendable result in
+                                        fetchBehavior: fetchBehavior) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }

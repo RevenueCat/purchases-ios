@@ -26,11 +26,11 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
     var invokedOfferingsCount = 0
     var invokedOfferingsParameters: (appUserID: String,
                                      fetchPolicy: FetchPolicy,
-                                     fetchCurrent: Bool,
+                                     fetchBehavior: FetchBehavior,
                                      completion: OfferingsCompletion?)?
     var invokedOfferingsParametersList = [(appUserID: String,
                                            fetchPolicy: FetchPolicy,
-                                           fetchCurrent: Bool,
+                                           fetchBehavior: FetchBehavior,
                                            completion: OfferingsCompletion??)]()
     var stubbedOfferingsCompletionResult: Result<Offerings, Error> = .failure(
         .configurationError("Stub not setup", underlyingError: nil)
@@ -38,12 +38,12 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
 
     override func offerings(appUserID: String,
                             fetchPolicy: FetchPolicy,
-                            fetchCurrent: Bool = false,
+                            fetchBehavior: FetchBehavior,
                             completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?) {
         self.invokedOfferings = true
         self.invokedOfferingsCount += 1
-        self.invokedOfferingsParameters = (appUserID, fetchPolicy, fetchCurrent, completion)
-        self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, fetchCurrent, completion))
+        self.invokedOfferingsParameters = (appUserID, fetchPolicy, fetchBehavior, completion)
+        self.invokedOfferingsParametersList.append((appUserID, fetchPolicy, fetchBehavior, completion))
 
         OperationDispatcher.dispatchOnMainActor { [result = self.stubbedOfferingsCompletionResult] in
             completion?(result)
@@ -58,6 +58,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         let appUserID: String
         let isAppBackgrounded: Bool
         let fetchPolicy: OfferingsManager.FetchPolicy
+        let fetchReason: String?
     }
 
     var invokedUpdateOfferingsCache = false
@@ -72,6 +73,7 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: OfferingsManager.FetchPolicy,
+        fetchReason: String?,
         completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
     ) {
         self.invokedUpdateOfferingsCache = true
@@ -80,7 +82,8 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         let parameters = InvokedUpdateOfferingsCacheParameters(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded,
-            fetchPolicy: fetchPolicy
+            fetchPolicy: fetchPolicy,
+            fetchReason: fetchReason
         )
 
         self.invokedUpdateOfferingsCacheParameters = parameters

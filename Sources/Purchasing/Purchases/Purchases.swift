@@ -703,12 +703,12 @@ public extension Purchases {
 
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
-        fetchCurrent: Bool = false,
+        fetchBehavior: OfferingsManager.FetchBehavior = .cachedOrFetched,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
         self.offeringsManager.offerings(appUserID: self.appUserID,
                                         fetchPolicy: fetchPolicy,
-                                        fetchCurrent: fetchCurrent) { @Sendable result in
+                                        fetchBehavior: fetchBehavior) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -1369,11 +1369,11 @@ public extension Purchases {
     @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
-        Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .build())
+Self.configure(
+    with: .builder(withAPIKey: apiKey)
+        .with(appUserID: appUserID)
+        .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+        .build())
     }
 
     #endif
@@ -1798,7 +1798,8 @@ private extension Purchases {
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
-            isAppBackgrounded: isAppBackgrounded
+            isAppBackgrounded: isAppBackgrounded,
+            fetchReason: nil
         ) { [cache = self.paywallCache] offerings in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offerings.value {

@@ -16,15 +16,18 @@ import Foundation
 final class GetOfferingsOperation: CacheableNetworkOperation {
 
     private let offeringsCallbackCache: CallbackCache<OfferingsCallback>
+    private let fetchReason: String?
     private let configuration: AppUserConfiguration
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
+        fetchReason: String?,
         offeringsCallbackCache: CallbackCache<OfferingsCallback>
     ) -> CacheableNetworkOperationFactory<GetOfferingsOperation> {
         return .init({ cacheKey in
                     .init(
                         configuration: configuration,
+                        fetchReason: fetchReason,
                         offeringsCallbackCache: offeringsCallbackCache,
                         cacheKey: cacheKey
                     )
@@ -33,9 +36,11 @@ final class GetOfferingsOperation: CacheableNetworkOperation {
     }
 
     private init(configuration: UserSpecificConfiguration,
+                 fetchReason: String?,
                  offeringsCallbackCache: CallbackCache<OfferingsCallback>,
                  cacheKey: String) {
         self.configuration = configuration
+        self.fetchReason = fetchReason
         self.offeringsCallbackCache = offeringsCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
@@ -61,7 +66,14 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
+        var additionalHeaders: HTTPRequest.Headers = [:]
+        if let fetchReason = self.fetchReason {
+            additionalHeaders["X-RC-Offerings-Refresh-Reason"] = fetchReason
+        }
+
+        let request = HTTPRequest(method: .get,
+                                  path: .getOfferings(appUserID: appUserID),
+                                  additionalHeaders: additionalHeaders)
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<OfferingsResponse>.Result) in
             defer {
