@@ -519,6 +519,7 @@ private extension BasePurchasesTests {
         self.mockIntroEligibilityCalculator = nil
         self.mockTransactionsManager = nil
         self.backend = nil
+        self.customAttributesManager = nil
         self.attributionFetcher = nil
         self.purchasesDelegate.makeDeferredPurchase = nil
         self.purchasesDelegate = nil
