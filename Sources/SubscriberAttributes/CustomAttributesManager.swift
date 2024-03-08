@@ -64,12 +64,11 @@ class CustomAttributesManager {
                 return
             }
 
-            // TODO: Determine if we want to sync all or just the ones we need
             self.syncAttributesAndOfferingsIfNeeded(
                 appUserID: appUserID,
                 attribution: attribution,
-                subscriberAttributionsManager: subscriberAttributionsManager) { offerings, error in
-                    print("here")
+                subscriberAttributionsManager: subscriberAttributionsManager) { _, _ in
+
                 }
         }
     }

@@ -95,10 +95,6 @@ class BasePurchasesTests: TestCase {
                                                    backend: self.backend,
                                                    attributionFetcher: self.attributionFetcher,
                                                    subscriberAttributesManager: self.subscriberAttributesManager)
-        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
-                                       currentUserProvider: self.identityManager,
-                                       attributionPoster: self.attributionPoster,
-                                       systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
@@ -113,6 +109,12 @@ class BasePurchasesTests: TestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: self.offeringsFactory,
                                                          productsManager: self.mockProductsManager)
+        self.customAttributesManager = CustomAttributesManager(offeringsManager: self.mockOfferingsManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
+                                       currentUserProvider: self.identityManager,
+                                       attributionPoster: self.attributionPoster,
+                                       systemInfo: self.systemInfo,
+                                       customAttributesManager: self.customAttributesManager)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: self.systemInfo,
                                                                   customerInfoManager: self.customerInfoManager,
                                                                   currentUserProvider: self.identityManager)
@@ -152,6 +154,7 @@ class BasePurchasesTests: TestCase {
     var mockProductsManager: MockProductsManager!
     var purchasedProductsFetcher: MockPurchasedProductsFetcher!
     var backend: MockBackend!
+    var customAttributesManager: CustomAttributesManager!
     var storeKit1Wrapper: MockStoreKit1Wrapper!
     var mockPaymentQueueWrapper: MockPaymentQueueWrapper!
     var notificationCenter: MockNotificationCenter!
@@ -278,6 +281,7 @@ class BasePurchasesTests: TestCase {
                                    attributionFetcher: self.attributionFetcher,
                                    attributionPoster: self.attributionPoster,
                                    backend: self.backend,
+                                   customAttributesManager: self.customAttributesManager,
                                    paymentQueueWrapper: paymentQueueWrapper,
                                    userDefaults: self.userDefaults,
                                    notificationCenter: self.notificationCenter,

@@ -30,6 +30,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockIdentityManager: MockIdentityManager!
     var mockSubscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
+    var customAttributesManager: CustomAttributesManager!
     var subscriberAttributeHeight: SubscriberAttribute!
     var subscriberAttributeWeight: SubscriberAttribute!
     var mockAttributes: [String: SubscriberAttribute]!
@@ -109,10 +110,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                        backend: mockBackend,
                                                        attributionFetcher: mockAttributionFetcher,
                                                        subscriberAttributesManager: mockSubscriberAttributesManager)
-        self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
-                                       currentUserProvider: self.mockIdentityManager,
-                                       attributionPoster: self.mockAttributionPoster,
-                                       systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
@@ -144,6 +141,12 @@ class PurchasesSubscriberAttributesTests: TestCase {
                                                          backend: mockBackend,
                                                          offeringsFactory: MockOfferingsFactory(),
                                                          productsManager: mockProductsManager)
+        self.customAttributesManager = CustomAttributesManager(offeringsManager: self.mockOfferingsManager)
+        self.attribution = Attribution(subscriberAttributesManager: self.mockSubscriberAttributesManager,
+                                       currentUserProvider: self.mockIdentityManager,
+                                       attributionPoster: self.mockAttributionPoster,
+                                       systemInfo: self.systemInfo,
+                                       customAttributesManager: self.customAttributesManager)
         self.mockManageSubsHelper = MockManageSubscriptionsHelper(systemInfo: systemInfo,
                                                                   customerInfoManager: customerInfoManager,
                                                                   currentUserProvider: mockIdentityManager)
@@ -202,6 +205,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               attributionFetcher: mockAttributionFetcher,
                               attributionPoster: mockAttributionPoster,
                               backend: mockBackend,
+                              customAttributesManager: customAttributesManager,
                               paymentQueueWrapper: .left(self.mockStoreKit1Wrapper),
                               userDefaults: .computeDefault(),
                               notificationCenter: mockNotificationCenter,

@@ -207,7 +207,7 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123", customAttributes: nil)
                 )
             )
         )
@@ -314,7 +314,7 @@ class OfferingsTests: TestCase {
                               ])
                     ],
                     placements: nil,
-                    targeting: .init(revision: 1, ruleId: "abc123")
+                    targeting: .init(revision: 1, ruleId: "abc123", customAttributes: nil)
                 )
             )
         )

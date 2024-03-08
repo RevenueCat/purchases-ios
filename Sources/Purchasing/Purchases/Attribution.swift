@@ -401,10 +401,10 @@ extension Attribution: @unchecked Sendable {}
 
 extension Attribution: SubscriberAttributesManagerDelegate {
 
-    func subscriberAttributesManagerSetAttribute(
+    func subscriberAttributesManager(
         _ manager: SubscriberAttributesManager,
-        key: String,
-        value: String?,
+        didSetAttribute key: String,
+        withValue value: String?,
         forUserID userID: String
     ) {
         self.customAttributesManager.syncCustomAttributesAndOfferingsIfNeeded(
@@ -419,7 +419,6 @@ extension Attribution: SubscriberAttributesManagerDelegate {
         didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
         forUserID userID: String
     ) {
-        // TODO: Do stuff here
         self.delegate?.attribution(didFinishSyncingAttributes: attributes, forUserID: userID)
     }
 
@@ -469,7 +468,6 @@ extension Attribution {
     func syncAttributesForAllUsers(currentAppUserID: String,
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
-        // TODO: Add logic here to also sync custom attributes
         self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                                                    syncedAttribute: syncedAttribute,
                                                                    completion: completion)

@@ -14,6 +14,8 @@
 
 import Foundation
 
+// swiftlint:disable nesting
+
 /**
  * This class contains all the offerings configured in RevenueCat dashboard.
  * Offerings let you control which products are shown to users without requiring an app update.
@@ -34,6 +36,7 @@ import Foundation
     }
 
     internal struct Targeting {
+
         internal struct CustomAttributes {
             let salt: String
             let keys: [String]

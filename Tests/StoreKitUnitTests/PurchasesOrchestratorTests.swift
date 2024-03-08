@@ -33,6 +33,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     private var customerInfoManager: MockCustomerInfoManager!
     private var paymentQueueWrapper: EitherPaymentQueueWrapper!
     private var backend: MockBackend!
+    private var customAttributesManager: CustomAttributesManager!
     private var offerings: MockOfferingsAPI!
     private var currentUserProvider: MockCurrentUserProvider!
     private var transactionsManager: MockTransactionsManager!
@@ -69,6 +70,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                          backend: self.backend,
                                                          offeringsFactory: OfferingsFactory(),
                                                          productsManager: self.productsManager)
+        self.customAttributesManager = CustomAttributesManager(offeringsManager: self.mockOfferingsManager)
         self.setUpStoreKit1Wrapper()
 
         self.customerInfoManager = MockCustomerInfoManager(
@@ -147,7 +149,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.attribution = Attribution(subscriberAttributesManager: self.subscriberAttributesManager,
                                        currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.mockUserID),
                                        attributionPoster: attributionPoster,
-                                       systemInfo: self.systemInfo)
+                                       systemInfo: self.systemInfo,
+                                       customAttributesManager: self.customAttributesManager)
     }
 
     fileprivate func setUpOrchestrator() {
