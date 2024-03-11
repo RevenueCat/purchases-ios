@@ -35,7 +35,6 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     func testLoadingPaywallView() {
         LoadingPaywallView(mode: .fullScreen,
                            displayCloseButton: false,
-                           shouldAutomaticallyDismiss: true,
                            shimmer: false)
             .snapshot(size: Self.fullScreenSize)
     }
@@ -43,7 +42,6 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     func testLoadingFooterPaywallView() {
         LoadingPaywallView(mode: .footer,
                            displayCloseButton: false,
-                           shouldAutomaticallyDismiss: false,
                            shimmer: false)
             .snapshot(size: Self.footerSize)
     }
@@ -51,7 +49,6 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     func testLoadingCondensedFooterPaywallView() {
         LoadingPaywallView(mode: .condensedFooter,
                            displayCloseButton: false,
-                           shouldAutomaticallyDismiss: false,
                            shimmer: false)
             .snapshot(size: Self.footerSize)
     }

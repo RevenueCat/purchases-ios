@@ -27,6 +27,10 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
+    /// See ``PaywallViewControllerRequestedDismissalDelegate`` for dismissing the paywall. If this is not set, the paywall 
+    /// will close itself automatically after a successful purchase.
+    @objc public final weak var requestedDismissalDelegate: PaywallViewControllerRequestedDismissalDelegate?
+
     private var configuration: PaywallViewConfiguration {
         didSet {
             // Overriding the configuration requires re-creating the `HostingViewController`.
@@ -141,12 +145,6 @@ public class PaywallViewController: UIViewController {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
 
-    /// - Warning: For internal use only
-    @objc(updateWithAutomaticallyDismiss:)
-    public func updateAutomaticallyDismiss(with automaticallyDismiss: Bool) {
-        self.configuration.shouldAutomaticallyDismiss = automaticallyDismiss
-    }
-
     // MARK: - Internal
 
     class var mode: PaywallViewMode {
@@ -240,17 +238,25 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerWasDismissed:)
     optional func paywallViewControllerWasDismissed(_ controller: PaywallViewController)
 
-    /// Notifies that the ``PaywallViewController`` has to be dismissed.
-    /// - After close button is pressed if it's present
-    /// - After a successful purchase
-    /// Only called if the shouldAutomaticallyDismiss configuration option is set to false (true by default).
-    @objc(paywallViewControllerRequestedDismissal:)
-    optional func paywallViewControllerRequestedDismissal(_ controller: PaywallViewController)
-
     /// For internal use only.
     @objc(paywallViewController:didChangeSizeTo:)
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didChangeSizeTo size: CGSize)
+
+}
+
+// MARK: - PaywallViewControllerRequestedDismissalDelegate
+
+/// Delegate for ``PaywallViewController``. Used to implement a custom dismissal behaviour.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@objc(RCPaywallViewControllerRequestedDismissalDelegate)
+public protocol PaywallViewControllerRequestedDismissalDelegate: AnyObject {
+
+    /// Notifies that the ``PaywallViewController`` has to be dismissed.
+    /// - After close button is pressed if it's present
+    /// - After a successful purchase
+    @objc(paywallViewControllerRequestedDismissal:)
+    optional func paywallViewControllerRequestedDismissal(_ controller: PaywallViewController)
 
 }
 
@@ -296,7 +302,7 @@ private extension PaywallViewController {
             },
             requestedDismissal: { [weak self] in
                 guard let self else { return }
-                self.delegate?.paywallViewControllerRequestedDismissal?(self)
+                self.requestedDismissalDelegate?.paywallViewControllerRequestedDismissal?(self)
             },
             onSizeChange: { [weak self] in
                 guard let self else { return }
