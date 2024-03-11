@@ -153,7 +153,6 @@ public struct PaywallView: View {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next function_parameter_count
     private func paywallView(
         for offering: Offering,
         activelySubscribedProductIdentifiers: Set<String>,

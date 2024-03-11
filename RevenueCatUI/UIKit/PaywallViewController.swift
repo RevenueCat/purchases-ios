@@ -27,9 +27,9 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
-    /// See ``PaywallViewControllerRequestedDismissalDelegate`` for dismissing the paywall. If this is not set, the paywall 
-    /// will close itself automatically after a successful purchase.
-    @objc public final weak var requestedDismissalDelegate: PaywallViewControllerRequestedDismissalDelegate?
+    /// See ``PaywallViewControllerRequestedDismissalDelegate`` for dismissing the paywall. 
+    /// If this is not set, the paywall will close itself automatically after a successful purchase.
+    @objc public final weak var dismissalDelegate: PaywallViewControllerDismissalDelegate?
 
     private var configuration: PaywallViewConfiguration {
         didSet {
@@ -250,7 +250,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 /// Delegate for ``PaywallViewController``. Used to implement a custom dismissal behaviour.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewControllerRequestedDismissalDelegate)
-public protocol PaywallViewControllerRequestedDismissalDelegate: AnyObject {
+public protocol PaywallViewControllerDismissalDelegate: AnyObject {
 
     /// Notifies that the ``PaywallViewController`` has to be dismissed.
     /// - After close button is pressed if it's present
@@ -302,7 +302,7 @@ private extension PaywallViewController {
             },
             requestedDismissal: { [weak self] in
                 guard let self else { return }
-                self.requestedDismissalDelegate?.paywallViewControllerRequestedDismissal?(self)
+                self.dismissalDelegate?.paywallViewControllerRequestedDismissal?(self)
             },
             onSizeChange: { [weak self] in
                 guard let self else { return }
