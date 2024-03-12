@@ -110,7 +110,7 @@ commands:
         default: true
       install_mint:
         type: boolean
-        default: true
+        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
