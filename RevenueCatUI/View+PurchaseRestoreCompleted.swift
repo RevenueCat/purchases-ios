@@ -251,6 +251,40 @@ extension View {
         return self.modifier(RestoreFailureModifier(handler: handler))
     }
 
+    /// Invokes the given closure when the paywall is meant to be dismissed. This closure will be called:
+    /// - When a purchase is completed.
+    /// - Whenever the close button is pressed.
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     ContentView()
+    ///         .sheet(isPresented: self.$displayPaywall) {
+    ///             PaywallView()
+    ///                 .onRequestedDismissal {
+    ///                     self.dismiss()
+    ///                 }
+    ///         }
+    ///  }
+    /// ```
+    public func onRequestedDismissal(_ action: @escaping (() -> Void)) -> some View {
+        self.environment(\.onRequestedDismissal, action)
+    }
+
+}
+
+// MARK: Environment keys
+
+/// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
+struct RequestedDismissalKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var onRequestedDismissal: (() -> Void)? {
+        get { self[RequestedDismissalKey.self] }
+        set { self[RequestedDismissalKey.self] = newValue }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
