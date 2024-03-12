@@ -52,13 +52,21 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-func paywallFooterViewControllerAPI(_ delegate: Delegate, _ offering: Offering?) {
+func paywallFooterViewControllerAPI(_ delegate: Delegate, 
+                                    _ offering: Offering?,
+                                    _ dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?) {
     let controller = PaywallFooterViewController()
     controller.delegate = delegate
 
     let _: UIViewController = PaywallFooterViewController(offering: offering)
+    let _: UIViewController = PaywallFooterViewController(offering: offering,
+                                                          dismissRequestedHandler: dismissRequestedHandler)
     let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering")
-    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering",
+                                                          dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering",
+                                                          fontName: "Papyrus",
+                                                          dismissRequestedHandler: dismissRequestedHandler)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
