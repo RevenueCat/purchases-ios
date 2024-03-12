@@ -27,7 +27,7 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
-    private final var dismissalRequest: ((_ controller: PaywallViewController) -> Void)?
+    private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
     private var configuration: PaywallViewConfiguration {
         didSet {
@@ -41,19 +41,19 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalRequest: If this is not set, the paywall will close itself automatically
-    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     @objc
     public convenience init(
         offering: Offering? = nil,
         displayCloseButton: Bool = false,
-        dismissalRequest: ((_ controller: PaywallViewController) -> Void)? = nil
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             offering: offering,
             fonts: DefaultPaywallFontProvider(),
             displayCloseButton: displayCloseButton,
-            dismissalRequest: dismissalRequest
+            dismissRequestedHandler: dismissRequestedHandler
         )
     }
 
@@ -62,19 +62,19 @@ public class PaywallViewController: UIViewController {
     /// `Offerings.current` will be used by default.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalRequest: If this is not set, the paywall will close itself automatically
-    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
-        dismissalRequest: ((_ controller: PaywallViewController) -> Void)? = nil
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            dismissalRequest: dismissalRequest
+            dismissRequestedHandler: dismissRequestedHandler
         )
     }
 
@@ -82,19 +82,19 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalRequest: If this is not set, the paywall will close itself automatically
-    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
+    /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     public convenience init(
         offeringIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        dismissalRequest: ((_ controller: PaywallViewController) -> Void)? = nil
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .offeringIdentifier(offeringIdentifier),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            dismissalRequest: dismissalRequest
+            dismissRequestedHandler: dismissRequestedHandler
         )
     }
 
@@ -102,9 +102,9 @@ public class PaywallViewController: UIViewController {
         content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool,
-        dismissalRequest: ((_ controller: PaywallViewController) -> Void)?
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
     ) {
-        self.dismissalRequest = dismissalRequest
+        self.dismissRequestedHandler = dismissRequestedHandler
 
         self.configuration = .init(
             content: content,
@@ -266,10 +266,10 @@ private extension PaywallViewController {
     // swiftlint:disable:next function_body_length
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         var onRequestedDismissal: (() -> Void)?
-        if let dismissalRequest = self.dismissalRequest {
+        if let dismissRequestedHandler = self.dismissRequestedHandler {
             onRequestedDismissal = { [weak self] in
                 guard let self = self else { return }
-                dismissalRequest(self)
+                dismissRequestedHandler(self)
             }
         }
 

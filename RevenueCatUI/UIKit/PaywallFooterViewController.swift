@@ -35,7 +35,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .optionalOffering(offering),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
-                   dismissalRequest: nil)
+                   dismissRequestedHandler: nil)
     }
 
     /// Initialize a `PaywallFooterViewController` with an `Offering` identifier.
@@ -44,7 +44,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
-                   dismissalRequest: nil)
+                   dismissRequestedHandler: nil)
     }
 
     /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and custom `fontName`.
@@ -54,7 +54,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
-                   dismissalRequest: nil)
+                   dismissRequestedHandler: nil)
     }
 
     @available(*, unavailable)
@@ -62,12 +62,12 @@ public final class PaywallFooterViewController: PaywallViewController {
         content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
-        dismissalRequest: ((_ controller: PaywallViewController) -> Void)? = nil
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         super.init(content: content,
                    fonts: fonts,
                    displayCloseButton: false,
-                   dismissalRequest: nil)
+                   dismissRequestedHandler: nil)
     }
 
     // swiftlint:disable:next missing_docs
