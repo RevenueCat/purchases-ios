@@ -277,6 +277,7 @@ GEM
     public_suffix (4.0.7)
     rake (13.1.0)
     rchardet (1.8.0)
+    readline-ext (0.2.0)
     representable (3.2.0)
       declarative (< 0.1.0)
       trailblazer-option (>= 0.1.1, < 0.2.0)
@@ -346,6 +347,7 @@ DEPENDENCIES
   fastlane
   fastlane-plugin-create_xcframework
   fastlane-plugin-revenuecat_internal!
+  readline-ext
   rest-client
 
 BUNDLED WITH
