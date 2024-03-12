@@ -161,7 +161,7 @@ commands:
     steps:
       - run:
           name: Install xcbeautify using Mint
-          command: mint install cpisciotta/xcbeautify@0.16.0
+          command: mint install cpisciotta/xcbeautify@1.17.0
 
   install-rubydocker-dependencies:
     steps:
