@@ -31,30 +31,40 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     @objc
-    public init(offering: Offering? = nil) {
+    public init(
+        offering: Offering? = nil,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
         super.init(content: .optionalOffering(offering),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
-                   dismissRequestedHandler: nil)
+                   dismissRequestedHandler: dismissRequestedHandler)
     }
 
     /// Initialize a `PaywallFooterViewController` with an `Offering` identifier.
     @objc
-    public init(offeringIdentifier: String) {
+    public init(
+        offeringIdentifier: String,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
-                   dismissRequestedHandler: nil)
+                   dismissRequestedHandler: dismissRequestedHandler)
     }
 
     /// Initialize a `PaywallFooterViewController` with an `offeringIdentifier` and custom `fontName`.
     /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
     @objc
-    public init(offeringIdentifier: String, fontName: String) {
+    public init(
+        offeringIdentifier: String, 
+        fontName: String,
+        dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
+    ) {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
-                   dismissRequestedHandler: nil)
+                   dismissRequestedHandler: dismissRequestedHandler)
     }
 
     @available(*, unavailable)
@@ -67,7 +77,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: content,
                    fonts: fonts,
                    displayCloseButton: false,
-                   dismissRequestedHandler: nil)
+                   dismissRequestedHandler: dismissRequestedHandler)
     }
 
     // swiftlint:disable:next missing_docs
