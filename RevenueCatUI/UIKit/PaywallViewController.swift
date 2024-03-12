@@ -41,8 +41,8 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically after a successful purchase. Otherwise use this
-    /// delegate to handle dismissals of the paywall
+    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically 
+    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
     @objc
     public convenience init(
         offering: Offering? = nil,
@@ -62,8 +62,8 @@ public class PaywallViewController: UIViewController {
     /// `Offerings.current` will be used by default.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically after a successful purchase. Otherwise use this
-    /// delegate to handle dismissals of the paywall
+    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically
+    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
@@ -82,8 +82,8 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
-    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically after a successful purchase. Otherwise use this
-    /// delegate to handle dismissals of the paywall
+    /// - Parameter dismissalDelegate: If this is not set, the paywall will close itself automatically 
+    /// after a successful purchase. Otherwise use this delegate to handle dismissals of the paywall
     public convenience init(
         offeringIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
@@ -277,8 +277,9 @@ public protocol PaywallViewControllerDismissalDelegate: AnyObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private extension PaywallViewController {
 
+    // swiftlint:disable:next function_body_length
     func createHostingController() -> UIHostingController<PaywallContainerView> {
-        var onRequestedDismissal: (() -> Void)? = nil
+        var onRequestedDismissal: (() -> Void)?
         if self.dismissalDelegate != nil {
             onRequestedDismissal = { [weak self] in
                 guard let self = self else { return }
