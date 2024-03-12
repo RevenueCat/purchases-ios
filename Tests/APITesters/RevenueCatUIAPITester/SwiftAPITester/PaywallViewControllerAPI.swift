@@ -23,7 +23,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?, _ dis
     let _: UIViewController = PaywallViewController(fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
                                                     displayCloseButton: true,
-                                                    dismissalDelegate: dismissalDelegate))
+                                                    dismissalDelegate: dismissalDelegate)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
