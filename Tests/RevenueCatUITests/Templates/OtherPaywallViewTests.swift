@@ -33,23 +33,17 @@ class OtherPaywallViewTests: BaseSnapshotTest {
     }
 
     func testLoadingPaywallView() {
-        LoadingPaywallView(mode: .fullScreen,
-                           displayCloseButton: false,
-                           shimmer: false)
+        LoadingPaywallView(mode: .fullScreen, displayCloseButton: false, shimmer: false)
             .snapshot(size: Self.fullScreenSize)
     }
 
     func testLoadingFooterPaywallView() {
-        LoadingPaywallView(mode: .footer,
-                           displayCloseButton: false,
-                           shimmer: false)
+        LoadingPaywallView(mode: .footer, displayCloseButton: false, shimmer: false)
             .snapshot(size: Self.footerSize)
     }
 
     func testLoadingCondensedFooterPaywallView() {
-        LoadingPaywallView(mode: .condensedFooter,
-                           displayCloseButton: false,
-                           shimmer: false)
+        LoadingPaywallView(mode: .condensedFooter, displayCloseButton: false, shimmer: false)
             .snapshot(size: Self.footerSize)
     }
 

@@ -352,7 +352,7 @@ private struct PaywallContainerView: View {
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
-    var requestedDismissal: (() -> Void)?
+    let requestedDismissal: (() -> Void)?
 
     let onSizeChange: (CGSize) -> Void
 
