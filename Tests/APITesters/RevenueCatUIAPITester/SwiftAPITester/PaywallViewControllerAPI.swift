@@ -10,7 +10,9 @@ import RevenueCatUI
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?, _ dismissalDelegate: DismissalDelegate) {
+func paywallViewControllerAPI(_ delegate: Delegate,
+                              _ offering: Offering?,
+                              _ dismissalRequest: ((_ controller: PaywallViewController) -> Void)?) {
     let fontProvider: PaywallFontProvider = CustomPaywallFontProvider(fontName: "test")
 
     let controller = PaywallViewController()
@@ -23,7 +25,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?, _ dis
     let _: UIViewController = PaywallViewController(fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
                                                     displayCloseButton: true,
-                                                    dismissalDelegate: dismissalDelegate)
+                                                    dismissalRequest: dismissalRequest)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
@@ -32,7 +34,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?, _ dis
     let _: UIViewController = PaywallViewController(offering: offering,
                                                     fonts: fontProvider,
                                                     displayCloseButton: true,
-                                                    dismissalDelegate: dismissalDelegate)
+                                                    dismissalRequest: dismissalRequest)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", displayCloseButton: true)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
@@ -41,7 +43,7 @@ func paywallViewControllerAPI(_ delegate: Delegate, _ offering: Offering?, _ dis
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
                                                     fonts: fontProvider,
                                                     displayCloseButton: true,
-                                                    dismissalDelegate: dismissalDelegate)
+                                                    dismissalRequest: dismissalRequest)
     let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
 
     controller.update(with: offering!)
@@ -88,13 +90,6 @@ final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewController(_ controller: PaywallViewController,
                                didChangeSizeTo size: CGSize) {}
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-final class DismissalDelegate: PaywallViewControllerDismissalDelegate {
-
-    func paywallViewControllerRequestedDismissal(_ controller: PaywallViewController) {}
 
 }
 
