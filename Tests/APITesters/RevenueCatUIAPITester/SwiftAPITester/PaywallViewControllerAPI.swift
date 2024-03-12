@@ -52,7 +52,7 @@ func paywallViewControllerAPI(_ delegate: Delegate,
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-func paywallFooterViewControllerAPI(_ delegate: Delegate, 
+func paywallFooterViewControllerAPI(_ delegate: Delegate,
                                     _ offering: Offering?,
                                     _ dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?) {
     let controller = PaywallFooterViewController()
