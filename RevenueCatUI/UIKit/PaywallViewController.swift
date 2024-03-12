@@ -27,7 +27,7 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
-    @objc private final weak var dismissalDelegate: PaywallViewControllerDismissalDelegate?
+    private final weak var dismissalDelegate: PaywallViewControllerDismissalDelegate?
 
     private var configuration: PaywallViewConfiguration {
         didSet {
