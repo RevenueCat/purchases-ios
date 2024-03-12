@@ -104,13 +104,14 @@ public class PaywallViewController: UIViewController {
         displayCloseButton: Bool,
         dismissalDelegate: PaywallViewControllerDismissalDelegate?
     ) {
+        self.dismissalDelegate = dismissalDelegate
+
         self.configuration = .init(
             content: content,
             mode: Self.mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton
         )
-        self.dismissalDelegate = dismissalDelegate
 
         super.init(nibName: nil, bundle: nil)
     }
