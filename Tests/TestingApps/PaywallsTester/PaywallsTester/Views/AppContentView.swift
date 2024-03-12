@@ -161,7 +161,10 @@ struct AppContentView: View {
 
     #if !os(watchOS)
     private func presentPaywallViewController() {
-        let paywall = PaywallViewController(displayCloseButton: Configuration.defaultDisplayCloseButton)
+        let paywall = PaywallViewController(displayCloseButton: Configuration.defaultDisplayCloseButton, 
+                                            dismissalDelegate: PaywallDelegateViewController(onDismiss: {
+            print("dismiss")
+        }))
         paywall.modalPresentationStyle = .pageSheet
 
         guard let rootController = UIApplication
@@ -177,6 +180,18 @@ struct AppContentView: View {
     }
     #endif
 
+}
+
+class PaywallDelegateViewController: PaywallViewControllerDismissalDelegate {
+    var onDismiss: (() -> Void)
+
+    init(onDismiss: @escaping () -> Void) {
+        self.onDismiss = onDismiss
+    }
+
+    func paywallViewControllerRequestedDismissal(_ controller: PaywallViewController) {
+        onDismiss()
+    }
 }
 
 private struct ProminentButton: View {
