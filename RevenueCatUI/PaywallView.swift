@@ -335,10 +335,12 @@ struct LoadedOfferingPaywallView: View {
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if self.mode.isFullScreen, purchased {
-                    Logger.debug(Strings.dismissing_paywall)
+                if purchased {
                     guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        self.dismiss()
+                        if self.mode.isFullScreen {
+                            Logger.debug(Strings.dismissing_paywall)
+                            self.dismiss()
+                        }
                         return
                     }
                     onRequestedDismissal()
