@@ -326,6 +326,21 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
 
 }
 
+// MARK: Environment keys
+
+/// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
+struct RequestedDismissalKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var onRequestedDismissal: (() -> Void)? {
+        get { self[RequestedDismissalKey.self] }
+        set { self[RequestedDismissalKey.self] = newValue }
+    }
+}
+
 // MARK: -
 
 private extension CustomerInfo {

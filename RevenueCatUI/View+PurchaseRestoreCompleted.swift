@@ -251,6 +251,25 @@ extension View {
         return self.modifier(RestoreFailureModifier(handler: handler))
     }
 
+    /// Invokes the given closure when the paywall is meant to be dismissed. This closure will be called:
+    /// - When a purchase is completed.
+    /// - Whenever the close button is pressed.
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     ContentView()
+    ///         .sheet(isPresented: self.$displayPaywall) {
+    ///             PaywallView()
+    ///                 .onRequestedDismissal {
+    ///                     self.dismiss()
+    ///                 }
+    ///         }
+    ///  }
+    /// ```
+    public func onRequestedDismissal(_ action: @escaping (() -> Void)) -> some View {
+        self.environment(\.onRequestedDismissal, action)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

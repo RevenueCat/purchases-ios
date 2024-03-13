@@ -125,7 +125,8 @@ public struct PaywallView: View {
                                      purchaseHandler: self.purchaseHandler)
                     .transition(Self.transition)
                 } else {
-                    LoadingPaywallView(mode: self.mode, displayCloseButton: self.displayCloseButton)
+                    LoadingPaywallView(mode: self.mode,
+                                       displayCloseButton: self.displayCloseButton)
                         .transition(Self.transition)
                         .task {
                             do {
@@ -268,6 +269,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.locale)
     private var locale
 
+    @Environment(\.onRequestedDismissal)
+    private var onRequestedDismissal: (() -> Void)?
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -331,9 +335,15 @@ struct LoadedOfferingPaywallView: View {
             .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.purchased) { purchased in
-                if self.mode.isFullScreen, purchased {
-                    Logger.debug(Strings.dismissing_paywall)
-                    self.dismiss()
+                if purchased {
+                    guard let onRequestedDismissal = self.onRequestedDismissal else {
+                        if self.mode.isFullScreen {
+                            Logger.debug(Strings.dismissing_paywall)
+                            self.dismiss()
+                        }
+                        return
+                    }
+                    onRequestedDismissal()
                 }
             }
 
@@ -362,7 +372,11 @@ struct LoadedOfferingPaywallView: View {
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
-                self.dismiss()
+                guard let onRequestedDismissal = self.onRequestedDismissal else {
+                    self.dismiss()
+                    return
+                }
+                onRequestedDismissal()
             } label: {
                 Image(systemName: "xmark")
             }
