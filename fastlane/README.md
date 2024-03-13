@@ -234,6 +234,14 @@ Release to CocoaPods
 
 Tag current branch with current version number
 
+### ios trigger_bump
+
+```sh
+[bundle exec] fastlane ios trigger_bump
+```
+
+Trigger bump
+
 ### ios generate_snapshots_RC
 
 ```sh
