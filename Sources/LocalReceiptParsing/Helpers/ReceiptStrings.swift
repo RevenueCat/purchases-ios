@@ -16,7 +16,7 @@ import Foundation
 // swiftlint:disable identifier_name
 enum ReceiptStrings {
 
-    case data_object_identifer_not_found_receipt
+    case data_object_identifier_not_found_receipt
     case force_refreshing_receipt
     case throttling_force_refreshing_receipt
     case loaded_receipt(url: URL)
@@ -48,7 +48,7 @@ extension ReceiptStrings: LogMessage {
     var description: String {
         switch self {
 
-        case .data_object_identifer_not_found_receipt:
+        case .data_object_identifier_not_found_receipt:
             return "The data object identifier couldn't be found on the receipt."
 
         case .force_refreshing_receipt:
@@ -62,7 +62,7 @@ extension ReceiptStrings: LogMessage {
 
         case .no_sandbox_receipt_intro_eligibility:
             return "App running on sandbox without a receipt file. " +
-            "Unable to determine into eligibility unless you've purchased " +
+            "Unable to determine intro eligibility unless you've purchased " +
             "before and there is a receipt available."
 
         case .no_sandbox_receipt_restore:
