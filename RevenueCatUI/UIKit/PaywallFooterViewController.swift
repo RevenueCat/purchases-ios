@@ -57,7 +57,7 @@ public final class PaywallFooterViewController: PaywallViewController {
     /// - Parameter fontName: a custom font name for this paywall. See ``CustomPaywallFontProvider``.
     @objc
     public init(
-        offeringIdentifier: String, 
+        offeringIdentifier: String,
         fontName: String,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
