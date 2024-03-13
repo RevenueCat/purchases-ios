@@ -1,4 +1,7 @@
+### New Features
+* PaywallViewController: option to not automatically dismiss and add `onRequestedDismissal`  (#3738) via Cesar de la Vega (@vegaro)
 ### Bugfixes
-* Fix for passing `TargetingContext` when using `currentOffering(forPlacement:)` (#3751) via Josh Holtz (@joshdholtz)
+* [EXTERNAL] Fix Typos in ReceiptStrings.swift (#3756) via @nickkohrn (#3760) via Cesar de la Vega (@vegaro)
 ### Other Changes
-* Remove unneeded tests for StoreKit2 with JWS (#3747) via Josh Holtz (@joshdholtz)
+* Pin xcbeautify version for xcode 14 tests (#3759) via Cesar de la Vega (@vegaro)
+* PaywallsTester: fix compilation (#3753) via Andy Boedo (@aboedo)
