@@ -1,8 +1,9 @@
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 9c82c7ab8dab77383245907fd6e5184a61398cae
+  revision: d23de33ecf1c7b59d3bde5766c78a579999352bd
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
+      rest-client
 
 GEM
   remote: https://rubygems.org/

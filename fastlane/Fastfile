@@ -129,7 +129,7 @@ platform :ios do
     # For platforms that fail to run StoreKit tests.
     # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
     skip_sk_tests = options[:skip_sk_tests]
-    
+
     if generate_snapshots
       if skip_sk_tests
         test_plan = "CI-RevenueCat-Snapshots"
@@ -391,12 +391,12 @@ platform :ios do
   lane :push_revenuecat_pod do |options|
     pod_push(path: "RevenueCat.podspec", synchronous: true)
   end
-  
+
   desc "Release to CocoaPods"
   lane :push_revenuecatui_pod do |options|
     pod_push(path: "RevenueCatUI.podspec", synchronous: true)
   end
-  
+
   desc "Tag current branch with current version number"
   lane :tag_current_branch do |options|
     version_number = current_version_number
@@ -404,6 +404,11 @@ platform :ios do
 
     add_git_tag(tag: version_number)
     push_git_tags(tag: version_number)
+  end
+
+  desc "Trigger bump"
+  lane :trigger_bump do
+    trigger_action_in_circle_ci(action: 'bump', repo_name: repo_name)
   end
 
   desc "Checks whether the RevenueCat-Swift.h is up to date"
@@ -429,14 +434,14 @@ platform :ios do
   end
 
   desc "Trigger CircleCI job to generate snapshots for RevenueCat"
-  lane :generate_snapshots_RC do 
+  lane :generate_snapshots_RC do
     generate_snapshots(
       pipeline: "generate_snapshots"
     )
   end
 
   desc "Trigger CircleCI job to generate snapshots for RevenueCatUI"
-  lane :generate_snapshots_RCUI do 
+  lane :generate_snapshots_RCUI do
     generate_snapshots(
       pipeline: "generate_revenuecatui_snapshots"
     )
@@ -497,7 +502,7 @@ platform :ios do
      push_snapshot_pr(
       version: options[:version],
       repo: "revenuecat/#{snapshots_repo_name}",
-      base_branch: "main", 
+      base_branch: "main",
       files_to_add: "."
      )
     }
@@ -506,20 +511,20 @@ platform :ios do
   private_lane :push_snapshot_pr do |options|
     version = options[:version]
     base_branch = options[:base_branch]
-    build_number = ENV["CIRCLE_BUILD_NUM"] 
+    build_number = ENV["CIRCLE_BUILD_NUM"]
 
     branch_name = "generated_snapshots/#{base_branch}-#{build_number}-#{version}"
 
     sh("git", "checkout", "-b", branch_name)
     sh("git", "add", options[:files_to_add])
-    
+
     file_count = sh("git diff --cached --numstat | wc -l").strip.to_i
 
     if file_count == 0
       UI.important("No files to be committed")
     else
       sh("git", "commit", "-m", "[skip ci] Generating new test snapshots")
-      sh("git", "push", "origin", branch_name) 
+      sh("git", "push", "origin", branch_name)
 
       circle_user = ENV["CIRCLE_USERNAME"]
       branch_link = "https://github.com/RevenueCat/purchases-ios/tree/#{base_branch}"
@@ -584,7 +589,7 @@ platform :ios do
       enable_bitcode: false,
       include_debug_symbols: true
     )
-    
+
     # sh runs from the Fastfile's location, but other commands run from the project root.
     output_directory_for_sh = "../#{output_directory}"
 
@@ -630,7 +635,7 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios"
     )
   end
-  
+
 
   desc "Update swift package commit"
   lane :update_swift_package_commit do
@@ -675,7 +680,7 @@ platform :ios do
     )
 
     sh(
-      "codesign", 
+      "codesign",
       "--timestamp",
       "-v",
       "--sign", "Apple Distribution: RevenueCat, Inc. (8SXR2327BM)",
@@ -727,7 +732,7 @@ platform :ios do
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
-    
+
     UI.user_error!("Missing environment variable: DOCS_REPO_BASE_URL") unless docs_repo_base_url
     UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
 
@@ -758,7 +763,7 @@ platform :ios do
            "--transform-for-static-hosting",
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
-           
+
         docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
         docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/v4_api_migration_guide.html")
         # clone docs repo
@@ -799,7 +804,7 @@ platform :ios do
         build_number: latest_testflight_build_number(platform: 'ios') + 1,
         xcodeproj: 'PurchaseTester.xcodeproj'
       )
-  
+
       match(readonly: true)
       build_ios_app(
         workspace: "PurchaseTester.xcworkspace",
@@ -817,7 +822,7 @@ platform :ios do
         build_number: latest_testflight_build_number(platform: 'osx') + 1,
         xcodeproj: 'PurchaseTester.xcodeproj'
       )
-  
+
       match(readonly: true, platform: "macos", additional_cert_types: "mac_installer_distribution")
       build_mac_app(
         workspace: "PurchaseTester.xcworkspace",
@@ -1007,10 +1012,10 @@ lane :check_pods do
   # Fix-me: add `visionOS` when we start building with Xcode 15.1
   pod_lib_lint(
     verbose: true,
-    podspec: 'RevenueCat.podspec', 
+    podspec: 'RevenueCat.podspec',
     platforms: 'ios,osx,tvos,watchos',
     fail_fast: true
-  ) 
+  )
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
@@ -1047,4 +1052,4 @@ end
 def update_snapshots_commit(hash)
   File.write(snapshots_commit_file, hash)
 end
- 
+
