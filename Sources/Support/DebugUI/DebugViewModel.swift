@@ -135,7 +135,6 @@ enum LoadingState<Value, Error: Swift.Error> {
 
 extension LoadingState where Error == NSError {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func create(_ loader: @Sendable () async throws -> Value) async -> Self {
         do {
             return .loaded(try await loader())
@@ -153,7 +152,7 @@ private extension DebugViewModel.Configuration {
         return .init(
             observerMode: purchases.observerMode,
             sandbox: purchases.isSandbox,
-            storeKit2Enabled: purchases.storeKit2Setting.isEnabledAndAvailable,
+            storeKit2Enabled: purchases.isStoreKit2EnabledAndAvailable,
             locale: .autoupdatingCurrent,
             offlineCustomerInfoSupport: purchases.offlineCustomerInfoEnabled,
             verificationMode: purchases.responseVerificationMode.display,

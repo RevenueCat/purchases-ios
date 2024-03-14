@@ -57,21 +57,13 @@ extension ISO8601DateFormatter {
 private extension ISO8601DateFormatter {
 
     static let withMilliseconds: DateFormatterType = {
-        if #available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *) {
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [
-                .withInternetDateTime,
-                .withFractionalSeconds
-            ]
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
 
-            return formatter
-        } else {
-            // See https://github.com/RevenueCat/purchases-ios/pull/2037
-            // `.withFractionalSeconds` makes iOS 11 crash.
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-            return dateFormatter
-        }
+        return formatter
     }()
 
     static let noMilliseconds: DateFormatterType = {

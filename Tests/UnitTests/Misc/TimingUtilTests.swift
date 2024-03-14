@@ -16,15 +16,12 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class TimingUtilAsyncTests: TestCase {
 
     private var clock: TestClock!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.clock = TestClock()
     }

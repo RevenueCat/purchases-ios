@@ -55,14 +55,12 @@ internal struct SK1StoreProduct: StoreProductType {
 
     var localizedTitle: String { underlyingSK1Product.localizedTitle }
 
-    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     var subscriptionGroupIdentifier: String? { underlyingSK1Product.subscriptionGroupIdentifier }
 
     var priceFormatter: NumberFormatter? {
         return self.priceFormatterProvider.priceFormatterForSK1(with: self.underlyingSK1Product.priceLocale)
     }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var subscriptionPeriod: SubscriptionPeriod? {
         guard let skSubscriptionPeriod = underlyingSK1Product.subscriptionPeriod,
                 skSubscriptionPeriod.numberOfUnits > 0 else {
@@ -71,13 +69,11 @@ internal struct SK1StoreProduct: StoreProductType {
         return SubscriptionPeriod.from(sk1SubscriptionPeriod: skSubscriptionPeriod)
     }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     var introductoryDiscount: StoreProductDiscount? {
         return self.underlyingSK1Product.introductoryPrice
             .flatMap(StoreProductDiscount.init)
     }
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     var discounts: [StoreProductDiscount] {
         return self.underlyingSK1Product.discounts
             .compactMap(StoreProductDiscount.init)

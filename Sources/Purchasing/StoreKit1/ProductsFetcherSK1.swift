@@ -65,7 +65,6 @@ final class ProductsFetcherSK1: NSObject {
         )
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK1StoreProduct> {
         return try await Async.call { completion in
             self.products(withIdentifiers: identifiers, completion: completion)

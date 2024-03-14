@@ -28,7 +28,7 @@ struct ConsistentPackageContentView<Content: View>: View {
     init(
         packages: [TemplateViewConfiguration.Package],
         selected: TemplateViewConfiguration.Package,
-        creator: @escaping Creator
+        @ViewBuilder creator: @escaping Creator
     ) {
         self.packages = packages
         self.selected = selected

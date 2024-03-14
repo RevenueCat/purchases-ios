@@ -35,7 +35,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         self.systemInfo = SystemInfo(platformInfo: Purchases.platformInfo,
                                      finishTransactions: true,
                                      operationDispatcher: operationDispatcher,
-                                     storeKit2Setting: .disabled)
+                                     storeKitVersion: .storeKit1)
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
         self.parser = .default
     }

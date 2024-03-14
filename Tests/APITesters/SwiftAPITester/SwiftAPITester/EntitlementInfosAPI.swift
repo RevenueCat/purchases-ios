@@ -21,10 +21,7 @@ func checkEntitlementInfosAPI() {
     let activeInAnyEnvironment: [String: EntitlementInfo] = eis.activeInAnyEnvironment
     let activeInCurrentEnvironment: [String: EntitlementInfo] = eis.activeInCurrentEnvironment
     let enti: EntitlementInfo? = eis[""]
-
-    if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-        let _: VerificationResult = eis.verification
-    }
+    let _: VerificationResult = eis.verification
 
     print(eis!, all, active, activeInAnyEnvironment, activeInCurrentEnvironment, enti!)
 }

@@ -186,10 +186,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
     // MARK: - StaticString appUserID
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testLogInWithStringDoesNotLogMessage() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let appUserID = "user ID"
 
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
@@ -200,11 +197,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
                                               allowNoMessages: true)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-    @available(*, deprecated)
     func testLogInWithStaticStringLogsMessage() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         _ = try await self.purchases.logIn("Static string")

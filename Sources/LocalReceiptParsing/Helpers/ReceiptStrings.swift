@@ -36,7 +36,6 @@ enum ReceiptStrings {
         purchase: Date,
         expiration: Date?
     )
-    case receipt_retrying_mechanism_not_available
     case local_receipt_missing_purchase(AppleReceipt, forProductIdentifier: String)
     case retrying_receipt_fetch_after(sleepDuration: TimeInterval)
     case error_validating_bundle_signature
@@ -107,9 +106,6 @@ extension ReceiptStrings: LogMessage {
         ):
             return "Receipt for product '\(productIdentifier)' has the same purchase (\(purchase)) " +
             "and expiration (\(expiration?.description ?? "")) dates. This is likely a StoreKit bug."
-
-        case .receipt_retrying_mechanism_not_available:
-            return "Receipt retrying mechanism is not available in iOS 12. Will only attempt to fetch once."
 
         case let .local_receipt_missing_purchase(receipt, productIdentifier):
             return "Local receipt is still missing purchase for '\(productIdentifier)': \n" +

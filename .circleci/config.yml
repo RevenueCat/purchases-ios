@@ -701,35 +701,6 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
-  run-test-ios-12:
-    <<: *base-job
-    # M1 unsupported
-    resource_class: macos.x86.medium.gen2
-    steps:
-      - checkout
-      - install-dependencies
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 12.4
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 6 (12.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-12"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
   build-tv-watch-and-macos:
     <<: *base-job
     steps:
@@ -784,8 +755,6 @@ jobs:
 
   release-checks:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
@@ -826,8 +795,6 @@ jobs:
 
   make-release:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
@@ -1121,8 +1088,6 @@ workflows:
           xcode_version: '14.2.0'
       - run-test-ios-13:
           xcode_version: '14.2.0'
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
       - run-test-macos:
           xcode_version: '15.2'
 
@@ -1183,11 +1148,8 @@ workflows:
       - run-test-ios-13:
           xcode_version: '14.2.0'
           <<: *release-branches-and-main
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
-          <<: *release-branches-and-main
       - build-tv-watch-and-macos:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
       - build-visionos:
           xcode_version: '15.2'
       - backend-integration-tests-SK1:
@@ -1225,25 +1187,25 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-cocoapods:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-swift-package-manager:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-custom-entitlement-computation-swift-package-manager:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-receipt-parser:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-carthage:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - installation-tests-xcode-direct-integration:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-branches
       - hold:
           type: approval
@@ -1261,7 +1223,7 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.3.0'
+          xcode_version: '15.2'
           <<: *release-tags
       - push-revenuecat-pod:
           xcode_version: '15.2'

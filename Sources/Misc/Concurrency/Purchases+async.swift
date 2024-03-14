@@ -14,7 +14,6 @@
 import Foundation
 
 /// This extension holds the biolerplate logic to convert methods with completion blocks into async / await syntax.
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION

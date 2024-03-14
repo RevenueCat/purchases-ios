@@ -22,6 +22,9 @@ internal enum PaywallTemplate: String {
     case template4 = "4"
     case template5 = "5"
 
+    // Fix-me: change when template 7 is fully ready.
+    case template7 = "7_disabled"
+
 }
 
 extension PaywallTemplate: Equatable {}

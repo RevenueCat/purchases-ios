@@ -76,7 +76,6 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThreadCount = 0
     var invokedDispatchAsyncOnWorkerThreadDelayParam: Delay?
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     override func dispatchOnWorkerThread(
         delay: Delay = .none,
         block: @escaping @Sendable () async -> Void

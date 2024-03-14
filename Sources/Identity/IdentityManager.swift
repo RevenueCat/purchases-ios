@@ -190,8 +190,7 @@ private extension IdentityManager {
     }
 
     private func shouldInvalidateCaches(for appUserID: String) -> Bool {
-        guard #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
-              self.backend.signatureVerificationEnabled,
+        guard self.backend.signatureVerificationEnabled,
               let info = self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID) else {
             return false
         }

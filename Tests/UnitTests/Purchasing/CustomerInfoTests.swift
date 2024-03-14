@@ -899,14 +899,6 @@ class BasicCustomerInfoTests: TestCase {
         expect(updatedCustomerInfo.entitlements["expired_pro"]?.isActive) == true
     }
 
-    func testIsNeverComputedOfflinePriorToIOS13() throws {
-        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-            throw XCTSkip("Test only for iOS 12.")
-        }
-
-        expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == false
-    }
-
     func testIsNotComputedOfflineIfVerificationNotRequested() {
         expect(self.customerInfo.copy(with: .notRequested).isComputedOffline) == false
     }
@@ -920,10 +912,6 @@ class BasicCustomerInfoTests: TestCase {
     }
 
     func testIsComputedOffline() throws {
-        // `CustomerInfo.entitlements.verification` isn't available in iOS 12,
-        // but offline CustomerInfo isn't supported anyway.
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         expect(self.customerInfo.copy(with: .verifiedOnDevice).isComputedOffline) == true
     }
 
@@ -936,12 +924,10 @@ class BasicCustomerInfoTests: TestCase {
         let copy = customerInfo.copy(with: newVerification)
         expect(customerInfo) != copy
 
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            expect(copy.entitlements.verification) == newVerification
+        expect(copy.entitlements.verification) == newVerification
 
-            let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
-            expect(copyWithOriginalVerification) == customerInfo
-        }
+        let copyWithOriginalVerification = copy.copy(with: customerInfo.entitlements.verification)
+        expect(copyWithOriginalVerification) == customerInfo
     }
 
     private func verifyCopy(

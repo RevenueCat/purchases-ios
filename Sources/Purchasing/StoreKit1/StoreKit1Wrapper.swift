@@ -42,10 +42,6 @@ class StoreKit1Wrapper: NSObject {
     static var simulatesAskToBuyInSandbox = false
 
     var currentStorefront: Storefront? {
-        guard #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) else {
-            return nil
-        }
-
         return self.paymentQueue.storefront
             .map(SK1Storefront.init)
             .map(Storefront.from(storefront:))
@@ -103,14 +99,11 @@ class StoreKit1Wrapper: NSObject {
 
     func payment(with product: SK1Product) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
+        payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
 
-        if #available(iOS 8.0, macOS 10.14, watchOS 6.2, macCatalyst 13.0, *) {
-            payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
-        }
         return payment
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func payment(with product: SK1Product, discount: SKPaymentDiscount?) -> SKMutablePayment {
         let payment = self.payment(with: product)
         payment.paymentDiscount = discount

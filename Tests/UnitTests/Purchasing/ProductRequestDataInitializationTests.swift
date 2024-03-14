@@ -151,42 +151,30 @@ class ProductRequestDataSK1ProductInitializationTests: TestCase {
     }
 
     func testExtractInfoFromProductExtractsSubscriptionGroup() {
-        if #available(iOS 12.0, macCatalyst 13.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *) {
-            let group = "mock_group"
-            product.mockSubscriptionGroupIdentifier = group
+        let group = "mock_group"
+        product.mockSubscriptionGroupIdentifier = group
 
-            let receivedProductData = self.extract()
+        let receivedProductData = self.extract()
 
-            expect(receivedProductData.subscriptionGroup) == group
-        } else {
-            let receivedProductData = self.extract()
-
-            expect(receivedProductData.subscriptionGroup).to(beNil())
-        }
+        expect(receivedProductData.subscriptionGroup) == group
     }
 
     func testExtractInfoFromProductExtractsDiscounts() {
-        if #available(iOS 12.2, tvOS 12.2, macOS 10.13.2, *) {
-            let mockDiscount = MockSKProductDiscount()
-            let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
-            mockDiscount.mockPaymentMode = paymentMode
-            let price: Decimal = 10.99
-            mockDiscount.mockPrice = price
-            let discountID = "cool_discount"
-            mockDiscount.mockIdentifier = discountID
+        let mockDiscount = MockSKProductDiscount()
+        let paymentMode: SKProductDiscount.PaymentMode = .freeTrial
+        mockDiscount.mockPaymentMode = paymentMode
+        let price: Decimal = 10.99
+        mockDiscount.mockPrice = price
+        let discountID = "cool_discount"
+        mockDiscount.mockIdentifier = discountID
 
-            product.mockDiscount = mockDiscount
-            let receivedProductData = self.extract()
+        product.mockDiscount = mockDiscount
+        let receivedProductData = self.extract()
 
-            expect(receivedProductData.discounts?.count) == 1
-            let receivedPromotionalOffer = receivedProductData.discounts?[0]
-            expect(receivedPromotionalOffer?.offerIdentifier) == discountID
-            expect(receivedPromotionalOffer?.price) == price
-            expect(receivedPromotionalOffer?.paymentMode.rawValue) == Int(paymentMode.rawValue)
-        } else {
-            let receivedProductData = self.extract()
-
-            expect(receivedProductData.discounts).to(beNil())
-        }
+        expect(receivedProductData.discounts?.count) == 1
+        let receivedPromotionalOffer = receivedProductData.discounts?[0]
+        expect(receivedPromotionalOffer?.offerIdentifier) == discountID
+        expect(receivedPromotionalOffer?.price) == price
+        expect(receivedPromotionalOffer?.paymentMode.rawValue) == Int(paymentMode.rawValue)
     }
 }

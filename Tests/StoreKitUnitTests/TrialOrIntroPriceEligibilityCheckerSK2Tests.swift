@@ -32,7 +32,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         mockSystemInfo = MockSystemInfo(platformInfo: platformInfo,
                                         finishTransactions: true,
-                                        storeKit2Setting: .enabledForCompatibleDevices)
+                                        storeKitVersion: .storeKit2)
 
         receiptFetcher = MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: mockSystemInfo)
         mockProductsManager = MockProductsManager(

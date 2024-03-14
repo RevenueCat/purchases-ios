@@ -42,10 +42,18 @@ class BaseBackendTests: TestCase {
     }
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
+        // Need to force StoreKit 1 because we use iOS 13 snapshots
+        // for watchOS tests which contain StoreKit 1 headers
+        #if os(watchOS)
+        let storeKitVersion = StoreKitVersion.storeKit1
+        #else
+        let storeKitVersion = StoreKitVersion.default
+        #endif
         self.systemInfo =  SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
+            storeKitVersion: storeKitVersion,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings
         )
@@ -107,11 +115,7 @@ extension BaseBackendTests {
     }
 
     private var responseVerificationMode: Signing.ResponseVerificationMode {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return Signing.verificationMode(with: self.verificationMode)
-        } else {
-            return .disabled
-        }
+        return Signing.verificationMode(with: self.verificationMode)
     }
 
 }

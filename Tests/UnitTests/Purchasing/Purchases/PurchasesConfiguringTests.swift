@@ -188,10 +188,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         self.logger.verifyMessageWasNotLogged(Strings.identity.logging_in_with_static_string)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeDisabledDoesNotSetPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .disabled)
@@ -199,10 +196,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.publicKey).to(beNil())
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeInformationalSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .informational)
@@ -212,10 +206,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // Can't compile this test while `Configuration.EntitlementVerificationMode.enforced` is unavailable.
     /*
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeEnforcedSetsPublicKey() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let purchases = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(entitlementVerificationMode: .enforced)
@@ -356,21 +347,19 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.storeKit1Wrapper.delegate) === self.purchasesOrchestrator
     }
 
-    @available(*, deprecated) // Ignore deprecation warnings
     func testSetsSelfAsStoreKit1WrapperDelegateForSK1() {
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
-            .with(usesStoreKit2IfAvailable: false)
+            .with(storeKitVersion: .storeKit1)
         let purchases = Purchases.configure(with: configurationBuilder.build())
 
         expect(purchases.isStoreKit1Configured) == true
     }
 
-    @available(*, deprecated) // Ignore deprecation warnings
     func testDoesNotInitializeSK1IfSK2Enabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
-            .with(usesStoreKit2IfAvailable: true)
+            .with(storeKitVersion: .storeKit2)
         let purchases = Purchases.configure(with: configurationBuilder.build())
 
         expect(purchases.isStoreKit1Configured) == false
@@ -378,7 +367,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     func testSetsPaymentQueueWrapperDelegateToPurchasesOrchestratorIfSK1IsEnabled() {
         self.systemInfo = MockSystemInfo(finishTransactions: false,
-                                         storeKit2Setting: .disabled)
+                                         storeKitVersion: .storeKit1)
 
         self.setupPurchases()
 
@@ -389,7 +378,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.systemInfo = MockSystemInfo(finishTransactions: false,
-                                         storeKit2Setting: .enabledForCompatibleDevices)
+                                         storeKitVersion: .storeKit2)
 
         self.setupPurchases()
 
@@ -525,7 +514,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     private static func create(observerMode: Bool) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
-                .with(observerMode: observerMode)
+                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
         )
     }
 

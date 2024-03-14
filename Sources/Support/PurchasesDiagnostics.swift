@@ -26,7 +26,6 @@ import Foundation
 /// }
 /// ```
 @objc(RCPurchasesDiagnostics)
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public final class PurchasesDiagnostics: NSObject {
 
     typealias SDK = PurchasesType & InternalPurchasesType
@@ -43,7 +42,6 @@ public final class PurchasesDiagnostics: NSObject {
     public static let `default`: PurchasesDiagnostics = .init(purchases: Purchases.shared)
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesDiagnostics {
 
     /// An error that represents a failing step in ``PurchasesDiagnostics``
@@ -70,7 +68,6 @@ extension PurchasesDiagnostics {
 
 // MARK: - Implementation
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesDiagnostics {
 
     /// Perform tests to ensure SDK is configured correctly.
@@ -96,7 +93,6 @@ extension PurchasesDiagnostics {
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension PurchasesDiagnostics {
 
     /// Makes a request to the backend, to verify connectivity, firewalls, or anything blocking network traffic.
@@ -159,7 +155,6 @@ private extension PurchasesDiagnostics {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesDiagnostics.Error: CustomNSError {
 
     // swiftlint:disable:next missing_docs

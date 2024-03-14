@@ -27,7 +27,7 @@ extension StoreView {
     /// the result automatically. All you need to do is to dismiss the paywall.
     ///
     /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
-    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
+    /// in SK2 mode using ``Configuration/Builder/with(storeKitVersion:)``.
     public static func forOffering(
         _ offering: Offering,
         prefersPromotionalIcon: Bool = false,
@@ -54,7 +54,7 @@ extension StoreView where Icon == EmptyView, PlaceholderIcon == EmptyView {
     /// the result automatically. All you need to do is to dismiss the paywall.
     ///
     /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
-    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
+    /// in SK2 mode using ``Configuration/Builder/with(storeKitVersion:)``.
     public static func forOffering(
         _ offering: Offering,
         prefersPromotionalIcon: Bool = false
@@ -79,7 +79,7 @@ extension SubscriptionStoreView {
     /// the result automatically. All you need to do is to dismiss the paywall.
     ///
     /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
-    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
+    /// in SK2 mode using ``Configuration/Builder/with(storeKitVersion:)``.
     public static func forOffering(
         _ offering: Offering,
         @ViewBuilder marketingContent: () -> (Content)
@@ -101,7 +101,7 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
     /// that doesn't take a custom view to use for marketing content.
     ///
     /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
-    /// in SK2 mode using ``Configuration/Builder/with(usesStoreKit2IfAvailable:)``.
+    /// in SK2 mode using ``Configuration/Builder/with(storeKitVersion:)``.
     public static func forOffering(_ offering: Offering) -> some View {
         return self
             .init(productIDs: offering.subscriptionProductIdentifiers)
@@ -120,7 +120,7 @@ private extension View {
             .onInAppPurchaseStart { product in
                 guard Purchases.isConfigured else { return }
 
-                if !Purchases.shared.storeKit2Setting.isEnabledAndAvailable {
+                if !Purchases.shared.isStoreKit2EnabledAndAvailable {
                     Logger.appleWarning(Strings.configure.sk2_required_for_swiftui_paywalls)
                 }
 
@@ -162,12 +162,10 @@ private extension Offering {
             .map(\.product.productIdentifier)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var allProductIdentifiers: [String] {
         return self.products.map(\.productIdentifier)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private var products: some Sequence<StoreProduct> {
         return self.availablePackages.lazy.map(\.storeProduct)
     }

@@ -26,7 +26,6 @@ class IntroEligibilityCalculator {
         self.receiptParser = receiptParser
     }
 
-    @available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
     func checkEligibility(with receiptData: Data,
                           productIdentifiers candidateProductIdentifiers: Set<String>,
                           completion: @escaping ([String: IntroEligibilityStatus], Error?) -> Void) {
@@ -87,7 +86,6 @@ extension IntroEligibilityCalculator: @unchecked Sendable {}
 
 // MARK: - Private
 
-@available(iOS 12.0, macOS 10.14, macCatalyst 13.0, tvOS 12.0, watchOS 6.2, *)
 private extension IntroEligibilityCalculator {
 
     func checkEligibility(

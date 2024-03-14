@@ -37,6 +37,8 @@ enum StoreKitStrings {
 
     case sk2_purchasing_added_promotional_offer_option(String)
 
+    case sk2_purchasing_added_uuid_option(UUID)
+
     case sk2_unknown_product_type(String)
 
     case sk1_no_known_product_type
@@ -121,6 +123,9 @@ extension StoreKitStrings: LogMessage {
 
         case let .sk2_purchasing_added_promotional_offer_option(discountIdentifier):
             return "Adding Product.PurchaseOption for discount '\(discountIdentifier)'"
+
+        case let .sk2_purchasing_added_uuid_option(uuid):
+            return "Adding Product.PurchaseOption for .appAccountToken '\(uuid)'"
 
         case let .sk2_unknown_product_type(type):
             return "Product.ProductType '\(type)' unknown, the product type will be undefined."

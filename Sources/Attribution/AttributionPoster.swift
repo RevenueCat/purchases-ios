@@ -138,7 +138,6 @@ final class AttributionPoster {
         }
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     var adServicesTokenToPostIfNeeded: String? {
         get async {
             #if os(tvOS) || os(watchOS)

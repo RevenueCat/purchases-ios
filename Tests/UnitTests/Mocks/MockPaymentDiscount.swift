@@ -9,7 +9,6 @@
 import Foundation
 import StoreKit
 
-@available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
 class MockPaymentDiscount: SKPaymentDiscount {
 
     var mockIdentifier: String

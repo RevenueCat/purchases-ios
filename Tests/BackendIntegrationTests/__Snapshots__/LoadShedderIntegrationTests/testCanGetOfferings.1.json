@@ -18,6 +18,9 @@
         "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
           "blurred_background_image" : false,
+          "color_overrides_by_tier" : {
+
+          },
           "colors" : {
             "dark" : {
               "background" : "#000000",
@@ -33,6 +36,9 @@
             }
           },
           "display_restore_purchases" : true,
+          "image_overrides_by_tier" : {
+
+          },
           "images" : {
             "background" : null,
             "header" : "903907_1693958145.jpg",
@@ -42,6 +48,9 @@
             "$rc_monthly"
           ],
           "privacy_url" : "https://revenuecat.com/privacy",
+          "tiers" : [
+
+          ],
           "tos_url" : "https://revenuecat.com/tos"
         },
         "localized_strings" : {
@@ -55,8 +64,12 @@
             "offer_details_with_intro_offer" : "Try {{ sub_offer_duration }} for free, then {{ total_price_and_per_month }}",
             "offer_name" : null,
             "subtitle" : "Get access to all content",
+            "tier_name" : null,
             "title" : "Ignite your child's curiosity"
           }
+        },
+        "localized_strings_by_tier" : {
+
         },
         "revision" : 1,
         "template_name" : "1"

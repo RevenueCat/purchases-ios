@@ -61,7 +61,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-            self.systemInfo.storeKit2Setting.usesStoreKit2IfAvailable {
+           self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             Async.call(with: completion) {
                 do {
                     return try await self.sk2CheckEligibility(productIdentifiers)
@@ -83,8 +83,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         // We don't want to refresh receipts because it will likely prompt the user for their credentials,
         // and intro eligibility is triggered programmatically.
         self.receiptFetcher.receiptData(refreshPolicy: .never) { data, _ in
-            if #available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *),
-               let data = data {
+            if let data = data {
                 self.sk1CheckEligibility(with: data,
                                          productIdentifiers: productIdentifiers,
                                          completion: completion)
@@ -142,7 +141,6 @@ extension TrialOrIntroPriceEligibilityCheckerType {
 
 private extension TrialOrIntroPriceEligibilityChecker {
 
-    @available(iOS 12.0, macOS 10.14, tvOS 12.0, watchOS 6.2, *)
     func sk1CheckEligibility(with receiptData: Data,
                              productIdentifiers: Set<String>,
                              completion: @escaping ReceiveIntroEligibilityBlock) {

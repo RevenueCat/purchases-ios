@@ -47,6 +47,21 @@ struct PurchaseButton: View {
     init(
         packages: TemplateViewConfiguration.PackageConfiguration,
         selectedPackage: TemplateViewConfiguration.Package,
+        configuration: TemplateViewConfiguration,
+        selectedTier: PaywallData.Tier
+    ) {
+        self.init(
+            packages: packages,
+            selectedPackage: selectedPackage,
+            colors: configuration.colors(for: selectedTier),
+            fonts: configuration.fonts,
+            mode: configuration.mode
+        )
+    }
+
+    init(
+        packages: TemplateViewConfiguration.PackageConfiguration,
+        selectedPackage: TemplateViewConfiguration.Package,
         colors: PaywallData.Configuration.Colors,
         fonts: PaywallFontProvider,
         mode: PaywallViewMode

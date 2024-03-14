@@ -60,21 +60,6 @@ extension TemplateViewType {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallTemplate {
-
-    var packageSetting: TemplateViewConfiguration.PackageSetting {
-        switch self {
-        case .template1: return .single
-        case .template2: return .multiple
-        case .template3: return .single
-        case .template4: return .multiple
-        case .template5: return .multiple
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 extension PaywallData {
@@ -123,10 +108,13 @@ extension PaywallData {
                                       filter: self.config.packages,
                                       default: self.config.defaultPackage,
                                       localization: self.localizedConfiguration,
+                                      localizationByTier: self.localizedConfigurationByTier,
+                                      tiers: self.config.tiers,
                                       setting: template.packageSetting,
                                       locale: locale),
                 configuration: self.config,
                 colors: self.config.colors.multiScheme,
+                colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
                 assetBaseURL: self.assetBaseURL
             )
@@ -150,6 +138,8 @@ extension PaywallData {
             Template4View(configuration)
         case .template5:
             Template5View(configuration)
+        case .template7:
+            Template7View(configuration)
         }
         #endif
     }

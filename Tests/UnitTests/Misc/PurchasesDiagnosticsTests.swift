@@ -16,7 +16,6 @@ import XCTest
 
 @testable import RevenueCat
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class PurchasesDiagnosticsTests: TestCase {
 
     private var purchases: MockPurchases!
@@ -24,8 +23,6 @@ class PurchasesDiagnosticsTests: TestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
 
         self.purchases = .init()
         self.diagnostics = .init(purchases: self.purchases)

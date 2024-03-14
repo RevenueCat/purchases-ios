@@ -135,7 +135,7 @@ final class PurchasesOrchestrator {
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
 
         storeKit2StorefrontListener.delegate = self
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             storeKit2StorefrontListener.listenForStorefrontChanges()
         }
 
@@ -153,7 +153,7 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
-            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+            if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
                 await storeKit2TransactionListener.listenForTransactions()
             }
         }
@@ -247,7 +247,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func promotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
                           product: StoreProductType,
                           completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
@@ -261,7 +260,7 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
             #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.sk2PromotionalOffer(forProductDiscount: productDiscount,
                                      discountIdentifier: discountIdentifier,
@@ -308,7 +307,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData,
@@ -336,7 +334,6 @@ final class PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func purchase(sk1Product: SK1Product,
                   promotionalOffer: PromotionalOffer.SignedData,
                   package: Package?,
@@ -465,6 +462,13 @@ final class PurchasesOrchestrator {
                 .simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)
             ]
 
+            if let uuid = UUID(uuidString: self.appUserID) {
+                Logger.debug(
+                    Strings.storeKit.sk2_purchasing_added_uuid_option(uuid)
+                )
+                options.insert(.appAccountToken(uuid))
+            }
+
             if let signedData = promotionalOffer {
                 Logger.debug(
                     Strings.storeKit.sk2_purchasing_added_promotional_offer_option(signedData.identifier)
@@ -496,7 +500,7 @@ final class PurchasesOrchestrator {
         // `userCancelled` above comes from `StoreKitError.userCancelled`.
         // This detects if `Product.PurchaseResult.userCancelled` is true.
         let (userCancelled, transaction) = try await self.storeKit2TransactionListener
-            .handle(purchaseResult: result)
+            .handle(purchaseResult: result, fromTransactionUpdate: false)
 
         if userCancelled, self.systemInfo.dangerousSettings.customEntitlementComputation {
             throw ErrorUtils.purchaseCancelledError()
@@ -745,8 +749,7 @@ extension PurchasesOrchestrator: PaymentQueueWrapperDelegate {
 
             let startPurchase: StartPurchaseBlock
 
-            if #available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *),
-               let discount = payment.paymentDiscount.map(PromotionalOffer.SignedData.init) {
+            if let discount = payment.paymentDiscount.map(PromotionalOffer.SignedData.init) {
                 startPurchase = { completion in
                     self.purchase(product: product,
                                   package: nil,
@@ -1003,7 +1006,7 @@ private extension PurchasesOrchestrator {
             Logger.warn(Strings.purchase.restorepurchases_called_with_allow_sharing_appstore_account_false)
         }
 
-        if self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self.syncPurchasesSK2(isRestore: isRestore,
                                   initiationSource: initiationSource,
@@ -1092,7 +1095,7 @@ private extension PurchasesOrchestrator {
 
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
-                let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
+                let transaction = await self.transactionFetcher.firstVerifiedTransaction
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
                     self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
                                                           fetchPolicy: .cachedOrFetched) { result in
@@ -1420,7 +1423,6 @@ private extension PurchasesOrchestrator {
 
 // MARK: - Async extensions
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension PurchasesOrchestrator {
 
     private func handlePurchasedTransaction(

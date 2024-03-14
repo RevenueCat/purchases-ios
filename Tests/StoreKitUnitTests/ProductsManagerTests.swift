@@ -20,7 +20,7 @@ import XCTest
 class ProductsManagerTests: StoreKitConfigTestCase {
 
     func testFetchProductsWithIdentifiersSK1() throws {
-        let manager = self.createManager(storeKit2Setting: .disabled)
+        let manager = self.createManager(storeKitVersion: .storeKit1)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
@@ -40,7 +40,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
             throw XCTSkip("Required API is not available for this test.")
         }
 
-        let manager = self.createManager(storeKit2Setting: .enabledForCompatibleDevices)
+        let manager = self.createManager(storeKitVersion: .storeKit2)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
@@ -56,7 +56,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testClearCacheAfterStorefrontChangesSK1() async throws {
-        let manager = self.createManager(storeKit2Setting: .disabled)
+        let manager = self.createManager(storeKitVersion: .storeKit1)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -86,7 +86,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK2() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let manager = self.createManager(storeKit2Setting: .enabledForCompatibleDevices)
+        let manager = self.createManager(storeKitVersion: .storeKit2)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -112,13 +112,13 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         expect(unwrappedFirstProduct.currencyCode) == "EUR"
     }
 
-    private func createManager(storeKit2Setting: StoreKit2Setting) -> ProductsManager {
+    private func createManager(storeKitVersion: StoreKitVersion) -> ProductsManager {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         return ProductsManager(
             systemInfo: MockSystemInfo(
                 platformInfo: platformInfo,
                 finishTransactions: true,
-                storeKit2Setting: storeKit2Setting
+                storeKitVersion: storeKitVersion
             ),
             requestTimeout: Self.requestTimeout
         )

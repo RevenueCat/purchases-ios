@@ -21,7 +21,6 @@ final class MockPurchasedProductsFetcher: PurchasedProductsFetcherType {
     var invokedFetchCount = 0
     var stubbedResult: Result<[PurchasedSK2Product], Error> = .failure(ErrorCode.invalidAppUserIdError)
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         self.invokedFetch = true
         self.invokedFetchCount += 1

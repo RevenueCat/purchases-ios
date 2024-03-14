@@ -78,7 +78,7 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           self.systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+           self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
                 completion(result.map { Set($0.map(StoreProduct.from(product:))) })
             }
@@ -133,7 +133,6 @@ private extension ProductsManager {
 extension ProductsManagerType {
 
     /// `async` overload for `products(withIdentifiers:)`
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.2, macOS 10.15, *)
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await Async.call { completion in
             self.products(withIdentifiers: identifiers, completion: completion)

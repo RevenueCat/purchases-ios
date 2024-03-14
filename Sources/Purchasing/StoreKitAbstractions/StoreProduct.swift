@@ -81,18 +81,14 @@ public typealias SK2Product = StoreKit.Product
     @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
     @objc public var isFamilyShareable: Bool { self.product.isFamilyShareable }
 
-    @available(iOS 12.0, macCatalyst 13.0, tvOS 12.0, macOS 10.14, watchOS 6.2, *)
     @objc public var subscriptionGroupIdentifier: String? { self.product.subscriptionGroupIdentifier}
 
     @objc public var priceFormatter: NumberFormatter? { self.product.priceFormatter }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var subscriptionPeriod: SubscriptionPeriod? { self.product.subscriptionPeriod }
 
-    @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc public var introductoryDiscount: StoreProductDiscount? { self.product.introductoryDiscount }
 
-    @available(iOS 12.2, macOS 10.14.4, tvOS 12.2, watchOS 6.2, *)
     @objc public var discounts: [StoreProductDiscount] { self.product.discounts }
 
     // switflint:enable missing_docs
@@ -272,7 +268,6 @@ public extension StoreProduct {
 }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 public extension StoreProduct {
     /// Finds the subset of ``discounts`` that's eligible for the current user.
     /// - Note: if checking for eligibility for a `StoreProductDiscount` fails (for example, if network is down),

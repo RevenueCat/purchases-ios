@@ -20,9 +20,18 @@ enum Constants {
     static let fastAnimation: Animation = .easeInOut(duration: 0.1)
     static let toggleAllPlansAnimation: Animation = .spring(response: 0.35, dampingFraction: 0.7)
 
+    #if swift(>=5.9)
+    // This was added in Xcode 15
+    static let tierChangeAnimation: Animation = .snappy(duration: 0.3)
+    #else
+    static let tierChangeAnimation: Animation = .easeInOut(duration: 0.3)
+    #endif
+
     static let defaultCornerRadius: CGFloat = 20
     static let defaultPackageCornerRadius: CGFloat = 16
     static let defaultPackageBorderWidth: CGFloat = 2
+
+    static let defaultPackageVerticalSpacing: CGFloat = 16
 
     static let purchaseInProgressButtonOpacity: CGFloat = 0.4
 

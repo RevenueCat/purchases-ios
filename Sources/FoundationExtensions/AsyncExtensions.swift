@@ -13,7 +13,6 @@
 
 import Foundation
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 internal enum Async {
 
     /// Invokes an `async throws` method and calls `completion` with the result.
@@ -127,7 +126,6 @@ internal enum Async {
     ///     }
     /// }
     /// ```
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     static func retry<T>(
         maximumRetries: Int = 5,
         pollInterval: DispatchTimeInterval = .milliseconds(300),
@@ -152,7 +150,6 @@ internal enum Async {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 internal extension AsyncSequence {
 
     /// Returns the elements of the asynchronous sequence.
@@ -164,7 +161,6 @@ internal extension AsyncSequence {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 internal extension AsyncSequence {
 
     func toAsyncStream() -> AsyncStream<Element> {

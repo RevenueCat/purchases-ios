@@ -21,7 +21,6 @@ internal enum TimingUtil {
 
 // MARK: - async API
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TimingUtil {
 
     /// Measures the time to execute `work` and returns the result and the duration.

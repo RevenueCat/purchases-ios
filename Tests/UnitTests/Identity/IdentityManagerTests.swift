@@ -109,8 +109,6 @@ class IdentityManagerTests: TestCase {
     }
 
     func testConfigureInvalidesCacheIfVerificationIsEnabledButCachedUserIsNotVerified() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         self.mockCustomerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo.copy(with: .notRequested)
         self.mockBackend.stubbedSignatureVerificationEnabled = true
         self.create(appUserID: "nacho")

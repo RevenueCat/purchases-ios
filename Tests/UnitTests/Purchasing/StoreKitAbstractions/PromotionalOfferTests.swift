@@ -18,10 +18,7 @@ import XCTest
 
 class PromotionalOfferTests: TestCase {
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testConversionFromAndToSKPaymentDiscount() throws {
-        try AvailabilityChecks.iOS12_2APIAvailableOrSkipTest()
-
         let signedData: PromotionalOffer.SignedData = Self.randomOffer
         let reencoded: PromotionalOffer.SignedData = .init(sk1PaymentDiscount: signedData.sk1PromotionalOffer)
 

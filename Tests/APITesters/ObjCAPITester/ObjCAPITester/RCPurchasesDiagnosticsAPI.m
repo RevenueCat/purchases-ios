@@ -12,10 +12,8 @@
 @implementation RCPurchasesDiagnosticsAPI
 
 + (void)checkAPI {
-    if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {
-        RCPurchasesDiagnostics *diagnostics = [RCPurchasesDiagnostics default];
-        [diagnostics testSDKHealthWithCompletion:^(NSError * _Nullable error) {}];
-    }
+    RCPurchasesDiagnostics *diagnostics = [RCPurchasesDiagnostics default];
+    [diagnostics testSDKHealthWithCompletion:^(NSError * _Nullable error) {}];
 }
 
 @end

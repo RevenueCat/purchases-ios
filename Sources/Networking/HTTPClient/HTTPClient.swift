@@ -105,7 +105,8 @@ class HTTPClient {
             "X-Client-Version": SystemInfo.appVersion,
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
-            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
+            "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
+            "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]
@@ -541,8 +542,7 @@ extension HTTPRequest {
 
         if result.nonce == nil,
            result.path.needsNonceForSigning,
-           verificationMode.isEnabled,
-           #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+           verificationMode.isEnabled {
             result.addRandomNonce()
         }
 
@@ -565,8 +565,7 @@ extension HTTPRequest {
             result += HTTPClient.nonceHeader(with: nonce)
         }
 
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *),
-           verificationMode.isEnabled,
+        if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
                 with: defaultHeaders,
@@ -590,7 +589,6 @@ extension HTTPRequest {
     }
 
     /// Add a nonce to the request
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     private mutating func addRandomNonce() {
         self.nonce = Data.randomNonce()
     }

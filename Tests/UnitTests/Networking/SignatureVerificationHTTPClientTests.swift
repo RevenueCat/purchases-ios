@@ -20,15 +20,12 @@ import XCTest
 
 // swiftlint:disable type_name
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager> {
 
     private var userDefaultsSuiteName: String!
     fileprivate var userDefaults: UserDefaults!
 
     override func setUpWithError() throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         // Note: these tests use the real `ETagManager`
         self.userDefaultsSuiteName = UUID().uuidString
         self.userDefaults = .init(suiteName: self.userDefaultsSuiteName)!
@@ -54,7 +51,6 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager>
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
     func testAutomaticallyAddsNonceIfRequired() {
@@ -310,7 +306,6 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
     override func setUpWithError() throws {
@@ -725,7 +720,6 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPClientTests {
 
     override func setUpWithError() throws {
@@ -840,7 +834,6 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 private extension BaseSignatureVerificationHTTPClientTests {
 
     final func changeClient(

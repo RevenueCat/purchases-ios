@@ -54,6 +54,7 @@
         "StoreKit2JWSIntegrationTests",
         "StoreKit2JWSObserverModeIntegrationTests",
         "StoreKit2JWSObserverModeWithExistingPurchasesTests",
+        "StoreKit2NotEnabledObserverModeIntegrationTests",
         "StoreKit2ObserverModeIntegrationTests",
         "StoreKit2ObserverModeWithExistingPurchasesTests",
         "TestCase"
