@@ -287,7 +287,7 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
 
     func testDisablingSignatureVerificationDoesNotResetCustomerInfoCache() async throws {
         // 1. Start with enforced mode
-        await self.changeMode(to: Signing.enforcedVerificationMode())
+        await self.changeMode(to: .enforced)
 
         // 2. Fetch CustomerInfo
         _ = try await self.purchases.customerInfo()
@@ -304,7 +304,7 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
         _ = try await self.purchases.customerInfo()
 
         // 2. Enable signature verification
-        await self.changeMode(to: Signing.verificationMode(with: .informational))
+        await self.changeMode(to: .informational)
 
         // 3. Verify CustomerInfo is not cached anymore
         await self.verifyNoCachedCustomerInfo()
@@ -315,14 +315,14 @@ class DynamicModeSignatureVerificationIntegrationTests: BaseSignatureVerificatio
         _ = try await self.purchases.customerInfo()
 
         // 2. Enable signature verification
-        await self.changeMode(to: Signing.enforcedVerificationMode())
+        await self.changeMode(to: .enforced)
 
         // 3. Verify CustomerInfo is not cached anymore
         await self.verifyNoCachedCustomerInfo()
     }
 
-    private func changeMode(to newMode: Signing.ResponseVerificationMode) async {
-        Self.currentMode = newMode
+    private func changeMode(to newMode: Configuration.EntitlementVerificationMode) async {
+        Self.currentMode = Signing.verificationMode(with: newMode)
         await self.resetSingleton()
     }
 

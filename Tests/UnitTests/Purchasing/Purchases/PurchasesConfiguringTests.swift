@@ -210,8 +210,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(purchases.publicKey).toNot(beNil())
     }
 
-    // Can't compile this test while `Configuration.EntitlementVerificationMode.enforced` is unavailable.
-    /*
     @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testEntitlementVerificationModeEnforcedSetsPublicKey() throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
@@ -222,7 +220,6 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         )
         expect(purchases.publicKey).toNot(beNil())
     }
-    */
 
     func testFirstInitializationCallDelegate() {
         self.setupPurchases()
