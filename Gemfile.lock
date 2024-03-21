@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: d23de33ecf1c7b59d3bde5766c78a579999352bd
+  revision: 8d4d9b171b3d960556b00e21b334c53af9a64751
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       rest-client
@@ -112,7 +112,7 @@ GEM
     declarative (0.0.20)
     digest-crc (0.6.5)
       rake (>= 12.0.0, < 14.0.0)
-    domain_name (0.6.20231109)
+    domain_name (0.6.20240107)
     dotenv (2.8.1)
     drb (2.2.0)
       ruby2_keywords
@@ -252,9 +252,9 @@ GEM
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
-    mime-types (3.4.1)
+    mime-types (3.5.2)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2023.0218.1)
+    mime-types-data (3.2024.0305)
     mini_magick (4.12.0)
     mini_mime (1.1.5)
     minitest (5.22.1)
