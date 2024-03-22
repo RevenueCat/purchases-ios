@@ -40,6 +40,9 @@ import Foundation
     /// For entitlements granted via the Amazon Store.
     @objc(RCAmazon) case amazon = 6
 
+    /// For entitlements granted via RC Billing
+    @objc(RCRCBilling) case rcBilling = 7
+
 }
 
 extension Store: CaseIterable {}
