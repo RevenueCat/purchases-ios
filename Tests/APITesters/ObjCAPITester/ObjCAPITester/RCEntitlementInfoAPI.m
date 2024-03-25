@@ -48,7 +48,7 @@
         case RCStripe:
         case RCPromotional:
         case RCAmazon:
-        case RCRCBilling:
+        case RCBilling:
         case RCUnknownStore:
             NSLog(@"%ld", (long)rs);
             break;

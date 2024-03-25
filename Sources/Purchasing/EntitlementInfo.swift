@@ -41,7 +41,7 @@ import Foundation
     @objc(RCAmazon) case amazon = 6
 
     /// For entitlements granted via RC Billing
-    @objc(RCRCBilling) case rcBilling = 7
+    @objc(RCBilling) case rcBilling = 7
 
 }
 
