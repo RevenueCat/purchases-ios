@@ -1,7 +1,5 @@
-### RevenueCatUI
-* Add `PaywallView.onRequestedDismissal` modifier and option to pass `dismissRequestedHandler` to `PaywallViewController` (#3738) via Cesar de la Vega (@vegaro)
-### Bugfixes
-* [EXTERNAL] Fix Typos in ReceiptStrings.swift (#3756) via @nickkohrn (#3760) via Cesar de la Vega (@vegaro)
+### Dependency Updates
+* Bump fastlane-plugin-revenuecat_internal from `d23de33` to `8d4d9b1` (#3769) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* Pin xcbeautify version for xcode 14 tests (#3759) via Cesar de la Vega (@vegaro)
-* PaywallsTester: fix compilation (#3753) via Andy Boedo (@aboedo)
+* Add `RC_BILLING` store (#3773) via Toni Rico (@tonidero)
+* Add lane to trigger bumps (#3766) via Cesar de la Vega (@vegaro)
