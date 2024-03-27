@@ -1,3 +1,7 @@
+## 4.40.0
+### New Features
+* [EXTERNAL] Cocoapods support for privacy manifest (#3772) via @sdurban (#3775) via Andy Boedo (@aboedo)
+
 ## 4.39.1
 ### Dependency Updates
 * Bump fastlane-plugin-revenuecat_internal from `d23de33` to `8d4d9b1` (#3769) via dependabot[bot] (@dependabot[bot])
