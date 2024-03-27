@@ -842,6 +842,7 @@ public extension Purchases {
 private extension Purchases {
 
     func resetUserIfPurchaseHistoryIsEmptyIfNeeded() {
+        guard self.isAnonymous else { return }
         guard self.systemInfo.dangerousSettings.disallowSharingAppStoreAccountsForAnonymousIDs,
         self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS else { return }
 
