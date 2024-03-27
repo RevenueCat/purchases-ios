@@ -42,6 +42,8 @@ enum IdentityStrings {
 
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
 
+    case app_store_logout_detected_anonymous_id_not_sharing
+
 }
 
 extension IdentityStrings: LogMessage {
@@ -80,6 +82,12 @@ extension IdentityStrings: LogMessage {
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."
+
+        case .app_store_logout_detected_anonymous_id_not_sharing:
+            return "The current user doesn't have transactions in their App Store Account, " +
+            "but their corresponding CustomerInfo does. \n " +
+            "The user will be reset under assumption that they've logged out of their App Store Account " +
+            "\n becuase of the disallowSharingAppStoreAccountsForAnonymousIDs dangerousSetting"
         }
     }
 

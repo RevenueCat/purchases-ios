@@ -418,6 +418,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeMessagesHelper = nil
         #endif
 
+
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
@@ -618,6 +619,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
             guard let self = self else { return }
             self.handleCustomerInfoChanged(from: old, to: new)
+        }
+
+        if systemInfo.dangerousSettings.disallowSharingAppStoreAccountsForAnonymousIDs {
+            self.resetUserIfPurchaseHistoryIsEmptyIfNeeded()
         }
     }
 
@@ -823,6 +828,48 @@ public extension Purchases {
         self.syncSubscriberAttributes(completion: {
             self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
         })
+    }
+
+}
+
+/**
+ * Clears all cache for the SDK if the user's purchase history is empty.
+ * It can be useful if you do not have your own accounts sytem and rely solely on RevenueCat's anonymous IDs,
+ * and you want to ensure that if a user logs out of their App Store account, they can no longer access their purchases
+ * unless they log back in or restore purchases.
+ */
+private extension Purchases {
+
+    func resetUserIfPurchaseHistoryIsEmptyIfNeeded() {
+        guard self.systemInfo.dangerousSettings.disallowSharingAppStoreAccountsForAnonymousIDs,
+        self.systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS else { return }
+
+        guard #available(iOS 15.0, tvOS 15.0, macOS 13.0, watchOS 9.0, *) else { return }
+
+        _ = Task<Void, Never> {
+
+            let hasTransactions = await self.customerInfoManager.transactionFetcher.firstVerifiedTransaction != nil
+            guard !hasTransactions else { return }
+
+            // if there are no transactions in StoreKit, but the user has transactions in RevenueCat,
+            // we assume that they've logged out of the account, and we logOut correspondingly.
+            guard let cachedCustomerInfo = customerInfoManager
+                .cachedCustomerInfo(appUserID: identityManager.currentAppUserID) else {
+                return
+            }
+
+            guard !cachedCustomerInfo.allPurchasedProductIdentifiers.isEmpty else {
+                return
+            }
+
+            Logger.warn(Strings.identity.app_store_logout_detected_anonymous_id_not_sharing)
+
+            self.identityManager.logOut { error in
+                if let error = error {
+                    Logger.error(error.localizedDescription)
+                }
+            }
+        }
     }
 
 }
@@ -1708,6 +1755,8 @@ private extension Purchases {
         self.postPaywallEventsIfNeeded()
 
         #endif
+
+        self.resetUserIfPurchaseHistoryIsEmptyIfNeeded()
     }
 
     @objc func applicationDidEnterBackground() {
