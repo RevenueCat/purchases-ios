@@ -32,6 +32,7 @@ import Foundation
     private let currentUserProvider: CurrentUserProvider
     private let attributionPoster: AttributionPoster
     private let systemInfo: SystemInfo
+    private let customAttributesManager: CustomAttributesManager
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
 
@@ -40,11 +41,13 @@ import Foundation
     init(subscriberAttributesManager: SubscriberAttributesManager,
          currentUserProvider: CurrentUserProvider,
          attributionPoster: AttributionPoster,
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         customAttributesManager: CustomAttributesManager) {
         self.subscriberAttributesManager = subscriberAttributesManager
         self.currentUserProvider = currentUserProvider
         self.attributionPoster = attributionPoster
         self.systemInfo = systemInfo
+        self.customAttributesManager = customAttributesManager
 
         super.init()
 
@@ -80,6 +83,16 @@ public extension Attribution {
         return !self.systemInfo.dangerousSettings.customEntitlementComputation
     }
 
+}
+
+internal extension Attribution {
+    func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
+        self.customAttributesManager.syncAttributesAndOfferingsIfNeeded(
+            appUserID: currentUserProvider.currentAppUserID,
+            attribution: self,
+            subscriberAttributionsManager: self.subscriberAttributesManager,
+            completion: completion)
+    }
 }
 
 #if !CUSTOM_ENTITLEMENTS_COMPUTATION
@@ -387,6 +400,19 @@ public extension Attribution {
 extension Attribution: @unchecked Sendable {}
 
 extension Attribution: SubscriberAttributesManagerDelegate {
+
+    func subscriberAttributesManager(
+        _ manager: SubscriberAttributesManager,
+        didSetAttribute key: String,
+        withValue value: String?,
+        forUserID userID: String
+    ) {
+        self.customAttributesManager.syncCustomAttributesAndOfferingsIfNeeded(
+            appUserID: appUserID,
+            attribution: self,
+            subscriberAttributionsManager: self.subscriberAttributesManager
+        )
+    }
 
     func subscriberAttributesManager(
         _ manager: SubscriberAttributesManager,

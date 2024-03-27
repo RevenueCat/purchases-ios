@@ -39,17 +39,24 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?,
+                                                    isAppBackgrounded: Bool,
+                                                    fetchReason: String?,
+                                                    completion: OfferingsAPI.OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?,
+                                                          isAppBackgrounded: Bool,
+                                                          fetchReason: String?,
+                                                          completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<OfferingsResponse, BackendError>?
 
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,
+                               fetchReason: String?,
                                completion: @escaping OfferingsResponseHandler) {
         self.invokedGetOfferingsForAppUserID = true
         self.invokedGetOfferingsForAppUserIDCount += 1
-        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, completion)
-        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, completion))
+        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, fetchReason, completion)
+        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, fetchReason, completion))
 
         completion(self.stubbedGetOfferingsCompletionResult!)
     }

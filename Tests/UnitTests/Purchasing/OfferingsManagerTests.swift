@@ -394,14 +394,15 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.cacheOfferingsCount) == 0
     }
 
-    func testOfferingsForAppUserIdForcesNetworkRequestWhenFetchCurrentIsTrue() throws {
+    func testOfferingsForAppUserIdForcesNetworkRequestWhenFetchBehaviorIsFetchCurrent() throws {
         // given
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsResponse)
         self.mockDeviceCache.stubbedOfferings = MockData.sampleOfferings
 
         // when
         let result = waitUntilValue { completed in
-            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID, fetchCurrent: true) {
+            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID,
+                                            fetchBehavior: .fetchCurrent(reason: .manualSyncCustomAttributes)) {
                 completed($0)
             }
         }

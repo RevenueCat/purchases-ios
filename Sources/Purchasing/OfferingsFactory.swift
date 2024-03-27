@@ -29,10 +29,11 @@ class OfferingsFactory {
             return nil
         }
 
+        // TOOD: Add custom attribute logichere
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
-                         targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
+                         targeting: createTargeting(with: data.targeting),
                          response: data)
     }
 
@@ -79,6 +80,28 @@ class OfferingsFactory {
 
         return .init(fallbackOfferingId: data.fallbackOfferingId,
                      offeringIdsByPlacement: data.offeringIdsByPlacement)
+    }
+
+    func createTargeting(
+        with targeting: OfferingsResponse.Targeting?
+    ) -> Offerings.Targeting? {
+        guard let targeting else {
+            return nil
+        }
+
+        return .init(revision: targeting.revision,
+                     ruleId: targeting.ruleId,
+                     customAttributes: createCustomAttributes(with: targeting.customAttributes))
+    }
+
+    func createCustomAttributes(
+        with customAttributes: OfferingsResponse.Targeting.CustomAttributes?
+    ) -> Offerings.Targeting.CustomAttributes? {
+        guard let customAttributes else {
+            return nil
+        }
+
+        return .init(salt: customAttributes.salt, keys: customAttributes.keys)
     }
 }
 

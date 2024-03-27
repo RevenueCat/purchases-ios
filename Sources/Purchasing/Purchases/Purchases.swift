@@ -236,6 +236,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let backend: Backend
+    private let customAttributesManager: CustomAttributesManager
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
     private let identityManager: IdentityManager
@@ -256,8 +257,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
-
-    private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
 
     // swiftlint:disable:next function_body_length
     convenience init(apiKey: String,
@@ -382,6 +381,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallEventsManager = nil
         }
 
+        let offeringsManager = OfferingsManager(deviceCache: deviceCache,
+                                                operationDispatcher: operationDispatcher,
+                                                systemInfo: systemInfo,
+                                                backend: backend,
+                                                offeringsFactory: offeringsFactory,
+                                                productsManager: productsManager)
+        let customAttributesManager = CustomAttributesManager(offeringsManager: offeringsManager)
+
         let attributionPoster = AttributionPoster(deviceCache: deviceCache,
                                                   currentUserProvider: identityManager,
                                                   backend: backend,
@@ -390,14 +397,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let subscriberAttributes = Attribution(subscriberAttributesManager: subscriberAttributesManager,
                                                currentUserProvider: identityManager,
                                                attributionPoster: attributionPoster,
-                                               systemInfo: systemInfo)
+                                               systemInfo: systemInfo,
+                                               customAttributesManager: customAttributesManager)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
-        let offeringsManager = OfferingsManager(deviceCache: deviceCache,
-                                                operationDispatcher: operationDispatcher,
-                                                systemInfo: systemInfo,
-                                                backend: backend,
-                                                offeringsFactory: offeringsFactory,
-                                                productsManager: productsManager)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -490,6 +492,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   attributionFetcher: attributionFetcher,
                   attributionPoster: attributionPoster,
                   backend: backend,
+                  customAttributesManager: customAttributesManager,
                   paymentQueueWrapper: paymentQueueWrapper,
                   userDefaults: userDefaults,
                   notificationCenter: .default,
@@ -519,6 +522,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          attributionFetcher: AttributionFetcher,
          attributionPoster: AttributionPoster,
          backend: Backend,
+         customAttributesManager: CustomAttributesManager,
          paymentQueueWrapper: EitherPaymentQueueWrapper,
          userDefaults: UserDefaults,
          notificationCenter: NotificationCenter,
@@ -568,6 +572,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.attributionFetcher = attributionFetcher
         self.attributionPoster = attributionPoster
         self.backend = backend
+        self.customAttributesManager = customAttributesManager
         self.paymentQueueWrapper = paymentQueueWrapper
         self.offeringsFactory = offeringsFactory
         self.deviceCache = deviceCache
@@ -698,12 +703,12 @@ public extension Purchases {
 
     internal func getOfferings(
         fetchPolicy: OfferingsManager.FetchPolicy,
-        fetchCurrent: Bool = false,
+        fetchBehavior: OfferingsManager.FetchBehavior = .cachedOrFetched,
         completion: @escaping (Offerings?, PublicError?) -> Void
     ) {
         self.offeringsManager.offerings(appUserID: self.appUserID,
                                         fetchPolicy: fetchPolicy,
-                                        fetchCurrent: fetchCurrent) { @Sendable result in
+                                        fetchBehavior: fetchBehavior) { @Sendable result in
             completion(result.value, result.error?.asPublicError)
         }
     }
@@ -809,20 +814,7 @@ public extension Purchases {
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
-        guard syncAttributesAndOfferingsIfNeededRateLimiter.shouldProceed() else {
-            Logger.warn(
-                Strings.identity.sync_attributes_and_offerings_rate_limit_reached(
-                    maxCalls: syncAttributesAndOfferingsIfNeededRateLimiter.maxCalls,
-                    period: Int(syncAttributesAndOfferingsIfNeededRateLimiter.period)
-                )
-            )
-            self.getOfferings(fetchPolicy: .default, completion: completion)
-            return
-        }
-
-        self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
-        })
+        self.attribution.syncAttributesAndOfferingsIfNeeded(completion: completion)
     }
 
 }
@@ -1377,11 +1369,11 @@ public extension Purchases {
     @objc(configureInCustomEntitlementsModeWithApiKey:appUserID:)
     @discardableResult static func configureInCustomEntitlementsComputationMode(apiKey: String,
                                                                                 appUserID: String) -> Purchases {
-        Self.configure(
-            with: .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
-                .build())
+Self.configure(
+    with: .builder(withAPIKey: apiKey)
+        .with(appUserID: appUserID)
+        .with(dangerousSettings: DangerousSettings(customEntitlementComputation: true))
+        .build())
     }
 
     #endif
@@ -1806,7 +1798,8 @@ private extension Purchases {
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
         self.offeringsManager.updateOfferingsCache(
             appUserID: self.appUserID,
-            isAppBackgrounded: isAppBackgrounded
+            isAppBackgrounded: isAppBackgrounded,
+            fetchReason: nil
         ) { [cache = self.paywallCache] offerings in
             if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *),
                let cache = cache, let offerings = offerings.value {

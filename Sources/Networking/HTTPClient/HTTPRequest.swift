@@ -22,22 +22,24 @@ struct HTTPRequest {
     var path: HTTPRequestPath
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?
+    var additionalHeaders: Headers
 
-    init(method: Method, path: HTTPRequest.Path, nonce: Data? = nil) {
-        self.init(method: method, requestPath: path, nonce: nonce)
+    init(method: Method, path: HTTPRequest.Path, nonce: Data? = nil, additionalHeaders: Headers = [:]) {
+        self.init(method: method, requestPath: path, nonce: nonce, additionalHeaders: additionalHeaders)
     }
 
-    init(method: Method, path: HTTPRequest.PaywallPath, nonce: Data? = nil) {
-        self.init(method: method, requestPath: path, nonce: nonce)
+    init(method: Method, path: HTTPRequest.PaywallPath, nonce: Data? = nil, additionalHeaders: Headers = [:]) {
+        self.init(method: method, requestPath: path, nonce: nonce, additionalHeaders: additionalHeaders)
     }
 
-    private init(method: Method, requestPath: HTTPRequestPath, nonce: Data? = nil) {
+    private init(method: Method, requestPath: HTTPRequestPath, nonce: Data? = nil, additionalHeaders: Headers = [:]) {
         assert(nonce == nil || nonce?.count == Data.nonceLength,
                "Invalid nonce: \(nonce?.description ?? "")")
 
         self.method = method
         self.path = requestPath
         self.nonce = nonce
+        self.additionalHeaders = additionalHeaders
     }
 
 }

@@ -16,6 +16,12 @@
 		2C10F19427AC319A0078444D /* EntitlementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19327AC319A0078444D /* EntitlementsView.swift */; };
 		2C10F19727AC31B80078444D /* CustomerInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19627AC31B80078444D /* CustomerInfoView.swift */; };
 		2C10F19A27AC32840078444D /* SubscriberAttributesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C10F19927AC32840078444D /* SubscriberAttributesView.swift */; };
+		2C84C13F2B9A47F7002BF4EF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C13E2B9A47F7002BF4EF /* RevenueCat */; };
+		2C84C1412B9A47FB002BF4EF /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C1402B9A47FB002BF4EF /* ReceiptParser */; };
+		2C84C1432B9A4800002BF4EF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C1422B9A4800002BF4EF /* RevenueCat */; };
+		2C84C1452B9A4805002BF4EF /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C1442B9A4805002BF4EF /* ReceiptParser */; };
+		2C84C1472B9A480B002BF4EF /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C1462B9A480B002BF4EF /* RevenueCat */; };
+		2C84C1492B9A480E002BF4EF /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 2C84C1482B9A480E002BF4EF /* ReceiptParser */; };
 		2CD2C516278C9B02005D1CC2 /* PurchaseTesterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EE278C9B01005D1CC2 /* PurchaseTesterApp.swift */; };
 		2CD2C518278C9B02005D1CC2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD2C4EF278C9B01005D1CC2 /* ContentView.swift */; };
 		2CD2C51A278C9B02005D1CC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2CD2C4F0278C9B02005D1CC2 /* Assets.xcassets */; };
@@ -32,11 +38,6 @@
 		575642A4290C7A2700719219 /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A3290C7A2700719219 /* LoggerView.swift */; };
 		575642A6290C7D3100719219 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 575642A5290C7D3100719219 /* Windows.swift */; };
 		5759B472296F9B3B002472D5 /* LocalReceiptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5759B471296F9B3B002472D5 /* LocalReceiptView.swift */; };
-		5759B47529707153002472D5 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47429707153002472D5 /* ReceiptParser */; };
-		5759B47729707153002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47629707153002472D5 /* RevenueCat */; };
-		5759B479297071AE002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B478297071AE002472D5 /* RevenueCat */; };
-		5759B47D297077B1002472D5 /* ReceiptParser in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47C297077B1002472D5 /* ReceiptParser */; };
-		5759B47F297077B1002472D5 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 5759B47E297077B1002472D5 /* RevenueCat */; };
 		578DAA0C2947DD21001700FD /* PurchaseTesterWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0B2947DD21001700FD /* PurchaseTesterWatchApp.swift */; };
 		578DAA0E2947DD21001700FD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 578DAA0D2947DD21001700FD /* ContentView.swift */; };
 		578DAA102947DD21001700FD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 578DAA0F2947DD21001700FD /* Assets.xcassets */; };
@@ -129,6 +130,7 @@
 		2C10F19327AC319A0078444D /* EntitlementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementsView.swift; sourceTree = "<group>"; };
 		2C10F19627AC31B80078444D /* CustomerInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoView.swift; sourceTree = "<group>"; };
 		2C10F19927AC32840078444D /* SubscriberAttributesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesView.swift; sourceTree = "<group>"; };
+		2C84C13D2B9A47EC002BF4EF /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ../../..; sourceTree = "<group>"; };
 		2C8C610427C5206D00F86F21 /* RevenueCat_SwiftUIConfiguration.storekit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = RevenueCat_SwiftUIConfiguration.storekit; sourceTree = "<group>"; };
 		2C8C610D27CEBEF200F86F21 /* PurchaseTester-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PurchaseTester-Info.plist"; sourceTree = "<group>"; };
 		2CCAF2AB286232EB0004E2CA /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -173,9 +175,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B47529707153002472D5 /* ReceiptParser in Frameworks */,
+				2C84C1412B9A47FB002BF4EF /* ReceiptParser in Frameworks */,
+				2C84C13F2B9A47F7002BF4EF /* RevenueCat in Frameworks */,
 				578DAA262947DD8C001700FD /* Core.framework in Frameworks */,
-				5759B47729707153002472D5 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,9 +185,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B47D297077B1002472D5 /* ReceiptParser in Frameworks */,
+				2C84C1452B9A4805002BF4EF /* ReceiptParser in Frameworks */,
+				2C84C1432B9A4800002BF4EF /* RevenueCat in Frameworks */,
 				578DAA322947E256001700FD /* Core.framework in Frameworks */,
-				5759B47F297077B1002472D5 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -193,7 +195,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5759B479297071AE002472D5 /* RevenueCat in Frameworks */,
+				2C84C1492B9A480E002BF4EF /* ReceiptParser in Frameworks */,
+				2C84C1472B9A480B002BF4EF /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,6 +242,7 @@
 		2CD2C4E8278C9B01005D1CC2 = {
 			isa = PBXGroup;
 			children = (
+				2C84C13D2B9A47EC002BF4EF /* purchases-ios */,
 				4FDA13862A33DBE300C45CFE /* PrivacyInfo.xcprivacy */,
 				57FA0F7C2908503B00E9EA1B /* PurchaseTester.entitlements */,
 				2C8C610D27CEBEF200F86F21 /* PurchaseTester-Info.plist */,
@@ -373,8 +377,8 @@
 			);
 			name = PurchaseTester;
 			packageProductDependencies = (
-				5759B47429707153002472D5 /* ReceiptParser */,
-				5759B47629707153002472D5 /* RevenueCat */,
+				2C84C13E2B9A47F7002BF4EF /* RevenueCat */,
+				2C84C1402B9A47FB002BF4EF /* ReceiptParser */,
 			);
 			productName = "PurchaseTester (iOS)";
 			productReference = 2CD2C4F5278C9B02005D1CC2 /* PurchaseTester.app */;
@@ -396,8 +400,8 @@
 			);
 			name = PurchaseTesterWatchOS;
 			packageProductDependencies = (
-				5759B47C297077B1002472D5 /* ReceiptParser */,
-				5759B47E297077B1002472D5 /* RevenueCat */,
+				2C84C1422B9A4800002BF4EF /* RevenueCat */,
+				2C84C1442B9A4805002BF4EF /* ReceiptParser */,
 			);
 			productName = "PurchaseTesterWatchOS Watch App";
 			productReference = 578DAA092947DD21001700FD /* PurchaseTesterWatchOS.app */;
@@ -418,7 +422,8 @@
 			);
 			name = Core;
 			packageProductDependencies = (
-				5759B478297071AE002472D5 /* RevenueCat */,
+				2C84C1462B9A480B002BF4EF /* RevenueCat */,
+				2C84C1482B9A480E002BF4EF /* ReceiptParser */,
 			);
 			productName = Core;
 			productReference = 578DAA202947DD8C001700FD /* Core.framework */;
@@ -455,7 +460,6 @@
 			);
 			mainGroup = 2CD2C4E8278C9B01005D1CC2;
 			packageReferences = (
-				5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			productRefGroup = 2CD2C4F6278C9B02005D1CC2 /* Products */;
 			projectDirPath = "";
@@ -978,14 +982,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		577E0E3B29159A8B0071E063 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
@@ -997,30 +993,29 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5759B47429707153002472D5 /* ReceiptParser */ = {
+		2C84C13E2B9A47F7002BF4EF /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		2C84C1402B9A47FB002BF4EF /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
 			productName = ReceiptParser;
 		};
-		5759B47629707153002472D5 /* RevenueCat */ = {
+		2C84C1422B9A4800002BF4EF /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
 		};
-		5759B478297071AE002472D5 /* RevenueCat */ = {
+		2C84C1442B9A4805002BF4EF /* ReceiptParser */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCat;
-		};
-		5759B47C297077B1002472D5 /* ReceiptParser */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = ReceiptParser;
 		};
-		5759B47E297077B1002472D5 /* RevenueCat */ = {
+		2C84C1462B9A480B002BF4EF /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5759B47329707153002472D5 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
+		};
+		2C84C1482B9A480E002BF4EF /* ReceiptParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReceiptParser;
 		};
 		577E0E3E29159B340071E063 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;

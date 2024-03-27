@@ -42,6 +42,8 @@ enum IdentityStrings {
 
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
 
+    case sync_custom_attributes_rate_limit_reached(maxCalls: Int, period: Int)
+
 }
 
 extension IdentityStrings: LogMessage {
@@ -80,6 +82,9 @@ extension IdentityStrings: LogMessage {
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."
+        case let .sync_custom_attributes_rate_limit_reached(maxCalls, period):
+            return "Automatic sync of custom attributes rate limit reached:\(maxCalls) per \(period) seconds. " +
+            "Sync manually or on app backgrouned or foregrounded."
         }
     }
 

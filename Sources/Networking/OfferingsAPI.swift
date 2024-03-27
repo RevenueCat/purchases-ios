@@ -29,11 +29,13 @@ class OfferingsAPI {
 
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
+                      fetchReason: String?,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetOfferingsOperation.createFactory(
             configuration: config,
+            fetchReason: fetchReason,
             offeringsCallbackCache: self.offeringsCallbacksCache
         )
 

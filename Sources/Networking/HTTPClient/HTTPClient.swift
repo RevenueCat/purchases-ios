@@ -222,7 +222,7 @@ private extension HTTPClient {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
             self.headers = self.httpRequest.headers(
                 with: authHeaders,
-                defaultHeaders: defaultHeaders,
+                defaultHeaders: defaultHeaders + httpRequest.additionalHeaders,
                 verificationMode: verificationMode,
                 internalSettings: internalSettings
             )
