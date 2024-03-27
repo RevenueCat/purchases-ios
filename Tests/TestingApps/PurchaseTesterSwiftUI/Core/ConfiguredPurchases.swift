@@ -49,7 +49,9 @@ public final class ConfiguredPurchases {
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
                 #if DEBUG
-                .with(dangerousSettings: .init(autoSyncPurchases: true, internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: useStoreKit2)))
+                .with(dangerousSettings: .init(autoSyncPurchases: true,
+                                               internalSettings: DangerousSettings.Internal(usesStoreKit2JWS: useStoreKit2),
+                                               disallowSharingAppStoreAccountsForAnonymousIDs: true))
                 #endif
                 .build()
         )

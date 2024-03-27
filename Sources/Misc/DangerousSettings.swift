@@ -77,6 +77,8 @@ import Foundation
      */
     @objc public let customEntitlementComputation: Bool
 
+    public let disallowSharingAppStoreAccountsForAnonymousIDs: Bool
+
     internal let internalSettings: InternalDangerousSettingsType
 
     @objc public override convenience init() {
@@ -109,10 +111,12 @@ import Foundation
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
-                  internalSettings: InternalDangerousSettingsType) {
+                  internalSettings: InternalDangerousSettingsType,
+                  disallowSharingAppStoreAccountsForAnonymousIDs: Bool = false) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
+        self.disallowSharingAppStoreAccountsForAnonymousIDs = disallowSharingAppStoreAccountsForAnonymousIDs
     }
 
 }

@@ -23,7 +23,8 @@ class CustomerInfoManager {
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
     private let systemInfo: SystemInfo
-    private let transactionFetcher: StoreKit2TransactionFetcherType
+    // todo: move to Purchases class
+    let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
 
     /// Underlying synchronized data.
