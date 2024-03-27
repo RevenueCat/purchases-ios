@@ -158,8 +158,9 @@ private extension IdentityManager {
             return
         }
 
-        self.resetCacheAndSave(newUserID: Self.generateRandomID())
-        Logger.info(Strings.identity.log_out_success)
+        let newAppUserID = Self.generateRandomID()
+        self.resetCacheAndSave(newUserID: newAppUserID)
+        Logger.info(Strings.identity.log_out_success(newAppUserID: newAppUserID))
         completion(nil)
     }
 }

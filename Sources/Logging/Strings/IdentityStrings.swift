@@ -26,7 +26,7 @@ enum IdentityStrings {
 
     case log_out_called_for_user
 
-    case log_out_success
+    case log_out_success(newAppUserID: String)
 
     case identifying_app_user_id
 
@@ -64,8 +64,8 @@ extension IdentityStrings: LogMessage {
             return "Log in successful"
         case .log_out_called_for_user:
             return "Log out called for user"
-        case .log_out_success:
-            return "Log out successful"
+        case let .log_out_success(newAppUserID):
+            return "Log out successful, new appUserID: \(newAppUserID)"
         case .identifying_app_user_id:
             return "Identifying App User ID"
         case .null_currentappuserid:
