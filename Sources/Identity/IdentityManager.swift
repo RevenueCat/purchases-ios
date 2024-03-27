@@ -31,6 +31,7 @@ class IdentityManager: CurrentUserProvider {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
+    private let systemInfo: SystemInfo
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -39,12 +40,14 @@ class IdentityManager: CurrentUserProvider {
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
-        appUserID: String?
+        appUserID: String?,
+        systemInfo: SystemInfo
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
         self.attributeSyncing = attributeSyncing
+        self.systemInfo = systemInfo
 
         if appUserID?.isEmpty == true {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
@@ -149,7 +152,8 @@ private extension IdentityManager {
     func performLogOut(completion: (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
 
-        if self.currentUserIsAnonymous {
+        if self.currentUserIsAnonymous
+            && !systemInfo.dangerousSettings.disallowSharingAppStoreAccountsForAnonymousIDs {
             completion(ErrorUtils.logOutAnonymousUserError())
             return
         }

@@ -362,7 +362,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              appUserID: appUserID)
+                                              appUserID: appUserID,
+                                              systemInfo: systemInfo)
 
         let paywallEventsManager: PaywallEventsManagerType?
         do {
@@ -848,9 +849,6 @@ private extension Purchases {
 
         _ = Task<Void, Never> {
 
-            let hasTransactions = await self.customerInfoManager.transactionFetcher.firstVerifiedTransaction != nil
-            guard !hasTransactions else { return }
-
             // if there are no transactions in StoreKit, but the user has transactions in RevenueCat,
             // we assume that they've logged out of the account, and we logOut correspondingly.
             guard let cachedCustomerInfo = customerInfoManager
@@ -861,6 +859,9 @@ private extension Purchases {
             guard !cachedCustomerInfo.allPurchasedProductIdentifiers.isEmpty else {
                 return
             }
+
+            let hasTransactions = await self.customerInfoManager.transactionFetcher.firstVerifiedTransaction != nil
+            guard !hasTransactions else { return }
 
             Logger.warn(Strings.identity.app_store_logout_detected_anonymous_id_not_sharing)
 

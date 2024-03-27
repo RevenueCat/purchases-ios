@@ -23,6 +23,7 @@ class CustomerInfoManager {
     private let operationDispatcher: OperationDispatcher
     private let backend: Backend
     private let systemInfo: SystemInfo
+    // todo: move to Purchases class
     let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
 
