@@ -185,6 +185,8 @@
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
 		359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */; };
+		35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */; };
+		35AAEB492BBB17B500A12548 /* DiagnosticsEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB482BBB17B500A12548 /* DiagnosticsEntry.swift */; };
 		35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */; };
 		35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */; };
 		35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832CC262A5B7500E60AC5 /* ETagManager.swift */; };
@@ -948,6 +950,8 @@
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
 		359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
+		35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsFileHandler.swift; sourceTree = "<group>"; };
+		35AAEB482BBB17B500A12548 /* DiagnosticsEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsEntry.swift; sourceTree = "<group>"; };
 		35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtils.swift; sourceTree = "<group>"; };
 		35D832CC262A5B7500E60AC5 /* ETagManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagManager.swift; sourceTree = "<group>"; };
 		35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPStatusCode.swift; sourceTree = "<group>"; };
@@ -2323,6 +2327,8 @@
 			isa = PBXGroup;
 			children = (
 				4F2F2EFE2A3CDAA800652B24 /* FileHandler.swift */,
+				35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */,
+				35AAEB482BBB17B500A12548 /* DiagnosticsEntry.swift */,
 			);
 			path = Diagnostics;
 			sourceTree = "<group>";
@@ -3480,6 +3486,7 @@
 				2D00A41D2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift in Sources */,
 				2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */,
 				B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */,
+				35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */,
 				B34D2AA626976FC700D88C3A /* ErrorCode.swift in Sources */,
 				4F15B4A12A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift in Sources */,
 				B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */,
@@ -3493,6 +3500,7 @@
 				35D832F4262E606500E60AC5 /* HTTPResponse.swift in Sources */,
 				352B7D7927BD919B002A47DD /* DangerousSettings.swift in Sources */,
 				A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */,
+				35AAEB492BBB17B500A12548 /* DiagnosticsEntry.swift in Sources */,
 				4F6EEBD92A38ED76007FD783 /* FakeSigning.swift in Sources */,
 				2DDF41AE24F6F37C005BC22D /* InAppPurchase.swift in Sources */,
 				B32B750126868C1D005647BF /* EntitlementInfo.swift in Sources */,
