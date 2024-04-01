@@ -13,8 +13,6 @@
 
 import Foundation
 
-typealias DiagnosticsEntries = [String]
-
 protocol DiagnosticsEntry: Codable {
     var diagnosticType: String { get }
     var version: Int { get }
