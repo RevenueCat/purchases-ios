@@ -19,7 +19,7 @@ protocol DiagnosticsFileHandlerType: AnyObject {
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async
     func deleteDiagnosticsFile() async
-    
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -34,6 +34,10 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
             Logger.error("Initialization error: \(error.localizedDescription)")
             return nil
         }
+    }
+
+    init(_ fileHandler: FileHandler) {
+        self.fileHandler = fileHandler
     }
 
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async {
@@ -89,7 +93,6 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     func deleteDiagnosticsFile() async {
-        // TODO
     }
 
 }
@@ -119,7 +122,17 @@ private extension DiagnosticsFileHandler {
     }
 
     private func decodeDiagnosticsEvent(from line: String) -> DiagnosticsEvent? {
-        guard let data = line.data(using: .utf8) else { return nil }
-        return try? JSONDecoder().decode(DiagnosticsEvent.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .millisecondsSince1970
+
+        do {
+            guard let data = line.data(using: .utf8) else { return nil }
+            let event = try decoder.decode(DiagnosticsEvent.self, from: data)
+            print("Decoded Timestamp: \(event.timestamp)")
+            return event
+        } catch {
+            print("Decoding error: \(error)")
+            return nil
+        }
     }
 }

@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol DiagnosticsEntry: Codable {
+protocol DiagnosticsEntry: Codable, Equatable {
     var diagnosticType: String { get }
     var version: Int { get }
 }
@@ -40,6 +40,15 @@ struct DiagnosticsEvent: DiagnosticsEntry {
     enum CodingKeys: String, CodingKey {
         case diagnosticType = "type"
         case name, properties, timestamp
+    }
+}
+
+extension DiagnosticsEvent {
+    static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
+        return lhs.diagnosticType == rhs.diagnosticType &&
+               lhs.name == rhs.name &&
+               lhs.properties == rhs.properties &&
+               lhs.timestamp == rhs.timestamp
     }
 }
 

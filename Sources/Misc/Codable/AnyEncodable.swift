@@ -109,4 +109,19 @@ extension AnyEncodable: Decodable {
 
 }
 
+extension AnyEncodable: Equatable {
+    static func == (lhs: AnyEncodable, rhs: AnyEncodable) -> Bool {
+        let lhsEncoder = JSONEncoder()
+        let rhsEncoder = JSONEncoder()
+
+        do {
+            let lhsData = try lhsEncoder.encode(lhs)
+            let rhsData = try rhsEncoder.encode(rhs)
+            return lhsData == rhsData
+        } catch {
+            return false
+        }
+    }
+}
+
 // swiftlint:enable cyclomatic_complexity
