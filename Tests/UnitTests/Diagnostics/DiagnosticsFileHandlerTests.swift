@@ -55,6 +55,32 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
         expect(entries[0]).to(equal(content))
     }
 
+    // MARK: - getEntries
+
+    func testGetEntries() async throws {
+        let line1 = """
+        {\"version\": 1, \"type\": \"event\", \"name\": \"event_name\", \"properties\": {}, \"timestamp\": 1712140712}
+        """
+        let line2 = """
+        {\"version\": 1, \"type\": \"event\", \"name\": \"event_name_2\", \"properties\": {}, \"timestamp\": 1712140714}
+        """
+
+        await self.fileHandler.append(line: line1)
+        await self.fileHandler.append(line: line2)
+
+        let content1 = DiagnosticsEvent(name: "event_name",
+                                        properties: [:],
+                                        timestamp: Date(millisecondsSince1970: 1712140712))
+
+        let content2 = DiagnosticsEvent(name: "event_name_2",
+                                        properties: [:],
+                                        timestamp: Date(millisecondsSince1970: 1712140714))
+
+        let entries = await self.handler.getEntries()
+        expect(entries[0]).to(equal(content1))
+        expect(entries[1]).to(equal(content2))
+    }
+
 }
 
 // MARK: - Private
