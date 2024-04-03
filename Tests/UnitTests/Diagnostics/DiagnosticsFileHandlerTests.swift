@@ -45,7 +45,9 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
     // MARK: - append
 
     func testAppendEvent() async throws {
-        let content = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED", properties: [:], timestamp: Date())
+        let content = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                       properties: ["key": AnyEncodable("value")],
+                                       timestamp: Date())
 
         await self.handler.appendEvent(diagnosticsEvent: content)
 
