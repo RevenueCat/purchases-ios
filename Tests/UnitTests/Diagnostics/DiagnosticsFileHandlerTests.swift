@@ -55,6 +55,26 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
         expect(entries[0]).to(equal(content))
     }
 
+    // MARK: - cleanSentDiagnostics
+
+    func testCleanSentDiagnostics() async throws {
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+        await self.handler.appendEvent(diagnosticsEvent: Self.sampleEvent())
+
+        var entries = await self.handler.getEntries()
+        expect(entries.count).to(equal(4))
+
+        await self.handler.cleanSentDiagnostics(diagnosticsSentCount: 2)
+        entries = await self.handler.getEntries()
+        expect(entries.count).to(equal(2))
+
+        await self.handler.cleanSentDiagnostics(diagnosticsSentCount: 2)
+        entries = await self.handler.getEntries()
+        expect(entries.count).to(equal(0))
+    }
+
     // MARK: - getEntries
 
     func testGetEntries() async throws {
@@ -105,8 +125,10 @@ private extension BaseDiagnosticsFileHandlerTests {
         return try FileHandler(Self.temporaryFileURL())
     }
 
-    static func sampleLine() -> String {
-        return UUID().uuidString
+    static func sampleEvent() -> DiagnosticsEvent {
+        return DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                properties: ["key": AnyEncodable("value")],
+                                timestamp: Date())
     }
 
 }
