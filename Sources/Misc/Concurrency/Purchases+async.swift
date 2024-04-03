@@ -36,6 +36,14 @@ extension Purchases {
         }
     }
 
+    func syncAttributesAndOfferingsIfNeededAsync() async throws -> Offerings? {
+        return try await withCheckedThrowingContinuation { continuation in
+            syncAttributesAndOfferingsIfNeeded { offerings, error in
+                continuation.resume(with: Result(offerings, error))
+            }
+        }
+    }
+
     #endif
 
     func offeringsAsync(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
