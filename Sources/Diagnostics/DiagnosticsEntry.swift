@@ -24,7 +24,7 @@ extension DiagnosticsEntry {
     func toJSONString() -> String? {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.dateEncodingStrategy = .millisecondsSince1970 // Example date encoding strategy
+        encoder.dateEncodingStrategy = .iso8601
 
         guard let jsonData = try? encoder.encode(self) else { return nil }
         return String(data: jsonData, encoding: .utf8)

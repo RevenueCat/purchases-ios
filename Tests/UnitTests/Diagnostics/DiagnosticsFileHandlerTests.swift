@@ -59,10 +59,10 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
     func testGetEntries() async throws {
         let line1 = """
-        {\"version\": 1, \"type\": \"event\", \"name\": \"event_name\", \"properties\": {}, \"timestamp\": 1712140712}
+        {\"type\": \"event\", \"name\": \"event_name\", \"properties\": {}, \"timestamp\": \"2024-04-03T12:17:36Z\"}
         """
         let line2 = """
-        {\"version\": 1, \"type\": \"event\", \"name\": \"event_name_2\", \"properties\": {}, \"timestamp\": 1712140714}
+        {\"type\": \"event\", \"name\": \"event_name_2\", \"properties\": {}, \"timestamp\": \"2024-04-03T12:18:36Z\"}
         """
 
         await self.fileHandler.append(line: line1)
@@ -70,11 +70,11 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
         let content1 = DiagnosticsEvent(name: "event_name",
                                         properties: [:],
-                                        timestamp: Date(millisecondsSince1970: 1712140712))
+                                        timestamp: Date(millisecondsSince1970: 1712146656000))
 
         let content2 = DiagnosticsEvent(name: "event_name_2",
                                         properties: [:],
-                                        timestamp: Date(millisecondsSince1970: 1712140714))
+                                        timestamp: Date(millisecondsSince1970: 1712146716000))
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(equal(content1))

@@ -123,15 +123,13 @@ private extension DiagnosticsFileHandler {
 
     private func decodeDiagnosticsEvent(from line: String) -> DiagnosticsEvent? {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .millisecondsSince1970
+        decoder.dateDecodingStrategy = .iso8601
 
         do {
             guard let data = line.data(using: .utf8) else { return nil }
             let event = try decoder.decode(DiagnosticsEvent.self, from: data)
-            print("Decoded Timestamp: \(event.timestamp)")
             return event
         } catch {
-            print("Decoding error: \(error)")
             return nil
         }
     }
