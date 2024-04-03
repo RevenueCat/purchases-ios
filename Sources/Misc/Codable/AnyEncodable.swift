@@ -113,7 +113,7 @@ extension AnyEncodable: Equatable {
     static func == (lhs: AnyEncodable, rhs: AnyEncodable) -> Bool {
         let lhsEncoder = JSONEncoder()
         let rhsEncoder = JSONEncoder()
-        
+
         lhsEncoder.dateEncodingStrategy = .iso8601
         rhsEncoder.dateEncodingStrategy = .iso8601
 
