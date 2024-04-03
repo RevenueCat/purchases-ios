@@ -13,6 +13,7 @@
 
 import Foundation
 
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 protocol DiagnosticsFileHandlerType: AnyObject {
 
     func getEntries() async -> [DiagnosticsEvent]
