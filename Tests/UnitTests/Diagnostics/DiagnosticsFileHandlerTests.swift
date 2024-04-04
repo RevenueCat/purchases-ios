@@ -49,10 +49,14 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
                                        properties: ["key": AnyEncodable("value")],
                                        timestamp: Date())
 
+        var entries = await self.handler.getEntries()
+        expect(entries.count).to(equal(0))
+
         await self.handler.appendEvent(diagnosticsEvent: content)
 
-        let entries = await self.handler.getEntries()
+        entries = await self.handler.getEntries()
         let encodedContent = try content.encodeAndDecode()
+        expect(entries.count).to(equal(1))
         expect(entries[0]).to(equal(encodedContent))
     }
 
