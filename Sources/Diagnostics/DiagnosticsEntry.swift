@@ -20,22 +20,17 @@ protocol DiagnosticsEntry: Codable, Equatable {
 
 }
 
-extension DiagnosticsEntry {
-
-    var version: Int { 1 }
-
-}
-
 struct DiagnosticsEvent: DiagnosticsEntry {
 
-    var diagnosticType: String = "event"
+    let version: Int = 1
+    let diagnosticType: String = "event"
     let name: String
     let properties: [String: AnyEncodable]
     let timestamp: Date
 
     enum CodingKeys: String, CodingKey {
         case diagnosticType = "type"
-        case name, properties, timestamp
+        case name, properties, timestamp, version
     }
 
 }
@@ -53,28 +48,30 @@ extension DiagnosticsEvent {
 
 struct Counter: DiagnosticsEntry {
 
-    var diagnosticType: String = "counter"
+    let version: Int = 1
+    let diagnosticType: String = "counter"
     let name: String
     let tags: [String: String]
     let value: Int
 
     enum CodingKeys: String, CodingKey {
         case diagnosticType = "type"
-        case name, tags, value
+        case name, tags, value, version
     }
 
 }
 
 struct Histogram: DiagnosticsEntry {
 
-    var diagnosticType: String = "histogram"
+    let version: Int = 1
+    let diagnosticType: String = "histogram"
     let name: String
     let tags: [String: String]
     let values: [Double]
 
     enum CodingKeys: String, CodingKey {
         case diagnosticType = "type"
-        case name, tags, values
+        case name, tags, values, version
     }
 
 }
