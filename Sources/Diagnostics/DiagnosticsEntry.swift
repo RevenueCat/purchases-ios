@@ -27,7 +27,7 @@ extension DiagnosticsEntry {
 }
 
 struct DiagnosticsEvent: DiagnosticsEntry {
-    
+
     var diagnosticType: String = "event"
     let name: String
     let properties: [String: AnyEncodable]
@@ -37,7 +37,7 @@ struct DiagnosticsEvent: DiagnosticsEntry {
         case diagnosticType = "type"
         case name, properties, timestamp
     }
-    
+
 }
 
 extension DiagnosticsEvent {
@@ -76,5 +76,5 @@ struct Histogram: DiagnosticsEntry {
         case diagnosticType = "type"
         case name, tags, values
     }
-    
+
 }
