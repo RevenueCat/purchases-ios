@@ -13,7 +13,7 @@
 
 import Foundation
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol DiagnosticsFileHandlerType: AnyObject {
 
     func getEntries() async -> [DiagnosticsEvent]
@@ -26,7 +26,7 @@ protocol DiagnosticsFileHandlerType: AnyObject {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     private let fileHandler: FileHandler
@@ -56,28 +56,14 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     func getEntries() async -> [DiagnosticsEvent] {
         var entries: [DiagnosticsEvent] = []
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            do {
-                for try await line in try await fileHandler.readLines() {
-                    if let event = decodeDiagnosticsEvent(from: line) {
-                        entries.append(event)
-                    }
+        do {
+            for try await line in try await fileHandler.readLines() {
+                if let event = decodeDiagnosticsEvent(from: line) {
+                    entries.append(event)
                 }
-            } catch {
-                Logger.error("Failed to read lines from file: \(error.localizedDescription)")
             }
-        } else {
-            do {
-                let data = try await fileHandler.readFile()
-                let content = String(decoding: data, as: UTF8.self)
-                content.split(separator: "\n").forEach { line in
-                    if let event = decodeDiagnosticsEvent(from: String(line)) {
-                        entries.append(event)
-                    }
-                }
-            } catch {
-                Logger.error("Failed to read file content: \(error.localizedDescription)")
-            }
+        } catch {
+            Logger.error("Failed to read lines from file: \(error.localizedDescription)")
         }
 
         return entries
@@ -108,7 +94,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsFileHandler {
 
     static var diagnosticsFile: URL {

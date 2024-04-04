@@ -16,8 +16,8 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-class BaseDiagnosticsFileHandlerTests: TestCase {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class DiagnosticsFileHandlerTests: TestCase {
 
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
@@ -25,7 +25,7 @@ class BaseDiagnosticsFileHandlerTests: TestCase {
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
@@ -36,11 +36,6 @@ class BaseDiagnosticsFileHandlerTests: TestCase {
 
         try await super.tearDown()
     }
-
-}
-
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
     // MARK: - append
 
@@ -152,51 +147,10 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
 }
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class IOS15DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
-
-    override func setUp() async throws {
-        try await super.setUp()
-
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-    }
-
-    func testGetEntries() async throws {
-        let line1 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
-        let line2 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
-
-        await self.fileHandler.append(line: line1)
-        await self.fileHandler.append(line: line2)
-
-        let content1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
-                                        properties: ["key": AnyEncodable("value")],
-                                        timestamp: Date(millisecondsSince1970: 1712235359000))
-
-        let content2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
-                                        properties: ["key": AnyEncodable("value")],
-                                        timestamp: Date(millisecondsSince1970: 1712238959000))
-
-        let entries = await self.handler.getEntries()
-        expect(entries[0]).to(equal(content1))
-        expect(entries[1]).to(equal(content2))
-    }
-
-}
-
 // MARK: - Private
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-private extension BaseDiagnosticsFileHandlerTests {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension DiagnosticsFileHandlerTests {
 
     func reCreateHandler() async throws {
         self.fileHandler = try FileHandler(await self.fileHandler.url)
