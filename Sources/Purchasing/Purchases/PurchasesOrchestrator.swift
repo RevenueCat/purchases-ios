@@ -89,6 +89,57 @@ final class PurchasesOrchestrator {
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    private var diagnosticsTracker: DiagnosticsTracker? {
+        // swiftlint:disable:next force_cast
+        return self._diagnosticsTracker as? DiagnosticsTracker
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    convenience init(productsManager: ProductsManagerType,
+                     paymentQueueWrapper: EitherPaymentQueueWrapper,
+                     systemInfo: SystemInfo,
+                     subscriberAttributes: Attribution,
+                     operationDispatcher: OperationDispatcher,
+                     receiptFetcher: ReceiptFetcher,
+                     receiptParser: PurchasesReceiptParser,
+                     transactionFetcher: StoreKit2TransactionFetcherType,
+                     customerInfoManager: CustomerInfoManager,
+                     backend: Backend,
+                     transactionPoster: TransactionPoster,
+                     currentUserProvider: CurrentUserProvider,
+                     transactionsManager: TransactionsManager,
+                     deviceCache: DeviceCache,
+                     offeringsManager: OfferingsManager,
+                     manageSubscriptionsHelper: ManageSubscriptionsHelper,
+                     beginRefundRequestHelper: BeginRefundRequestHelper,
+                     storeMessagesHelper: StoreMessagesHelperType?,
+                     diagnosticsTracker: DiagnosticsTracker?
+    ) {
+        self.init(
+            productsManager: productsManager,
+            paymentQueueWrapper: paymentQueueWrapper,
+            systemInfo: systemInfo,
+            subscriberAttributes: subscriberAttributes,
+            operationDispatcher: operationDispatcher,
+            receiptFetcher: receiptFetcher,
+            receiptParser: receiptParser,
+            transactionFetcher: transactionFetcher,
+            customerInfoManager: customerInfoManager,
+            backend: backend,
+            transactionPoster: transactionPoster,
+            currentUserProvider: currentUserProvider,
+            transactionsManager: transactionsManager,
+            deviceCache: deviceCache,
+            offeringsManager: offeringsManager,
+            manageSubscriptionsHelper: manageSubscriptionsHelper,
+            beginRefundRequestHelper: beginRefundRequestHelper,
+            storeMessagesHelper: storeMessagesHelper
+        )
+
+        self._diagnosticsTracker = diagnosticsTracker
+    }
+
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsTracker: DiagnosticsTrackerType? {
         return self._diagnosticsTracker as? DiagnosticsTrackerType
