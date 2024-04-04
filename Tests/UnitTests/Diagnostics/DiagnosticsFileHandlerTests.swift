@@ -88,7 +88,6 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T12:55:59Z",
           "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -97,7 +96,6 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T13:55:59Z",
           "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
