@@ -17,8 +17,11 @@ import Foundation
 protocol DiagnosticsFileHandlerType: AnyObject {
 
     func getEntries() async -> [DiagnosticsEvent]
+
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async
+
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async
+
     func deleteDiagnosticsFile() async
 
 }
@@ -134,4 +137,5 @@ private extension DiagnosticsFileHandler {
             return nil
         }
     }
+
 }

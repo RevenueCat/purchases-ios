@@ -14,8 +14,10 @@
 import Foundation
 
 protocol DiagnosticsEntry: Codable, Equatable {
+
     var diagnosticType: String { get }
     var version: Int { get }
+
 }
 
 extension DiagnosticsEntry {
@@ -32,6 +34,7 @@ extension DiagnosticsEntry {
 }
 
 struct DiagnosticsEvent: DiagnosticsEntry {
+    
     var diagnosticType: String = "event"
     let name: String
     let properties: [String: AnyEncodable]
@@ -41,18 +44,22 @@ struct DiagnosticsEvent: DiagnosticsEntry {
         case diagnosticType = "type"
         case name, properties, timestamp
     }
+    
 }
 
 extension DiagnosticsEvent {
+
     static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
         return lhs.diagnosticType == rhs.diagnosticType &&
                lhs.name == rhs.name &&
                lhs.properties == rhs.properties &&
                lhs.timestamp == rhs.timestamp
     }
+
 }
 
 struct Counter: DiagnosticsEntry {
+
     var diagnosticType: String = "counter"
     let name: String
     let tags: [String: String]
@@ -62,9 +69,11 @@ struct Counter: DiagnosticsEntry {
         case diagnosticType = "type"
         case name, tags, value
     }
+
 }
 
 struct Histogram: DiagnosticsEntry {
+
     var diagnosticType: String = "histogram"
     let name: String
     let tags: [String: String]
@@ -74,4 +83,5 @@ struct Histogram: DiagnosticsEntry {
         case diagnosticType = "type"
         case name, tags, values
     }
+    
 }
