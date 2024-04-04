@@ -83,18 +83,24 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        let line1 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
-        let line2 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
+        let line1 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T12:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "type": "event",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
+        let line2 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T13:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "type": "event",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
 
         await self.fileHandler.append(line: line1)
         await self.fileHandler.append(line: line2)
@@ -115,18 +121,24 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
     // MARK: - emptyFile
 
     func testEmptyFile() async throws {
-        let line1 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
-        let line2 =
-            "{\"properties\":{\"key\":\"value\"}," +
-            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
-            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
-            "\"type\":\"event\"," +
-            "\"version\":1}"
+        let line1 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T12:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "type": "event",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
+        let line2 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T13:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "type": "event",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
 
         await self.fileHandler.append(line: line1)
         await self.fileHandler.append(line: line2)
@@ -212,3 +224,12 @@ private extension BaseDiagnosticsFileHandlerTests {
     }
 
 }
+
+private extension String {
+
+    var trimmingWhitespacesAndNewLines: String {
+        return self.replacingOccurrences(of: "[\\s\\n]+", with: "", options: .regularExpression, range: nil)
+    }
+
+}
+
