@@ -79,23 +79,98 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        let line1 = """
-        {\"type\": \"event\", \"name\": \"event_name\", \"properties\": {}, \"timestamp\": \"2024-04-03T12:17:36Z\"}
-        """
-        let line2 = """
-        {\"type\": \"event\", \"name\": \"event_name_2\", \"properties\": {}, \"timestamp\": \"2024-04-03T12:18:36Z\"}
-        """
+        let line1 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
+        let line2 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
 
         await self.fileHandler.append(line: line1)
         await self.fileHandler.append(line: line2)
 
-        let content1 = DiagnosticsEvent(name: "event_name",
-                                        properties: [:],
-                                        timestamp: Date(millisecondsSince1970: 1712146656000))
+        let content1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                        properties: ["key": AnyEncodable("value")],
+                                        timestamp: Date(millisecondsSince1970: 1712235359000))
 
-        let content2 = DiagnosticsEvent(name: "event_name_2",
-                                        properties: [:],
-                                        timestamp: Date(millisecondsSince1970: 1712146716000))
+        let content2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                        properties: ["key": AnyEncodable("value")],
+                                        timestamp: Date(millisecondsSince1970: 1712238959000))
+
+        let entries = await self.handler.getEntries()
+        expect(entries[0]).to(equal(content1))
+        expect(entries[1]).to(equal(content2))
+    }
+
+    // MARK: - emptyFile
+
+    func testEmptyFile() async throws {
+        let line1 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
+        let line2 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
+
+        await self.fileHandler.append(line: line1)
+        await self.fileHandler.append(line: line2)
+
+        var data = try await self.fileHandler.readFile()
+        expect(data).toNot(beEmpty())
+
+        await self.handler.emptyDiagnosticsFile()
+
+        data = try await self.fileHandler.readFile()
+        expect(data).to(beEmpty())
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class ModernDiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
+    func testGetEntries() async throws {
+        let line1 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T12:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
+        let line2 =
+            "{\"properties\":{\"key\":\"value\"}," +
+            "\"timestamp\":\"2024-04-04T13:55:59Z\"," +
+            "\"name\":\"HTTP_REQUEST_PERFORMED\"," +
+            "\"type\":\"event\"," +
+            "\"version\":1}"
+
+        await self.fileHandler.append(line: line1)
+        await self.fileHandler.append(line: line2)
+
+        let content1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                        properties: ["key": AnyEncodable("value")],
+                                        timestamp: Date(millisecondsSince1970: 1712235359000))
+
+        let content2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                        properties: ["key": AnyEncodable("value")],
+                                        timestamp: Date(millisecondsSince1970: 1712238959000))
 
         let entries = await self.handler.getEntries()
         expect(entries[0]).to(equal(content1))

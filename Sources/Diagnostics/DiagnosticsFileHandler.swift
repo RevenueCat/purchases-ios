@@ -22,7 +22,7 @@ protocol DiagnosticsFileHandlerType: AnyObject {
 
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async
 
-    func deleteDiagnosticsFile() async
+    func emptyDiagnosticsFile() async
 
 }
 
@@ -96,7 +96,12 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
     }
 
-    func deleteDiagnosticsFile() async {
+    func emptyDiagnosticsFile() async {
+        do {
+            try await fileHandler.emptyFile()
+        } catch {
+            Logger.error("Failed to empty diagnostics file: \(error.localizedDescription)")
+        }
     }
 
 }
