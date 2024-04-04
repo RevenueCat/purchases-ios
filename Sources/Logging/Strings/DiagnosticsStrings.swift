@@ -18,6 +18,7 @@ import Foundation
 enum DiagnosticsStrings {
 
     case timing_message(message: String, duration: TimeInterval)
+    case could_not_create_diagnostics_tracker
 
 }
 
@@ -28,6 +29,8 @@ extension DiagnosticsStrings: LogMessage {
         case let .timing_message(message, duration):
             let roundedDuration = (duration * 100).rounded(.down) / 100
             return String(format: "%@ (%.2f seconds)", message.description, roundedDuration)
+        case .could_not_create_diagnostics_tracker:
+            return "Could not create DiagnosticsTracker"
         }
     }
 

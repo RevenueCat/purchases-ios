@@ -418,6 +418,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeMessagesHelper = nil
         #endif
 
+        let diagnosticsEnabled = false
+        var diagnosticsTracker: Any?
+        if #available(iOSApplicationExtension 13.0, *) {
+            if (diagnosticsEnabled) {
+                if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                    diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
+                } else {
+                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                }
+            }
+        }
+
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return .init(
@@ -440,7 +452,38 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                    storeMessagesHelper: storeMessagesHelper
+                    storeMessagesHelper: storeMessagesHelper,
+                    diagnosticsTracker: diagnosticsTracker as? DiagnosticsTracker
+                )
+            } else if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
+                let diagnosticsEnabled = false
+                var diagnosticsTracker: DiagnosticsTracker?
+                if (diagnosticsEnabled) {
+                    diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: DiagnosticsFileHandler(FileHandler()))
+                }
+                return .init(
+                    productsManager: productsManager,
+                    paymentQueueWrapper: paymentQueueWrapper,
+                    systemInfo: systemInfo,
+                    subscriberAttributes: subscriberAttributes,
+                    operationDispatcher: operationDispatcher,
+                    receiptFetcher: receiptFetcher,
+                    receiptParser: receiptParser,
+                    transactionFetcher: transactionFetcher,
+                    customerInfoManager: customerInfoManager,
+                    backend: backend,
+                    transactionPoster: transactionPoster,
+                    currentUserProvider: identityManager,
+                    transactionsManager: transactionsManager,
+                    deviceCache: deviceCache,
+                    offeringsManager: offeringsManager,
+                    manageSubscriptionsHelper: manageSubsHelper,
+                    beginRefundRequestHelper: beginRefundRequestHelper,
+                    storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                    storeMessagesHelper: storeMessagesHelper,
+                    diagnosticsTracker: diagnosticsTracker,
+                    diagnosticsTracker: diagnosticsTracker as? DiagnosticsTracker
                 )
             } else {
                 return .init(

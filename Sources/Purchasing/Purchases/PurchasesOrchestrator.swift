@@ -74,6 +74,7 @@ final class PurchasesOrchestrator {
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
+    var _diagnosticsTracker: Any?
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -86,6 +87,57 @@ final class PurchasesOrchestrator {
     var storeKit2StorefrontListener: StoreKit2StorefrontListener {
         // swiftlint:disable:next force_cast
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    private var diagnosticsTracker: DiagnosticsTracker? {
+        // swiftlint:disable:next force_cast
+        return self._diagnosticsTracker as? DiagnosticsTracker
+    }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    convenience init(productsManager: ProductsManagerType,
+                     paymentQueueWrapper: EitherPaymentQueueWrapper,
+                     systemInfo: SystemInfo,
+                     subscriberAttributes: Attribution,
+                     operationDispatcher: OperationDispatcher,
+                     receiptFetcher: ReceiptFetcher,
+                     receiptParser: PurchasesReceiptParser,
+                     transactionFetcher: StoreKit2TransactionFetcherType,
+                     customerInfoManager: CustomerInfoManager,
+                     backend: Backend,
+                     transactionPoster: TransactionPoster,
+                     currentUserProvider: CurrentUserProvider,
+                     transactionsManager: TransactionsManager,
+                     deviceCache: DeviceCache,
+                     offeringsManager: OfferingsManager,
+                     manageSubscriptionsHelper: ManageSubscriptionsHelper,
+                     beginRefundRequestHelper: BeginRefundRequestHelper,
+                     storeMessagesHelper: StoreMessagesHelperType?,
+                     diagnosticsTracker: DiagnosticsTracker?
+    ) {
+        self.init(
+            productsManager: productsManager,
+            paymentQueueWrapper: paymentQueueWrapper,
+            systemInfo: systemInfo,
+            subscriberAttributes: subscriberAttributes,
+            operationDispatcher: operationDispatcher,
+            receiptFetcher: receiptFetcher,
+            receiptParser: receiptParser,
+            transactionFetcher: transactionFetcher,
+            customerInfoManager: customerInfoManager,
+            backend: backend,
+            transactionPoster: transactionPoster,
+            currentUserProvider: currentUserProvider,
+            transactionsManager: transactionsManager,
+            deviceCache: deviceCache,
+            offeringsManager: offeringsManager,
+            manageSubscriptionsHelper: manageSubscriptionsHelper,
+            beginRefundRequestHelper: beginRefundRequestHelper,
+            storeMessagesHelper: storeMessagesHelper
+        )
+
+        self._diagnosticsTracker = diagnosticsTracker
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -108,7 +160,8 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
-                     storeMessagesHelper: StoreMessagesHelperType?
+                     storeMessagesHelper: StoreMessagesHelperType?,
+                     diagnosticsTracker: DiagnosticsTracker?
     ) {
         self.init(
             productsManager: productsManager,
@@ -130,6 +183,8 @@ final class PurchasesOrchestrator {
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper
         )
+
+        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
