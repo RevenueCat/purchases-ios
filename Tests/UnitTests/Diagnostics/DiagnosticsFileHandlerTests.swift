@@ -44,16 +44,17 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
     // MARK: - append
 
-//    func testAppendEventWithProperties() async throws {
-//        let content = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
-//                                       properties: ["key": AnyEncodable("value")],
-//                                       timestamp: Date())
-//
-//        await self.handler.appendEvent(diagnosticsEvent: content)
-//
-//        let entries = await self.handler.getEntries()
-//        expect(entries[0]).to(equal(content))
-//    }
+    func testAppendEventWithProperties() async throws {
+        let content = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                       properties: ["key": AnyEncodable("value")],
+                                       timestamp: Date())
+
+        await self.handler.appendEvent(diagnosticsEvent: content)
+
+        let entries = await self.handler.getEntries()
+        let encodedContent = try content.encodeAndDecode()
+        expect(entries[0]).to(equal(encodedContent))
+    }
 
     // MARK: - cleanSentDiagnostics
 
