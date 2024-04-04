@@ -21,16 +21,9 @@ protocol DiagnosticsEntry: Codable, Equatable {
 }
 
 extension DiagnosticsEntry {
+
     var version: Int { 1 }
 
-    func toJSONString() -> String? {
-        let encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
-        encoder.dateEncodingStrategy = .iso8601
-
-        guard let jsonData = try? encoder.encode(self) else { return nil }
-        return String(data: jsonData, encoding: .utf8)
-    }
 }
 
 struct DiagnosticsEvent: DiagnosticsEntry {

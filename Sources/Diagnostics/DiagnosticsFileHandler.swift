@@ -45,7 +45,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async {
-        guard let jsonString = diagnosticsEvent.toJSONString() else {
+        guard let jsonString = try? diagnosticsEvent.encodedJSON else {
             Logger.error("Failed to serialize diagnostics event to JSON")
             return
         }
