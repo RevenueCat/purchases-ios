@@ -155,7 +155,7 @@ class DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-class ModernDiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
+class IOS15DiagnosticsFileHandlerTests: BaseDiagnosticsFileHandlerTests {
 
     override func setUp() async throws {
         try await super.setUp()
@@ -232,4 +232,3 @@ private extension String {
     }
 
 }
-
