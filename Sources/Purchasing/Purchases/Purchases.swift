@@ -420,6 +420,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeMessagesHelper = nil
         #endif
 
+        let diagnosticsEnabled = false
+        var diagnosticsTracker: Any?
+        if #available(iOSApplicationExtension 13.0, *) {
+            if (diagnosticsEnabled) {
+                if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                    diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
+                } else {
+                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                }
+            }
+        }
+
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 var diagnosticsTracker: DiagnosticsTrackerType?
