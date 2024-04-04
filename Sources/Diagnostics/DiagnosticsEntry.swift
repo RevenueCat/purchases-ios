@@ -45,33 +45,3 @@ extension DiagnosticsEvent {
     }
 
 }
-
-struct Counter: DiagnosticsEntry {
-
-    let version: Int = 1
-    let diagnosticType: String = "counter"
-    let name: String
-    let tags: [String: String]
-    let value: Int
-
-    enum CodingKeys: String, CodingKey {
-        case diagnosticType = "type"
-        case name, tags, value, version
-    }
-
-}
-
-struct Histogram: DiagnosticsEntry {
-
-    let version: Int = 1
-    let diagnosticType: String = "histogram"
-    let name: String
-    let tags: [String: String]
-    let values: [Double]
-
-    enum CodingKeys: String, CodingKey {
-        case diagnosticType = "type"
-        case name, tags, values, version
-    }
-
-}
