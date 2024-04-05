@@ -41,6 +41,8 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
 class PurchasesSyncAttributesAndOfferingsAsyncTests: BasePurchasesTests {
 
     func testAttributesSyncedAndOfferingsFetchedAsync() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+        
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
