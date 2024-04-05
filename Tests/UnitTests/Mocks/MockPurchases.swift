@@ -169,6 +169,7 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings? {
         self.unimplemented()
     }

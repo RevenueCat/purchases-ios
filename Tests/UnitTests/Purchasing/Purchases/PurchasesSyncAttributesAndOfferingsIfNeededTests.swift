@@ -35,14 +35,11 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
     }
-}
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-class PurchasesSyncAttributesAndOfferingsAsyncTests: BasePurchasesTests {
-
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func testAttributesSyncedAndOfferingsFetchedAsync() async throws {
         try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-        
+
         self.setupPurchases()
 
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
@@ -55,5 +52,4 @@ class PurchasesSyncAttributesAndOfferingsAsyncTests: BasePurchasesTests {
         expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
     }
-
 }
