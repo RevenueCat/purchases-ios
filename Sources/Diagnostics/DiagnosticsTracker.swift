@@ -13,14 +13,14 @@
 
 import Foundation
 
-protocol DiagnosticsTrackerType: AnyObject {
-    
+protocol DiagnosticsTrackerType {
+
     func track(_ event: DiagnosticsEvent) async
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-final class DiagnosticsTracker {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+final class DiagnosticsTracker: DiagnosticsTrackerType {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandler
 

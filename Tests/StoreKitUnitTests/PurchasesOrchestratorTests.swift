@@ -115,6 +115,17 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         return self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
     }
 
+    fileprivate func setUpDiagnosticTracker() {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.orchestrator._diagnosticsTracker = MockDiagnosticsTracker()
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    var mockDiagnosticsTracker: MockDiagnosticsTracker? {
+        return self.orchestrator.diagnosticsTracker as? MockDiagnosticsTracker
+    }
+
     fileprivate func setUpSystemInfo(
         finishTransactions: Bool = true,
         storeKit2Setting: StoreKit2Setting = .default,
@@ -196,7 +207,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener,
-                                                  storeMessagesHelper: self.mockStoreMessagesHelper)
+                                                  storeMessagesHelper: self.mockStoreMessagesHelper,
+                                                  diagnosticsTracker: self.mockDiagnosticsTracker)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 

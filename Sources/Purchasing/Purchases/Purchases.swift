@@ -271,7 +271,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
-                     showStoreMessagesAutomatically: Bool) {
+                     showStoreMessagesAutomatically: Bool,
+                     diagnosticsEnabled: Bool = false
+    ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
         }
@@ -420,9 +422,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                let diagnosticsEnabled = false
-                var diagnosticsTracker: DiagnosticsTracker?
-                if (diagnosticsEnabled) {
+                var diagnosticsTracker: DiagnosticsTrackerType?
+                if diagnosticsEnabled {
                     if let diagnosticsFileHandler = DiagnosticsFileHandler() {
                         diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
                     } else {

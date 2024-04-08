@@ -90,9 +90,8 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    private var diagnosticsTracker: DiagnosticsTracker? {
-        // swiftlint:disable:next force_cast
-        return self._diagnosticsTracker as? DiagnosticsTracker
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -116,7 +115,7 @@ final class PurchasesOrchestrator {
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeMessagesHelper: StoreMessagesHelperType?,
-                     diagnosticsTracker: DiagnosticsTracker?
+                     diagnosticsTracker: DiagnosticsTrackerType?
     ) {
         self.init(
             productsManager: productsManager,
