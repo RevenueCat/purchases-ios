@@ -35,4 +35,21 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
     }
+
+    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
+    func testAttributesSyncedAndOfferingsFetchedAsync() async throws {
+        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
+
+        self.setupPurchases()
+
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:], data: .mockResponse))
+        )
+
+        let result: Offerings? = try await self.purchases.syncAttributesAndOfferingsIfNeeded()
+
+        expect(result).toNot(beNil())
+        expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
+        expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
+    }
 }
