@@ -130,6 +130,8 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     purchases.getOfferings { (_: Offerings?, _: Error?) in }
     let _: Offerings? = purchases.cachedOfferings
 
+    purchases.syncAttributesAndOfferingsIfNeeded { (_: Offerings?, _: Error?) in }
+
     purchases.getProducts([String]()) { (_: [StoreProduct]) in }
 
     let storeProduct: StoreProduct! = nil
@@ -248,6 +250,8 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
+
+        let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let _: [StoreProduct] = await purchases.products([])
         let _: (StoreTransaction?, CustomerInfo, Bool) = try await purchases.purchase(package: pack)

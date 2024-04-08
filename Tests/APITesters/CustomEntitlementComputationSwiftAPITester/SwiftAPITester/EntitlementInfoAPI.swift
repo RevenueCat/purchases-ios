@@ -50,7 +50,9 @@ func checkEntitlementInfoEnums() {
          .stripe,
          .promotional,
          .amazon,
-         .unknownStore:
+         .rcBilling,
+         .unknownStore,
+         .external:
         print(store!)
     @unknown default:
         fatalError()

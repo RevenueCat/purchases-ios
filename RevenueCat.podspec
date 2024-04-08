@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCat"
-  s.version          = "4.38.0"
+  s.version          = "4.40.0"
   s.summary          = "Subscription and in-app-purchase backend service."
 
   s.description      = <<-DESC
@@ -31,5 +31,5 @@ Pod::Spec.new do |s|
   s.source_files = 'Sources/**/*.swift'
   s.exclude_files = 'Sources/LocalReceiptParsing/ReceiptParser-only-files/**'
   
-  
+  s.resource_bundles = {'RevenueCat' => ['Sources/PrivacyInfo.xcprivacy']}
 end

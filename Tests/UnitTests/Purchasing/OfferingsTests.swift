@@ -207,7 +207,7 @@ class OfferingsTests: TestCase {
                                         "placement_name": "offering_b",
                                         "placement_name_with_nil": nil
                                       ])),
-                    targeting: nil
+                    targeting: .init(revision: 1, ruleId: "abc123")
                 )
             )
         )
@@ -215,12 +215,36 @@ class OfferingsTests: TestCase {
         let offeringA = try XCTUnwrap(offerings["offering_a"])
         let offeringB = try XCTUnwrap(offerings["offering_b"])
         let offeringC = try XCTUnwrap(offerings["offering_c"])
-        expect(offerings.current) === offeringA
-        expect(offerings.currentOffering(forPlacement: "placement_name")!.identifier) == offeringB.identifier
+
+        let currentOfferingByPlacement = try XCTUnwrap(offerings.currentOffering(
+            forPlacement: "placement_name")
+        )
+        let currentOfferingByPlacementContext = try XCTUnwrap(
+            currentOfferingByPlacement.availablePackages.first?.presentedOfferingContext
+        )
+
+        let currentOfferingFallback = try XCTUnwrap(offerings.currentOffering(
+            forPlacement: "unexisting_placement_name")
+        )
+        let currentOfferingFallbackContext = try XCTUnwrap(
+            currentOfferingFallback.availablePackages.first?.presentedOfferingContext
+        )
+
+        expect(offerings.current?.identifier) == offeringA.identifier
+
+        expect(currentOfferingByPlacement.identifier) == offeringB.identifier
+        expect(currentOfferingByPlacementContext.offeringIdentifier) == offeringB.identifier
+        expect(currentOfferingByPlacementContext.placementIdentifier) == "placement_name"
+        expect(currentOfferingByPlacementContext.targetingContext!.revision) == 1
+        expect(currentOfferingByPlacementContext.targetingContext!.ruleId) == "abc123"
+
+        expect(currentOfferingFallback.identifier) == offeringC.identifier
+        expect(currentOfferingFallbackContext.offeringIdentifier) == offeringC.identifier
+        expect(currentOfferingFallbackContext.placementIdentifier) == "unexisting_placement_name"
+        expect(currentOfferingFallbackContext.targetingContext!.revision) == 1
+        expect(currentOfferingFallbackContext.targetingContext!.ruleId) == "abc123"
+
         expect(offerings.currentOffering(forPlacement: "placement_name_with_nil")).to(beNil())
-        expect(offerings.currentOffering(
-            forPlacement: "unexisting_placement_name")!.identifier
-        ) == offeringC.identifier
     }
 
     func testOfferingIdsByPlacementWithNullFallbackOffering() throws {

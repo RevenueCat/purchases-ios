@@ -105,16 +105,30 @@ commands:
       directory:
         type: string
         default: .
+      install_xcbeautify:
+        type: boolean
+        default: true
+      install_mint:
+        type: boolean
+        default: false
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
       - restore_cache:
           keys:
             - homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
-      - install-brew-dependency:
-          dependency_name: 'xcbeautify'
+      - when:
+          condition: << parameters.install_xcbeautify >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: 'xcbeautify'
       - install-brew-dependency:
           dependency_name: 'swiftlint'
+      - when:
+          condition: << parameters.install_mint >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: 'mint'
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
@@ -141,6 +155,13 @@ commands:
             brew install << parameters.dependency_name >>
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+  install-xcbeautify-for-xcode14:
+    description: "Installs xcbeautify using Mint"
+    steps:
+      - run:
+          name: Install xcbeautify using Mint
+          command: mint install cpisciotta/xcbeautify@1.6.0
 
   install-rubydocker-dependencies:
     steps:
@@ -625,7 +646,10 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 14.5

@@ -131,7 +131,8 @@ public extension Offerings {
             returnOffering =  placements.fallbackOfferingId.flatMap { self.all[$0]}
         }
 
-        return returnOffering?.copyWith(placementIdentifier: placementIdentifier)
+        return returnOffering?.copyWith(placementIdentifier: placementIdentifier,
+                                        targeting: self.targeting)
     }
 }
 

@@ -63,6 +63,8 @@ private extension Store {
         case .promotional: return "promotional"
         case .amazon: return "amazon"
         case .unknownStore: return nil
+        case .rcBilling: return "rc_billing"
+        case .external: return "external"
         }
     }
 

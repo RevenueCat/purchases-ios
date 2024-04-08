@@ -3189,6 +3189,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCUnknownStore SWIFT_COMPILE_NAME("unknownStore") = 5,
 /// For entitlements granted via the Amazon Store.
   RCAmazon SWIFT_COMPILE_NAME("amazon") = 6,
+/// For entitlements granted via RC Billing
+  RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
 };
 
 
