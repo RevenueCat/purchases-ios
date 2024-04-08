@@ -40,7 +40,7 @@
         "text3": "#FFFFFF"
       }
     },
-    "color_overrides_by_tier": {
+    "colors_by_tier": {
       "standard": {
         "light": {
           "callToActionBackground": "#00FF00"
@@ -61,7 +61,7 @@
     "images": {
       "header": "954459_1703109702.png"
     },
-    "image_overrides_by_tier": {
+    "images_by_tier": {
       "premium": {
         "header": "header.heic"
       }
