@@ -74,8 +74,36 @@ extension Package: VariableDataProvider {
         return self.storeProduct.localizedTitle
     }
 
+    func toPackageType(product: StoreProduct) -> PackageType? {
+        guard let period = product.subscriptionPeriod else {
+            return nil
+        }
+
+        product.productType
+
+        switch (period.value, period.unit) {
+        case (_, .day):
+            return nil
+        case (1, .week):
+            return .weekly
+        case (1, .month):
+            return .monthly
+        case (2, .month):
+            return .twoMonth
+        case (3, .month):
+            return .threeMonth
+        case (6, .month):
+            return .sixMonth
+        case (1, .year):
+            return .annual
+        default:
+            return nil
+        }
+    }
+
     func periodNameOrIdentifier(_ locale: Locale) -> String {
-        return Localization.localized(packageType: self.packageType,
+        let packageType = toPackageType(product: self.storeProduct) ?? self.packageType
+        return Localization.localized(packageType: packageType,
                                       locale: locale) ?? self.identifier
     }
 
