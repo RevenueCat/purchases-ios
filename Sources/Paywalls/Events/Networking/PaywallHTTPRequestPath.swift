@@ -52,4 +52,11 @@ extension HTTPRequest.PaywallPath: HTTPRequestPath {
         }
     }
 
+    var name: String {
+        switch self {
+        case .postEvents:
+            return "post_paywall_events"
+        }
+    }
+
 }
