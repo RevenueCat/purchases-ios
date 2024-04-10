@@ -260,7 +260,8 @@ extension ETagManager.Response {
             httpStatusCode: self.statusCode,
             responseHeaders: headers,
             body: self.data,
-            requestDate: requestDate
+            requestDate: requestDate,
+            origin: .cache
         )
         .verified(with: responseVerificationResult)
     }
