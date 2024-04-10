@@ -86,4 +86,5 @@ Pre-built `.frameworks` are no longer included in releases, only `.xcframeworks`
 
 ## Breaking Changes
 
-- The scope of `onChangeOf` is changed from `public` to `internal`
+- The scope of the View extension `onChangeOf` is changed from `public` to `internal`
+  - This was never intended to be made public and to be used outside of the RevenueCat SDK
