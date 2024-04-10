@@ -64,7 +64,7 @@ extension BackendConfiguration {
     /// Adds the `operation` to the diagnostics `OperationQueue` potentially adding a random delay.
     func addDiagnosticsOperation(
         _ operation: NetworkOperation,
-        delay: Delay
+        delay: Delay = .long
     ) {
         self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
             self.diagnosticsQueue.addOperation(operation)
