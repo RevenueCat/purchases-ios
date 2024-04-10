@@ -126,6 +126,7 @@
 		2DEAC2DD26EFE46E006914ED /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DEAC2DC26EFE46E006914ED /* AppDelegate.swift */; };
 		2DEAC2E626EFE470006914ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DEAC2E526EFE470006914ED /* Assets.xcassets */; };
 		2DFF6C56270CA28800ECAFAB /* MockRequestFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B517926D44FF000BD2BD7 /* MockRequestFetcher.swift */; };
+		35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */; };
 		351B513D26D4491E00BD2BD7 /* MockDeviceCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */; };
 		351B513F26D4496000BD2BD7 /* MockIdentityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */; };
 		351B514126D4498F00BD2BD7 /* MockBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B514026D4498F00BD2BD7 /* MockBackend.swift */; };
@@ -924,6 +925,7 @@
 		2DEC0CFB24A2A1B100B0E5BB /* Package.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = SOURCE_ROOT; };
 		33FFC8744F2BAE7BD8889A4C /* Pods_RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostDiagnosticsTests.swift; sourceTree = "<group>"; };
 		351B513C26D4491E00BD2BD7 /* MockDeviceCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceCache.swift; sourceTree = "<group>"; };
 		351B513E26D4496000BD2BD7 /* MockIdentityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockIdentityManager.swift; sourceTree = "<group>"; };
 		351B514026D4498F00BD2BD7 /* MockBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBackend.swift; sourceTree = "<group>"; };
@@ -2638,6 +2640,7 @@
 				5796A39827D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift */,
 				57DB164F298C4327008F6707 /* BackendSignatureVerificationTests.swift */,
 				5796A38027D6B78500653165 /* BaseBackendTest.swift */,
+				35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -3730,6 +3733,7 @@
 				5752E8482892DC500069281E /* ErrorUtilsTests.swift in Sources */,
 				57488BF229CB84D40000EE7E /* BackendOfflineEntitlementsTests.swift in Sources */,
 				57554C88282AC293009A7E58 /* PurchaseOwnershipTypeTests.swift in Sources */,
+				35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */,
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
 				4FE6FEEA2AA940E300780B45 /* PaywallEventStoreTests.swift in Sources */,
 				57057FF828B0048900995F21 /* TestLogHandler.swift in Sources */,
