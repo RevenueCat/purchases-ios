@@ -359,6 +359,7 @@ private struct PackageButton: View {
             }
 
             Text(secondRow)
+                .frame(maxWidth: .infinity)
                 .font(self.font(for: .title3).weight(.regular))
         }
     }

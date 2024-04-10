@@ -322,7 +322,7 @@ private extension SamplePaywallLoader {
         return .init(
             templateName: PaywallTemplate.template4.rawValue,
             config: .init(
-                packages: Array<PackageType>([.monthly, .sixMonth, .annual])
+                packages: Array<PackageType>([.monthly, .annual, .lifetime])
                     .map { Package.string(from: $0)! },
                 defaultPackage: Package.string(from: .sixMonth)!,
                 images: .init(background: "300883_1690710097.jpg"),
