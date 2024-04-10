@@ -19,6 +19,7 @@ class BackendConfiguration {
 
     let operationDispatcher: OperationDispatcher
     let operationQueue: OperationQueue
+    let diagnosticsQueue: OperationQueue
     let dateProvider: DateProvider
     let systemInfo: SystemInfo
     let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
@@ -26,12 +27,14 @@ class BackendConfiguration {
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
+         diagnosticsQueue: OperationQueue,
          systemInfo: SystemInfo,
          offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
          dateProvider: DateProvider = DateProvider()) {
         self.httpClient = httpClient
         self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
+        self.diagnosticsQueue = diagnosticsQueue
         self.offlineCustomerInfoCreator = offlineCustomerInfoCreator
         self.dateProvider = dateProvider
         self.systemInfo = systemInfo
@@ -55,6 +58,16 @@ extension BackendConfiguration {
     ) {
         self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
             self.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        }
+    }
+
+    /// Adds the `operation` to the diagnostics `OperationQueue` potentially adding a random delay.
+    func addDiagnosticsOperation(
+        _ operation: NetworkOperation,
+        delay: Delay = .long
+    ) {
+        self.operationDispatcher.dispatchOnWorkerThread(delay: delay) {
+            self.diagnosticsQueue.addOperation(operation)
         }
     }
 

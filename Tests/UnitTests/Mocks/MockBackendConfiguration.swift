@@ -27,6 +27,7 @@ class MockBackendConfiguration: BackendConfiguration {
             httpClient: httpClient,
             operationDispatcher: MockOperationDispatcher(),
             operationQueue: Backend.QueueProvider.createBackendQueue(),
+            diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
             systemInfo: systemInfo,
             offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)

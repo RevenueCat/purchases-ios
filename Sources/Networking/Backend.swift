@@ -41,6 +41,7 @@ class Backend {
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
+                                          diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
@@ -169,8 +170,16 @@ extension Backend {
 
         static func createBackendQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
-            operationQueue.name = "Backend Queue"
+            operationQueue.name = "RC Backend Queue"
             operationQueue.maxConcurrentOperationCount = 1
+            return operationQueue
+        }
+
+        static func createDiagnosticsQueue() -> OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "RC Diagnostics Queue"
+            operationQueue.maxConcurrentOperationCount = 1
+            operationQueue.qualityOfService = .background
             return operationQueue
         }
 

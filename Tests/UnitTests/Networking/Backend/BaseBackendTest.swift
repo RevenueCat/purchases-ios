@@ -61,6 +61,7 @@ class BaseBackendTests: TestCase {
             httpClient: self.httpClient,
             operationDispatcher: self.operationDispatcher,
             operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+            diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
             systemInfo: self.systemInfo,
             offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
