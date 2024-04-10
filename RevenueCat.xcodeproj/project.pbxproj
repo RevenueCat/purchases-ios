@@ -190,6 +190,8 @@
 		35AAEB4C2BBC39D100A12548 /* DiagnosticsFileHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB4A2BBC380600A12548 /* DiagnosticsFileHandlerTests.swift */; };
 		35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */; };
 		35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */; };
+		35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D159CA2BC4396F004D8061 /* DiagnosticsPostOperation.swift */; };
+		35D159CD2BC43A92004D8061 /* DiagnosticsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D159CC2BC43A92004D8061 /* DiagnosticsAPI.swift */; };
 		35D159D12BC492E4004D8061 /* DiagnosticsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D159D02BC492E4004D8061 /* DiagnosticsHTTPRequestPath.swift */; };
 		35D832CD262A5B7500E60AC5 /* ETagManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832CC262A5B7500E60AC5 /* ETagManager.swift */; };
 		35D832D2262E56DB00E60AC5 /* HTTPStatusCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */; };
@@ -956,6 +958,8 @@
 		35AAEB482BBB17B500A12548 /* DiagnosticsEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsEntry.swift; sourceTree = "<group>"; };
 		35AAEB4A2BBC380600A12548 /* DiagnosticsFileHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsFileHandlerTests.swift; sourceTree = "<group>"; };
 		35D0E5CF26A5886C0099EAD8 /* ErrorUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorUtils.swift; sourceTree = "<group>"; };
+		35D159CA2BC4396F004D8061 /* DiagnosticsPostOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsPostOperation.swift; sourceTree = "<group>"; };
+		35D159CC2BC43A92004D8061 /* DiagnosticsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsAPI.swift; sourceTree = "<group>"; };
 		35D159D02BC492E4004D8061 /* DiagnosticsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsHTTPRequestPath.swift; sourceTree = "<group>"; };
 		35D832CC262A5B7500E60AC5 /* ETagManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETagManager.swift; sourceTree = "<group>"; };
 		35D832D1262E56DB00E60AC5 /* HTTPStatusCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPStatusCode.swift; sourceTree = "<group>"; };
@@ -2179,6 +2183,7 @@
 			isa = PBXGroup;
 			children = (
 				35D159D02BC492E4004D8061 /* DiagnosticsHTTPRequestPath.swift */,
+				35D159CA2BC4396F004D8061 /* DiagnosticsPostOperation.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -2197,6 +2202,7 @@
 				B378156B285A9729000A7B93 /* OfferingsAPI.swift */,
 				57488BC529CB7BDC0000EE7E /* OfflineEntitlementsAPI.swift */,
 				5723FBBD28EDE1360003BA16 /* InternalAPI.swift */,
+				35D159CC2BC43A92004D8061 /* DiagnosticsAPI.swift */,
 			);
 			path = Networking;
 			sourceTree = "<group>";
@@ -3465,6 +3471,7 @@
 				2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */,
 				57DC9F4627CC2E4900DA6AF9 /* HTTPRequest.swift in Sources */,
 				2DC5623024EC63730031F69B /* OperationDispatcher.swift in Sources */,
+				35D159CB2BC4396F004D8061 /* DiagnosticsPostOperation.swift in Sources */,
 				575642B62910116900719219 /* EligibilityStrings.swift in Sources */,
 				4F87610F2A5C9E490006FA14 /* PaywallData.swift in Sources */,
 				57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */,
@@ -3680,6 +3687,7 @@
 				57DE807328074C76008D6C6F /* SK2Storefront.swift in Sources */,
 				57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */,
 				4DC546272AD44BBE005CDB35 /* EncodedAppleReceipt.swift in Sources */,
+				35D159CD2BC43A92004D8061 /* DiagnosticsAPI.swift in Sources */,
 				37E350C67712B9E054FEF297 /* AttributionData.swift in Sources */,
 				37E3578711F5FDD5DC6458A8 /* AttributionFetcher.swift in Sources */,
 				B302206A27271BCB008F1A0D /* Decoder+Extensions.swift in Sources */,
