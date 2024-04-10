@@ -158,6 +158,12 @@ public class PaywallViewController: UIViewController {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
     }
 
+    // Override touch events to deal with: https://github.com/RevenueCat/purchases-flutter/issues/1023
+    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {}
+    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {}
+
     // MARK: - Internal
 
     class var mode: PaywallViewMode {
