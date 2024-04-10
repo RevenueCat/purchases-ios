@@ -355,6 +355,7 @@ private struct PackageButton: View {
         VStack {
             if let firstRow {
                 Text(firstRow)
+                    .frame(maxWidth: .infinity)
                     .font(self.font(for: .title).bold())
             }
 
