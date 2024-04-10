@@ -235,7 +235,6 @@ extension VerifiedHTTPResponse {
 enum HTTPResponseOrigin {
 
     case backend
-
     case cache
 
 }
