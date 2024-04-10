@@ -81,19 +81,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4F34FF682A60AEE300AADF11 /* Views */ = {
+		4F34FF682A60AEE300AADF11 /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
-				4FC046C32A572E3700A28BCF /* DebugView.swift */,
-				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
-				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
-				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
-				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
-				2D708C7E2AC6050000336AC8 /* UpsellView.swift */,
-				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
+				88DFC12C2BC7306100273B6D /* Views */,
 			);
-			path = Views;
+			path = UI;
 			sourceTree = "<group>";
 		};
 		4F6BED912A26A64200CD9322 = {
@@ -126,7 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				4FC046BC2A572E3700A28BCF /* SimpleApp.swift */,
-				4F34FF682A60AEE300AADF11 /* Views */,
+				4F34FF682A60AEE300AADF11 /* UI */,
 				4FC046CA2A572EF300A28BCF /* Config */,
 				4FC046C02A572E3700A28BCF /* Preview Content */,
 			);
@@ -153,6 +146,21 @@
 				4F4557E42A6FFE6A00160521 /* Localizable.strings */,
 			);
 			name = Config;
+			sourceTree = "<group>";
+		};
+		88DFC12C2BC7306100273B6D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
+				4FC046C32A572E3700A28BCF /* DebugView.swift */,
+				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
+				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
+				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
+				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
+				2D708C7E2AC6050000336AC8 /* UpsellView.swift */,
+				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
