@@ -355,10 +355,12 @@ private struct PackageButton: View {
         VStack {
             if let firstRow {
                 Text(firstRow)
+                    .frame(maxWidth: .infinity)
                     .font(self.font(for: .title).bold())
             }
 
             Text(secondRow)
+                .frame(maxWidth: .infinity)
                 .font(self.font(for: .title3).weight(.regular))
         }
     }
