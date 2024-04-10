@@ -76,6 +76,12 @@ extension HTTPRequest {
 
     }
 
+    enum DiagnosticsPath: Hashable {
+
+        case postDiagnostics
+
+    }
+
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {
