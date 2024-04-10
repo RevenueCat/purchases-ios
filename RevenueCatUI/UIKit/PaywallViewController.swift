@@ -22,7 +22,7 @@ import UIKit
 /// - Seealso: ``PaywallView`` for `SwiftUI`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 @objc(RCPaywallViewController)
-public class PaywallViewController: UIViewController {
+open class PaywallViewController: UIViewController {
 
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
