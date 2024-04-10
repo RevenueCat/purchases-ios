@@ -59,10 +59,10 @@ extension DiagnosticsPostOperation {
 
     struct Body: Encodable, HTTPRequestBody {
 
-        let entries: DiagnosticsEntries
+        let data: AnyEncodable
 
         init(entries: DiagnosticsEntries) {
-            self.entries = entries
+            self.data = AnyEncodable(entries)
         }
 
     }
