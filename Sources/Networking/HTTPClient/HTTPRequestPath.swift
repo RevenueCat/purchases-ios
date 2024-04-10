@@ -33,6 +33,9 @@ protocol HTTPRequestPath {
     /// The path component for this endpoint.
     var pathComponent: String { get }
 
+    /// The name of the endpoint.
+    var name: String { get }
+
 }
 
 extension HTTPRequestPath {
@@ -189,6 +192,45 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getProductEntitlementMapping:
             return "product_entitlement_mapping"
+
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .getCustomerInfo:
+            return "get_customer"
+
+        case .getOfferings:
+            return "get_offerings"
+
+        case .getIntroEligibility:
+            return "get_intro_eligibility"
+
+        case .logIn:
+            return "log_in"
+
+        case .postAttributionData:
+            return "post_attribution"
+
+        case .postAdServicesToken:
+            return "post_adservices_token"
+
+        case .postOfferForSigning:
+            return "post_offer_for_signing"
+
+        case .postReceiptData:
+            return "post_receipt"
+
+        case .postSubscriberAttributes:
+            return "post_attributes"
+
+        case .health:
+            return "post_health"
+
+        case .getProductEntitlementMapping:
+            return "get_product_entitlement_mapping"
+
         }
     }
 
