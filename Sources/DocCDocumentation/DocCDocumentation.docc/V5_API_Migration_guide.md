@@ -83,3 +83,8 @@ The minimum targets have been raised to the folllowing:
 ## Release Assets
 
 Pre-built `.frameworks` are no longer included in releases, only `.xcframeworks`: https://github.com/RevenueCat/purchases-ios/pull/3582
+
+## Breaking Changes
+
+- The scope of the View extension `onChangeOf` is changed from `public` to `internal`
+  - This was never intended to be made public and to be used outside of the RevenueCat SDK

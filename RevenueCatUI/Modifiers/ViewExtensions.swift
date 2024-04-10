@@ -35,7 +35,7 @@ extension View {
     /// Wraps the 2 `onChange(of:)` implementations in iOS 17+ and below depending on what's available
     @inlinable
     @ViewBuilder
-    public func onChangeOf<V>(
+    func onChangeOf<V>(
         _ value: V,
         perform action: @escaping (_ newValue: V) -> Void
     ) -> some View where V: Equatable {
