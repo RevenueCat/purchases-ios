@@ -103,3 +103,20 @@ extension VerificationResult: CustomDebugStringConvertible {
     }
 
 }
+
+extension VerificationResult {
+
+    var name: String {
+        switch self {
+        case .notRequested:
+            return "NOT_REQUESTED"
+        case .verified:
+            return "VERIFIED"
+        case .verifiedOnDevice:
+            return "VERIFIED_ON_DEVICE"
+        case .failed:
+            return "FAILED"
+        }
+    }
+
+}
