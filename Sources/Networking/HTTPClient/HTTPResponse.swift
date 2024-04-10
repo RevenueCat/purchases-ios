@@ -28,6 +28,7 @@ protocol HTTPResponseType {
     var responseHeaders: HTTPClient.ResponseHeaders { get }
     var body: Body { get }
     var requestDate: Date? { get }
+    var origin: HTTPResponseOrigin { get }
 
 }
 
@@ -37,6 +38,7 @@ struct HTTPResponse<Body: HTTPResponseBody>: HTTPResponseType {
     var responseHeaders: HTTPClient.ResponseHeaders
     var body: Body
     var requestDate: Date?
+    var origin: HTTPResponseOrigin = .backend
 
 }
 
@@ -123,6 +125,8 @@ extension HTTPURLResponse: HTTPResponseType {
     var body: Data? { return nil }
 
     var requestDate: Date? { HTTPResponse<Data>.parseRequestDate(headers: self.responseHeaders) }
+
+    var origin: HTTPResponseOrigin { .backend }
 
 }
 
@@ -217,6 +221,7 @@ extension VerifiedHTTPResponse {
     var responseHeaders: HTTPClient.ResponseHeaders { self.response.responseHeaders }
     var body: Body { self.response.body }
     var requestDate: Date? { self.response.requestDate }
+    var origin: HTTPResponseOrigin { self.response.origin }
 
     func mapBody<NewBody>(_ mapping: (Body) throws -> NewBody) rethrows -> VerifiedHTTPResponse<NewBody> {
         return .init(
@@ -224,5 +229,12 @@ extension VerifiedHTTPResponse {
             verificationResult: self.verificationResult
         )
     }
+
+}
+
+enum HTTPResponseOrigin {
+
+    case backend
+    case cache
 
 }
