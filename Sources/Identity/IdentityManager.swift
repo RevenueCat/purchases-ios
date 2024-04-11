@@ -118,13 +118,18 @@ class IdentityManager: CurrentUserProvider {
 extension IdentityManager {
     
     @objc private func ubiquitousKeyValueStoreDidChange(notification: Notification) {
-        logOut { error in
-            if let error {
-                // todo: add delegate call here informing of the issue.
-            } else {
-                // todo: add delegate call here informing that we've detected an account logout
-                // and that we're automatically logging out the user.
+        guard let userInfo = notification.userInfo else { return }
+
+        if let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? NSNumber {
+            if reason.intValue == NSUbiquitousKeyValueStoreAccountChange {
+                // todo: log
+                // app store account change detected
             }
+        }
+
+        let newAppUserID = cloudSyncedAnonymousIDProvider.appUserID
+        logIn(appUserID: newAppUserID) { response in
+            // todo
         }
     }
 
@@ -200,6 +205,7 @@ private extension IdentityManager {
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
     }
+
 }
 
 // @unchecked because:
