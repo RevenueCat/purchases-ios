@@ -20,9 +20,9 @@ enum DiagnosticsStrings {
     case timing_message(message: String, duration: TimeInterval)
     case could_not_create_diagnostics_tracker
 
-    case event_flush_already_in_progress
-    case event_flush_with_empty_store
-    case event_flush_starting(count: Int)
+    case event_sync_already_in_progress
+    case event_sync_with_empty_store
+    case event_sync_starting(count: Int)
 
     case error_fetching_events(error: Error)
 
@@ -39,13 +39,13 @@ extension DiagnosticsStrings: LogMessage {
         case .could_not_create_diagnostics_tracker:
             return "Could not create DiagnosticsTracker"
 
-        case .event_flush_already_in_progress:
+        case .event_sync_already_in_progress:
             return "Diagnostics event flushing already in progress. Skipping."
 
-        case .event_flush_with_empty_store:
+        case .event_sync_with_empty_store:
             return "Diagnostics event flushing requested with empty store."
 
-        case let .event_flush_starting(count):
+        case let .event_sync_starting(count):
             return "Diagnostics event flush: posting \(count) events."
 
         case let .error_fetching_events(error):

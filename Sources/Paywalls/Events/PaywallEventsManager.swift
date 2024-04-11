@@ -72,7 +72,7 @@ actor PaywallEventsManager: PaywallEventsManagerType {
 
             return events.count
         } catch {
-            Logger.error(Strings.paywalls.event_flush_failed(error))
+            Logger.error(Strings.paywalls.event_sync_failed(error))
 
             if let backendError = error as? BackendError,
                backendError.successfullySynced {

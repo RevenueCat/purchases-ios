@@ -18,7 +18,7 @@ struct DiagnosticsEvent: Codable, Equatable {
     let version: Int = 1
     let eventType: DiagnosticsEvent.EventType
     let properties: [String: AnyEncodable]
-    let timestamp: Date = Date()
+    let timestamp: Date
 
     enum CodingKeys: String, CodingKey {
         case version, properties, timestamp, eventType

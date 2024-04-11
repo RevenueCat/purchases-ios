@@ -40,7 +40,7 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithOneEvent() {
-        let event = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                      properties: ["key": AnyEncodable("value")],
                                      timestamp: Self.eventTimestamp1)
 
@@ -52,11 +52,11 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     }
 
     func testPostDiagnosticsEventsWithMultipleEvents() {
-        let event1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                       properties: ["key": AnyEncodable("value")],
                                       timestamp: Self.eventTimestamp1)
 
-        let event2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let event2 = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                       properties: ["key": AnyEncodable("value")],
                                       timestamp: Self.eventTimestamp2)
 
