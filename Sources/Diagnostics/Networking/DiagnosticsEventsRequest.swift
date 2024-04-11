@@ -58,7 +58,6 @@ extension DiagnosticsEventsRequest.Event {
 
 // MARK: - Codable
 
-
 extension DiagnosticsEventsRequest.Event: Encodable {
 
     enum CodingKeys: String, CodingKey {

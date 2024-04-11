@@ -60,8 +60,8 @@ class InternalAPI {
         }
 
         let operation = DiagnosticsPostOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
-                                                request: .init(events: events),
-                                                responseHandler: completion)
+                                                 request: .init(events: events),
+                                                 responseHandler: completion)
 
         self.backendConfig.addDiagnosticsOperation(operation, delay: .long)
     }
