@@ -15,54 +15,32 @@ import Foundation
 
 final class DiagnosticsPostOperation: NetworkOperation {
 
-    private let configuration: BackendConfiguration
-    private let entries: [DiagnosticsEvent]
-    private let responseHandler: DiagnosticsAPI.ResponseHandler
+    private let configuration: Configuration
+    private let request: DiagnosticsEventsRequest
+    private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
-        configuration: BackendConfiguration,
-        entries: [DiagnosticsEvent],
-        responseHandler: @escaping DiagnosticsAPI.ResponseHandler
+        configuration: Configuration,
+        request: DiagnosticsEventsRequest,
+        responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.configuration = configuration
-        self.entries = entries
+        self.request = request
         self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
     }
 
     override func begin(completion: @escaping () -> Void) {
-        self.postDiagnostics(completion: completion)
-    }
-
-    private func postDiagnostics(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(Body(entries: self.entries)),
-                                  path: .postDiagnostics)
+        let request = HTTPRequest(method: .post(self.request), path: .postDiagnostics)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {
                 completion()
             }
-            self.responseHandler(
-                response
-                    .map { _ in () }
-                    .mapError(BackendError.networkError)
-            )
+
+            self.responseHandler?(response.error.map(BackendError.networkError))
         }
-    }
-
-}
-
-extension DiagnosticsPostOperation {
-
-    struct Body: Encodable, HTTPRequestBody {
-
-        let entries: [DiagnosticsEvent]
-
-        init(entries: [DiagnosticsEvent]) {
-            self.entries = entries
-        }
-
     }
 
 }

@@ -17,94 +17,64 @@ import XCTest
 
 @testable import RevenueCat
 
-class BackendPostDiagnosticsTests: TestCase {
-
-    private(set) var systemInfo: SystemInfo!
-    private(set) var httpClient: MockHTTPClient!
-    private(set) var operationDispatcher: MockOperationDispatcher!
-    private(set) var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
-    private(set) var mockOfflineCustomerInfoCreator: MockOfflineCustomerInfoCreator!
-    private(set) var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
-    private(set) var backend: Backend!
-    private(set) var api: DiagnosticsAPI!
-
-    static let apiKey = "asharedsecret"
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class BackendPostDiagnosticsTests: BaseBackendTests {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.createDependencies()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
     }
 
-    final func createDependencies(dangerousSettings: DangerousSettings? = nil) {
-        self.systemInfo =  SystemInfo(
-            platformInfo: nil,
-            finishTransactions: true,
-            storefrontProvider: MockStorefrontProvider(),
-            responseVerificationMode: self.responseVerificationMode,
-            dangerousSettings: .init()
-        )
-        self.httpClient = self.createClient()
-        self.operationDispatcher = MockOperationDispatcher()
-        self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
-        self.mockOfflineCustomerInfoCreator = MockOfflineCustomerInfoCreator()
-        self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
-
-        let backendConfig = BackendConfiguration(
-            httpClient: self.httpClient,
-            operationDispatcher: self.operationDispatcher,
-            operationQueue: MockBackend.QueueProvider.createBackendQueue(),
-            diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
-            systemInfo: self.systemInfo,
-            offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
-            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
-        )
-
-        self.api = DiagnosticsAPI(backendConfig: backendConfig)
+    override func createClient() -> MockHTTPClient {
+        super.createClient(#file)
     }
 
-    func createClient() -> MockHTTPClient {
-        let eTagManager = MockETagManager()
+    func testPostDiagnosticsEventsWithNoEventsMakesNoRequests() {
+        let error = waitUntilValue { completion in
+            self.internalAPI.postDiagnosticsEvents(events: [], completion: completion)
+        }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
-                              eTagManager: eTagManager,
-                              sourceTestFile: #file)
+        expect(error).to(beNil())
+        expect(self.httpClient.calls).to(beEmpty())
     }
 
-    func testPostDiagnosticsCallsHttpClient() throws {
+    func testPostDiagnosticsEventsWithOneEvent() {
+        let event = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                     properties: ["key": AnyEncodable("value")],
+                                     timestamp: Self.eventTimestamp1)
+
+        let error = waitUntilValue { completion in
+            self.internalAPI.postDiagnosticsEvents(events: [event], completion: completion)
+        }
+
+        expect(error).to(beNil())
+    }
+
+    func testPostDiagnosticsEventsWithMultipleEvents() {
         let event1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
                                       properties: ["key": AnyEncodable("value")],
-                                      timestamp: Date())
+                                      timestamp: Self.eventTimestamp1)
 
         let event2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
                                       properties: ["key": AnyEncodable("value")],
-                                      timestamp: Date())
+                                      timestamp: Self.eventTimestamp2)
 
-        self.httpClient.mock(
-            requestPath: .postDiagnostics,
-            response: .init(statusCode: .success)
-        )
-
-        waitUntil { completed in
-            self.api.postDiagnostics(items: [event1, event2]) { _ in
-                completed()
-            }
+        let error = waitUntilValue { completion in
+            self.internalAPI.postDiagnosticsEvents(events: [event1, event2], completion: completion)
         }
 
-        expect(self.httpClient.calls).to(haveCount(1))
+        expect(error).to(beNil())
     }
 
 }
 
-extension BackendPostDiagnosticsTests {
+// MARK: -
 
-    private var responseVerificationMode: Signing.ResponseVerificationMode {
-        if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
-            return Signing.verificationMode(with: .disabled)
-        } else {
-            return .disabled
-        }
-    }
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension BackendPostDiagnosticsTests {
+
+    static let eventTimestamp1: Date = .init(timeIntervalSince1970: 1694029328)
+    static let eventTimestamp2: Date = .init(timeIntervalSince1970: 1694022321)
 
 }
