@@ -26,6 +26,10 @@ func paywallViewControllerAPI(_ delegate: Delegate,
     let _: UIViewController = PaywallViewController(offering: offering,
                                                     displayCloseButton: true,
                                                     dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallViewController(offering: offering,
+                                                    displayCloseButton: true,
+                                                    shouldBlockTouchEvents: true,
+                                                    dismissRequestedHandler: dismissRequestedHandler)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering, fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offering: offering,
@@ -35,6 +39,11 @@ func paywallViewControllerAPI(_ delegate: Delegate,
                                                     fonts: fontProvider,
                                                     displayCloseButton: true,
                                                     dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallViewController(offering: offering,
+                                                    fonts: fontProvider,
+                                                    displayCloseButton: true,
+                                                    shouldBlockTouchEvents: true,
+                                                    dismissRequestedHandler: dismissRequestedHandler)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", displayCloseButton: true)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering", fonts: fontProvider)
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
@@ -43,6 +52,11 @@ func paywallViewControllerAPI(_ delegate: Delegate,
     let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
                                                     fonts: fontProvider,
                                                     displayCloseButton: true,
+                                                    dismissRequestedHandler: dismissRequestedHandler)
+    let _: UIViewController = PaywallViewController(offeringIdentifier: "offering",
+                                                    fonts: fontProvider,
+                                                    displayCloseButton: true,
+                                                    shouldBlockTouchEvents: true,
                                                     dismissRequestedHandler: dismissRequestedHandler)
     let _: UIViewController = PaywallFooterViewController(offeringIdentifier: "offering", fontName: "Papyrus")
 
