@@ -362,7 +362,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              appUserID: appUserID)
+                                              appUserID: appUserID,
+                                              cloudSyncedAnonymousIDMode: systemInfo.dangerousSettings.cloudSyncedAnonymousIDs)
 
         let paywallEventsManager: PaywallEventsManagerType?
         do {
