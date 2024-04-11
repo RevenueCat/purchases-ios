@@ -36,6 +36,7 @@ class CloudSyncedAnonymousIDProvider {
         }
     }
 
+    // todo: add checks for this
     func isKeyValueStoreAvailable() -> Bool {
         let token = FileManager.default.ubiquityIdentityToken
         return token != nil
