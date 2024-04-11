@@ -73,23 +73,13 @@ class BackendPostDiagnosticsTests: TestCase {
     }
 
     func testPostDiagnosticsCallsHttpClient() throws {
-        let event1 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T12:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
+        let event1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                      properties: ["key": AnyEncodable("value")],
+                                      timestamp: Date())
 
-        let event2 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T13:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
+        let event2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+                                      properties: ["key": AnyEncodable("value")],
+                                      timestamp: Date())
 
         self.httpClient.mock(
             requestPath: .postDiagnostics,

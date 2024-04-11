@@ -13,17 +13,15 @@
 
 import Foundation
 
-typealias DiagnosticsEntries = [String]
-
 final class DiagnosticsPostOperation: NetworkOperation {
 
     private let configuration: BackendConfiguration
-    private let entries: DiagnosticsEntries
+    private let entries: [DiagnosticsEvent]
     private let responseHandler: DiagnosticsAPI.ResponseHandler
 
     init(
         configuration: BackendConfiguration,
-        entries: DiagnosticsEntries,
+        entries: [DiagnosticsEvent],
         responseHandler: @escaping DiagnosticsAPI.ResponseHandler
     ) {
         self.configuration = configuration
@@ -59,10 +57,10 @@ extension DiagnosticsPostOperation {
 
     struct Body: Encodable, HTTPRequestBody {
 
-        let data: AnyEncodable
+        let entries: [DiagnosticsEvent]
 
-        init(entries: DiagnosticsEntries) {
-            self.data = AnyEncodable(entries)
+        init(entries: [DiagnosticsEvent]) {
+            self.entries = entries
         }
 
     }

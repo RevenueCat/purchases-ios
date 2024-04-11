@@ -24,7 +24,7 @@ final class DiagnosticsAPI: Sendable {
     }
 
     func postDiagnostics(
-        items: DiagnosticsEntries,
+        items: [DiagnosticsEvent],
         completion: @escaping DiagnosticsAPI.ResponseHandler
     ) {
         self.backendConfig.addDiagnosticsOperation(
