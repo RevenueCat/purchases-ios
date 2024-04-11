@@ -80,7 +80,6 @@ private extension PaywallTemplate {
 extension PaywallData {
 
     @ViewBuilder
-    // swiftlint:disable:next function_parameter_count
     func createView(for offering: Offering,
                     template: PaywallTemplate,
                     configuration: Result<TemplateViewConfiguration, Error>,
