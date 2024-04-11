@@ -143,11 +143,9 @@ extension IdentityManager {
 private extension IdentityManager {
 
     func performLogIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
-        // todo: update warning message, we want to warn that you're logging in in this mode,
-        // which maybe is an accident, and that you should check that you're using the right
-        // tranfer behavior
         if cloudSyncedAnonymousIDMode {
-            Logger.warn(Strings.identity.deleting_attributes_none_found)
+            Logger.warn(Strings.identity.login_called_in_cloud_synced_appuserid_mode(oldUserID: currentAppUserID,
+                                                                                     newUserID: appUserID))
         }
 
         let oldAppUserID = self.currentAppUserID
@@ -191,9 +189,9 @@ private extension IdentityManager {
         let newAppUserID: String
         if self.cloudSyncedAnonymousIDMode &&
                 self.cloudSyncedAnonymousIDProvider.isCloudSyncedAnonymousID(appUserID: self.currentAppUserID) {
-            // todo: update with message about how we're switching to a new cloud synced ID.
-            Logger.info(Strings.identity.deleting_attributes_none_found)
             newAppUserID = self.cloudSyncedAnonymousIDProvider.resetAppUserID()
+            Logger.info(Strings.identity.logout_called_in_cloud_synced_appuserid_mode(oldUserID: self.currentAppUserID,
+                                                                                      newUserID: newAppUserID))
         } else {
             newAppUserID = Self.generateRandomID()
         }

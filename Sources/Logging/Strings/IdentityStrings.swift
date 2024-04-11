@@ -42,6 +42,10 @@ enum IdentityStrings {
 
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
 
+    case login_called_in_cloud_synced_appuserid_mode(oldUserID: String, newUserID: String)
+
+    case logout_called_in_cloud_synced_appuserid_mode(oldUserID: String, newUserID: String)
+
 }
 
 extension IdentityStrings: LogMessage {
@@ -80,7 +84,25 @@ extension IdentityStrings: LogMessage {
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."
+        case let .login_called_in_cloud_synced_appuserid_mode(oldUserID, newUserID):
+            return """
+            logIn() called with cloud synced appUserIDs enabled. This shouldn't be an issue, but the purchases
+            for the user will be transferred or blocked depending on the configuration in RevenueCat Dashboard.
+            Old user ID: \(oldUserID)
+            New user ID: \(newUserID)
+            More info: https://rev.cat/auth
+            """
+        case let .logout_called_in_cloud_synced_appuserid_mode(oldUserID, newUserID):
+            return """
+            logOut() called with cloud synced appUserIDs enabled. The current user will be logged out, and
+            a new appUserID will be generated.
+            Old user ID: \(oldUserID)
+            New user ID: \(newUserID)
+            """
+
         }
+
+
     }
 
     var category: String { return "identity" }
