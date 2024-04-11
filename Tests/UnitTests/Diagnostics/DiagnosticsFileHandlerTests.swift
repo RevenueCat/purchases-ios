@@ -82,7 +82,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T12:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -90,7 +90,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T13:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -118,8 +118,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T12:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -127,8 +126,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T13:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
