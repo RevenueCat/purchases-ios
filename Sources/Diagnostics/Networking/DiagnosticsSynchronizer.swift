@@ -26,7 +26,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     private let internalAPI: InternalAPI
     private let handler: DiagnosticsFileHandlerType
 
-    private var flushInProgress = false
+    private var syncInProgress = false
 
     init(
         internalAPI: InternalAPI,
@@ -37,30 +37,30 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     }
 
     func syncDiagnosticsIfNeeded() async throws {
-        guard !self.flushInProgress else {
-            Logger.debug(Strings.diagnostics.event_flush_already_in_progress)
+        guard !self.syncInProgress else {
+            Logger.debug(Strings.diagnostics.event_sync_already_in_progress)
             return
         }
 
-        self.flushInProgress = true
-        defer { self.flushInProgress = false }
+        self.syncInProgress = true
+        defer { self.syncInProgress = false }
 
         let events = await self.handler.getEntries()
         let count = events.count
 
         guard !events.isEmpty else {
-            Logger.verbose(Strings.diagnostics.event_flush_with_empty_store)
+            Logger.verbose(Strings.diagnostics.event_sync_with_empty_store)
             return
         }
 
-        Logger.verbose(Strings.diagnostics.event_flush_starting(count: count))
+        Logger.verbose(Strings.diagnostics.event_sync_starting(count: count))
 
         do {
             try await self.internalAPI.postDiagnosticsEvents(events: events)
 
             await self.handler.cleanSentDiagnostics(diagnosticsSentCount: count)
         } catch {
-            Logger.error(Strings.paywalls.event_flush_failed(error))
+            Logger.error(Strings.paywalls.event_sync_failed(error))
 
             if let backendError = error as? BackendError,
                backendError.successfullySynced {

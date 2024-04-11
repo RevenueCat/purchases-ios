@@ -35,4 +35,19 @@ class MockInternalAPI: InternalAPI {
         completion(self.stubbedPostPaywallEventsCompletionResult)
     }
 
+    var invokedPostDiagnosticsEvents: Bool = false
+    var invokedPostDiagnosticsEventsParameters: [[DiagnosticsEvent]] = []
+    var stubbedPostDiagnosticsEventsCompletionResult: BackendError?
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    override func postDiagnosticsEvents(
+        events: [DiagnosticsEvent],
+        completion: @escaping ResponseHandler
+    ) {
+        self.invokedPostDiagnosticsEvents = true
+        self.invokedPostDiagnosticsEventsParameters.append(events)
+
+        completion(self.stubbedPostDiagnosticsEventsCompletionResult)
+    }
+
 }
