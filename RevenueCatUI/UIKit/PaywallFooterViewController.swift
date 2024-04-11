@@ -38,6 +38,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .optionalOffering(offering),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
@@ -50,6 +51,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: DefaultPaywallFontProvider(),
                    displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
@@ -64,6 +66,7 @@ public final class PaywallFooterViewController: PaywallViewController {
         super.init(content: .offeringIdentifier(offeringIdentifier),
                    fonts: CustomPaywallFontProvider(fontName: fontName),
                    displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
@@ -72,11 +75,13 @@ public final class PaywallFooterViewController: PaywallViewController {
         content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         super.init(content: content,
                    fonts: fonts,
                    displayCloseButton: false,
+                   shouldBlockTouchEvents: false,
                    dismissRequestedHandler: dismissRequestedHandler)
     }
 
