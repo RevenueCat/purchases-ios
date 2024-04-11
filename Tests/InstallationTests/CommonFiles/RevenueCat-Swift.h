@@ -963,6 +963,11 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 
 
 
+
+SWIFT_CLASS("_TtC10RevenueCat24DiagnosticsPostOperation")
+@interface DiagnosticsPostOperation : NetworkOperation
+@end
+
 enum RCPeriodType : NSInteger;
 enum RCStore : NSInteger;
 enum RCPurchaseOwnershipType : NSInteger;
@@ -2439,6 +2444,17 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// Called immediately with cached offerings if rate limit reached. <code>Offerings</code> will be <code>nil</code> if an error occurred.
 ///
 - (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
+/// Syncs subscriber attributes and then fetches the configured offerings for this user. This method is intended to
+/// be called when using Targeting Rules with Custom Attributes. Any subscriber attributes should be set before
+/// calling this method to ensure the returned offerings are applied with the latest subscriber attributes.
+/// This method is rate limited to 5 calls per minute. It will log a warning and return offerings cache when reached.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/targeting">Targeting</a>
+///   </li>
+/// </ul>
+- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
 @property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED;
 - (void)setEmail:(NSString * _Nullable)email SWIFT_DEPRECATED;
@@ -2636,6 +2652,7 @@ SWIFT_CLASS_NAMED("PlatformInfo")
 
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
@@ -2669,18 +2686,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 - (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 - (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
-@end
-
-
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-+ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
-+ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
-+ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable dangerousSettings:(RCDangerousSettings * _Nullable)dangerousSettings SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
-/// Enable automatic collection of Apple Search Ads attribution. Defaults to <code>false</code>.
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAttributionCollection SWIFT_DEPRECATED_MSG("Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead");)
-+ (BOOL)automaticAppleSearchAdsAttributionCollection SWIFT_WARN_UNUSED_RESULT;
-+ (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)value;
+- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @end
 
 
@@ -2775,6 +2781,17 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAt
 /// returns:
 /// An instantiated <code>Purchases</code> object that has been set as a singleton.
 + (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode;
+@end
+
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
++ (RCPurchases * _Nonnull)configureWithAPIKey:(NSString * _Nonnull)apiKey appUserID:(NSString * _Nullable)appUserID observerMode:(BOOL)observerMode userDefaults:(NSUserDefaults * _Nullable)userDefaults useStoreKit2IfAvailable:(BOOL)useStoreKit2IfAvailable dangerousSettings:(RCDangerousSettings * _Nullable)dangerousSettings SWIFT_AVAILABILITY(maccatalyst,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(macos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(watchos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(tvos,deprecated=1,message="'configure' has been renamed to 'configure(with:)'") SWIFT_AVAILABILITY(ios,deprecated=1,message="'configure' has been renamed to 'configure(with:)'");
+/// Enable automatic collection of Apple Search Ads attribution. Defaults to <code>false</code>.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL automaticAppleSearchAdsAttributionCollection SWIFT_DEPRECATED_MSG("Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead");)
++ (BOOL)automaticAppleSearchAdsAttributionCollection SWIFT_WARN_UNUSED_RESULT;
++ (void)setAutomaticAppleSearchAdsAttributionCollection:(BOOL)value;
 @end
 
 
@@ -3124,10 +3141,10 @@ SWIFT_CLASS("_TtC10RevenueCat22PurchasesReceiptParser")
 
 
 
-
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
 - (BOOL)receiptHasTransactionsWithReceiptData:(NSData * _Nonnull)receiptData SWIFT_WARN_UNUSED_RESULT;
 @end
+
 
 
 @interface PurchasesReceiptParser (SWIFT_EXTENSION(RevenueCat))
@@ -3191,6 +3208,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCAmazon SWIFT_COMPILE_NAME("amazon") = 6,
 /// For entitlements granted via RC Billing
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
+/// For entitlements granted via RevenueCat’s External Purchases API.
+  RCExternal SWIFT_COMPILE_NAME("external") = 8,
 };
 
 
@@ -3579,13 +3598,13 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 
