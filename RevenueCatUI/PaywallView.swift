@@ -321,14 +321,20 @@ struct LoadedOfferingPaywallView: View {
 
     @ViewBuilder
     private var content: some View {
+        let configuration = self.paywall.configuration(
+            for: self.offering,
+            activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
+            template: self.template,
+            mode: self.mode,
+            fonts: self.fonts,
+            locale: self.locale
+        )
+
         let view = self.paywall
             .createView(for: self.offering,
-                        activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
                         template: self.template,
-                        mode: self.mode,
-                        fonts: self.fonts,
-                        introEligibility: self.introEligibility,
-                        locale: self.locale)
+                        configuration: configuration,
+                        introEligibility: self.introEligibility)
             .environmentObject(self.introEligibility)
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
@@ -350,7 +356,11 @@ struct LoadedOfferingPaywallView: View {
         if self.displayCloseButton {
             NavigationView {
                 view
-                    .toolbar { self.toolbar }
+                    .toolbar {
+                        self.makeToolbar(
+                            color: self.getCloseButtonColor(configuration: configuration)
+                        )
+                    }
             }
             .navigationViewStyle(.stack)
         } else {
@@ -369,7 +379,16 @@ struct LoadedOfferingPaywallView: View {
         )
     }
 
-    private var toolbar: some ToolbarContent {
+    private func getCloseButtonColor(configuration: Result<TemplateViewConfiguration, Error>) -> Color? {
+        switch configuration {
+        case .success(let configuration):
+            return configuration.colors.closeButtonColor
+        case .failure:
+            return nil
+        }
+    }
+
+    private func makeToolbar(color: Color?) -> some ToolbarContent {
         ToolbarItem(placement: .destructiveAction) {
             Button {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
@@ -379,6 +398,7 @@ struct LoadedOfferingPaywallView: View {
                 onRequestedDismissal()
             } label: {
                 Image(systemName: "xmark")
+                    .foregroundColor(color)
             }
             .disabled(self.purchaseHandler.actionInProgress)
             .opacity(
