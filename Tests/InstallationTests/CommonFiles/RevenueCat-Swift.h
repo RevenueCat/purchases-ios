@@ -2439,6 +2439,17 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// Called immediately with cached offerings if rate limit reached. <code>Offerings</code> will be <code>nil</code> if an error occurred.
 ///
 - (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
+/// Syncs subscriber attributes and then fetches the configured offerings for this user. This method is intended to
+/// be called when using Targeting Rules with Custom Attributes. Any subscriber attributes should be set before
+/// calling this method to ensure the returned offerings are applied with the latest subscriber attributes.
+/// This method is rate limited to 5 calls per minute. It will log a warning and return offerings cache when reached.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/targeting">Targeting</a>
+///   </li>
+/// </ul>
+- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)setAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
 @property (nonatomic) BOOL allowSharingAppStoreAccount SWIFT_DEPRECATED;
 - (void)setEmail:(NSString * _Nullable)email SWIFT_DEPRECATED;
@@ -2663,14 +2674,15 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 @end
 
 
+
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 - (void)logIn:(NSString * _Nonnull)appUserID completion:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completion;
 - (void)logIn:(NSString * _Nonnull)appUserID completionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, BOOL, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)logOutWithCompletion:(void (^ _Nullable)(RCCustomerInfo * _Nullable, NSError * _Nullable))completion;
 - (void)logOutWithCompletionHandler:(void (^ _Nonnull)(RCCustomerInfo * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 - (void)syncAttributesAndOfferingsIfNeededWithCompletion:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completion;
+- (void)syncAttributesAndOfferingsIfNeededWithCompletionHandler:(void (^ _Nonnull)(RCOfferings * _Nullable, NSError * _Nullable))completionHandler SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
 @end
-
 
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -3191,6 +3203,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
   RCAmazon SWIFT_COMPILE_NAME("amazon") = 6,
 /// For entitlements granted via RC Billing
   RCBilling SWIFT_COMPILE_NAME("rcBilling") = 7,
+/// For entitlements granted via RevenueCat’s External Purchases API.
+  RCExternal SWIFT_COMPILE_NAME("external") = 8,
 };
 
 
