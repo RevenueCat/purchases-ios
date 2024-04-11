@@ -17,6 +17,15 @@ import Foundation
 protocol DiagnosticsTrackerType {
 
     func track(_ event: DiagnosticsEvent) async
+    // swiftlint:disable:next function_parameter_count
+    func trackHttpRequestPerformed(
+        endpoint: HTTPRequestPath,
+        responseTime: TimeInterval,
+        wasSuccessful: Bool,
+        responseCode: Int,
+        resultOrigin: HTTPResponseOrigin?,
+        verificationResult: VerificationResult
+    )
 
 }
 
@@ -31,5 +40,32 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
 
     func track(_ event: DiagnosticsEvent) async {
         await diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func trackHttpRequestPerformed(
+        endpoint: HTTPRequestPath,
+        responseTime: TimeInterval,
+        wasSuccessful: Bool,
+        responseCode: Int,
+        resultOrigin: HTTPResponseOrigin?,
+        verificationResult: VerificationResult
+    ) {
+        let eTagHit = resultOrigin == .cache
+        Task {
+            await track(
+                DiagnosticsEvent(
+                    eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
+                    properties: [
+                        "endpoint_name": AnyEncodable(endpoint.name),
+                        "response_time_millis": AnyEncodable(responseTime * 1000),
+                        "successful": AnyEncodable(wasSuccessful),
+                        "response_code": AnyEncodable(responseCode),
+                        "etag_hit": AnyEncodable(eTagHit),
+                        "verification_result": AnyEncodable(verificationResult.name)
+                    ]
+                )
+            )
+        }
     }
 }

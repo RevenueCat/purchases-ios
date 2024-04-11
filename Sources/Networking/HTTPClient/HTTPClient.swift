@@ -31,6 +31,29 @@ class HTTPClient {
     private let eTagManager: ETagManager
     private let dnsChecker: DNSCheckerType.Type
     private let signing: SigningType
+    private var _diagnosticsTracker: Any?
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    convenience init(apiKey: String,
+                     systemInfo: SystemInfo,
+                     eTagManager: ETagManager,
+                     signing: SigningType,
+                     diagnosticsTracker: DiagnosticsTrackerType,
+                     dnsChecker: DNSCheckerType.Type = DNSChecker.self,
+                     requestTimeout: TimeInterval = Configuration.networkTimeoutDefault) {
+        self.init(apiKey: apiKey,
+                  systemInfo: systemInfo,
+                  eTagManager: eTagManager,
+                  signing: signing,
+                  dnsChecker: dnsChecker,
+                  requestTimeout: requestTimeout)
+        self._diagnosticsTracker = diagnosticsTracker
+    }
 
     init(apiKey: String,
          systemInfo: SystemInfo,
@@ -290,11 +313,13 @@ private extension HTTPClient {
     }
 
     /// - Returns: `nil` if the request must be retried
+    // swiftlint:disable:next function_parameter_count
     func parse(urlResponse: URLResponse?,
                request: Request,
                urlRequest: URLRequest,
                data: Data?,
-               error networkError: Error?) -> VerifiedHTTPResponse<Data>.Result? {
+               error networkError: Error?,
+               requestStartTime: Date) -> VerifiedHTTPResponse<Data>.Result? {
         if let networkError = networkError {
             return .failure(NetworkError(networkError, dnsChecker: self.dnsChecker))
         }
@@ -313,7 +338,8 @@ private extension HTTPClient {
         return self.createVerifiedResponse(request: request,
                                            urlRequest: urlRequest,
                                            data: dataIfAvailable,
-                                           response: httpURLResponse)
+                                           response: httpURLResponse,
+                                           requestStartTime: requestStartTime)
     }
 
     /// - Returns `Result<VerifiedHTTPResponse<Data>, NetworkError>?`
@@ -321,7 +347,8 @@ private extension HTTPClient {
         request: Request,
         urlRequest: URLRequest,
         data: Data?,
-        response httpURLResponse: HTTPURLResponse
+        response httpURLResponse: HTTPURLResponse,
+        requestStartTime: Date
     ) -> VerifiedHTTPResponse<Data>.Result? {
         #if DEBUG
         let requestHeaders: HTTPClient.RequestHeaders
@@ -338,7 +365,7 @@ private extension HTTPClient {
         let requestHeaders = request.headers
         #endif
 
-        return Result
+        let result = Result
             .success(data)
             .mapToResponse(response: httpURLResponse, request: request.httpRequest)
             // Verify response
@@ -375,13 +402,22 @@ private extension HTTPClient {
             }
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
+
+        trackHttpRequestPerformedIfNeeded(request: request,
+                                          requestStartTime: requestStartTime,
+                                          result: result)
+
+        return result
+
     }
 
+    // swiftlint:disable:next function_parameter_count
     func handle(urlResponse: URLResponse?,
                 request: Request,
                 urlRequest: URLRequest,
                 data: Data?,
-                error networkError: Error?) {
+                error networkError: Error?,
+                requestStartTime: Date) {
         RCTestAssertNotMainThread()
 
         let response = self.parse(
@@ -389,7 +425,8 @@ private extension HTTPClient {
             request: request,
             urlRequest: urlRequest,
             data: data,
-            error: networkError
+            error: networkError,
+            requestStartTime: requestStartTime
         )
 
         if let response = response {
@@ -464,6 +501,7 @@ private extension HTTPClient {
             return
         }
 
+        let requestStartTime = Date()
         Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
         let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
@@ -471,7 +509,8 @@ private extension HTTPClient {
                         request: request,
                         urlRequest: urlRequest,
                         data: data,
-                        error: error)
+                        error: error,
+                        requestStartTime: requestStartTime)
         }
         task.resume()
     }
@@ -516,6 +555,37 @@ private extension HTTPClient {
         #endif
 
         return self.signing
+    }
+
+    private func trackHttpRequestPerformedIfNeeded(request: Request,
+                                                   requestStartTime: Date,
+                                                   result: Result<VerifiedHTTPResponse<Data>, NetworkError>?) {
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            if let diagnosticsTracker = diagnosticsTracker {
+                let responseTime = Date().timeIntervalSince(requestStartTime)
+                if let result = result {
+                    switch result {
+                    case let .success(response):
+                        diagnosticsTracker.trackHttpRequestPerformed(endpoint: request.httpRequest.path,
+                                                                     responseTime: responseTime,
+                                                                     wasSuccessful: true,
+                                                                     responseCode: response.httpStatusCode.rawValue,
+                                                                     resultOrigin: response.origin,
+                                                                     verificationResult: response.verificationResult)
+                    // swiftlint:disable:next empty_enum_arguments
+                    case .failure(_):
+                        diagnosticsTracker.trackHttpRequestPerformed(endpoint: request.httpRequest.path,
+                                                                     responseTime: responseTime,
+                                                                     wasSuccessful: false,
+                                                                     responseCode: -1,
+                                                                     resultOrigin: nil,
+                                                                     verificationResult: .notRequested)
+                    }
+                }
+            }
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
 }
