@@ -9,12 +9,12 @@
 //
 //  DiagnosticsFileHandler.swift
 //
-//  Created by Nacho Soto on 6/16/23.
+//  Created by Cesar de la Vega on 8/4/24.
 
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol DiagnosticsFileHandlerType: AnyObject {
+protocol DiagnosticsFileHandlerType: AnyObject, Sendable {
 
     func getEntries() async -> [DiagnosticsEvent]
 
@@ -54,19 +54,14 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
     }
 
     func getEntries() async -> [DiagnosticsEvent] {
-        var entries: [DiagnosticsEvent] = []
-
         do {
-            for try await line in try await fileHandler.readLines() {
-                if let event = decodeDiagnosticsEvent(from: line) {
-                    entries.append(event)
-                }
-            }
+            return try await self.fileHandler.readLines()
+                .compactMap { try? JSONDecoder.default.decode(jsonData: $0.asData) }
+                .extractValues()
         } catch {
-            Logger.error("Failed to read lines from file: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.error_fetching_events(error: error))
+            return []
         }
-
-        return entries
     }
 
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async {
