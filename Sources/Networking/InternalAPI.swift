@@ -80,6 +80,15 @@ extension InternalAPI {
         if let error { throw error }
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func postDiagnosticsEvents(events: [DiagnosticsEvent]) async throws {
+        let error = await Async.call { completion in
+            self.postDiagnosticsEvents(events: events, completion: completion)
+        }
+
+        if let error { throw error }
+    }
+
 }
 
 // @unchecked because:
