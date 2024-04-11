@@ -14,7 +14,7 @@
 import Foundation
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol DiagnosticsFileHandlerType: AnyObject, Sendable {
+protocol DiagnosticsFileHandlerType: Sendable {
 
     func getEntries() async -> [DiagnosticsEvent]
 
