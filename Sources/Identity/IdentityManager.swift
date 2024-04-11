@@ -31,6 +31,8 @@ class IdentityManager: CurrentUserProvider {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
+    private let cloudSyncedAnonymousIDProvider: CloudSyncedAnonymousIDProvider = .init()
+    private let cloudSyncedAnonymousIDMode: Bool
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -39,27 +41,38 @@ class IdentityManager: CurrentUserProvider {
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
-        appUserID: String?
+        appUserID: String?,
+        cloudSyncedAnonymousIDMode: Bool = false
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
         self.attributeSyncing = attributeSyncing
+        self.cloudSyncedAnonymousIDMode = cloudSyncedAnonymousIDMode
 
         if appUserID?.isEmpty == true {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
         }
 
         let appUserID = appUserID?.notEmptyOrWhitespaces
-            ?? deviceCache.cachedAppUserID
-            ?? deviceCache.cachedLegacyAppUserID
-            ?? Self.generateRandomID()
+          ?? deviceCache.cachedAppUserID
+          ?? deviceCache.cachedLegacyAppUserID
+          ?? (self.cloudSyncedAnonymousIDMode ? cloudSyncedAnonymousIDProvider.appUserID : Self.generateRandomID())
 
         Logger.user(Strings.identity.identifying_app_user_id)
 
         deviceCache.cache(appUserID: appUserID)
         deviceCache.cleanupSubscriberAttributes()
         self.invalidateCachesIfNeeded(appUserID: appUserID)
+
+        // todo: inject store and notification center
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(ubiquitousKeyValueStoreDidChange),
+            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: NSUbiquitousKeyValueStore.default
+        )
+
     }
 
     var currentAppUserID: String {
@@ -103,6 +116,21 @@ class IdentityManager: CurrentUserProvider {
 }
 
 extension IdentityManager {
+    
+    @objc private func ubiquitousKeyValueStoreDidChange(notification: Notification) {
+        logOut { error in
+            if let error {
+                // todo: add delegate call here informing of the issue.
+            } else {
+                // todo: add delegate call here informing that we've detected an account logout
+                // and that we're automatically logging out the user.
+            }
+        }
+    }
+
+}
+
+extension IdentityManager {
 
     static func userIsAnonymous(_ appUserId: String) -> Bool {
         let anonymousFoundRange = appUserId.range(of: IdentityManager.anonymousRegex,
@@ -115,6 +143,13 @@ extension IdentityManager {
 private extension IdentityManager {
 
     func performLogIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        // todo: update warning message, we want to warn that you're logging in in this mode,
+        // which maybe is an accident, and that you should check that you're using the right
+        // tranfer behavior
+        if cloudSyncedAnonymousIDMode {
+            Logger.warn(Strings.identity.deleting_attributes_none_found)
+        }
+
         let oldAppUserID = self.currentAppUserID
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
@@ -148,13 +183,22 @@ private extension IdentityManager {
 
     func performLogOut(completion: (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
-
         if self.currentUserIsAnonymous {
             completion(ErrorUtils.logOutAnonymousUserError())
             return
         }
 
-        self.resetCacheAndSave(newUserID: Self.generateRandomID())
+        let newAppUserID: String
+        if self.cloudSyncedAnonymousIDMode &&
+                self.cloudSyncedAnonymousIDProvider.isCloudSyncedAnonymousID(appUserID: self.currentAppUserID) {
+            // todo: update with message about how we're switching to a new cloud synced ID.
+            Logger.info(Strings.identity.deleting_attributes_none_found)
+            newAppUserID = self.cloudSyncedAnonymousIDProvider.resetAppUserID()
+        } else {
+            newAppUserID = Self.generateRandomID()
+        }
+
+        self.resetCacheAndSave(newUserID: newAppUserID)
         Logger.info(Strings.identity.log_out_success)
         completion(nil)
     }
