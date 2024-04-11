@@ -38,6 +38,10 @@
 		88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1492BC7463A00273B6D /* StringExtensions.swift */; };
 		88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */; };
 		88DFC14F2BC7502800273B6D /* UserDefaultsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */; };
+		88DFC1512BC8AA5900273B6D /* RootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1502BC8AA5900273B6D /* RootScreen.swift */; };
+		88DFC1532BC8ABB700273B6D /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1522BC8ABB700273B6D /* LoginScreen.swift */; };
+		88DFC1572BC8AC1700273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1542BC8AC1700273B6D /* AsyncButton.swift */; };
+		88DFC1582BC8AC1700273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -95,6 +99,10 @@
 		88DFC1492BC7463A00273B6D /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONExtensions.swift; sourceTree = "<group>"; };
 		88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtensions.swift; sourceTree = "<group>"; };
+		88DFC1502BC8AA5900273B6D /* RootScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootScreen.swift; sourceTree = "<group>"; };
+		88DFC1522BC8ABB700273B6D /* LoginScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
+		88DFC1542BC8AC1700273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
+		88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +193,8 @@
 		88DFC12C2BC7306100273B6D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				88DFC1522BC8ABB700273B6D /* LoginScreen.swift */,
+				88DFC1502BC8AA5900273B6D /* RootScreen.swift */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
@@ -193,6 +203,7 @@
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
 				2D708C7E2AC6050000336AC8 /* UpsellView.swift */,
 				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
+				88DFC1562BC8AC1700273B6D /* Utility Views */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -238,6 +249,15 @@
 				88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		88DFC1562BC8AC1700273B6D /* Utility Views */ = {
+			isa = PBXGroup;
+			children = (
+				88DFC1542BC8AC1700273B6D /* AsyncButton.swift */,
+				88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */,
+			);
+			path = "Utility Views";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -325,6 +345,7 @@
 			files = (
 				88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */,
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
+				88DFC1512BC8AA5900273B6D /* RootScreen.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
 				88DFC1482BC7451800273B6D /* LoginResponse.swift in Sources */,
 				88DFC13E2BC73D9D00273B6D /* HTTPClient.swift in Sources */,
@@ -333,6 +354,7 @@
 				88DFC1332BC7385B00273B6D /* ApplicationManager.swift in Sources */,
 				4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */,
 				88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */,
+				88DFC1582BC8AC1700273B6D /* ErrorDisplay.swift in Sources */,
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4FC6F8B22A7403D3002139B2 /* OfferingsList.swift in Sources */,
 				88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */,
@@ -347,6 +369,8 @@
 				88DFC13D2BC73D9D00273B6D /* HTTPEndpoint.swift in Sources */,
 				88DFC1412BC73D9D00273B6D /* HTTPRequest.swift in Sources */,
 				88DFC1462BC7443B00273B6D /* ErrorResponse.swift in Sources */,
+				88DFC1532BC8ABB700273B6D /* LoginScreen.swift in Sources */,
+				88DFC1572BC8AC1700273B6D /* AsyncButton.swift in Sources */,
 				88DFC1402BC73D9D00273B6D /* HTTPStatusCode.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
 			);

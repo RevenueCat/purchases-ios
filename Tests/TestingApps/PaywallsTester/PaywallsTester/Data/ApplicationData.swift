@@ -14,7 +14,8 @@ final class ApplicationData {
 
     private(set) var authentication: Authentication = .unknown {
         didSet {
-            Self.logger.info("Changed authentication: \(String(describing: self.authentication))")
+            // FIXME: Log authentication status
+            // Self.logger.info("Changed authentication: \(String(describing: self.authentication))")
         }
     }
 

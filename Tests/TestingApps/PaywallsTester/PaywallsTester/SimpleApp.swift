@@ -12,7 +12,7 @@ struct SimpleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            AppContentView()
+            RootScreen()
         }
     }
 
