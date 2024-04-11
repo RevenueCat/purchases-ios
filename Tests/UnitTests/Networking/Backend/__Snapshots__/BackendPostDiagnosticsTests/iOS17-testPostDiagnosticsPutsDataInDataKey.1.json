@@ -1,28 +1,42 @@
 {
-  "headers" : {
-    "Authorization" : "Bearer asharedsecret",
-    "content-type" : "application/json",
-    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
-    "X-Client-Build-Version" : "12345",
-    "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
-    "X-Client-Version" : "17.0.0",
-    "X-Is-Sandbox" : "true",
-    "X-Observer-Mode-Enabled" : "false",
-    "X-Platform" : "iOS",
-    "X-Platform-Flavor" : "native",
-    "X-Platform-Version" : "Version 17.0.0 (Build 21A342)",
-    "X-Storefront" : "USA",
-    "X-StoreKit2-Enabled" : "false",
-    "X-Version" : "4.0.0"
+  "headers": {
+    "Authorization": "Bearer asharedsecret",
+    "content-type": "application/json",
+    "X-Apple-Device-Identifier": "5D7C0074-07E4-4564-AAA4-4008D0640881",
+    "X-Client-Build-Version": "12345",
+    "X-Client-Bundle-ID": "com.apple.dt.xctest.tool",
+    "X-Client-Version": "17.0.0",
+    "X-Is-Sandbox": "true",
+    "X-Observer-Mode-Enabled": "false",
+    "X-Platform": "iOS",
+    "X-Platform-Flavor": "native",
+    "X-Platform-Version": "Version 17.0.0 (Build 21A342)",
+    "X-Storefront": "USA",
+    "X-StoreKit2-Enabled": "false",
+    "X-Version": "4.0.0"
   },
-  "request" : {
-    "body" : {
-      "data" : [
-        "{\n  \"properties\": {\"key\": \"value\"},\n  \"timestamp\": \"2024-04-04T12:55:59Z\",\n  \"name\": \"HTTP_REQUEST_PERFORMED\",\n  \"version\": 1\n}",
-        "{\n  \"properties\": {\"key\": \"value\"},\n  \"timestamp\": \"2024-04-04T13:55:59Z\",\n  \"name\": \"HTTP_REQUEST_PERFORMED\",\n  \"version\": 1\n}"
+  "request": {
+    "body": {
+      "data": [
+        {
+          "properties": {
+            "key": "value"
+          },
+          "timestamp": "2024-04-04T12:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "version": 1
+        },
+        {
+          "properties": {
+            "key": "value"
+          },
+          "timestamp": "2024-04-04T13:55:59Z",
+          "name": "HTTP_REQUEST_PERFORMED",
+          "version": 1
+        }
       ]
     },
-    "method" : "POST",
-    "url" : "https://api-diagnostics.revenuecat.com/v1/diagnostics"
+    "method": "POST",
+    "url": "https://api-diagnostics.revenuecat.com/v1/diagnostics"
   }
 }
