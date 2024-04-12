@@ -271,7 +271,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
                      dangerousSettings: DangerousSettings? = nil,
-                     showStoreMessagesAutomatically: Bool) {
+                     showStoreMessagesAutomatically: Bool,
+                     diagnosticsEnabled: Bool = false
+    ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
         }
@@ -420,6 +422,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                var diagnosticsTracker: DiagnosticsTrackerType?
+                if diagnosticsEnabled {
+                    if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                        diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
+                    } else {
+                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                    }
+                }
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
@@ -440,7 +450,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                    storeMessagesHelper: storeMessagesHelper
+                    storeMessagesHelper: storeMessagesHelper,
+                    diagnosticsTracker: diagnosticsTracker
                 )
             } else {
                 return .init(
@@ -1201,7 +1212,8 @@ public extension Purchases {
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
-                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically
+                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                  diagnosticsEnabled: configuration.diagnosticsEnabled
         )
     }
 
@@ -1404,7 +1416,8 @@ public extension Purchases {
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
-        showStoreMessagesAutomatically: Bool
+        showStoreMessagesAutomatically: Bool,
+        diagnosticsEnabled: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1418,7 +1431,8 @@ public extension Purchases {
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
-                  showStoreMessagesAutomatically: showStoreMessagesAutomatically)
+                  showStoreMessagesAutomatically: showStoreMessagesAutomatically,
+                  diagnosticsEnabled: diagnosticsEnabled)
         )
     }
 
