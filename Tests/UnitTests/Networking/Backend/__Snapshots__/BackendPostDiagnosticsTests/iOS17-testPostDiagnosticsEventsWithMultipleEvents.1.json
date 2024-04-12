@@ -19,7 +19,7 @@
     "body" : {
       "entries" : [
         {
-          "name" : "HTTP_REQUEST_PERFORMED",
+          "name" : "http_request_performed",
           "properties" : {
             "key" : "value"
           },
@@ -27,7 +27,7 @@
           "version" : 1
         },
         {
-          "name" : "HTTP_REQUEST_PERFORMED",
+          "name" : "http_request_performed",
           "properties" : {
             "key" : "value"
           },

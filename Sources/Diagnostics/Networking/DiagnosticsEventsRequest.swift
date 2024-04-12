@@ -61,8 +61,8 @@ private extension DiagnosticsEvent.EventType {
 
     var name: String {
         switch self {
-        case .httpRequestPerformed: return "HTTP_REQUEST_PERFORMED"
-        case .customerInfoVerificationResult: return "CUSTOMER_INFO_VERIFICATION_RESULT"
+        case .httpRequestPerformed: return "http_request_performed"
+        case .customerInfoVerificationResult: return "customer_info_verification_result"
         }
 
     }
