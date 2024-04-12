@@ -82,7 +82,8 @@ class BaseBackendIntegrationTests: TestCase {
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
                             networkTimeout: Configuration.networkTimeoutDefault,
                             dangerousSettings: self.dangerousSettings,
-                            showStoreMessagesAutomatically: true)
+                            showStoreMessagesAutomatically: true,
+                            diagnosticsEnabled: false)
     }
 
     // MARK: -
