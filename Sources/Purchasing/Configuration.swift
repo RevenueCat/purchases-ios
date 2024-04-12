@@ -51,6 +51,7 @@ import Foundation
     let platformInfo: Purchases.PlatformInfo?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let showStoreMessagesAutomatically: Bool
+    internal let diagnosticsEnabled: Bool
 
     private init(with builder: Builder) {
         Self.verify(apiKey: builder.apiKey)
@@ -67,6 +68,7 @@ import Foundation
         self.platformInfo = builder.platformInfo
         self.responseVerificationMode = builder.responseVerificationMode
         self.showStoreMessagesAutomatically = builder.showStoreMessagesAutomatically
+        self.diagnosticsEnabled = builder.diagnosticsEnabled
     }
 
     /// Factory method for the ``Configuration/Builder`` object that is required to create a `Configuration`
@@ -92,6 +94,7 @@ import Foundation
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var responseVerificationMode: Signing.ResponseVerificationMode = .default
         private(set) var showStoreMessagesAutomatically: Bool = true
+        private(set) var diagnosticsEnabled: Bool = false
 
         /**
          * Create a new builder with your API key.
@@ -220,6 +223,18 @@ import Foundation
         @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
         @objc public func with(entitlementVerificationMode mode: EntitlementVerificationMode) -> Builder {
             self.responseVerificationMode = Signing.verificationMode(with: mode)
+            return self
+        }
+
+        /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
+        /// Examples of this information include response times, cache hits or error codes.
+        /// This information will be anonymous so it can't be traced back to the end-user
+        /// 
+        /// Defaults to ``false``
+        ///
+        @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+        @objc internal func with(diagnosticsEnabled: Bool) -> Builder {
+            self.diagnosticsEnabled = diagnosticsEnabled
             return self
         }
 

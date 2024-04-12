@@ -1212,7 +1212,8 @@ public extension Purchases {
                   storeKitTimeout: configuration.storeKit1Timeout,
                   networkTimeout: configuration.networkTimeout,
                   dangerousSettings: configuration.dangerousSettings,
-                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically
+                  showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
+                  diagnosticsEnabled: configuration.diagnosticsEnabled
         )
     }
 
@@ -1415,7 +1416,8 @@ public extension Purchases {
         storeKitTimeout: TimeInterval,
         networkTimeout: TimeInterval,
         dangerousSettings: DangerousSettings?,
-        showStoreMessagesAutomatically: Bool
+        showStoreMessagesAutomatically: Bool,
+        diagnosticsEnabled: Bool
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -1429,7 +1431,8 @@ public extension Purchases {
                   storeKitTimeout: storeKitTimeout,
                   networkTimeout: networkTimeout,
                   dangerousSettings: dangerousSettings,
-                  showStoreMessagesAutomatically: showStoreMessagesAutomatically)
+                  showStoreMessagesAutomatically: showStoreMessagesAutomatically,
+                  diagnosticsEnabled: diagnosticsEnabled)
         )
     }
 
