@@ -74,6 +74,7 @@ final class PurchasesOrchestrator {
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
+    var _diagnosticsTracker: Any?
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -86,6 +87,11 @@ final class PurchasesOrchestrator {
     var storeKit2StorefrontListener: StoreKit2StorefrontListener {
         // swiftlint:disable:next force_cast
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -108,7 +114,8 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
-                     storeMessagesHelper: StoreMessagesHelperType?
+                     storeMessagesHelper: StoreMessagesHelperType?,
+                     diagnosticsTracker: DiagnosticsTrackerType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -130,6 +137,8 @@ final class PurchasesOrchestrator {
             beginRefundRequestHelper: beginRefundRequestHelper,
             storeMessagesHelper: storeMessagesHelper
         )
+
+        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener

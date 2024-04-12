@@ -11,6 +11,8 @@
 //  
 //  Created by Nacho Soto on 8/1/23.
 
+// swiftlint:disable file_length
+
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
 import RevenueCat
@@ -27,6 +29,7 @@ public class PaywallViewController: UIViewController {
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
+    private final var shouldBlockTouchEvents: Bool
     private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
     private var configuration: PaywallViewConfiguration {
@@ -41,18 +44,21 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offering: The `Offering` containing the desired `PaywallData` to display.
     /// `Offerings.current` will be used by default.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     @objc
     public convenience init(
         offering: Offering? = nil,
         displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             offering: offering,
             fonts: DefaultPaywallFontProvider(),
             displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
             dismissRequestedHandler: dismissRequestedHandler
         )
     }
@@ -62,18 +68,21 @@ public class PaywallViewController: UIViewController {
     /// `Offerings.current` will be used by default.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     public convenience init(
         offering: Offering? = nil,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .optionalOffering(offering),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
             dismissRequestedHandler: dismissRequestedHandler
         )
     }
@@ -82,18 +91,21 @@ public class PaywallViewController: UIViewController {
     /// - Parameter offeringIdentifier: The identifier for the offering with `PaywallData` to display.
     /// - Parameter fonts: A ``PaywallFontProvider``.
     /// - Parameter displayCloseButton: Set this to `true` to automatically include a close button.
+    /// - Parameter shouldBlockTouchEvents: Whether to interecept all touch events propagated through this VC
     /// - Parameter dismissRequestedHandler: If this is not set, the paywall will close itself automatically
     /// after a successful purchase. Otherwise use this handler to handle dismissals of the paywall
     public convenience init(
         offeringIdentifier: String,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
+        shouldBlockTouchEvents: Bool = false,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)? = nil
     ) {
         self.init(
             content: .offeringIdentifier(offeringIdentifier),
             fonts: fonts,
             displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: shouldBlockTouchEvents,
             dismissRequestedHandler: dismissRequestedHandler
         )
     }
@@ -102,8 +114,10 @@ public class PaywallViewController: UIViewController {
         content: PaywallViewConfiguration.Content,
         fonts: PaywallFontProvider,
         displayCloseButton: Bool,
+        shouldBlockTouchEvents: Bool,
         dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
     ) {
+        self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
 
         self.configuration = .init(
@@ -156,6 +170,31 @@ public class PaywallViewController: UIViewController {
     @objc(updateFontWithFontName:)
     public func updateFont(with fontName: String) {
         self.configuration.fonts = CustomPaywallFontProvider(fontName: fontName)
+    }
+
+    // Overriding touches conditionally to deal with https://github.com/RevenueCat/purchases-flutter/issues/1023
+    public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !shouldBlockTouchEvents {
+            super.touchesBegan(touches, with: event)
+        }
+    }
+
+    public override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !shouldBlockTouchEvents {
+            super.touchesMoved(touches, with: event)
+        }
+    }
+
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !shouldBlockTouchEvents {
+            super.touchesEnded(touches, with: event)
+        }
+    }
+
+    public override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !shouldBlockTouchEvents {
+            super.touchesCancelled(touches, with: event)
+        }
     }
 
     // MARK: - Internal
@@ -372,3 +411,5 @@ extension View {
 }
 
 #endif
+
+// swiftlint:enable file_length

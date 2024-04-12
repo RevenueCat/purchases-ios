@@ -77,4 +77,16 @@ class ConfigurationTests: TestCase {
                                            level: .warn)
     }
 
+    func testDiagnosticsEnabled() throws {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+            throw XCTSkip("Required API is unavailable for this test")
+        }
+
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(diagnosticsEnabled: true)
+            .build()
+
+        expect(configuration.diagnosticsEnabled) == true
+    }
+
 }
