@@ -36,7 +36,7 @@ public struct RootScreen: View {
                 }
 
         case let .signedIn(developer):
-            AppContentView()
+            AppContentView(developer: developer)
 
         case .signedOut:
             LoginScreen {

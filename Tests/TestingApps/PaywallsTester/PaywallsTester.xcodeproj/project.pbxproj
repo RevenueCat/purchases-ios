@@ -42,6 +42,8 @@
 		88DFC1532BC8ABB700273B6D /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1522BC8ABB700273B6D /* LoginScreen.swift */; };
 		88DFC1572BC8AC1700273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1542BC8AC1700273B6D /* AsyncButton.swift */; };
 		88DFC1582BC8AC1700273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */; };
+		88DFC15A2BC9E92600273B6D /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1592BC9E92600273B6D /* OfferingsResponse.swift */; };
+		88DFC15C2BC9EE1A00273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC15B2BC9EE1A00273B6D /* PaywallsResponse.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -103,6 +105,8 @@
 		88DFC1522BC8ABB700273B6D /* LoginScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
 		88DFC1542BC8AC1700273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
+		88DFC1592BC9E92600273B6D /* OfferingsResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OfferingsResponse.swift; sourceTree = "<group>"; };
+		88DFC15B2BC9EE1A00273B6D /* PaywallsResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallsResponse.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -224,6 +228,8 @@
 				88DFC1452BC7443B00273B6D /* ErrorResponse.swift */,
 				88DFC1352BC73D5A00273B6D /* DeveloperResponse.swift */,
 				88DFC1472BC7451800273B6D /* LoginResponse.swift */,
+				88DFC1592BC9E92600273B6D /* OfferingsResponse.swift */,
+				88DFC15B2BC9EE1A00273B6D /* PaywallsResponse.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -345,6 +351,7 @@
 			files = (
 				88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */,
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
+				88DFC15A2BC9E92600273B6D /* OfferingsResponse.swift in Sources */,
 				88DFC1512BC8AA5900273B6D /* RootScreen.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
 				88DFC1482BC7451800273B6D /* LoginResponse.swift in Sources */,
@@ -355,6 +362,7 @@
 				4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */,
 				88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */,
 				88DFC1582BC8AC1700273B6D /* ErrorDisplay.swift in Sources */,
+				88DFC15C2BC9EE1A00273B6D /* PaywallsResponse.swift in Sources */,
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4FC6F8B22A7403D3002139B2 /* OfferingsList.swift in Sources */,
 				88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */,

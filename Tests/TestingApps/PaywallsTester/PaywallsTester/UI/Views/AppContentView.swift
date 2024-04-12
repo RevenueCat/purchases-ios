@@ -22,10 +22,12 @@ struct AppContentView: View {
 
     @State
     private var customerInfoTask: Task<(), Never>? = nil
+    
+    let developer: DeveloperResponse
 
     var body: some View {
         TabView {
-            if Purchases.isConfigured {
+            if Purchases.isConfigured || true {
                 NavigationView {
                     ZStack {
                         self.background
@@ -46,8 +48,8 @@ struct AppContentView: View {
                 }
             #endif
 
-            if Purchases.isConfigured {
-                OfferingsList()
+            if Purchases.isConfigured || true {
+                OfferingsList(developer: developer)
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
                     }
@@ -249,17 +251,18 @@ private extension UIApplication {
 
 #if DEBUG
 
-@testable import RevenueCatUI
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-struct AppContentView_Previews: PreviewProvider {
-
-    static var previews: some View {
-        NavigationStack {
-            AppContentView()
-        }
-    }
-
-}
+// TODO: Mock developer to instantiate AppContentView
+//@testable import RevenueCatUI
+//
+//@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+//struct AppContentView_Previews: PreviewProvider {
+//
+//    static var previews: some View {
+//        NavigationStack {
+//            AppContentView()
+//        }
+//    }
+//
+//}
 
 #endif

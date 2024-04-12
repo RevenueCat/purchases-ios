@@ -21,7 +21,12 @@ struct OfferingsList: View {
 
     fileprivate struct Data: Hashable {
         var sections: [Template]
-        var offeringsBySection: [Template: [Offering]]
+        var offeringsBySection:  [Template: [Offering]]
+    }
+    
+    fileprivate struct Data2: Hashable {
+        var sections: [String]
+        var offeringsBySection: [String: [OfferingsResponse]]
     }
 
     fileprivate struct PresentedPaywall: Hashable {
@@ -31,9 +36,19 @@ struct OfferingsList: View {
 
     @State
     private var offerings: Result<Data, NSError>?
+    
+    @State
+    private var offerings2: Result<Data2, NSError>?
 
     @State
     private var presentedPaywall: PresentedPaywall?
+    
+    private let client = HTTPClient.shared
+    
+    let developer: DeveloperResponse
+    
+    @State
+    var offeringPaywallData: OfferingPaywallData?
 
     var body: some View {
         NavigationView {
@@ -51,6 +66,22 @@ struct OfferingsList: View {
                     grouping: offerings,
                     by: { Template(name: $0.paywall?.templateName) }
                 )
+                
+                // TODO: Collect ALL offerings, paywalls
+                let offerings2 = try await fetchOfferings(for: developer.apps.first!).all
+                let paywalls2 = try await fetchPaywalls(for: developer.apps.first!).all
+                
+                offeringPaywallData = OfferingPaywallData(offerings: offerings2, paywalls: paywalls2)
+                
+//                let offeringsBySection2 = Dictionary(
+//                    grouping: offerings,
+//                    by: { Template(name: $0.paywall?.templateName) }
+//                )
+                
+                /*self.offerings2 = .success(
+                    .init(sections: offeringPaywallData!.paywallsByOfferingName().keys.map { "Template \($0)" },
+                          offeringsBySection: )
+                )*/
 
                 self.offerings = .success(
                     .init(
@@ -62,6 +93,40 @@ struct OfferingsList: View {
                 self.offerings = .failure(error)
             }
         }
+    }
+    
+    public func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
+        return try await self.client.perform(
+            .init(
+                method: .get,
+                endpoint: .offerings(projectID: app.id)
+            )
+        )
+    }
+    
+    public func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
+        return try await self.client.perform(
+            .init(
+                method: .get,
+                endpoint: .paywalls(projectID: app.id)
+            )
+        )
+    }
+    
+    struct OfferingPaywallData {
+
+        var offerings: [OfferingsResponse.Offering]
+        var paywalls: [PaywallsResponse.Paywall]
+        
+        func paywallsByOfferingName() -> Dictionary<String, PaywallsResponse.Paywall?> {
+            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
+            
+            return paywallsByOfferingID
+
+//            return .init(uniqueKeys: self.offerings,
+//                         values: self.offerings.lazy.map { paywallsByOfferingID[$0.id] })
+        }
+        
     }
 
     @ViewBuilder
@@ -225,12 +290,13 @@ extension OfferingsList.PresentedPaywall: Identifiable {
 
 #if DEBUG
 
-struct OfferingsList_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            OfferingsList()
-        }
-    }
-}
+// TODO: Mock DeveloperResponse to instantiate OfferingsList
+//struct OfferingsList_Previews: PreviewProvider {
+//    static var previews: some View {
+//        NavigationView {
+//            OfferingsList()
+//        }
+//    }
+//}
 
 #endif
