@@ -54,24 +54,37 @@ class IdentityManager: CurrentUserProvider {
             Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
         }
 
-        let appUserID = appUserID?.notEmptyOrWhitespaces
-          ?? deviceCache.cachedAppUserID
-          ?? deviceCache.cachedLegacyAppUserID
-          ?? (self.cloudSyncedAnonymousIDMode ? cloudSyncedAnonymousIDProvider.appUserID : Self.generateRandomID())
+        let finalAppUserID: String
+
+        if cloudSyncedAnonymousIDMode {
+            finalAppUserID = appUserID?.notEmptyOrWhitespaces
+              ?? cloudSyncedAnonymousIDProvider.appUserID
+        } else {
+            finalAppUserID = appUserID?.notEmptyOrWhitespaces
+            ?? deviceCache.cachedAppUserID
+            ?? deviceCache.cachedLegacyAppUserID
+            ?? Self.generateRandomID()
+        }
 
         Logger.user(Strings.identity.identifying_app_user_id)
 
-        deviceCache.cache(appUserID: appUserID)
+        deviceCache.cache(appUserID: finalAppUserID)
         deviceCache.cleanupSubscriberAttributes()
-        self.invalidateCachesIfNeeded(appUserID: appUserID)
+        self.invalidateCachesIfNeeded(appUserID: finalAppUserID)
 
         // todo: inject store and notification center
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(ubiquitousKeyValueStoreDidChange),
+            selector: #selector(self.ubiquitousKeyValueStoreDidChange),
             name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: NSUbiquitousKeyValueStore.default
         )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(self.applicationWillEnterForeground),
+            name: SystemInfo.applicationWillEnterForegroundNotification,
+            object: nil)
 
     }
 
@@ -130,6 +143,14 @@ extension IdentityManager {
         let newAppUserID = cloudSyncedAnonymousIDProvider.appUserID
         logIn(appUserID: newAppUserID) { response in
             // todo
+        }
+    }
+
+    @objc private func applicationWillEnterForeground(notification: Notification) {
+        if self.cloudSyncedAnonymousIDProvider.forceSyncWithICloud() {
+            // todo: log that sync went through correctly
+        } else {
+            // todo: log that sync did not go through
         }
     }
 

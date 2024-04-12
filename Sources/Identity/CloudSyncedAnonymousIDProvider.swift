@@ -54,4 +54,8 @@ class CloudSyncedAnonymousIDProvider {
         return appUserID.starts(with: Constants.appUserIDPrefix)
     }
 
+    func forceSyncWithICloud() -> Bool {
+        return self.store.synchronize()
+    }
+
 }
