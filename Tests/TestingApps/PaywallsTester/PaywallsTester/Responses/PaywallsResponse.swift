@@ -69,3 +69,48 @@ extension PaywallsResponse: Decodable {
     }
 
 }
+
+extension PaywallsResponse.Paywall {
+
+    func convertToRevenueCatPaywall(with offering: OfferingsResponse.Offering) -> RevenueCat.Offering {
+        return .init(
+            identifier: offering.identifier,
+            serverDescription: offering.displayName,
+            paywall: self.data,
+            availablePackages: self.data.config.packages.map {
+                let type = Package.packageType(from: $0)
+
+                return .init(
+                    identifier: $0,
+                    packageType: type,
+                    // TODO: improve this to depend on package type
+                    storeProduct: TestStoreProduct(
+                        localizedTitle: $0,
+                        price: 1.99,
+                        localizedPriceString: "$1.99",
+                        productIdentifier: "com.revenuecat.test_product",
+                        productType: .autoRenewableSubscription,
+                        localizedDescription: $0,
+                        subscriptionPeriod: type.subscriptionPeriod
+                    ).toStoreProduct(),
+                    offeringIdentifier: offering.identifier
+                )
+            }
+        )
+    }
+
+}
+
+private extension PackageType {
+
+    var subscriptionPeriod: SubscriptionPeriod? {
+        switch self {
+        case .weekly: .init(value: 1, unit: .week)
+        case .monthly: .init(value: 1, unit: .month)
+        case .annual:  .init(value: 1, unit: .year)
+
+        default: nil
+        }
+    }
+
+}

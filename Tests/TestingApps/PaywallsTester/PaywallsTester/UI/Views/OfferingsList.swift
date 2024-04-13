@@ -21,13 +21,10 @@ struct OfferingsList: View {
 
     fileprivate struct Data: Hashable {
         var sections: [Template]
-        var offeringsBySection:  [Template: [Offering]]
+        var offeringsBySection: [Template: [Offering]]
     }
     
-    fileprivate struct Data2: Hashable {
-        var sections: [String]
-        var offeringsBySection: [String: [OfferingsResponse]]
-    }
+    typealias Data2 = [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]
 
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
@@ -48,7 +45,7 @@ struct OfferingsList: View {
     let developer: DeveloperResponse
     
     @State
-    var offeringPaywallData: OfferingPaywallData?
+    private var displayPaywall: Bool = false
 
     var body: some View {
         NavigationView {
@@ -71,17 +68,12 @@ struct OfferingsList: View {
                 let offerings2 = try await fetchOfferings(for: developer.apps.first!).all
                 let paywalls2 = try await fetchPaywalls(for: developer.apps.first!).all
                 
-                offeringPaywallData = OfferingPaywallData(offerings: offerings2, paywalls: paywalls2)
+                let offeringPaywallData = OfferingPaywallData(offerings: offerings2, paywalls: paywalls2)
                 
-//                let offeringsBySection2 = Dictionary(
-//                    grouping: offerings,
-//                    by: { Template(name: $0.paywall?.templateName) }
-//                )
                 
-                /*self.offerings2 = .success(
-                    .init(sections: offeringPaywallData!.paywallsByOfferingName().keys.map { "Template \($0)" },
-                          offeringsBySection: )
-                )*/
+                self.offerings2 = .success(
+                    offeringPaywallData.paywallsByOffering()
+                )
 
                 self.offerings = .success(
                     .init(
@@ -118,20 +110,25 @@ struct OfferingsList: View {
         var offerings: [OfferingsResponse.Offering]
         var paywalls: [PaywallsResponse.Paywall]
         
-        func paywallsByOfferingName() -> Dictionary<String, PaywallsResponse.Paywall?> {
-            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
-            
-            return paywallsByOfferingID
-
-//            return .init(uniqueKeys: self.offerings,
-//                         values: self.offerings.lazy.map { paywallsByOfferingID[$0.id] })
-        }
         
+        func paywallsByOffering() -> [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] {
+            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
+
+            var dictionary: [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] = [:]
+            for offering in self.offerings {
+                if let paywall = paywallsByOfferingID[offering.id] {
+                    dictionary[offering, default: [PaywallsResponse.Paywall]()].append(paywall)
+                }
+            }
+
+            return dictionary
+        }
+
     }
 
     @ViewBuilder
     private var content: some View {
-        switch self.offerings {
+        switch self.offerings2 {
         case let .success(data):
             VStack {
                 Text(Self.modesInstructions)
@@ -148,12 +145,12 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with data: Data) -> some View {
+    private func list(with data: [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]) -> some View {
         List {
-            ForEach(data.sections, id: \.self) { template in
+            ForEach(Array(data.keys), id: \.self) { offering in
                 Section {
-                    ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if let paywall = offering.paywall {
+                    ForEach(data[offering]!, id: \.self) { paywall in
+//                        if let paywall = offering.paywall {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
                                 destination: PaywallPresenter(offering: offering, 
@@ -168,21 +165,28 @@ struct OfferingsList: View {
                                 }
                             }
                             #else
-                            OfferButton(offering: offering, paywall: paywall) {
-                                self.presentedPaywall = .init(offering: offering, mode: .default)
+                            Button {
+                                self.displayPaywall = true
+                            } label: {
+                                Text("Template \(paywall.data.templateName)")
+                                
                             }
+                            .sheet(isPresented: self.$displayPaywall) {
+                                PaywallView(offering: paywall.convertToRevenueCatPaywall(with: offering))
+                            }
+
                                 #if !os(watchOS)
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
-                                }
+//                                .contextMenu {
+//                                    self.contextMenu(for: offering)
+//                                }
                                 #endif
                             #endif
-                        } else {
-                            Text(offering.serverDescription)
-                        }
+//                        } else {
+//                            Text(offering.serverDescription)
+//                        }
                     }
                 } header: {
-                    Text(verbatim: template.description)
+                    Text(offering.displayName)
                 }
             }
         }
