@@ -75,12 +75,6 @@ struct OfferingsList: View {
                     offeringPaywallData.paywallsByOffering()
                 )
 
-//                self.offerings = .success(
-//                    .init(
-//                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-//                        offeringsBySection: offeringsBySection
-//                    )
-//                )
             } catch let error as NSError {
                 self.offerings = .failure(error)
             }
