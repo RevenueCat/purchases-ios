@@ -27,7 +27,7 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            if Purchases.isConfigured || true {
+            if Purchases.isConfigured {
                 NavigationView {
                     ZStack {
                         self.background
@@ -48,7 +48,7 @@ struct AppContentView: View {
                 }
             #endif
 
-            if Purchases.isConfigured || true {
+            if Purchases.isConfigured {
                 OfferingsList(developer: developer)
                     .tabItem {
                         Label("All paywalls", systemImage: "network")

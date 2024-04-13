@@ -54,15 +54,15 @@ struct OfferingsList: View {
         }
         .task {
             do {
-                let offerings = try await Purchases.shared.offerings()
-                    .all
-                    .map(\.value)
-                    .sorted { $0.serverDescription > $1.serverDescription }
-
-                let offeringsBySection = Dictionary(
-                    grouping: offerings,
-                    by: { Template(name: $0.paywall?.templateName) }
-                )
+//                let offerings = try await Purchases.shared.offerings()
+//                    .all
+//                    .map(\.value)
+//                    .sorted { $0.serverDescription > $1.serverDescription }
+//
+//                let offeringsBySection = Dictionary(
+//                    grouping: offerings,
+//                    by: { Template(name: $0.paywall?.templateName) }
+//                )
                 
                 // TODO: Collect ALL offerings, paywalls
                 let offerings2 = try await fetchOfferings(for: developer.apps.first!).all
@@ -75,12 +75,12 @@ struct OfferingsList: View {
                     offeringPaywallData.paywallsByOffering()
                 )
 
-                self.offerings = .success(
-                    .init(
-                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-                        offeringsBySection: offeringsBySection
-                    )
-                )
+//                self.offerings = .success(
+//                    .init(
+//                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+//                        offeringsBySection: offeringsBySection
+//                    )
+//                )
             } catch let error as NSError {
                 self.offerings = .failure(error)
             }
