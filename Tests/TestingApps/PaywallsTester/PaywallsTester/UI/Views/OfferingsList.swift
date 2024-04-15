@@ -13,6 +13,7 @@ import RevenueCatUI
 #endif
 import SwiftUI
 
+// TODO: Ask Barbara about how to present
 struct OfferingsList: View {
 
     fileprivate struct Template: Hashable {
@@ -40,36 +41,22 @@ struct OfferingsList: View {
     @State
     private var presentedPaywall: PresentedPaywall?
     
-    private let client = HTTPClient.shared
-    
-    let developer: DeveloperResponse
-    
     @State
     private var displayPaywall: Bool = false
+    
+    private let client = HTTPClient.shared
+    
+    let app: DeveloperResponse.App
 
     var body: some View {
-        NavigationView {
             self.content
                 .navigationTitle("Live Paywalls")
-        }
         .task {
             do {
-//                let offerings = try await Purchases.shared.offerings()
-//                    .all
-//                    .map(\.value)
-//                    .sorted { $0.serverDescription > $1.serverDescription }
-//
-//                let offeringsBySection = Dictionary(
-//                    grouping: offerings,
-//                    by: { Template(name: $0.paywall?.templateName) }
-//                )
+                let appOfferings = try await fetchOfferings(for: app).all
+                let appPaywalls = try await fetchPaywalls(for: app).all
                 
-                // TODO: Collect ALL offerings, paywalls
-                let offerings2 = try await fetchOfferings(for: developer.apps.first!).all
-                let paywalls2 = try await fetchPaywalls(for: developer.apps.first!).all
-                
-                let offeringPaywallData = OfferingPaywallData(offerings: offerings2, paywalls: paywalls2)
-                
+                let offeringPaywallData = OfferingPaywallData(offerings: appOfferings, paywalls: appPaywalls)
                 
                 self.offerings2 = .success(
                     offeringPaywallData.paywallsByOffering()
@@ -127,7 +114,11 @@ struct OfferingsList: View {
             VStack {
                 Text(Self.modesInstructions)
                     .font(.footnote)
-                self.list(with: data)
+                if data.isEmpty {
+                    ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                } else {
+                    self.list(with: data)
+                }
             }
 
         case let .failure(error):
@@ -140,11 +131,11 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private func list(with data: [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]) -> some View {
+
         List {
             ForEach(Array(data.keys), id: \.self) { offering in
                 Section {
                     ForEach(data[offering]!, id: \.self) { paywall in
-//                        if let paywall = offering.paywall {
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
                                 destination: PaywallPresenter(offering: offering, 
@@ -160,24 +151,20 @@ struct OfferingsList: View {
                             }
                             #else
                             Button {
-                                self.displayPaywall = true
+                                let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
+                                self.presentedPaywall = .init(offering: rcOffering, mode: .default)
                             } label: {
                                 Text("Template \(paywall.data.templateName)")
                                 
                             }
-                            .sheet(isPresented: self.$displayPaywall) {
-                                PaywallView(offering: paywall.convertToRevenueCatPaywall(with: offering))
-                            }
 
                                 #if !os(watchOS)
-//                                .contextMenu {
-//                                    self.contextMenu(for: offering)
-//                                }
+                                .contextMenu {
+                                    let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
+                                    self.contextMenu(for: rcOffering)
+                                }
                                 #endif
                             #endif
-//                        } else {
-//                            Text(offering.serverDescription)
-//                        }
                     }
                 } header: {
                     Text(offering.displayName)
@@ -246,11 +233,15 @@ private struct PaywallPresenter: View {
 
         #if !os(watchOS)
         case .footer:
-            CustomPaywallContent()
+//            CustomPaywallContent()
+            // TODO: Get this presenting correctly.
+            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
                 .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
-            CustomPaywallContent()
+//            CustomPaywallContent()
+            // TODO: Get this presenting correctly.
+            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
                 .paywallFooter(offering: self.offering, condensed: true)
         #endif
         }
@@ -289,12 +280,12 @@ extension OfferingsList.PresentedPaywall: Identifiable {
 #if DEBUG
 
 // TODO: Mock DeveloperResponse to instantiate OfferingsList
-//struct OfferingsList_Previews: PreviewProvider {
-//    static var previews: some View {
-//        NavigationView {
-//            OfferingsList()
-//        }
-//    }
-//}
+struct OfferingsList_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            OfferingsList(app: MockData.developer().apps.first!)
+        }
+    }
+}
 
 #endif

@@ -49,7 +49,7 @@ struct AppContentView: View {
             #endif
 
             if Purchases.isConfigured {
-                OfferingsList(developer: developer)
+                AppList(developer: developer)
                     .tabItem {
                         Label("All paywalls", systemImage: "network")
                     }
@@ -252,17 +252,17 @@ private extension UIApplication {
 #if DEBUG
 
 // TODO: Mock developer to instantiate AppContentView
-//@testable import RevenueCatUI
-//
-//@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-//struct AppContentView_Previews: PreviewProvider {
-//
-//    static var previews: some View {
-//        NavigationStack {
-//            AppContentView()
-//        }
-//    }
-//
-//}
+@testable import RevenueCatUI
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct AppContentView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        NavigationStack {
+            AppContentView(developer: MockData.developer())
+        }
+    }
+
+}
 
 #endif
