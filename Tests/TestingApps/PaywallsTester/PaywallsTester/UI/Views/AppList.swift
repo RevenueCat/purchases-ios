@@ -18,8 +18,8 @@ struct AppList: View {
                             OfferingsList(app: app)
                         }
                     }
-                }.navigationTitle("My Apps")
-            }
+                }
+            }.navigationTitle("My Apps")
         }
     }
 }

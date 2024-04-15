@@ -22,53 +22,57 @@ struct LoginScreen: View {
     }
 
     var body: some View {
-        Form {
-            Section(header: Text("Sign In")) {
-                TextField("Email", text: self.$model.username)
-                    .disableAutocorrection(true)
-                    .textContentType(.username)
-                    #if !os(macOS)
-                    .autocapitalization(.none)
-                    .keyboardType(.emailAddress)
-                    #endif
-
-                SecureField("Password", text: self.$model.password)
-                    .textContentType(.password)
-
-                if self.model.codeRequired {
-                    TextField("2FA code", text: self.$model.code)
-                        .textContentType(.oneTimeCode)
-                        .transition(.push(from: .bottom))
-                        #if !os(macOS)
+        VStack {
+            Text("Log in to your RevenueCat account to preview the paywalls that are configured in your dashboard.")
+                .font(.footnote)
+                .padding()
+            Form {
+                Section(header: Text("Sign In")) {
+                    TextField("Email", text: self.$model.username)
+                        .disableAutocorrection(true)
+                        .textContentType(.username)
+#if !os(macOS)
                         .autocapitalization(.none)
-                        .keyboardType(.numberPad)
-                        #endif
+                        .keyboardType(.emailAddress)
+#endif
+                    
+                    SecureField("Password", text: self.$model.password)
+                        .textContentType(.password)
+                    
+                    if self.model.codeRequired {
+                        TextField("2FA code", text: self.$model.code)
+                            .textContentType(.oneTimeCode)
+                            .transition(.push(from: .bottom))
+#if !os(macOS)
+                            .autocapitalization(.none)
+                            .keyboardType(.numberPad)
+#endif
+                    }
+                }
+                
+                Section {
+                    AsyncButton {
+                        try await self.model.attemptLogin()
+                    } label: {
+                        Text("Login")
+                    }
+                    .disabled(!self.model.formIsComplete)
+                    
+                    //                AsyncButton {
+                    //                    await self.model.useDemoCredentials()
+                    //                } label: {
+                    //                    Text("Demo credentials")
+                    //                }
                 }
             }
-
-            Section {
-                AsyncButton {
-                    try await self.model.attemptLogin()
-                } label: {
-                    Text("Login")
+            .disabled(self.model.operationInProgress)
+            .animation(.snappy(), value: self.model.codeRequired)
+            .onChange(of: self.model.authenticated) { _, authenticated in
+                if authenticated {
+                    self.onAuthentication()
                 }
-                .disabled(!self.model.formIsComplete)
-
-//                AsyncButton {
-//                    await self.model.useDemoCredentials()
-//                } label: {
-//                    Text("Demo credentials")
-//                }
             }
         }
-        .disabled(self.model.operationInProgress)
-        .animation(.snappy(), value: self.model.codeRequired)
-        .onChange(of: self.model.authenticated) { _, authenticated in
-            if authenticated {
-                self.onAuthentication()
-            }
-        }
-        .navigationTitle("RevenueCat")
     }
 
 }

@@ -50,7 +50,7 @@ struct OfferingsList: View {
 
     var body: some View {
             self.content
-                .navigationTitle("Live Paywalls")
+                .navigationTitle("Paywalls")
         .task {
             do {
                 let appOfferings = try await fetchOfferings(for: app).all
