@@ -80,20 +80,11 @@ private extension PaywallTemplate {
 extension PaywallData {
 
     @ViewBuilder
-    // swiftlint:disable:next function_parameter_count
     func createView(for offering: Offering,
-                    activelySubscribedProductIdentifiers: Set<String>,
                     template: PaywallTemplate,
-                    mode: PaywallViewMode,
-                    fonts: PaywallFontProvider,
-                    introEligibility: IntroEligibilityViewModel,
-                    locale: Locale) -> some View {
-        switch self.configuration(for: offering,
-                                  activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                                  template: template,
-                                  mode: mode,
-                                  fonts: fonts,
-                                  locale: locale) {
+                    configuration: Result<TemplateViewConfiguration, Error>,
+                    introEligibility: IntroEligibilityViewModel) -> some View {
+        switch configuration {
         case let .success(configuration):
             Self.createView(template: template, configuration: configuration)
                 .adaptTemplateView(with: configuration)

@@ -47,7 +47,8 @@ extension PaywallData.Configuration.Colors {
                                                    dark: dark.callToActionSecondaryBackground),
             accent1: .init(light: light.accent1, dark: dark.accent1),
             accent2: .init(light: light.accent2, dark: dark.accent2),
-            accent3: .init(light: light.accent3, dark: dark.accent3)
+            accent3: .init(light: light.accent3, dark: dark.accent3),
+            closeButton: .init(light: light.closeButton, dark: dark.closeButton)
         )
     }
 
@@ -118,6 +119,7 @@ extension PaywallData.Configuration.Colors {
     var accent1Color: Color { self.accent1?.underlyingColor ?? self.callToActionForegroundColor }
     var accent2Color: Color { self.accent2?.underlyingColor ?? self.accent1Color }
     var accent3Color: Color { self.accent3?.underlyingColor ?? self.accent2Color }
+    var closeButtonColor: Color? { self.closeButton?.underlyingColor }
 
 }
 

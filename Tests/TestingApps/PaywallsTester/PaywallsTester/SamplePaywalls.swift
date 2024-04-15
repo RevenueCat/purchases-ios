@@ -283,7 +283,8 @@ private extension SamplePaywallLoader {
                         callToActionBackground: "#222222",
                         callToActionForeground: "#FFFFFF",
                         accent1: "#F4E971",
-                        accent2: "#121212"
+                        accent2: "#121212",
+                        closeButton: "#00FF00"
                     ),
                     dark: .init(
                         background: "#272727",
@@ -292,7 +293,8 @@ private extension SamplePaywallLoader {
                         callToActionBackground: "#FFFFFF",
                         callToActionForeground: "#000000",
                         accent1: "#F4E971",
-                        accent2: "#4A4A4A"
+                        accent2: "#4A4A4A",
+                        closeButton: "#00FF00"
                     )
                 ),
                 termsOfServiceURL: Self.tosURL
