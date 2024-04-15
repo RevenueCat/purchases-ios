@@ -38,7 +38,6 @@
 		88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1492BC7463A00273B6D /* StringExtensions.swift */; };
 		88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */; };
 		88DFC14F2BC7502800273B6D /* UserDefaultsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */; };
-		88DFC1512BC8AA5900273B6D /* RootScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1502BC8AA5900273B6D /* RootScreen.swift */; };
 		88DFC1532BC8ABB700273B6D /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1522BC8ABB700273B6D /* LoginScreen.swift */; };
 		88DFC1572BC8AC1700273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1542BC8AC1700273B6D /* AsyncButton.swift */; };
 		88DFC1582BC8AC1700273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */; };
@@ -46,6 +45,7 @@
 		88DFC15C2BC9EE1A00273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC15B2BC9EE1A00273B6D /* PaywallsResponse.swift */; };
 		88DFC15F2BCB2F9200273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC15D2BCB2F9200273B6D /* MockData.swift */; };
 		88DFC1632BCB333000273B6D /* AppList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1622BCB333000273B6D /* AppList.swift */; };
+		88DFC1652BCDD7E200273B6D /* LoginWall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1642BCDD7E200273B6D /* LoginWall.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -103,7 +103,6 @@
 		88DFC1492BC7463A00273B6D /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONExtensions.swift; sourceTree = "<group>"; };
 		88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtensions.swift; sourceTree = "<group>"; };
-		88DFC1502BC8AA5900273B6D /* RootScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RootScreen.swift; sourceTree = "<group>"; };
 		88DFC1522BC8ABB700273B6D /* LoginScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
 		88DFC1542BC8AC1700273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		88DFC1552BC8AC1700273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
@@ -111,6 +110,7 @@
 		88DFC15B2BC9EE1A00273B6D /* PaywallsResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallsResponse.swift; sourceTree = "<group>"; };
 		88DFC15D2BCB2F9200273B6D /* MockData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 		88DFC1622BCB333000273B6D /* AppList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppList.swift; sourceTree = "<group>"; };
+		88DFC1642BCDD7E200273B6D /* LoginWall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWall.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,11 +202,10 @@
 		88DFC12C2BC7306100273B6D /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				88DFC1522BC8ABB700273B6D /* LoginScreen.swift */,
-				88DFC1502BC8AA5900273B6D /* RootScreen.swift */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				88DFC1622BCB333000273B6D /* AppList.swift */,
+				88DFC1662BCDDB7C00273B6D /* Login */,
 				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
 				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
@@ -278,6 +277,15 @@
 				88DFC15D2BCB2F9200273B6D /* MockData.swift */,
 			);
 			path = Mocks;
+			sourceTree = "<group>";
+		};
+		88DFC1662BCDDB7C00273B6D /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				88DFC1642BCDD7E200273B6D /* LoginWall.swift */,
+				88DFC1522BC8ABB700273B6D /* LoginScreen.swift */,
+			);
+			path = Login;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -366,7 +374,6 @@
 				88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */,
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
 				88DFC15A2BC9E92600273B6D /* OfferingsResponse.swift in Sources */,
-				88DFC1512BC8AA5900273B6D /* RootScreen.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
 				88DFC1482BC7451800273B6D /* LoginResponse.swift in Sources */,
 				88DFC13E2BC73D9D00273B6D /* HTTPClient.swift in Sources */,
@@ -390,6 +397,7 @@
 				88DFC14F2BC7502800273B6D /* UserDefaultsExtensions.swift in Sources */,
 				88DFC13D2BC73D9D00273B6D /* HTTPEndpoint.swift in Sources */,
 				88DFC1412BC73D9D00273B6D /* HTTPRequest.swift in Sources */,
+				88DFC1652BCDD7E200273B6D /* LoginWall.swift in Sources */,
 				88DFC1462BC7443B00273B6D /* ErrorResponse.swift in Sources */,
 				88DFC1532BC8ABB700273B6D /* LoginScreen.swift in Sources */,
 				88DFC1572BC8AC1700273B6D /* AsyncButton.swift in Sources */,

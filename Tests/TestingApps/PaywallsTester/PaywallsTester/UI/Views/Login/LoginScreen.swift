@@ -83,8 +83,8 @@ private final class LoginViewModel {
 //                                 defaultValue: "",
 //                                 store: .revenueCatSuite))
     @ObservationIgnored
-    var username: String = ""
-    var password: String = ""
+    var username: String = "james@revenuecat.com"
+    var password: String = "Myrvug-vaxhy1-susjyp" // Myrvug-vaxhy1-susjyp
     var code: String = ""
 
     var codeRequired: Bool = false

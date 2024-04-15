@@ -22,8 +22,6 @@ struct AppContentView: View {
 
     @State
     private var customerInfoTask: Task<(), Never>? = nil
-    
-    let developer: DeveloperResponse
 
     var body: some View {
         TabView {
@@ -49,9 +47,9 @@ struct AppContentView: View {
             #endif
 
             if Purchases.isConfigured {
-                AppList(developer: developer)
+                AppList()
                     .tabItem {
-                        Label("All paywalls", systemImage: "network")
+                        Label("My paywalls", systemImage: "network")
                     }
 
                 UpsellView()
@@ -259,7 +257,7 @@ struct AppContentView_Previews: PreviewProvider {
 
     static var previews: some View {
         NavigationStack {
-            AppContentView(developer: MockData.developer())
+            AppContentView()
         }
     }
 

@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct AppList: View {
-    
-    let developer: DeveloperResponse
-    
+        
     var body: some View {
         NavigationView {
-            List {
-                ForEach(developer.apps, id: \.id) { app in
-                    NavigationLink("\(app.name)") {
-                        OfferingsList(app: app)
+            LoginWall { developer in
+                List {
+                    ForEach(developer.apps, id: \.id) { app in
+                        NavigationLink("\(app.name)") {
+                            OfferingsList(app: app)
+                        }
                     }
-                }
-            }.navigationTitle("Live Apps")
+                }.navigationTitle("My Apps")
+            }
         }
     }
 }
 
 #Preview {
-    AppList(developer: MockData.developer())
+    AppList()
 }
