@@ -86,7 +86,7 @@ public final class HTTPClient {
     }
 
     func removeCookies() {
-        // the following call will delete cookies but the deletion is not persisted (or the cookie is recreated)
+        // the following call only persists the deletion on device, does not work on simulators
         // self.session.configuration.httpCookieStorage?.removeCookies(since: .distantPast)
         session.configuration.httpCookieStorage?.cookies?.forEach { cookie in
             session.configuration.httpCookieStorage?.deleteCookie(cookie)
