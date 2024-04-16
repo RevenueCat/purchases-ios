@@ -26,20 +26,7 @@ public final class HTTPClient {
         self.domain = domain
         self.headers = headers
     }
-
-//    public static func createDefault() -> Self {
-//        return self.init(domain: #URL("https://api.revenuecat.com"))
-//    }
-
-//    public static func withDemoCredentials(apiKey: String) -> Self {
-//        return self.init(
-//            domain: #URL("https://demo-api.revenuecat.com"),
-//            headers: [
-//                "Authorization": "Bearer \(apiKey)"
-//            ]
-//        )
-//    }
-
+    
     func perform<Response: Decodable>(_ request: HTTPRequest) async throws -> Response {
         let request = try request.build(
             domain: self.domain,

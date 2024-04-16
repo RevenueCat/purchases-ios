@@ -10,7 +10,6 @@ import Foundation
 public protocol AuthenticationActorType {
     
     func logIn(user: String, password: String, code: String?) async throws
-//    func logInWithDemoCredentials() async
 
 }
 
@@ -45,11 +44,6 @@ public actor AuthenticationActor: AuthenticationActorType {
             throw Error.unknown(error)
         }
     }
-
-//    public func logInWithDemoCredentials() {
-//        Container.shared.registerDemoHTTPClient()
-//        self.$client.resolve(reset: .scope)
-//    }
 
 }
 
