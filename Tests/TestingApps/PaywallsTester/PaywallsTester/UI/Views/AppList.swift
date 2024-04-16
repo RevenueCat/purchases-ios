@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct AppList: View {
+    
+    @State
+    private var application = ApplicationData()
         
     var body: some View {
         NavigationView {
@@ -19,8 +22,22 @@ struct AppList: View {
                         }
                     }
                 }
-            }.navigationTitle("My Apps")
+                
+            }
+            .environment(application)
+            .navigationTitle("My Apps")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        application.signOut()
+                    } label: {
+                        Text("Sign Out")
+                    }
+                    .opacity(application.isSignedIn ? 1 : 0)
+                }
+            }
         }
+
     }
 }
 

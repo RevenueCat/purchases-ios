@@ -9,8 +9,7 @@ import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
     
-    @State
-    private var application = ApplicationData()
+    @Environment(ApplicationData.self) private var application
     
     @State
     private var error: NSError?
