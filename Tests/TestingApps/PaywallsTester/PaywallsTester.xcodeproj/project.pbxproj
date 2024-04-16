@@ -38,6 +38,10 @@
 		88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1492BC7463A00273B6D /* StringExtensions.swift */; };
 		88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */; };
 		88DFC14F2BC7502800273B6D /* UserDefaultsExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */; };
+		88DFC1882BCF3AB700273B6D /* LoginScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1852BCF39AF00273B6D /* LoginScreen.swift */; };
+		88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1862BCF39AF00273B6D /* LoginWall.swift */; };
+		88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */; };
+		88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -95,6 +99,10 @@
 		88DFC1492BC7463A00273B6D /* StringExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtensions.swift; sourceTree = "<group>"; };
 		88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONExtensions.swift; sourceTree = "<group>"; };
 		88DFC14E2BC7502800273B6D /* UserDefaultsExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtensions.swift; sourceTree = "<group>"; };
+		88DFC1852BCF39AF00273B6D /* LoginScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginScreen.swift; sourceTree = "<group>"; };
+		88DFC1862BCF39AF00273B6D /* LoginWall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWall.swift; sourceTree = "<group>"; };
+		88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
+		88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				88DFC12C2BC7306100273B6D /* Views */,
+				88DFC18C2BCF3ACA00273B6D /* Utility Views */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -185,6 +194,7 @@
 		88DFC12C2BC7306100273B6D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				88DFC1872BCF39AF00273B6D /* Login */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
@@ -238,6 +248,24 @@
 				88DFC14C2BC74D8F00273B6D /* JSONExtensions.swift */,
 			);
 			path = Extensions;
+			sourceTree = "<group>";
+		};
+		88DFC1872BCF39AF00273B6D /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				88DFC1852BCF39AF00273B6D /* LoginScreen.swift */,
+				88DFC1862BCF39AF00273B6D /* LoginWall.swift */,
+			);
+			path = Login;
+			sourceTree = "<group>";
+		};
+		88DFC18C2BCF3ACA00273B6D /* Utility Views */ = {
+			isa = PBXGroup;
+			children = (
+				88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */,
+				88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */,
+			);
+			path = "Utility Views";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -323,6 +351,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */,
+				88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */,
+				88DFC1882BCF3AB700273B6D /* LoginScreen.swift in Sources */,
+				88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */,
 				88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */,
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
