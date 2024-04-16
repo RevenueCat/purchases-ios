@@ -40,7 +40,7 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - append
 
     func testAppendEventWithProperties() async throws {
-        let content = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let content = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                        properties: ["key": AnyEncodable("value")],
                                        timestamp: Date())
 
@@ -82,7 +82,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T12:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -90,7 +90,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T13:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -98,11 +98,11 @@ class DiagnosticsFileHandlerTests: TestCase {
         await self.fileHandler.append(line: line1)
         await self.fileHandler.append(line: line2)
 
-        let content1 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let content1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                         properties: ["key": AnyEncodable("value")],
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
-        let content2 = DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        let content2 = DiagnosticsEvent(eventType: .httpRequestPerformed,
                                         properties: ["key": AnyEncodable("value")],
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
@@ -118,8 +118,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T12:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -127,8 +126,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         {
           "properties": {"key": "value"},
           "timestamp": "2024-04-04T13:55:59Z",
-          "name": "HTTP_REQUEST_PERFORMED",
-          "type": "event",
+          "event_type": "httpRequestPerformed",
           "version": 1
         }
         """.trimmingWhitespacesAndNewLines
@@ -152,11 +150,6 @@ class DiagnosticsFileHandlerTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsFileHandlerTests {
 
-    func reCreateHandler() async throws {
-        self.fileHandler = try FileHandler(await self.fileHandler.url)
-        self.handler = .init(self.fileHandler)
-    }
-
     static func temporaryFileURL() -> URL {
         return FileManager.default
             .temporaryDirectory
@@ -170,7 +163,7 @@ private extension DiagnosticsFileHandlerTests {
     }
 
     static func sampleEvent() -> DiagnosticsEvent {
-        return DiagnosticsEvent(name: "HTTP_REQUEST_PERFORMED",
+        return DiagnosticsEvent(eventType: .httpRequestPerformed,
                                 properties: ["key": AnyEncodable("value")],
                                 timestamp: Date())
     }

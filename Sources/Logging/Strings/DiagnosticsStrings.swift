@@ -20,6 +20,12 @@ enum DiagnosticsStrings {
     case timing_message(message: String, duration: TimeInterval)
     case could_not_create_diagnostics_tracker
 
+    case event_sync_already_in_progress
+    case event_sync_with_empty_store
+    case event_sync_starting(count: Int)
+
+    case error_fetching_events(error: Error)
+
 }
 
 extension DiagnosticsStrings: LogMessage {
@@ -29,8 +35,21 @@ extension DiagnosticsStrings: LogMessage {
         case let .timing_message(message, duration):
             let roundedDuration = (duration * 100).rounded(.down) / 100
             return String(format: "%@ (%.2f seconds)", message.description, roundedDuration)
+
         case .could_not_create_diagnostics_tracker:
             return "Could not create DiagnosticsTracker"
+
+        case .event_sync_already_in_progress:
+            return "Diagnostics event flushing already in progress. Skipping."
+
+        case .event_sync_with_empty_store:
+            return "Diagnostics event flushing requested with empty store."
+
+        case let .event_sync_starting(count):
+            return "Diagnostics event flush: posting \(count) events."
+
+        case let .error_fetching_events(error):
+            return "Failed to read lines from file: \(error.localizedDescription)"
         }
     }
 
