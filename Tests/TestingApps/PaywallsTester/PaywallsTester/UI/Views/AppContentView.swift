@@ -46,11 +46,12 @@ struct AppContentView: View {
                 }
             #endif
 
+            AppList()
+                .tabItem {
+                    Label("My paywalls", systemImage: "network")
+                }
+
             if Purchases.isConfigured {
-                AppList()
-                    .tabItem {
-                        Label("My paywalls", systemImage: "network")
-                    }
 
                 UpsellView()
                     .tabItem {
