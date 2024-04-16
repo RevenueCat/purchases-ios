@@ -86,7 +86,11 @@ public final class HTTPClient {
     }
 
     func removeCookies() {
-        self.session.configuration.httpCookieStorage?.removeCookies(since: .distantPast)
+        // the following call will delete cookies but the deletion is not persisted (or the cookie is recreated)
+        // self.session.configuration.httpCookieStorage?.removeCookies(since: .distantPast)
+        session.configuration.httpCookieStorage?.cookies?.forEach { cookie in
+            session.configuration.httpCookieStorage?.deleteCookie(cookie)
+        }
     }
 
     private let session: URLSession = {
