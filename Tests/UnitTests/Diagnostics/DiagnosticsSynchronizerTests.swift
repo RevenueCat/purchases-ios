@@ -121,7 +121,7 @@ class DiagnosticsSynchronizerTests: TestCase {
         let syncer = self.synchronizer!
         async let sync1: () = await syncer.syncDiagnosticsIfNeeded()
         async let sync2: () = await syncer.syncDiagnosticsIfNeeded()
-        
+
         let (result1: (), result2: ()) = try await (sync1, sync2)
 
         expect(self.api.invokedPostDiagnosticsEvents) == true
