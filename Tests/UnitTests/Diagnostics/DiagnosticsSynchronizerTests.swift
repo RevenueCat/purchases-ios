@@ -118,10 +118,11 @@ class DiagnosticsSynchronizerTests: TestCase {
         _ = await self.storeEvent()
         _ = await self.storeEvent(timestamp: Self.eventTimestamp2)
 
-        let task1 = Task { [synchronizer = self.synchronizer!] in try await synchronizer.syncDiagnosticsIfNeeded() }
-        let task2 = Task { [synchronizer = self.synchronizer!] in try await synchronizer.syncDiagnosticsIfNeeded() }
-
-        let (result1: (), result2: ()) = try await (task1.value, task2.value)
+        let syncer = self.synchronizer!
+        async let sync1: () = await syncer.syncDiagnosticsIfNeeded()
+        async let sync2: () = await syncer.syncDiagnosticsIfNeeded()
+        
+        let (result1: (), result2: ()) = try await (sync1, sync2)
 
         expect(self.api.invokedPostDiagnosticsEvents) == true
 
