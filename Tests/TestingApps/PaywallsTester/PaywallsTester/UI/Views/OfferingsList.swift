@@ -15,16 +15,19 @@ import SwiftUI
 
 // TODO: Ask Barbara about how to present
 struct OfferingsList: View {
-
-    typealias OfferingToPaywalls = [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]
-
+    
+    private struct OfferingPaywall: Hashable {
+        let offering: OfferingsResponse.Offering
+        let paywall: PaywallsResponse.Paywall
+    }
+    
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
         var mode: PaywallViewMode
     }
     
     @State
-    private var offeringsPaywalls: Result<OfferingToPaywalls, NSError>?
+    private var offeringsPaywalls: Result<[OfferingPaywall], NSError>?
 
     @State
     private var presentedPaywall: PresentedPaywall?
@@ -74,25 +77,23 @@ struct OfferingsList: View {
         )
     }
     
-    struct OfferingPaywallData {
+    private struct OfferingPaywallData {
 
         var offerings: [OfferingsResponse.Offering]
         var paywalls: [PaywallsResponse.Paywall]
         
-        
-        func paywallsByOffering() -> [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] {
+        func paywallsByOffering() -> [OfferingPaywall] {
             let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
 
-            var dictionary: [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] = [:]
+            var offeringPaywall = [OfferingPaywall]()
             for offering in self.offerings {
                 if let paywall = paywallsByOfferingID[offering.id] {
-                    dictionary[offering, default: [PaywallsResponse.Paywall]()].append(paywall)
+                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall))
                 }
             }
 
-            return dictionary
+            return offeringPaywall
         }
-
     }
 
     @ViewBuilder
@@ -118,44 +119,26 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with data: OfferingToPaywalls) -> some View {
-
+    private func list(with data: [OfferingPaywall]) -> some View {
         List {
-            ForEach(Array(data.keys), id: \.self) { offering in
+            ForEach(data, id: \.self) { offeringPaywall in
+                let responseOffering = offeringPaywall.offering
+                let responsePaywall = offeringPaywall.paywall
+                let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
                 Section {
-                    ForEach(data[offering]!, id: \.self) { paywall in
-                            #if targetEnvironment(macCatalyst)
-                            NavigationLink(
-                                destination: PaywallPresenter(offering: offering,
-                                                              mode: .default,
-                                                              displayCloseButton: false),
-                                tag: PresentedPaywall(offering: offering, mode: .default),
-                                selection: self.$presentedPaywall
-                            ) {
-                                OfferButton(offering: offering, paywall: paywall) {}
-                                .contextMenu {
-                                    self.contextMenu(for: offering)
-                                }
-                            }
-                            #else
-                            Button {
-                                let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
-                                self.presentedPaywall = .init(offering: rcOffering, mode: .default)
-                            } label: {
-                                Text("Template \(paywall.data.templateName)")
-                                
-                            }
-
-                                #if !os(watchOS)
-                                .contextMenu {
-                                    let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
-                                    self.contextMenu(for: rcOffering)
-                                }
-                                #endif
-                            #endif
+                    Button {
+                        self.presentedPaywall = .init(offering: rcOffering, mode: .default)
+                    } label: {
+                        Text("Template \(responsePaywall.data.templateName)")
                     }
+                    #if !os(watchOS)
+                    .contextMenu {
+                        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+                        self.contextMenu(for: rcOffering)
+                    }
+                    #endif
                 } header: {
-                    Text(offering.displayName)
+                    Text(responseOffering.displayName)
                 }
             }
         }
@@ -183,20 +166,6 @@ struct OfferingsList: View {
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
-        }
-    }
-
-    private struct OfferButton: View {
-        let offering: Offering
-        let paywall: PaywallData
-        let action: () -> Void
-
-        var body: some View {
-            Button(action: action) {
-                Text(self.offering.serverDescription)
-            }
-            .buttonStyle(.plain)
-            .contentShape(Rectangle())
         }
     }
 
