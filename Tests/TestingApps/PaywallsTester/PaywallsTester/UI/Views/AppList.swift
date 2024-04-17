@@ -19,7 +19,6 @@ struct AppList: View {
                         }
                     }
                 }
-                
             }
             .navigationTitle("My Apps")
         }
