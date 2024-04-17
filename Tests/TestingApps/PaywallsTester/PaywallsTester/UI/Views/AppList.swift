@@ -28,7 +28,7 @@ struct AppList: View {
                     Button {
                         application.signOut()
                     } label: {
-                        Text("Sign Out")
+                        Text("Log Out")
                     }
                     .opacity(application.isSignedIn ? 1 : 0)
                 }
