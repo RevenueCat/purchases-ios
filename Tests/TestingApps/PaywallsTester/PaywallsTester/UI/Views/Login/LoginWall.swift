@@ -48,7 +48,7 @@ struct LoginWall<ContentView: View>: View {
 
 #Preview {
     NavigationView {
-        LoginWall { developer in
+        LoginWall() { developer in
             Text("Developer \(developer.name) is now signed in.")
         }
     }
