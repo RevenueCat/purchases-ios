@@ -44,7 +44,6 @@ struct OfferingsList: View {
                 self.content
             }
             .navigationTitle("Live Paywalls")
-            .environment(application)
         }
         .task {
             do {
