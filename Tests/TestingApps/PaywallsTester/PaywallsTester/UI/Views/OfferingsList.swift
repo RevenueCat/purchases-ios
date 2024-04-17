@@ -25,10 +25,10 @@ struct OfferingsList: View {
         var offering: Offering
         var mode: PaywallViewMode
     }
-    
+
     @State
     private var offeringsPaywalls: Result<[OfferingPaywall], NSError>?
-
+    
     @State
     private var presentedPaywall: PresentedPaywall?
     
@@ -44,10 +44,13 @@ struct OfferingsList: View {
                 .navigationTitle("Paywalls")
         .task {
             do {
-                let appOfferings = try await fetchOfferings(for: app).all
-                let appPaywalls = try await fetchPaywalls(for: app).all
+                async let appOfferings = fetchOfferings(for: app).all
+                async let appPaywalls = fetchPaywalls(for: app).all
                 
-                let offeringPaywallData = OfferingPaywallData(offerings: appOfferings, paywalls: appPaywalls)
+                let offerings = try await appOfferings
+                let paywalls = try await appPaywalls
+                
+                let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
                 
                 self.offeringsPaywalls = .success(
                     offeringPaywallData.paywallsByOffering()
