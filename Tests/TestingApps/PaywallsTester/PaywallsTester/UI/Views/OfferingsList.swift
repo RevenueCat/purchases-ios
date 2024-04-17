@@ -40,26 +40,26 @@ struct OfferingsList: View {
     let app: DeveloperResponse.App
 
     var body: some View {
-            self.content
-                .navigationTitle("Paywalls")
-        .task {
-            do {
-                async let appOfferings = fetchOfferings(for: app).all
-                async let appPaywalls = fetchPaywalls(for: app).all
-                
-                let offerings = try await appOfferings
-                let paywalls = try await appPaywalls
-                
-                let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
-                
-                self.offeringsPaywalls = .success(
-                    offeringPaywallData.paywallsByOffering()
-                )
-
-            } catch let error as NSError {
-                self.offeringsPaywalls = .failure(error)
+        self.content
+            .navigationTitle("Paywalls")
+            .task {
+                do {
+                    async let appOfferings = fetchOfferings(for: app).all
+                    async let appPaywalls = fetchPaywalls(for: app).all
+                    
+                    let offerings = try await appOfferings
+                    let paywalls = try await appPaywalls
+                    
+                    let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
+                    
+                    self.offeringsPaywalls = .success(
+                        offeringPaywallData.paywallsByOffering()
+                    )
+                    
+                } catch let error as NSError {
+                    self.offeringsPaywalls = .failure(error)
+                }
             }
-        }
     }
     
     public func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
