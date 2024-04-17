@@ -9,8 +9,7 @@ import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
     
-    @State
-    private(set) var application: ApplicationData
+    @Environment(ApplicationData.self) private var application
     
     @State
     private var error: NSError?
@@ -49,7 +48,7 @@ struct LoginWall<ContentView: View>: View {
 
 #Preview {
     NavigationView {
-        LoginWall(application: ApplicationData()) { developer in
+        LoginWall() { developer in
             Text("Developer \(developer.name) is now signed in.")
         }
     }
