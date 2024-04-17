@@ -26,6 +26,16 @@ struct AppList: View {
             }
             .environment(application)
             .navigationTitle("My Apps")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        application.signOut()
+                    } label: {
+                        Text("Sign Out")
+                    }
+                    .opacity(application.isSignedIn ? 1 : 0)
+                }
+            }
         }
     }
 }
