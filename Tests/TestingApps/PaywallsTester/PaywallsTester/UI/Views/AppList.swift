@@ -8,13 +8,10 @@
 import SwiftUI
 
 struct AppList: View {
-    
-    @State
-    private var application = ApplicationData()
         
     var body: some View {
         NavigationView {
-            LoginWall(application: application) { developer in
+            LoginWall() { developer in
                 List {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
@@ -24,7 +21,6 @@ struct AppList: View {
                 }
                 
             }
-            .environment(application)
             .navigationTitle("My Apps")
         }
     }
