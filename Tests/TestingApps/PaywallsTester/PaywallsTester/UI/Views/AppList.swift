@@ -11,7 +11,7 @@ struct AppList: View {
         
     var body: some View {
         NavigationView {
-            LoginWall() { developer in
+            LoginWall { developer in
                 List {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
