@@ -16,16 +16,7 @@ import SwiftUI
 // TODO: Ask Barbara about how to present
 struct OfferingsList: View {
 
-    fileprivate struct Template: Hashable {
-        var name: String?
-    }
-
-    fileprivate struct Data: Hashable {
-        var sections: [Template]
-        var offeringsBySection: [Template: [Offering]]
-    }
-    
-    typealias Data2 = [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]
+    typealias OfferingToPaywalls = [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]
 
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
@@ -33,7 +24,7 @@ struct OfferingsList: View {
     }
     
     @State
-    private var offerings2: Result<Data2, NSError>?
+    private var offeringsPaywalls: Result<OfferingToPaywalls, NSError>?
 
     @State
     private var presentedPaywall: PresentedPaywall?
@@ -55,12 +46,12 @@ struct OfferingsList: View {
                 
                 let offeringPaywallData = OfferingPaywallData(offerings: appOfferings, paywalls: appPaywalls)
                 
-                self.offerings2 = .success(
+                self.offeringsPaywalls = .success(
                     offeringPaywallData.paywallsByOffering()
                 )
 
             } catch let error as NSError {
-                self.offerings2 = .failure(error)
+                self.offeringsPaywalls = .failure(error)
             }
         }
     }
@@ -106,7 +97,7 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private var content: some View {
-        switch self.offerings2 {
+        switch self.offeringsPaywalls {
         case let .success(data):
             VStack {
                 Text(Self.modesInstructions)
@@ -127,7 +118,7 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with data: Data2) -> some View {
+    private func list(with data: OfferingToPaywalls) -> some View {
 
         List {
             ForEach(Array(data.keys), id: \.self) { offering in
@@ -241,26 +232,6 @@ private struct PaywallPresenter: View {
             PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
                 .paywallFooter(offering: self.offering, condensed: true)
         #endif
-        }
-    }
-
-}
-
-extension OfferingsList.Template: CustomStringConvertible {
-
-    var description: String {
-        if let name = self.name {
-            #if DEBUG
-            if let template = PaywallTemplate(rawValue: name) {
-                return template.name
-            } else {
-                return "Unrecognized template"
-            }
-            #else
-            return name
-            #endif
-        } else {
-            return "No paywall"
         }
     }
 
