@@ -132,7 +132,9 @@ struct OfferingsList: View {
                     Button {
                         self.presentedPaywall = .init(offering: rcOffering, mode: .default)
                     } label: {
-                        Text("Template \(responsePaywall.data.templateName)")
+                        let name = responsePaywall.data.templateName
+                        let humanTemplateName = PaywallTemplate(rawValue: name)?.name ?? name
+                        Text("Template \(humanTemplateName)")
                     }
                     #if !os(watchOS)
                     .contextMenu {
