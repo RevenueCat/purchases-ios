@@ -34,13 +34,10 @@ struct OfferingsList: View {
 
     @State
     private var presentedPaywall: PresentedPaywall?
-    
-    @State
-    private var application = ApplicationData()
 
     var body: some View {
         NavigationView {
-            LoginWall(application: application) { _ in
+            LoginWall() { _ in
                 self.content
             }
             .navigationTitle("Live Paywalls")
