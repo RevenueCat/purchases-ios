@@ -9,7 +9,8 @@ import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
     
-    let application: ApplicationData
+    @State
+    private(set) var application: ApplicationData
     
     @State
     private var error: NSError?
@@ -20,6 +21,7 @@ struct LoginWall<ContentView: View>: View {
         switch application.authentication {
         case .unknown:
             ProgressView()
+                .displayError(self.$error)
                 .task {
                     await reload()
                 }
@@ -31,6 +33,7 @@ struct LoginWall<ContentView: View>: View {
                     await reload()
                 }
             }
+            .displayError(self.$error)
         }
     }
     
