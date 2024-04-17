@@ -40,7 +40,7 @@ struct OfferingsList: View {
 
     var body: some View {
         NavigationView {
-            LoginWall { _ in
+            LoginWall(application: application) { _ in
                 self.content
             }
             .navigationTitle("Live Paywalls")
