@@ -25,10 +25,10 @@ struct OfferingsList: View {
         var offering: Offering
         var mode: PaywallViewMode
     }
-    
+
     @State
     private var offeringsPaywalls: Result<[OfferingPaywall], NSError>?
-
+    
     @State
     private var presentedPaywall: PresentedPaywall?
     
@@ -40,23 +40,26 @@ struct OfferingsList: View {
     let app: DeveloperResponse.App
 
     var body: some View {
-            self.content
-                .navigationTitle("Paywalls")
-        .task {
-            do {
-                let appOfferings = try await fetchOfferings(for: app).all
-                let appPaywalls = try await fetchPaywalls(for: app).all
-                
-                let offeringPaywallData = OfferingPaywallData(offerings: appOfferings, paywalls: appPaywalls)
-                
-                self.offeringsPaywalls = .success(
-                    offeringPaywallData.paywallsByOffering()
-                )
-
-            } catch let error as NSError {
-                self.offeringsPaywalls = .failure(error)
+        self.content
+            .navigationTitle("Paywalls")
+            .task {
+                do {
+                    async let appOfferings = fetchOfferings(for: app).all
+                    async let appPaywalls = fetchPaywalls(for: app).all
+                    
+                    let offerings = try await appOfferings
+                    let paywalls = try await appPaywalls
+                    
+                    let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
+                    
+                    self.offeringsPaywalls = .success(
+                        offeringPaywallData.paywallsByOffering()
+                    )
+                    
+                } catch let error as NSError {
+                    self.offeringsPaywalls = .failure(error)
+                }
             }
-        }
     }
     
     public func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
@@ -190,15 +193,11 @@ private struct PaywallPresenter: View {
 
         #if !os(watchOS)
         case .footer:
-//            CustomPaywallContent()
-            // TODO: Get this presenting correctly.
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+            CustomPaywallContent()
                 .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
-//            CustomPaywallContent()
-            // TODO: Get this presenting correctly.
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+            CustomPaywallContent()
                 .paywallFooter(offering: self.offering, condensed: true)
         #endif
         }
