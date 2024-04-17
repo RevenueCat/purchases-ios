@@ -122,39 +122,23 @@ struct OfferingsList: View {
     private func list(with data: [OfferingPaywall]) -> some View {
         List {
             ForEach(data, id: \.self) { offeringPaywall in
+                let responseOffering = offeringPaywall.offering
+                let responsePaywall = offeringPaywall.paywall
+                let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
                 Section {
-                    let paywall = offeringPaywall.paywall
-                    #if targetEnvironment(macCatalyst)
-                    NavigationLink(
-                        destination: PaywallPresenter(offering: offering,
-                                                      mode: .default,
-                                                      displayCloseButton: false),
-                        tag: PresentedPaywall(offering: offering, mode: .default),
-                        selection: self.$presentedPaywall
-                    ) {
-                        OfferButton(offering: offering, paywall: paywall) {}
-                        .contextMenu {
-                            self.contextMenu(for: offering)
-                        }
-                    }
-                    #else
                     Button {
-                        let rcOffering = paywall.convertToRevenueCatPaywall(with: offeringPaywall.offering)
                         self.presentedPaywall = .init(offering: rcOffering, mode: .default)
                     } label: {
-                        Text("Template \(paywall.data.templateName)")
-                        
+                        Text("Template \(responsePaywall.data.templateName)")
                     }
-
-                        #if !os(watchOS)
-                        .contextMenu {
-                            let rcOffering = paywall.convertToRevenueCatPaywall(with: offeringPaywall.offering)
-                            self.contextMenu(for: rcOffering)
-                        }
-                        #endif
+                    #if !os(watchOS)
+                    .contextMenu {
+                        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+                        self.contextMenu(for: rcOffering)
+                    }
                     #endif
                 } header: {
-                    Text(offeringPaywall.offering.displayName)
+                    Text(responseOffering.displayName)
                 }
             }
         }
@@ -182,20 +166,6 @@ struct OfferingsList: View {
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
-        }
-    }
-
-    private struct OfferButton: View {
-        let offering: Offering
-        let paywall: PaywallData
-        let action: () -> Void
-
-        var body: some View {
-            Button(action: action) {
-                Text(self.offering.serverDescription)
-            }
-            .buttonStyle(.plain)
-            .contentShape(Rectangle())
         }
     }
 
