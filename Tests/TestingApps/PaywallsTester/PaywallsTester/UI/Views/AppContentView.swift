@@ -46,11 +46,12 @@ struct AppContentView: View {
                 }
             #endif
 
+            AppList()
+                .tabItem {
+                    Label("My paywalls", systemImage: "network")
+                }
+
             if Purchases.isConfigured {
-                OfferingsList()
-                    .tabItem {
-                        Label("All paywalls", systemImage: "network")
-                    }
 
                 UpsellView()
                     .tabItem {
@@ -249,6 +250,7 @@ private extension UIApplication {
 
 #if DEBUG
 
+// TODO: Mock developer to instantiate AppContentView
 @testable import RevenueCatUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)

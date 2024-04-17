@@ -13,6 +13,7 @@ import RevenueCatUI
 #endif
 import SwiftUI
 
+// TODO: Ask Barbara about how to present
 struct OfferingsList: View {
 
     fileprivate struct Template: Hashable {
@@ -23,61 +24,98 @@ struct OfferingsList: View {
         var sections: [Template]
         var offeringsBySection: [Template: [Offering]]
     }
+    
+    typealias Data2 = [OfferingsResponse.Offering: [PaywallsResponse.Paywall]]
 
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
         var mode: PaywallViewMode
     }
-
+    
     @State
-    private var offerings: Result<Data, NSError>?
+    private var offerings2: Result<Data2, NSError>?
 
     @State
     private var presentedPaywall: PresentedPaywall?
     
     @State
-    private var application = ApplicationData()
+    private var displayPaywall: Bool = false
+    
+    private let client = HTTPClient.shared
+    
+    let app: DeveloperResponse.App
 
     var body: some View {
-        NavigationView {
-            LoginWall { _ in
-                self.content
-            }
-            .navigationTitle("Live Paywalls")
-            .environment(application)
-        }
+            self.content
+                .navigationTitle("Paywalls")
         .task {
             do {
-                let offerings = try await Purchases.shared.offerings()
-                    .all
-                    .map(\.value)
-                    .sorted { $0.serverDescription > $1.serverDescription }
-
-                let offeringsBySection = Dictionary(
-                    grouping: offerings,
-                    by: { Template(name: $0.paywall?.templateName) }
+                let appOfferings = try await fetchOfferings(for: app).all
+                let appPaywalls = try await fetchPaywalls(for: app).all
+                
+                let offeringPaywallData = OfferingPaywallData(offerings: appOfferings, paywalls: appPaywalls)
+                
+                self.offerings2 = .success(
+                    offeringPaywallData.paywallsByOffering()
                 )
 
-                self.offerings = .success(
-                    .init(
-                        sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
-                        offeringsBySection: offeringsBySection
-                    )
-                )
             } catch let error as NSError {
-                self.offerings = .failure(error)
+                self.offerings2 = .failure(error)
             }
         }
+    }
+    
+    public func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
+        return try await self.client.perform(
+            .init(
+                method: .get,
+                endpoint: .offerings(projectID: app.id)
+            )
+        )
+    }
+    
+    public func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
+        return try await self.client.perform(
+            .init(
+                method: .get,
+                endpoint: .paywalls(projectID: app.id)
+            )
+        )
+    }
+    
+    struct OfferingPaywallData {
+
+        var offerings: [OfferingsResponse.Offering]
+        var paywalls: [PaywallsResponse.Paywall]
+        
+        
+        func paywallsByOffering() -> [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] {
+            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
+
+            var dictionary: [OfferingsResponse.Offering: [PaywallsResponse.Paywall]] = [:]
+            for offering in self.offerings {
+                if let paywall = paywallsByOfferingID[offering.id] {
+                    dictionary[offering, default: [PaywallsResponse.Paywall]()].append(paywall)
+                }
+            }
+
+            return dictionary
+        }
+
     }
 
     @ViewBuilder
     private var content: some View {
-        switch self.offerings {
+        switch self.offerings2 {
         case let .success(data):
             VStack {
                 Text(Self.modesInstructions)
                     .font(.footnote)
-                self.list(with: data)
+                if data.isEmpty {
+                    ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                } else {
+                    self.list(with: data)
+                }
             }
 
         case let .failure(error):
@@ -89,15 +127,15 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with data: Data) -> some View {
+    private func list(with data: Data2) -> some View {
+
         List {
-            ForEach(data.sections, id: \.self) { template in
+            ForEach(Array(data.keys), id: \.self) { offering in
                 Section {
-                    ForEach(data.offeringsBySection[template]!, id: \.id) { offering in
-                        if let paywall = offering.paywall {
+                    ForEach(data[offering]!, id: \.self) { paywall in
                             #if targetEnvironment(macCatalyst)
                             NavigationLink(
-                                destination: PaywallPresenter(offering: offering, 
+                                destination: PaywallPresenter(offering: offering,
                                                               mode: .default,
                                                               displayCloseButton: false),
                                 tag: PresentedPaywall(offering: offering, mode: .default),
@@ -109,21 +147,24 @@ struct OfferingsList: View {
                                 }
                             }
                             #else
-                            OfferButton(offering: offering, paywall: paywall) {
-                                self.presentedPaywall = .init(offering: offering, mode: .default)
+                            Button {
+                                let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
+                                self.presentedPaywall = .init(offering: rcOffering, mode: .default)
+                            } label: {
+                                Text("Template \(paywall.data.templateName)")
+                                
                             }
+
                                 #if !os(watchOS)
                                 .contextMenu {
-                                    self.contextMenu(for: offering)
+                                    let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
+                                    self.contextMenu(for: rcOffering)
                                 }
                                 #endif
                             #endif
-                        } else {
-                            Text(offering.serverDescription)
-                        }
                     }
                 } header: {
-                    Text(verbatim: template.description)
+                    Text(offering.displayName)
                 }
             }
         }
@@ -189,11 +230,15 @@ private struct PaywallPresenter: View {
 
         #if !os(watchOS)
         case .footer:
-            CustomPaywallContent()
+//            CustomPaywallContent()
+            // TODO: Get this presenting correctly.
+            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
                 .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
-            CustomPaywallContent()
+//            CustomPaywallContent()
+            // TODO: Get this presenting correctly.
+            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
                 .paywallFooter(offering: self.offering, condensed: true)
         #endif
         }
@@ -231,10 +276,11 @@ extension OfferingsList.PresentedPaywall: Identifiable {
 
 #if DEBUG
 
+// TODO: Mock DeveloperResponse to instantiate OfferingsList
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            OfferingsList()
+            OfferingsList(app: MockData.developer().apps.first!)
         }
     }
 }
