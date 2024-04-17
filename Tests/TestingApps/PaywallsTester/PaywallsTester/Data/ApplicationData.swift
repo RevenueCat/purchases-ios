@@ -34,13 +34,6 @@ final class ApplicationData {
         self.manager.signOut()
         self.authentication = .signedOut
     }
-    
-    var isSignedIn: Bool {
-        if case .signedIn = self.authentication {
-            return true
-        }
-        return false
-    }
 
     @ObservationIgnored
     private var manager: ApplicationManagerType = ApplicationManager()
