@@ -193,15 +193,11 @@ private struct PaywallPresenter: View {
 
         #if !os(watchOS)
         case .footer:
-//            CustomPaywallContent()
-            // TODO: Get this presenting correctly.
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+            CustomPaywallContent()
                 .paywallFooter(offering: self.offering)
 
         case .condensedFooter:
-//            CustomPaywallContent()
-            // TODO: Get this presenting correctly.
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+            CustomPaywallContent()
                 .paywallFooter(offering: self.offering, condensed: true)
         #endif
         }
