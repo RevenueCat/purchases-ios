@@ -15,7 +15,7 @@ struct Logging {
     private init() {}
     
     func logger(category: String) -> Logger {
-        return Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.revenuecat.PaywallsTester",
+        return Logger(subsystem: Bundle.main.bundleIdentifier!,
                       category: category)
     }
 }
