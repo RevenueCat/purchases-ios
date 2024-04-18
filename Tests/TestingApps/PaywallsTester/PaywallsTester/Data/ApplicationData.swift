@@ -37,8 +37,7 @@ final class ApplicationData {
 
     @ObservationIgnored
     private var manager: ApplicationManagerType = ApplicationManager()
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.revenuecat.PaywallsTester",
-                                       category: "ApplicationData")
+    private static let logger = Logging.shared.logger(category: "ApplicationData")
 
 }
 

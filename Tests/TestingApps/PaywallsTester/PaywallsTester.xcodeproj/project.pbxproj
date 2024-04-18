@@ -23,6 +23,7 @@
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 		4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */; };
 		4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF11212A72714C004F3680 /* SamplePaywalls.swift */; };
+		88B4378C2BD0972B000AF27C /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B4378B2BD0972B000AF27C /* Logging.swift */; };
 		88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC12D2BC7335200273B6D /* ApplicationData.swift */; };
 		88DFC1322BC7385B00273B6D /* AuthenticationActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */; };
 		88DFC1332BC7385B00273B6D /* ApplicationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1312BC7385B00273B6D /* ApplicationManager.swift */; };
@@ -80,6 +81,7 @@
 		4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
 		4FDF11212A72714C004F3680 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
 		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		88B4378B2BD0972B000AF27C /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		88DFC12D2BC7335200273B6D /* ApplicationData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationData.swift; sourceTree = "<group>"; };
 		88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationActor.swift; sourceTree = "<group>"; };
 		88DFC1312BC7385B00273B6D /* ApplicationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationManager.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				4FC046BC2A572E3700A28BCF /* SimpleApp.swift */,
 				88DFC1422BC743BC00273B6D /* Extensions */,
 				88DFC1372BC73D8000273B6D /* Networking */,
+				88B4378D2BD09735000AF27C /* Logging */,
 				88DFC1342BC73D5000273B6D /* Responses */,
 				88DFC12F2BC7335600273B6D /* Data */,
 				4F34FF682A60AEE300AADF11 /* UI */,
@@ -180,6 +183,14 @@
 				4F4557E42A6FFE6A00160521 /* Localizable.strings */,
 			);
 			name = Config;
+			sourceTree = "<group>";
+		};
+		88B4378D2BD09735000AF27C /* Logging */ = {
+			isa = PBXGroup;
+			children = (
+				88B4378B2BD0972B000AF27C /* Logging.swift */,
+			);
+			path = Logging;
 			sourceTree = "<group>";
 		};
 		88DFC12C2BC7306100273B6D /* Views */ = {
@@ -330,6 +341,7 @@
 				88DFC13E2BC73D9D00273B6D /* HTTPClient.swift in Sources */,
 				88DFC1322BC7385B00273B6D /* AuthenticationActor.swift in Sources */,
 				4F4EE7CF2A572F5D00D7EAE1 /* DebugView.swift in Sources */,
+				88B4378C2BD0972B000AF27C /* Logging.swift in Sources */,
 				88DFC1332BC7385B00273B6D /* ApplicationManager.swift in Sources */,
 				4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */,
 				88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */,
@@ -523,6 +535,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,5,6,7";
 				WATCHOS_DEPLOYMENT_TARGET = 8.0;
@@ -571,6 +584,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,5,6,7";
 				WATCHOS_DEPLOYMENT_TARGET = 8.0;
