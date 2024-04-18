@@ -43,6 +43,10 @@
 		88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1862BCF39AF00273B6D /* LoginWall.swift */; };
 		88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */; };
 		88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */; };
+		88DFC1902BCF48B000273B6D /* AppList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18F2BCF48B000273B6D /* AppList.swift */; };
+		88DFC1932BCF490400273B6D /* OfferingsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1922BCF490400273B6D /* OfferingsResponse.swift */; };
+		88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1912BCF490400273B6D /* PaywallsResponse.swift */; };
+		88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1952BCF4A4300273B6D /* MockData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -105,6 +109,10 @@
 		88DFC1862BCF39AF00273B6D /* LoginWall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginWall.swift; sourceTree = "<group>"; };
 		88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
+		88DFC18F2BCF48B000273B6D /* AppList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppList.swift; sourceTree = "<group>"; };
+		88DFC1912BCF490400273B6D /* PaywallsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsResponse.swift; sourceTree = "<group>"; };
+		88DFC1922BCF490400273B6D /* OfferingsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsResponse.swift; sourceTree = "<group>"; };
+		88DFC1952BCF4A4300273B6D /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -167,6 +175,7 @@
 				88DFC12F2BC7335600273B6D /* Data */,
 				4F34FF682A60AEE300AADF11 /* UI */,
 				4FC046CA2A572EF300A28BCF /* Config */,
+				88DFC1962BCF4A4300273B6D /* Mocks */,
 				4FC046C02A572E3700A28BCF /* Preview Content */,
 			);
 			path = PaywallsTester;
@@ -206,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				88DFC1872BCF39AF00273B6D /* Login */,
+				88DFC18F2BCF48B000273B6D /* AppList.swift */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
@@ -234,6 +244,8 @@
 				88DFC1452BC7443B00273B6D /* ErrorResponse.swift */,
 				88DFC1352BC73D5A00273B6D /* DeveloperResponse.swift */,
 				88DFC1472BC7451800273B6D /* LoginResponse.swift */,
+				88DFC1922BCF490400273B6D /* OfferingsResponse.swift */,
+				88DFC1912BCF490400273B6D /* PaywallsResponse.swift */,
 			);
 			path = Responses;
 			sourceTree = "<group>";
@@ -277,6 +289,14 @@
 				88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */,
 			);
 			path = "Utility Views";
+			sourceTree = "<group>";
+		};
+		88DFC1962BCF4A4300273B6D /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				88DFC1952BCF4A4300273B6D /* MockData.swift */,
+			);
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -362,10 +382,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88DFC1972BCF4A5100273B6D /* MockData.swift in Sources */,
 				88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */,
 				88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */,
 				88DFC1882BCF3AB700273B6D /* LoginScreen.swift in Sources */,
 				88DFC1892BCF3AB700273B6D /* LoginWall.swift in Sources */,
+				88DFC1932BCF490400273B6D /* OfferingsResponse.swift in Sources */,
 				88DFC14A2BC7463A00273B6D /* StringExtensions.swift in Sources */,
 				4F4EE7CD2A572F5400D7EAE1 /* SimpleApp.swift in Sources */,
 				4F71CDD22A992292001B9BEF /* CustomPaywallContent.swift in Sources */,
@@ -379,6 +401,7 @@
 				88DFC14D2BC74D8F00273B6D /* JSONExtensions.swift in Sources */,
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4FC6F8B22A7403D3002139B2 /* OfferingsList.swift in Sources */,
+				88DFC1902BCF48B000273B6D /* AppList.swift in Sources */,
 				88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */,
 				2D708C7F2AC6050000336AC8 /* UpsellView.swift in Sources */,
 				2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */,
@@ -389,6 +412,7 @@
 				88DFC1442BC743EE00273B6D /* ArrayExtensions.swift in Sources */,
 				88DFC14F2BC7502800273B6D /* UserDefaultsExtensions.swift in Sources */,
 				88DFC13D2BC73D9D00273B6D /* HTTPEndpoint.swift in Sources */,
+				88DFC1942BCF490400273B6D /* PaywallsResponse.swift in Sources */,
 				88DFC1412BC73D9D00273B6D /* HTTPRequest.swift in Sources */,
 				88DFC1462BC7443B00273B6D /* ErrorResponse.swift in Sources */,
 				88DFC1402BC73D9D00273B6D /* HTTPStatusCode.swift in Sources */,
