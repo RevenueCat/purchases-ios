@@ -36,7 +36,7 @@ final class ApplicationData {
     }
     
     var isSignedIn: Bool {
-        if case .signedIn = self.authentication {
+        if case .signedIn = self.authenticationStatus {
             return true
         }
         return false

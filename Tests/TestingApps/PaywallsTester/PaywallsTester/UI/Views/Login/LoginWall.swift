@@ -17,7 +17,7 @@ struct LoginWall<ContentView: View>: View {
     var content: (DeveloperResponse) -> ContentView
     
     var body: some View {
-        switch application.authentication {
+        switch application.authenticationStatus {
         case .unknown:
             ProgressView()
                 .displayError(self.$error)
