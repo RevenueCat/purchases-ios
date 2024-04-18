@@ -26,11 +26,7 @@ extension PaywallsResponse {
 
 }
 
-// MARK: - Hashable
-
 extension PaywallsResponse.Paywall: Hashable {}
-
-// MARK: - Identifiable
 
 extension PaywallsResponse.Paywall: Identifiable {
 
@@ -39,8 +35,6 @@ extension PaywallsResponse.Paywall: Identifiable {
     }
 
 }
-
-// MARK: - Decodable
 
 extension PaywallsResponse.Paywall: Decodable {
 

@@ -20,7 +20,7 @@ struct OfferingsList: View {
         let offering: OfferingsResponse.Offering
         let paywall: PaywallsResponse.Paywall
     }
-    
+
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
         var mode: PaywallViewMode
@@ -28,7 +28,7 @@ struct OfferingsList: View {
 
     @State
     private var offeringsPaywalls: Result<[OfferingPaywall], NSError>?
-    
+
     @State
     private var presentedPaywall: PresentedPaywall?
     
