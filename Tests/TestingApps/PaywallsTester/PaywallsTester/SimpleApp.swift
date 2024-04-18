@@ -9,10 +9,14 @@ import SwiftUI
 
 @main
 struct SimpleApp: App {
+    
+    @State
+    private var application = ApplicationData()
 
     var body: some Scene {
         WindowGroup {
             AppContentView()
+                .environment(application)
         }
     }
 
