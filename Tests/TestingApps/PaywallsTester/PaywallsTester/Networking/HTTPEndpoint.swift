@@ -12,11 +12,6 @@ public enum HTTPEndpoint {
 
     case login(user: String, password: String, code: String?)
     case me
-
-    case overview
-    case transactions
-    case subscriberActivity(projectID: String, subscriber: String)
-
     case offerings(projectID: String)
     case paywalls(projectID: String)
 
@@ -28,11 +23,6 @@ extension HTTPEndpoint {
         switch self {
         case .login: return "login"
         case .me: return "me"
-        case .overview: return "me/charts_v2/overview"
-        case .transactions: return "me/transactions"
-        case let .subscriberActivity(projectID, subscriber):
-            return "me/projects/\(projectID)/subscribers/\(subscriber)/activity"
-
         case let .offerings(projectID): return "me/projects/\(projectID)/offerings"
         case let .paywalls(projectID): return "me/projects/\(projectID)/paywalls"
         }
@@ -42,9 +32,6 @@ extension HTTPEndpoint {
         switch self {
         case .login: false
         case .me: false
-        case .overview: false
-        case .transactions: false
-        case .subscriberActivity: true
         case .offerings: true
         case .paywalls: true
         }
@@ -54,11 +41,6 @@ extension HTTPEndpoint {
         switch self {
         case .login: return nil
         case .me: return nil
-        case .overview: return [
-            "app_uuid": nil
-        ]
-        case .transactions: return nil
-        case .subscriberActivity: return nil
         case .offerings, .paywalls: return nil
         }
     }
@@ -68,11 +50,7 @@ extension HTTPEndpoint {
             switch self {
             case let .login(user, password, code):
                 return try LoginRequestBody(email: user, password: password, otpCode: code).jsonEncodedData
-
             case .me: return nil
-            case .transactions: return nil
-            case .overview: return nil
-            case .subscriberActivity: return nil
             case .offerings, .paywalls: return nil
             }
         }
