@@ -48,10 +48,23 @@ extension DiagnosticsEventsRequest.Event {
     init(event: DiagnosticsEvent) {
         self.init(
             version: event.version,
-            name: event.name,
+            name: event.eventType.name,
             properties: event.properties,
             timestamp: event.timestamp.ISO8601Format()
         )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension DiagnosticsEvent.EventType {
+
+    var name: String {
+        switch self {
+        case .httpRequestPerformed: return "http_request_performed"
+        case .customerInfoVerificationResult: return "customer_info_verification_result"
+        }
+
     }
 
 }

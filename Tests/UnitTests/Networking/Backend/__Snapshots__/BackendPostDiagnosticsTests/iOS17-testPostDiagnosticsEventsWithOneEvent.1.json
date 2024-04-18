@@ -20,7 +20,7 @@
     "body" : {
       "entries" : [
         {
-          "name" : "HTTP_REQUEST_PERFORMED",
+          "name" : "http_request_performed",
           "properties" : {
             "key" : "value"
           },

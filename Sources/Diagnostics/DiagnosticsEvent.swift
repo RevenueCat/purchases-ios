@@ -16,12 +16,23 @@ import Foundation
 struct DiagnosticsEvent: Codable, Equatable {
 
     let version: Int = 1
-    let name: String
+    let eventType: DiagnosticsEvent.EventType
     let properties: [String: AnyEncodable]
     let timestamp: Date
 
     enum CodingKeys: String, CodingKey {
-        case version, name, properties, timestamp
+        case version, properties, timestamp, eventType
+    }
+
+}
+
+extension DiagnosticsEvent {
+
+    enum EventType: String, Codable {
+
+        case httpRequestPerformed
+        case customerInfoVerificationResult
+
     }
 
 }
@@ -30,7 +41,7 @@ extension DiagnosticsEvent {
 
     static func == (lhs: DiagnosticsEvent, rhs: DiagnosticsEvent) -> Bool {
         return lhs.version == rhs.version &&
-               lhs.name == rhs.name &&
+               lhs.eventType == rhs.eventType &&
                lhs.properties == rhs.properties &&
                lhs.timestamp == rhs.timestamp
     }
