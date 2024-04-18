@@ -19,7 +19,6 @@ public enum MockData {
 
 }
 
-
 extension MockData {
 
     static let developerJson = """
@@ -45,10 +44,6 @@ extension MockData {
     """
 
 }
-
-// MARK: -
-
-
 
 extension MockData {
 
