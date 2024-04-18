@@ -12,39 +12,38 @@ import OSLog
 @Observable
 final class ApplicationData {
 
-    private(set) var authentication: Authentication = .unknown {
+    private(set) var authenticationStatus: AuthenticationStatus = .unknown {
         didSet {
-            Self.logger.info("Changed authentication: \(String(describing: self.authentication))")
+            Self.logger.info("Changed authentication: \(String(describing: self.authenticationStatus))")
         }
     }
 
     @MainActor
     func loadApplicationData() async throws {
-        self.authentication = .unknown
+        self.authenticationStatus = .unknown
 
         do {
-            self.authentication = .signedIn(try await self.manager.loadApplicationData())
+            self.authenticationStatus = .signedIn(try await self.manager.loadApplicationData())
         } catch ApplicationManager.Error.unauthenticated {
             Self.logger.warning("Received unauthentication error when loading application data")
-            self.authentication = .signedOut
+            self.authenticationStatus = .signedOut
         }
     }
 
     func signOut() {
         self.manager.signOut()
-        self.authentication = .signedOut
+        self.authenticationStatus = .signedOut
     }
 
     @ObservationIgnored
     private var manager: ApplicationManagerType = ApplicationManager()
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.revenuecat.PaywallsTester",
-                                       category: "ApplicationData")
+    private static let logger = Logging.shared.logger(category: "ApplicationData")
 
 }
 
 extension ApplicationData {
   
-    enum Authentication: Equatable {
+    enum AuthenticationStatus: Equatable {
 
         case signedIn(DeveloperResponse)
         case signedOut

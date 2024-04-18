@@ -21,7 +21,7 @@ public final class HTTPClient {
         domain: URL,
         headers: [String: String] = [:]
     ) {
-        Self.log(.info, "Creating HTTPClient with domain: \(domain)")
+        Self.logger.log(.info, "Creating HTTPClient with domain: \(domain)")
 
         self.domain = domain
         self.headers = headers
@@ -33,7 +33,7 @@ public final class HTTPClient {
             headers: self.headers
         )
 
-        Self.log(.info, request, "Starting")
+        Self.logger.log(.info, request: request, message: "Starting")
 
         let (data, response) = try await self.session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -41,7 +41,7 @@ public final class HTTPClient {
         }
 
         let statusCode = httpResponse.httpStatusCode
-        Self.log(.info, request, "Finished: \(statusCode.rawValue)")
+        Self.logger.log(.info, request: request, message: "Finished: \(statusCode.rawValue)")
 
         guard statusCode.isSuccessfulResponse else {
             if let error = statusCode.toError() {
@@ -106,25 +106,17 @@ extension HTTPClient {
 
 // MARK: - Private
 
+private extension Logger {
+    func log(_ level: OSLogType, request: URLRequest, message: String) {
+        self.log(level: level, "\(request.httpMethod ?? "") \(request.url?.absoluteString ?? ""): \(message)")
+    }
+    func log(_ level: OSLogType, _ message: String) {
+        self.log(level: level, "\(message)")
+    }
+}
+
 private extension HTTPClient {
-
-    static func log(_ level: OSLogType, _ request: URLRequest, _ message: String) {
-        Self.log(
-            level,
-            "\(request.httpMethod ?? "") \(request.url?.absoluteString ?? ""): \(message)"
-        )
-    }
-
-    static func log(_ level: OSLogType, _ message: String) {
-        Self.logger.log(
-            level: level,
-            "\(message)"
-        )
-    }
-    
-    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.revenuecat.PaywallsTester",
-                                       category: "HTTPClient")
-
+    private static let logger = Logging.shared.logger(category: "HTTPClient")
 }
 
 private extension HTTPRequest {
