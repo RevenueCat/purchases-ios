@@ -56,11 +56,6 @@ extension HTTPEndpoint {
         }
     }
 
-    private static let dateFormat = Date.FormatStyle()
-        .year(.defaultDigits)
-        .month(.twoDigits)
-        .day(.twoDigits)
-
 }
 
 // MARK: -
