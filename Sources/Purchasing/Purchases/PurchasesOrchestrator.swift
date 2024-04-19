@@ -165,6 +165,7 @@ final class PurchasesOrchestrator {
         }
 
         Task {
+            await diagnosticsSynchronizer?.clearDiagnosticsFileIfTooBig()
             await syncDiagnosticsIfNeeded()
         }
     }

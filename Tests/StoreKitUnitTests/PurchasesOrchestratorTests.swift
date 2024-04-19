@@ -1735,6 +1735,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.orchestrator.diagnosticsSynchronizer).toNot(beNil())
         expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
     }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testClearDiagnosticsFileIfTooBigOnInitialization() throws {
+        let mockDiagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let transactionListener = MockStoreKit2TransactionListener()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               diagnosticsSynchronizer: mockDiagnosticsSynchronizer)
+        expect(self.orchestrator.diagnosticsSynchronizer).toNot(beNil())
+        expect(mockDiagnosticsSynchronizer.invokedClearDiagnosticsFileIfTooBig).toEventually(beTrue())
+    }
 }
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)

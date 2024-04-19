@@ -17,7 +17,12 @@ import Foundation
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class MockDiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 
+    private(set) var invokedClearDiagnosticsFileIfTooBig = false
     private(set) var invokedSyncDiagnosticsIfNeeded = false
+
+    func clearDiagnosticsFileIfTooBig() async {
+        invokedClearDiagnosticsFileIfTooBig = true
+    }
 
     func syncDiagnosticsIfNeeded() async throws {
         invokedSyncDiagnosticsIfNeeded = true

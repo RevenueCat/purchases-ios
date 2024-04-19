@@ -24,6 +24,8 @@ protocol DiagnosticsFileHandlerType: Sendable {
 
     func emptyDiagnosticsFile() async
 
+    func isDiagnosticsFileTooBig() async -> Bool
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -50,7 +52,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
             return
         }
 
-        await fileHandler.append(line: jsonString)
+        await self.fileHandler.append(line: jsonString)
     }
 
     func getEntries() async -> [DiagnosticsEvent] {
@@ -71,7 +73,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         }
 
         do {
-            try await fileHandler.removeFirstLines(diagnosticsSentCount)
+            try await self.fileHandler.removeFirstLines(diagnosticsSentCount)
         } catch {
             Logger.error("Failed to clean sent diagnostics: \(error.localizedDescription)")
         }
@@ -79,12 +81,22 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     func emptyDiagnosticsFile() async {
         do {
-            try await fileHandler.emptyFile()
+            try await self.fileHandler.emptyFile()
         } catch {
             Logger.error("Failed to empty diagnostics file: \(error.localizedDescription)")
         }
     }
 
+    func isDiagnosticsFileTooBig() async -> Bool {
+        do {
+            return try await self.fileHandler.fileSizeInKB() > Self.maxFileSizeInKb
+        } catch {
+            Logger.error("Failed to check whether diagnostics file is too big: \(error.localizedDescription)")
+            return true
+        }
+    }
+
+    private static let maxFileSizeInKb: Double = 500
 }
 
 // MARK: - Private
