@@ -1027,6 +1027,8 @@ jobs:
           command: |
             git clone https://github.com/RevenueCat/purchases-ios.git
             cd purchases-ios
+            echo "0000"
+            git checkout HEAD~3
             echo "AAAA"
             git fetch --tags
             echo "BBBB"
