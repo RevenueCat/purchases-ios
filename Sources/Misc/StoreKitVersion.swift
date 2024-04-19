@@ -24,6 +24,8 @@ public enum StoreKitVersion: Int {
     /// Always use StoreKit 2 (StoreKit 1 will be used if StoreKit 2 is not available in the current device.)
     ///
     /// - Warning: Make sure you have an In-App Purchase Key configured in your app.
+    /// - Warning: If you are using observer mode, ensure that you're calling ``Purchases/handleObserverModeTransaction(_:)``
+    /// after making a purchase.
     /// Please see https://rev.cat/in-app-purchase-key-configuration for more info.
     @objc(RCStoreKitVersion2)
     case storeKit2 = 2
