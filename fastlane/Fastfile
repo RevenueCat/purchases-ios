@@ -24,10 +24,6 @@ files_with_version_number = {
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
   './scripts/docs/v5_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v5_api_migration_guide']
 }
-is_prerelease = Gem::Version.new(current_version_number).prerelease?
-if !is_prerelease
-  files_with_version_number['./scripts/docs/index.html'] = ['purchases-ios-docs/{x}/documentation/revenuecat']
-end
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
   './Sources/Info.plist' => PLIST_VERSION_PATTERNS,
@@ -36,6 +32,10 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
+files_to_update_on_latest_stable_releases = {
+  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
+}
+
 repo_name = 'purchases-ios'
 snapshots_repo_name = 'purchases-ios-snapshots'
 changelog_latest_path = './CHANGELOG.latest.md'
@@ -59,6 +59,7 @@ platform :ios do
       changelog_path: changelog_path,
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
+      files_to_update_on_latest_stable_releases: files_to_update_on_latest_stable_releases,
       repo_name: repo_name,
       github_rate_limit: options[:github_rate_limit],
       editor: options[:editor],
