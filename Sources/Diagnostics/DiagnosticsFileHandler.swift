@@ -13,15 +13,18 @@
 
 import Foundation
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol DiagnosticsFileHandlerType: Sendable {
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func getEntries() async -> [DiagnosticsEvent]
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func appendEvent(diagnosticsEvent: DiagnosticsEvent) async
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func emptyDiagnosticsFile() async
 
 }

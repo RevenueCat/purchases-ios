@@ -26,6 +26,16 @@ class CustomerInfoManager {
     private let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
 
+    // Can't have these properties with `@available`.
+    // swiftlint:disable identifier_name
+    var _diagnosticsTracker: Any?
+    // swiftlint:enable identifier_name
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    private var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
+    }
+
     /// Underlying synchronized data.
     private let data: Atomic<Data>
 
@@ -45,6 +55,26 @@ class CustomerInfoManager {
         self.systemInfo = systemInfo
 
         self.data = .init(.init(deviceCache: deviceCache))
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    convenience init(offlineEntitlementsManager: OfflineEntitlementsManager,
+                     operationDispatcher: OperationDispatcher,
+                     deviceCache: DeviceCache,
+                     backend: Backend,
+                     transactionFetcher: StoreKit2TransactionFetcherType,
+                     transactionPoster: TransactionPosterType,
+                     systemInfo: SystemInfo,
+                     diagnosticsTracker: DiagnosticsTrackerType?
+    ) {
+        self.init(offlineEntitlementsManager: offlineEntitlementsManager,
+                  operationDispatcher: operationDispatcher,
+                  deviceCache: deviceCache,
+                  backend: backend,
+                  transactionFetcher: transactionFetcher,
+                  transactionPoster: transactionPoster,
+                  systemInfo: systemInfo)
+        self._diagnosticsTracker = diagnosticsTracker
     }
 
     func fetchAndCacheCustomerInfo(appUserID: String,
@@ -260,6 +290,14 @@ class CustomerInfoManager {
     private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
         return self.modifyData {
             let lastSentCustomerInfo = $0.lastSentCustomerInfo
+
+            if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                if lastSentCustomerInfo != customerInfo {
+                    Task {
+                        await self.diagnosticsTracker?.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+                    }
+                }
+            }
 
             guard !$0.customerInfoObserversByIdentifier.isEmpty, lastSentCustomerInfo != customerInfo else {
                 return

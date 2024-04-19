@@ -346,13 +346,39 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                     operationDispatcher: operationDispatcher,
                                                                     api: backend.offlineEntitlements,
                                                                     systemInfo: systemInfo)
-        let customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
+
+        var diagnosticsFileHandler: DiagnosticsFileHandlerType?
+        var diagnosticsTracker: DiagnosticsTrackerType?
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            if diagnosticsEnabled {
+                diagnosticsFileHandler = DiagnosticsFileHandler()
+                if let diagnosticsFileHandler = diagnosticsFileHandler {
+                    diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
+                } else {
+                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                }
+            }
+        }
+
+        let customerInfoManager: CustomerInfoManager
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
+                                                      operationDispatcher: operationDispatcher,
+                                                      deviceCache: deviceCache,
+                                                      backend: backend,
+                                                      transactionFetcher: transactionFetcher,
+                                                      transactionPoster: transactionPoster,
+                                                      systemInfo: systemInfo,
+                                                      diagnosticsTracker: diagnosticsTracker)
+        } else {
+            customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
                                                       operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       transactionFetcher: transactionFetcher,
                                                       transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
+        }
 
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
@@ -424,7 +450,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 var diagnosticsSynchronizer: DiagnosticsSynchronizer?
                 if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                    if let diagnosticsFileHandler = diagnosticsFileHandler {
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
                                                                           handler: diagnosticsFileHandler)
                     } else {
