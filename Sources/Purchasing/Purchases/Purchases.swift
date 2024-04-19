@@ -20,19 +20,6 @@
 import Foundation
 import StoreKit
 
-struct ABC {
-    func abc() {
-        let abc = ""
-        Purchases.configure(withAPIKey: "")
-        Purchases.configure(withAPIKey: "", appUserID: abc)
-        Purchases.configure(withAPIKey: "", appUserID: abc, observerMode: true)
-
-        Purchases.configure(withAPIKey: "", storeKitVersion: .storeKit1)
-        Purchases.configure(withAPIKey: "", appUserID: abc, storeKitVersion: .storeKit1)
-        Purchases.configure(withAPIKey: "", appUserID: abc, observerMode: true, storeKitVersion: .storeKit1)
-    }
-}
-
 // MARK: Block definitions
 
 /**
