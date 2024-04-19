@@ -19,8 +19,17 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
 
     private(set) var trackedEvents: [DiagnosticsEvent] = []
 
+    private(set) var invokedTrackMaxEventsStoredLimitReached = false
+
     func track(_ event: DiagnosticsEvent) async {
         trackedEvents.append(event)
     }
 
+    func trackMaxEventsStoredLimitReached() async {
+        invokedTrackMaxEventsStoredLimitReached = true
+    }
+
 }
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension MockDiagnosticsTracker: @unchecked Sendable {}

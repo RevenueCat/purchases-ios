@@ -23,6 +23,7 @@ class DiagnosticsSynchronizerTests: TestCase {
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
     fileprivate var synchronizer: DiagnosticsSynchronizer!
+    fileprivate var tracker: DiagnosticsTracker!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -32,8 +33,10 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.api = .init()
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
+        self.tracker = .init(diagnosticsFileHandler: self.handler)
         self.synchronizer = .init(internalAPI: self.api,
-                                  handler: self.handler)
+                                  handler: self.handler,
+                                  diagnosticsTracker: self.tracker)
     }
 
     // MARK: - syncDiagnosticsIfNeeded
@@ -151,13 +154,14 @@ class DiagnosticsSynchronizerTests: TestCase {
             _ = await self.storeEvent()
         }
 
-        let data = try await self.fileHandler.readFile()
-        expect(data).toNot(beEmpty())
+        let entries = await self.handler.getEntries()
+        expect(entries.count) == 8001
 
         await self.synchronizer!.clearDiagnosticsFileIfTooBig()
 
-        let data2 = try await self.fileHandler.readFile()
-        expect(data2).to(beEmpty())
+        let entries2 = await self.handler.getEntries()
+        // We add the maxEventsStoredLimitReached event
+        expect(entries2.count) == 1
     }
 }
 

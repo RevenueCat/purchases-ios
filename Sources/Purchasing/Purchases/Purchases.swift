@@ -425,8 +425,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 var diagnosticsSynchronizer: DiagnosticsSynchronizer?
                 if diagnosticsEnabled {
                     if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                        let diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler)
+                                                                          handler: diagnosticsFileHandler,
+                                                                          diagnosticsTracker: diagnosticsTracker)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
