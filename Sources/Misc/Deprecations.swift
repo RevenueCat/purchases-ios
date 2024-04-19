@@ -127,7 +127,6 @@ public extension Purchases {
         )
     }
 
-
     /**
      * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
      */
