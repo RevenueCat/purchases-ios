@@ -1,4 +1,5 @@
 orbs:
+  revenuecat: revenuecat/sdks-common-config@3.0.0
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
@@ -1008,6 +1009,34 @@ jobs:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
+  push-to-spm:
+    <<: *base-job
+    steps:
+      - checkout
+      - revenuecat/setup-git-credentials
+      - run:
+          name: Trust GitHub key
+          command: |
+              for ip in $(dig @8.8.8.8 github.com +short); \
+              do ssh-keyscan github.com,$ip; \
+              ssh-keyscan $ip; \
+              done 2>/dev/null >> ~/.ssh/known_hosts
+      - run:
+          name: Clone and Push purchases-ios
+          command: |
+            git clone https://github.com/RevenueCat/purchases-ios.git
+            cd purchases-ios
+            echo "AAAA"
+            git fetch --tags
+            echo "BBBB"
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
+            echo "CCCC"
+            git push origin
+            echo "DDDD"
+            git push --tags
+            echo "EEEE"
+
+
   integration-tests-all:
     <<: *base-job
     steps:
@@ -1218,6 +1247,10 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
+
+  deploy-spm:
+    jobs:
+      - push-to-spm
 
   deploy:
     when:
