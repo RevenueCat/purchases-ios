@@ -1010,6 +1010,7 @@ jobs:
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
   push-to-spm:
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - revenuecat/setup-git-credentials
