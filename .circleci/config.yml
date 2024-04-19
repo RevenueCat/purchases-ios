@@ -1011,6 +1011,7 @@ jobs:
   push-to-spm:
     docker:
       - image: cimg/base:stable
+    resource_class: small
     steps:
       - checkout
       - setup-git-credentials
