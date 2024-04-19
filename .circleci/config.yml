@@ -1,5 +1,4 @@
 orbs:
-  revenuecat: revenuecat/sdks-common-config@3.0.0
   macos: circleci/macos@2.0.1
   slack: circleci/slack@4.10.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
@@ -1014,22 +1013,16 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - revenuecat/setup-git-credentials
+      - setup-git-credentials
       - run:
-          name: Clone and Push purchases-ios
+          name: Clone purchases-ios and push to purchases-ios-spm
           command: |
             git clone https://github.com/RevenueCat/purchases-ios.git
             cd purchases-ios
-            echo "AAAA"
             git fetch --tags
-            echo "BBBB"
             git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
-            echo "CCCC"
             git push origin
-            echo "DDDD"
             git push --tags
-            echo "EEEE"
-
 
   integration-tests-all:
     <<: *base-job
