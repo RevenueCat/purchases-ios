@@ -1023,13 +1023,6 @@ jobs:
           command: bundle exec fastlane automatic_bump github_rate_limit:10
       - push-to-spm
 
-  push-to-spm-job:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - push-to-spm
-
   integration-tests-all:
     <<: *base-job
     steps:
