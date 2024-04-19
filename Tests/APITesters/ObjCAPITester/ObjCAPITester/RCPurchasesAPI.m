@@ -30,13 +30,13 @@ NSString *appUserID;
 BOOL isAnonymous;
 
 + (void)checkAPI {
-    RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
+    RCPurchases *p = [RCPurchases configureWithAPIKey:@"" storeKitVersion: RCStoreKitVersion1];
     [RCPurchases configureWithConfiguration:[[RCConfiguration builderWithAPIKey:@""] build]];
     [RCPurchases configureWithConfigurationBuilder:[RCConfiguration builderWithAPIKey:@""]];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@""];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" storeKitVersion: RCStoreKitVersion1];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil storeKitVersion: RCStoreKitVersion1];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false storeKitVersion: RCStoreKitVersion1];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false storeKitVersion: RCStoreKitVersion1];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
