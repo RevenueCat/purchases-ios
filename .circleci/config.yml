@@ -1016,13 +1016,6 @@ jobs:
       - checkout
       - revenuecat/setup-git-credentials
       - run:
-          name: Trust GitHub key
-          command: |
-              for ip in $(dig @8.8.8.8 github.com +short); \
-              do ssh-keyscan github.com,$ip; \
-              ssh-keyscan $ip; \
-              done 2>/dev/null >> ~/.ssh/known_hosts
-      - run:
           name: Clone and Push purchases-ios
           command: |
             git clone https://github.com/RevenueCat/purchases-ios.git
