@@ -339,6 +339,23 @@ commands:
           path: fastlane/test_output/xctest
           destination: scan-test-output
 
+  push-to-spm:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout
+      - setup-git-credentials
+      - run:
+          name: Clone purchases-ios and push to purchases-ios-spm
+          command: |
+            git clone https://github.com/RevenueCat/purchases-ios.git
+            cd purchases-ios
+            git fetch --tags
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
+            git push origin
+            git push --tags
+
 jobs:
   spm-release-build-xcode-14:
     <<: *base-job
@@ -996,23 +1013,6 @@ jobs:
       - run:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
-
-  push-to-spm:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - checkout
-      - setup-git-credentials
-      - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
-          command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
-            cd purchases-ios
-            git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
-            git push origin
-            git push --tags
 
   release-train:
     <<: *base-job
