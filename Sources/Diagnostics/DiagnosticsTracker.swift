@@ -14,9 +14,11 @@
 import Foundation
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-protocol DiagnosticsTrackerType {
+protocol DiagnosticsTrackerType : Sendable {
 
     func track(_ event: DiagnosticsEvent) async
+
+    func trackMaxEventsStoredLimitReached() async
 
 }
 
@@ -24,12 +26,21 @@ protocol DiagnosticsTrackerType {
 final class DiagnosticsTracker: DiagnosticsTrackerType {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandler
+    private let dateProvider: DateProvider
 
-    init(diagnosticsFileHandler: DiagnosticsFileHandler) {
+    init(diagnosticsFileHandler: DiagnosticsFileHandler,
+         dateProvider: DateProvider = .init()) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
+        self.dateProvider = dateProvider
     }
 
     func track(_ event: DiagnosticsEvent) async {
         await diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
+    }
+
+    func trackMaxEventsStoredLimitReached() async {
+        await self.track(.init(eventType: .maxEventsStoredLimitReached,
+                               properties: [:],
+                               timestamp: self.dateProvider.now()))
     }
 }

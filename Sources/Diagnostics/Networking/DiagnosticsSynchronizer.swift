@@ -27,20 +27,24 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
 
     private let internalAPI: InternalAPI
     private let handler: DiagnosticsFileHandlerType
+    private let diagnosticsTracker: DiagnosticsTrackerType
 
     private var syncInProgress = false
 
     init(
         internalAPI: InternalAPI,
-        handler: DiagnosticsFileHandlerType
+        handler: DiagnosticsFileHandlerType,
+        diagnosticsTracker: DiagnosticsTrackerType
     ) {
         self.internalAPI = internalAPI
         self.handler = handler
+        self.diagnosticsTracker = diagnosticsTracker
     }
 
     func clearDiagnosticsFileIfTooBig() async {
         if await self.handler.isDiagnosticsFileTooBig() {
             await self.handler.emptyDiagnosticsFile()
+            await self.diagnosticsTracker.trackMaxEventsStoredLimitReached()
         }
     }
 
