@@ -115,17 +115,6 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         return self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
     }
 
-    fileprivate func setUpDiagnosticTracker() {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.orchestrator._diagnosticsTracker = MockDiagnosticsTracker()
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    var mockDiagnosticsTracker: MockDiagnosticsTracker? {
-        return self.orchestrator.diagnosticsTracker as? MockDiagnosticsTracker
-    }
-
     fileprivate func setUpSystemInfo(
         finishTransactions: Bool = true,
         storeKit2Setting: StoreKit2Setting = .default,
@@ -186,7 +175,8 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     fileprivate func setUpOrchestrator(
         storeKit2TransactionListener: StoreKit2TransactionListenerType,
-        storeKit2StorefrontListener: StoreKit2StorefrontListener
+        storeKit2StorefrontListener: StoreKit2StorefrontListener,
+        diagnosticsSynchronizer: DiagnosticsSynchronizerType? = nil
     ) {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
                                                   paymentQueueWrapper: self.paymentQueueWrapper,
@@ -208,7 +198,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener,
                                                   storeMessagesHelper: self.mockStoreMessagesHelper,
-                                                  diagnosticsTracker: self.mockDiagnosticsTracker)
+                                                  diagnosticsSynchronizer: diagnosticsSynchronizer)
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 
@@ -1732,6 +1722,18 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         } catch {
             expect(error).to(matchError(expectedError.asPurchasesError))
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testSyncingDiagnosticsOnInitialization() throws {
+        let mockDiagnosticsSynchronizer = MockDiagnosticsSynchronizer()
+        let transactionListener = MockStoreKit2TransactionListener()
+
+        self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               diagnosticsSynchronizer: mockDiagnosticsSynchronizer)
+        expect(self.orchestrator.diagnosticsSynchronizer).toNot(beNil())
+        expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
     }
 }
 
