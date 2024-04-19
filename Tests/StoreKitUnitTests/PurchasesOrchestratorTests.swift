@@ -1733,7 +1733,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                                diagnosticsSynchronizer: mockDiagnosticsSynchronizer)
 
-        expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).to(beTrue())
+        expect(mockDiagnosticsSynchronizer.invokedSyncDiagnosticsIfNeeded).toEventually(beTrue())
     }
 }
 
