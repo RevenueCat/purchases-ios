@@ -555,7 +555,7 @@ public extension Purchases {
     """, renamed: "configure(withAPIKey:storeKitVersion:)")
     @_disfavoredOverload
     @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: nil)
+        fatalError()
     }
 
     /**
@@ -591,7 +591,7 @@ public extension Purchases {
     If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
     """, renamed: "configure(withAPIKey:appUserID:storeKitVersion:)")
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
+        fatalError()
     }
 
     /**
@@ -632,13 +632,7 @@ public extension Purchases {
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
                                              observerMode: Bool) -> Purchases {
-        Self.configure(
-            with: Configuration
-                .builder(withAPIKey: apiKey)
-                .with(appUserID: appUserID)
-                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
-                .build()
-        )
+        fatalError()
     }
 
 }
