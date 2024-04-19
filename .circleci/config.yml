@@ -1010,7 +1010,6 @@ jobs:
           command: bundle exec fastlane automatic_bump github_rate_limit:10
 
   push-to-spm:
-    <<: *base-job
     steps:
       - checkout
       - revenuecat/setup-git-credentials
