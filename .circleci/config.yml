@@ -1017,10 +1017,10 @@ jobs:
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
-            cd purchases-ios
+            git clone https://github.com/RevenueCat/purchases-test.git
+            cd purchases-test
             git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
+            git remote set-url origin https://github.com/RevenueCat/purchases-test-spm.git
             git push origin
             git push --tags
 
