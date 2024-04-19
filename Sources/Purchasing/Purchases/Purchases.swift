@@ -54,7 +54,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
-    /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
+    /// ``Purchases/configure(withAPIKey:storeKitVersion:)`` or one of its overloads.
     /// If there's a chance that may have not happened yet, you can use ``isConfigured`` to check if it's safe to call.
     /// 
     /// ### Related symbols
@@ -70,7 +70,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private static let purchases: Atomic<Purchases?> = nil
 
-    /// Returns `true` if RevenueCat has already been initialized through ``Purchases/configure(withAPIKey:)``
+    /// Returns `true` if RevenueCat has already been initialized
+    /// through ``Purchases/configure(withAPIKey:storeKitVersion:)``
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
@@ -1253,6 +1254,8 @@ public extension Purchases {
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
     @objc(configureWithAPIKey:storeKitVersion:)
@@ -1277,8 +1280,11 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
+    @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
@@ -1314,10 +1320,13 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
      */
+    @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,

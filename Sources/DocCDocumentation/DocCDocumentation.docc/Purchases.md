@@ -22,7 +22,7 @@ Most features require configuring the SDK before using it.
 - ``Purchases/logHandler``
 
 ### Configuring the SDK
-- ``Purchases/configure(withAPIKey:)``
+- ``Purchases/configure(withAPIKey:storeKitVersion:)``
 - ``Purchases/configure(with:)-6oipy``
 - ``PurchasesDiagnostics``
 
@@ -125,7 +125,7 @@ Most features require configuring the SDK before using it.
 - ``Configuration/Builder/with(entitlementVerificationMode:)``
 
 ### Configuring the SDK with parameters (deprecated)
-- ``Purchases/configure(withAPIKey:appUserID:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
+- ``Purchases/configure(withAPIKey:appUserID:storeKitVersion:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:storeKitVersion:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``

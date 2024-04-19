@@ -59,7 +59,7 @@ Or browse our iOS sample apps:
 - ``Purchases``
 
 ### Configuring the SDK
-- ``Purchases/configure(withAPIKey:)``
+- ``Purchases/configure(withAPIKey:storeKitVersion:)``
 - ``Purchases/configure(with:)-6oipy``
 - ``PurchasesDiagnostics``
 
@@ -159,7 +159,7 @@ Or browse our iOS sample apps:
 - ``Purchases/setOnesignalID(_:)``
 
 ### Configuring the SDK with parameters (deprecated)
-- ``Purchases/configure(withAPIKey:appUserID:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
+- ``Purchases/configure(withAPIKey:appUserID:storeKitVersion:)``
+- ``Purchases/configure(withAPIKey:appUserID:observerMode:storeKitVersion:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``
