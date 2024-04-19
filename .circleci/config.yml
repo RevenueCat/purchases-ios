@@ -1007,6 +1007,7 @@ jobs:
       - run:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
+      - push-to-spm
 
   push-to-spm:
     docker:
@@ -1234,10 +1235,6 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-
-  deploy-spm:
-    jobs:
-      - push-to-spm
 
   deploy:
     when:
