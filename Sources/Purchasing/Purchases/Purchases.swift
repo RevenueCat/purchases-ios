@@ -1284,7 +1284,6 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
@@ -1326,7 +1325,6 @@ public extension Purchases {
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
      */
-    @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,

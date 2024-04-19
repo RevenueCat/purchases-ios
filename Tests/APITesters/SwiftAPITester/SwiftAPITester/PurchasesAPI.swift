@@ -306,6 +306,7 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(withAPIKey: "")
     Purchases.configure(withAPIKey: "", appUserID: nil)
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, storeKitVersion: .storeKit2)
 
     return nil
 }
