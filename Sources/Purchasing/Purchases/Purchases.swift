@@ -20,6 +20,19 @@
 import Foundation
 import StoreKit
 
+struct ABC {
+    func abc() {
+        let abc = ""
+        Purchases.configure(withAPIKey: "")
+        Purchases.configure(withAPIKey: "", appUserID: abc)
+        Purchases.configure(withAPIKey: "", appUserID: abc, observerMode: true)
+
+        Purchases.configure(withAPIKey: "", storeKitVersion: .storeKit1)
+        Purchases.configure(withAPIKey: "", appUserID: abc, storeKitVersion: .storeKit1)
+        Purchases.configure(withAPIKey: "", appUserID: abc, observerMode: true, storeKitVersion: .storeKit1)
+    }
+}
+
 // MARK: Block definitions
 
 /**
@@ -1255,9 +1268,10 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureWithAPIKey:)
-    @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: nil)
+    @objc(configureWithAPIKey:storeKitVersion:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             storeKitVersion: StoreKitVersion = .default) -> Purchases {
+        Self.configure(withAPIKey: apiKey, appUserID: nil, storeKitVersion: storeKitVersion)
     }
 
     /**
@@ -1278,10 +1292,11 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @_disfavoredOverload
-    @objc(configureWithAPIKey:appUserID:)
-    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
+    @objc(configureWithAPIKey:appUserID:storeKitVersion:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             storeKitVersion: StoreKitVersion = .default) -> Purchases {
+        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: storeKitVersion)
     }
 
     @available(*, deprecated, message: """
@@ -1316,16 +1331,16 @@ public extension Purchases {
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
      */
-    @_disfavoredOverload
-    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
+                                             observerMode: Bool,
+                                             storeKitVersion: StoreKitVersion = .default) -> Purchases {
         Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
+                .with(observerMode: observerMode, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
