@@ -349,7 +349,7 @@ commands:
             git clone https://github.com/RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
 
@@ -1240,10 +1240,6 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-
-  deploy-spm:
-    jobs:
-      - push-to-spm-job
 
   deploy:
     when:
