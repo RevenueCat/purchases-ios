@@ -997,17 +997,6 @@ jobs:
           name: Tag branch
           command: bundle exec fastlane tag_current_branch
 
-  release-train:
-    <<: *base-job
-    steps:
-      - checkout
-      - setup-git-credentials
-      - trust-github-key
-      - install-dependencies
-      - run:
-          name: Create automatic PR
-          command: bundle exec fastlane automatic_bump github_rate_limit:10
-
   push-to-spm:
     docker:
       - image: cimg/base:stable
@@ -1024,6 +1013,18 @@ jobs:
             git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm4.git
             git push origin
             git push --tags
+
+  release-train:
+    <<: *base-job
+    steps:
+      - checkout
+      - setup-git-credentials
+      - trust-github-key
+      - install-dependencies
+      - run:
+          name: Create automatic PR
+          command: bundle exec fastlane automatic_bump github_rate_limit:10
+      - push-to-spm
 
   integration-tests-all:
     <<: *base-job
