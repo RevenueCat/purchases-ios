@@ -181,6 +181,22 @@ class FileHandlerTests: BaseFileHandlerTests {
         expect(data).to(beEmpty())
     }
 
+    // MARK: - fileSizeInKB
+
+    func testFileSizeInKBForEmptyFile() async throws {
+        let result = try await self.handler.fileSizeInKB()
+        expect(result) == 0
+    }
+
+    func testFileSizeInKBForFileWithSomeData() async throws {
+        let content = Self.sampleLine()
+
+        await self.handler.append(line: content)
+
+        let result = try await self.handler.fileSizeInKB()
+        expect(result) > 0
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

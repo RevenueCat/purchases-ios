@@ -109,6 +109,61 @@ class DiagnosticsFileHandlerTests: TestCase {
         expect(data).to(beEmpty())
     }
 
+    // MARK: - isDiagnosticsFileTooBig
+
+    func testDiagnosticsFileIsNotTooBigIfEmpty() async {
+        let result = await self.handler.isDiagnosticsFileTooBig()
+        expect(result).to(beFalse())
+    }
+
+    func testDiagnosticsFileIsNotTooBigWithAFewEvents() async throws {
+        let line1 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T12:55:59Z",
+          "event_type": "httpRequestPerformed",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
+        let line2 = """
+        {
+          "properties": {"key": "value"},
+          "timestamp": "2024-04-04T13:55:59Z",
+          "event_type": "httpRequestPerformed",
+          "version": 1
+        }
+        """.trimmingWhitespacesAndNewLines
+
+        await self.fileHandler.append(line: line1)
+        await self.fileHandler.append(line: line2)
+
+        let data = try await self.fileHandler.readFile()
+        expect(data).toNot(beEmpty())
+
+        let result = await self.handler.isDiagnosticsFileTooBig()
+        expect(result).to(beFalse())
+    }
+
+    func testDiagnosticsFileIsTooBigWithALotOfEvents() async throws {
+        for iterator in 0...8000 {
+            let line = """
+            {
+              "properties": {"key\(iterator)": "value\(iterator)"},
+              "timestamp": "2024-04-04T12:55:59Z",
+              "event_type": "httpRequestPerformed",
+              "version": \(iterator)
+            }
+            """.trimmingWhitespacesAndNewLines
+            await self.fileHandler.append(line: line)
+        }
+
+        let data = try await self.fileHandler.readFile()
+        expect(data).toNot(beEmpty())
+
+        let result = await self.handler.isDiagnosticsFileTooBig()
+        expect(result).to(beTrue())
+    }
+
 }
 
 // MARK: - Private
