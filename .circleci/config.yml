@@ -350,8 +350,8 @@ commands:
             cd purchases-test
             git fetch --tags
             git remote set-url origin https://github.com/RevenueCat/purchases-test-spm.git
-            git push origin
-            git push --tags
+            git push origin --force
+            git push --tags --force
 
 jobs:
   spm-release-build-xcode-14:
@@ -1244,7 +1244,7 @@ workflows:
   deploy-spm:
     jobs:
       - push-to-spm-job
-      
+
   deploy:
     when:
       not:
