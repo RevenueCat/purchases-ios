@@ -1254,14 +1254,11 @@ public extension Purchases {
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
-     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
-     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureWithAPIKey:storeKitVersion:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             storeKitVersion: StoreKitVersion = .default) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: nil, storeKitVersion: storeKitVersion)
+    @objc(configureWithAPIKey:)
+    @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
+        Self.configure(withAPIKey: apiKey, appUserID: nil)
     }
 
     /**
@@ -1280,15 +1277,12 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
-     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
-    @objc(configureWithAPIKey:appUserID:storeKitVersion:)
+    @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             storeKitVersion: StoreKitVersion = .default) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: storeKitVersion)
+                                             appUserID: String?) -> Purchases {
+        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: .default)
     }
 
     @available(*, deprecated, message: """
@@ -1302,7 +1296,7 @@ public extension Purchases {
         return Self.configure(withAPIKey: apiKey,
                               appUserID: "\(appUserID)",
                               observerMode: false,
-                              storeKitVersion: .storeKit2)
+                              storeKitVersion: .default)
     }
 
     /**
@@ -1356,7 +1350,7 @@ public extension Purchases {
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: "\(appUserID)")
-                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
+                .with(observerMode: observerMode, storeKitVersion: .default)
                 .build()
         )
     }

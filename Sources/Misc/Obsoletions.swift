@@ -527,74 +527,6 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a specified API key.
-     *
-     * The instance will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Note: Use this initializer if your app does not have an account system.
-     * ``Purchases`` will generate a unique identifier for the current device and persist it to `NSUserDefaults`.
-     * This also affects the behavior of ``Purchases/restorePurchases(completion:)``.
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @objc(configureWithAPIKey:)
-    @available(iOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:storeKitVersion:)")
-    @available(tvOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:storeKitVersion:)")
-    @available(watchOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:storeKitVersion:)")
-    @available(macOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:storeKitVersion:)")
-    @_disfavoredOverload
-    @discardableResult static func configure(withAPIKey apiKey: String) -> Purchases {
-        fatalError()
-    }
-
-    /**
-     * Configures an instance of the Purchases SDK with a specified API key and app user ID.
-     *
-     * The instance will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
-     *
-     * - Note: Best practice is to use a salted hash of your unique app user ids.
-     *
-     * - Warning: Use this initializer if you have your own user identifiers that you manage.
-     *
-     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
-     *
-     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
-     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
-     * to generate this for you.
-     *
-     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     */
-    @_disfavoredOverload
-    @objc(configureWithAPIKey:appUserID:)
-    @available(iOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:storeKitVersion:)")
-    @available(tvOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:appUserID:storeKitVersion:)")
-    @available(watchOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:appUserID:storeKitVersion:)")
-    @available(macOS, obsoleted: 1, message: """
-    If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
-    """, renamed: "configure(withAPIKey:appUserID:storeKitVersion:)")
-    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        fatalError()
-    }
-
-    /**
      * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
      *
      * Use this constructor if you want to
@@ -614,6 +546,7 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
+     * - Warning: If you're using observer mode with StoreKit 2, ensure that you call ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
     @available(iOS, obsoleted: 1, message: """
     If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
