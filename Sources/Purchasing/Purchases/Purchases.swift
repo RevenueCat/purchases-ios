@@ -54,7 +54,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// Returns the already configured instance of ``Purchases``.
     /// - Warning: this method will crash with `fatalError` if ``Purchases`` has not been initialized through
-    /// ``Purchases/configure(withAPIKey:storeKitVersion:)`` or one of its overloads.
+    /// ``Purchases/configure(withAPIKey:)`` or one of its overloads.
     /// If there's a chance that may have not happened yet, you can use ``isConfigured`` to check if it's safe to call.
     /// 
     /// ### Related symbols
@@ -71,7 +71,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private static let purchases: Atomic<Purchases?> = nil
 
     /// Returns `true` if RevenueCat has already been initialized
-    /// through ``Purchases/configure(withAPIKey:storeKitVersion:)``
+    /// through ``Purchases/configure(withAPIKey:)``
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
@@ -1229,7 +1229,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: .init(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false, storeKitVersion: .storeKit1)
+     *               .with(observerMode: false, storeKitVersion: .default)
      *               .with(appUserID: "<app_user_id>")
      *      )
      * ```
@@ -1279,6 +1279,7 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      */
+    @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?) -> Purchases {
@@ -1300,11 +1301,10 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     * Configures an instance of the Purchases SDK with a specified API key, app user ID, observer mode
+     * setting, and StoreKit version.
      *
-     * Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
+     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK will be set as a singleton.
      * You should access the singleton instance using ``Purchases/shared``
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
@@ -1320,7 +1320,8 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Warning: This assumes your IAP implementation uses StoreKit 1.
+     * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
+     * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,

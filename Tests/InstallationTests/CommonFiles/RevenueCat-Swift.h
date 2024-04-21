@@ -2491,7 +2491,7 @@ SWIFT_CLASS_NAMED("Purchases")
 /// Returns the already configured instance of <code>Purchases</code>.
 /// warning:
 /// this method will crash with <code>fatalError</code> if <code>Purchases</code> has not been initialized through
-/// <code>Purchases/configure(withAPIKey:storeKitVersion:)</code> or one of its overloads.
+/// <code>Purchases/configure(withAPIKey:)</code> or one of its overloads.
 /// If there’s a chance that may have not happened yet, you can use <code>isConfigured</code> to check if it’s safe to call.
 /// <h3>Related symbols</h3>
 /// <ul>
@@ -2501,7 +2501,7 @@ SWIFT_CLASS_NAMED("Purchases")
 /// </ul>
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCPurchases * _Nonnull sharedPurchases;)
 + (RCPurchases * _Nonnull)sharedPurchases SWIFT_WARN_UNUSED_RESULT;
-/// Returns <code>true</code> if RevenueCat has already been initialized through <code>Purchases/configure(withAPIKey:storeKitVersion:)</code>
+/// Returns <code>true</code> if RevenueCat has already been initialized through <code>Purchases/configure(withAPIKey:)</code>
 /// or one of is overloads.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly) BOOL isConfigured;)
 + (BOOL)isConfigured SWIFT_WARN_UNUSED_RESULT;
