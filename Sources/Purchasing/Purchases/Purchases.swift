@@ -1304,8 +1304,8 @@ public extension Purchases {
      * Configures an instance of the Purchases SDK with a specified API key, app user ID, observer mode
      * setting, and StoreKit version.
      *
-     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
+     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK 
+     * will be set as a singleton. You should access the singleton instance using ``Purchases/shared``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
