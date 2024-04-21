@@ -70,8 +70,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private static let purchases: Atomic<Purchases?> = nil
 
-    /// Returns `true` if RevenueCat has already been initialized
-    /// through ``Purchases/configure(withAPIKey:)``
+    /// Returns `true` if RevenueCat has already been initialized through ``Purchases/configure(withAPIKey:)``
     /// or one of is overloads.
     @objc public static var isConfigured: Bool { Self.purchases.value != nil }
 
@@ -1281,8 +1280,7 @@ public extension Purchases {
      */
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?) -> Purchases {
+    @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
         Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: .default)
     }
 
