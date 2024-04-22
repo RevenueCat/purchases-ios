@@ -164,7 +164,7 @@ extension BaseStoreKitIntegrationTests {
 
         return data
     }
-    
+
     @discardableResult
     func purchaseShortestDuration(
         allowOfflineEntitlements: Bool = false,

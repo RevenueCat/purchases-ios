@@ -221,9 +221,10 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
         try await self.simulateAnyPurchase(finishTransaction: true)
 
         await self.listener.listenForTransactions()
-        
+
+        // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 2 * 1_000_000_000)
-        
+
         try await self.waitForTransactionUpdated()
 
         expect(self.delegate.updatedTransactions)

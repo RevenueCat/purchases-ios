@@ -362,7 +362,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         } else {
             self.testSession.timeRate = .oneSecondIsOneDay
         }
-        
+
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
@@ -382,7 +382,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-
+        // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()
@@ -421,6 +421,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 3. Renew subscription
         self.logger.clearMessages()
 
+        // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()

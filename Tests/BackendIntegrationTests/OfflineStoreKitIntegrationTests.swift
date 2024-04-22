@@ -255,7 +255,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
 
         try await self.purchaseShortestDuration(allowOfflineEntitlements: true)
-        
+
+        // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }

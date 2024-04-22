@@ -72,6 +72,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
+        // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()
