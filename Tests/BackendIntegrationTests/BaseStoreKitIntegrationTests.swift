@@ -164,6 +164,29 @@ extension BaseStoreKitIntegrationTests {
 
         return data
     }
+    
+    @discardableResult
+    func purchaseShortestDuration(
+        allowOfflineEntitlements: Bool = false,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let logger = TestLogHandler()
+        let product = try await StoreKit.Product.products(for: ["shortest_duration"]).first!
+
+        let data = try await self.purchases.purchase(product: product)
+
+        try await self.verifyEntitlementWentThrough(data.customerInfo,
+                                                    file: file,
+                                                    line: line)
+
+        if !allowOfflineEntitlements {
+            // Avoid false positives if the API returned a 500 and customer info was computed offline
+            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+        }
+
+        return data
+    }
 
     @discardableResult
     func purchaseConsumablePackage(

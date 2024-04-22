@@ -68,7 +68,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
             self.testSession.timeRate = .oneSecondIsOneDay
         }
 
-        let productID = Self.weeklyWith3DayTrial
+        let productID = Self.group3MonthlyNoTrialProductID
 
         try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
