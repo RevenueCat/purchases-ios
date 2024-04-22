@@ -347,7 +347,7 @@ commands:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: |
             git clone https://github.com/RevenueCat/purchases-test.git
-            cd purchases-test
+            cd purchases-ios
             git fetch --tags
             git remote set-url origin https://github.com/RevenueCat/purchases-test-spm.git
             git push origin
