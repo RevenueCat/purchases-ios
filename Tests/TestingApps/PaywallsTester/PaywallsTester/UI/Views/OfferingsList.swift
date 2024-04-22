@@ -39,26 +39,30 @@ struct OfferingsList: View {
     
     let app: DeveloperResponse.App
 
+    fileprivate func updateOfferingsAndPaywalls() async {
+        do {
+            async let appOfferings = fetchOfferings(for: app).all
+            async let appPaywalls = fetchPaywalls(for: app).all
+            
+            let offerings = try await appOfferings
+            let paywalls = try await appPaywalls
+            
+            let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
+            
+            self.offeringsPaywalls = .success(
+                offeringPaywallData.paywallsByOffering()
+            )
+            
+        } catch let error as NSError {
+            self.offeringsPaywalls = .failure(error)
+        }
+    }
+    
     var body: some View {
         self.content
             .navigationTitle("Paywalls")
             .task {
-                do {
-                    async let appOfferings = fetchOfferings(for: app).all
-                    async let appPaywalls = fetchPaywalls(for: app).all
-                    
-                    let offerings = try await appOfferings
-                    let paywalls = try await appPaywalls
-                    
-                    let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
-                    
-                    self.offeringsPaywalls = .success(
-                        offeringPaywallData.paywallsByOffering()
-                    )
-                    
-                } catch let error as NSError {
-                    self.offeringsPaywalls = .failure(error)
-                }
+                await updateOfferingsAndPaywalls()
             }
     }
     
@@ -153,6 +157,11 @@ struct OfferingsList: View {
                     self.presentedPaywall = nil
                 }
         }
+        .refreshable {
+            Task {
+                await updateOfferingsAndPaywalls()
+            }
+        }
     }
 
     #if !os(watchOS)
@@ -177,7 +186,7 @@ struct OfferingsList: View {
     #if targetEnvironment(macCatalyst)
     private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
     #else
-    private static let modesInstructions = "Press and hold to open in different modes."
+    private static let modesInstructions = "Pull to refresh\nPress and hold to open in different modes."
     #endif
 
 }
