@@ -341,7 +341,6 @@ commands:
 
   push-to-spm:
     steps:
-      - checkout
       - setup-git-credentials
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
