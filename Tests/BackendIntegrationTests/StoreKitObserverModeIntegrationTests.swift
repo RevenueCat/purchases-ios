@@ -61,14 +61,19 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRenewalsPostReceipt() async throws {
-        self.testSession.timeRate = .realTime
-        await self.deleteAllTransactions(session: self.testSession)
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        if #available(iOS 16.4, *) {
+            self.testSession.timeRate = .oneRenewalEveryTwoSeconds
+        } else {
+            self.testSession.timeRate = .oneSecondIsOneDay
+        }
 
-        let productID = Self.monthlyNoIntroProductID
+        let productID = Self.weeklyWith3DayTrial
 
         try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+
         try await self.verifyReceiptIsEventuallyPosted()
     }
 
