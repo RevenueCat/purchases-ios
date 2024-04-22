@@ -346,10 +346,10 @@ commands:
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: |
-            git clone https://github.com/RevenueCat/purchases-test.git
+            git clone https://github.com/RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-test-spm.git
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
             git push origin
             git push --tags
 
@@ -1239,10 +1239,6 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-
-  test-spm-workflow:
-    jobs:
-      - deploy-to-spm
 
   deploy:
     when:
