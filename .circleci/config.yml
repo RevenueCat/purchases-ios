@@ -1240,6 +1240,10 @@ workflows:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
 
+  run-spm-workflow:
+    jobs:
+      - deploy-to-spm
+
   deploy:
     when:
       not:
