@@ -18,9 +18,14 @@ import Foundation
 class MockDiagnosticsTracker: DiagnosticsTrackerType {
 
     private(set) var trackedEvents: [DiagnosticsEvent] = []
+    private(set) var trackedCustomerInfo: [CustomerInfo] = []
 
     func track(_ event: DiagnosticsEvent) async {
         trackedEvents.append(event)
+    }
+
+    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: RevenueCat.CustomerInfo) async {
+        trackedCustomerInfo.append(customerInfo)
     }
 
 }

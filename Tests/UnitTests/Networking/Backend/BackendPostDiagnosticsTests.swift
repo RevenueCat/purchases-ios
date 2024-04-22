@@ -41,7 +41,7 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
 
     func testPostDiagnosticsEventsWithOneEvent() {
         let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: ["key": AnyEncodable("value")],
+                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                      timestamp: Self.eventTimestamp1)
 
         let error = waitUntilValue { completion in
@@ -53,11 +53,11 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
 
     func testPostDiagnosticsEventsWithMultipleEvents() {
         let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                      properties: ["key": AnyEncodable("value")],
+                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp1)
 
         let event2 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                      properties: ["key": AnyEncodable("value")],
+                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp2)
 
         let error = waitUntilValue { completion in

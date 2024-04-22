@@ -43,7 +43,7 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackEvent() async {
         let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                     properties: ["key": AnyEncodable("property")],
+                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                      timestamp: Self.eventTimestamp1)
 
         await self.tracker.track(event)
@@ -51,17 +51,17 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(eventType: .httpRequestPerformed,
-                  properties: ["key": AnyEncodable("property")],
+                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
                   timestamp: Self.eventTimestamp1)
         ]
     }
 
     func testTrackMultipleEvents() async {
         let event1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                      properties: ["key": AnyEncodable("property")],
+                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp1)
         let event2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
-                                      properties: ["key": AnyEncodable("property")],
+                                      properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                       timestamp: Self.eventTimestamp2)
 
         await self.tracker.track(event1)
@@ -70,10 +70,10 @@ class DiagnosticsTrackerTests: TestCase {
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(eventType: .httpRequestPerformed,
-                  properties: ["key": AnyEncodable("property")],
+                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
                   timestamp: Self.eventTimestamp1),
             .init(eventType: .customerInfoVerificationResult,
-                  properties: ["key": AnyEncodable("property")],
+                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
                   timestamp: Self.eventTimestamp2)
         ]
     }
