@@ -1326,16 +1326,18 @@ public extension Purchases {
     // swiftlint:disable:next missing_docs
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: StaticString) -> Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
-        return Self.configure(withAPIKey: apiKey, appUserID: "\(appUserID)", observerMode: false)
+        return Self.configure(withAPIKey: apiKey,
+                              appUserID: "\(appUserID)",
+                              observerMode: false,
+                              storeKitVersion: .default)
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     * Configures an instance of the Purchases SDK with a specified API key, app user ID, observer mode
+     * setting, and StoreKit version.
      *
-     * Use this constructor if you want to
-     * sync status across a shared container, such as between a host app and an extension. The instance of the
-     * Purchases SDK will be set as a singleton.
-     * You should access the singleton instance using ``Purchases/shared``
+     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK 
+     * will be set as a singleton. You should access the singleton instance using ``Purchases/shared``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
      *
@@ -1346,9 +1348,12 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Warning: This assumes your IAP implementation uses StoreKit 1.
+     * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
+     * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
     @_disfavoredOverload
     @available(*, deprecated, message: "Use configure(withAPIKey:appUserID:purchasesAreCompletedBy:) instead.")
