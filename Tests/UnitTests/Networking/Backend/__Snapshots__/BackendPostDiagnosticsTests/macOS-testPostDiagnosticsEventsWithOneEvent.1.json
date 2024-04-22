@@ -18,7 +18,7 @@
     "body" : {
       "entries" : [
         {
-          "name" : "http_request_performed",
+          "name" : "customer_info_verification_result",
           "properties" : {
             "key" : "value"
           },
