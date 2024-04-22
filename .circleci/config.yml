@@ -1020,7 +1020,6 @@ jobs:
       - run:
           name: Create automatic PR
           command: bundle exec fastlane automatic_bump github_rate_limit:10
-      - push-to-spm
 
   integration-tests-all:
     <<: *base-job
@@ -1119,6 +1118,13 @@ jobs:
                   }
                 ]
               }
+
+  deploy-to-spm:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - push-to-spm
 
 workflows:
   version: 2
@@ -1288,6 +1294,9 @@ workflows:
             - make-release
             - push-revenuecat-pod
           <<: *release-tags
+      - deploy-to-spm:
+         requires:
+            - make-release
       - docs-deploy:
           xcode_version: '14.3.0'
           <<: *release-tags
