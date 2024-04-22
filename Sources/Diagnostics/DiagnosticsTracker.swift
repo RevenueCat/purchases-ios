@@ -19,7 +19,8 @@ protocol DiagnosticsTrackerType {
     func track(_ event: DiagnosticsEvent) async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo) async
+    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo,
+                                                     timestamp: Date) async
 
 }
 
@@ -36,7 +37,10 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
         await diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
     }
 
-    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo) async {
+    func trackCustomerInfoVerificationResultIfNeeded(
+        _ customerInfo: CustomerInfo,
+        timestamp: Date = Date()
+    ) async {
         let verificationResult = customerInfo.entitlements.verification
         if verificationResult == .notRequested {
             return
@@ -45,7 +49,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
         let event = DiagnosticsEvent(
             eventType: .customerInfoVerificationResult,
             properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
-            timestamp: Date()
+            timestamp: timestamp
         )
         await track(event)
     }

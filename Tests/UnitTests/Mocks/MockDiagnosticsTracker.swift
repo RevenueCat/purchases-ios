@@ -24,7 +24,10 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
         trackedEvents.append(event)
     }
 
-    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: RevenueCat.CustomerInfo) async {
+    func trackCustomerInfoVerificationResultIfNeeded(
+        _ customerInfo: RevenueCat.CustomerInfo,
+        timestamp: Date
+    ) async {
         trackedCustomerInfo.append(customerInfo)
     }
 

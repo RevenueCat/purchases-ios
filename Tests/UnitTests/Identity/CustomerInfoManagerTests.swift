@@ -702,3 +702,43 @@ class CustomerInfoManagerGetCustomerInfoTests: BaseCustomerInfoManagerTests {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class CustomerInfoVerificationTrackingTests: BaseCustomerInfoManagerTests {
+
+    private var mockDiagnosticsTracker: MockDiagnosticsTracker!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.mockDiagnosticsTracker = MockDiagnosticsTracker()
+
+        self.customerInfoManager = CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.mockDeviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: self.mockSystemInfo,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        )
+    }
+
+    func testTracksCustomerInfoVerificationResultIfNeeded() {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+
+        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.count).toEventually(equal(1))
+    }
+
+    func testDoesNotTrackCustomerInfoResultIfCustomerInfoDoesNotChange() {
+        self.customerInfoManager.setLastSentCustomerInfo(self.mockCustomerInfo)
+        expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+        expect(self.mockDiagnosticsTracker.trackedCustomerInfo.count).toEventually(equal(0))
+    }
+
+}

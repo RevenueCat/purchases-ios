@@ -294,7 +294,8 @@ class CustomerInfoManager {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 if lastSentCustomerInfo != customerInfo {
                     Task {
-                        await self.diagnosticsTracker?.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+                        await self.diagnosticsTracker?.trackCustomerInfoVerificationResultIfNeeded(customerInfo,
+                                                                                                   timestamp: Date())
                     }
                 }
             }

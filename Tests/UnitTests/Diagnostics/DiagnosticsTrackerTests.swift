@@ -78,6 +78,31 @@ class DiagnosticsTrackerTests: TestCase {
         ]
     }
 
+    // MARK: - customer info verification
+
+    func testDoesNotTrackWhenVerificationIsNotRequested() async {
+        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .notRequested)
+
+        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
+
+        let entries = await self.handler.getEntries()
+        expect(entries.count) == 0
+    }
+
+    func testTracksCustomerInfoVerificationFailed() async {
+        let customerInfo: CustomerInfo = .emptyInfo.copy(with: .failed)
+
+        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo,
+                                                                       timestamp: Self.eventTimestamp1)
+
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .customerInfoVerificationResult,
+                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                  timestamp: Self.eventTimestamp1)
+        ]
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
