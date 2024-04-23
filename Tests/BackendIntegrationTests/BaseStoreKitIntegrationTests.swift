@@ -174,7 +174,7 @@ extension BaseStoreKitIntegrationTests {
         let logger = TestLogHandler()
         let product = try await StoreKit.Product.products(for: ["shortest_duration"]).first!
 
-        let data = try await self.purchases.purchase(product: product)
+        let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
