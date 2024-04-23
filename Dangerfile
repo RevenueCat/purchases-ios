@@ -1,1 +1,1 @@
-danger.import_dangerfile(github: 'RevenueCat/Dangerfile#check-pr-size-increase')
+danger.import_dangerfile(github: 'RevenueCat/purchases-test')
