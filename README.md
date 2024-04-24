@@ -63,7 +63,7 @@ Or view our iOS sample apps:
 | visionOS | 1.0+ |
 
 ## SDK Reference
-Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).
+Our full SDK reference [can be found here](https://www.revenuecat.com/docs/getting-started/installation/ios).
 
 ## Contributing
 Contributions are always welcome! To learn how you can contribute, please see the [Contributing Guide](./Contributing/CONTRIBUTING.md).
