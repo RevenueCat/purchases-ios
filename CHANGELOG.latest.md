@@ -1,6 +1,6 @@
 ### Dependency Updates
-* Bump fastlane-plugin-revenuecat_internal from `8d4d9b1` to `1e62420` (#3818) via dependabot[bot] (@dependabot[bot])
+* Update Package.resolved (#3822) via Cesar de la Vega (@vegaro)
+* Bump fastlane-plugin-revenuecat_internal from `1e62420` to `f88dcd4` (#3831) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* Sync repo in an SPM-friendly way (#3827) via James Borthwick (@jamesrb1)
-* Syncs diagnostics on initialization (#3821) via Cesar de la Vega (@vegaro)
-* Only update docs index on latest stable releases (#3815) via Toni Rico (@tonidero)
+* Push to SPM after release has been made (#3834) via James Borthwick (@jamesrb1)
+* Add note to readme about new spm repo (#3828) via James Borthwick (@jamesrb1)
