@@ -1,5 +1,4 @@
 ## 5.0.0-beta.4
-## 5.0.0-beta.4
 
 RevenueCat iOS SDK v5 is here!!
 
