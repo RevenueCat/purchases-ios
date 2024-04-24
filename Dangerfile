@@ -52,6 +52,7 @@ def check_pr_size_increase
       warn("Size increase: #{'%.2f' % toKB(total_size_increase)} KB")
     else
       message("Size increase: #{'%.2f' % toKB(total_size_increase)} KB")
+    end
     return
   end
 
