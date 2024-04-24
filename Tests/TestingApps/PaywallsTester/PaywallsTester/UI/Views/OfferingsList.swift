@@ -135,6 +135,22 @@ struct OfferingsList: View {
                 Section {
                     Button {
                         self.presentedPaywall = .init(offering: rcOffering, mode: .default)
+                        Task {
+                            // The paywall data may have changed, reload
+                            let currentId = offeringPaywall.offering.id
+                            await updateOfferingsAndPaywalls()
+                            switch self.offeringsPaywalls {
+                            case let .success(data):
+                                if let newData = data.first(where: { $0.offering.id == currentId }) {
+                                    let newOffering = newData.offering
+                                    let newPaywall = newData.paywall
+                                    let newRCOffering = newPaywall.convertToRevenueCatPaywall(with: newOffering)
+                                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default)
+                                }
+                            default:
+                            self.presentedPaywall = nil
+                            }
+                        }
                     } label: {
                         let name = responsePaywall.data.templateName
                         let humanTemplateName = PaywallTemplate(rawValue: name)?.name ?? name
