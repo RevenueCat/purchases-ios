@@ -58,7 +58,7 @@ def check_pr_size_increase
 
   if total_size_increase > FAIL_SIZE_INCREASE
     fail("This PR increases the size of the repo by more than #{'%.2f' % toKB(FAIL_SIZE_INCREASE)} KB (increased by #{'%.2f' % toKB(total_size_increase)} KB).")
-    message("You can bypass this failure by adding the label \"#{BYPASS_LABEL}\". Please exercise caution.")
+    message("You can bypass the size check failure by adding the label \"#{BYPASS_LABEL}\". Please exercise caution.")
   elsif total_size_increase > WARN_SIZE_INCREASE
     warn("This PR increases the size of the repo by more than #{'%.2f' % toKB(WARN_SIZE_INCREASE)} KB (increased by #{'%.2f' % toKB(total_size_increase)} KB).")
   else
