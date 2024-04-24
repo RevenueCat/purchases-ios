@@ -172,6 +172,7 @@ struct OfferingsList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
+                .id(presentedPaywall?.hashValue)
         }
         .refreshable {
             Task {
