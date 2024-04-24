@@ -39,6 +39,7 @@ struct OfferingsList: View {
     
     let app: DeveloperResponse.App
 
+    @MainActor
     fileprivate func updateOfferingsAndPaywalls() async {
         do {
             async let appOfferings = fetchOfferings(for: app).all
@@ -57,7 +58,23 @@ struct OfferingsList: View {
             self.offeringsPaywalls = .failure(error)
         }
     }
-    
+
+    fileprivate func refreshPresentedPaywallForOfferingID(_ offeringID: String, mode: PaywallViewMode) async {
+        // The paywall data may have changed, reload
+        await updateOfferingsAndPaywalls()
+        switch self.offeringsPaywalls {
+        case let .success(data):
+            if let newData = data.first(where: { $0.offering.id == offeringID }) {
+                let newOffering = newData.offering
+                let newPaywall = newData.paywall
+                let newRCOffering = newPaywall.convertToRevenueCatPaywall(with: newOffering)
+                self.presentedPaywall = .init(offering: newRCOffering, mode: mode)
+            }
+        default:
+        self.presentedPaywall = nil
+        }
+    }
+
     var body: some View {
         self.content
             .navigationTitle("Paywalls")
@@ -137,19 +154,7 @@ struct OfferingsList: View {
                         self.presentedPaywall = .init(offering: rcOffering, mode: .default)
                         Task {
                             // The paywall data may have changed, reload
-                            let currentId = offeringPaywall.offering.id
-                            await updateOfferingsAndPaywalls()
-                            switch self.offeringsPaywalls {
-                            case let .success(data):
-                                if let newData = data.first(where: { $0.offering.id == currentId }) {
-                                    let newOffering = newData.offering
-                                    let newPaywall = newData.paywall
-                                    let newRCOffering = newPaywall.convertToRevenueCatPaywall(with: newOffering)
-                                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default)
-                                }
-                            default:
-                            self.presentedPaywall = nil
-                            }
+                            await refreshPresentedPaywallForOfferingID(offeringPaywall.offering.id, mode:.default)
                         }
                     } label: {
                         let name = responsePaywall.data.templateName
@@ -159,7 +164,7 @@ struct OfferingsList: View {
                     #if !os(watchOS)
                     .contextMenu {
                         let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                        self.contextMenu(for: rcOffering)
+                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
                     }
                     #endif
                 } header: {
@@ -183,17 +188,20 @@ struct OfferingsList: View {
 
     #if !os(watchOS)
     @ViewBuilder
-    private func contextMenu(for offering: Offering) -> some View {
+    private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.button(for: mode, offering: offering)
+            self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
         }
     }
     #endif
 
     @ViewBuilder
-    private func button(for selectedMode: PaywallViewMode, offering: Offering) -> some View {
+    private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
         Button {
             self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            Task {
+                await refreshPresentedPaywallForOfferingID(responseOfferingID, mode: selectedMode)
+            }
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
