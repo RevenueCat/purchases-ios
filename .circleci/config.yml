@@ -582,7 +582,7 @@ jobs:
   run-test-ios-15:
     <<: *base-job
     # Fix-me: running on M1 makes these tests crash
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - install-dependencies
@@ -675,7 +675,7 @@ jobs:
   run-test-ios-13:
     <<: *base-job
     # M1 unsupported
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - install-dependencies
@@ -704,7 +704,7 @@ jobs:
   run-test-ios-12:
     <<: *base-job
     # M1 unsupported
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - install-dependencies
@@ -771,7 +771,7 @@ jobs:
   backend-integration-tests-offline:
     <<: *base-job
     # These tests are even flakier running on M1
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
@@ -785,7 +785,7 @@ jobs:
   release-checks:
     <<: *base-job
     # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - trust-github-key
@@ -827,7 +827,7 @@ jobs:
   make-release:
     <<: *base-job
     # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - trust-github-key
