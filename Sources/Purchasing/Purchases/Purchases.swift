@@ -1145,6 +1145,15 @@ public extension Purchases {
         }
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func pocHandleObserverModeTransaction(
+        transaction: StoreKit.Transaction,
+        jwsRepresentation: String
+    ) async throws {
+        try await self.purchasesOrchestrator.storeKit2TransactionListener.pocHandle(verifiedTransaction: transaction,
+                                                                                    jwsRepresentation: jwsRepresentation)
+    }
+
 }
 
 // swiftlint:enable missing_docs

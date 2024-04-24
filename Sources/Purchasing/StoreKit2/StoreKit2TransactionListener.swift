@@ -44,6 +44,11 @@ protocol StoreKit2TransactionListenerType: Sendable {
         fromTransactionUpdate: Bool
     ) async throws -> StoreKit2TransactionListener.ResultData
 
+    func pocHandle(
+        verifiedTransaction: StoreKit.Transaction,
+        jwsRepresentation: String
+    ) async throws
+
 }
 
 /// Observes `StoreKit.Transaction.updates`, which receives:
@@ -135,6 +140,24 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         }
     }
 
+    func pocHandle(
+        verifiedTransaction: StoreKit.Transaction,
+        jwsRepresentation: String
+    ) async throws {
+        let transaction = StoreTransaction(sk2Transaction: verifiedTransaction,
+                                           jwsRepresentation: jwsRepresentation)
+        if let delegate = self.delegate {
+            Logger.debug(Strings.purchase.sk2_transactions_update_received_transaction(
+                productID: verifiedTransaction.productID
+            ))
+
+            try await delegate.storeKit2TransactionListener(
+                self,
+                updatedTransaction: transaction
+            )
+        }
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -173,5 +196,4 @@ private extension StoreKit2TransactionListener {
             return transaction
         }
     }
-
 }
