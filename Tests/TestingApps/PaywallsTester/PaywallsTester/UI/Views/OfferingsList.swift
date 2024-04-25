@@ -140,11 +140,22 @@ struct OfferingsList: View {
                 Text(Self.modesInstructions)
                     .font(.footnote)
                 if data.isEmpty {
-                    ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                    ScrollView {
+                        ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                        Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
+                            .font(.footnote)
+                            .padding()
+                    }
+                    .refreshable {
+                        Task { @MainActor in
+                            await updateOfferingsAndPaywalls()
+                        }
+                    }
                 } else {
                     self.list(with: data)
                 }
             }
+
 
         case let .failure(error):
             Text(error.description)
@@ -190,11 +201,6 @@ struct OfferingsList: View {
                     self.presentedPaywall = nil
                 }
                 .id(presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
-        }
-        .refreshable {
-            Task { @MainActor in
-                await updateOfferingsAndPaywalls()
-            }
         }
     }
 
