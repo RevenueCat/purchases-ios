@@ -72,8 +72,10 @@ struct OfferingsList: View {
 
         switch self.offeringsPaywalls {
         case let .success(data):
+            // Find the offering that corresponds to the currently presented paywall's offering.
             if let newData = data.first(where: { $0.offering.id == currentPaywall.responseOfferingID }) {
                 let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
+                // if the paywall has changed, update what we're showing
                 if currentPaywall.offering.paywall != newRCOffering.paywall {
                     self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
                 }
