@@ -18,6 +18,7 @@ struct AppList: View {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
                             OfferingsList(app: app)
+                                .navigationTitle("Paywalls") // TODO: Include app name in a dynamic length way
                         }
                     }
                 }

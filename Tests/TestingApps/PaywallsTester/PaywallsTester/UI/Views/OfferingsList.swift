@@ -85,7 +85,6 @@ struct OfferingsList: View {
 
     var body: some View {
         self.content
-            .navigationTitle("Paywalls")
             .task {
                 await updateOfferingsAndPaywalls()
             }
