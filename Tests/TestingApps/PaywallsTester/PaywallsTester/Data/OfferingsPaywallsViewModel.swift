@@ -59,6 +59,10 @@ final class OfferingsPaywallsViewModel {
         }
     }
 
+}
+
+// Private helpers
+extension OfferingsPaywallsViewModel {
     @MainActor
     private func refreshPresentedPaywall() {
 
@@ -117,5 +121,4 @@ final class OfferingsPaywallsViewModel {
             return offeringPaywall
         }
     }
-
 }
