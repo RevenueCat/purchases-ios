@@ -76,7 +76,9 @@ struct OfferingsList: View {
                 let newOffering = newData.offering
                 let newPaywall = newData.paywall
                 let newRCOffering = newPaywall.convertToRevenueCatPaywall(with: newOffering)
-                self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
+                if currentPaywall.offering.paywall != newRCOffering.paywall {
+                    self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
+                }
             }
         default:
         self.presentedPaywall = nil
