@@ -49,9 +49,7 @@ extension DiagnosticsEventsRequest.Event {
         self.init(
             version: event.version,
             name: event.eventType.name,
-            properties: event.properties.mapKeys({ key in
-                key.name
-            }),
+            properties: event.properties.mapKeys { $0.name },
             timestamp: event.timestamp.ISO8601Format()
         )
     }

@@ -26,15 +26,7 @@ class CustomerInfoManager {
     private let transactionFetcher: StoreKit2TransactionFetcherType
     private let transactionPoster: TransactionPosterType
 
-    // Can't have these properties with `@available`.
-    // swiftlint:disable identifier_name
-    var _diagnosticsTracker: Any?
-    // swiftlint:enable identifier_name
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    private var diagnosticsTracker: DiagnosticsTrackerType? {
-        return self._diagnosticsTracker as? DiagnosticsTrackerType
-    }
+    private var diagnosticsTracker: DiagnosticsTrackerType?
 
     /// Underlying synchronized data.
     private let data: Atomic<Data>
@@ -74,7 +66,7 @@ class CustomerInfoManager {
                   transactionFetcher: transactionFetcher,
                   transactionPoster: transactionPoster,
                   systemInfo: systemInfo)
-        self._diagnosticsTracker = diagnosticsTracker
+        self.diagnosticsTracker = diagnosticsTracker
     }
 
     func fetchAndCacheCustomerInfo(appUserID: String,
