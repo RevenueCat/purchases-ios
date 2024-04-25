@@ -142,7 +142,7 @@ struct OfferingsList: View {
 
 }
 
-private struct PaywallPresenter: View {
+struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode

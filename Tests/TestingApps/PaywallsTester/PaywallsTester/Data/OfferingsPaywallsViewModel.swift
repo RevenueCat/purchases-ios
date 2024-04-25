@@ -59,6 +59,18 @@ final class OfferingsPaywallsViewModel {
         }
     }
 
+    func showPaywallForID(id: String) async {
+        switch self.offeringsPaywalls {
+        case let .success(data):
+            if let newData = data.first(where: { $0.offering.id == id }) {
+                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
+                self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
+            }
+        default:
+        self.presentedPaywall = nil
+        }
+    }
+
 }
 
 // Private helpers
