@@ -144,16 +144,15 @@ struct OfferingsList: View {
                             .font(.footnote)
                             .padding()
                     }
-
+                    .refreshable {
+                        Task { @MainActor in
+                            await updateOfferingsAndPaywalls()
+                        }
+                    }
                 } else {
                     Text(Self.modesInstructions)
                         .font(.footnote)
                     self.list(with: data)
-                }
-            }
-            .refreshable {
-                Task { @MainActor in
-                    await updateOfferingsAndPaywalls()
                 }
             }
 
@@ -193,6 +192,11 @@ struct OfferingsList: View {
                 } header: {
                     Text(responseOffering.displayName)
                 }
+            }
+        }
+        .refreshable {
+            Task { @MainActor in
+                await updateOfferingsAndPaywalls()
             }
         }
         .sheet(item: self.$presentedPaywall) { paywall in
