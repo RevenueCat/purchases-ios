@@ -137,25 +137,26 @@ struct OfferingsList: View {
         switch self.offeringsPaywalls {
         case let .success(data):
             VStack {
-                Text(Self.modesInstructions)
-                    .font(.footnote)
                 if data.isEmpty {
+                    Text(Self.pullToRefresh)
                     ScrollView {
                         ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
                         Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
                             .font(.footnote)
                             .padding()
                     }
-                    .refreshable {
-                        Task { @MainActor in
-                            await updateOfferingsAndPaywalls()
-                        }
-                    }
+
                 } else {
+                    Text(Self.modesInstructions)
+                        .font(.footnote)
                     self.list(with: data)
                 }
             }
-
+            .refreshable {
+                Task { @MainActor in
+                    await updateOfferingsAndPaywalls()
+                }
+            }
 
         case let .failure(error):
             Text(error.description)
@@ -227,9 +228,11 @@ struct OfferingsList: View {
     }
 
     #if targetEnvironment(macCatalyst)
+    private static let pullToRefresh = ""
     private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
     #else
-    private static let modesInstructions = "Pull to refresh\nPress and hold to open in different modes."
+    private static let pullToRefresh = "Pull to refresh"
+    private static let modesInstructions = "Press and hold to open in different modes."
     #endif
 
 }
