@@ -24,10 +24,17 @@ struct OfferingsList: View {
     fileprivate struct PresentedPaywall: Hashable {
         var offering: Offering
         var mode: PaywallViewMode
+        var responseOfferingID: String
     }
 
     @State
-    private var offeringsPaywalls: Result<[OfferingPaywall], NSError>?
+    private var offeringsPaywalls: Result<[OfferingPaywall], NSError>? {
+        didSet {
+            Task { @MainActor in
+                refreshPresentedPaywall()
+            }
+        }
+    }
 
     @State
     private var presentedPaywall: PresentedPaywall?
@@ -40,7 +47,7 @@ struct OfferingsList: View {
     let app: DeveloperResponse.App
 
     @MainActor
-    fileprivate func updateOfferingsAndPaywalls() async {
+    private func updateOfferingsAndPaywalls() async {
         do {
             async let appOfferings = fetchOfferings(for: app).all
             async let appPaywalls = fetchPaywalls(for: app).all
@@ -59,16 +66,18 @@ struct OfferingsList: View {
         }
     }
 
-    fileprivate func refreshPresentedPaywallForOfferingID(_ offeringID: String, mode: PaywallViewMode) async {
-        // The paywall data may have changed, reload
-        await updateOfferingsAndPaywalls()
+    @MainActor
+    private func refreshPresentedPaywall() {
+
+        guard let currentPaywall = self.presentedPaywall else { return }
+
         switch self.offeringsPaywalls {
         case let .success(data):
-            if let newData = data.first(where: { $0.offering.id == offeringID }) {
+            if let newData = data.first(where: { $0.offering.id == currentPaywall.responseOfferingID }) {
                 let newOffering = newData.offering
                 let newPaywall = newData.paywall
                 let newRCOffering = newPaywall.convertToRevenueCatPaywall(with: newOffering)
-                self.presentedPaywall = .init(offering: newRCOffering, mode: mode)
+                self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
             }
         default:
         self.presentedPaywall = nil
@@ -151,10 +160,10 @@ struct OfferingsList: View {
                 let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
                 Section {
                     Button {
-                        self.presentedPaywall = .init(offering: rcOffering, mode: .default)
-                        Task {
+                        self.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
+                        Task { @MainActor in
                             // The paywall data may have changed, reload
-                            await refreshPresentedPaywallForOfferingID(offeringPaywall.offering.id, mode:.default)
+                            await updateOfferingsAndPaywalls()
                         }
                     } label: {
                         let name = responsePaywall.data.templateName
@@ -177,10 +186,10 @@ struct OfferingsList: View {
                 .onRestoreCompleted { _ in
                     self.presentedPaywall = nil
                 }
-                .id(presentedPaywall?.hashValue)
+                .id(presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
         .refreshable {
-            Task {
+            Task { @MainActor in
                 await updateOfferingsAndPaywalls()
             }
         }
@@ -198,9 +207,9 @@ struct OfferingsList: View {
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
         Button {
-            self.presentedPaywall = .init(offering: offering, mode: selectedMode)
-            Task {
-                await refreshPresentedPaywallForOfferingID(responseOfferingID, mode: selectedMode)
+            self.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
+            Task { @MainActor in
+                await updateOfferingsAndPaywalls()
             }
         } label: {
             Text(selectedMode.name)
