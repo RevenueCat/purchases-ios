@@ -142,31 +142,6 @@ struct OfferingsList: View {
 
 }
 
-struct PaywallPresenter: View {
-
-    var offering: Offering
-    var mode: PaywallViewMode
-    var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
-
-    var body: some View {
-        switch self.mode {
-        case .fullScreen:
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
-
-        #if !os(watchOS)
-        case .footer:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering)
-
-        case .condensedFooter:
-            CustomPaywallContent()
-                .paywallFooter(offering: self.offering, condensed: true)
-        #endif
-        }
-    }
-
-}
-
 extension PresentedPaywall: Identifiable {
 
     var id: String {

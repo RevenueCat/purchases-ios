@@ -26,6 +26,7 @@
 		88B4378C2BD0972B000AF27C /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B4378B2BD0972B000AF27C /* Logging.swift */; };
 		88B438082BDB0089000AF27C /* OfferingsPaywallsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B438072BDB0089000AF27C /* OfferingsPaywallsViewModel.swift */; };
 		88B4380A2BDB0A28000AF27C /* PaywallForID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B438092BDB0A28000AF27C /* PaywallForID.swift */; };
+		88B4380C2BDB0FCB000AF27C /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B4380B2BDB0FCB000AF27C /* PaywallPresenter.swift */; };
 		88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC12D2BC7335200273B6D /* ApplicationData.swift */; };
 		88DFC1322BC7385B00273B6D /* AuthenticationActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */; };
 		88DFC1332BC7385B00273B6D /* ApplicationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC1312BC7385B00273B6D /* ApplicationManager.swift */; };
@@ -94,6 +95,7 @@
 		88B4378B2BD0972B000AF27C /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		88B438072BDB0089000AF27C /* OfferingsPaywallsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OfferingsPaywallsViewModel.swift; path = PaywallsTester/Data/OfferingsPaywallsViewModel.swift; sourceTree = SOURCE_ROOT; };
 		88B438092BDB0A28000AF27C /* PaywallForID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallForID.swift; sourceTree = "<group>"; };
+		88B4380B2BDB0FCB000AF27C /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
 		88DFC12D2BC7335200273B6D /* ApplicationData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationData.swift; sourceTree = "<group>"; };
 		88DFC1302BC7385A00273B6D /* AuthenticationActor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthenticationActor.swift; sourceTree = "<group>"; };
 		88DFC1312BC7385B00273B6D /* ApplicationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationManager.swift; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				4FC6F8B12A7403D3002139B2 /* OfferingsList.swift */,
+				88B4380B2BDB0FCB000AF27C /* PaywallPresenter.swift */,
 				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
@@ -409,6 +412,7 @@
 				4F34FF652A60ADBD00AADF11 /* Configuration.swift in Sources */,
 				4FC6F8B22A7403D3002139B2 /* OfferingsList.swift in Sources */,
 				88DFC1902BCF48B000273B6D /* AppList.swift in Sources */,
+				88B4380C2BDB0FCB000AF27C /* PaywallPresenter.swift in Sources */,
 				88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */,
 				2D708C7F2AC6050000336AC8 /* UpsellView.swift in Sources */,
 				2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */,
