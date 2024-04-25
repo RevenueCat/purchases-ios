@@ -49,7 +49,7 @@ extension DiagnosticsEventsRequest.Event {
         self.init(
             version: event.version,
             name: event.eventType.name,
-            properties: event.properties,
+            properties: event.properties.mapKeys { $0.name },
             timestamp: event.timestamp.ISO8601Format()
         )
     }
@@ -65,6 +65,17 @@ private extension DiagnosticsEvent.EventType {
         case .customerInfoVerificationResult: return "customer_info_verification_result"
         }
 
+    }
+
+}
+
+private extension DiagnosticsEvent.DiagnosticsPropertyKey {
+
+    var name: String {
+        switch self {
+        case .verificationResultKey:
+            return "verification_result"
+        }
     }
 
 }

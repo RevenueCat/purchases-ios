@@ -259,7 +259,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let syncAttributesAndOfferingsIfNeededRateLimiter = RateLimiter(maxCalls: 5, period: 60)
 
-    // swiftlint:disable:next function_body_length
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
                      appUserID: String?,
                      userDefaults: UserDefaults? = nil,
@@ -346,13 +346,42 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                     operationDispatcher: operationDispatcher,
                                                                     api: backend.offlineEntitlements,
                                                                     systemInfo: systemInfo)
-        let customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
+
+        let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
+            guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
+            return DiagnosticsFileHandler()
+        }()
+
+        let diagnosticsTracker: DiagnosticsTrackerType? = {
+            if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+            } else {
+                if diagnosticsEnabled {
+                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                }
+            }
+            return nil
+        }()
+
+        let customerInfoManager: CustomerInfoManager
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
+                                                      operationDispatcher: operationDispatcher,
+                                                      deviceCache: deviceCache,
+                                                      backend: backend,
+                                                      transactionFetcher: transactionFetcher,
+                                                      transactionPoster: transactionPoster,
+                                                      systemInfo: systemInfo,
+                                                      diagnosticsTracker: diagnosticsTracker)
+        } else {
+            customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: offlineEntitlementsManager,
                                                       operationDispatcher: operationDispatcher,
                                                       deviceCache: deviceCache,
                                                       backend: backend,
                                                       transactionFetcher: transactionFetcher,
                                                       transactionPoster: transactionPoster,
                                                       systemInfo: systemInfo)
+        }
 
         let attributionDataMigrator = AttributionDataMigrator()
         let subscriberAttributesManager = SubscriberAttributesManager(backend: backend,
@@ -424,7 +453,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 var diagnosticsSynchronizer: DiagnosticsSynchronizer?
                 if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = DiagnosticsFileHandler() {
+                    if let diagnosticsFileHandler = diagnosticsFileHandler {
                         diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
                                                                           handler: diagnosticsFileHandler)
                     } else {

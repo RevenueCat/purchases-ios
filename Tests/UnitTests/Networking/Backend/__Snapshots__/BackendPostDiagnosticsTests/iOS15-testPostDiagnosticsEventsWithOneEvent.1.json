@@ -19,9 +19,9 @@
     "body" : {
       "entries" : [
         {
-          "name" : "http_request_performed",
+          "name" : "customer_info_verification_result",
           "properties" : {
-            "key" : "value"
+            "verification_result" : "FAILED"
           },
           "timestamp" : "2023-09-06T19:42:08Z",
           "version" : 1
