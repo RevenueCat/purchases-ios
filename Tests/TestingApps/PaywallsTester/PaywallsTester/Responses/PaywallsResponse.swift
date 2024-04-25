@@ -11,7 +11,7 @@ import RevenueCat
 
 public struct PaywallsResponse: Sendable {
 
-    public var all: [Paywall]
+    public var all: [Paywall] = []
 
 }
 

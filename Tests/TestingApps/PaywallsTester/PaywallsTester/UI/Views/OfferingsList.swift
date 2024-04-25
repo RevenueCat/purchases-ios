@@ -21,7 +21,7 @@ struct OfferingsList: View {
     private var viewModel = OfferingsPaywallsViewModel()
 
     init(app: DeveloperResponse.App) {
-        self.viewModel.app = app
+        self.viewModel.apps = [app]
     }
 
     var body: some View {

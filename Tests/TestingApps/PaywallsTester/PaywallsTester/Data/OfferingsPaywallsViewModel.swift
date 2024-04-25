@@ -22,7 +22,7 @@ struct PresentedPaywall: Hashable {
 @Observable
 final class OfferingsPaywallsViewModel {
 
-    var app: DeveloperResponse.App?
+    var apps: [DeveloperResponse.App]?
 
     var offeringsPaywalls: Result<[OfferingPaywall], NSError>? {
         didSet {
@@ -34,14 +34,14 @@ final class OfferingsPaywallsViewModel {
 
     var presentedPaywall: PresentedPaywall?
 
-    init(app: DeveloperResponse.App? = nil) {
-        self.app = app
+    init(app: [DeveloperResponse.App]? = nil) {
+        self.apps = app
     }
 
     @MainActor
     func updateOfferingsAndPaywalls() async {
         do {
-            guard let appCopy = app else { return }
+            guard let appCopy = apps else { return }
             async let appOfferings = Self.fetchOfferings(for: appCopy).all
             async let appPaywalls = Self.fetchPaywalls(for: appCopy).all
 
@@ -94,6 +94,25 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
+    private static func fetchOfferings(for apps: [DeveloperResponse.App]) async throws -> OfferingsResponse {
+        var combinedOfferings: OfferingsResponse = OfferingsResponse()
+
+        try await withThrowingTaskGroup(of: OfferingsResponse.self) { group in
+            for app in apps {
+                group.addTask {
+                    return try await fetchOfferings(for: app)
+                }
+            }
+
+            for try await offerings in group {
+                combinedOfferings.all.append(contentsOf: offerings.all)
+            }
+        }
+
+        return combinedOfferings
+    }
+
+    @MainActor
     private static func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
         return try await HTTPClient.shared.perform(
             .init(
@@ -101,6 +120,26 @@ extension OfferingsPaywallsViewModel {
                 endpoint: .paywalls(projectID: app.id)
             )
         )
+    }
+
+    @MainActor
+    private static func fetchPaywalls(for apps: [DeveloperResponse.App]) async throws -> PaywallsResponse {
+        var combinedPaywalls: PaywallsResponse = PaywallsResponse()
+
+        try await withThrowingTaskGroup(of: PaywallsResponse.self) { group in
+            for app in apps {
+                group.addTask {
+                    return try await fetchPaywalls(for: app)
+                }
+            }
+
+            // Collect results
+            for try await paywalls in group {
+                combinedPaywalls.all.append(contentsOf: paywalls.all)
+            }
+        }
+
+        return combinedPaywalls
     }
 
     private struct OfferingPaywallData {

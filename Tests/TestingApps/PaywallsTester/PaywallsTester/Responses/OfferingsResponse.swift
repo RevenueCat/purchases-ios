@@ -11,7 +11,7 @@ import RevenueCat
 
 public struct OfferingsResponse: Sendable {
 
-    public let all: [Offering]
+    public var all: [Offering] = []
 
 }
 
