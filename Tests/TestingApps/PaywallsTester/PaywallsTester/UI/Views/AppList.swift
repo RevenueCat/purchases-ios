@@ -22,6 +22,9 @@ struct AppList: View {
                         }
                     }
                 }
+                .refreshable {
+                    try? await application.loadApplicationData()
+                }
             }
             .navigationTitle("My Apps")
             .toolbar {
