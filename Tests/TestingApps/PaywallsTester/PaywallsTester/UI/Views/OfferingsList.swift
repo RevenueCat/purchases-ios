@@ -138,8 +138,10 @@ struct OfferingsList: View {
             VStack {
                 if data.isEmpty {
                     Text(Self.pullToRefresh)
+                        .font(.footnote)
                     ScrollView {
                         ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                            .padding()
                         Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
                             .font(.footnote)
                             .padding()
