@@ -13,129 +13,27 @@ import RevenueCatUI
 #endif
 import SwiftUI
 
+
 // TODO: Ask Barbara about how to present
 struct OfferingsList: View {
-    
-    private struct OfferingPaywall: Hashable {
-        let offering: OfferingsResponse.Offering
-        let paywall: PaywallsResponse.Paywall
-    }
-
-    fileprivate struct PresentedPaywall: Hashable {
-        var offering: Offering
-        var mode: PaywallViewMode
-        var responseOfferingID: String
-    }
 
     @State
-    private var offeringsPaywalls: Result<[OfferingPaywall], NSError>? {
-        didSet {
-            Task { @MainActor in
-                refreshPresentedPaywall()
-            }
-        }
-    }
+    private var viewModel = OfferingsPaywallsViewModel()
 
-    @State
-    private var presentedPaywall: PresentedPaywall?
-    
-    @State
-    private var displayPaywall: Bool = false
-
-    let app: DeveloperResponse.App
-
-    @MainActor
-    private func updateOfferingsAndPaywalls() async {
-        do {
-            let appCopy = app
-            async let appOfferings = Self.fetchOfferings(for: appCopy).all
-            async let appPaywalls = Self.fetchPaywalls(for: appCopy).all
-
-            let offerings = try await appOfferings
-            let paywalls = try await appPaywalls
-            
-            let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
-            
-            self.offeringsPaywalls = .success(
-                offeringPaywallData.paywallsByOffering()
-            )
-            
-        } catch let error as NSError {
-            self.offeringsPaywalls = .failure(error)
-        }
-    }
-
-    @MainActor
-    private func refreshPresentedPaywall() {
-
-        guard let currentPaywall = self.presentedPaywall else { return }
-
-        switch self.offeringsPaywalls {
-        case let .success(data):
-            // Find the offering that corresponds to the currently presented paywall's offering.
-            if let newData = data.first(where: { $0.offering.id == currentPaywall.responseOfferingID }) {
-                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
-                // if the paywall has changed, update what we're showing
-                if currentPaywall.offering.paywall != newRCOffering.paywall {
-                    self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
-                }
-            }
-        default:
-        self.presentedPaywall = nil
-        }
+    init(app: DeveloperResponse.App) {
+        self.viewModel.app = app
     }
 
     var body: some View {
         self.content
             .task {
-                await updateOfferingsAndPaywalls()
+                await viewModel.updateOfferingsAndPaywalls()
             }
-    }
-    
-
-    @MainActor
-    static private func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
-        return try await HTTPClient.shared.perform(
-            .init(
-                method: .get,
-                endpoint: .offerings(projectID: app.id)
-            )
-        )
-    }
-    
-    @MainActor
-    static private func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
-        return try await HTTPClient.shared.perform(
-            .init(
-                method: .get,
-                endpoint: .paywalls(projectID: app.id)
-            )
-        )
-    }
-
-
-    private struct OfferingPaywallData {
-
-        var offerings: [OfferingsResponse.Offering]
-        var paywalls: [PaywallsResponse.Paywall]
-        
-        func paywallsByOffering() -> [OfferingPaywall] {
-            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
-
-            var offeringPaywall = [OfferingPaywall]()
-            for offering in self.offerings {
-                if let paywall = paywallsByOfferingID[offering.id] {
-                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall))
-                }
-            }
-
-            return offeringPaywall
-        }
     }
 
     @ViewBuilder
     private var content: some View {
-        switch self.offeringsPaywalls {
+        switch viewModel.offeringsPaywalls {
         case let .success(data):
             VStack {
                 if data.isEmpty {
@@ -150,7 +48,7 @@ struct OfferingsList: View {
                     }
                     .refreshable {
                         Task { @MainActor in
-                            await updateOfferingsAndPaywalls()
+                            await viewModel.updateOfferingsAndPaywalls()
                         }
                     }
                 } else {
@@ -177,10 +75,10 @@ struct OfferingsList: View {
                 let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
                 Section {
                     Button {
-                        self.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
+                        viewModel.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
                         Task { @MainActor in
                             // The paywall data may have changed, reload
-                            await updateOfferingsAndPaywalls()
+                            await viewModel.updateOfferingsAndPaywalls()
                         }
                     } label: {
                         let name = responsePaywall.data.templateName
@@ -200,15 +98,15 @@ struct OfferingsList: View {
         }
         .refreshable {
             Task { @MainActor in
-                await updateOfferingsAndPaywalls()
+                await viewModel.updateOfferingsAndPaywalls()
             }
         }
-        .sheet(item: self.$presentedPaywall) { paywall in
+        .sheet(item: $viewModel.presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
                 .onRestoreCompleted { _ in
-                    self.presentedPaywall = nil
+                    viewModel.presentedPaywall = nil
                 }
-                .id(presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
     }
 
@@ -224,9 +122,9 @@ struct OfferingsList: View {
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
         Button {
-            self.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
+            viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
             Task { @MainActor in
-                await updateOfferingsAndPaywalls()
+                await viewModel.updateOfferingsAndPaywalls()
             }
         } label: {
             Text(selectedMode.name)
@@ -269,7 +167,7 @@ private struct PaywallPresenter: View {
 
 }
 
-extension OfferingsList.PresentedPaywall: Identifiable {
+extension PresentedPaywall: Identifiable {
 
     var id: String {
         return "\(self.offering.id)-\(self.mode.name)"
