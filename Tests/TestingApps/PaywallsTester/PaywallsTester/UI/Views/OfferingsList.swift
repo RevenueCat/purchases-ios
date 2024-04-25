@@ -41,17 +41,16 @@ struct OfferingsList: View {
     
     @State
     private var displayPaywall: Bool = false
-    
-    private let client = HTTPClient.shared
-    
+
     let app: DeveloperResponse.App
 
     @MainActor
     private func updateOfferingsAndPaywalls() async {
         do {
-            async let appOfferings = fetchOfferings(for: app).all
-            async let appPaywalls = fetchPaywalls(for: app).all
-            
+            let appCopy = app
+            async let appOfferings = Self.fetchOfferings(for: appCopy).all
+            async let appPaywalls = Self.fetchPaywalls(for: appCopy).all
+
             let offerings = try await appOfferings
             let paywalls = try await appPaywalls
             
@@ -92,8 +91,10 @@ struct OfferingsList: View {
             }
     }
     
-    public func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
-        return try await self.client.perform(
+
+    @MainActor
+    static private func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
+        return try await HTTPClient.shared.perform(
             .init(
                 method: .get,
                 endpoint: .offerings(projectID: app.id)
@@ -101,15 +102,17 @@ struct OfferingsList: View {
         )
     }
     
-    public func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
-        return try await self.client.perform(
+    @MainActor
+    static private func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
+        return try await HTTPClient.shared.perform(
             .init(
                 method: .get,
                 endpoint: .paywalls(projectID: app.id)
             )
         )
     }
-    
+
+
     private struct OfferingPaywallData {
 
         var offerings: [OfferingsResponse.Offering]

@@ -9,7 +9,7 @@ import Foundation
 
 import RevenueCat
 
-public struct PaywallsResponse {
+public struct PaywallsResponse: Sendable {
 
     public var all: [Paywall]
 
@@ -17,7 +17,7 @@ public struct PaywallsResponse {
 
 extension PaywallsResponse {
 
-    public struct Paywall {
+    public struct Paywall: Sendable {
 
         public var data: PaywallData
         public var offeringID: String

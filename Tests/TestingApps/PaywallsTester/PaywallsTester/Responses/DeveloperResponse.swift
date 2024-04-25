@@ -7,9 +7,9 @@
 
 import Foundation
 
-public struct DeveloperResponse {
+public struct DeveloperResponse: Sendable {
 
-    public struct App {
+    public struct App: Sendable {
         
         public var id: String
         public var name: String
