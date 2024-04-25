@@ -1106,23 +1106,6 @@ jobs:
                 ]
               }
 
-  deploy-to-spm:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - checkout
-      - setup-git-credentials
-      - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
-          command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
-            cd purchases-ios
-            git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
-            git push origin
-            git push --tags
-
 workflows:
   version: 2
   generate-snapshot:
@@ -1291,9 +1274,6 @@ workflows:
             - make-release
             - push-revenuecat-pod
           <<: *release-tags
-      - deploy-to-spm:
-         requires:
-            - make-release
       - docs-deploy:
           xcode_version: '14.3.0'
           <<: *release-tags

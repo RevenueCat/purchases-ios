@@ -422,16 +422,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                var diagnosticsSynchronizer: DiagnosticsSynchronizer?
+                var diagnosticsTracker: DiagnosticsTrackerType?
                 if diagnosticsEnabled {
                     if let diagnosticsFileHandler = DiagnosticsFileHandler() {
-                        diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler)
+                        diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
                     } else {
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
                 }
-
                 return .init(
                     productsManager: productsManager,
                     paymentQueueWrapper: paymentQueueWrapper,
@@ -453,7 +451,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeMessagesHelper: storeMessagesHelper,
-                    diagnosticsSynchronizer: diagnosticsSynchronizer
+                    diagnosticsTracker: diagnosticsTracker
                 )
             } else {
                 return .init(

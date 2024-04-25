@@ -1,19 +1,3 @@
-## 4.41.1
-### Dependency Updates
-* Bump fastlane-plugin-revenuecat_internal from `8d4d9b1` to `1e62420` (#3818) via dependabot[bot] (@dependabot[bot])
-### Other Changes
-* Sync repo in an SPM-friendly way (#3827) via James Borthwick (@jamesrb1)
-* Syncs diagnostics on initialization (#3821) via Cesar de la Vega (@vegaro)
-* Only update docs index on latest stable releases (#3815) via Toni Rico (@tonidero)
-
-## 4.41.0
-### New Features
-* Paywalls: Allow closed button color to be configured (#3805) via Josh Holtz (@joshdholtz)
-### Other Changes
-* Create `DiagnosticsTracker` (#3784) via Cesar de la Vega (@vegaro)
-* Add DiagnosticsSynchronizer (#3787) via Cesar de la Vega (@vegaro)
-* Update Package.resolved (#3796) via Cesar de la Vega (@vegaro)
-
 ## 4.40.1
 ### Bugfixes
 * Prevent Template 4 from wrapping Lifetime (#3789) via Josh Holtz (@joshdholtz)

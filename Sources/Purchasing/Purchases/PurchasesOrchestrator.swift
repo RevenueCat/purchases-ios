@@ -74,7 +74,7 @@ final class PurchasesOrchestrator {
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
-    var _diagnosticsSynchronizer: Any?
+    var _diagnosticsTracker: Any?
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -90,8 +90,8 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
-        return self._diagnosticsSynchronizer as? DiagnosticsSynchronizerType
+    var diagnosticsTracker: DiagnosticsTrackerType? {
+        return self._diagnosticsTracker as? DiagnosticsTrackerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -115,7 +115,7 @@ final class PurchasesOrchestrator {
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeMessagesHelper: StoreMessagesHelperType?,
-                     diagnosticsSynchronizer: DiagnosticsSynchronizerType?
+                     diagnosticsTracker: DiagnosticsTrackerType?
     ) {
         self.init(
             productsManager: productsManager,
@@ -138,7 +138,7 @@ final class PurchasesOrchestrator {
             storeMessagesHelper: storeMessagesHelper
         )
 
-        self._diagnosticsSynchronizer = diagnosticsSynchronizer
+        self._diagnosticsTracker = diagnosticsTracker
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
@@ -161,11 +161,10 @@ final class PurchasesOrchestrator {
         #endif
 
         Task {
-            await setSK2DelegateAndStartListening()
-        }
-
-        Task {
-            await syncDiagnosticsIfNeeded()
+            await storeKit2TransactionListener.set(delegate: self)
+            if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
+                await storeKit2TransactionListener.listenForTransactions()
+            }
         }
     }
 
@@ -1476,26 +1475,6 @@ extension PurchasesOrchestrator {
                                isRestore: isRestore,
                                initiationSource: initiationSource,
                                completion: completion)
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PurchasesOrchestrator {
-
-    private func syncDiagnosticsIfNeeded() async {
-        do {
-            try await diagnosticsSynchronizer?.syncDiagnosticsIfNeeded()
-        } catch {
-            Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
-        }
-    }
-
-    private func setSK2DelegateAndStartListening() async {
-        await storeKit2TransactionListener.set(delegate: self)
-        if systemInfo.storeKit2Setting == .enabledForCompatibleDevices {
-            await storeKit2TransactionListener.listenForTransactions()
         }
     }
 
