@@ -347,18 +347,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                     api: backend.offlineEntitlements,
                                                                     systemInfo: systemInfo)
 
-        var diagnosticsFileHandler: DiagnosticsFileHandlerType?
-        var diagnosticsTracker: DiagnosticsTrackerType?
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            if diagnosticsEnabled {
-                diagnosticsFileHandler = DiagnosticsFileHandler()
-                if let diagnosticsFileHandler = diagnosticsFileHandler {
-                    diagnosticsTracker = DiagnosticsTracker(diagnosticsFileHandler: diagnosticsFileHandler)
-                } else {
+        let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
+            guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
+            return DiagnosticsFileHandler()
+        }()
+
+        let diagnosticsTracker: DiagnosticsTrackerType? = {
+            if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+            } else {
+                if diagnosticsEnabled {
                     Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                 }
             }
-        }
+            return nil
+        }()
 
         let customerInfoManager: CustomerInfoManager
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
