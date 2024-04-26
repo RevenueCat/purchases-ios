@@ -36,6 +36,12 @@ struct SimpleApp: App {
         return IdentifiableString(id: paywallID)
     }
 
+    func processURL(_ url: URL) {
+        // set to nil to trigger re-render if presenting same paywall with new data
+        paywallIDToShow = nil
+        paywallIDToShow = getPaywallIdFrom(incomingURL: url)
+    }
+
     var body: some Scene {
         WindowGroup {
             AppContentView()
@@ -45,9 +51,13 @@ struct SimpleApp: App {
                     }
                 }
                 .onOpenURL { URL in
-                    // set to nil to trigger re-render if presenting same paywall with new data
-                    paywallIDToShow = nil
-                    paywallIDToShow = getPaywallIdFrom(incomingURL: URL)
+                    // user taps a link on their phone
+                    processURL(URL)
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
+                    // user scans a QR code
+                    guard let url = userActivity.webpageURL else { return }
+                    processURL(url)
                 }
         }
         .environment(application)
