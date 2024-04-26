@@ -59,7 +59,9 @@ final class OfferingsPaywallsViewModel {
         }
     }
 
+    @MainActor
     func showPaywallForID(id: String) async {
+
         switch self.offeringsPaywalls {
         case let .success(data):
             if let newData = data.first(where: { $0.offering.id == id }) {
@@ -69,12 +71,37 @@ final class OfferingsPaywallsViewModel {
         default:
         self.presentedPaywall = nil
         }
+
+        // in case data has changed since last fetch
+        await updateOfferingsAndPaywalls()
     }
 
 }
 
 // Private helpers
 extension OfferingsPaywallsViewModel {
+
+    private struct OfferingPaywallData {
+
+        var offerings: [OfferingsResponse.Offering]
+        var paywalls: [PaywallsResponse.Paywall]
+
+        func paywallsByOffering() -> [OfferingPaywall] {
+            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
+
+            var offeringPaywall = [OfferingPaywall]()
+            for offering in self.offerings {
+                if let paywall = paywallsByOfferingID[offering.id] {
+                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall))
+                }
+            }
+
+            return offeringPaywall
+        }
+
+    }
+
+
     @MainActor
     private func refreshPresentedPaywall() {
 
@@ -95,6 +122,7 @@ extension OfferingsPaywallsViewModel {
         }
     }
 
+    // MARK: - Network
     @MainActor
     private static func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
         return try await HTTPClient.shared.perform(
@@ -154,22 +182,4 @@ extension OfferingsPaywallsViewModel {
         return combinedPaywalls
     }
 
-    private struct OfferingPaywallData {
-
-        var offerings: [OfferingsResponse.Offering]
-        var paywalls: [PaywallsResponse.Paywall]
-
-        func paywallsByOffering() -> [OfferingPaywall] {
-            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
-
-            var offeringPaywall = [OfferingPaywall]()
-            for offering in self.offerings {
-                if let paywall = paywallsByOfferingID[offering.id] {
-                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall))
-                }
-            }
-
-            return offeringPaywall
-        }
-    }
 }
