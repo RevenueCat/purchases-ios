@@ -61,36 +61,16 @@ final class OfferingsPaywallsViewModel {
             self.offeringsPaywalls = .failure(error)
         }
     }
-
+    
     @MainActor
-    func showPaywallForID(id: String) async {
+    func getAndShowPaywallForID(id: String) async {
 
-        self.presentedPaywall = nil
-
-        switch self.offeringsPaywalls {
-        case let .success(data):
-            if let newData = data.first(where: { $0.offering.id == id }) {
-                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
-                self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
-            }
-        default:
-        self.presentedPaywall = nil
-        }
+        showPaywallForID(id)
 
         // in case data has changed since last fetch
         await updateOfferingsAndPaywalls()
-        
-        switch self.offeringsPaywalls {
-        case let .success(data):
-            if let newData = data.first(where: { $0.offering.id == id }) {
-                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
-                if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
-                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
-                }
-            }
-        default:
-        self.presentedPaywall = nil
-        }
+
+        showPaywallForID(id)
     }
 
 }
@@ -118,25 +98,30 @@ extension OfferingsPaywallsViewModel {
 
     }
 
+    @MainActor
+    private func showPaywallForID(_ id: String) {
+        switch self.offeringsPaywalls {
+        case let .success(data):
+            // Find the offering that corresponds to the target paywall's offering.
+            if let newData = data.first(where: { $0.offering.id == id }) {
+                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
+                // if the presented paywall has changed, update what we're showing
+                if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
+                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
+                }
+            }
+        default:
+            self.presentedPaywall = nil
+        }
+    }
 
     @MainActor
     private func refreshPresentedPaywall() {
 
         guard let currentPaywall = self.presentedPaywall else { return }
 
-        switch self.offeringsPaywalls {
-        case let .success(data):
-            // Find the offering that corresponds to the currently presented paywall's offering.
-            if let newData = data.first(where: { $0.offering.id == currentPaywall.responseOfferingID }) {
-                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
-                // if the paywall has changed, update what we're showing
-                if currentPaywall.offering.paywall != newRCOffering.paywall {
-                    self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
-                }
-            }
-        default:
-        self.presentedPaywall = nil
-        }
+        showPaywallForID(currentPaywall.responseOfferingID)
+
     }
 
     // MARK: - Network

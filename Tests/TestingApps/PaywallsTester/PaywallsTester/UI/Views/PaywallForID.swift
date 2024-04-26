@@ -27,7 +27,7 @@ struct PaywallForID: View {
         } else {
             SwiftUI.ProgressView()
                 .task {
-                    await viewModel.showPaywallForID(id: id)
+                    await viewModel.getAndShowPaywallForID(id: id)
                 }
         }
 
