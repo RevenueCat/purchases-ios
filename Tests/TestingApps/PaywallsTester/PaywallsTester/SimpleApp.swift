@@ -22,26 +22,6 @@ struct SimpleApp: App {
     @State
     private var paywallIDToShow: IdentifiableString?
 
-    func getPaywallIdFrom(incomingURL: URL) -> IdentifiableString? {
-        guard let components = NSURLComponents(url: incomingURL, resolvingAgainstBaseURL: true) else {
-            return nil
-        }
-
-        guard let params = components.queryItems else { return nil }
-
-        guard let paywallID = params.first(where: { $0.name == "paywall" } )?.value else {
-            return nil
-        }
-
-        return IdentifiableString(id: paywallID)
-    }
-
-    func processURL(_ url: URL) {
-        // set to nil to trigger re-render if presenting same paywall with new data
-        paywallIDToShow = nil
-        paywallIDToShow = getPaywallIdFrom(incomingURL: url)
-    }
-
     var body: some Scene {
         WindowGroup {
             AppContentView()
@@ -63,4 +43,27 @@ struct SimpleApp: App {
         .environment(application)
     }
 
+}
+
+// MARK: - Universal Links
+extension SimpleApp {
+    func processURL(_ url: URL) {
+        // set to nil to trigger re-render if presenting same paywall with new data
+        paywallIDToShow = nil
+        paywallIDToShow = getPaywallIdFrom(incomingURL: url)
+    }
+
+    func getPaywallIdFrom(incomingURL: URL) -> IdentifiableString? {
+        guard let components = NSURLComponents(url: incomingURL, resolvingAgainstBaseURL: true) else {
+            return nil
+        }
+
+        guard let params = components.queryItems else { return nil }
+
+        guard let paywallID = params.first(where: { $0.name == "paywall" } )?.value else {
+            return nil
+        }
+
+        return IdentifiableString(id: paywallID)
+    }
 }
