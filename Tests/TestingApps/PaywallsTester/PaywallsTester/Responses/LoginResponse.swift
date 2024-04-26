@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct LoginResponse: Decodable {
+public struct LoginResponse: Decodable, Sendable {
 
     public var authenticationToken: String
 
