@@ -1150,8 +1150,8 @@ public extension Purchases {
         transaction: StoreKit.Transaction,
         jwsRepresentation: String
     ) async throws {
-        try await self.purchasesOrchestrator.storeKit2TransactionListener.pocHandle(verifiedTransaction: transaction,
-                                                                                    jwsRepresentation: jwsRepresentation)
+        try await self.purchasesOrchestrator.storeKit2TransactionListener.handle(verifiedTransaction: transaction,
+                                                                                 jwsRepresentation: jwsRepresentation)
     }
 
 }

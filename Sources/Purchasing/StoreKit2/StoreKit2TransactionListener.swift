@@ -44,7 +44,7 @@ protocol StoreKit2TransactionListenerType: Sendable {
         fromTransactionUpdate: Bool
     ) async throws -> StoreKit2TransactionListener.ResultData
 
-    func pocHandle(
+    func handle(
         verifiedTransaction: StoreKit.Transaction,
         jwsRepresentation: String
     ) async throws
@@ -140,7 +140,7 @@ actor StoreKit2TransactionListener: StoreKit2TransactionListenerType {
         }
     }
 
-    func pocHandle(
+    func handle(
         verifiedTransaction: StoreKit.Transaction,
         jwsRepresentation: String
     ) async throws {
