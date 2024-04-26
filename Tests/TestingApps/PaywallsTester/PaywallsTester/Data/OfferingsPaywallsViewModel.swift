@@ -22,7 +22,6 @@ struct PresentedPaywall: Hashable {
 @Observable
 final class OfferingsPaywallsViewModel {
 
-
     var apps: [DeveloperResponse.App]
 
     init(apps: [DeveloperResponse.App]) {
@@ -38,8 +37,6 @@ final class OfferingsPaywallsViewModel {
     }
 
     var presentedPaywall: PresentedPaywall?
-
-
 
     @MainActor
     func updateOfferingsAndPaywalls() async {
@@ -117,11 +114,9 @@ extension OfferingsPaywallsViewModel {
 
     @MainActor
     private func refreshPresentedPaywall() {
-
         guard let currentPaywall = self.presentedPaywall else { return }
 
         showPaywallForID(currentPaywall.responseOfferingID)
-
     }
 
     // MARK: - Network
@@ -150,7 +145,6 @@ extension OfferingsPaywallsViewModel {
                 combinedOfferings.all.append(contentsOf: offerings.all)
             }
         }
-
         return combinedOfferings
     }
 
@@ -180,7 +174,6 @@ extension OfferingsPaywallsViewModel {
                 combinedPaywalls.all.append(contentsOf: paywalls.all)
             }
         }
-
         return combinedPaywalls
     }
 

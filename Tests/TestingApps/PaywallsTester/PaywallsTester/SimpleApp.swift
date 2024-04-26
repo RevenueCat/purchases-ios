@@ -11,7 +11,9 @@ import SwiftUI
 struct SimpleApp: App {
 
     struct IdentifiableString: Identifiable {
+
         let id: String
+        
     }
 
     @State

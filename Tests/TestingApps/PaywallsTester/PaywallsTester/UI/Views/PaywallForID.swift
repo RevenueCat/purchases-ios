@@ -23,15 +23,15 @@ struct PaywallForID: View {
     var body: some View {
         if let paywall = viewModel.presentedPaywall {
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
-                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in PaywallView
         } else {
             SwiftUI.ProgressView()
                 .task {
                     await viewModel.getAndShowPaywallForID(id: id)
                 }
         }
-
     }
+
 }
 
 #Preview {
