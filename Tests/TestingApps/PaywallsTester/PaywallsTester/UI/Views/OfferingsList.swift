@@ -18,10 +18,11 @@ import SwiftUI
 struct OfferingsList: View {
 
     @State
-    private var viewModel = OfferingsPaywallsViewModel()
+    private var viewModel: OfferingsPaywallsViewModel
 
     init(app: DeveloperResponse.App) {
-        self.viewModel.apps = [app]
+
+        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
     }
 
     var body: some View {

@@ -11,23 +11,23 @@ import SwiftUI
 struct PaywallForID: View {
 
     @State
-    private var paywallsVM = OfferingsPaywallsViewModel()
+    private var viewModel: OfferingsPaywallsViewModel
 
     let id: String
 
     init(apps: [DeveloperResponse.App], id: String) {
         self.id = id
-        paywallsVM.apps = apps
+        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: apps))
     }
 
     var body: some View {
-        if let paywall = paywallsVM.presentedPaywall {
+        if let paywall = viewModel.presentedPaywall {
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+                .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         } else {
             SwiftUI.ProgressView()
                 .task {
-                    await paywallsVM.updateOfferingsAndPaywalls()
-                    await paywallsVM.showPaywallForID(id: id)
+                    await viewModel.showPaywallForID(id: id)
                 }
         }
 

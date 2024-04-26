@@ -22,7 +22,12 @@ struct PresentedPaywall: Hashable {
 @Observable
 final class OfferingsPaywallsViewModel {
 
-    var apps: [DeveloperResponse.App]?
+
+    var apps: [DeveloperResponse.App]
+
+    init(apps: [DeveloperResponse.App]) {
+        self.apps = apps
+    }
 
     var offeringsPaywalls: Result<[OfferingPaywall], NSError>? {
         didSet {
@@ -34,14 +39,12 @@ final class OfferingsPaywallsViewModel {
 
     var presentedPaywall: PresentedPaywall?
 
-    init(app: [DeveloperResponse.App]? = nil) {
-        self.apps = app
-    }
+
 
     @MainActor
     func updateOfferingsAndPaywalls() async {
         do {
-            guard let appCopy = apps else { return }
+            let appCopy = apps
             async let appOfferings = Self.fetchOfferings(for: appCopy).all
             async let appPaywalls = Self.fetchPaywalls(for: appCopy).all
 
@@ -62,6 +65,8 @@ final class OfferingsPaywallsViewModel {
     @MainActor
     func showPaywallForID(id: String) async {
 
+        self.presentedPaywall = nil
+
         switch self.offeringsPaywalls {
         case let .success(data):
             if let newData = data.first(where: { $0.offering.id == id }) {
@@ -74,6 +79,18 @@ final class OfferingsPaywallsViewModel {
 
         // in case data has changed since last fetch
         await updateOfferingsAndPaywalls()
+        
+        switch self.offeringsPaywalls {
+        case let .success(data):
+            if let newData = data.first(where: { $0.offering.id == id }) {
+                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
+                if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
+                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
+                }
+            }
+        default:
+        self.presentedPaywall = nil
+        }
     }
 
 }

@@ -2,7 +2,7 @@
 //  SimpleApp.swift
 //  SimpleApp
 //
-//  Created by Nacho Soto on 5/30/23.
+//  Created by James Borthwick on 4/25/24.
 //
 
 import SwiftUI
@@ -43,12 +43,9 @@ struct SimpleApp: App {
                     }
                 }
                 .onOpenURL { URL in
+                    // set to nil to trigger re-render if presenting same paywall with new data
+                    paywallIDToShow = nil
                     paywallIDToShow = getPaywallIdFrom(incomingURL: URL)
-                }
-                .task {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5) { //ofrngb173f388db
-                        paywallIDToShow = getPaywallIdFrom(incomingURL: URL(string: "https://app.revenuecat.com/?paywall=ofrng71bdfc2037")!)
-                    }
                 }
         }
         .environment(application)
