@@ -1736,23 +1736,22 @@ private extension Purchases {
 
     @objc func applicationDidBecomeActive() {
 
-        Task {
-            // TODO: SK2 & Observer mode checks
-
-            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), self.systemInfo.storeKitVersion == .storeKit2
+            && self.systemInfo.observerMode
+        {
+            Task.detached {
                 var cachedSyncedSK2TransactionIDs = Set(self.deviceCache.cachedSyncedSK2TransactionIDs(appUserID: self.appUserID) ?? [])
 
-                // 1. Get all transaction IDs for this user
                 for await transaction in StoreKit.Transaction.all {
                     switch transaction {
                     case .verified(let verifiedTransaction):
 
-                        var reasonIsPurchaseOrBelowiOS17 = true
+                        var purchaseOrLegacyiOS = true
                         if #available(iOS 17.0, *) {
-                            reasonIsPurchaseOrBelowiOS17 = verifiedTransaction.reason == .purchase
+                            purchaseOrLegacyiOS = verifiedTransaction.reason == .purchase
                         }
 
-                        if !cachedSyncedSK2TransactionIDs.contains(verifiedTransaction.id) && reasonIsPurchaseOrBelowiOS17 {
+                        if !cachedSyncedSK2TransactionIDs.contains(verifiedTransaction.id) && purchaseOrLegacyiOS {
 
                             do {
                                 try await self.handleObserverModeTransaction(transaction: verifiedTransaction,
@@ -1762,12 +1761,11 @@ private extension Purchases {
                                 self.deviceCache.cacheSyncedSK2TransactionIDs(syncedSK2TransactionIDs: Array(cachedSyncedSK2TransactionIDs),
                                                                               appUserID: self.appUserID)
                             } catch {
-                                
+                                Logger.error(Strings.purchase.sk2_observer_mode_error_processing_transaction(error))
                             }
-
                         }
-                    case .unverified:
-                        print("Transaction is unverified")
+                    case .unverified(let unverifiedTranaction, _):
+                        Logger.warn(Strings.purchase.sk2_observer_mode_ignoring_unverified_transaction(id: unverifiedTranaction.id))
                     }
                 }
             }

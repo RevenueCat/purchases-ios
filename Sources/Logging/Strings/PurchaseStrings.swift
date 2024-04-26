@@ -88,6 +88,7 @@ enum PurchaseStrings {
     case payment_queue_wrapper_delegate_call_sk1_enabled
     case restorepurchases_called_with_allow_sharing_appstore_account_false
     case sk2_observer_mode_error_processing_transaction(Error)
+    case sk2_observer_mode_ignoring_unverified_transaction(id: UInt64)
 
 }
 
@@ -341,7 +342,9 @@ extension PurchaseStrings: LogMessage {
             return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
-            return "Obserber mode could not process transaction: \(error)"
+            return "Observer mode could not process transaction: \(error)"
+        case let .sk2_observer_mode_ignoring_unverified_transaction(id):
+            return "Observer mode is not processing unverified transaction with ID \(id)"
         }
     }
 
