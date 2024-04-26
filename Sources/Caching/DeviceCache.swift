@@ -341,12 +341,13 @@ class DeviceCache {
     // MARK: - SK2
     func cachedSyncedSK2TransactionIDs(appUserID: String) -> [UInt64]? {
         return self.userDefaults.read { userDefaults in
-            (userDefaults.array(forKey: CacheKey.syncedSK2TransactionIDs(appUserID).rawValue) as? [NSNumber])?.map { $0.uint64Value }
+            (userDefaults.array(forKey: CacheKey.syncedSK2TransactionIDs(appUserID).rawValue) as? [NSNumber])?.map {
+                $0.uint64Value
+            }
         }
     }
 
     func cacheSyncedSK2TransactionIDs(syncedSK2TransactionIDs: [UInt64], appUserID: String) {
-//        self.cacheInMemory(offerings: offerings)
         self.userDefaults.write {
             $0.set(syncedSK2TransactionIDs, forKey: CacheKey.syncedSK2TransactionIDs(appUserID))
         }
