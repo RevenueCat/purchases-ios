@@ -1782,12 +1782,10 @@ private extension Purchases {
                                             name: SystemInfo.applicationWillEnterForegroundNotification,
                                             object: nil)
 
-        self.notificationCenter.addObserver(
-            self,
-            selector: #selector(applicationDidBecomeActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(applicationDidBecomeActive),
+                                            name: UIApplication.didBecomeActiveNotification,
+                                            object: nil)
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationDidEnterBackground),
