@@ -1146,7 +1146,7 @@ public extension Purchases {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func pocHandleObserverModeTransaction(
+    func handleObserverModeTransaction(
         transaction: StoreKit.Transaction,
         jwsRepresentation: String
     ) async throws {
@@ -1734,6 +1734,46 @@ private extension Purchases {
         #endif
     }
 
+    @objc func applicationDidBecomeActive() {
+
+        Task {
+            // TODO: SK2 & Observer mode checks
+
+            if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
+                var cachedSyncedSK2TransactionIDs = Set(self.deviceCache.cachedSyncedSK2TransactionIDs(appUserID: self.appUserID) ?? [])
+
+                // 1. Get all transaction IDs for this user
+                for await transaction in StoreKit.Transaction.all {
+                    switch transaction {
+                    case .verified(let verifiedTransaction):
+
+                        var reasonIsPurchaseOrBelowiOS17 = true
+                        if #available(iOS 17.0, *) {
+                            reasonIsPurchaseOrBelowiOS17 = verifiedTransaction.reason == .purchase
+                        }
+
+                        if !cachedSyncedSK2TransactionIDs.contains(verifiedTransaction.id) && reasonIsPurchaseOrBelowiOS17 {
+
+                            do {
+                                try await self.handleObserverModeTransaction(transaction: verifiedTransaction,
+                                                                             jwsRepresentation: transaction.jwsRepresentation)
+
+                                cachedSyncedSK2TransactionIDs.insert(verifiedTransaction.id)
+                                self.deviceCache.cacheSyncedSK2TransactionIDs(syncedSK2TransactionIDs: Array(cachedSyncedSK2TransactionIDs),
+                                                                              appUserID: self.appUserID)
+                            } catch {
+                                
+                            }
+
+                        }
+                    case .unverified:
+                        print("Transaction is unverified")
+                    }
+                }
+            }
+        }
+    }
+
     @objc func applicationDidEnterBackground() {
         self.dispatchSyncSubscriberAttributes()
     }
@@ -1743,6 +1783,13 @@ private extension Purchases {
                                             selector: #selector(self.applicationWillEnterForeground),
                                             name: SystemInfo.applicationWillEnterForegroundNotification,
                                             object: nil)
+
+        self.notificationCenter.addObserver(
+            self,
+            selector: #selector(applicationDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationDidEnterBackground),

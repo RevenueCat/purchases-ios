@@ -338,6 +338,20 @@ class DeviceCache {
         return self.userDefaults.read(Self.productEntitlementMapping)
     }
 
+    // MARK: - SK2
+    func cachedSyncedSK2TransactionIDs(appUserID: String) -> [UInt64]? {
+        return self.userDefaults.read { userDefaults in
+            (userDefaults.array(forKey: CacheKey.syncedSK2TransactionIDs(appUserID).rawValue) as? [NSNumber])?.map { $0.uint64Value }
+        }
+    }
+
+    func cacheSyncedSK2TransactionIDs(syncedSK2TransactionIDs: [UInt64], appUserID: String) {
+//        self.cacheInMemory(offerings: offerings)
+        self.userDefaults.write {
+            $0.set(syncedSK2TransactionIDs, forKey: CacheKey.syncedSK2TransactionIDs(appUserID))
+        }
+    }
+
     // MARK: - Helper functions
 
     internal enum CacheKeys: String, DeviceCacheKeyType {
@@ -360,6 +374,7 @@ class DeviceCache {
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
+        case syncedSK2TransactionIDs(String)
 
         var rawValue: String {
             switch self {
@@ -368,6 +383,7 @@ class DeviceCache {
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
+            case let .syncedSK2TransactionIDs(userID): return "\(Self.base)syncedSK2TransactionIDs.\(userID)"
             }
         }
 
