@@ -60,7 +60,7 @@ extension SimpleApp {
 
         guard let params = components.queryItems else { return nil }
 
-        guard let paywallID = params.first(where: { $0.name == "paywall" } )?.value else {
+        guard let paywallID = params.first(where: { $0.name == "pw" } )?.value else {
             return nil
         }
 
