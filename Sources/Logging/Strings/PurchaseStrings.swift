@@ -341,7 +341,7 @@ extension PurchaseStrings: LogMessage {
             return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
-            return "Obserber mode could not process transaction: \(error)"
+            return "Observer mode could not process transaction: \(error)"
         }
     }
 
