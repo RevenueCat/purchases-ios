@@ -20,6 +20,9 @@ struct OfferingsList: View {
     @State
     private var viewModel: OfferingsPaywallsViewModel
 
+    @State
+    private var selectedItemId: String?
+
     init(app: DeveloperResponse.App) {
 
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
@@ -74,26 +77,36 @@ struct OfferingsList: View {
                 let responseOffering = offeringPaywall.offering
                 let responsePaywall = offeringPaywall.paywall
                 let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                Section {
+
+                VStack(alignment: .leading) {
                     Button {
                         viewModel.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
                         Task { @MainActor in
                             // The paywall data may have changed, reload
                             await viewModel.updateOfferingsAndPaywalls()
+                            selectedItemId = offeringPaywall.offering.id
                         }
                     } label: {
                         let name = responsePaywall.data.templateName
                         let humanTemplateName = PaywallTemplate(rawValue: name)?.name ?? name
-                        Text("Template \(humanTemplateName)")
+                        let decorator = data.count > 1 && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
+                        HStack {
+                            VStack(alignment:.leading) {
+                                Text(decorator + responseOffering.displayName)
+                                    .font(.headline)
+                                Text("\(humanTemplateName)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                        }
+                        #if !os(watchOS)
+                        .contextMenu {
+                            let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+                            self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
+                        }
+                        #endif
                     }
-                    #if !os(watchOS)
-                    .contextMenu {
-                        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
-                    }
-                    #endif
-                } header: {
-                    Text(responseOffering.displayName)
                 }
             }
         }
@@ -111,14 +124,14 @@ struct OfferingsList: View {
         }
     }
 
-    #if !os(watchOS)
+#if !os(watchOS)
     @ViewBuilder
     private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
         }
     }
-    #endif
+#endif
 
     @ViewBuilder
     private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
@@ -126,6 +139,7 @@ struct OfferingsList: View {
             viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
             Task { @MainActor in
                 await viewModel.updateOfferingsAndPaywalls()
+                selectedItemId = responseOfferingID
             }
         } label: {
             Text(selectedMode.name)
@@ -133,13 +147,13 @@ struct OfferingsList: View {
         }
     }
 
-    #if targetEnvironment(macCatalyst)
+#if targetEnvironment(macCatalyst)
     private static let pullToRefresh = ""
     private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
-    #else
+#else
     private static let pullToRefresh = "Pull to refresh"
     private static let modesInstructions = "Press and hold to open in different modes."
-    #endif
+#endif
 
 }
 
