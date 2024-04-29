@@ -19,7 +19,7 @@ struct SamplePaywallsList: View {
     var body: some View {
         NavigationView {
             self.list(with: Self.loader)
-                .navigationTitle("Test Paywalls")
+                .navigationTitle("Example Paywalls")
         }
             .sheet(item: self.$display) { display in
                 self.view(for: display)
