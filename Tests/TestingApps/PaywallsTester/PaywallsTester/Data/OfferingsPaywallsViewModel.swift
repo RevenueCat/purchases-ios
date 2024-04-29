@@ -56,6 +56,7 @@ final class OfferingsPaywallsViewModel {
 
         } catch let error as NSError {
             self.offeringsPaywalls = .failure(error)
+            Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
         }
     }
     
@@ -69,6 +70,8 @@ final class OfferingsPaywallsViewModel {
 
         showPaywallForID(id)
     }
+
+    private static var logger = Logging.shared.logger(category: "Paywalls Tester")
 
 }
 
@@ -108,6 +111,7 @@ extension OfferingsPaywallsViewModel {
                 }
             }
         default:
+            Self.logger.log(level: .error, "Could not find a paywall for id \(id)")
             self.presentedPaywall = nil
         }
     }
