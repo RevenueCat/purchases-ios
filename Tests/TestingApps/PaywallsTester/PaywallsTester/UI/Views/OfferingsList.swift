@@ -70,6 +70,8 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private func list(with data: [OfferingPaywall]) -> some View {
+        let heterogenousTemplates = Set(data.map { $0.paywall.data.templateName }).count > 1
+
         List {
             ForEach(data, id: \.self) { offeringPaywall in
                 let responseOffering = offeringPaywall.offering
@@ -85,16 +87,20 @@ struct OfferingsList: View {
                             selectedItemId = offeringPaywall.offering.id
                         }
                     } label: {
-                        let name = responsePaywall.data.templateName
-                        let humanTemplateName = PaywallTemplate(rawValue: name)?.name ?? name
+                        let templateName = rcOffering.paywall?.templateName
+                        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
+
                         let decorator = data.count > 1 && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
                         HStack {
-                            VStack(alignment:.leading) {
+                            VStack(alignment:.leading, spacing: 5) {
                                 Text(decorator + responseOffering.displayName)
                                     .font(.headline)
-                                Text("\(humanTemplateName)")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                if let title = paywallTitle, let name = templateName {
+                                    let text = heterogenousTemplates ? "Style \(name): \(title)" : title
+                                    Text(text)
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                             Spacer()
                             Menu {
