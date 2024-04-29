@@ -70,7 +70,7 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private func list(with data: [OfferingPaywall]) -> some View {
-        let heterogenousTemplates = Set(data.map { $0.paywall.data.templateName }).count > 1
+        let hasMultipleTemplates = Set(data.map { $0.paywall.data.templateName }).count > 1
 
         List {
             ForEach(data, id: \.self) { offeringPaywall in
@@ -96,7 +96,7 @@ struct OfferingsList: View {
                                 Text(decorator + responseOffering.displayName)
                                     .font(.headline)
                                 if let title = paywallTitle, let name = templateName {
-                                    let text = heterogenousTemplates ? "Style \(name): \(title)" : title
+                                    let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
                                     Text(text)
                                         .font(.footnote)
                                         .foregroundColor(.secondary)
