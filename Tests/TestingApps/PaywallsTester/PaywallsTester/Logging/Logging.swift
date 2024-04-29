@@ -10,12 +10,17 @@ import Foundation
 import os.log
 
 struct Logging {
+
     static let shared = Logging()
-    
-    private init() {}
-    
+
     func logger(category: String) -> Logger {
-        return Logger(subsystem: Bundle.main.bundleIdentifier!,
-                      category: category)
+        return loggers[category,
+                       default:Logger(subsystem: Bundle.main.bundleIdentifier!,
+                                      category: category)]
     }
+
+    private init() {}
+
+    private let loggers = [String: Logger]()
+
 }
