@@ -84,7 +84,7 @@ extension OfferingsPaywallsViewModel {
         var paywalls: [PaywallsResponse.Paywall]
 
         func paywallsByOffering() -> [OfferingPaywall] {
-            let paywallsByOfferingID = Set(self.paywalls).dictionaryWithKeys { $0.offeringID }
+            let paywallsByOfferingID = self.paywalls.dictionaryWithKeys { $0.offeringID }
 
             var offeringPaywall = [OfferingPaywall]()
             for offering in self.offerings {
