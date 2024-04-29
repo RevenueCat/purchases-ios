@@ -102,10 +102,8 @@ extension OfferingsPaywallsViewModel {
     private func showPaywallForID(_ id: String) {
         switch self.offeringsPaywalls {
         case let .success(data):
-            // Find the offering that corresponds to the target paywall's offering.
-            if let newData = data.first(where: { $0.offering.id == id }) {
-                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
-                // if the presented paywall has changed, update what we're showing
+            if let dataForRequestedID = data.first(where: { $0.offering.id == id }) {
+                let newRCOffering = dataForRequestedID.paywall.convertToRevenueCatPaywall(with: dataForRequestedID.offering)
                 if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
                     self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
                 }
