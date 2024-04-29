@@ -261,13 +261,18 @@ extension SystemInfo {
         #endif
     }
 
-    static var applicationDidBecomeActiveNotification: Notification.Name {
+    static var applicationDidBecomeActiveNotification: Notification.Name? {
         #if os(iOS) || os(tvOS) || VISION_OS
             UIApplication.didBecomeActiveNotification
         #elseif os(macOS)
             NSApplication.didBecomeActiveNotification
         #elseif os(watchOS)
-            Notification.Name.NSExtensionHostDidBecomeActive
+        if #available(watchOSApplicationExtension 7.0, *) {
+            return WKApplication.didBecomeActiveNotification
+        } else {
+            // There's no equivalent notification available on watchOS <7.
+            return nil
+        }
         #endif
     }
 
