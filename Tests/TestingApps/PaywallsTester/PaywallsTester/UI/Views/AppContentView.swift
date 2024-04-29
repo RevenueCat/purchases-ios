@@ -101,14 +101,6 @@ struct AppContentView: View {
             Text("Currently configured for \(self.descriptionForCurrentMode())")
                 .font(.footnote)
 
-            ConfigurationButton(title: "Configure for demos", mode: .demos, configuration: configuration) {
-                self.configuration.currentMode = .demos
-            }
-
-            ConfigurationButton(title: "Configure for testing", mode: .testing, configuration: configuration) {
-                self.configuration.currentMode = .testing
-            }
-
             ProminentButton(title: "Present default paywall") {
                 self.showingDefaultPaywall.toggle()
             }
