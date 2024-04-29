@@ -116,6 +116,12 @@ extension BaseStoreKitIntegrationTests {
         }
     }
 
+    var shortestDurationProduct: StoreProduct {
+        get async throws {
+            return try await self.product(Self.weeklyWith3DayTrial)
+        }
+    }
+
     func product(_ identifier: String) async throws -> StoreProduct {
         let products = try await self.purchases.products([identifier])
         return try XCTUnwrap(products.onlyElement)

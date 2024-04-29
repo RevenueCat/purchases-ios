@@ -510,9 +510,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchase() async throws {
-        let product = try await self.monthlyPackage.storeProduct
+        if #available(iOS 16.4, *) {
+            self.testSession.timeRate = .oneRenewalEveryTwoSeconds
+        } else {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        }
 
-        try await self.purchaseMonthlyOffering()
+        let product = try await self.shortestDurationProduct
+
+        try await self.purchaseShortestDuration()
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
@@ -568,10 +574,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
-        let product = try await self.monthlyPackage.storeProduct
+        if #available(iOS 16.4, *) {
+            self.testSession.timeRate = .oneRenewalEveryTwoSeconds
+        } else {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        }
+
+        let product = try await self.shortestDurationProduct
 
         // 1. Purchase monthly offering
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let customerInfo = try await self.purchaseShortestDuration().customerInfo
 
         // 2. Expire subscription
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
@@ -599,10 +611,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: -
 
     func testExpireSubscription() async throws {
+        if #available(iOS 16.4, *) {
+            self.testSession.timeRate = .oneRenewalEveryTwoSeconds
+        } else {
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
+        }
+
         let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
 
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let customerInfo = try await self.purchaseShortestDuration().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
@@ -635,7 +653,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         if #available(iOS 16.4, *) {
             self.testSession.timeRate = .oneRenewalEveryTwoSeconds
         } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
+            self.testSession.timeRate = .monthlyRenewalEveryThirtySeconds
         }
 
         func waitForNewPurchaseDate() async {
