@@ -261,6 +261,16 @@ extension SystemInfo {
         #endif
     }
 
+    static var applicationDidBecomeActiveNotification: Notification.Name {
+        #if os(iOS) || os(tvOS) || VISION_OS
+            UIApplication.didBecomeActiveNotification
+        #elseif os(macOS)
+            NSApplication.didBecomeActiveNotification
+        #elseif os(watchOS)
+            Notification.Name.NSExtensionHostDidBecomeActive
+        #endif
+    }
+
     var isAppExtension: Bool {
         return self.bundle.bundlePath.hasSuffix(".appex")
     }

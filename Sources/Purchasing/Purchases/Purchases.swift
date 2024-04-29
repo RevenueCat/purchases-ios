@@ -1747,7 +1747,7 @@ private extension Purchases {
                     case .verified(let verifiedTransaction):
 
                         var purchaseOrLegacyiOS = true
-                        if #available(iOS 17.0, *) {
+                        if #available(iOS 17.0, watchOS 10.0, *) {
                             purchaseOrLegacyiOS = verifiedTransaction.reason == .purchase
                         }
 
@@ -1784,7 +1784,7 @@ private extension Purchases {
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(applicationDidBecomeActive),
-                                            name: UIApplication.didBecomeActiveNotification,
+                                            name: SystemInfo.applicationDidBecomeActiveNotification,
                                             object: nil)
 
         self.notificationCenter.addObserver(self,
