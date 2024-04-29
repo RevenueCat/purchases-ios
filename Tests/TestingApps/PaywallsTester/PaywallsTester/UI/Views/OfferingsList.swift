@@ -56,8 +56,6 @@ struct OfferingsList: View {
                         }
                     }
                 } else {
-                    Text(Self.modesInstructions)
-                        .font(.footnote)
                     self.list(with: data)
                 }
             }
@@ -99,17 +97,27 @@ struct OfferingsList: View {
                                     .foregroundColor(.secondary)
                             }
                             Spacer()
-                        }
-                        #if !os(watchOS)
-                        .contextMenu {
-                            let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                            self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
-                        }
-                        #endif
+                            Menu {
+                                ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                                    self.button(for: mode, offering: rcOffering, responseOfferingID: responseOffering.id)
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .padding([.leading, .vertical])
+                            }
+                            .padding(.all, 0)
+
                     }
+#if !os(watchOS)
+                    .contextMenu {
+                        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
+                    }
+#endif
                 }
             }
         }
+    }
         .refreshable {
             Task { @MainActor in
                 await viewModel.updateOfferingsAndPaywalls()
@@ -122,37 +130,35 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
-    }
+}
 
 #if !os(watchOS)
-    @ViewBuilder
-    private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
-        }
+@ViewBuilder
+private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
+    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+        self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
     }
+}
 #endif
 
-    @ViewBuilder
-    private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
-        Button {
-            viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
-            Task { @MainActor in
-                await viewModel.updateOfferingsAndPaywalls()
-                selectedItemId = responseOfferingID
-            }
-        } label: {
-            Text(selectedMode.name)
-            Image(systemName: selectedMode.icon)
+@ViewBuilder
+private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
+    Button {
+        viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
+        Task { @MainActor in
+            await viewModel.updateOfferingsAndPaywalls()
+            selectedItemId = responseOfferingID
         }
+    } label: {
+        Text(selectedMode.name)
+        Image(systemName: selectedMode.icon)
     }
+}
 
 #if targetEnvironment(macCatalyst)
-    private static let pullToRefresh = ""
-    private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
+private static let pullToRefresh = ""
 #else
-    private static let pullToRefresh = "Pull to refresh"
-    private static let modesInstructions = "Press and hold to open in different modes."
+private static let pullToRefresh = "Pull to refresh"
 #endif
 
 }
