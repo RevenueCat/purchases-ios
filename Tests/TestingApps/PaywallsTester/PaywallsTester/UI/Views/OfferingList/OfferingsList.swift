@@ -55,8 +55,7 @@ struct OfferingsList: View {
             SwiftUI.ProgressView()
         }
     }
-    
-    @ViewBuilder
+
     private func list(with data: PaywallsListData) -> some View {
         List {
             Section {
@@ -70,14 +69,7 @@ struct OfferingsList: View {
                                        selectedItemID: $selectedItemId)
                     }
                 } else {
-                    VStack {
-                        ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
-                        Text(Self.pullToRefresh)
-                            .font(.footnote)
-                        Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
-                            .font(.footnote)
-                            .padding()
-                    }
+                    noPaywallsListItem()
                 }
             } header: {
                 Text("Offerings With Paywalls")
@@ -106,6 +98,17 @@ struct OfferingsList: View {
                     viewModel.presentedPaywall = nil
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+        }
+    }
+
+    private func noPaywallsListItem() -> some View {
+        return VStack {
+            ContentUnavailableView("No configured paywalls", systemImage: "exclamationmark.triangle.fill")
+            Text(Self.pullToRefresh)
+                .font(.footnote)
+            Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
+                .font(.footnote)
+                .padding()
         }
     }
 
