@@ -66,27 +66,26 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
     class ApplicationStateListener: Sendable {
 
         let onApplicationDidBecomeActive: (@Sendable () async -> Void)?
-        let notificationCenter: NotificationCenter
 
         /// Initializes a new listener with optional completion handlers and a notification center.
         /// - Parameters:
         ///   - onApplicationDidBecomeActive: An optional asynchronous closure called when the app becomes active.
         ///   - notificationCenter: The notification center to listen for application state changes.
         init(
-            notificationCenter: NotificationCenter,
             onApplicationDidBecomeActive: (@Sendable () async -> Void)?
         ) {
             self.onApplicationDidBecomeActive = onApplicationDidBecomeActive
-            self.notificationCenter = notificationCenter
         }
 
         /// Begins listening for the application becoming active and triggers processing of transactions.
-        func listenForApplicationDidBecomeActive() {
+        func listenForApplicationDidBecomeActive(
+            notificationCenter: NotificationCenter
+        ) {
             if let applicationDidBecomeActiveNotification = SystemInfo.applicationDidBecomeActiveNotification {
-                self.notificationCenter.addObserver(self,
-                                                    selector: #selector(applicationDidBecomeActive),
-                                                    name: applicationDidBecomeActiveNotification,
-                                                    object: nil)
+                notificationCenter.addObserver(self,
+                                               selector: #selector(applicationDidBecomeActive),
+                                               name: applicationDidBecomeActiveNotification,
+                                               object: nil)
             }
         }
 
@@ -106,12 +105,13 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
     /// Begin listening for unobserved initial purchases, processing them when one is found.
     func beginObservingPurchases() {
         self.applicationStateListener = ApplicationStateListener(
-            notificationCenter: notificationCenter,
             onApplicationDidBecomeActive: { [weak self] in
                 await self?.processUnobservedTransactions()
             }
         )
-        self.applicationStateListener?.listenForApplicationDidBecomeActive()
+        self.applicationStateListener?.listenForApplicationDidBecomeActive(
+            notificationCenter: notificationCenter
+        )
     }
 
     /// Processes unobserved transactions by checking the most recent verified transaction and updating the cache if necessary.
@@ -137,7 +137,7 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
         // Try to avoid processing renewals since those will be picked up by
         // ``StoreKit2TransactionListener/listenForTransactions``.
         var purchaseOrLegacyOS = true
-        if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+        if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, *) {
             purchaseOrLegacyOS = mostRecentVerifiedTransaction.verifiedTransaction.reason == .purchase
         }
         guard purchaseOrLegacyOS else { return }
