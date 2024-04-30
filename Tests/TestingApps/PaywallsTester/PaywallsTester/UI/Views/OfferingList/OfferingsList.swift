@@ -88,8 +88,7 @@ struct OfferingsList: View {
                                    hasMultipleTemplates: hasMultipleTemplates)
                     #if !os(watchOS)
                     .contextMenu {
-                        let rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: offeringPaywall.offering)
-                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
+                        contextMenuItems(offeringID: offeringPaywall.offering.id)
                     }
                     #endif
                 }
@@ -104,7 +103,6 @@ struct OfferingsList: View {
                     }
                 }
             }
-
         }
         .refreshable {
             Task { @MainActor in
@@ -120,17 +118,7 @@ struct OfferingsList: View {
         }
     }
 
-#if !os(watchOS)
-    @ViewBuilder
-    private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.presentPaywallButton(for: mode, offeringID: responseOfferingID)
-        }
-    }
-#endif
-
-    @ViewBuilder
-    private func presentPaywallButton(for selectedMode: PaywallViewMode, offeringID: String) -> some View {
+    private func showPaywallButton(for selectedMode: PaywallViewMode, offeringID: String) -> some View {
         Button {
             Task { @MainActor in
                 await viewModel.getAndShowPaywallForID(id: offeringID, mode: selectedMode)
@@ -142,6 +130,26 @@ struct OfferingsList: View {
         }
     }
 
+    @ViewBuilder
+    private func contextMenuItems(offeringID: String) -> some View {
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+            self.showPaywallButton(for: mode, offeringID: offeringID)
+        }
+        if let appID = viewModel.singleApp?.id {
+            Divider()
+            ManagePaywallButton(kind: .edit, appID: appID, offeringID: offeringID)
+        }
+    }
+
+    fileprivate func offeringButtonMenu(offeringID: String) -> some View {
+        return Menu {
+            contextMenuItems(offeringID: offeringID)
+        } label: {
+            Image(systemName: "ellipsis")
+                .padding([.leading, .vertical])
+        }
+    }
+    
     @ViewBuilder
     private func offeringButton(offeringPaywall: OfferingPaywall, multipleOfferings: Bool, hasMultipleTemplates: Bool) -> some View {
         let responseOffering = offeringPaywall.offering
@@ -170,18 +178,7 @@ struct OfferingsList: View {
                         }
                     }
                     Spacer()
-                    Menu {
-                        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-                            self.presentPaywallButton(for: mode, offeringID: responseOffering.id)
-                        }
-                        if let appID = viewModel.singleApp?.id {
-                            Divider()
-                            ManagePaywallButton(kind: .edit, appID: appID, offeringID: responseOffering.id)
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                            .padding([.leading, .vertical])
-                    }
+                    offeringButtonMenu(offeringID: offeringPaywall.offering.id)
                     .padding(.all, 0)
                 }
             }
