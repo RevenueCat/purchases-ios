@@ -36,6 +36,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var offerings: MockOfferingsAPI!
     var currentUserProvider: MockCurrentUserProvider!
     var transactionsManager: MockTransactionsManager!
+    var notificationCenter: MockNotificationCenter!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -200,6 +201,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   transactionPoster: self.transactionPoster,
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
+                                                  notificationCenter: self.notificationCenter,
                                                   deviceCache: self.deviceCache,
                                                   offeringsManager: self.mockOfferingsManager,
                                                   manageSubscriptionsHelper: self.mockManageSubsHelper,

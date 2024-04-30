@@ -74,6 +74,7 @@ final class PurchasesOrchestrator {
     // swiftlint:disable identifier_name
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
+    var _storeKit2ObserverModeManager: Any?
     var _diagnosticsTracker: Any?
     // swiftlint:enable identifier_name
 
@@ -87,6 +88,11 @@ final class PurchasesOrchestrator {
     var storeKit2StorefrontListener: StoreKit2StorefrontListener {
         // swiftlint:disable:next force_cast
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var storeKit2ObserverModeManager: StoreKit2ObserverModeManagerType? {
+        return self._storeKit2ObserverModeManager as? StoreKit2ObserverModeManagerType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -109,11 +115,13 @@ final class PurchasesOrchestrator {
                      currentUserProvider: CurrentUserProvider,
                      transactionsManager: TransactionsManager,
                      deviceCache: DeviceCache,
+                     notificationCenter: NotificationCenter,
                      offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
+                     storeKit2ObserverModeManager: StoreKit2ObserverModeManagerType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsTracker: DiagnosticsTrackerType?
     ) {
@@ -142,6 +150,7 @@ final class PurchasesOrchestrator {
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
+        self._storeKit2ObserverModeManager = storeKit2ObserverModeManager
 
         storeKit2StorefrontListener.delegate = self
         if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
@@ -162,8 +171,13 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
+            await storeKit2ObserverModeManager.set(delegate: self)
             if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
                 await storeKit2TransactionListener.listenForTransactions()
+
+                if self.observerMode {
+                    await storeKit2ObserverModeManager.beginObservingPurchases()
+                }
             }
         }
     }
@@ -1480,4 +1494,15 @@ extension PurchasesOrchestrator {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchasesOrchestrator: StoreKit2ObserverModeManagerDelegate {
+    func handleSK2ObserverModeTransaction(verifiedTransaction: StoreKit.Transaction,
+                                          jwsRepresentation: String) async throws {
+        try await self.storeKit2TransactionListener.handleSK2ObserverModeTransaction(
+            verifiedTransaction: verifiedTransaction,
+            jwsRepresentation: jwsRepresentation
+        )
+    }
 }
