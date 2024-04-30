@@ -83,55 +83,15 @@ struct OfferingsList: View {
             Section(header: Text("Configured Paywalls")) {
                 let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
                 ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
-                    let responseOffering = offeringPaywall.offering
-                    let responsePaywall = offeringPaywall.paywall
-                    let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-
-                    VStack(alignment: .leading) {
-                        Button {
-                            Task {
-                                await viewModel.getAndShowPaywallForID(id: responseOffering.id)
-                                selectedItemId = offeringPaywall.offering.id
-                            }
-                        } label: {
-                            let templateName = rcOffering.paywall?.templateName
-                            let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-
-                            let decorator = data.offeringsAndPaywalls.count > 1 && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
-                            HStack {
-                                VStack(alignment:.leading, spacing: 5) {
-                                    Text(decorator + responseOffering.displayName)
-                                        .font(.headline)
-                                    if let title = paywallTitle, let name = templateName {
-                                        let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
-                                        Text(text)
-                                            .font(.footnote)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                Spacer()
-                                Menu {
-                                    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-                                        self.button(for: mode, offering: rcOffering, responseOfferingID: responseOffering.id)
-                                    }
-                                    if let appID = viewModel.singleApp?.id {
-                                        Divider()
-                                        ManagePaywallButton(kind: .edit, appID: appID, offeringID: responseOffering.id)
-                                    }
-                                } label: {
-                                    Image(systemName: "ellipsis")
-                                        .padding([.leading, .vertical])
-                                }
-                                .padding(.all, 0)
-                            }
-#if !os(watchOS)
-                            .contextMenu {
-                                let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                                self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
-                            }
-#endif
-                        }
+                    offeringButton(offeringPaywall: offeringPaywall,
+                                   multipleOfferings: data.offeringsAndPaywalls.count > 1,
+                                   hasMultipleTemplates: hasMultipleTemplates)
+                    #if !os(watchOS)
+                    .contextMenu {
+                        let rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: offeringPaywall.offering)
+                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
                     }
+                    #endif
                 }
             }
             if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
@@ -164,22 +124,67 @@ struct OfferingsList: View {
     @ViewBuilder
     private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
+            self.presentPaywallButton(for: mode, offeringID: responseOfferingID)
         }
     }
 #endif
 
     @ViewBuilder
-    private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
+    private func presentPaywallButton(for selectedMode: PaywallViewMode, offeringID: String) -> some View {
         Button {
-            viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
             Task { @MainActor in
-                await viewModel.updateOfferingsAndPaywalls()
-                selectedItemId = responseOfferingID
+                await viewModel.getAndShowPaywallForID(id: offeringID, mode: selectedMode)
+                selectedItemId = offeringID
             }
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
+        }
+    }
+
+    @ViewBuilder
+    private func offeringButton(offeringPaywall: OfferingPaywall, multipleOfferings: Bool, hasMultipleTemplates: Bool) -> some View {
+        let responseOffering = offeringPaywall.offering
+        let responsePaywall = offeringPaywall.paywall
+        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+
+        VStack(alignment: .leading) {
+            Button {
+                Task {
+                    await viewModel.getAndShowPaywallForID(id: responseOffering.id)
+                    selectedItemId = offeringPaywall.offering.id
+                }
+            } label: {
+                let templateName = rcOffering.paywall?.templateName
+                let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
+                let decorator = multipleOfferings && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
+                HStack {
+                    VStack(alignment:.leading, spacing: 5) {
+                        Text(decorator + responseOffering.displayName)
+                            .font(.headline)
+                        if let title = paywallTitle, let name = templateName {
+                            let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
+                            Text(text)
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    Spacer()
+                    Menu {
+                        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                            self.presentPaywallButton(for: mode, offeringID: responseOffering.id)
+                        }
+                        if let appID = viewModel.singleApp?.id {
+                            Divider()
+                            ManagePaywallButton(kind: .edit, appID: appID, offeringID: responseOffering.id)
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .padding([.leading, .vertical])
+                    }
+                    .padding(.all, 0)
+                }
+            }
         }
     }
 

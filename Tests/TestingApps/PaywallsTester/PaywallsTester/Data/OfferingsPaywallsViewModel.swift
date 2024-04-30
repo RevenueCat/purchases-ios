@@ -71,14 +71,14 @@ final class OfferingsPaywallsViewModel {
     }
     
     @MainActor
-    func getAndShowPaywallForID(id: String) async {
+    func getAndShowPaywallForID(id: String, mode: PaywallViewMode = .default) async {
 
-        showPaywallForID(id)
+        showPaywallForID(id, mode: mode)
 
         // in case data has changed since last fetch
         await updateOfferingsAndPaywalls()
 
-        showPaywallForID(id)
+        showPaywallForID(id, mode: mode)
     }
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")
@@ -117,13 +117,13 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private func showPaywallForID(_ id: String) {
+    private func showPaywallForID(_ id: String, mode: PaywallViewMode = .default) {
         switch self.listData {
         case let .success(data):
             if let dataForRequestedID = data.offeringsAndPaywalls.first(where: { $0.offering.id == id }) {
                 let newRCOffering = dataForRequestedID.paywall.convertToRevenueCatPaywall(with: dataForRequestedID.offering)
                 if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
-                    self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)
+                    self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
                 }
             }
         default:
