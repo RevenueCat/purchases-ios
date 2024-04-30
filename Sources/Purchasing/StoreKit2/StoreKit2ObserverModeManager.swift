@@ -48,7 +48,8 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
     private var delegate: StoreKit2ObserverModeManagerDelegate?
     private let currentUserProvider: CurrentUserProvider
     private let deviceCache: DeviceCache
-    private var applicationStateListener: ApplicationStateListener
+    private let notificationCenter: NotificationCenter
+    private var applicationStateListener: ApplicationStateListener?
 
     /// Initializes a new manager with specified services and components.
     init(
@@ -58,18 +59,13 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
     ) {
         self.currentUserProvider = currentUserProvider
         self.deviceCache = deviceCache
-        self.applicationStateListener = ApplicationStateListener(
-            notificationCenter: notificationCenter
-        )
-        self.applicationStateListener.onApplicationDidBecomeActive = { [weak self] in
-            await self?.processUnobservedTransactions()
-        }
+        self.notificationCenter = notificationCenter
     }
 
     /// Listens for application state changes and notifies the parent manager to process transactions when the application becomes active.
     class ApplicationStateListener: Sendable {
 
-        var onApplicationDidBecomeActive: (() async -> Void)?
+        let onApplicationDidBecomeActive: (@Sendable () async -> Void)?
         let notificationCenter: NotificationCenter
 
         /// Initializes a new listener with optional completion handlers and a notification center.
@@ -78,7 +74,7 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
         ///   - notificationCenter: The notification center to listen for application state changes.
         init(
             notificationCenter: NotificationCenter,
-            onApplicationDidBecomeActive: (() async -> Void)? = nil
+            onApplicationDidBecomeActive: (@Sendable () async -> Void)?
         ) {
             self.onApplicationDidBecomeActive = onApplicationDidBecomeActive
             self.notificationCenter = notificationCenter
@@ -109,7 +105,13 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
     /// Begin listening for unobserved initial purchases, processing them when one is found.
     func beginObservingPurchases() {
-        self.applicationStateListener.listenForApplicationDidBecomeActive()
+        self.applicationStateListener = ApplicationStateListener(
+            notificationCenter: notificationCenter,
+            onApplicationDidBecomeActive: { [weak self] in
+                await self?.processUnobservedTransactions()
+            }
+        )
+        self.applicationStateListener?.listenForApplicationDidBecomeActive()
     }
 
     /// Processes unobserved transactions by checking the most recent verified transaction and updating the cache if necessary.
