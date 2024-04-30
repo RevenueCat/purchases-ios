@@ -1292,8 +1292,9 @@ workflows:
             - push-revenuecat-pod
           <<: *release-tags
       - deploy-to-spm:
-         requires:
+          requires:
             - make-release
+          <<: *release-tags
       - docs-deploy:
           xcode_version: '14.3.0'
           <<: *release-tags
