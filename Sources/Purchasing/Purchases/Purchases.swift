@@ -431,9 +431,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
                 }
-                let storeKit2ObserverModeManager: StoreKit2ObserverModeManagerType = StoreKit2ObserverModeManager(currentUserProvider: identityManager,
-                                                                                deviceCache: deviceCache,
-                                                                                notificationCenter: notificationCenter)
+                let storeKit2ObserverModeManager = StoreKit2ObserverModeManager(currentUserProvider: identityManager,
+                                                                                 deviceCache: deviceCache,
+                                                                                 notificationCenter: notificationCenter)
 
                 return .init(
                     productsManager: productsManager,

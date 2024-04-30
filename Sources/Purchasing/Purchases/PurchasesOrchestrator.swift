@@ -171,7 +171,7 @@ final class PurchasesOrchestrator {
 
         Task {
             await storeKit2TransactionListener.set(delegate: self)
-            await storeKit2ObserverModeManager.set(delegate: self)
+            storeKit2ObserverModeManager.set(delegate: self)
             if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
                 await storeKit2TransactionListener.listenForTransactions()
 
