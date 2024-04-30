@@ -122,14 +122,6 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
             let transaction: StoreKit.Transaction = mostRecentVerifiedTransaction.verifiedTransaction
             let jwsRepresentation: String = mostRecentVerifiedTransaction.jwsRepresentation
 
-            // Try to avoid processing renewals since those will be picked up by
-            // ``StoreKit2TransactionListener/listenForTransactions``.
-            var purchaseOrLegacyOS = true
-            if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, *) {
-                purchaseOrLegacyOS = transaction.reason == .purchase
-            }
-            guard purchaseOrLegacyOS else { return }
-
             var cachedSyncedSK2TransactionIDs = Set(
                 self.deviceCache.cachedSyncedSK2TransactionIDs(appUserID: currentUserProvider.currentAppUserID) ?? []
             )
@@ -144,7 +136,7 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
                     jwsRepresentation: jwsRepresentation
                 )
 
-                cachedSyncedSK2TransactionIDs.insert(mostRecentVerifiedTransaction.verifiedTransaction.id)
+                cachedSyncedSK2TransactionIDs.insert(transaction.id)
                 self.deviceCache.cacheSyncedSK2TransactionIDs(
                     syncedSK2TransactionIDs: Array(cachedSyncedSK2TransactionIDs),
                     appUserID: currentUserProvider.currentAppUserID
