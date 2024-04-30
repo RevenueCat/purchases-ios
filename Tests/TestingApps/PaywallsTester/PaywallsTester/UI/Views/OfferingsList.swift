@@ -17,6 +17,8 @@ import SwiftUI
 // TODO: Ask Barbara about how to present
 struct OfferingsList: View {
 
+    @Environment(\.scenePhase) var scenePhase
+
     @State
     private var viewModel: OfferingsPaywallsViewModel
 
@@ -32,6 +34,13 @@ struct OfferingsList: View {
         self.content
             .task {
                 await viewModel.updateOfferingsAndPaywalls()
+            }
+            .onChange(of: scenePhase) { oldPhase, newPhase in
+                if newPhase == .active {
+                    Task {
+                        await viewModel.updateOfferingsAndPaywalls()
+                    }
+                }
             }
     }
 
@@ -129,13 +138,11 @@ struct OfferingsList: View {
                                             }
                                         }
                                     }
-
                                 } label: {
                                     Image(systemName: "ellipsis")
                                         .padding([.leading, .vertical])
                                 }
                                 .padding(.all, 0)
-
                             }
 #if !os(watchOS)
                             .contextMenu {
