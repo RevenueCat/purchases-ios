@@ -93,7 +93,7 @@ struct OfferingsList: View {
         .sheet(item: $viewModel.presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
                 .onRestoreCompleted { _ in
-                    viewModel.presentedPaywall = nil
+                    viewModel.dismissPaywall()
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }

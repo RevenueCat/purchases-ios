@@ -81,6 +81,11 @@ final class OfferingsPaywallsViewModel {
         showPaywallForID(id, mode: mode)
     }
 
+    @MainActor
+    func dismissPaywall() {
+        self.presentedPaywall = nil
+    }
+
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")
 
     private var apps: [DeveloperResponse.App]
