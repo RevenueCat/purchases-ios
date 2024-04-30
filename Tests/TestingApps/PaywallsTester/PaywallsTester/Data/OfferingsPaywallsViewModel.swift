@@ -61,9 +61,6 @@ final class OfferingsPaywallsViewModel {
             let listData = PaywallsListData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
 
             self.listData = .success(listData)
-
-
-
         } catch let error as NSError {
             self.listData = .failure(error)
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
