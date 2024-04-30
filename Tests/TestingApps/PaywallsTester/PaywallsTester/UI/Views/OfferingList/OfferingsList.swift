@@ -76,7 +76,7 @@ struct OfferingsList: View {
             SwiftUI.ProgressView()
         }
     }
-
+    
     @ViewBuilder
     private func list(with data: PaywallsListData) -> some View {
         List {
@@ -118,25 +118,7 @@ struct OfferingsList: View {
                                     }
                                     if let appID = viewModel.singleApp?.id {
                                         Divider()
-                                        Button {
-                                            let urlString = "https://app.revenuecat.com/projects/" + appID + "/paywalls/" + responseOffering.id + "/edit"
-                                            if let url = URL(string: urlString) {
-                                                if UIApplication.shared.canOpenURL(url) {
-                                                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                                                } else {
-                                                    print("Cannot open URL")
-                                                }
-                                            } else {
-                                                print("Invalid URL")
-                                            }
-                                        } label: {
-                                            HStack {
-                                                Text("Edit Paywall")
-                                                    .font(.headline)
-                                                Spacer()
-                                                Image(systemName: "slider.horizontal.2.square.on.square")
-                                            }
-                                        }
+                                        ManagePaywallButton(kind: .edit, appID: appID, offeringID: responseOffering.id)
                                     }
                                 } label: {
                                     Image(systemName: "ellipsis")
@@ -157,26 +139,10 @@ struct OfferingsList: View {
             if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
                 Section(header: Text("Offerings Without Paywalls")) {
                     ForEach(data.offeringsWithoutPaywalls, id: \.self) { offeringWithoutPaywall in
-                        Button {
-                            let urlString = "https://app.revenuecat.com/projects/" + appID + "/paywalls/" + offeringWithoutPaywall.id + "/new"
-                            if let url = URL(string: urlString) {
-                                if UIApplication.shared.canOpenURL(url) {
-                                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                                } else {
-                                    print("Cannot open URL")
-                                }
-                            } else {
-                                print("Invalid URL")
-                            }
-                        } label: {
-                            HStack {
-                                Text(offeringWithoutPaywall.displayName)
-                                    .font(.headline)
-                                Spacer()
-                                Image(systemName: "escape")
-                                    .rotationEffect(Angle(degrees: 90))
-                            }
-                        }
+                        ManagePaywallButton(kind: .new, 
+                                            appID: appID,
+                                            offeringID: offeringWithoutPaywall.id,
+                                            buttonName: offeringWithoutPaywall.displayName)
                     }
                 }
             }
@@ -226,6 +192,8 @@ struct OfferingsList: View {
 #endif
 
 }
+
+
 
 extension PresentedPaywall: Identifiable {
 
