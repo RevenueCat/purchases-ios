@@ -83,14 +83,11 @@ struct OfferingsList: View {
             Section(header: Text("Configured Paywalls")) {
                 let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
                 ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
-                    offeringButton(offeringPaywall: offeringPaywall,
+                    OfferingButton(offeringPaywall: offeringPaywall,
                                    multipleOfferings: data.offeringsAndPaywalls.count > 1,
-                                   hasMultipleTemplates: hasMultipleTemplates)
-                    #if !os(watchOS)
-                    .contextMenu {
-                        contextMenuItems(offeringID: offeringPaywall.offering.id)
-                    }
-                    #endif
+                                   hasMultipleTemplates: hasMultipleTemplates,
+                                   viewModel: viewModel,
+                                   selectedItemID: $selectedItemId)
                 }
             }
             if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
@@ -115,73 +112,6 @@ struct OfferingsList: View {
                     viewModel.presentedPaywall = nil
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
-        }
-    }
-
-    private func showPaywallButton(for selectedMode: PaywallViewMode, offeringID: String) -> some View {
-        Button {
-            Task { @MainActor in
-                await viewModel.getAndShowPaywallForID(id: offeringID, mode: selectedMode)
-                selectedItemId = offeringID
-            }
-        } label: {
-            Text(selectedMode.name)
-            Image(systemName: selectedMode.icon)
-        }
-    }
-
-    @ViewBuilder
-    private func contextMenuItems(offeringID: String) -> some View {
-        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.showPaywallButton(for: mode, offeringID: offeringID)
-        }
-        if let appID = viewModel.singleApp?.id {
-            Divider()
-            ManagePaywallButton(kind: .edit, appID: appID, offeringID: offeringID)
-        }
-    }
-
-    fileprivate func offeringButtonMenu(offeringID: String) -> some View {
-        return Menu {
-            contextMenuItems(offeringID: offeringID)
-        } label: {
-            Image(systemName: "ellipsis")
-                .padding([.leading, .vertical])
-        }
-    }
-    
-    @ViewBuilder
-    private func offeringButton(offeringPaywall: OfferingPaywall, multipleOfferings: Bool, hasMultipleTemplates: Bool) -> some View {
-        let responseOffering = offeringPaywall.offering
-        let responsePaywall = offeringPaywall.paywall
-        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-
-        VStack(alignment: .leading) {
-            Button {
-                Task {
-                    await viewModel.getAndShowPaywallForID(id: responseOffering.id)
-                    selectedItemId = offeringPaywall.offering.id
-                }
-            } label: {
-                let templateName = rcOffering.paywall?.templateName
-                let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-                let decorator = multipleOfferings && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
-                HStack {
-                    VStack(alignment:.leading, spacing: 5) {
-                        Text(decorator + responseOffering.displayName)
-                            .font(.headline)
-                        if let title = paywallTitle, let name = templateName {
-                            let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
-                            Text(text)
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Spacer()
-                    offeringButtonMenu(offeringID: offeringPaywall.offering.id)
-                    .padding(.all, 0)
-                }
-            }
         }
     }
 
