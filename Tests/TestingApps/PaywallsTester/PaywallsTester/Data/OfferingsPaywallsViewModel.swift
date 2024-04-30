@@ -8,6 +8,11 @@
 import Foundation
 import RevenueCat
 
+struct PaywallsListData: Hashable {
+    let offeringsAndPaywalls: [OfferingPaywall]
+    let offeringsWithoutPaywalls: [OfferingsResponse.Offering]
+}
+
 struct OfferingPaywall: Hashable {
     let offering: OfferingsResponse.Offering
     let paywall: PaywallsResponse.Paywall
@@ -22,13 +27,16 @@ struct PresentedPaywall: Hashable {
 @Observable
 final class OfferingsPaywallsViewModel {
 
-    var apps: [DeveloperResponse.App]
+    var singleApp: DeveloperResponse.App? {
+        guard apps.count == 1 else { return nil }
+        return apps.first
+    }
 
     init(apps: [DeveloperResponse.App]) {
         self.apps = apps
     }
 
-    var offeringsPaywalls: Result<[OfferingPaywall], NSError>? {
+    var listData: Result<PaywallsListData, NSError>? {
         didSet {
             Task { @MainActor in
                 refreshPresentedPaywall()
@@ -50,12 +58,14 @@ final class OfferingsPaywallsViewModel {
 
             let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
 
-            self.offeringsPaywalls = .success(
-                offeringPaywallData.paywallsByOffering()
-            )
+            let listData = PaywallsListData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
+
+            self.listData = .success(listData)
+
+
 
         } catch let error as NSError {
-            self.offeringsPaywalls = .failure(error)
+            self.listData = .failure(error)
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
         }
     }
@@ -72,6 +82,8 @@ final class OfferingsPaywallsViewModel {
     }
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")
+
+    private var apps: [DeveloperResponse.App]
 
 }
 
@@ -96,13 +108,19 @@ extension OfferingsPaywallsViewModel {
             return offeringPaywall
         }
 
+        func offeringsWithoutPaywalls() -> [OfferingsResponse.Offering] {
+            let paywallsByOfferingID = self.paywalls.dictionaryWithKeys { $0.offeringID }
+
+            return self.offerings.filter { paywallsByOfferingID[$0.id] == nil }
+        }
+
     }
 
     @MainActor
     private func showPaywallForID(_ id: String) {
-        switch self.offeringsPaywalls {
+        switch self.listData {
         case let .success(data):
-            if let dataForRequestedID = data.first(where: { $0.offering.id == id }) {
+            if let dataForRequestedID = data.offeringsAndPaywalls.first(where: { $0.offering.id == id }) {
                 let newRCOffering = dataForRequestedID.paywall.convertToRevenueCatPaywall(with: dataForRequestedID.offering)
                 if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
                     self.presentedPaywall = .init(offering: newRCOffering, mode: .default, responseOfferingID: id)

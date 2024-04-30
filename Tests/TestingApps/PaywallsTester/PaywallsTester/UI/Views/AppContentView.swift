@@ -48,7 +48,7 @@ struct AppContentView: View {
 
             AppList()
                 .tabItem {
-                    Label("My paywalls", systemImage: "network")
+                    Label("My Apps", systemImage: "network")
                 }
 
             if Purchases.isConfigured {

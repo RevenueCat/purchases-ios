@@ -37,10 +37,10 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private var content: some View {
-        switch viewModel.offeringsPaywalls {
+        switch viewModel.listData {
         case let .success(data):
             VStack {
-                if data.isEmpty {
+                if data.offeringsAndPaywalls.isEmpty {
                     Text(Self.pullToRefresh)
                         .font(.footnote)
                     ScrollView {
@@ -69,60 +69,88 @@ struct OfferingsList: View {
     }
 
     @ViewBuilder
-    private func list(with data: [OfferingPaywall]) -> some View {
-        let hasMultipleTemplates = Set(data.map { $0.paywall.data.templateName }).count > 1
-
+    private func list(with data: PaywallsListData) -> some View {
         List {
-            ForEach(data, id: \.self) { offeringPaywall in
-                let responseOffering = offeringPaywall.offering
-                let responsePaywall = offeringPaywall.paywall
-                let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+            Section(header: Text("Configured Paywalls")) {
+                let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
+                ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
+                    let responseOffering = offeringPaywall.offering
+                    let responsePaywall = offeringPaywall.paywall
+                    let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
 
-                VStack(alignment: .leading) {
-                    Button {
-                        viewModel.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
-                        Task { @MainActor in
-                            // The paywall data may have changed, reload
-                            await viewModel.updateOfferingsAndPaywalls()
-                            selectedItemId = offeringPaywall.offering.id
-                        }
-                    } label: {
-                        let templateName = rcOffering.paywall?.templateName
-                        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-
-                        let decorator = data.count > 1 && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
-                        HStack {
-                            VStack(alignment:.leading, spacing: 5) {
-                                Text(decorator + responseOffering.displayName)
-                                    .font(.headline)
-                                if let title = paywallTitle, let name = templateName {
-                                    let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
-                                    Text(text)
-                                        .font(.footnote)
-                                        .foregroundColor(.secondary)
-                                }
+                    VStack(alignment: .leading) {
+                        Button {
+                            viewModel.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
+                            Task { @MainActor in
+                                // The paywall data may have changed, reload
+                                await viewModel.updateOfferingsAndPaywalls()
+                                selectedItemId = offeringPaywall.offering.id
                             }
-                            Spacer()
-                            Menu {
-                                ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-                                    self.button(for: mode, offering: rcOffering, responseOfferingID: responseOffering.id)
-                                }
-                            } label: {
-                                Image(systemName: "ellipsis")
-                                    .padding([.leading, .vertical])
-                            }
-                            .padding(.all, 0)
+                        } label: {
+                            let templateName = rcOffering.paywall?.templateName
+                            let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
 
-                    }
+                            let decorator = data.offeringsAndPaywalls.count > 1 && self.selectedItemId == offeringPaywall.offering.id ? "▶ " : ""
+                            HStack {
+                                VStack(alignment:.leading, spacing: 5) {
+                                    Text(decorator + responseOffering.displayName)
+                                        .font(.headline)
+                                    if let title = paywallTitle, let name = templateName {
+                                        let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
+                                        Text(text)
+                                            .font(.footnote)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                Spacer()
+                                Menu {
+                                    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+                                        self.button(for: mode, offering: rcOffering, responseOfferingID: responseOffering.id)
+                                    }
+                                } label: {
+                                    Image(systemName: "ellipsis")
+                                        .padding([.leading, .vertical])
+                                }
+                                .padding(.all, 0)
+
+                            }
 #if !os(watchOS)
-                    .contextMenu {
-                        let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
-                        self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
-                    }
+                            .contextMenu {
+                                let rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+                                self.contextMenu(for: rcOffering, responseOfferingID: offeringPaywall.offering.id)
+                            }
 #endif
+                        }
+                    }
                 }
             }
-        }
+            if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
+                Section(header: Text("Offerings Without Paywalls")) {
+                    ForEach(data.offeringsWithoutPaywalls, id: \.self) { offeringWithoutPaywall in
+                        Button {
+                            let urlString = "https://app.revenuecat.com/projects/" + appID + "/paywalls/" + offeringWithoutPaywall.id + "/new"
+                            if let url = URL(string: urlString) {
+                                if UIApplication.shared.canOpenURL(url) {
+                                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                                } else {
+                                    print("Cannot open URL")
+                                }
+                            } else {
+                                print("Invalid URL")
+                            }
+                        } label: {
+                            HStack {
+                                Text(offeringWithoutPaywall.displayName)
+                                    .font(.headline)
+                                Spacer()
+                                Image(systemName: "escape")
+                                    .rotationEffect(Angle(degrees: 90))
+                            }
+                        }
+                    }
+                }
+            }
+
     }
         .refreshable {
             Task { @MainActor in
