@@ -67,7 +67,7 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
     }
 
     /// Listens for application state changes and notifies the parent manager to process transactions when the application becomes active.
-    class ApplicationStateListener {
+    class ApplicationStateListener: Sendable {
 
         var onApplicationDidBecomeActive: (() async -> Void)?
         let notificationCenter: NotificationCenter
@@ -134,11 +134,11 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
         // Try to avoid processing renewals since those will be picked up by
         // ``StoreKit2TransactionListener/listenForTransactions``.
-        var purchaseOrLegacyiOS = true
-        if #available(iOS 17.0, *) {
-            purchaseOrLegacyiOS = mostRecentVerifiedTransaction.verifiedTransaction.reason == .purchase
+        var purchaseOrLegacyOS = true
+        if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *) {
+            purchaseOrLegacyOS = mostRecentVerifiedTransaction.verifiedTransaction.reason == .purchase
         }
-        guard purchaseOrLegacyiOS else { return }
+        guard purchaseOrLegacyOS else { return }
 
         var cachedSyncedSK2TransactionIDs = Set(
             self.deviceCache.cachedSyncedSK2TransactionIDs(appUserID: currentUserProvider.currentAppUserID) ?? []
