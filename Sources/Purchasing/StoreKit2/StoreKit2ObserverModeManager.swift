@@ -61,7 +61,9 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
         self.applicationStateListener = ApplicationStateListener(
             notificationCenter: notificationCenter
         )
-        self.applicationStateListener.onApplicationDidBecomeActive = self.processUnobservedTransactions
+        self.applicationStateListener.onApplicationDidBecomeActive = { [weak self] in
+            await self?.processUnobservedTransactions()
+        }
     }
 
     /// Listens for application state changes and notifies the parent manager to process transactions when the application becomes active.
@@ -94,8 +96,8 @@ actor StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
         /// Handles the event when the application becomes active by calling the associated handler.
         @objc func applicationDidBecomeActive() {
-            Task {
-                await self.onApplicationDidBecomeActive?()
+            Task { [weak self] in
+                await self?.onApplicationDidBecomeActive?()
             }
         }
     }
