@@ -104,9 +104,7 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
                 verifiedTransaction: StoreKit.Transaction,
                 jwsRepresentation: String
             ) = (await StoreKit.Transaction.all.extractValues()
-                .compactMap { transaction -> (
-                    verifiedTransaction: StoreKit.Transaction, jwsRepresentation: String
-                )? in
+                .compactMap { transaction in
                     guard let verifiedTransaction = transaction.verifiedTransaction else {
                         return nil
                     }
@@ -121,11 +119,14 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
                 return
             }
 
+            let transaction: StoreKit.Transaction = mostRecentVerifiedTransaction.verifiedTransaction
+            let jwsRepresentation: String = mostRecentVerifiedTransaction.jwsRepresentation
+
             // Try to avoid processing renewals since those will be picked up by
             // ``StoreKit2TransactionListener/listenForTransactions``.
             var purchaseOrLegacyOS = true
             if #available(iOS 17.0, macOS 14.0, macCatalyst 17.0, tvOS 17.0, watchOS 10.0, *) {
-                purchaseOrLegacyOS = mostRecentVerifiedTransaction.verifiedTransaction.reason == .purchase
+                purchaseOrLegacyOS = transaction.reason == .purchase
             }
             guard purchaseOrLegacyOS else { return }
 
@@ -133,14 +134,14 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
                 self.deviceCache.cachedSyncedSK2TransactionIDs(appUserID: currentUserProvider.currentAppUserID) ?? []
             )
 
-            guard !cachedSyncedSK2TransactionIDs.contains(mostRecentVerifiedTransaction.verifiedTransaction.id) else {
+            guard !cachedSyncedSK2TransactionIDs.contains(transaction.id) else {
                 return
             }
 
             do {
                 try await delegate?.handleSK2ObserverModeTransaction(
-                    verifiedTransaction: mostRecentVerifiedTransaction.verifiedTransaction,
-                    jwsRepresentation: mostRecentVerifiedTransaction.jwsRepresentation
+                    verifiedTransaction: transaction,
+                    jwsRepresentation: jwsRepresentation
                 )
 
                 cachedSyncedSK2TransactionIDs.insert(mostRecentVerifiedTransaction.verifiedTransaction.id)
