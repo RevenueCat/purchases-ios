@@ -89,10 +89,8 @@ struct OfferingsList: View {
 
                     VStack(alignment: .leading) {
                         Button {
-                            viewModel.presentedPaywall = .init(offering: rcOffering, mode: .default, responseOfferingID: responseOffering.id)
-                            Task { @MainActor in
-                                // The paywall data may have changed, reload
-                                await viewModel.updateOfferingsAndPaywalls()
+                            Task {
+                                await viewModel.getAndShowPaywallForID(id: responseOffering.id)
                                 selectedItemId = offeringPaywall.offering.id
                             }
                         } label: {
