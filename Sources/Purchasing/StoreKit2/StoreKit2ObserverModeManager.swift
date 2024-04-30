@@ -100,7 +100,10 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
         func detectUnobservedTransactions(
             delegate: StoreKit2ObserverModeManagerDelegate?
         ) async {
-            guard let mostRecentVerifiedTransaction = (await StoreKit.Transaction.all.extractValues()
+            guard let mostRecentVerifiedTransaction: (
+                verifiedTransaction: StoreKit.Transaction,
+                jwsRepresentation: String
+            ) = (await StoreKit.Transaction.all.extractValues()
                 .compactMap { transaction -> (
                     verifiedTransaction: StoreKit.Transaction, jwsRepresentation: String
                 )? in
