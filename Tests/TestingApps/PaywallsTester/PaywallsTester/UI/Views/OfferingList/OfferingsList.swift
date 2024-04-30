@@ -48,30 +48,9 @@ struct OfferingsList: View {
     private var content: some View {
         switch viewModel.listData {
         case let .success(data):
-            VStack {
-                if data.offeringsAndPaywalls.isEmpty {
-                    Text(Self.pullToRefresh)
-                        .font(.footnote)
-                    ScrollView {
-                        ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
-                            .padding()
-                        Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
-                            .font(.footnote)
-                            .padding()
-                    }
-                    .refreshable {
-                        Task { @MainActor in
-                            await viewModel.updateOfferingsAndPaywalls()
-                        }
-                    }
-                } else {
-                    self.list(with: data)
-                }
-            }
-
+            self.list(with: data)
         case let .failure(error):
             Text(error.description)
-
         case .none:
             SwiftUI.ProgressView()
         }
@@ -80,24 +59,39 @@ struct OfferingsList: View {
     @ViewBuilder
     private func list(with data: PaywallsListData) -> some View {
         List {
-            Section(header: Text("Configured Paywalls")) {
-                let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
-                ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
-                    OfferingButton(offeringPaywall: offeringPaywall,
-                                   multipleOfferings: data.offeringsAndPaywalls.count > 1,
-                                   hasMultipleTemplates: hasMultipleTemplates,
-                                   viewModel: viewModel,
-                                   selectedItemID: $selectedItemId)
+            Section {
+                if !data.offeringsAndPaywalls.isEmpty {
+                    let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
+                    ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
+                        OfferingButton(offeringPaywall: offeringPaywall,
+                                       multipleOfferings: data.offeringsAndPaywalls.count > 1,
+                                       hasMultipleTemplates: hasMultipleTemplates,
+                                       viewModel: viewModel,
+                                       selectedItemID: $selectedItemId)
+                    }
+                } else {
+                    VStack {
+                        ContentUnavailableView("No paywalls configured", systemImage: "exclamationmark.triangle.fill")
+                        Text(Self.pullToRefresh)
+                            .font(.footnote)
+                        Text("Use the RevenueCat [web dashboard](https://app.revenuecat.com/) to configure a new paywall for one of this app's offerings.")
+                            .font(.footnote)
+                            .padding()
+                    }
                 }
+            } header: {
+                Text("Offerings With Paywalls")
             }
             if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
-                Section(header: Text("Offerings Without Paywalls")) {
+                Section{
                     ForEach(data.offeringsWithoutPaywalls, id: \.self) { offeringWithoutPaywall in
                         ManagePaywallButton(kind: .new, 
                                             appID: appID,
                                             offeringID: offeringWithoutPaywall.id,
                                             buttonName: offeringWithoutPaywall.displayName)
                     }
+                } header: {
+                    Text("Offerings Without Paywalls")
                 }
             }
         }
