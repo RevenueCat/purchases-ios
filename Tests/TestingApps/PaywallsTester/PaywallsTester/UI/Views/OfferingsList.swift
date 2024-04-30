@@ -181,7 +181,7 @@ struct OfferingsList: View {
                 }
             }
 
-    }
+        }
         .refreshable {
             Task { @MainActor in
                 await viewModel.updateOfferingsAndPaywalls()
@@ -194,35 +194,35 @@ struct OfferingsList: View {
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
         }
-}
+    }
 
 #if !os(watchOS)
-@ViewBuilder
-private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
-    ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-        self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
+    @ViewBuilder
+    private func contextMenu(for offering: Offering, responseOfferingID: String) -> some View {
+        ForEach(PaywallViewMode.allCases, id: \.self) { mode in
+            self.button(for: mode, offering: offering, responseOfferingID: responseOfferingID)
+        }
     }
-}
 #endif
 
-@ViewBuilder
-private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
-    Button {
-        viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
-        Task { @MainActor in
-            await viewModel.updateOfferingsAndPaywalls()
-            selectedItemId = responseOfferingID
+    @ViewBuilder
+    private func button(for selectedMode: PaywallViewMode, offering: Offering, responseOfferingID: String) -> some View {
+        Button {
+            viewModel.presentedPaywall = .init(offering: offering, mode: selectedMode, responseOfferingID: responseOfferingID)
+            Task { @MainActor in
+                await viewModel.updateOfferingsAndPaywalls()
+                selectedItemId = responseOfferingID
+            }
+        } label: {
+            Text(selectedMode.name)
+            Image(systemName: selectedMode.icon)
         }
-    } label: {
-        Text(selectedMode.name)
-        Image(systemName: selectedMode.icon)
     }
-}
 
 #if targetEnvironment(macCatalyst)
-private static let pullToRefresh = ""
+    private static let pullToRefresh = ""
 #else
-private static let pullToRefresh = "Pull to refresh"
+    private static let pullToRefresh = "Pull to refresh"
 #endif
 
 }
