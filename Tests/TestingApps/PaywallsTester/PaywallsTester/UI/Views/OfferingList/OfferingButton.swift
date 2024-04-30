@@ -78,7 +78,7 @@ struct OfferingButton: View {
 
 
     @ViewBuilder
-    func contextMenuItems(offeringID: String) -> some View {
+    private func contextMenuItems(offeringID: String) -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
             self.showPaywallButton(for: mode, offeringID: offeringID)
         }

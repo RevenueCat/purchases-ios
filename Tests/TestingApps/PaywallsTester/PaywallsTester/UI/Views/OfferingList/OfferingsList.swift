@@ -13,8 +13,6 @@ import RevenueCatUI
 #endif
 import SwiftUI
 
-
-// TODO: Ask Barbara about how to present
 struct OfferingsList: View {
 
     @Environment(\.scenePhase) var scenePhase
