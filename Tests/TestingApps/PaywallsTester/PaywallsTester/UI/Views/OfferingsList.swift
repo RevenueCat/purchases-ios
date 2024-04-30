@@ -107,6 +107,29 @@ struct OfferingsList: View {
                                     ForEach(PaywallViewMode.allCases, id: \.self) { mode in
                                         self.button(for: mode, offering: rcOffering, responseOfferingID: responseOffering.id)
                                     }
+                                    if let appID = viewModel.singleApp?.id {
+                                        Divider()
+                                        Button {
+                                            let urlString = "https://app.revenuecat.com/projects/" + appID + "/paywalls/" + responseOffering.id + "/edit"
+                                            if let url = URL(string: urlString) {
+                                                if UIApplication.shared.canOpenURL(url) {
+                                                    UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                                                } else {
+                                                    print("Cannot open URL")
+                                                }
+                                            } else {
+                                                print("Invalid URL")
+                                            }
+                                        } label: {
+                                            HStack {
+                                                Text("Edit Paywall")
+                                                    .font(.headline)
+                                                Spacer()
+                                                Image(systemName: "slider.horizontal.2.square.on.square")
+                                            }
+                                        }
+                                    }
+
                                 } label: {
                                     Image(systemName: "ellipsis")
                                         .padding([.leading, .vertical])
