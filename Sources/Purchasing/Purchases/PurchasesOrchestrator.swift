@@ -115,7 +115,6 @@ final class PurchasesOrchestrator {
                      currentUserProvider: CurrentUserProvider,
                      transactionsManager: TransactionsManager,
                      deviceCache: DeviceCache,
-                     notificationCenter: NotificationCenter,
                      offeringsManager: OfferingsManager,
                      manageSubscriptionsHelper: ManageSubscriptionsHelper,
                      beginRefundRequestHelper: BeginRefundRequestHelper,

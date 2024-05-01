@@ -204,7 +204,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
                                                   deviceCache: self.deviceCache,
-                                                  notificationCenter: self.notificationCenter,
                                                   offeringsManager: self.mockOfferingsManager,
                                                   manageSubscriptionsHelper: self.mockManageSubsHelper,
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,

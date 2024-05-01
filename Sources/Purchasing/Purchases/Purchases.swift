@@ -456,7 +456,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
                     deviceCache: deviceCache,
-                    notificationCenter: notificationCenter,
                     offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
