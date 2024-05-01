@@ -743,6 +743,7 @@
 		F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */; };
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
+		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDC1BE8E2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC1BE8D2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -3459,6 +3460,7 @@
 				A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				57F3C10C29B7EAE90004FD7E /* MockUserDefaults.swift in Sources */,
 				2D90F8B426FD208B009B9142 /* MockStoreKit1Wrapper.swift in Sources */,
+				FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */,
 				2D90F8BB26FD20BD009B9142 /* MockIdentityManager.swift in Sources */,
 				A55D083627236F0200D919E0 /* MockSK2BeginRefundRequestHelper.swift in Sources */,
 			);
