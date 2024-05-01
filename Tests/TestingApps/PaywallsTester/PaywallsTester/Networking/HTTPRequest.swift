@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct HTTPRequest {
+public struct HTTPRequest: Sendable {
 
     var method: HTTPMethod
     var endpoint: HTTPEndpoint

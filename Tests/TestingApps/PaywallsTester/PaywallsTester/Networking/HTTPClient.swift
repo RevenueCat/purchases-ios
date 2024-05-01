@@ -10,7 +10,7 @@ import Foundation
 import OSLog
 
 
-public final class HTTPClient {
+public final class HTTPClient: Sendable {
     
     static let shared = HTTPClient(domain: URL(string: "https://api.revenuecat.com")!)
 
@@ -27,7 +27,7 @@ public final class HTTPClient {
         self.headers = headers
     }
     
-    func perform<Response: Decodable>(_ request: HTTPRequest) async throws -> Response {
+    func perform<Response: Decodable & Sendable>(_ request: HTTPRequest) async throws -> Response {
         let request = try request.build(
             domain: self.domain,
             headers: self.headers

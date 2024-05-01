@@ -9,7 +9,7 @@ import Foundation
 
 import RevenueCat
 
-public struct OfferingsResponse {
+public struct OfferingsResponse: Sendable {
 
     public let all: [Offering]
 
@@ -17,7 +17,7 @@ public struct OfferingsResponse {
 
 extension OfferingsResponse {
     
-    public struct Offering {
+    public struct Offering: Sendable {
 
         public let createdAt: Date
         public let displayName: String
@@ -32,7 +32,7 @@ extension OfferingsResponse {
 
 extension OfferingsResponse {
 
-    public struct Package {
+    public struct Package: Sendable {
 
         public let createdAt: String
         public let displayName: String
@@ -46,7 +46,7 @@ extension OfferingsResponse {
 
 extension OfferingsResponse {
 
-    public struct Product {
+    public struct Product: Sendable {
 
         public let app: App
         public let createdAt: String
@@ -55,7 +55,7 @@ extension OfferingsResponse {
         public let identifier: String
         public let isSubscription: Bool
 
-        public struct App {
+        public struct App: Sendable {
 
             public let id: String
             public let name: String

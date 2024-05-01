@@ -20,8 +20,6 @@ final class ApplicationData {
 
     @MainActor
     func loadApplicationData() async throws {
-        self.authenticationStatus = .unknown
-
         do {
             self.authenticationStatus = .signedIn(try await self.manager.loadApplicationData())
         } catch ApplicationManager.Error.unauthenticated {

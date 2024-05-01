@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LoginWall<ContentView: View>: View {
-    
+
     @Environment(ApplicationData.self) private var application
     
     @State
@@ -21,14 +21,14 @@ struct LoginWall<ContentView: View>: View {
         case .unknown:
             ProgressView()
                 .displayError(self.$error)
-                .task {
+                .task { @MainActor in
                     await reload()
                 }
         case let .signedIn(developer):
             content(developer)
         case .signedOut:
             LoginScreen {
-                Task {
+                Task { @MainActor in
                     await reload()
                 }
             }

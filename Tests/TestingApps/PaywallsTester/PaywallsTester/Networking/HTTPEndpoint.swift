@@ -8,7 +8,7 @@
 import Foundation
 
 
-public enum HTTPEndpoint {
+public enum HTTPEndpoint: Sendable {
 
     case login(user: String, password: String, code: String?)
     case me
