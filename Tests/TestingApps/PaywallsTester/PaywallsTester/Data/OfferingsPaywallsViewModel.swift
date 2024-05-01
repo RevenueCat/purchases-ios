@@ -16,6 +16,7 @@ struct PaywallsListData: Hashable {
 struct OfferingPaywall: Hashable {
     let offering: OfferingsResponse.Offering
     let paywall: PaywallsResponse.Paywall
+    let rcOffering: Offering
 }
 
 struct PresentedPaywall: Hashable {
@@ -108,7 +109,8 @@ extension OfferingsPaywallsViewModel {
             var offeringPaywall = [OfferingPaywall]()
             for offering in self.offerings {
                 if let paywall = paywallsByOfferingID[offering.id] {
-                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall))
+                    let rcOffering = paywall.convertToRevenueCatPaywall(with: offering)
+                    offeringPaywall.append(OfferingPaywall(offering: offering, paywall: paywall, rcOffering: rcOffering))
                 }
             }
 
@@ -127,8 +129,7 @@ extension OfferingsPaywallsViewModel {
     private func showPaywallForID(_ id: String, mode: PaywallViewMode = .default) {
         switch self.listData {
         case let .success(data):
-            if let dataForRequestedID = data.offeringsAndPaywalls.first(where: { $0.offering.id == id }) {
-                let newRCOffering = dataForRequestedID.paywall.convertToRevenueCatPaywall(with: dataForRequestedID.offering)
+            if let newRCOffering = data.offeringsAndPaywalls.first(where: { $0.offering.id == id })?.rcOffering {
                 if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
                     self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
                 }

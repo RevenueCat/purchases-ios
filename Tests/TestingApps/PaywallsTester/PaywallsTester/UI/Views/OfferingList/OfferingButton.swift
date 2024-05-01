@@ -27,7 +27,7 @@ struct OfferingButton: View {
          viewModel: OfferingsPaywallsViewModel,
          selectedItemID: Binding<String?>) {
         self.responseOffering = offeringPaywall.offering
-        self.rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: responseOffering)
+        self.rcOffering = offeringPaywall.rcOffering
         self.viewModel = viewModel
         self._selectedItemID = selectedItemID
     }
