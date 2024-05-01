@@ -47,13 +47,13 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
     private var delegate: StoreKit2ObserverModeManagerDelegate?
     private let notificationCenter: NotificationCenter
-    private let storeKit2ObserverModePurchaseListener: SK2ObserverModePurchaseDetectorType
+    private let storeKit2ObserModePurchaseDetector: SK2ObserverModePurchaseDetectorType
 
     init(
-        storeKit2ObserverModePurchaseListener: SK2ObserverModePurchaseDetectorType,
+        storeKit2ObserModePurchaseDetector: SK2ObserverModePurchaseDetectorType,
         notificationCenter: NotificationCenter
     ) {
-        self.storeKit2ObserverModePurchaseListener = storeKit2ObserverModePurchaseListener
+        self.storeKit2ObserModePurchaseDetector = storeKit2ObserModePurchaseDetector
         self.notificationCenter = notificationCenter
     }
 
@@ -68,7 +68,7 @@ class StoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
     @objc func applicationDidBecomeActive() {
         Task {
-            await storeKit2ObserverModePurchaseListener.detectUnobservedTransactions(delegate: self.delegate)
+            await storeKit2ObserModePurchaseDetector.detectUnobservedTransactions(delegate: self.delegate)
         }
     }
 

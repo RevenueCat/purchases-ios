@@ -35,7 +35,7 @@ class StoreKit2ObserverModeManagerTests: StoreKitConfigTestCase {
         storeKit2ObserverModePurchaseDetector = .init()
 
         self.observerModeManager = .init(
-            storeKit2ObserverModePurchaseListener: storeKit2ObserverModePurchaseDetector,
+            storeKit2ObserModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
             notificationCenter: notificationCenter
         )
     }
