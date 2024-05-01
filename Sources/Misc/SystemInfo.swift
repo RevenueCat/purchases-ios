@@ -262,19 +262,20 @@ extension SystemInfo {
     }
 
     static var applicationDidBecomeActiveNotification: Notification.Name? {
-        #if os(iOS) || os(tvOS) || VISION_OS
-            UIApplication.didBecomeActiveNotification
+        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+            return UIApplication.didBecomeActiveNotification
         #elseif os(macOS)
-            NSApplication.didBecomeActiveNotification
+            return NSApplication.didBecomeActiveNotification
         #elseif os(watchOS)
-        if #available(watchOSApplicationExtension 7.0, *) {
-            return WKApplication.didBecomeActiveNotification
-        } else {
-            // There's no equivalent notification available on watchOS <7.
-            return nil
-        }
+            if #available(watchOS 7.0, *) {
+                return WKApplication.didBecomeActiveNotification
+            } else {
+                // There's no equivalent notification available on watchOS <7.
+                return nil
+            }
         #endif
     }
+
 
     var isAppExtension: Bool {
         return self.bundle.bundlePath.hasSuffix(".appex")
