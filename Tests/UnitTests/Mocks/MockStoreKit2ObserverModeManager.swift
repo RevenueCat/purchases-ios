@@ -27,7 +27,7 @@ final class MockStoreKit2ObserverModeManager: StoreKit2ObserverModeManagerType {
 
     var invokedBeginObservingPurchases = false
     var invokedBeginObservingPurchasesCount = 0
-    func beginObservingPurchases() async {
+    func beginObservingPurchases() {
         invokedBeginObservingPurchases = true
         invokedBeginObservingPurchasesCount += 1
     }

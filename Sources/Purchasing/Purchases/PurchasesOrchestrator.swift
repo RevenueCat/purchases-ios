@@ -176,7 +176,7 @@ final class PurchasesOrchestrator {
 
                 if self.observerMode {
                     storeKit2ObserverModeManager.set(delegate: self)
-                    await storeKit2ObserverModeManager.beginObservingPurchases()
+                    storeKit2ObserverModeManager.beginObservingPurchases()
                 }
             }
         }
