@@ -30,8 +30,9 @@ struct ManagePaywallButton: View {
 
     var body: some View {
         Button {
-            guard let url = URL(string: urlString(appID: appID, offeringID: offeringID)) else {
-                print("Invalid URL")
+            let urlString = urlString(appID: appID, offeringID: offeringID)
+            guard let url = URL(string: urlString) else {
+                Self.logger.log(level: .error, "Could not create URL for \(urlString)")
                 return
             }
             openURL(url)
@@ -39,7 +40,7 @@ struct ManagePaywallButton: View {
             switch kind {
             case .edit:
                 HStack {
-                    Text("Edit Paywall")
+                    Text(buttonName ?? "Edit Paywall")
                         .font(.headline)
                     Spacer()
                     Image(systemName: kind.systemImageName)
@@ -70,11 +71,13 @@ struct ManagePaywallButton: View {
 
     private func openURL(_ url: URL) {
         guard UIApplication.shared.canOpenURL(url) else {
-            print("Cannot open URL")
+            Self.logger.log(level: .error, "Could not open URL for \(url)")
             return
         }
-        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        UIApplication.shared.open(url)
     }
+
+    private static var logger = Logging.shared.logger(category: "Paywalls Tester")
 }
 
 
