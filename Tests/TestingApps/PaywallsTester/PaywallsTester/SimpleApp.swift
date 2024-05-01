@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import RevenueCat
 
 @main
 struct SimpleApp: App {
@@ -16,18 +17,24 @@ struct SimpleApp: App {
         
     }
 
+    struct PaywallPreviewData: Identifiable {
+        let paywallIDToShow: String
+        let introOfferEligible: IntroEligibilityStatus
+        var id: String { paywallIDToShow }
+    }
+
     @State
     private var application = ApplicationData()
 
     @State
-    private var paywallIDToShow: IdentifiableString?
+    private var paywallPreviewData: PaywallPreviewData?
 
     var body: some Scene {
         WindowGroup {
             AppContentView()
-                .sheet(item: $paywallIDToShow) { paywallID in
+                .sheet(item: $paywallPreviewData) { paywallID in
                     LoginWall { response in
-                        PaywallForID(apps: response.apps, id: paywallID.id)
+                        PaywallForID(apps: response.apps, id: paywallID.id, introEligible: paywallID.introOfferEligible)
                     }
                 }
                 .onOpenURL { URL in
@@ -49,11 +56,11 @@ struct SimpleApp: App {
 extension SimpleApp {
     func processURL(_ url: URL) {
         // set to nil to trigger re-render if presenting same paywall with new data
-        paywallIDToShow = nil
-        paywallIDToShow = getPaywallIdFrom(incomingURL: url)
+        paywallPreviewData = nil
+        paywallPreviewData = getPaywallDataFrom(incomingURL: url)
     }
 
-    func getPaywallIdFrom(incomingURL: URL) -> IdentifiableString? {
+    func getPaywallDataFrom(incomingURL: URL) -> PaywallPreviewData? {
         guard let components = NSURLComponents(url: incomingURL, resolvingAgainstBaseURL: true) else {
             return nil
         }
@@ -64,6 +71,18 @@ extension SimpleApp {
             return nil
         }
 
-        return IdentifiableString(id: paywallID)
+        let showIntroOffer = params.first(where: { $0.name == "io" })?.value.flatMap { value -> IntroEligibilityStatus in
+            if value == "1" {
+                return .eligible
+            } else if value == "0" {
+                return .ineligible
+            } else if value == "n" {
+                return .noIntroOfferExists
+            } else {
+                return .unknown
+            }
+        } ?? .unknown
+
+        return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: showIntroOffer)
     }
 }

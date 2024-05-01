@@ -6,23 +6,24 @@
 //
 
 import SwiftUI
-
+import RevenueCat
 
 struct PaywallForID: View {
 
     @State
     private var viewModel: OfferingsPaywallsViewModel
+    private let id: String
+    private let introEligible: IntroEligibilityStatus
 
-    let id: String
-
-    init(apps: [DeveloperResponse.App], id: String) {
+    init(apps: [DeveloperResponse.App], id: String, introEligible: IntroEligibilityStatus = .unknown) {
         self.id = id
+        self.introEligible = introEligible
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: apps))
     }
 
     var body: some View {
         if let paywall = viewModel.presentedPaywall {
-            PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligible: introEligible)
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in PaywallView
         } else {
             SwiftUI.ProgressView()
@@ -35,5 +36,5 @@ struct PaywallForID: View {
 }
 
 #Preview {
-    PaywallForID(apps: [], id: "n")
+    PaywallForID(apps: [], id: "n", introEligible: IntroEligibilityStatus.ineligible)
 }

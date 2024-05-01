@@ -74,6 +74,15 @@ extension PaywallsResponse.Paywall {
             availablePackages: self.data.config.packages.map {
                 let type = Package.packageType(from: $0)
 
+                let introDiscount = TestStoreProductDiscount(identifier: "intro",
+                                                             price: 0,
+                                                             localizedPriceString: "$0.00",
+                                                             paymentMode: .freeTrial,
+                                                             subscriptionPeriod: .init(value: 1, unit: .week),
+                                                             numberOfPeriods: 1,
+                                                             type: .introductory
+                )
+
                 return .init(
                     identifier: $0,
                     packageType: type,
@@ -85,7 +94,16 @@ extension PaywallsResponse.Paywall {
                         productIdentifier: "com.revenuecat.test_product",
                         productType: .autoRenewableSubscription,
                         localizedDescription: $0,
-                        subscriptionPeriod: type.subscriptionPeriod
+                        subscriptionPeriod: type.subscriptionPeriod,
+                        introductoryDiscount: .init(
+                            identifier: "intro",
+                            price: 0,
+                            localizedPriceString: "$0.00",
+                            paymentMode: .freeTrial,
+                            subscriptionPeriod: .init(value: 1, unit: .week),
+                            numberOfPeriods: 1,
+                            type: .introductory
+                        )
                     ).toStoreProduct(),
                     offeringIdentifier: offering.identifier
                 )

@@ -15,8 +15,24 @@ import SwiftUI
 
 struct OfferingsList: View {
 
+    @State private var introEligible: IntroEligibilityStatus = .eligible
+
     var body: some View {
         self.content
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Picker("Options", selection: $introEligible) {
+                            Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
+                             Text("No Intro Offer").tag(IntroEligibilityStatus.ineligible)
+                         }
+                    } label: {
+                        Image(systemName: "ellipsis.circle.fill")
+
+                    }
+
+                }
+            }
             .task {
                 await viewModel.updateOfferingsAndPaywalls()
             }
@@ -80,7 +96,7 @@ struct OfferingsList: View {
             }
         }
         .sheet(item: $viewModel.presentedPaywall) { paywall in
-            PaywallPresenter(offering: paywall.offering, mode: paywall.mode)
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligible: introEligible)
                 .onRestoreCompleted { _ in
                     viewModel.dismissPaywall()
                 }

@@ -17,12 +17,19 @@ struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode
+    var introEligible: IntroEligibilityStatus
     var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
 
     var body: some View {
         switch self.mode {
         case .fullScreen:
-            PaywallView(offering: self.offering, displayCloseButton: self.displayCloseButton)
+            let config = PaywallViewConfiguration(
+                offering: offering,
+                fonts: DefaultPaywallFontProvider(),
+                displayCloseButton: displayCloseButton,
+                introEligibility: .producing(eligibility: introEligible)
+            )
+            PaywallView(configuration: config)
 
         #if !os(watchOS)
         case .footer:
