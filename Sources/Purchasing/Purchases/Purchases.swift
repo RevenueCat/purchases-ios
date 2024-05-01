@@ -431,9 +431,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
                 }
-                let storeKit2ObserverModeManager = StoreKit2ObserverModeManager(currentUserProvider: identityManager,
-                                                                                 deviceCache: deviceCache,
-                                                                                 notificationCenter: notificationCenter)
+                let storeKit2ObserverModeManager = StoreKit2ObserverModeManager(
+                    currentUserProvider: identityManager,
+                    deviceCache: deviceCache,
+                    notificationCenter: notificationCenter
+                )
 
                 return .init(
                     productsManager: productsManager,
@@ -449,13 +451,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     transactionPoster: transactionPoster,
                     currentUserProvider: identityManager,
                     transactionsManager: transactionsManager,
-                    deviceCache: deviceCache, 
+                    deviceCache: deviceCache,
                     notificationCenter: notificationCenter,
                     offeringsManager: offeringsManager,
                     manageSubscriptionsHelper: manageSubsHelper,
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
-                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil), 
+                    storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
                     storeKit2ObserverModeManager: storeKit2ObserverModeManager,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsTracker: diagnosticsTracker
@@ -1740,7 +1742,6 @@ private extension Purchases {
                                             selector: #selector(self.applicationWillEnterForeground),
                                             name: SystemInfo.applicationWillEnterForegroundNotification,
                                             object: nil)
-
 
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationDidEnterBackground),
