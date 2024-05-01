@@ -262,7 +262,7 @@ extension SystemInfo {
     }
 
     static var applicationDidBecomeActiveNotification: Notification.Name? {
-        #if os(iOS) || os(tvOS) || os(visionOS) || targetEnvironment(macCatalyst)
+        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
             return UIApplication.didBecomeActiveNotification
         #elseif os(macOS)
             return NSApplication.didBecomeActiveNotification
