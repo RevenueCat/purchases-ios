@@ -8,7 +8,7 @@
 import Foundation
 import RevenueCat
 
-struct PaywallsListData: Hashable {
+struct PaywallsData: Hashable {
     let offeringsAndPaywalls: [OfferingPaywall]
     let offeringsWithoutPaywalls: [OfferingsResponse.Offering]
 }
@@ -28,16 +28,18 @@ struct PresentedPaywall: Hashable {
 @Observable
 final class OfferingsPaywallsViewModel {
 
-    var singleApp: DeveloperResponse.App? {
-        guard apps.count == 1 else { return nil }
-        return apps.first
+    enum State {
+        case unloaded
+        case success
+        case error(NSError)
     }
 
-    init(apps: [DeveloperResponse.App]) {
-        self.apps = apps
-    }
+    private(set) var state: State
+    private(set) var hasMultipleTemplates = false
+    private(set) var hasMultipleOfferingsWithPaywalls = false
+    var presentedPaywall: PresentedPaywall?
 
-    var listData: Result<PaywallsListData, NSError>? {
+    var listData: PaywallsData? {
         didSet {
             Task { @MainActor in
                 refreshPresentedPaywall()
@@ -45,10 +47,15 @@ final class OfferingsPaywallsViewModel {
         }
     }
 
-    private(set) var hasMultipleTemplates = false
-    private(set) var hasMultipleOfferingsWithPaywalls = false
+    var singleApp: DeveloperResponse.App? {
+        guard apps.count == 1 else { return nil }
+        return apps.first
+    }
 
-    var presentedPaywall: PresentedPaywall?
+    init(apps: [DeveloperResponse.App]) {
+        self.apps = apps
+        state = .unloaded
+    }
 
     @MainActor
     func updateOfferingsAndPaywalls() async {
@@ -61,15 +68,14 @@ final class OfferingsPaywallsViewModel {
             let paywalls = try await appPaywalls
 
             let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
-
-            let listData = PaywallsListData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
-
-            self.listData = .success(listData)
+            let listData = PaywallsData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
             self.hasMultipleTemplates = Set(listData.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
             self.hasMultipleOfferingsWithPaywalls = listData.offeringsAndPaywalls.count > 1
+            self.listData = listData
+            self.state = .success
         } catch let error as NSError {
-            self.listData = .failure(error)
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
+            self.state = .error(error)
         }
     }
     
@@ -127,15 +133,18 @@ extension OfferingsPaywallsViewModel {
 
     @MainActor
     private func showPaywallForID(_ id: String, mode: PaywallViewMode = .default) {
-        switch self.listData {
-        case let .success(data):
-            if let newRCOffering = data.offeringsAndPaywalls.first(where: { $0.offering.id == id })?.rcOffering {
+        switch self.state {
+        case .unloaded:
+            Self.logger.log(level: .info, "Could not show paywall for id \(id), data not loaded.")
+            self.presentedPaywall = nil
+        case .success:
+            if let newRCOffering = listData?.offeringsAndPaywalls.first(where: { $0.offering.id == id })?.rcOffering {
                 if self.presentedPaywall == nil || self.presentedPaywall?.offering.paywall != newRCOffering.paywall {
                     self.presentedPaywall = .init(offering: newRCOffering, mode: mode, responseOfferingID: id)
                 }
             }
-        default:
-            Self.logger.log(level: .error, "Could not find a paywall for id \(id)")
+        case .error(let error):
+            Self.logger.log(level: .error, "Could not find a paywall for id \(id), error: \(error)")
             self.presentedPaywall = nil
         }
     }

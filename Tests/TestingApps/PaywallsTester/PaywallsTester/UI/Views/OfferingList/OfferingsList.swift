@@ -45,18 +45,22 @@ struct OfferingsList: View {
 
     @ViewBuilder
     private var content: some View {
-        switch viewModel.listData {
-        case let .success(data):
-            self.list(with: data)
-        case let .failure(error):
-            Text(error.description)
-        case .none:
+        switch viewModel.state {
+        case .unloaded:
             SwiftUI.ProgressView()
+        case .success:
+            if let listData = viewModel.listData {
+                self.list(with:listData)
+            } else {
+                Text("No data available.")
+            }
+        case .error(let error):
+            Text(error.description)
         }
     }
 
     @ViewBuilder
-    private func list(with data: PaywallsListData) -> some View {
+    private func list(with data: PaywallsData) -> some View {
         List {
             Section {
                 if !data.offeringsAndPaywalls.isEmpty {
