@@ -17,7 +17,7 @@ struct PaywallPresenter: View {
 
     var offering: Offering
     var mode: PaywallViewMode
-    var introEligible: IntroEligibilityStatus
+    var introEligility: IntroEligibilityStatus
     var displayCloseButton: Bool = Configuration.defaultDisplayCloseButton
 
     var body: some View {
@@ -27,19 +27,24 @@ struct PaywallPresenter: View {
                 offering: offering,
                 fonts: DefaultPaywallFontProvider(),
                 displayCloseButton: displayCloseButton,
-                introEligibility: .producing(eligibility: introEligible)
+                introEligibility: .producing(eligibility: introEligility)
             )
             PaywallView(configuration: config)
 
-        #if !os(watchOS)
+#if !os(watchOS)
         case .footer:
             CustomPaywallContent()
-                .paywallFooter(offering: self.offering)
+                .paywallFooter(offering: self.offering,
+                               customerInfo: nil,
+                               introEligibility: .producing(eligibility: introEligility))
 
         case .condensedFooter:
             CustomPaywallContent()
-                .paywallFooter(offering: self.offering, condensed: true)
-        #endif
+                .paywallFooter(offering: self.offering,
+                               customerInfo: nil,
+                               condensed: true,
+                               introEligibility: .producing(eligibility: introEligility))
+#endif
         }
     }
 

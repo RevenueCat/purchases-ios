@@ -15,22 +15,20 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @Binding private var introEligible: IntroEligibilityStatus
+    @Binding private var introEligility: IntroEligibilityStatus
 
     var body: some View {
         self.content
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Picker("Options", selection: $introEligible) {
+                        Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
                              Text("No Intro Offer").tag(IntroEligibilityStatus.ineligible)
                          }
                     } label: {
                         Image(systemName: "ellipsis.circle.fill")
-
                     }
-
                 }
             }
             .task {
@@ -45,9 +43,9 @@ struct OfferingsList: View {
             }
     }
 
-    init(app: DeveloperResponse.App, introEligible: Binding<IntroEligibilityStatus>) {
+    init(app: DeveloperResponse.App, introEligility: Binding<IntroEligibilityStatus>) {
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
-        self._introEligible = introEligible
+        self._introEligility = introEligility
     }
 
     @Environment(\.scenePhase) private var scenePhase
@@ -96,7 +94,7 @@ struct OfferingsList: View {
             }
         }
         .sheet(item: $viewModel.presentedPaywall) { paywall in
-            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligible: introEligible)
+            PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: introEligility)
                 .onRestoreCompleted { _ in
                     viewModel.dismissPaywall()
                 }
@@ -160,7 +158,7 @@ extension PresentedPaywall: Identifiable {
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            OfferingsList(app: MockData.developer().apps.first!, introEligible: .constant(.eligible))
+            OfferingsList(app: MockData.developer().apps.first!, introEligility: .constant(.eligible))
         }
     }
 }

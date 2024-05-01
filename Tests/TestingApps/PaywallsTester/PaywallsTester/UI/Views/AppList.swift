@@ -12,7 +12,7 @@ struct AppList: View {
     
     @Environment(ApplicationData.self) private var application
 
-    @State private var introEligible: IntroEligibilityStatus = .eligible
+    @State private var introEligility: IntroEligibilityStatus = .eligible
 
     var body: some View {
         NavigationView {
@@ -20,7 +20,7 @@ struct AppList: View {
                 List {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
-                            OfferingsList(app: app, introEligible: $introEligible)
+                            OfferingsList(app: app, introEligility: $introEligility)
                                 .navigationTitle("Paywalls") // TODO: Include app name in a dynamic length way
                         }
                     }
