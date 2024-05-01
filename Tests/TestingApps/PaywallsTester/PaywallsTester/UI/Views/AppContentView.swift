@@ -25,7 +25,7 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            if Purchases.isConfigured {
+            if false && Purchases.isConfigured {
                 NavigationView {
                     ZStack {
                         self.background
@@ -51,8 +51,7 @@ struct AppContentView: View {
                     Label("My Apps", systemImage: "network")
                 }
 
-            if Purchases.isConfigured {
-
+            if false && Purchases.isConfigured {
                 UpsellView()
                     .tabItem {
                         Label("Upsell view", systemImage: "dollarsign")
