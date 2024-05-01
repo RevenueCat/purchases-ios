@@ -91,8 +91,8 @@ struct OfferingsList: View {
     @ViewBuilder
     private func offeringsWithPaywallsListItems(with data: PaywallsData) -> some View {
         if !data.offeringsAndPaywalls.isEmpty {
-            ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
-                OfferingButton(offeringPaywall: offeringPaywall,
+            ForEach(data.offeringsAndPaywalls, id: \.self) { offeringWithPaywall in
+                OfferingButton(offeringPaywall: offeringWithPaywall,
                                viewModel: viewModel,
                                selectedItemID: $selectedItemId)
             }
