@@ -25,13 +25,11 @@ struct OfferingButton: View {
 
     init(offeringPaywall: OfferingPaywall,
          multipleOfferings: Bool,
-         hasMultipleTemplates: Bool,
          viewModel: OfferingsPaywallsViewModel,
          selectedItemID: Binding<String?>) {
         self.responseOffering = offeringPaywall.offering
         self.rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: responseOffering)
         self.multipleOfferings = multipleOfferings
-        self.hasMultipleTemplates = hasMultipleTemplates
         self.viewModel = viewModel
         self._selectedItemID = selectedItemID
     }
@@ -39,7 +37,6 @@ struct OfferingButton: View {
     private let responseOffering: OfferingsResponse.Offering
     private let rcOffering: Offering
     private let multipleOfferings: Bool
-    private let hasMultipleTemplates: Bool
     private let viewModel: OfferingsPaywallsViewModel
     @Binding private var selectedItemID: String?
 }
@@ -65,7 +62,7 @@ private extension OfferingButton {
                 Text(decorator + responseOffering.displayName)
                     .font(.headline)
                 if let title = paywallTitle, let name = templateName {
-                    let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
+                    let text = viewModel.hasMultipleTemplates ? "Style \(name): \(title)" : title
                     Text(text)
                         .font(.footnote)
                         .foregroundColor(.secondary)

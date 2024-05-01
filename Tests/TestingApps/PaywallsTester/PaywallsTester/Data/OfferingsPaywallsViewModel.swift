@@ -44,6 +44,8 @@ final class OfferingsPaywallsViewModel {
         }
     }
 
+    private(set) var hasMultipleTemplates = false
+
     var presentedPaywall: PresentedPaywall?
 
     @MainActor
@@ -61,6 +63,7 @@ final class OfferingsPaywallsViewModel {
             let listData = PaywallsListData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
 
             self.listData = .success(listData)
+            self.hasMultipleTemplates = Set(listData.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
         } catch let error as NSError {
             self.listData = .failure(error)
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")

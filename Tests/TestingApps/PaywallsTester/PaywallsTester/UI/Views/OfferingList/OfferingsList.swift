@@ -15,14 +15,6 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @Environment(\.scenePhase) var scenePhase
-
-    @State
-    private var viewModel: OfferingsPaywallsViewModel
-
-    @State
-    private var selectedItemId: String?
-
     init(app: DeveloperResponse.App) {
 
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
@@ -42,6 +34,15 @@ struct OfferingsList: View {
             }
     }
 
+    @Environment(\.scenePhase) private var scenePhase
+
+    @State
+    private var viewModel: OfferingsPaywallsViewModel
+
+    @State
+    private var selectedItemId: String?
+
+
     @ViewBuilder
     private var content: some View {
         switch viewModel.listData {
@@ -54,15 +55,14 @@ struct OfferingsList: View {
         }
     }
 
+    @ViewBuilder
     private func list(with data: PaywallsListData) -> some View {
         List {
             Section {
                 if !data.offeringsAndPaywalls.isEmpty {
-                    let hasMultipleTemplates = Set(data.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
                     ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
                         OfferingButton(offeringPaywall: offeringPaywall,
                                        multipleOfferings: data.offeringsAndPaywalls.count > 1,
-                                       hasMultipleTemplates: hasMultipleTemplates,
                                        viewModel: viewModel,
                                        selectedItemID: $selectedItemId)
                     }
@@ -100,7 +100,7 @@ struct OfferingsList: View {
     }
 
     private func noPaywallsListItem() -> some View {
-        return VStack {
+        VStack {
             ContentUnavailableView("No configured paywalls", systemImage: "exclamationmark.triangle.fill")
             Text(Self.pullToRefresh)
                 .font(.footnote)
@@ -117,8 +117,6 @@ struct OfferingsList: View {
 #endif
 
 }
-
-
 
 extension PresentedPaywall: Identifiable {
 
