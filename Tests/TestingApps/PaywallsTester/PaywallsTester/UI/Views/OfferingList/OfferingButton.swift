@@ -54,11 +54,13 @@ private extension OfferingButton {
 }
 
 private extension OfferingButton {
+
+    @ViewBuilder
     private func label() -> some View {
         let templateName = rcOffering.paywall?.templateName
         let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
         let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
-        return HStack {
+        HStack {
             VStack(alignment:.leading, spacing: 5) {
                 Text(decorator + responseOffering.displayName)
                     .font(.headline)
@@ -75,7 +77,7 @@ private extension OfferingButton {
     }
 
     private func moreActionsMenu() -> some View {
-        return Menu {
+        Menu {
             contextMenuItems()
         } label: {
             Image(systemName: "ellipsis")
