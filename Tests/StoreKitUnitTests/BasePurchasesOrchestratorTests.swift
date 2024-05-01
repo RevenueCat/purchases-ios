@@ -186,7 +186,8 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func setUpOrchestrator(
         storeKit2TransactionListener: StoreKit2TransactionListenerType,
-        storeKit2StorefrontListener: StoreKit2StorefrontListener
+        storeKit2StorefrontListener: StoreKit2StorefrontListener,
+        storeKit2ObserverModeManager: StoreKit2ObserverModeManagerType
     ) {
         self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
                                                   paymentQueueWrapper: self.paymentQueueWrapper,
@@ -201,13 +202,14 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                   transactionPoster: self.transactionPoster,
                                                   currentUserProvider: self.currentUserProvider,
                                                   transactionsManager: self.transactionsManager,
-                                                  notificationCenter: self.notificationCenter,
                                                   deviceCache: self.deviceCache,
+                                                  notificationCenter: self.notificationCenter,
                                                   offeringsManager: self.mockOfferingsManager,
                                                   manageSubscriptionsHelper: self.mockManageSubsHelper,
                                                   beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
                                                   storeKit2TransactionListener: storeKit2TransactionListener,
                                                   storeKit2StorefrontListener: storeKit2StorefrontListener,
+                                                  storeKit2ObserverModeManager: storeKit2ObserverModeManager,
                                                   storeMessagesHelper: self.mockStoreMessagesHelper,
                                                   diagnosticsTracker: self.mockDiagnosticsTracker)
         self.storeKit1Wrapper.delegate = self.orchestrator
