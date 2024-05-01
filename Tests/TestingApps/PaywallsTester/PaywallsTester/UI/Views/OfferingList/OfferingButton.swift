@@ -12,16 +12,13 @@ struct OfferingButton: View {
 
     var body: some View {
         Button {
-            Task {
-                await viewModel.getAndShowPaywallForID(id: responseOffering.id)
-                selectedItemID = responseOffering.id
-            }
+            showPaywall()
         } label: {
-            offeringButtonLabel()
+            label()
         }
         #if !os(watchOS)
         .contextMenu {
-            contextMenuItems(offeringID: responseOffering.id)
+            contextMenuItems()
         }
         #endif
     }
@@ -47,9 +44,17 @@ struct OfferingButton: View {
     @Binding private var selectedItemID: String?
 }
 
+private extension OfferingButton {
+    private func showPaywall(mode: PaywallViewMode = .default) {
+        Task { @MainActor in
+            await viewModel.getAndShowPaywallForID(id: responseOffering.id, mode: mode)
+            selectedItemID = responseOffering.id
+        }
+    }
+}
 
 private extension OfferingButton {
-    private func offeringButtonLabel() -> some View {
+    private func label() -> some View {
         let templateName = rcOffering.paywall?.templateName
         let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
         let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
@@ -65,13 +70,13 @@ private extension OfferingButton {
                 }
             }
             Spacer()
-            offeringButtonMenu(offeringID: responseOffering.id)
+            moreActionsMenu()
         }
     }
 
-    private func offeringButtonMenu(offeringID: String) -> some View {
+    private func moreActionsMenu() -> some View {
         return Menu {
-            contextMenuItems(offeringID: offeringID)
+            contextMenuItems()
         } label: {
             Image(systemName: "ellipsis")
                 .padding([.leading, .vertical])
@@ -79,22 +84,19 @@ private extension OfferingButton {
     }
 
     @ViewBuilder
-    private func contextMenuItems(offeringID: String) -> some View {
+    private func contextMenuItems() -> some View {
         ForEach(PaywallViewMode.allCases, id: \.self) { mode in
-            self.showPaywallButton(for: mode, offeringID: offeringID)
+            self.showPaywallMenuButton(for: mode)
         }
         if let appID = viewModel.singleApp?.id {
             Divider()
-            ManagePaywallButton(kind: .edit, appID: appID, offeringID: offeringID)
+            ManagePaywallButton(kind: .edit, appID: appID, offeringID: responseOffering.id)
         }
     }
-
-    private func showPaywallButton(for selectedMode: PaywallViewMode, offeringID: String) -> some View {
+    
+    private func showPaywallMenuButton(for selectedMode: PaywallViewMode) -> some View {
         Button {
-            Task { @MainActor in
-                await viewModel.getAndShowPaywallForID(id: offeringID, mode: selectedMode)
-                selectedItemID = offeringID
-            }
+            showPaywall(mode: selectedMode)
         } label: {
             Text(selectedMode.name)
             Image(systemName: selectedMode.icon)
