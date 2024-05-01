@@ -101,6 +101,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                          currentUserProvider: self.currentUserProvider)
         self.mockStoreMessagesHelper = .init()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+        self.notificationCenter = MockNotificationCenter()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
