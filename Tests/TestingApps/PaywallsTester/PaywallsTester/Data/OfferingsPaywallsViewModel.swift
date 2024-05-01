@@ -29,7 +29,7 @@ struct PresentedPaywall: Hashable {
 final class OfferingsPaywallsViewModel {
 
     enum State {
-        case unloaded
+        case notloaded
         case success
         case error(NSError)
     }
@@ -54,7 +54,7 @@ final class OfferingsPaywallsViewModel {
 
     init(apps: [DeveloperResponse.App]) {
         self.apps = apps
-        state = .unloaded
+        state = .notloaded
     }
 
     @MainActor
@@ -134,7 +134,7 @@ extension OfferingsPaywallsViewModel {
     @MainActor
     private func showPaywallForID(_ id: String, mode: PaywallViewMode = .default) {
         switch self.state {
-        case .unloaded:
+        case .notloaded:
             Self.logger.log(level: .info, "Could not show paywall for id \(id), data not loaded.")
             self.presentedPaywall = nil
         case .success:

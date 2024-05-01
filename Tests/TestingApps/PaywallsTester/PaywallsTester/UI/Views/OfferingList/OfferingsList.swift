@@ -46,7 +46,7 @@ struct OfferingsList: View {
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
-        case .unloaded:
+        case .notloaded:
             SwiftUI.ProgressView()
         case .success:
             if let listData = viewModel.listData {
