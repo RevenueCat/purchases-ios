@@ -15,7 +15,7 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @State private var introEligible: IntroEligibilityStatus = .eligible
+    @Binding private var introEligible: IntroEligibilityStatus
 
     var body: some View {
         self.content
@@ -45,9 +45,9 @@ struct OfferingsList: View {
             }
     }
 
-    init(app: DeveloperResponse.App) {
-
+    init(app: DeveloperResponse.App, introEligible: Binding<IntroEligibilityStatus>) {
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
+        self._introEligible = introEligible
     }
 
     @Environment(\.scenePhase) private var scenePhase
@@ -160,7 +160,7 @@ extension PresentedPaywall: Identifiable {
 struct OfferingsList_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            OfferingsList(app: MockData.developer().apps.first!)
+            OfferingsList(app: MockData.developer().apps.first!, introEligible: .constant(.eligible))
         }
     }
 }

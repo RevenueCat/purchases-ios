@@ -6,18 +6,21 @@
 //
 
 import SwiftUI
+import RevenueCat
 
 struct AppList: View {
     
     @Environment(ApplicationData.self) private var application
-        
+
+    @State private var introEligible: IntroEligibilityStatus = .eligible
+
     var body: some View {
         NavigationView {
             LoginWall { developer in
                 List {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
-                            OfferingsList(app: app)
+                            OfferingsList(app: app, introEligible: $introEligible)
                                 .navigationTitle("Paywalls") // TODO: Include app name in a dynamic length way
                         }
                     }
