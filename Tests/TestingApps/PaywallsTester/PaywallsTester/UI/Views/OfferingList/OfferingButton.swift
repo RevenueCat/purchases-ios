@@ -11,7 +11,6 @@ import RevenueCat
 struct OfferingButton: View {
 
     let responseOffering: OfferingsResponse.Offering
-    let responsePaywall: PaywallsResponse.Paywall
     let rcOffering: Offering
     let multipleOfferings: Bool
     let hasMultipleTemplates: Bool
@@ -24,8 +23,7 @@ struct OfferingButton: View {
          viewModel: OfferingsPaywallsViewModel,
          selectedItemID: Binding<String?>) {
         self.responseOffering = offeringPaywall.offering
-        self.responsePaywall = offeringPaywall.paywall
-        self.rcOffering = responsePaywall.convertToRevenueCatPaywall(with: responseOffering)
+        self.rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: responseOffering)
         self.multipleOfferings = multipleOfferings
         self.hasMultipleTemplates = hasMultipleTemplates
         self.viewModel = viewModel
@@ -37,12 +35,12 @@ struct OfferingButton: View {
             Button {
                 Task {
                     await viewModel.getAndShowPaywallForID(id: responseOffering.id)
-                    selectedItemID = responseOffering.identifier
+                    selectedItemID = responseOffering.id
                 }
             } label: {
                 let templateName = rcOffering.paywall?.templateName
                 let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-                let decorator = multipleOfferings && self.selectedItemID == responseOffering.identifier ? "▶ " : ""
+                let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
                 HStack {
                     VStack(alignment:.leading, spacing: 5) {
                         Text(decorator + responseOffering.displayName)
@@ -56,7 +54,6 @@ struct OfferingButton: View {
                     }
                     Spacer()
                     offeringButtonMenu(offeringID: responseOffering.id)
-                    .padding(.all, 0)
                 }
             }
         }
