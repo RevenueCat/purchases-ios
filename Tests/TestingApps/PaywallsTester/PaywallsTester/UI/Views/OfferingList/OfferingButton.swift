@@ -10,12 +10,21 @@ import RevenueCat
 
 struct OfferingButton: View {
 
-    let responseOffering: OfferingsResponse.Offering
-    let rcOffering: Offering
-    let multipleOfferings: Bool
-    let hasMultipleTemplates: Bool
-    let viewModel: OfferingsPaywallsViewModel
-    @Binding var selectedItemID: String?
+    var body: some View {
+        Button {
+            Task {
+                await viewModel.getAndShowPaywallForID(id: responseOffering.id)
+                selectedItemID = responseOffering.id
+            }
+        } label: {
+            offeringButtonLabel()
+        }
+        #if !os(watchOS)
+        .contextMenu {
+            contextMenuItems(offeringID: responseOffering.id)
+        }
+        #endif
+    }
 
     init(offeringPaywall: OfferingPaywall,
          multipleOfferings: Bool,
@@ -30,38 +39,34 @@ struct OfferingButton: View {
         self._selectedItemID = selectedItemID
     }
 
-    var body: some View {
-        VStack(alignment: .leading) {
-            Button {
-                Task {
-                    await viewModel.getAndShowPaywallForID(id: responseOffering.id)
-                    selectedItemID = responseOffering.id
-                }
-            } label: {
-                let templateName = rcOffering.paywall?.templateName
-                let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-                let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
-                HStack {
-                    VStack(alignment:.leading, spacing: 5) {
-                        Text(decorator + responseOffering.displayName)
-                            .font(.headline)
-                        if let title = paywallTitle, let name = templateName {
-                            let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
-                            Text(text)
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    Spacer()
-                    offeringButtonMenu(offeringID: responseOffering.id)
+    private let responseOffering: OfferingsResponse.Offering
+    private let rcOffering: Offering
+    private let multipleOfferings: Bool
+    private let hasMultipleTemplates: Bool
+    private let viewModel: OfferingsPaywallsViewModel
+    @Binding private var selectedItemID: String?
+}
+
+
+private extension OfferingButton {
+    private func offeringButtonLabel() -> some View {
+        let templateName = rcOffering.paywall?.templateName
+        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
+        let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
+        return HStack {
+            VStack(alignment:.leading, spacing: 5) {
+                Text(decorator + responseOffering.displayName)
+                    .font(.headline)
+                if let title = paywallTitle, let name = templateName {
+                    let text = hasMultipleTemplates ? "Style \(name): \(title)" : title
+                    Text(text)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
             }
+            Spacer()
+            offeringButtonMenu(offeringID: responseOffering.id)
         }
-        #if !os(watchOS)
-        .contextMenu {
-            contextMenuItems(offeringID: responseOffering.id)
-        }
-        #endif
     }
 
     private func offeringButtonMenu(offeringID: String) -> some View {
@@ -72,7 +77,6 @@ struct OfferingButton: View {
                 .padding([.leading, .vertical])
         }
     }
-
 
     @ViewBuilder
     private func contextMenuItems(offeringID: String) -> some View {
@@ -97,7 +101,3 @@ struct OfferingButton: View {
         }
     }
 }
-
-//#Preview {
-//    OfferingButton()
-//}
