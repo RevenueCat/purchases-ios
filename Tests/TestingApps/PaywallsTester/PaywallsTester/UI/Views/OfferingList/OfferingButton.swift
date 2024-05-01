@@ -24,19 +24,16 @@ struct OfferingButton: View {
     }
 
     init(offeringPaywall: OfferingPaywall,
-         multipleOfferings: Bool,
          viewModel: OfferingsPaywallsViewModel,
          selectedItemID: Binding<String?>) {
         self.responseOffering = offeringPaywall.offering
         self.rcOffering = offeringPaywall.paywall.convertToRevenueCatPaywall(with: responseOffering)
-        self.multipleOfferings = multipleOfferings
         self.viewModel = viewModel
         self._selectedItemID = selectedItemID
     }
 
     private let responseOffering: OfferingsResponse.Offering
     private let rcOffering: Offering
-    private let multipleOfferings: Bool
     private let viewModel: OfferingsPaywallsViewModel
     @Binding private var selectedItemID: String?
 }
@@ -56,7 +53,7 @@ private extension OfferingButton {
     private func label() -> some View {
         let templateName = rcOffering.paywall?.templateName
         let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
-        let decorator = multipleOfferings && self.selectedItemID == responseOffering.id ? "▶ " : ""
+        let decorator = viewModel.hasMultipleOfferingsWithPaywalls && self.selectedItemID == responseOffering.id ? "▶ " : ""
         HStack {
             VStack(alignment:.leading, spacing: 5) {
                 Text(decorator + responseOffering.displayName)

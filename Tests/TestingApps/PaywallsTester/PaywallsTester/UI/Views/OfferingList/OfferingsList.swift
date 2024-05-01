@@ -62,7 +62,6 @@ struct OfferingsList: View {
                 if !data.offeringsAndPaywalls.isEmpty {
                     ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
                         OfferingButton(offeringPaywall: offeringPaywall,
-                                       multipleOfferings: data.offeringsAndPaywalls.count > 1,
                                        viewModel: viewModel,
                                        selectedItemID: $selectedItemId)
                     }

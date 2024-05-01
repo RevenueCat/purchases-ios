@@ -45,6 +45,7 @@ final class OfferingsPaywallsViewModel {
     }
 
     private(set) var hasMultipleTemplates = false
+    private(set) var hasMultipleOfferingsWithPaywalls = false
 
     var presentedPaywall: PresentedPaywall?
 
@@ -64,6 +65,7 @@ final class OfferingsPaywallsViewModel {
 
             self.listData = .success(listData)
             self.hasMultipleTemplates = Set(listData.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
+            self.hasMultipleOfferingsWithPaywalls = listData.offeringsAndPaywalls.count > 1
         } catch let error as NSError {
             self.listData = .failure(error)
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
