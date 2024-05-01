@@ -276,7 +276,6 @@ extension SystemInfo {
         #endif
     }
 
-
     var isAppExtension: Bool {
         return self.bundle.bundlePath.hasSuffix(".appex")
     }
