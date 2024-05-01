@@ -15,11 +15,6 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    init(app: DeveloperResponse.App) {
-
-        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
-    }
-
     var body: some View {
         self.content
             .task {
@@ -34,6 +29,11 @@ struct OfferingsList: View {
             }
     }
 
+    init(app: DeveloperResponse.App) {
+
+        self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
+    }
+
     @Environment(\.scenePhase) private var scenePhase
 
     @State
@@ -42,7 +42,6 @@ struct OfferingsList: View {
     @State
     private var selectedItemId: String?
 
-
     @ViewBuilder
     private var content: some View {
         switch viewModel.state {
@@ -50,7 +49,7 @@ struct OfferingsList: View {
             SwiftUI.ProgressView()
         case .success:
             if let listData = viewModel.listData {
-                self.list(with:listData)
+                self.offeringsList(with:listData)
             } else {
                 Text("No data available.")
             }
@@ -58,31 +57,18 @@ struct OfferingsList: View {
             Text(error.description)
         }
     }
-
+    
     @ViewBuilder
-    private func list(with data: PaywallsData) -> some View {
+    private func offeringsList(with data: PaywallsData) -> some View {
         List {
             Section {
-                if !data.offeringsAndPaywalls.isEmpty {
-                    ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
-                        OfferingButton(offeringPaywall: offeringPaywall,
-                                       viewModel: viewModel,
-                                       selectedItemID: $selectedItemId)
-                    }
-                } else {
-                    noPaywallsListItem()
-                }
+                offeringsWithPaywallsListItems(with: data)
             } header: {
                 Text("Offerings With Paywalls")
             }
             if let appID = viewModel.singleApp?.id, !data.offeringsWithoutPaywalls.isEmpty {
                 Section{
-                    ForEach(data.offeringsWithoutPaywalls, id: \.self) { offeringWithoutPaywall in
-                        ManagePaywallButton(kind: .new, 
-                                            appID: appID,
-                                            offeringID: offeringWithoutPaywall.id,
-                                            buttonName: offeringWithoutPaywall.displayName)
-                    }
+                    offeringsWithoutPaywallsListItems(with: data, appID: appID)
                 } header: {
                     Text("Offerings Without Paywalls")
                 }
@@ -99,6 +85,29 @@ struct OfferingsList: View {
                     viewModel.dismissPaywall()
                 }
                 .id(viewModel.presentedPaywall?.hashValue) //FIXME: This should not be required, issue is in Paywallview
+        }
+    }
+
+    @ViewBuilder
+    private func offeringsWithPaywallsListItems(with data: PaywallsData) -> some View {
+        if !data.offeringsAndPaywalls.isEmpty {
+            ForEach(data.offeringsAndPaywalls, id: \.self) { offeringPaywall in
+                OfferingButton(offeringPaywall: offeringPaywall,
+                               viewModel: viewModel,
+                               selectedItemID: $selectedItemId)
+            }
+        } else {
+            noPaywallsListItem()
+        }
+    }
+
+    @ViewBuilder
+    private func offeringsWithoutPaywallsListItems(with data: PaywallsData, appID: String) -> some View {
+        ForEach(data.offeringsWithoutPaywalls, id: \.self) { offeringWithoutPaywall in
+            ManagePaywallButton(kind: .new,
+                                appID: appID,
+                                offeringID: offeringWithoutPaywall.id,
+                                buttonName: offeringWithoutPaywall.displayName)
         }
     }
 
