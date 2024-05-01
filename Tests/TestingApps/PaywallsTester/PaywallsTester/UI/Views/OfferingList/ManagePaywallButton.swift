@@ -23,18 +23,9 @@ struct ManagePaywallButton: View {
         }
     }
 
-    let kind: Kind
-    let appID: String
-    let offeringID: String
-    let buttonName: String?
-
     var body: some View {
         Button {
-            let urlString = urlString(appID: appID, offeringID: offeringID)
-            guard let url = URL(string: urlString) else {
-                Self.logger.log(level: .error, "Could not create URL for \(urlString)")
-                return
-            }
+            guard let url = dashboardPaywallURL else { return }
             openURL(url)
         } label: {
             switch kind {
@@ -60,14 +51,21 @@ struct ManagePaywallButton: View {
 
     init(kind: Kind, appID: String, offeringID: String, buttonName: String? = nil) {
         self.kind = kind
-        self.appID = appID
-        self.offeringID = offeringID
         self.buttonName = buttonName
+        self.dashboardPaywallURL = {
+            let urlString = "https://app.revenuecat.com/projects/\(appID)/paywalls/\(offeringID)/\(kind.rawValue)"
+            guard let url = URL(string: urlString) else {
+                Self.logger.log(level: .error, "Could not create URL for \(urlString)")
+                return nil
+            }
+
+            return url
+        }()
     }
 
-    private func urlString(appID: String, offeringID: String) -> String {
-        "https://app.revenuecat.com/projects/\(appID)/paywalls/\(offeringID)/\(kind.rawValue)"
-    }
+    private let kind: Kind
+    private let buttonName: String?
+    private let dashboardPaywallURL: URL?
 
     private func openURL(_ url: URL) {
         guard UIApplication.shared.canOpenURL(url) else {
