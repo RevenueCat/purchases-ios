@@ -51,21 +51,26 @@ struct ManagePaywallButton: View {
 
     init(kind: Kind, appID: String, offeringID: String, buttonName: String? = nil) {
         self.kind = kind
+        self.appID = appID
+        self.offeringID = offeringID
         self.buttonName = buttonName
-        self.dashboardPaywallURL = {
-            let urlString = "https://app.revenuecat.com/projects/\(appID)/paywalls/\(offeringID)/\(kind.rawValue)"
-            guard let url = URL(string: urlString) else {
-                Self.logger.log(level: .error, "Could not create URL for \(urlString)")
-                return nil
-            }
-
-            return url
-        }()
     }
 
     private let kind: Kind
+    private let appID: String
+    private let offeringID: String
     private let buttonName: String?
-    private let dashboardPaywallURL: URL?
+
+    private var dashboardPaywallURL: URL? {
+        let urlString = "https://app.revenuecat.com/projects/\(appID)/paywalls/\(offeringID)/\(kind.rawValue)"
+
+        guard let url = URL(string: urlString) else {
+            Self.logger.log(level: .error, "Could not create URL for \(urlString)")
+            return nil
+        }
+
+        return url
+    }
 
     private func openURL(_ url: URL) {
         guard UIApplication.shared.canOpenURL(url) else {
