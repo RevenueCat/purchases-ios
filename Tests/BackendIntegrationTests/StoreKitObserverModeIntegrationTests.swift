@@ -51,25 +51,34 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
-        _ = try await Purchases.shared.handleObserverModeTransaction(result)
+        try await simulateAppDidBecomeActive()
+        try await Task.sleep(nanoseconds: 3_000_000_000)    // 3 sec
 
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
         try await self.verifyEntitlementWentThrough(customerInfo)
+        await self.deleteAllTransactions(session: self.testSession)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRenewalsPostReceipt() async throws {
         self.testSession.timeRate = .realTime
+        await self.deleteAllTransactions(session: self.testSession)
 
         let productID = Self.monthlyNoIntroProductID
 
         try await self.manager.purchaseProductFromStoreKit2(productIdentifier: productID)
 
         try self.testSession.forceRenewalOfSubscription(productIdentifier: productID)
-
         try await self.verifyReceiptIsEventuallyPosted()
     }
 
+    /// Simulates the app becoming active by broadcasting the SystemInfo.applicationDidBecomeActiveNotification.
+    /// This is necessary because our backend integration test app initiates the purchase 
+    /// flow without any user input and therefore the purchase dialogs never appear.
+    /// Without the dialogs, the SDK's trigger to detect purchases in observer mode is never activated.
+    private func simulateAppDidBecomeActive() async throws {
+        NotificationCenter.default.post(name: SystemInfo.applicationDidBecomeActiveNotification!, object: nil)
+    }
 }
 
 class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegrationTests {
