@@ -43,6 +43,7 @@ struct AppList: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
 }
 
