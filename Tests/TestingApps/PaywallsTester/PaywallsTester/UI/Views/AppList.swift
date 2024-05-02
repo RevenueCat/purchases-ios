@@ -9,11 +9,12 @@ import SwiftUI
 import RevenueCat
 
 struct AppList: View {
-    
-    @Environment(ApplicationData.self) private var application
 
-    @State
-    private var introEligility: IntroEligibilityStatus = .eligible
+    @Environment(ApplicationData.self)
+    private var application
+
+    @AppStorage(UserDefaults.introEligibilityStatus) 
+    private var introEligibility: IntroEligibilityStatus = .eligible
 
     var body: some View {
         NavigationView {
@@ -21,7 +22,7 @@ struct AppList: View {
                 List {
                     ForEach(developer.apps, id: \.id) { app in
                         NavigationLink("\(app.name)") {
-                            OfferingsList(app: app, introEligility: $introEligility)
+                            OfferingsList(app: app, introEligility: $introEligibility)
                                 .navigationTitle("Paywalls") // TODO: Include app name in a dynamic length way
                         }
                     }

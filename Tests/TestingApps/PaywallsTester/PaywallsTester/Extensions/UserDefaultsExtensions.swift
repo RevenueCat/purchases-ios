@@ -14,5 +14,6 @@ public extension UserDefaults {
     )!
 
     static let sharedAppGroup: String = "group.com.revenuecat"
+    static let introEligibilityStatus: String = "introEligilityStatus"
 
 }
