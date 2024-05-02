@@ -27,7 +27,7 @@ struct OfferingsList: View {
                              Text("No Intro Offer").tag(IntroEligibilityStatus.ineligible)
                          }
                     } label: {
-                        Image(systemName: "ellipsis.circle.fill")
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
