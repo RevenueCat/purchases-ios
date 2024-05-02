@@ -339,17 +339,22 @@ class DeviceCache {
     }
 
     // MARK: - SK2
-    func cachedSyncedSK2TransactionIDs(appUserID: String) -> [UInt64]? {
+    func cachedSyncedSK2ObserverModeTransactionIDs(appUserID: String) -> [UInt64]? {
         return self.userDefaults.read { userDefaults in
-            (userDefaults.array(forKey: CacheKey.syncedSK2TransactionIDs(appUserID).rawValue) as? [NSNumber])?.map {
+            (userDefaults.array(
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID).rawValue) as? [NSNumber]
+            )?.map {
                 $0.uint64Value
             }
         }
     }
 
-    func cacheSyncedSK2TransactionIDs(syncedSK2TransactionIDs: [UInt64], appUserID: String) {
+    func cachedSyncedSK2ObserverModeTransactionIDs(syncedSK2TransactionIDs: [UInt64], appUserID: String) {
         self.userDefaults.write {
-            $0.set(syncedSK2TransactionIDs, forKey: CacheKey.syncedSK2TransactionIDs(appUserID))
+            $0.set(
+                syncedSK2TransactionIDs,
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID)
+            )
         }
     }
 
@@ -375,7 +380,7 @@ class DeviceCache {
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
-        case syncedSK2TransactionIDs(String)
+        case syncedSK2ObserverModeTransactionIDs(String)
 
         var rawValue: String {
             switch self {
@@ -384,7 +389,7 @@ class DeviceCache {
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
-            case let .syncedSK2TransactionIDs(userID): return "\(Self.base)syncedSK2TransactionIDs.\(userID)"
+            case let .syncedSK2ObserverModeTransactionIDs(userID): return "\(Self.base)syncedSK2ObserverModeTransactionIDs.\(userID)"
             }
         }
 
