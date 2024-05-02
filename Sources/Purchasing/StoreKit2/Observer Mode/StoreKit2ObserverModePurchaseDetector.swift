@@ -45,27 +45,18 @@ actor StoreKit2ObserverModePurchaseDetector: SK2ObserverModePurchaseDetectorType
     func detectUnobservedTransactions(
         delegate: StoreKit2ObserverModeManagerDelegate?
     ) async {
-        guard let mostRecentVerifiedTransaction: (
-            verifiedTransaction: StoreKit.Transaction,
-            jwsRepresentation: String
-        ) = (await allTransactionsProvider.getAllTransactions()
-            .compactMap { transaction in
-                guard let verifiedTransaction = transaction.verifiedTransaction else {
-                    return nil
-                }
-                return (
-                    verifiedTransaction: verifiedTransaction,
-                    jwsRepresentation: transaction.jwsRepresentation
-                )
-            }
-            .sorted(by: { $0.verifiedTransaction.purchaseDate > $1.verifiedTransaction.purchaseDate })
-            .first
-        ) else {
+        let allTransactions = await allTransactionsProvider.getAllTransactions()
+        var verifiedTransactions = allTransactions.filter { transaction in
+            return transaction.verifiedTransaction != nil
+        }
+        verifiedTransactions.sort {
+            $0.verifiedTransaction?.purchaseDate ?? .distantPast > $1.verifiedTransaction?.purchaseDate ?? .distantPast
+        }
+        guard let mostRecentTransaction = verifiedTransactions.first else {
             return
         }
-
-        let transaction: StoreKit.Transaction = mostRecentVerifiedTransaction.verifiedTransaction
-        let jwsRepresentation: String = mostRecentVerifiedTransaction.jwsRepresentation
+        let jwsRepresentation = mostRecentTransaction.jwsRepresentation
+        guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
 
         var cachedSyncedSK2ObserverModeTransactionIDs = Set(
             self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs(
