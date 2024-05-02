@@ -744,16 +744,12 @@
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FD18ED4E2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
-		FD9F982F2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9F982E2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift */; };
-		FD9F98302BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9F982E2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift */; };
-		FD9F983E2BE29BEF0091A5BF /* StoreKit2ObserverModeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9F983D2BE29BEF0091A5BF /* StoreKit2ObserverModeManagerTests.swift */; };
 		FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
 		FDAADFCC2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */; };
 		FDAADFD12BE2B87000BD1659 /* StoreKit2ObserverModePurchaseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */; };
 		FDAADFD32BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFD22BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift */; };
 		FDAADFD42BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFD22BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift */; };
 		FDAADFD72BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */; };
-		FDC1BE8E2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC1BE8D2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1492,13 +1488,10 @@
 		F5FCD3E927DA0D0B003BDC04 /* PriceFormatterProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProvider.swift; sourceTree = "<group>"; };
 		F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatterProviderTests.swift; sourceTree = "<group>"; };
 		FD18ED4D2837F89200C5AA4F /* StoreKitWorkaroundsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitWorkaroundsTests.swift; sourceTree = "<group>"; };
-		FD9F982E2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2ObserverModeManager.swift; sourceTree = "<group>"; };
-		FD9F983D2BE29BEF0091A5BF /* StoreKit2ObserverModeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModeManagerTests.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
 		FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
 		FDAADFD22BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
 		FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetectorTests.swift; sourceTree = "<group>"; };
-		FDC1BE8D2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModeManager.swift; sourceTree = "<group>"; };
 		FECF627761D375C8431EB866 /* StoreProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreProduct.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1993,7 +1986,6 @@
 				2DDF41E724F6F61B005BC22D /* MockSKProductDiscount.swift */,
 				57DE807F2807529F008D6C6F /* MockStorefront.swift */,
 				2D90F8C926FD257A009B9142 /* MockStoreKit2TransactionListener.swift */,
-				FD9F982E2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift */,
 				351B515326D44B0A00BD2BD7 /* MockStoreKit1Wrapper.swift */,
 				57C381E1279627B7009E3940 /* MockStoreProductDiscount.swift */,
 				351B514226D449C100BD2BD7 /* MockSubscriberAttributesManager.swift */,
@@ -2478,7 +2470,6 @@
 				F516BD322828FDD90083480B /* StoreKit2StorefrontListenerTests.swift */,
 				57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */,
 				4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */,
-				FD9F983D2BE29BEF0091A5BF /* StoreKit2ObserverModeManagerTests.swift */,
 				FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */,
 			);
 			path = StoreKit2;
@@ -2963,7 +2954,6 @@
 		FDAADFCD2BE2B82D00BD1659 /* Observer Mode */ = {
 			isa = PBXGroup;
 			children = (
-				FDC1BE8D2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift */,
 				FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */,
 			);
 			path = "Observer Mode";
@@ -3403,7 +3393,6 @@
 				4D322E382B7E7B170004AF53 /* PurchasesOrchestratorSK2Tests.swift in Sources */,
 				2D9C5EC826F280510057FC45 /* StoreProductTests.swift in Sources */,
 				FDAADFD42BE2B99900BD1659 /* MockStoreKit2ObserverModePurchaseDetector.swift in Sources */,
-				FD9F983E2BE29BEF0091A5BF /* StoreKit2ObserverModeManagerTests.swift in Sources */,
 				3543914426F911F300E669DF /* MockCustomerInfoManager.swift in Sources */,
 				5738F46E278CAC520096D623 /* StoreTransactionTests.swift in Sources */,
 				3543914226F911F300E669DF /* MockSK1Product.swift in Sources */,
@@ -3415,7 +3404,6 @@
 				F5E5E2EE28479BD000216ECD /* ProductsFetcherSK2Tests.swift in Sources */,
 				3543913626F90D6A00E669DF /* TrialOrIntroPriceEligibilityCheckerSK1Tests.swift in Sources */,
 				4F6E81982A81BC30006EF181 /* TestClock.swift in Sources */,
-				FD9F98302BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift in Sources */,
 				2D34D9D227481D9B00C05DB6 /* TrialOrIntroPriceEligibilityCheckerSK2Tests.swift in Sources */,
 				FDAADFCC2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */,
 				2D90F8C726FD221D009B9142 /* MockASN1ContainerBuilder.swift in Sources */,
@@ -3699,7 +3687,6 @@
 				2DDF41A224F6F331005BC22D /* ProductsManager.swift in Sources */,
 				57CCC6EC2984496D001CE9B6 /* Box.swift in Sources */,
 				4F6ABC7E2A81700900250E63 /* PaywallsStrings.swift in Sources */,
-				FDC1BE8E2BE1361C00E646E3 /* StoreKit2ObserverModeManager.swift in Sources */,
 				575137CF27F50D2F0064AB2C /* HTTPResponseBody.swift in Sources */,
 				573E7F092819B989007C9128 /* StoreKitWorkarounds.swift in Sources */,
 				5791FCF32992D3EC00F1FEDA /* SigningStrings.swift in Sources */,
@@ -3952,7 +3939,6 @@
 				5796A39927D6C1E000653165 /* BackendPostSubscriberAttributesTests.swift in Sources */,
 				35D8330A262FBA9A00E60AC5 /* MockUserDefaults.swift in Sources */,
 				2DDF41DF24F6F527005BC22D /* MockProductsManager.swift in Sources */,
-				FD9F982F2BE28DE30091A5BF /* MockStoreKit2ObserverModeManager.swift in Sources */,
 				351B514F26D44ACE00BD2BD7 /* PurchasesSubscriberAttributesTests.swift in Sources */,
 				57DBFA5D28AADA43002D18CA /* PurchasesLogInTests.swift in Sources */,
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
@@ -4402,6 +4388,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -4430,6 +4417,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -4459,7 +4447,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Tests/BackendIntegrationTestApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Tests/BackendIntegrationTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
@@ -4487,7 +4475,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Tests/BackendIntegrationTestApp/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Tests/BackendIntegrationTestApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.1;
@@ -4700,6 +4688,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -4728,6 +4717,7 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8SXR2327BM;
 				INFOPLIST_FILE = Tests/BackendIntegrationTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (

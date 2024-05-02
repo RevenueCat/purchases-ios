@@ -431,14 +431,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
                 }
-                let storeKit2ObserModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
+                let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
                     deviceCache: deviceCache,
                     currentUserProvider: identityManager,
                     allTransactionsProvider: SK2AllTransactionsProvider()
-                )
-                let storeKit2ObserverModeManager = StoreKit2ObserverModeManager(
-                    storeKit2ObserModePurchaseDetector: storeKit2ObserModePurchaseDetector,
-                    notificationCenter: notificationCenter
                 )
 
                 return .init(
@@ -461,7 +457,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                    storeKit2ObserverModeManager: storeKit2ObserverModeManager,
+                    storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsTracker: diagnosticsTracker
                 )
@@ -1713,6 +1709,10 @@ private extension Purchases {
         self.delegate?.purchases?(self, receivedUpdated: new)
     }
 
+    @objc func applicationDidBecomeActive() {
+        purchasesOrchestrator.handleApplicationDidBecomeActive()
+    }
+
     @objc func applicationWillEnterForeground() {
         Logger.debug(Strings.configure.application_foregrounded)
 
@@ -1741,6 +1741,11 @@ private extension Purchases {
     }
 
     func subscribeToAppStateNotifications() {
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationDidBecomeActive),
+                                            name: SystemInfo.applicationDidBecomeActiveNotification,
+                                            object: nil)
+        
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationWillEnterForeground),
                                             name: SystemInfo.applicationWillEnterForegroundNotification,

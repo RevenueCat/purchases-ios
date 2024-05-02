@@ -16,12 +16,12 @@ import Foundation
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 // swiftlint:disable type_name
-final class MockStoreKit2ObserverModePurchaseDetector: SK2ObserverModePurchaseDetectorType {
+final class MockStoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType {
 
     var detectUnobservedTransactionsCalled = false
     var detectUnobservedTransactionsCalledCount = 0
 
-    func detectUnobservedTransactions(delegate: (any RevenueCat.StoreKit2ObserverModeManagerDelegate)?) async {
+    func detectUnobservedTransactions(delegate: (any StoreKit2ObserverModePurchaseDetectorDelegate)?) async {
         detectUnobservedTransactionsCalled = true
         detectUnobservedTransactionsCalledCount += 1
     }

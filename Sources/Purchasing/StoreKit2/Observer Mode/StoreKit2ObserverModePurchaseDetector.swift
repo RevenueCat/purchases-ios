@@ -14,17 +14,32 @@
 import Foundation
 import StoreKit
 
+/// A delegate protocol for handling verified transactions in observer mode.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable type_name
+protocol StoreKit2ObserverModePurchaseDetectorDelegate: AnyObject, Sendable {
+
+    /// Handles a verified transaction with its corresponding JWS representation.
+    /// - Parameters:
+    ///   - verifiedTransaction: The verified transaction to be processed.
+    ///   - jwsRepresentation: The JSON Web Signature representation of the transaction.
+    func handleSK2ObserverModeTransaction(
+        verifiedTransaction: StoreKit.Transaction,
+        jwsRepresentation: String
+    ) async throws
+}
+
 /// Protocol describing an actor capable of detecting purchases from StoreKit 2.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol SK2ObserverModePurchaseDetectorType {
+protocol StoreKit2ObserverModePurchaseDetectorType {
     func detectUnobservedTransactions(
-        delegate: StoreKit2ObserverModeManagerDelegate?
+        delegate: StoreKit2ObserverModePurchaseDetectorDelegate?
     ) async
 }
 
 /// Actor responsibile for detecting purchases from StoreKit2 that should be processed by observer mode.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-actor StoreKit2ObserverModePurchaseDetector: SK2ObserverModePurchaseDetectorType {
+actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType {
 
     private let deviceCache: DeviceCache
     private let currentUserProvider: CurrentUserProvider
@@ -43,7 +58,7 @@ actor StoreKit2ObserverModePurchaseDetector: SK2ObserverModePurchaseDetectorType
     /// Detects unobserved transactions and forwards them to the StoreKit2ObserverModeManagerDelegate
     /// for processing.
     func detectUnobservedTransactions(
-        delegate: StoreKit2ObserverModeManagerDelegate?
+        delegate: StoreKit2ObserverModePurchaseDetectorDelegate?
     ) async {
         let allTransactions = await allTransactionsProvider.getAllTransactions()
         var verifiedTransactions = allTransactions.filter { transaction in

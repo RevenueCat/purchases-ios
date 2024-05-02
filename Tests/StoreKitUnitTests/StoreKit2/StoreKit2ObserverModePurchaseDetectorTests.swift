@@ -36,7 +36,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     func testDetectUnobservedTransactionsDoesntCallDelegateWith0Transactions() async {
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [])
 
-        let delegate = MockStoreKit2ObserverModeManagerDelegate()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
@@ -48,14 +48,14 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
         expect(delegate.handleSK2ObserverModeTransactionCalled) == false
 
-        expect(self.deviceCache.invokedReadCachedSyncedSK2TransactionIDs) == false
-        expect(self.deviceCache.invokedSetCacheSyncedSK2TransactionIDs) == false
+        expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == false
+        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == false
     }
 
     func testDetectUnobservedTransactionsCallsDelegateUnobservedTransactions() async throws {
         let txn1 = try await self.simulateAnyPurchase(product: nil, finishTransaction: false)
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
-        let delegate = MockStoreKit2ObserverModeManagerDelegate()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
@@ -76,8 +76,8 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
         expect(delegateInvocation.jwsRepresentation) == txn1.jwsRepresentation
 
         // Validate cache state
-        expect(self.deviceCache.invokedReadCachedSyncedSK2TransactionIDs) == true
-        expect(self.deviceCache.invokedSetCacheSyncedSK2TransactionIDs) == true
+        expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == true
+        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == true
     }
 
     // Since the transaction is cached when it is detected for the first time, we don't expect
@@ -85,7 +85,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     func testDetectUnobservedTransactionsCallsDelegateOncePerUnobservedTransactions() async throws {
         let txn1 = try await self.simulateAnyPurchase(product: nil, finishTransaction: false)
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
-        let delegate = MockStoreKit2ObserverModeManagerDelegate()
+        let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
@@ -107,14 +107,15 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
         expect(delegateInvocation.jwsRepresentation) == txn1.jwsRepresentation
 
         // Validate cache state
-        expect(self.deviceCache.invokedReadCachedSyncedSK2TransactionIDs) == true
-        expect(self.deviceCache.invokedSetCacheSyncedSK2TransactionIDs) == true
+        expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == true
+        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == true
     }
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 // Unchecked since it's a mock
-final class MockStoreKit2ObserverModeManagerDelegate: StoreKit2ObserverModeManagerDelegate, @unchecked Sendable {
+final class MockStoreKit2ObserverModePurchaseDetectorDelegate: StoreKit2ObserverModePurchaseDetectorDelegate,
+                                                               @unchecked Sendable {
 
     var handleSK2ObserverModeTransactionCalled = false
     var handleSK2ObserverModeTransactionCount = 0
