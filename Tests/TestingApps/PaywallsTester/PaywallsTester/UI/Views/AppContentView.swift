@@ -42,7 +42,9 @@ struct AppContentView: View {
             #if DEBUG
             SamplePaywallsList()
                 .tabItem {
-                    Label("Examples", systemImage: "pawprint")
+                    Image("logo")
+                        .renderingMode(.template)
+                    Text("Examples")
                 }
             #endif
 

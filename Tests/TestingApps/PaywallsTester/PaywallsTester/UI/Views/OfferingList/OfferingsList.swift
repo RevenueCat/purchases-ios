@@ -25,7 +25,7 @@ struct OfferingsList: View {
                     Menu {
                         Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
-                             Text("No Intro Offer").tag(IntroEligibilityStatus.ineligible)
+                            Text("No Intro Offer").tag(IntroEligibilityStatus.ineligible)
                          }
                     } label: {
                         Image(systemName: "ellipsis.circle")
