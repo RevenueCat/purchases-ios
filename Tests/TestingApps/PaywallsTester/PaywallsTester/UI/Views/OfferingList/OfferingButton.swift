@@ -48,26 +48,49 @@ private extension OfferingButton {
 }
 
 private extension OfferingButton {
-
+    
     @ViewBuilder
     private func label() -> some View {
-        let templateName = rcOffering.paywall?.templateName
-        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title
+        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title ?? ""
         let decorator = viewModel.hasMultipleOfferingsWithPaywalls && self.selectedItemID == responseOffering.id ? "▶ " : ""
         HStack {
             VStack(alignment:.leading, spacing: 5) {
-                Text(decorator + responseOffering.displayName)
-                    .font(.headline)
-                if let title = paywallTitle, let name = templateName {
-                    let text = viewModel.hasMultipleTemplates ? "Style \(name): \(title)" : title
-                    Text(text)
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
+                HStack {
+                    Text(decorator + responseOffering.displayName)
+                        .font(.headline)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                    if let templateName = rcOffering.paywall?.templateName {
+                        paywallNamePill(name: templateName)
+                    }
                 }
+                Text(paywallTitle)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
             }
             Spacer()
             moreActionsMenu()
         }
+    }
+
+    private func paywallNamePill(name: String) -> some View {
+        let tagText = {
+            if let number = Int(name), let templateInfo = TemplateInfo.init(rawValue: number) {
+                return "\(templateInfo.description)"
+            } else {
+                return "Template \(name)"
+            }
+        }()
+        return Text(tagText)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(
+                Capsule()
+                    .stroke(Color.accentColor.opacity(0.6), lineWidth: 1)
+            )
+            .foregroundColor(.accentColor)
+            .font(.system(size: 10))
+            .lineLimit(1)
     }
 
     private func moreActionsMenu() -> some View {
