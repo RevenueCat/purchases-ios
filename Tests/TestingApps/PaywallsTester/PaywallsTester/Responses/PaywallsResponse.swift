@@ -90,7 +90,7 @@ extension PaywallsResponse.Paywall {
                     storeProduct: TestStoreProduct(
                         localizedTitle: $0,
                         price: 1.99,
-                        localizedPriceString: "$1.99",
+                        localizedPriceString: "$39.99",
                         productIdentifier: "com.revenuecat.test_product",
                         productType: .autoRenewableSubscription,
                         localizedDescription: $0,
