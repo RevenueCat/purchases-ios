@@ -15,7 +15,8 @@ import SwiftUI
 
 struct OfferingsList: View {
 
-    @Binding private var introEligility: IntroEligibilityStatus
+    @Binding 
+    private var introEligility: IntroEligibilityStatus
 
     var body: some View {
         self.content

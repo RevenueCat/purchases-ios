@@ -12,7 +12,8 @@ struct AppList: View {
     
     @Environment(ApplicationData.self) private var application
 
-    @State private var introEligility: IntroEligibilityStatus = .eligible
+    @State
+    private var introEligility: IntroEligibilityStatus = .eligible
 
     var body: some View {
         NavigationView {
