@@ -31,7 +31,7 @@ struct LoginScreen: View {
                     TextField("Email", text: self.$model.username)
                         .disableAutocorrection(true)
                         .textContentType(.username)
-#if !os(macOS)
+#if !os(macOS) && !os(watchOS)
                         .autocapitalization(.none)
                         .keyboardType(.emailAddress)
 #endif
@@ -43,7 +43,7 @@ struct LoginScreen: View {
                         TextField("2FA code", text: self.$model.code)
                             .textContentType(.oneTimeCode)
                             .transition(.push(from: .bottom))
-#if !os(macOS)
+#if !os(macOS) && !os(watchOS)
                             .autocapitalization(.none)
                             .keyboardType(.numberPad)
 #endif

@@ -94,12 +94,16 @@ private extension OfferingButton {
     }
 
     private func moreActionsMenu() -> some View {
+        #if !os(watchOS)
         Menu {
             contextMenuItems()
         } label: {
             Image(systemName: "ellipsis")
                 .padding([.leading, .vertical])
         }
+        #else
+        EmptyView()
+        #endif
     }
 
     @ViewBuilder

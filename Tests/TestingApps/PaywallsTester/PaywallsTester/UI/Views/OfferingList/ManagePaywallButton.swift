@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import WatchKit
 
 struct ManagePaywallButton: View {
 
@@ -73,11 +74,15 @@ struct ManagePaywallButton: View {
     }
 
     private func openURL(_ url: URL) {
+        #if !os(watchOS)
         guard UIApplication.shared.canOpenURL(url) else {
             Self.logger.log(level: .error, "Could not open URL for \(url)")
             return
         }
         UIApplication.shared.open(url)
+        #else
+        WKExtension.shared().openSystemURL(url)
+        #endif
     }
 
     private static var logger = Logging.shared.logger(category: "Paywalls Tester")

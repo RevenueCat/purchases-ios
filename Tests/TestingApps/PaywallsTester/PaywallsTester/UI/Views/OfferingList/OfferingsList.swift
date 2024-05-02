@@ -21,7 +21,8 @@ struct OfferingsList: View {
     var body: some View {
         self.content
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                #if !os(watchOS)
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Picker("Options", selection: $introEligility) {
                             Text("Show Intro Offer").tag(IntroEligibilityStatus.eligible)
@@ -31,6 +32,7 @@ struct OfferingsList: View {
                         Image(systemName: "ellipsis.circle")
                     }
                 }
+                #endif
             }
             .task {
                 await viewModel.updateOfferingsAndPaywalls()

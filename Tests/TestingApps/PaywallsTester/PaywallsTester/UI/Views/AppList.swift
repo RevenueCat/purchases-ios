@@ -33,7 +33,7 @@ struct AppList: View {
             }
             .navigationTitle("My Apps")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         application.signOut()
                     } label: {
