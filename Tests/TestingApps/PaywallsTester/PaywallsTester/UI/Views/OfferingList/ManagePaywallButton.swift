@@ -6,7 +6,9 @@
 //
 
 import SwiftUI
+#if os(watchOS)
 import WatchKit
+#endif
 
 struct ManagePaywallButton: View {
 
