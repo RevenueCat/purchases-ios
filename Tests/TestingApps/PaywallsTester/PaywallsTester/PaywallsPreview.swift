@@ -47,6 +47,7 @@ struct PaywallsPreview: App {
 
 // MARK: - Universal Links
 extension PaywallsPreview {
+
     func processURL(_ url: URL) {
         // set to nil to trigger re-render if presenting same paywall with new data
         paywallIDToShow = nil
@@ -66,4 +67,5 @@ extension PaywallsPreview {
 
         return IdentifiableString(id: paywallID)
     }
+    
 }
