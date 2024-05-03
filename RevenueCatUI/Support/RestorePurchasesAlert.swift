@@ -35,14 +35,14 @@ public struct RestorePurchasesAlert: ViewModifier {
                             Task {
                                 guard let customerInfo = try? await Purchases.shared.restorePurchases() else {
                                     // todo: handle errors
-                                    self.alertType = .purchasesNotFound
+                                    self.setAlertType(.purchasesNotFound)
                                     return
                                 }
                                 let hasEntitlements = customerInfo.entitlements.active.count > 0
                                 if hasEntitlements {
-                                    self.alertType = .purchasesRecovered
+                                    self.setAlertType(.purchasesRecovered)
                                 } else {
-                                    self.alertType = .purchasesNotFound
+                                    self.setAlertType(.purchasesNotFound)
                                 }
                             }
                         }),
@@ -64,7 +64,7 @@ public struct RestorePurchasesAlert: ViewModifier {
                                         "Contact support for assistance if you think this is an error."),
                           primaryButton: .default(Text("Contact Support"), action: {
                         // todo: make configurable
-                        openURL(URL(string: "mailto:support@revenuecat.com")!)
+                        openURL(self.createMailURL()!)
                     }),
                           secondaryButton: .cancel(Text("Cancel")) {
                         dismiss()
@@ -72,6 +72,24 @@ public struct RestorePurchasesAlert: ViewModifier {
                 }
             }
     }
+
+    private func setAlertType(_ newType: AlertType) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.alertType = newType
+            self.isPresented = true
+        }
+    }
+
+    func createMailURL() -> URL? {
+        let subject = "Support Request"
+        let body = "Please describe your issue or question."
+        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+
+        let urlString = "mailto:support@revenuecat.com?subject=\(encodedSubject)&body=\(encodedBody)"
+        return URL(string: urlString)
+    }
+
 }
 
 @available(iOS 15.0, *)
