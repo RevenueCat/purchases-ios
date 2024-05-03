@@ -543,6 +543,8 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
@@ -560,11 +562,12 @@ public extension Purchases {
     @available(macOS, obsoleted: 1, message: """
     If you're using observer mode with StoreKit 2, ensure that you call Purchases.handleObserverModeTransaction(result:) after making a purchase.
     """, renamed: "configure(withAPIKey:appUserID:observerMode:storeKitVersion:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @_disfavoredOverload
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
+                                             observerMode: Bool,
+                                             storeKitVersion: StoreKitVersion) -> Purchases {
         fatalError()
     }
 
@@ -765,21 +768,4 @@ public extension Purchases {
     @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
     @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
     enum PeriodType {}
-
-}
-
-public extension Configuration.Builder {
-
-    @available(iOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(tvOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(watchOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(macOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @objc func with(observerMode: Bool) -> Configuration.Builder {
-        fatalError()
-    }
-
 }
