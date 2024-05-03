@@ -146,7 +146,7 @@ import Foundation
             self.storeKitVersion = .default
             return self
         }
-        
+
         /**
          * Set `observerMode`.
          * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
