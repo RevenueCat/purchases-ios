@@ -31,7 +31,7 @@ protocol StoreKit2ObserverModePurchaseDetectorDelegate: AnyObject, Sendable {
 
 /// Protocol describing an actor capable of detecting purchases from StoreKit 2.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol StoreKit2ObserverModePurchaseDetectorType {
+protocol StoreKit2ObserverModePurchaseDetectorType: Actor {
     func detectUnobservedTransactions(
         delegate: StoreKit2ObserverModePurchaseDetectorDelegate?
     ) async
