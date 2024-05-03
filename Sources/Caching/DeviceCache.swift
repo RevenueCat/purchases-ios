@@ -340,12 +340,9 @@ class DeviceCache {
 
     // MARK: - SK2
     func cachedSyncedSK2ObserverModeTransactionIDs(appUserID: String) -> [UInt64]? {
-        return self.userDefaults.read { userDefaults in
-            (userDefaults.array(
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID).rawValue) as? [NSNumber]
-            )?.map {
-                $0.uint64Value
-            }
+                return self.userDefaults.read { userDefaults in
+            userDefaults.array(
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID).rawValue) as? [UInt64]
         }
     }
 
