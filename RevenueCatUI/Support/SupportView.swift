@@ -14,6 +14,7 @@ public struct SupportView: View {
     public init() { }
 
     @State private var hasSubscriptions: Bool = false
+    @State private var areSubscriptionsFromApple: Bool = false
 
     public var body: some View {
         NavigationView {
@@ -32,14 +33,25 @@ public struct SupportView: View {
 
     private func loadHasSubscriptions() async {
         Task {
-            self.hasSubscriptions = try await Purchases.shared.customerInfo().activeSubscriptions.count > 0
+            let customerInfo = try await Purchases.shared.customerInfo()
+            self.hasSubscriptions = customerInfo.activeSubscriptions.count > 0
+            guard let firstActiveEntitlement: EntitlementInfo = customerInfo.entitlements.active.first?.value else {
+                self.areSubscriptionsFromApple = false
+                return
+            }
+
+            self.areSubscriptionsFromApple = firstActiveEntitlement.store == .appStore || firstActiveEntitlement.store == .macAppStore
         }
     }
 
     @ViewBuilder
     private func destinationView() -> some View {
         if self.hasSubscriptions {
-            ManageSubscriptionsView()
+            if areSubscriptionsFromApple {
+                ManageSubscriptionsView()
+            } else {
+                WrongPlatformView()
+            }
         } else {
             NoSubscriptionsView()
         }

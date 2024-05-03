@@ -12,6 +12,7 @@ import RevenueCat
 public struct ManageSubscriptionsView: View {
     @State private var subscriptionInformation: SubscriptionInformation? = nil
     @State private var showRestoreAlert: Bool = false
+    @State private var refundRequestStatus: String? = nil
     @Environment(\.openURL) var openURL
 
     public var body: some View {
@@ -33,12 +34,22 @@ public struct ManageSubscriptionsView: View {
                     .foregroundColor(Color.gray)
                     .padding(.horizontal)
 
-                Text("\(subscriptionInformation.willRenew ? "Renews" : "Expires"): \(subscriptionInformation.nextRenewal)")
+                Text("\(subscriptionInformation.renewalString): \(subscriptionInformation.nextRenewal)")
                     .font(.caption)
                     .foregroundColor(Color.gray)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                     .padding(.bottom)
+
+                if let refundRequestStatus = refundRequestStatus {
+                    Text("Refund request status: \(refundRequestStatus)")
+                        .font(.caption)
+                        .bold()
+                        .foregroundColor(Color.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .padding(.bottom)
+                }
             }
 
             Spacer()
@@ -56,6 +67,26 @@ public struct ManageSubscriptionsView: View {
             Button("Change plans") {
                 Task {
                     try await Purchases.shared.showManageSubscriptions()
+                }
+            }
+            .padding()
+            .frame(width: 300)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+
+            Button("Request refund") {
+                Task {
+                    guard let subscriptionInformation = subscriptionInformation else { return }
+                    let status = try await Purchases.shared.beginRefundRequest(forProduct: subscriptionInformation.productIdentifier)
+                    switch status {
+                    case .error:
+                        self.refundRequestStatus = "Error when requesting refund, try again"
+                    case .success:
+                        self.refundRequestStatus = "Refund granted successfully!"
+                    case .userCancelled:
+                        self.refundRequestStatus = "Refund canceled"
+                    }
                 }
             }
             .padding()
@@ -84,6 +115,14 @@ public struct ManageSubscriptionsView: View {
         let price: String
         let nextRenewal: String
         let willRenew: Bool
+        let productIdentifier: String
+        let active: Bool
+
+        var renewalString: String {
+            return active ?
+                (willRenew ? "Renews" : "Expires")
+                : "Expired"
+        }
     }
 
     private func loadSubscriptionInformation() async throws {
@@ -99,8 +138,10 @@ public struct ManageSubscriptionsView: View {
             title: subscribedProduct.localizedTitle,
             duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
             price: subscribedProduct.localizedPriceString,
-            nextRenewal: "\(String(describing: currentEntitlement.expirationDate))",
-            willRenew: currentEntitlement.willRenew)
+            nextRenewal: "\(String(describing: currentEntitlement.expirationDate!))",
+            willRenew: currentEntitlement.willRenew,
+            productIdentifier: subscribedProductID,
+            active: currentEntitlement.isActive)
     }
 
     func createMailURL() -> URL? {

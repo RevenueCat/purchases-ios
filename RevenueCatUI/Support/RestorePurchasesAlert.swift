@@ -52,7 +52,7 @@ public struct RestorePurchasesAlert: ViewModifier {
                 case .purchasesRecovered:
                     Alert(title: Text("Purchases recovered!"),
                           message: Text("We applied the previously purchased items to your account. " +
-                                        "Sorry for the inconvenience.."),
+                                        "Sorry for the inconvenience."),
                           dismissButton: .default(Text("Dismiss")) {
                         dismiss()
                     })
