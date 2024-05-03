@@ -87,12 +87,20 @@ public struct ManageSubscriptionsView: View {
     }
 
     private func loadSubscriptionInformation() async throws {
+        guard let customerInfo = try? await Purchases.shared.customerInfo(),
+              let currentEntitlementDict = customerInfo.entitlements.active.first,
+              let subscribedProductID = try? await Purchases.shared.customerInfo().activeSubscriptions.first,
+              let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
+            return
+        }
+        let currentEntitlement = currentEntitlementDict.value
+
         self.subscriptionInformation = SubscriptionInformation(
-            title: "Basic",
-            duration: "Monthly",
-            price: "4.99/month",
-            nextRenewal: "June 1st, 2024",
-            willRenew: false)
+            title: subscribedProduct.localizedTitle,
+            duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
+            price: subscribedProduct.localizedPriceString,
+            nextRenewal: "\(String(describing: currentEntitlement.expirationDate))",
+            willRenew: currentEntitlement.willRenew)
     }
 
     func createMailURL() -> URL? {
@@ -106,6 +114,26 @@ public struct ManageSubscriptionsView: View {
     }
 
 }
+
+
+extension SubscriptionPeriod {
+    var durationTitle: String {
+        switch self.unit {
+        case .day: return "day"
+        case .week: return "week"
+        case .month: return "month"
+        case .year: return "year"
+        default: return "Unknown"
+        }
+    }
+
+    func periodTitle() -> String {
+        let periodString = "\(self.value) \(self.durationTitle)"
+        let pluralized = self.value > 1 ?  periodString + "s" : periodString
+        return pluralized
+    }
+}
+
 
 @available(iOS 15.0, *)
 #Preview {
