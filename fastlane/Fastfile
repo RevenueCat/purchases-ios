@@ -17,6 +17,7 @@ files_with_version_number = {
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
+  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
   './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
 }
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
@@ -27,10 +28,6 @@ files_with_version_number_without_prerelease_modifiers = {
   './Tests/UnitTests/Info.plist' => PLIST_VERSION_PATTERNS,
   './Tests/UnitTestsHostApp/Info.plist' => PLIST_VERSION_PATTERNS
 }
-files_to_update_on_latest_stable_releases = {
-  './scripts/docs/index.html' => ['purchases-ios-docs/{x}/documentation/revenuecat'],
-}
-
 repo_name = 'purchases-ios'
 snapshots_repo_name = 'purchases-ios-snapshots'
 changelog_latest_path = './CHANGELOG.latest.md'
@@ -54,7 +51,6 @@ platform :ios do
       changelog_path: changelog_path,
       files_to_update: files_with_version_number,
       files_to_update_without_prerelease_modifiers: files_with_version_number_without_prerelease_modifiers,
-      files_to_update_on_latest_stable_releases: files_to_update_on_latest_stable_releases,
       repo_name: repo_name,
       github_rate_limit: options[:github_rate_limit],
       editor: options[:editor],

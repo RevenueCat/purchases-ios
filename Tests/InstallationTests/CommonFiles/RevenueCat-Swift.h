@@ -658,11 +658,6 @@ SWIFT_CLASS_NAMED("Builder")
 ///   </li>
 /// </ul>
 - (RCConfigurationBuilder * _Nonnull)withEntitlementVerificationMode:(enum RCEntitlementVerificationMode)mode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=6.2) SWIFT_AVAILABILITY(tvos,introduced=13.0) SWIFT_AVAILABILITY(macos,introduced=10.15) SWIFT_AVAILABILITY(ios,introduced=13.0);
-/// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
-/// Examples of this information include response times, cache hits or error codes.
-/// This information will be anonymous so it can’t be traced back to the end-user
-/// Defaults to <code>false</code>
-- (RCConfigurationBuilder * _Nonnull)withDiagnosticsEnabled:(BOOL)diagnosticsEnabled SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
