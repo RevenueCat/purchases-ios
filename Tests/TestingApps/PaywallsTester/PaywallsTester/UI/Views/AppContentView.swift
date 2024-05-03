@@ -25,6 +25,7 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
+            // disabling with `false &&` in anticipation of future removal
             if false && Purchases.isConfigured {
                 NavigationView {
                     ZStack {
@@ -53,6 +54,7 @@ struct AppContentView: View {
                     Label("My Apps", systemImage: "network")
                 }
 
+            // disabling with `false &&` in anticipation of future removal
             if false && Purchases.isConfigured {
                 UpsellView()
                     .tabItem {
