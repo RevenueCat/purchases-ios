@@ -1,6 +1,6 @@
 //
-//  SimpleApp.swift
-//  SimpleApp
+//  PaywallsPreview.swift
+//  PaywallsPreview
 //
 //  Created by James Borthwick on 4/25/24.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import RevenueCat
 
 @main
-struct SimpleApp: App {
+struct PaywallsPreview: App {
 
     struct IdentifiableString: Identifiable {
 
@@ -53,7 +53,8 @@ struct SimpleApp: App {
 }
 
 // MARK: - Universal Links
-extension SimpleApp {
+extension PaywallsPreview {
+
     func processURL(_ url: URL) {
         // set to nil to trigger re-render if presenting same paywall with new data
         paywallPreviewData = nil
@@ -82,4 +83,5 @@ extension SimpleApp {
 
         return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: introElgibility)
     }
+    
 }
