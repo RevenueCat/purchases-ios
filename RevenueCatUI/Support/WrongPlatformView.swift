@@ -30,6 +30,7 @@ public struct WrongPlatformView: View {
                 }
             }
             .padding()
+            .frame(width: 300)
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(10)
