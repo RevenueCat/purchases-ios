@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  SimpleApp
+//  PaywallsPreview
 //
 //  Created by Nacho Soto on 5/30/23.
 //

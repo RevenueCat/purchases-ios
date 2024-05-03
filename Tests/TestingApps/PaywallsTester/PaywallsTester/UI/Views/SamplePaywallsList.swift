@@ -1,6 +1,6 @@
 //
 //  SamplePaywallsList.swift
-//  SimpleApp
+//  PaywallsPreview
 //
 //  Created by Nacho Soto on 7/27/23.
 //
@@ -19,7 +19,7 @@ struct SamplePaywallsList: View {
     var body: some View {
         NavigationView {
             self.list(with: Self.loader)
-                .navigationTitle("Test Paywalls")
+                .navigationTitle("Example Paywalls")
         }
             .sheet(item: self.$display) { display in
                 self.view(for: display)
@@ -231,15 +231,15 @@ extension PaywallTemplate {
     var name: String {
         switch self {
         case .template1:
-            return "#1: Minimalist"
+            return "1: Minimalist"
         case .template2:
-            return "#2: Bold packages"
+            return "2: Bold packages"
         case .template3:
-            return "#3: Feature list"
+            return "3: Feature list"
         case .template4:
-            return "#4: Horizontal packages"
+            return "4: Horizontal packages"
         case .template5:
-            return "#5: Minimalist with Small Banner"
+            return "5: Minimalist with Small Banner"
         }
     }
 

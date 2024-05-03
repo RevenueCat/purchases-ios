@@ -1,6 +1,6 @@
 //
 //  CustomPaywall.swift
-//  SimpleApp
+//  PaywallsPreview
 //
 //  Created by Nacho Soto on 8/9/23.
 //
