@@ -21,6 +21,15 @@ struct ManagePaywallButton: View {
                 return "plus.square.on.square"
             }
         }
+
+        var defaultName: String {
+            switch self {
+            case .edit:
+                "Edit Paywall"
+            case .new:
+                "New Paywall"
+            }
+        }
     }
 
     var body: some View {
@@ -31,14 +40,14 @@ struct ManagePaywallButton: View {
             switch kind {
             case .edit:
                 HStack {
-                    Text(buttonName ?? "Edit Paywall")
+                    Text(buttonName ?? kind.defaultName)
                         .font(.headline)
                     Spacer()
                     Image(systemName: kind.systemImageName)
                 }
             case .new:
                 HStack {
-                    Text(buttonName ?? "New Paywall")
+                    Text(buttonName ?? kind.defaultName)
                         .font(.headline)
                     Spacer()
                     Image(systemName: "escape")
