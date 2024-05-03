@@ -64,12 +64,11 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         var verifiedTransactions = allTransactions.filter { transaction in
             return transaction.verifiedTransaction != nil
         }
-        verifiedTransactions.sort {
-            $0.verifiedTransaction?.purchaseDate ?? .distantPast > $1.verifiedTransaction?.purchaseDate ?? .distantPast
-        }
-        guard let mostRecentTransaction = verifiedTransactions.first else {
-            return
-        }
+        guard !verifiedTransactions.isEmpty else { return }
+        guard let mostRecentTransaction = verifiedTransactions.max(by: {
+            $0.verifiedTransaction?.purchaseDate ?? .distantPast < $1.verifiedTransaction?.purchaseDate ?? .distantPast
+        }) else { return }
+
         let jwsRepresentation = mostRecentTransaction.jwsRepresentation
         guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
 
