@@ -1,6 +1,6 @@
 //
 //  AppContentView.swift
-//  SimpleApp
+//  PaywallsPreview
 //
 //  Created by Nacho Soto on 7/13/23.
 //
@@ -25,7 +25,8 @@ struct AppContentView: View {
 
     var body: some View {
         TabView {
-            if Purchases.isConfigured {
+            // disabling with `false &&` in anticipation of future removal
+            if false && Purchases.isConfigured {
                 NavigationView {
                     ZStack {
                         self.background
@@ -42,16 +43,19 @@ struct AppContentView: View {
             #if DEBUG
             SamplePaywallsList()
                 .tabItem {
-                    Label("Examples", systemImage: "pawprint")
+                    Image("logo")
+                        .renderingMode(.template)
+                    Text("Examples")
                 }
             #endif
 
-            if Purchases.isConfigured {
-                OfferingsList()
-                    .tabItem {
-                        Label("All paywalls", systemImage: "network")
-                    }
+            AppList()
+                .tabItem {
+                    Label("My Apps", systemImage: "network")
+                }
 
+            // disabling with `false &&` in anticipation of future removal
+            if false && Purchases.isConfigured {
                 UpsellView()
                     .tabItem {
                         Label("Upsell view", systemImage: "dollarsign")
@@ -99,14 +103,6 @@ struct AppContentView: View {
 
             Text("Currently configured for \(self.descriptionForCurrentMode())")
                 .font(.footnote)
-
-            ConfigurationButton(title: "Configure for demos", mode: .demos, configuration: configuration) {
-                self.configuration.currentMode = .demos
-            }
-
-            ConfigurationButton(title: "Configure for testing", mode: .testing, configuration: configuration) {
-                self.configuration.currentMode = .testing
-            }
 
             ProminentButton(title: "Present default paywall") {
                 self.showingDefaultPaywall.toggle()
@@ -249,6 +245,7 @@ private extension UIApplication {
 
 #if DEBUG
 
+// TODO: Mock developer to instantiate AppContentView
 @testable import RevenueCatUI
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
