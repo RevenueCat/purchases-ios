@@ -13,12 +13,15 @@ struct ManagePaywallButton: View {
         case edit
         case new
 
-        var systemImageName: String {
-            switch self {
-            case .edit:
-                return "slider.horizontal.2.square.on.square"
-            case .new:
-                return "plus.square.on.square"
+        var image: some View {
+            Group {
+                switch self {
+                case .edit:
+                    Image(systemName: "slider.horizontal.2.square.on.square")
+                case .new:
+                    Image(systemName: "escape")
+                        .rotationEffect(Angle(degrees: 90))
+                }
             }
         }
 
@@ -37,24 +40,12 @@ struct ManagePaywallButton: View {
             guard let url = dashboardPaywallURL else { return }
             openURL(url)
         } label: {
-            switch kind {
-            case .edit:
-                HStack {
-                    Text(buttonName ?? kind.defaultName)
-                        .font(.headline)
-                    Spacer()
-                    Image(systemName: kind.systemImageName)
-                }
-            case .new:
-                HStack {
-                    Text(buttonName ?? kind.defaultName)
-                        .font(.headline)
-                    Spacer()
-                    Image(systemName: "escape")
-                        .rotationEffect(Angle(degrees: 90))
-                }
+            HStack {
+                Text(buttonName ?? kind.defaultName)
+                    .font(.headline)
+                Spacer()
+                kind.image
             }
-
         }
     }
 
