@@ -20,7 +20,7 @@ import XCTest
 class DiagnosticsFileHandlerTests: TestCase {
 
     fileprivate var fileHandler: FileHandler!
-    fileprivate var handler: DiagnosticsFileHandler!
+    fileprivate var handler: DiagnosticsFileHandlerType!
 
     override func setUp() async throws {
         try await super.setUp()
@@ -28,7 +28,7 @@ class DiagnosticsFileHandlerTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.fileHandler = try Self.createWithTemporaryFile()
-        self.handler = .init(self.fileHandler)
+        self.handler = DiagnosticsFileHandler(self.fileHandler)
     }
 
     override func tearDown() async throws {
@@ -40,8 +40,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - append
 
     func testAppendEventWithProperties() async throws {
-        let content = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                       properties: ["key": AnyEncodable("value")],
+        let content = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+                                       properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                        timestamp: Date())
 
         var entries = await self.handler.getEntries()
@@ -78,32 +78,15 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - getEntries
 
     func testGetEntries() async throws {
-        let line1 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T12:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
-        let line2 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T13:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
+        await self.fileHandler.append(line: Self.line1)
+        await self.fileHandler.append(line: Self.line2)
 
-        await self.fileHandler.append(line: line1)
-        await self.fileHandler.append(line: line2)
-
-        let content1 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                        properties: ["key": AnyEncodable("value")],
+        let content1 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                         timestamp: Date(millisecondsSince1970: 1712235359000))
 
-        let content2 = DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                        properties: ["key": AnyEncodable("value")],
+        let content2 = DiagnosticsEvent(eventType: .customerInfoVerificationResult,
+                                        properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                         timestamp: Date(millisecondsSince1970: 1712238959000))
 
         let entries = await self.handler.getEntries()
@@ -114,25 +97,8 @@ class DiagnosticsFileHandlerTests: TestCase {
     // MARK: - emptyFile
 
     func testEmptyFile() async throws {
-        let line1 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T12:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
-        let line2 = """
-        {
-          "properties": {"key": "value"},
-          "timestamp": "2024-04-04T13:55:59Z",
-          "event_type": "httpRequestPerformed",
-          "version": 1
-        }
-        """.trimmingWhitespacesAndNewLines
-
-        await self.fileHandler.append(line: line1)
-        await self.fileHandler.append(line: line2)
+        await self.fileHandler.append(line: Self.line1)
+        await self.fileHandler.append(line: Self.line2)
 
         var data = try await self.fileHandler.readFile()
         expect(data).toNot(beEmpty())
@@ -150,6 +116,24 @@ class DiagnosticsFileHandlerTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension DiagnosticsFileHandlerTests {
 
+    static let line1 = """
+    {
+      "properties": ["verificationResultKey", "FAILED"],
+      "timestamp": "2024-04-04T12:55:59Z",
+      "event_type": "customerInfoVerificationResult",
+      "version": 1
+    }
+    """.trimmingWhitespacesAndNewLines
+
+    static let line2 = """
+    {
+      "properties": ["verificationResultKey", "FAILED"],
+      "timestamp": "2024-04-04T13:55:59Z",
+      "event_type": "customerInfoVerificationResult",
+      "version": 1
+    }
+    """.trimmingWhitespacesAndNewLines
+
     static func temporaryFileURL() -> URL {
         return FileManager.default
             .temporaryDirectory
@@ -164,7 +148,7 @@ private extension DiagnosticsFileHandlerTests {
 
     static func sampleEvent() -> DiagnosticsEvent {
         return DiagnosticsEvent(eventType: .httpRequestPerformed,
-                                properties: ["key": AnyEncodable("value")],
+                                properties: [.verificationResultKey: AnyEncodable("FAILED")],
                                 timestamp: Date())
     }
 
