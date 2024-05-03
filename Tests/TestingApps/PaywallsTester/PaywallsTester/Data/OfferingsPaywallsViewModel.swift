@@ -68,8 +68,10 @@ final class OfferingsPaywallsViewModel {
             let paywalls = try await appPaywalls
 
             let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
-            let listData = PaywallsData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(), offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
-            self.hasMultipleTemplates = Set(listData.offeringsAndPaywalls.map { $0.paywall.data.templateName }).count > 1
+            let listData = PaywallsData(offeringsAndPaywalls: offeringPaywallData.paywallsByOffering(),
+                                        offeringsWithoutPaywalls: offeringPaywallData.offeringsWithoutPaywalls())
+            let templateNames = listData.offeringsAndPaywalls.map { $0.paywall.data.templateName }
+            self.hasMultipleTemplates = Set(templateNames).count > 1
             self.hasMultipleOfferingsWithPaywalls = listData.offeringsAndPaywalls.count > 1
             self.listData = listData
             self.state = .success
