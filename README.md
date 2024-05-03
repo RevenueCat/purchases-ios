@@ -45,6 +45,8 @@ For more detailed information, you can view our complete documentation at [docs.
 
 Please follow the [Quickstart Guide](https://docs.revenuecat.com/docs/) for more information on how to install the SDK.
 
+**Note:** When integrating SPM, it is recommended to add the SPM mirror repository for faster download/integration times: https://github.com/RevenueCat/purchases-ios-spm
+
 Or view our iOS sample apps:
 - [MagicWeather](Examples/MagicWeather)
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)

@@ -26,6 +26,8 @@ enum DiagnosticsStrings {
 
     case error_fetching_events(error: Error)
 
+    case could_not_synchronize_diagnostics(error: Error)
+
 }
 
 extension DiagnosticsStrings: LogMessage {
@@ -50,6 +52,10 @@ extension DiagnosticsStrings: LogMessage {
 
         case let .error_fetching_events(error):
             return "Failed to read lines from file: \(error.localizedDescription)"
+
+        case let .could_not_synchronize_diagnostics(error):
+            return "Failed to synchronize diagnostics: \(error.localizedDescription)"
+
         }
     }
 

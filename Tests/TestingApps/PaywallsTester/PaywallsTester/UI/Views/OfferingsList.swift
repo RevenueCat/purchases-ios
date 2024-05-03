@@ -25,6 +25,47 @@ struct OfferingsList: View {
         self._viewModel = State(initialValue: OfferingsPaywallsViewModel(apps: [app]))
     }
 
+    @MainActor
+    private func updateOfferingsAndPaywalls() async {
+        do {
+            let appCopy = app
+            async let appOfferings = Self.fetchOfferings(for: appCopy).all
+            async let appPaywalls = Self.fetchPaywalls(for: appCopy).all
+
+            let offerings = try await appOfferings
+            let paywalls = try await appPaywalls
+            
+            let offeringPaywallData = OfferingPaywallData(offerings: offerings, paywalls: paywalls)
+            
+            self.offeringsPaywalls = .success(
+                offeringPaywallData.paywallsByOffering()
+            )
+            
+        } catch let error as NSError {
+            self.offeringsPaywalls = .failure(error)
+        }
+    }
+
+    @MainActor
+    private func refreshPresentedPaywall() {
+
+        guard let currentPaywall = self.presentedPaywall else { return }
+
+        switch self.offeringsPaywalls {
+        case let .success(data):
+            // Find the offering that corresponds to the currently presented paywall's offering.
+            if let newData = data.first(where: { $0.offering.id == currentPaywall.responseOfferingID }) {
+                let newRCOffering = newData.paywall.convertToRevenueCatPaywall(with: newData.offering)
+                // if the paywall has changed, update what we're showing
+                if currentPaywall.offering.paywall != newRCOffering.paywall {
+                    self.presentedPaywall = .init(offering: newRCOffering, mode: currentPaywall.mode, responseOfferingID: currentPaywall.responseOfferingID)
+                }
+            }
+        default:
+        self.presentedPaywall = nil
+        }
+    }
+
     var body: some View {
         self.content
             .task {
