@@ -1495,8 +1495,8 @@ extension PurchasesOrchestrator {
     func handleApplicationDidBecomeActive() {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *), self.observerMode
             && self.systemInfo.storeKitVersion == .storeKit2 {
-            // This must be .userInitiated since notifications come in with that Quality of Service as well
-            Task.detached {
+            // This task's priority must be .low to avoiod task priority inversions
+            Task(priority: .low) {
                 await self.storeKit2ObserverModePurchaseDetector?.detectUnobservedTransactions(delegate: self)
             }
         }
