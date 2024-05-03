@@ -389,7 +389,8 @@ class DeviceCache {
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
-            case let .syncedSK2ObserverModeTransactionIDs(userID): return "\(Self.base)syncedSK2ObserverModeTransactionIDs.\(userID)"
+            case let .syncedSK2ObserverModeTransactionIDs(userID):
+                return "\(Self.base)syncedSK2ObserverModeTransactionIDs.\(userID)"
             }
         }
 
