@@ -17,7 +17,7 @@ struct DiagnosticsEvent: Codable, Equatable {
 
     let version: Int = 1
     let eventType: DiagnosticsEvent.EventType
-    let properties: [String: AnyEncodable]
+    let properties: [DiagnosticsPropertyKey: AnyEncodable]
     let timestamp: Date
 
     enum CodingKeys: String, CodingKey {
@@ -32,6 +32,12 @@ extension DiagnosticsEvent {
 
         case httpRequestPerformed
         case customerInfoVerificationResult
+
+    }
+
+    enum DiagnosticsPropertyKey: String, Codable {
+
+        case verificationResultKey
 
     }
 

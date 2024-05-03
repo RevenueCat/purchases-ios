@@ -13,23 +13,45 @@
 
 import Foundation
 
-@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 protocol DiagnosticsTrackerType {
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent) async
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo,
+                                                     timestamp: Date) async
 
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 final class DiagnosticsTracker: DiagnosticsTrackerType {
 
-    private let diagnosticsFileHandler: DiagnosticsFileHandler
+    private let diagnosticsFileHandler: DiagnosticsFileHandlerType
 
-    init(diagnosticsFileHandler: DiagnosticsFileHandler) {
+    init(diagnosticsFileHandler: DiagnosticsFileHandlerType) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
     }
 
     func track(_ event: DiagnosticsEvent) async {
         await diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
     }
+
+    func trackCustomerInfoVerificationResultIfNeeded(
+        _ customerInfo: CustomerInfo,
+        timestamp: Date = Date()
+    ) async {
+        let verificationResult = customerInfo.entitlements.verification
+        if verificationResult == .notRequested {
+            return
+        }
+
+        let event = DiagnosticsEvent(
+            eventType: .customerInfoVerificationResult,
+            properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
+            timestamp: timestamp
+        )
+        await track(event)
+    }
+
 }
