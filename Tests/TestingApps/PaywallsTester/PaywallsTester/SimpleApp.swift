@@ -71,18 +71,15 @@ extension SimpleApp {
             return nil
         }
 
-        let showIntroOffer = params.first(where: { $0.name == "io" })?.value.flatMap { value -> IntroEligibilityStatus in
-            if value == "1" {
-                return .eligible
-            } else if value == "0" {
-                return .ineligible
-            } else if value == "n" {
-                return .noIntroOfferExists
-            } else {
-                return .unknown
-            }
-        } ?? .unknown
+        let introElgibility: IntroEligibilityStatus
 
-        return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: showIntroOffer)
+        if let ioStringValue = params.first(where: { $0.name == "io" })?.value,
+           let ioIntValue = Int(ioStringValue)  {
+            introElgibility = IntroEligibilityStatus(rawValue: ioIntValue) ?? .unknown
+        } else {
+            introElgibility = .unknown
+        }
+
+        return PaywallPreviewData(paywallIDToShow: paywallID, introOfferEligible: introElgibility)
     }
 }
