@@ -104,9 +104,9 @@ final class OfferingsPaywallsViewModel {
 }
 
 // Private helpers
-extension OfferingsPaywallsViewModel {
+private extension OfferingsPaywallsViewModel {
 
-    private struct OfferingPaywallData {
+    struct OfferingPaywallData {
 
         var offerings: [OfferingsResponse.Offering]
         var paywalls: [PaywallsResponse.Paywall]
@@ -152,7 +152,7 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private func refreshPresentedPaywall() {
+    func refreshPresentedPaywall() {
         guard let currentPaywall = self.presentedPaywall else { return }
 
         showPaywallForID(currentPaywall.responseOfferingID)
@@ -160,7 +160,7 @@ extension OfferingsPaywallsViewModel {
 
     // MARK: - Network
     @MainActor
-    private static func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
+    static func fetchOfferings(for app: DeveloperResponse.App) async throws -> OfferingsResponse {
         return try await HTTPClient.shared.perform(
             .init(
                 method: .get,
@@ -170,7 +170,7 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private static func fetchOfferings(for apps: [DeveloperResponse.App]) async throws -> OfferingsResponse {
+    static func fetchOfferings(for apps: [DeveloperResponse.App]) async throws -> OfferingsResponse {
         var combinedOfferings: OfferingsResponse = OfferingsResponse()
 
         try await withThrowingTaskGroup(of: OfferingsResponse.self) { group in
@@ -188,7 +188,7 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private static func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
+    static func fetchPaywalls(for app: DeveloperResponse.App) async throws -> PaywallsResponse {
         return try await HTTPClient.shared.perform(
             .init(
                 method: .get,
@@ -198,7 +198,7 @@ extension OfferingsPaywallsViewModel {
     }
 
     @MainActor
-    private static func fetchPaywalls(for apps: [DeveloperResponse.App]) async throws -> PaywallsResponse {
+    static func fetchPaywalls(for apps: [DeveloperResponse.App]) async throws -> PaywallsResponse {
         var combinedPaywalls: PaywallsResponse = PaywallsResponse()
 
         try await withThrowingTaskGroup(of: PaywallsResponse.self) { group in
