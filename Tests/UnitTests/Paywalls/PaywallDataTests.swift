@@ -145,7 +145,7 @@ class PaywallDataTests: BaseHTTPResponseTest {
     func testLocalesOrderedByPriority() throws {
         let expected: [String]
 
-        if #available(iOS 17.0, tvOS 17.0, watchOS 10.0, *) {
+        if #available(iOS 17.0, tvOS 17.0, watchOS 9.0, *) {
             expected = [
                 "en_US",
                 "en-US"
