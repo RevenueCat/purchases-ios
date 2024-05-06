@@ -495,7 +495,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 8 (41mm),OS=9.4
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.3
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -634,6 +634,10 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_watchos
           no_output_timeout: 5m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.3
+            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
