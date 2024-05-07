@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+# CircleCI images fail without this
+gem 'rb-readline'
 gem 'fastlane'
 
 gem 'cocoapods'
