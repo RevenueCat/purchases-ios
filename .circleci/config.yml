@@ -26,7 +26,7 @@ aliases:
     parameters:
       xcode_version:
         type: string
-        default: '15.2'
+        default: '15.3'
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -495,7 +495,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.2
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.4
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -636,7 +636,7 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.2
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.4
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
