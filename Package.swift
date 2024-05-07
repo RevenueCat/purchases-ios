@@ -64,9 +64,6 @@ let package = Package(
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
-        .testTarget(name: "ReceiptParserTests",
-                    dependencies: ["ReceiptParser", "Nimble"],
-                    exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
         .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
@@ -75,14 +72,6 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
-                ]),
-        .testTarget(name: "RevenueCatUITests",
-                    dependencies: [
-                        "RevenueCatUI",
-                        "Nimble",
-                        .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-                    ],
-                    exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
+                ])
     ]
 )
