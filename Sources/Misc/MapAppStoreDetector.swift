@@ -32,6 +32,8 @@ final class DefaultMacAppStoreDetector: MacAppStoreDetector {
     /// it checked the common name but was changed to an extension check to make it more
     /// future-proof.
     ///
+    /// - warning: this method may take a long time to run on macOS. It should not be called on the main thread. 
+    ///
     /// For more information, see the following references:
     /// - https://github.com/objective-see/ProcInfo/blob/master/procInfo/Signing.m#L184-L247
     /// - https://gist.github.com/lukaskubanek/cbfcab29c0c93e0e9e0a16ab09586996#gistcomment-3993808

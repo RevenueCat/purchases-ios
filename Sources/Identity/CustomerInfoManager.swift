@@ -99,23 +99,26 @@ class CustomerInfoManager {
     func fetchAndCacheCustomerInfoIfStale(appUserID: String,
                                           isAppBackgrounded: Bool,
                                           completion: CustomerInfoCompletion?) {
-        let isCacheStale = self.withData {
-            $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
-        }
-
-        guard !isCacheStale, let customerInfo = self.cachedCustomerInfo(appUserID: appUserID) else {
-            Logger.debug(isAppBackgrounded
-                            ? Strings.customerInfo.customerinfo_stale_updating_in_background
-                            : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
-            self.fetchAndCacheCustomerInfo(appUserID: appUserID,
-                                           isAppBackgrounded: isAppBackgrounded,
-                                           completion: completion)
-            return
-        }
-
-        if let completion = completion {
-            self.operationDispatcher.dispatchOnMainActor {
-                completion(.success(customerInfo))
+        self.operationDispatcher.dispatchOnWorkerThread {
+            
+            let isCacheStale = self.withData {
+                $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
+            }
+            
+            guard !isCacheStale, let customerInfo = self.cachedCustomerInfo(appUserID: appUserID) else {
+                Logger.debug(isAppBackgrounded
+                             ? Strings.customerInfo.customerinfo_stale_updating_in_background
+                             : Strings.customerInfo.customerinfo_stale_updating_in_foreground)
+                self.fetchAndCacheCustomerInfo(appUserID: appUserID,
+                                               isAppBackgrounded: isAppBackgrounded,
+                                               completion: completion)
+                return
+            }
+            
+            if let completion = completion {
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(.success(customerInfo))
+                }
             }
         }
     }

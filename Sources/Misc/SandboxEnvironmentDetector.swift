@@ -40,6 +40,7 @@ final class BundleSandboxEnvironmentDetector: SandboxEnvironmentDetector {
         self.macAppStoreDetector = macAppStoreDetector
     }
 
+    /// - warning: this method should not be called on the main thread, since on macOS it may take a long time to complete.
     var isSandbox: Bool {
         guard !self.isRunningInSimulator else {
             return true

@@ -1743,21 +1743,23 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false)
-        self.dispatchSyncSubscriberAttributes()
+        self.operationDispatcher.dispatchOnWorkerThread {
+            self.updateAllCachesIfNeeded(isAppBackgrounded: false)
+            self.dispatchSyncSubscriberAttributes()
 
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
-        #if os(iOS) || os(macOS) || VISION_OS
-        if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
-            self.attribution.postAdServicesTokenOncePerInstallIfNeeded()
+            #if os(iOS) || os(macOS) || VISION_OS
+            if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
+                self.attribution.postAdServicesTokenOncePerInstallIfNeeded()
+            }
+            #endif
+
+            self.postPaywallEventsIfNeeded()
+
+            #endif
         }
-        #endif
-
-        self.postPaywallEventsIfNeeded()
-
-        #endif
     }
 
     @objc func applicationDidEnterBackground() {
