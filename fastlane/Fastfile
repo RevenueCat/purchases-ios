@@ -200,8 +200,8 @@ platform :ios do
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
-    platform = ENV['SCAN_PLATFORM'] || 'iOS Simulator'
-    destination = ENV['SCAN_DEVICE'] || "iPhone 14,OS=16.4"
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
 
     fetch_snapshots

@@ -406,7 +406,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 13,OS=15.5
+            DEVICE: iPhone 13,OS=15.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -435,7 +435,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14,OS=16.4
+            DEVICE: iPhone 14,OS=16.4
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -469,7 +469,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro,OS=17.2
+            DEVICE: iPhone 15 Pro,OS=17.2
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -494,8 +494,8 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.4
+            PLATFORM: watchOS Simulator
+            DEVICE: Apple Watch Series 9 (45mm),OS=10.4
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
