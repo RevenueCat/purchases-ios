@@ -100,11 +100,11 @@ class CustomerInfoManager {
                                           isAppBackgrounded: Bool,
                                           completion: CustomerInfoCompletion?) {
         self.operationDispatcher.dispatchOnWorkerThread {
-            
+
             let isCacheStale = self.withData {
                 $0.deviceCache.isCustomerInfoCacheStale(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded)
             }
-            
+
             guard !isCacheStale, let customerInfo = self.cachedCustomerInfo(appUserID: appUserID) else {
                 Logger.debug(isAppBackgrounded
                              ? Strings.customerInfo.customerinfo_stale_updating_in_background
@@ -114,7 +114,7 @@ class CustomerInfoManager {
                                                completion: completion)
                 return
             }
-            
+
             if let completion = completion {
                 self.operationDispatcher.dispatchOnMainActor {
                     completion(.success(customerInfo))
