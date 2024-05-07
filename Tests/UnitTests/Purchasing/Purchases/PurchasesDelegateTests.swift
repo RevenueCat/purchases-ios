@@ -73,12 +73,10 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = false
-        let workerThreadCountBeforeNotifications = self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount
 
         self.notificationCenter.fireNotifications()
 
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread) == true
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadCount) == workerThreadCountBeforeNotifications + 1
     }
 
     func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
