@@ -9,11 +9,7 @@ import class Foundation.ProcessInfo
 let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
-var dependencies: [Package.Dependency] = [
-    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
-    // SST requires iOS 13 starting from version 1.13.0
-    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
-]
+var dependencies: [Package.Dependency] = []
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
