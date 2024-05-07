@@ -928,7 +928,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         ) == "offering"
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, *)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchaseSK2PackageDoesNotPostAdServicesTokenIfNotEnabled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
@@ -958,7 +958,7 @@ class PurchasesOrchestratorTests: StoreKitConfigTestCase {
         expect(self.backend.invokedPostReceiptDataParameters?.transactionData.aadAttributionToken).to(beNil())
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, *)
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     func testPurchaseSK2PackagePostsAdServicesTokenAndAttributes() async throws {

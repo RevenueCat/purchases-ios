@@ -26,6 +26,7 @@ aliases:
     parameters:
       xcode_version:
         type: string
+        default: '15.3'
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -405,7 +406,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 13,OS=15.5
+            DEVICE: iPhone 13,OS=15.5
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -434,7 +435,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14,OS=16.4
+            DEVICE: iPhone 14,OS=16.4
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -468,7 +469,7 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro,OS=17.2
+            DEVICE: iPhone 15 Pro,OS=17.2
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshots_repo_pr"
@@ -493,8 +494,8 @@ jobs:
           command: bundle exec fastlane test_revenuecatui
           no_output_timeout: 15m
           environment:
-            SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 8 (41mm),OS=9.4
+            PLATFORM: watchOS Simulator
+            DEVICE: Apple Watch Series 9 (45mm),OS=10.4
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -633,6 +634,10 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_watchos
           no_output_timeout: 5m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 9 (45mm) (10.4)
+            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
@@ -1140,8 +1145,7 @@ workflows:
           xcode_version: '14.2.0'
       - run-test-ios-12:
           xcode_version: '14.2.0'
-      - run-test-macos:
-          xcode_version: '15.2'
+      - run-test-macos
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -1161,38 +1165,31 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint:
-          xcode_version: '14.3.0'
+      - lint
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
       - spm-release-build-xcode-15:
           xcode_version: '15.2'
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
-      - spm-custom-entitlement-computation-build:
-          xcode_version: '14.3.0'
-      - spm-receipt-parser:
-          xcode_version: '14.3.0'
+      - spm-custom-entitlement-computation-build
+      - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.2'
-      - spm-revenuecat-ui-watchos:
-          xcode_version: '14.3.0'
-      - run-test-macos:
-          xcode_version: '15.2'
+      - spm-revenuecat-ui-watchos
+      - run-test-macos
       - run-test-ios-17:
           xcode_version: '15.2'
       - run-test-ios-16:
           xcode_version: '14.3.0'
       - run-test-ios-15:
           xcode_version: '14.3.0'
-      - run-test-watchos:
-          xcode_version: '14.3.0'
-      - run-test-tvos:
-          xcode_version: '14.3.0'
+      - run-test-watchos
+      - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
@@ -1203,34 +1200,27 @@ workflows:
       - run-test-ios-12:
           xcode_version: '14.2.0'
           <<: *release-branches-and-main
-      - build-tv-watch-and-macos:
-          xcode_version: '14.3.0'
-      - build-visionos:
-          xcode_version: '15.2'
+      - build-tv-watch-and-macos
+      - build-visionos
       - backend-integration-tests-SK1:
-          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-SK2:
-          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-other:
-          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
       - backend-integration-tests-offline:
-          xcode_version: '15.2'
           # These tests are flaky due to FB13133387 so we don't want the noise in every PR
           <<: *release-branches-and-main
       - backend-integration-tests-custom-entitlements:
-          xcode_version: '15.2'
           filters:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
@@ -1242,25 +1232,18 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-swift-package-manager:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-custom-entitlement-computation-swift-package-manager:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-receipt-parser:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-carthage:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-xcode-direct-integration:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - hold:
           type: approval
@@ -1278,15 +1261,12 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.3.0'
           <<: *release-tags
       - push-revenuecat-pod:
-          xcode_version: '15.2'
           requires:
             - make-release
           <<: *release-tags
       - push-revenuecatui-pod:
-          xcode_version: '15.2'
           requires:
             - make-release
             - push-revenuecat-pod
@@ -1296,10 +1276,8 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '14.3.0'
           <<: *release-tags
       - deploy-purchase-tester:
-          xcode_version: '15.2'
           <<: *release-tags
       - notify-on-non-patch-release-branches:
           requires:
@@ -1312,7 +1290,6 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - prepare-next-version:
-          xcode_version: '14.3.0'
           <<: *only-main-branch
   danger:
     jobs:
@@ -1323,8 +1300,7 @@ workflows:
         - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - equal: [ "release-train", << pipeline.schedule.name >> ]
     jobs:
-      - release-train:
-          xcode_version: '14.3.0'
+      - release-train
 
   daily-loadshedder-integration-tests:
     when:
@@ -1332,14 +1308,11 @@ workflows:
         - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
         - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
     jobs:
-      - loadshedder-integration-tests-v3:
-          xcode_version: '15.2'
-      - integration-tests-all:
-          xcode_version: '15.2'
+      - loadshedder-integration-tests-v3
+      - integration-tests-all
 
   manual-trigger-bump:
     when:
       equal: [ bump, << pipeline.parameters.action >> ]
     jobs:
-      - release-train:
-          xcode_version: '14.3.0'
+      - release-train
