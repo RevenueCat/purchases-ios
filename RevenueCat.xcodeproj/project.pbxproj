@@ -859,6 +859,7 @@
 		2D1015DD275A57FC0086173F /* SubscriptionPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriod.swift; sourceTree = "<group>"; };
 		2D1015E0275A676F0086173F /* SubscriptionPeriodTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPeriodTests.swift; sourceTree = "<group>"; };
 		2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionStrings.swift; sourceTree = "<group>"; };
+		2D2063142BEABA030002710C /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		2D222BAA27FB7008003D5F37 /* LocalReceiptParserStoreKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReceiptParserStoreKitTests.swift; sourceTree = "<group>"; };
 		2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+Extensions.swift"; sourceTree = "<group>"; };
 		2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2TransactionListener.swift; sourceTree = "<group>"; };
@@ -1868,6 +1869,7 @@
 		2DDE870027E5238500D8B390 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				2D2063142BEABA030002710C /* Package.swift */,
 				570896B627596E6E00296F1C /* APITesters */,
 				2DE20B8026409EB7004C597D /* BackendIntegrationTestApp */,
 				2DE20B6D264087FB004C597D /* BackendIntegrationTests */,
