@@ -495,7 +495,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 8 (45mm),OS=10.2
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.2
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output
@@ -636,7 +636,7 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 8 (45mm),OS=10.2
+            SCAN_DEVICE: Apple Watch Series 9 (45mm),OS=10.2
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
