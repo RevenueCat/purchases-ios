@@ -6,10 +6,12 @@
 #  Created by James Borthwick on 2024-05-08.
 #
 
+# Intended to be run via the scheme's pre-actions build phase
+#
 # This script searches up from ${PROJECT_DIR} to locate the RevenueCat.xcworkspace directory.
 # Once found, it searches through all `.swift` files starting from that base directory.
-# It finds occurances of `//@PublicForExternalTesting` and modifies the subsequent class, struct,
-# func, init and enum declaration to make it public.
+# It finds occurrences of `//@PublicForExternalTesting` and modifies the subsequent class, struct,
+# func, init, and enum declaration to make it public.
 
 # directory containing RevenueCat.xcworkspace
 find_xcworkspace_dir() {
@@ -26,9 +28,7 @@ find_xcworkspace_dir() {
 
 echo "Starting script to make items annotated with \`\\\\@PublicForExternalTesting\` public."
 
-echo "PWD is ${PROJECT_DIR}"
-
-base_directory=$(find_xcworkspace_dir ${PROJECT_DIR})
+base_directory=$(find_xcworkspace_dir "${PROJECT_DIR}")
 
 if [[ -z "$base_directory" ]]; then
   echo "Error: RevenueCat.xcworkspace not found in the current directory or any parent directory."
@@ -64,9 +64,8 @@ find "$base_directory" -type f -name "*.swift" | while read -r file; do
         fi
 
         # Remove the backup file
-        rm -f "$original_file" "${file}.bak"
+        rm -f "${file}.bak"
     fi
 done
 
 echo "Processing completed." | tee -a "$log_file"
-
