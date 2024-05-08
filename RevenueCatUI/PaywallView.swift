@@ -91,6 +91,7 @@ public struct PaywallView: View {
         )
     }
 
+    //@PublicForExternalTesting
     init(configuration: PaywallViewConfiguration) {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
         self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default())
