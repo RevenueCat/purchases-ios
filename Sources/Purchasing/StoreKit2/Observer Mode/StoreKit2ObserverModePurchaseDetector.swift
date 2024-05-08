@@ -61,13 +61,9 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         delegate: StoreKit2ObserverModePurchaseDetectorDelegate?
     ) async {
         let allTransactions = await allTransactionsProvider.getAllTransactions()
-        var verifiedTransactions = allTransactions.filter { transaction in
-            return transaction.verifiedTransaction != nil
+        guard let mostRecentTransaction = self.getMostRecentVerifiedTransaction(from: allTransactions) else {
+            return
         }
-        guard !verifiedTransactions.isEmpty else { return }
-        guard let mostRecentTransaction = verifiedTransactions.max(by: {
-            $0.verifiedTransaction?.purchaseDate ?? .distantPast < $1.verifiedTransaction?.purchaseDate ?? .distantPast
-        }) else { return }
 
         let jwsRepresentation = mostRecentTransaction.jwsRepresentation
         guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
@@ -78,9 +74,7 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
             ) ?? []
         )
 
-        guard !cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) else {
-            return
-        }
+        if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
 
         do {
             try await delegate?.handleSK2ObserverModeTransaction(
@@ -96,6 +90,20 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         } catch {
             Logger.error(Strings.purchase.sk2_observer_mode_error_processing_transaction(error))
         }
+    }
+
+    private func getMostRecentVerifiedTransaction(
+        from transactions: [StoreKit.VerificationResult<StoreKit.Transaction>]
+    ) -> StoreKit.VerificationResult<StoreKit.Transaction>? {
+        let verifiedTransactions = transactions.filter { transaction in
+            return transaction.verifiedTransaction != nil
+        }
+        if verifiedTransactions.isEmpty { return nil }
+        guard let mostRecentTransaction = verifiedTransactions.max(by: {
+            $0.verifiedTransaction?.purchaseDate ?? .distantPast < $1.verifiedTransaction?.purchaseDate ?? .distantPast
+        }) else { return nil }
+
+        return mostRecentTransaction
     }
 }
 

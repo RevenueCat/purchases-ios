@@ -46,17 +46,17 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testObservingTransactionUnlocksEntitlement() async throws {
+        await self.deleteAllTransactions(session: self.testSession)
+
         let result = try await self.manager.purchaseProductFromStoreKit2()
         let transaction = try XCTUnwrap(result.verificationResult?.underlyingTransaction)
-
         try self.testSession.disableAutoRenewForTransaction(identifier: UInt(transaction.id))
 
         try await simulateAppDidBecomeActive()
-        try await Task.sleep(nanoseconds: 3_000_000_000)    // 3 sec
 
+        try await self.verifyReceiptIsEventuallyPosted()
         let customerInfo = try XCTUnwrap(self.purchasesDelegate.customerInfo)
         try await self.verifyEntitlementWentThrough(customerInfo)
-        await self.deleteAllTransactions(session: self.testSession)
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

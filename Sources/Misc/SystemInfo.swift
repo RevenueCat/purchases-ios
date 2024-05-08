@@ -261,7 +261,6 @@ extension SystemInfo {
         #endif
     }
 
-    
     /// Returns the appropriate `Notification.Name` for the OS's didBecomeActive notification,
     /// indicating that the application did become active. This value is only nil for watchOS
     /// versions below 7.0.
