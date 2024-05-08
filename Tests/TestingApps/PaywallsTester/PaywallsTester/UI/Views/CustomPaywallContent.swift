@@ -5,11 +5,7 @@
 //  Created by Nacho Soto on 8/25/23.
 //
 
-#if DEBUG
-@testable import RevenueCatUI
-#else
 import RevenueCatUI
-#endif
 
 import SwiftUI
 

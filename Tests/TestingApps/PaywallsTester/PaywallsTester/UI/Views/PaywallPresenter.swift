@@ -7,11 +7,7 @@
 
 import SwiftUI
 import RevenueCat
-#if DEBUG
-@testable import RevenueCatUI
-#else
 import RevenueCatUI
-#endif
 
 struct PaywallPresenter: View {
 
