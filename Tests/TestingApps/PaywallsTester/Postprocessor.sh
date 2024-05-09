@@ -14,23 +14,23 @@
 
 echo "Starting undo process."
 
-# directory containing RevenueCat.xcworkspace
-find_xcworkspace_dir() {
+find_dir() {
   local dir="$1"
+  local target_dir="$2"
   while [[ "$dir" != "/" ]]; do
-    if [[ -e "$dir/RevenueCat.xcworkspace" ]]; then
-      echo "$dir"
+    if [[ -e "$dir/$target_dir" ]]; then
+      echo "$dir/$target_dir"
       return 0
     fi
     dir=$(dirname "$dir")  # go up one level
   done
-  return 1  # RevenueCat.xcworkspace not found :'(
+  return 1  # Target directory not found
 }
 
-base_directory=$(find_xcworkspace_dir "${PROJECT_DIR}")
+base_directory=$(find_dir "${PROJECT_DIR}" "RevenueCatUI")
 
 if [[ -z "$base_directory" ]]; then
-  echo "Error: RevenueCat.xcworkspace not found in the current directory or any parent directory."
+  echo "Error: RevenueCatUI not found in the current directory or any parent directory."
   exit 1
 fi
 
