@@ -36,11 +36,11 @@ If you're using the Firebase SDK, you'll need to follow [these instructions](htt
 
 ### Observer Mode
 
-Version 5.0 of the SDK now supports observer mode for purchases made with StoreKit 2, which is used by default in this version:
+Version 5.0 of the SDK now supports observer mode for purchases made with StoreKit 2. You can enable it when configuring the SDK:
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-		.with(observerMode: true)
+		.with(observerMode: true, storeKitVersion: .storeKit2)
     .build()
 ```
 

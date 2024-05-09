@@ -299,14 +299,16 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
 private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
-    Purchases.configure(with: Configuration.Builder(withAPIKey: "").with(observerMode: true).build())
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "")
+        .with(observerMode: true, storeKitVersion: .default)
+        .build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
         .with(showStoreMessagesAutomatically: false)
         .build())
 
     Purchases.configure(withAPIKey: "")
     Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, storeKitVersion: .default)
 
     return nil
 }

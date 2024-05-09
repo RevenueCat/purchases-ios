@@ -1281,7 +1281,7 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false)
+        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: .default)
     }
 
     @available(*, deprecated, message: """
@@ -1294,7 +1294,8 @@ public extension Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
         return Self.configure(withAPIKey: apiKey,
                               appUserID: "\(appUserID)",
-                              observerMode: false)
+                              observerMode: false,
+                              storeKitVersion: .default)
     }
 
     /**
@@ -1313,20 +1314,23 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
+     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
+     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
      * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
-    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
-                                             observerMode: Bool) -> Purchases {
+                                             observerMode: Bool,
+                                             storeKitVersion: StoreKitVersion) -> Purchases {
         Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(observerMode: observerMode, storeKitVersion: .default)
+                .with(observerMode: observerMode, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
