@@ -181,7 +181,7 @@ extension View {
         )
     }
 
-    //@PublicForExternalTesting
+    // @PublicForExternalTesting
     func paywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,

@@ -26,7 +26,7 @@ find_dir() {
   return 1  # Target directory not found
 }
 
-echo "Starting script to make items annotated with \`\\\\@PublicForExternalTesting\` public."
+echo "Starting script to make items annotated with \`\/\/ @PublicForExternalTesting\` public."
 
 base_directory=$(find_dir "${PROJECT_DIR}" "RevenueCatUI")
 
@@ -44,16 +44,16 @@ echo "Starting log at $(date)" > "$log_file"
 # Find all .swift files recursively from the base directory
 find "$base_directory" -type f -name "*.swift" | while read -r file; do
 
-    if grep -q '//@PublicForExternalTesting' "$file"; then
+    if grep -q '// @PublicForExternalTesting' "$file"; then
         # Backup original file
         backup_file="${file}.orig"
         cp "$file" "$original_file"
 
         # Find //@PublicForExternalTesting and replace it with public before declarations
         sed -i.orig -E \
-        '/\/\/@PublicForExternalTesting[[:space:]]*$/{
+        '/\/\/ @PublicForExternalTesting[[:space:]]*$/{
         N
-        s/\/\/@PublicForExternalTesting[[:space:]]*\n[[:space:]]*(static[[:space:]]+)?(struct|class|final[[:space:]]+class|enum|init|func)/public \1\2/
+        s/\/\/ @PublicForExternalTesting[[:space:]]*\n[[:space:]]*(static[[:space:]]+)?(struct|class|final[[:space:]]+class|enum|init|func)/public \1\2/
         }' "$file"
 
         # Log changes made to the file

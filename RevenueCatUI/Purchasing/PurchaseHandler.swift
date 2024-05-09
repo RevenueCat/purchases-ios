@@ -16,7 +16,7 @@ import StoreKit
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//@PublicForExternalTesting
+// @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
