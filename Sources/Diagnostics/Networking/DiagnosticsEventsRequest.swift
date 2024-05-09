@@ -63,6 +63,7 @@ private extension DiagnosticsEvent.EventType {
         switch self {
         case .httpRequestPerformed: return "http_request_performed"
         case .customerInfoVerificationResult: return "customer_info_verification_result"
+        case .maxEventsStoredLimitReached: return "max_events_stored_limit_reached"
         }
 
     }

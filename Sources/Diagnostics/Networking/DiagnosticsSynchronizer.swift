@@ -18,8 +18,6 @@ protocol DiagnosticsSynchronizerType {
 
     func syncDiagnosticsIfNeeded() async throws
 
-    func clearDiagnosticsFileIfTooBig() async
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -36,12 +34,6 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     ) {
         self.internalAPI = internalAPI
         self.handler = handler
-    }
-
-    func clearDiagnosticsFileIfTooBig() async {
-        if await self.handler.isDiagnosticsFileTooBig() {
-            await self.handler.emptyDiagnosticsFile()
-        }
     }
 
     func syncDiagnosticsIfNeeded() async throws {

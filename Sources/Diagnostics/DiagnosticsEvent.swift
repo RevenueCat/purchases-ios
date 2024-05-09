@@ -32,6 +32,7 @@ extension DiagnosticsEvent {
 
         case httpRequestPerformed
         case customerInfoVerificationResult
+        case maxEventsStoredLimitReached
 
     }
 

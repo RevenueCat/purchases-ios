@@ -19,8 +19,7 @@ protocol DiagnosticsTrackerType {
     func track(_ event: DiagnosticsEvent) async
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo,
-                                                     timestamp: Date) async
+    func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo) async
 
 }
 
@@ -28,18 +27,21 @@ protocol DiagnosticsTrackerType {
 final class DiagnosticsTracker: DiagnosticsTrackerType {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
+    private let dateProvider: DateProvider
 
-    init(diagnosticsFileHandler: DiagnosticsFileHandlerType) {
+    init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
+         dateProvider: DateProvider = DateProvider()) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
+        self.dateProvider = dateProvider
     }
 
     func track(_ event: DiagnosticsEvent) async {
-        await diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
+        await self.clearDiagnosticsFileIfTooBig()
+        await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
     }
 
     func trackCustomerInfoVerificationResultIfNeeded(
-        _ customerInfo: CustomerInfo,
-        timestamp: Date = Date()
+        _ customerInfo: CustomerInfo
     ) async {
         let verificationResult = customerInfo.entitlements.verification
         if verificationResult == .notRequested {
@@ -49,9 +51,27 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
         let event = DiagnosticsEvent(
             eventType: .customerInfoVerificationResult,
             properties: [.verificationResultKey: AnyEncodable(verificationResult.name)],
-            timestamp: timestamp
+            timestamp: self.dateProvider.now()
         )
         await track(event)
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension DiagnosticsTracker {
+
+    func clearDiagnosticsFileIfTooBig() async {
+        if await self.diagnosticsFileHandler.isDiagnosticsFileTooBig() {
+            await self.diagnosticsFileHandler.emptyDiagnosticsFile()
+            await self.trackMaxEventsStoredLimitReached()
+        }
+    }
+
+    func trackMaxEventsStoredLimitReached() async {
+        await self.track(.init(eventType: .maxEventsStoredLimitReached,
+                               properties: [:],
+                               timestamp: self.dateProvider.now()))
     }
 
 }

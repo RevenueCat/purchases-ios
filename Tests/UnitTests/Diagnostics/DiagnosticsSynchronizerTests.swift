@@ -131,34 +131,6 @@ class DiagnosticsSynchronizerTests: TestCase {
                                            expectedCount: 1)
     }
 
-    // MARK: - clearDiagnosticsFileIfTooBig
-
-    func testClearDiagnosticsFileIfTooBigDoesNotClearFileIfNotBig() async throws {
-        _ = await self.storeEvent()
-        _ = await self.storeEvent(timestamp: Self.eventTimestamp2)
-
-        let data = try await self.fileHandler.readFile()
-        expect(data).toNot(beEmpty())
-
-        await self.synchronizer!.clearDiagnosticsFileIfTooBig()
-
-        let data2 = try await self.fileHandler.readFile()
-        expect(data2).to(equal(data))
-    }
-
-    func testClearDiagnosticsFileIfTooBigDoesClearFileIfBig() async throws {
-        for _ in 0...8000 {
-            _ = await self.storeEvent()
-        }
-
-        let data = try await self.fileHandler.readFile()
-        expect(data).toNot(beEmpty())
-
-        await self.synchronizer!.clearDiagnosticsFileIfTooBig()
-
-        let data2 = try await self.fileHandler.readFile()
-        expect(data2).to(beEmpty())
-    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

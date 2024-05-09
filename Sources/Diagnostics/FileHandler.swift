@@ -85,9 +85,12 @@ actor FileHandler: FileHandlerType {
     }
 
     /// Removes the contents of the file
-    func emptyFile() throws {
+    func emptyFile() async throws {
+        RCTestAssertNotMainThread()
+
         do {
             try self.fileHandle.truncate(atOffset: 0)
+            try self.fileHandle.synchronize()
         } catch {
             throw Error.failedEmptyingFile(error)
         }
@@ -130,11 +133,11 @@ actor FileHandler: FileHandlerType {
     }
 
     func fileSizeInKB() async throws -> Double {
-        let resources = try self.url.resourceValues(forKeys: [.fileSizeKey])
-        guard let fileSizeInBytes = resources.fileSize else {
+        let attributes = try FileManager.default.attributesOfItem(atPath: self.url.path)
+        guard let fileSizeInBytes = attributes[.size] as? NSNumber else {
             throw Error.failedGettingFileSize(self.url)
         }
-        return Double(fileSizeInBytes) / 1024
+        return Double(fileSizeInBytes.intValue) / 1024
     }
 
     // MARK: -
