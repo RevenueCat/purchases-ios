@@ -12,6 +12,7 @@ else
     echo "Replacing API keys on PaywallsTester"
 
     file="$SCRIPT_DIR/../PaywallsTester/Configuration.swift"
+    sed -i.bak 's/private static let apiKey = ""/private static let apiKey = "'$REVENUECAT_XCODE_CLOUD_SIMPLE_APP_API_KEY'"/g' $file
     sed -i.bak 's/private static let apiKeyFromCIForTesting = ""/private static let apiKeyFromCIForTesting = "'$PAYWALLS_TESTER_API_KEY_FOR_TESTING'"/g' $file
     sed -i.bak 's/private static let apiKeyFromCIForDemos = ""/private static let apiKeyFromCIForDemos = "'$PAYWALLS_TESTER_API_KEY_FOR_DEMOS'"/g' $file
     rm $file.bak
