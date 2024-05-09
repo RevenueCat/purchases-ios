@@ -24,13 +24,11 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
     private let appUserID = "mockAppUserID"
     private var deviceCache: MockDeviceCache!
-    private var currentUserProvider: MockCurrentUserProvider!
 
     private var observerModePurchaseDetector: StoreKit2ObserverModePurchaseDetector!
 
     override func setUp() async throws {
         deviceCache = .init()
-        currentUserProvider = .init(mockAppUserID: appUserID)
     }
 
     func testDetectUnobservedTransactionsDoesntCallDelegateWith0Transactions() async {
@@ -40,7 +38,6 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider,
             allTransactionsProvider: allTransactionsProvider
         )
 
@@ -53,13 +50,12 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     }
 
     func testDetectUnobservedTransactionsCallsDelegateUnobservedTransactions() async throws {
-        let txn1 = try await self.simulateAnyPurchase(product: nil, finishTransaction: false)
+        let txn1 = try await self.simulateAnyPurchase(finishTransaction: true)
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider,
             allTransactionsProvider: allTransactionsProvider
         )
 
@@ -83,13 +79,12 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     // Since the transaction is cached when it is detected for the first time, we don't expect
     // the delegate to be called again for this transaction in the future.
     func testDetectUnobservedTransactionsCallsDelegateOncePerUnobservedTransactions() async throws {
-        let txn1 = try await self.simulateAnyPurchase(product: nil, finishTransaction: false)
+        let txn1 = try await self.simulateAnyPurchase(finishTransaction: true)
         let allTransactionsProvider = MockAllTransactionsProvider(mockedTransactions: [txn1])
         let delegate = MockStoreKit2ObserverModePurchaseDetectorDelegate()
 
         observerModePurchaseDetector = .init(
             deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider,
             allTransactionsProvider: allTransactionsProvider
         )
 

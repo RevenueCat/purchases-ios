@@ -433,7 +433,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
                     deviceCache: deviceCache,
-                    currentUserProvider: identityManager,
                     allTransactionsProvider: SK2AllTransactionsProvider()
                 )
 

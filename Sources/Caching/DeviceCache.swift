@@ -338,19 +338,19 @@ class DeviceCache {
         return self.userDefaults.read(Self.productEntitlementMapping)
     }
 
-    // MARK: - SK2
-    func cachedSyncedSK2ObserverModeTransactionIDs(appUserID: String) -> [UInt64]? {
+    // MARK: - StoreKit 2
+    func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64]? {
         return self.userDefaults.read { userDefaults in
             userDefaults.array(
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID).rawValue) as? [UInt64]
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
         }
     }
 
-    func cachedSyncedSK2ObserverModeTransactionIDs(syncedSK2TransactionIDs: [UInt64], appUserID: String) {
+    func cacheSyncedSK2ObserverModeTransactionIDs(syncedSK2TransactionIDs: [UInt64]) {
         self.userDefaults.write {
             $0.set(
                 syncedSK2TransactionIDs,
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs(appUserID)
+                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
             )
         }
     }
@@ -377,7 +377,7 @@ class DeviceCache {
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
-        case syncedSK2ObserverModeTransactionIDs(String)
+        case syncedSK2ObserverModeTransactionIDs
 
         var rawValue: String {
             switch self {
@@ -386,8 +386,8 @@ class DeviceCache {
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
-            case let .syncedSK2ObserverModeTransactionIDs(userID):
-                return "\(Self.base)syncedSK2ObserverModeTransactionIDs.\(userID)"
+            case .syncedSK2ObserverModeTransactionIDs:
+                return "\(Self.base)syncedSK2ObserverModeTransactionIDs"
             }
         }
 
