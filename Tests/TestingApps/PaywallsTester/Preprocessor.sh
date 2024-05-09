@@ -46,25 +46,23 @@ find "$base_directory" -type f -name "*.swift" | while read -r file; do
 
     if grep -q '//@PublicForExternalTesting' "$file"; then
         # Backup original file
-        original_file="${file}.orig"
+        backup_file="${file}.orig"
         cp "$file" "$original_file"
 
         # Find //@PublicForExternalTesting and replace it with public before declarations
-        sed -i.bak -E \
+        sed -i.orig -E \
         '/\/\/@PublicForExternalTesting[[:space:]]*$/{
         N
         s/\/\/@PublicForExternalTesting[[:space:]]*\n[[:space:]]*(static[[:space:]]+)?(struct|class|final[[:space:]]+class|enum|init|func)/public \1\2/
         }' "$file"
 
         # Log changes made to the file
-        diff_output=$(diff "$original_file" "$file")
+        diff_output=$(diff "$backup_file" "$file")
         if [[ -n "$diff_output" ]]; then
             echo "Changes made in file: $file" | tee -a "$log_file"
             echo "$diff_output" | tee -a "$log_file"
         fi
 
-        # Remove the backup file
-        rm -f "${file}.bak"
     fi
 done
 
