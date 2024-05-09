@@ -543,8 +543,6 @@ public extension Purchases {
      * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
      * RevenueCat's backend. Default is `false`.
      *
-     * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
-     *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
