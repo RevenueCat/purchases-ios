@@ -218,6 +218,9 @@ extension HTTPClient.Error: LocalizedError {
         case .notFound:
             return "Page not found"
 
+        case let .failedParsingResponse(swiftError, _):
+            return swiftError.localizedDescription
+
         default:
             return self.localizedDescription
         }
