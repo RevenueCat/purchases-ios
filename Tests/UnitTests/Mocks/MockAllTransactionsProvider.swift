@@ -29,4 +29,8 @@ final class MockAllTransactionsProvider: AllTransactionsProviderType {
     func getAllTransactions() async -> [StoreKit.VerificationResult<StoreKit.Transaction>] {
         return mockedTransactions
     }
+
+    func getMostRecentVerifiedTransaction() async -> StoreKit.VerificationResult<StoreKit.Transaction>? {
+        return mockedTransactions.last
+    }
 }

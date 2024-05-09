@@ -46,7 +46,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
         expect(delegate.handleSK2ObserverModeTransactionCalled) == false
 
         expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == false
-        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == false
+        expect(self.deviceCache.invokedRegisterNewSyncedSK2ObserverModeTransactionID) == false
     }
 
     func testDetectUnobservedTransactionsCallsDelegateUnobservedTransactions() async throws {
@@ -73,7 +73,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
         // Validate cache state
         expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == true
-        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == true
+        expect(self.deviceCache.invokedRegisterNewSyncedSK2ObserverModeTransactionID) == true
     }
 
     // Since the transaction is cached when it is detected for the first time, we don't expect
@@ -103,7 +103,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
 
         // Validate cache state
         expect(self.deviceCache.invokedReadCachedSyncedSK2ObserverModeTransactionIDs) == true
-        expect(self.deviceCache.invokedSetCachedSyncedSK2ObserverModeTransactionIDs) == true
+        expect(self.deviceCache.invokedRegisterNewSyncedSK2ObserverModeTransactionID) == true
     }
 }
 

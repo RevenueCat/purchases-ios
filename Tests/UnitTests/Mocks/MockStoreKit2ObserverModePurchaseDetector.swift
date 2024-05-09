@@ -21,7 +21,7 @@ final actor MockStoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurc
     var detectUnobservedTransactionsCalled = false
     var detectUnobservedTransactionsCalledCount = 0
 
-    func detectUnobservedTransactions(delegate: (any StoreKit2ObserverModePurchaseDetectorDelegate)?) async {
+    func detectUnobservedTransactions(delegate: (any StoreKit2ObserverModePurchaseDetectorDelegate)) async {
         detectUnobservedTransactionsCalled = true
         detectUnobservedTransactionsCalledCount += 1
     }

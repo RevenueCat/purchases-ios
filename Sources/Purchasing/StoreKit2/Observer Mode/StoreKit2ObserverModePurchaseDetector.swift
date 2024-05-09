@@ -64,10 +64,7 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         let jwsRepresentation = mostRecentTransaction.jwsRepresentation
         guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
 
-        var cachedSyncedSK2ObserverModeTransactionIDs = Set(
-            self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs() ?? []
-        )
-
+        let cachedSyncedSK2ObserverModeTransactionIDs = self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()
         if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
 
         do {
@@ -76,10 +73,7 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
                 jwsRepresentation: jwsRepresentation
             )
 
-            cachedSyncedSK2ObserverModeTransactionIDs.insert(transaction.id)
-            self.deviceCache.cacheSyncedSK2ObserverModeTransactionIDs(
-                syncedSK2TransactionIDs: Array(cachedSyncedSK2ObserverModeTransactionIDs)
-            )
+            deviceCache.registerNewSyncedSK2ObserverModeTransactionID(transaction.id)
         } catch {
             Logger.error(Strings.purchase.sk2_observer_mode_error_processing_transaction(error))
         }
