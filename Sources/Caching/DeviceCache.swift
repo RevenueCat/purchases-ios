@@ -339,19 +339,25 @@ class DeviceCache {
     }
 
     // MARK: - StoreKit 2
+    private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
+
     func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64]? {
-        return self.userDefaults.read { userDefaults in
-            userDefaults.array(
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            return self.userDefaults.read { userDefaults in
+                userDefaults.array(
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
+            }
         }
     }
 
     func cacheSyncedSK2ObserverModeTransactionIDs(syncedSK2TransactionIDs: [UInt64]) {
-        self.userDefaults.write {
-            $0.set(
-                syncedSK2TransactionIDs,
-                forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
-            )
+        cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
+            self.userDefaults.write {
+                $0.set(
+                    syncedSK2TransactionIDs,
+                    forKey: CacheKey.syncedSK2ObserverModeTransactionIDs
+                )
+            }
         }
     }
 
