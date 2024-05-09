@@ -22,6 +22,7 @@
 		4FCA01FB2A3A1CBD00B262C0 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FCA01FA2A3A1CBD00B262C0 /* StoreKit.framework */; };
 		4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */; };
 		4FDF11222A72714C004F3680 /* SamplePaywalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FDF11212A72714C004F3680 /* SamplePaywalls.swift */; };
+		880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */ = {isa = PBXBuildFile; fileRef = 880B2AF12BEC2D62006B9393 /* Preprocessor.sh */; };
 		88B2F9882BE1943C00B43E0B /* ManagePaywallButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B2F9872BE1943C00B43E0B /* ManagePaywallButton.swift */; };
 		88B2F98B2BE19B1200B43E0B /* OfferingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B2F98A2BE19B1200B43E0B /* OfferingButton.swift */; };
 		88B2F98D2BE3F1E900B43E0B /* TemplateInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B2F98C2BE3F1E900B43E0B /* TemplateInfo.swift */; };
@@ -94,6 +95,8 @@
 		4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywallsList.swift; sourceTree = "<group>"; };
 		4FDF11212A72714C004F3680 /* SamplePaywalls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SamplePaywalls.swift; sourceTree = "<group>"; };
 		4FFD2A602AA154B4001F4B0C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		880B2AF12BEC2D62006B9393 /* Preprocessor.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = Preprocessor.sh; sourceTree = SOURCE_ROOT; };
+		880B2AF32BEC35AA006B9393 /* Postprocessor.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = Postprocessor.sh; sourceTree = SOURCE_ROOT; };
 		88B2F9872BE1943C00B43E0B /* ManagePaywallButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagePaywallButton.swift; sourceTree = "<group>"; };
 		88B2F98A2BE19B1200B43E0B /* OfferingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingButton.swift; sourceTree = "<group>"; };
 		88B2F98C2BE3F1E900B43E0B /* TemplateInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateInfo.swift; sourceTree = "<group>"; };
@@ -206,6 +209,8 @@
 			children = (
 				4F34FF642A60ADBD00AADF11 /* Configuration.swift */,
 				4FDF11212A72714C004F3680 /* SamplePaywalls.swift */,
+				880B2AF12BEC2D62006B9393 /* Preprocessor.sh */,
+				880B2AF32BEC35AA006B9393 /* Postprocessor.sh */,
 				4FC882E02A5870C6005BE85E /* Info.plist */,
 				4FC046BF2A572E3700A28BCF /* Assets.xcassets */,
 				4FC046BD2A572E3700A28BCF /* PaywallsTester.entitlements */,
@@ -397,6 +402,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */,
+				880B2AF22BEC2D62006B9393 /* Preprocessor.sh in Resources */,
 				4F4557E22A6FFE6A00160521 /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -14,12 +14,11 @@
 import Foundation
 import RevenueCat
 
-#if DEBUG
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
+    // @PublicForExternalTesting
     static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
         return .init { packages in
             return Dictionary(
@@ -34,7 +33,7 @@ extension TrialOrIntroEligibilityChecker {
             )
         }
     }
-
+#if DEBUG
     /// Creates a copy of this `TrialOrIntroEligibilityChecker` with a delay.
     func with(delay seconds: TimeInterval) -> Self {
         return .init { [checker = self.checker] in
@@ -43,7 +42,6 @@ extension TrialOrIntroEligibilityChecker {
             return await checker($0)
         }
     }
+#endif
 
 }
-
-#endif

@@ -6,11 +6,7 @@
 //
 
 import RevenueCat
-#if DEBUG
-@testable import RevenueCatUI
-#else
 import RevenueCatUI
-#endif
 import SwiftUI
 
 struct OfferingsList: View {

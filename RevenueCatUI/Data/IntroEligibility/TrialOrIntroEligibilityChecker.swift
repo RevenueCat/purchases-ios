@@ -15,6 +15,7 @@ import Foundation
 import RevenueCat
 
 @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
+// @PublicForExternalTesting
 final class TrialOrIntroEligibilityChecker: ObservableObject {
 
     typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]

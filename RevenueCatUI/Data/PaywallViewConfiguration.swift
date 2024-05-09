@@ -11,6 +11,7 @@ import RevenueCat
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// @PublicForExternalTesting
 struct PaywallViewConfiguration {
 
     var content: Content
@@ -45,6 +46,7 @@ struct PaywallViewConfiguration {
 extension PaywallViewConfiguration {
 
     /// Offering selection for the paywall.
+    // @PublicForExternalTesting
     enum Content {
 
         case defaultOffering
@@ -60,6 +62,7 @@ extension PaywallViewConfiguration {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallViewConfiguration {
 
+    // @PublicForExternalTesting
     init(
         offering: Offering? = nil,
         customerInfo: CustomerInfo? = nil,
