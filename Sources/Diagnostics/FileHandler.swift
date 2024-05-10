@@ -30,6 +30,8 @@ protocol FileHandlerType: Sendable {
     /// Deletes the first N lines from the file, without loading the entire file in memory.
     func removeFirstLines(_ count: Int) async throws
 
+    func fileSizeInKB() async throws -> Double
+
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
@@ -83,9 +85,12 @@ actor FileHandler: FileHandlerType {
     }
 
     /// Removes the contents of the file
-    func emptyFile() throws {
+    func emptyFile() async throws {
+        RCTestAssertNotMainThread()
+
         do {
             try self.fileHandle.truncate(atOffset: 0)
+            try self.fileHandle.synchronize()
         } catch {
             throw Error.failedEmptyingFile(error)
         }
@@ -127,6 +132,14 @@ actor FileHandler: FileHandlerType {
         try self.replaceHandler(with: tempURL)
     }
 
+    func fileSizeInKB() async throws -> Double {
+        let attributes = try FileManager.default.attributesOfItem(atPath: self.url.path)
+        guard let fileSizeInBytes = attributes[.size] as? NSNumber else {
+            throw Error.failedGettingFileSize(self.url)
+        }
+        return Double(fileSizeInBytes.intValue) / 1024
+    }
+
     // MARK: -
 
     private static let fileManager: FileManager = .default
@@ -150,6 +163,7 @@ extension FileHandler {
         case failedSeeking(Swift.Error)
         case failedEmptyingFile(Swift.Error)
         case failedMovingNewFile(from: URL, toURL: URL, Swift.Error)
+        case failedGettingFileSize(URL)
 
     }
 

@@ -22,6 +22,7 @@ class DiagnosticsTrackerTests: TestCase {
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
     fileprivate var tracker: DiagnosticsTracker!
+    fileprivate var dateProvider: MockDateProvider!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -30,7 +31,9 @@ class DiagnosticsTrackerTests: TestCase {
 
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
-        self.tracker = .init(diagnosticsFileHandler: self.handler)
+        self.dateProvider = .init(stubbedNow: Self.eventTimestamp1)
+        self.tracker = .init(diagnosticsFileHandler: self.handler,
+                             dateProvider: self.dateProvider)
     }
 
     override func tearDown() async throws {
@@ -65,6 +68,7 @@ class DiagnosticsTrackerTests: TestCase {
                                       timestamp: Self.eventTimestamp2)
 
         await self.tracker.track(event1)
+        self.dateProvider.stubbedNowResult = Self.eventTimestamp2
         await self.tracker.track(event2)
 
         let entries = await self.handler.getEntries()
@@ -92,14 +96,43 @@ class DiagnosticsTrackerTests: TestCase {
     func testTracksCustomerInfoVerificationFailed() async {
         let customerInfo: CustomerInfo = .emptyInfo.copy(with: .failed)
 
-        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo,
-                                                                       timestamp: Self.eventTimestamp1)
+        await self.tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
 
         let entries = await self.handler.getEntries()
         expect(entries) == [
             .init(eventType: .customerInfoVerificationResult,
                   properties: [.verificationResultKey: AnyEncodable("FAILED")],
                   timestamp: Self.eventTimestamp1)
+        ]
+    }
+
+    // MARK: - empty diagnostics file when too big
+
+    func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
+        for _ in 0...8000 {
+            await self.handler.appendEvent(diagnosticsEvent: .init(eventType: .httpRequestPerformed,
+                                                                   properties: [:],
+                                                                   timestamp: Date()))
+        }
+
+        let entries = await self.handler.getEntries()
+        expect(entries.count) == 8001
+
+        let event = DiagnosticsEvent(eventType: .httpRequestPerformed,
+                                     properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                                     timestamp: Self.eventTimestamp2)
+
+        await self.tracker.track(event)
+
+        let entries2 = await self.handler.getEntries()
+        expect(entries2.count) == 2
+        expect(entries2) == [
+            .init(eventType: .maxEventsStoredLimitReached,
+                  properties: [:],
+                  timestamp: Self.eventTimestamp1),
+            .init(eventType: .httpRequestPerformed,
+                  properties: [.verificationResultKey: AnyEncodable("FAILED")],
+                  timestamp: Self.eventTimestamp2)
         ]
     }
 

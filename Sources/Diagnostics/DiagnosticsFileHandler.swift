@@ -27,6 +27,9 @@ protocol DiagnosticsFileHandlerType: Sendable {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func emptyDiagnosticsFile() async
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func isDiagnosticsFileTooBig() async -> Bool
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -53,7 +56,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
             return
         }
 
-        await fileHandler.append(line: jsonString)
+        await self.fileHandler.append(line: jsonString)
     }
 
     func getEntries() async -> [DiagnosticsEvent] {
@@ -69,25 +72,35 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async {
         guard diagnosticsSentCount > 0 else {
-            Logger.error("Invalid sent diagnostics count: \(diagnosticsSentCount)")
+            Logger.error(Strings.diagnostics.invalid_sent_diagnostics_count(count: diagnosticsSentCount))
             return
         }
 
         do {
-            try await fileHandler.removeFirstLines(diagnosticsSentCount)
+            try await self.fileHandler.removeFirstLines(diagnosticsSentCount)
         } catch {
-            Logger.error("Failed to clean sent diagnostics: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.failed_to_clean_sent_diagnostics(error: error))
         }
     }
 
     func emptyDiagnosticsFile() async {
         do {
-            try await fileHandler.emptyFile()
+            try await self.fileHandler.emptyFile()
         } catch {
-            Logger.error("Failed to empty diagnostics file: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.failed_to_empty_diagnostics_file(error: error))
         }
     }
 
+    func isDiagnosticsFileTooBig() async -> Bool {
+        do {
+            return try await self.fileHandler.fileSizeInKB() > Self.maxFileSizeInKb
+        } catch {
+            Logger.error(Strings.diagnostics.failed_check_diagnostics_size(error: error))
+            return true
+        }
+    }
+
+    private static let maxFileSizeInKb: Double = 500
 }
 
 // MARK: - Private
