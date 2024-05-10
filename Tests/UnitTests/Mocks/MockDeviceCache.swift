@@ -303,10 +303,10 @@ class MockDeviceCache: DeviceCache {
     }
 
     // MARK: - CachedSyncedSK2TransactionIDs
-    private var cachedSyncedSK2TransactionIDs: Set<UInt64> = Set()
+    private var cachedSyncedSK2TransactionIDs: [UInt64] = []
 
     var invokedReadCachedSyncedSK2ObserverModeTransactionIDs = false
-    override func cachedSyncedSK2ObserverModeTransactionIDs() -> Set<UInt64> {
+    override func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
         invokedReadCachedSyncedSK2ObserverModeTransactionIDs = true
         return cachedSyncedSK2TransactionIDs
     }
@@ -314,7 +314,7 @@ class MockDeviceCache: DeviceCache {
     var invokedRegisterNewSyncedSK2ObserverModeTransactionID = false
     override func registerNewSyncedSK2ObserverModeTransactionID(_ id: UInt64) {
         invokedRegisterNewSyncedSK2ObserverModeTransactionID = true
-        cachedSyncedSK2TransactionIDs.insert(id)
+        cachedSyncedSK2TransactionIDs.append(id)
     }
 
 }

@@ -343,12 +343,12 @@ class DeviceCache {
 
     func registerNewSyncedSK2ObserverModeTransactionID(_ id: UInt64) {
         cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
-            var transactionIDs = Set(self.userDefaults.read { userDefaults in
+            var transactionIDs = self.userDefaults.read { userDefaults in
                 userDefaults.array(
                     forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
-            } ?? [])
+            } ?? []
 
-            transactionIDs.insert(id)
+            transactionIDs.append(id)
 
             self.userDefaults.write {
                 $0.set(
@@ -359,12 +359,12 @@ class DeviceCache {
         }
     }
 
-    func cachedSyncedSK2ObserverModeTransactionIDs() -> Set<UInt64> {
+    func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
         cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
-            return Set(self.userDefaults.read { userDefaults in
+            return self.userDefaults.read { userDefaults in
                 userDefaults.array(
                     forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64] ?? []
-            })
+            }
         }
     }
 

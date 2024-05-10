@@ -64,7 +64,9 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         let jwsRepresentation = mostRecentTransaction.jwsRepresentation
         guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
 
-        let cachedSyncedSK2ObserverModeTransactionIDs = self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()
+        let cachedSyncedSK2ObserverModeTransactionIDs = Set(
+            self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()
+        )
         if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
 
         do {
