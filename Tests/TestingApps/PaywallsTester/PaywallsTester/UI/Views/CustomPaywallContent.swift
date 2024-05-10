@@ -16,9 +16,7 @@ struct CustomPaywallContent: View {
 
     var body: some View {
         self.content
-        #if DEBUG
             .scrollableIfNecessary(.vertical)
-        #endif
             .background(CustomPaywallContent.backgroundColor)
     }
 
