@@ -11,7 +11,6 @@ import RevenueCat
 final class Configuration: ObservableObject {
     static let shared = Configuration()
 
-
     static let entitlement = "pro"
 
     #if os(watchOS)
