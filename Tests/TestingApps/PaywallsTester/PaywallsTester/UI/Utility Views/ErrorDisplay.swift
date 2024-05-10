@@ -11,7 +11,7 @@ import SwiftUI
 private struct ErrorDisplay: ViewModifier {
 
     @Binding
-    var error: NSError?
+    var error: Error?
     var dismissOnClose: Bool
 
     @Environment(\.dismiss)
@@ -49,7 +49,7 @@ private struct ErrorDisplay: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    func displayError(_ error: Binding<NSError?>, dismissOnClose: Bool = false) -> some View {
+    func displayError(_ error: Binding<Error?>, dismissOnClose: Bool = false) -> some View {
         self.modifier(ErrorDisplay(error: error, dismissOnClose: dismissOnClose))
     }
 
@@ -57,24 +57,25 @@ extension View {
 
 private struct LocalizedAlertError: LocalizedError {
 
-    private let underlyingError: NSError
+    private let underlyingError: Error
 
-    init(error: NSError) {
+    init(error: Error) {
         self.underlyingError = error
     }
 
     var errorDescription: String? {
-        return (self.underlyingError as? LocalizedError)?.errorDescription
-        ?? "\(self.underlyingError.domain) \(self.underlyingError.code)"
+        return (self.underlyingError as? LocalizedError)?.errorDescription ??
+        (self.underlyingError as NSError).localizedDescription
     }
 
     var failureReason: String? {
-        return (self.underlyingError as? LocalizedError)?.failureReason
-        ?? self.underlyingError.localizedDescription
+        return (self.underlyingError as? LocalizedError)?.failureReason ??
+        (self.underlyingError as NSError).localizedFailureReason
     }
 
     var recoverySuggestion: String? {
-        self.underlyingError.localizedRecoverySuggestion
+        return (self.underlyingError as? LocalizedError)?.recoverySuggestion ??
+        (self.underlyingError as NSError).localizedRecoverySuggestion
     }
 
 }

@@ -105,6 +105,24 @@ extension HTTPClient {
 
         case notFound
 
+
+        public var errorDescription: String? {
+            switch self {
+            case .unrecognizedResponse(_):
+                "Unrecognized Server Response"
+            case .invalidResponse(_):
+                "Invalid Server Response"
+            case .errorResponse(_, _, _, _):
+                "Server Error Response"
+            case .failedParsingResponse(_, json: let json):
+                "Failed to Parse Repsponse"
+            case .failedBuildingURL:
+                "Failed to Build URL"
+            case .notFound:
+                "Unknown Error"
+            }
+        }
+
     }
 
 }
@@ -217,6 +235,9 @@ extension HTTPClient.Error: LocalizedError {
 
         case .notFound:
             return "Page not found"
+
+        case let .failedParsingResponse(swiftError, _):
+            return swiftError.localizedDescription
 
         default:
             return self.localizedDescription

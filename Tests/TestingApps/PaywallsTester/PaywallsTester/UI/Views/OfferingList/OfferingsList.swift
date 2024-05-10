@@ -40,6 +40,7 @@ struct OfferingsList: View {
                     }
                 }
             }
+            .displayError($viewModel.error)
     }
 
     init(app: DeveloperResponse.App, introEligility: Binding<IntroEligibilityStatus>) {
@@ -67,7 +68,7 @@ struct OfferingsList: View {
                 Text("No data available.")
             }
         case .error(let error):
-            Text(error.description)
+            ContentUnavailableView("Error loading paywalls", systemImage: "exclamationmark.triangle.fill", description: Text(error.localizedDescription))
         }
     }
     

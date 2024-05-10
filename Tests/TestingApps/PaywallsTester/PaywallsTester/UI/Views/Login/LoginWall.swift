@@ -12,8 +12,8 @@ struct LoginWall<ContentView: View>: View {
     @Environment(ApplicationData.self) private var application
     
     @State
-    private var error: NSError?
-    
+    private var error: Error?
+
     var content: (DeveloperResponse) -> ContentView
     
     var body: some View {
@@ -41,7 +41,7 @@ struct LoginWall<ContentView: View>: View {
         do {
             try await application.loadApplicationData()
         } catch {
-            self.error = error as NSError
+            self.error = error
         }
     }
 }

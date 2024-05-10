@@ -24,7 +24,25 @@ import Foundation
 @propertyWrapper
 struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable {
 
-    struct Error: Swift.Error {}
+    struct Error: LocalizedError {
+
+        var path: String?
+
+        init(codingPath: String? = nil) {
+            self.path = codingPath
+        }
+
+        /// Error message explaining that the collection cannot be empty
+        public var localizedDescription: String? {
+            "Collection cannot be empty"
+        }
+
+        /// Error message that includes the path that contains the empty collection
+        public var failureReason: String? {
+            "A collection at \(path ?? "unknown") was unexpectedly empty."
+        }
+
+    }
 
     var wrappedValue: Value
 
@@ -40,7 +58,7 @@ extension EnsureNonEmptyCollectionDecodable: Decodable {
         let array = try container.decode(Value.self)
 
         if array.isEmpty {
-            throw Error()
+            throw Error(codingPath: "\(decoder.codingPath)")
         } else {
             self.wrappedValue = array
         }
@@ -64,7 +82,7 @@ extension KeyedDecodingContainer {
         forKey key: Key
     ) throws -> EnsureNonEmptyCollectionDecodable<T> {
         return try self.decodeIfPresent(type, forKey: key)
-            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error())
+            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error(codingPath: "\(self.codingPath)"))
     }
 
 }

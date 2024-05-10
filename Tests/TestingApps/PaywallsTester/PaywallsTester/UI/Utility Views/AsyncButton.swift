@@ -16,7 +16,7 @@ struct AsyncButton<Label>: View where Label: View {
     private let label: Label
 
     @State
-    private var error: NSError?
+    private var error: Error?
 
     init(
         action: @escaping Action,
@@ -28,10 +28,10 @@ struct AsyncButton<Label>: View where Label: View {
 
     var body: some View {
         Button {
-            Task<Void, Never> {
+            Task {
                 do {
                     try await self.action()
-                } catch let error as NSError {
+                } catch {
                     self.error = error
                 }
             }
