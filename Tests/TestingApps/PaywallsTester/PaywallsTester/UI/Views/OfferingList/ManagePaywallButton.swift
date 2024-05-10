@@ -12,6 +12,9 @@ import WatchKit
 
 struct ManagePaywallButton: View {
 
+    @State
+    var error: Error?
+
     enum Kind: String {
         case edit
         case new
@@ -50,6 +53,7 @@ struct ManagePaywallButton: View {
                 kind.image
             }
         }
+        .displayError($error)
     }
 
     init(kind: Kind, appID: String, offeringID: String, buttonName: String? = nil) {
@@ -69,6 +73,8 @@ struct ManagePaywallButton: View {
 
         guard let url = URL(string: urlString) else {
             Self.logger.log(level: .error, "Could not create URL for \(urlString)")
+            self.error = URLError(.badURL, userInfo: [NSLocalizedDescriptionKey: "Could not create URL",
+                                               NSLocalizedFailureReasonErrorKey: "Attempted with \(urlString)"])
             return nil
         }
 
@@ -79,6 +85,8 @@ struct ManagePaywallButton: View {
         #if !os(watchOS)
         guard UIApplication.shared.canOpenURL(url) else {
             Self.logger.log(level: .error, "Could not open URL for \(url)")
+            self.error = URLError(.badURL, userInfo: [NSLocalizedDescriptionKey: "Could not open URL",
+                                               NSLocalizedFailureReasonErrorKey: "Could not open \(url)"])
             return
         }
         UIApplication.shared.open(url)

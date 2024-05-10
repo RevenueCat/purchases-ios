@@ -24,7 +24,22 @@ import Foundation
 @propertyWrapper
 struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable {
 
-    struct Error: Swift.Error {}
+    struct Error: LocalizedError {
+        var type: String?
+
+        init(type: String? = nil) {
+            self.type = type
+        }
+
+        public var localizedDescription: String? {
+            "Collection cannot be empty"
+        }
+
+        public var failureReason: String? {
+            "A collection of type \(type ?? "unknown") was unexpectedly empty."
+        }
+
+    }
 
     var wrappedValue: Value
 
@@ -40,7 +55,7 @@ extension EnsureNonEmptyCollectionDecodable: Decodable {
         let array = try container.decode(Value.self)
 
         if array.isEmpty {
-            throw Error()
+            throw Error(type: "\(Value.self)")
         } else {
             self.wrappedValue = array
         }
@@ -64,7 +79,7 @@ extension KeyedDecodingContainer {
         forKey key: Key
     ) throws -> EnsureNonEmptyCollectionDecodable<T> {
         return try self.decodeIfPresent(type, forKey: key)
-            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error())
+            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error(type: "\(type)"))
     }
 
 }

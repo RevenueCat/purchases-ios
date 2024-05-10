@@ -31,10 +31,18 @@ final class OfferingsPaywallsViewModel {
     enum State {
         case notloaded
         case success
-        case error(NSError)
+        case error(Error)
     }
 
-    private(set) var state: State
+    var error: Error?
+
+    private(set) var state: State {
+        didSet {
+            if case let .error(stateError) = state {
+                self.error = stateError
+            }
+        }
+    }
     private(set) var hasMultipleTemplates = false
     private(set) var hasMultipleOfferingsWithPaywalls = false
     var presentedPaywall: PresentedPaywall?
@@ -75,7 +83,7 @@ final class OfferingsPaywallsViewModel {
             self.hasMultipleOfferingsWithPaywalls = listData.offeringsAndPaywalls.count > 1
             self.listData = listData
             self.state = .success
-        } catch let error as NSError {
+        } catch {
             Self.logger.log(level: .error, "Could not fetch offerings/paywalls: \(error)")
             self.state = .error(error)
         }
@@ -147,6 +155,7 @@ private extension OfferingsPaywallsViewModel {
             }
         case .error(let error):
             Self.logger.log(level: .error, "Could not find a paywall for id \(id), error: \(error)")
+            self.error = error as! LocalizedError
             self.presentedPaywall = nil
         }
     }
