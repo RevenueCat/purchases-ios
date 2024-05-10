@@ -11,11 +11,6 @@ import RevenueCat
 final class Configuration: ObservableObject {
     static let shared = Configuration()
 
-    @Published var currentMode: Mode {
-        didSet {
-            self.configure()
-        }
-    }
 
     static let entitlement = "pro"
 
@@ -35,16 +30,7 @@ final class Configuration: ObservableObject {
     private static let proxyURL = ""
     private static let apiKey = ""
 
-    // This is modified by CI:
-    private static let apiKeyFromCIForTesting = ""
-    private static let apiKeyFromCIForDemos = ""
-
     private init() {
-        if Self.apiKey.isEmpty {
-            self.currentMode = Self.apiKeyFromCIForTesting.isEmpty ? .listOnly : .testing
-        } else {
-            self.currentMode = .custom
-        }
 
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Self.proxyURL.isEmpty
@@ -54,27 +40,9 @@ final class Configuration: ObservableObject {
         self.configure()
     }
 
-    var currentAPIKey: String? {
-        switch currentMode {
-        case .custom:
-            Self.apiKey
-        case .testing:
-            Self.apiKeyFromCIForTesting
-        case .demos:
-            Self.apiKeyFromCIForDemos
-        case .listOnly:
-            nil
-        }
-    }
-
     private func configure() {
-        guard let currentAPIKey = self.currentAPIKey,
-              !currentAPIKey.isEmpty else {
-            return
-        }
-
         Purchases.configure(
-            with: .init(withAPIKey: currentAPIKey)
+            with: .init(withAPIKey: Self.apiKey)
                 .with(entitlementVerificationMode: .informational)
                 .with(usesStoreKit2IfAvailable: true)
         )
