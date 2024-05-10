@@ -36,6 +36,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     var offerings: MockOfferingsAPI!
     var currentUserProvider: MockCurrentUserProvider!
     var transactionsManager: MockTransactionsManager!
+    var notificationCenter: MockNotificationCenter!
     var deviceCache: MockDeviceCache!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
@@ -100,6 +101,7 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
                                                                          currentUserProvider: self.currentUserProvider)
         self.mockStoreMessagesHelper = .init()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+        self.notificationCenter = MockNotificationCenter()
         self.setUpStoreKit1Wrapper()
         self.setUpAttribution()
         self.setUpOrchestrator()
@@ -185,29 +187,33 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func setUpOrchestrator(
         storeKit2TransactionListener: StoreKit2TransactionListenerType,
-        storeKit2StorefrontListener: StoreKit2StorefrontListener
+        storeKit2StorefrontListener: StoreKit2StorefrontListener,
+        storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType
     ) {
-        self.orchestrator = PurchasesOrchestrator(productsManager: self.productsManager,
-                                                  paymentQueueWrapper: self.paymentQueueWrapper,
-                                                  systemInfo: self.systemInfo,
-                                                  subscriberAttributes: self.attribution,
-                                                  operationDispatcher: self.operationDispatcher,
-                                                  receiptFetcher: self.receiptFetcher,
-                                                  receiptParser: self.receiptParser,
-                                                  transactionFetcher: self.mockTransactionFetcher,
-                                                  customerInfoManager: self.customerInfoManager,
-                                                  backend: self.backend,
-                                                  transactionPoster: self.transactionPoster,
-                                                  currentUserProvider: self.currentUserProvider,
-                                                  transactionsManager: self.transactionsManager,
-                                                  deviceCache: self.deviceCache,
-                                                  offeringsManager: self.mockOfferingsManager,
-                                                  manageSubscriptionsHelper: self.mockManageSubsHelper,
-                                                  beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
-                                                  storeKit2TransactionListener: storeKit2TransactionListener,
-                                                  storeKit2StorefrontListener: storeKit2StorefrontListener,
-                                                  storeMessagesHelper: self.mockStoreMessagesHelper,
-                                                  diagnosticsTracker: self.mockDiagnosticsTracker)
+        self.orchestrator = PurchasesOrchestrator(
+            productsManager: self.productsManager,
+            paymentQueueWrapper: self.paymentQueueWrapper,
+            systemInfo: self.systemInfo,
+            subscriberAttributes: self.attribution,
+            operationDispatcher: self.operationDispatcher,
+            receiptFetcher: self.receiptFetcher,
+            receiptParser: self.receiptParser,
+            transactionFetcher: self.mockTransactionFetcher,
+            customerInfoManager: self.customerInfoManager,
+            backend: self.backend,
+            transactionPoster: self.transactionPoster,
+            currentUserProvider: self.currentUserProvider,
+            transactionsManager: self.transactionsManager,
+            deviceCache: self.deviceCache,
+            offeringsManager: self.mockOfferingsManager,
+            manageSubscriptionsHelper: self.mockManageSubsHelper,
+            beginRefundRequestHelper: self.mockBeginRefundRequestHelper,
+            storeKit2TransactionListener: storeKit2TransactionListener,
+            storeKit2StorefrontListener: storeKit2StorefrontListener,
+            storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+            storeMessagesHelper: self.mockStoreMessagesHelper,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        )
         self.storeKit1Wrapper.delegate = self.orchestrator
     }
 

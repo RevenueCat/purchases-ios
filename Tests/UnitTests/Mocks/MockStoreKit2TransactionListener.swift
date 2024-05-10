@@ -84,6 +84,13 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
 
         return (self.mockCancelled, transaction)
     }
+
+    var invokedHandleSK2ObserverModeTransaction = false
+    var invokedHandleSK2ObserverModeTransactionCount = 0
+    func handleSK2ObserverModeTransaction(verifiedTransaction: Transaction, jwsRepresentation: String) async throws {
+        self.invokedHandleSK2ObserverModeTransaction = true
+        invokedHandleSK2ObserverModeTransactionCount += 1
+    }
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

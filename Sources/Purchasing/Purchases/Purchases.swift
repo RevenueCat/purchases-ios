@@ -450,6 +450,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         storeMessagesHelper = nil
         #endif
 
+        let notificationCenter: NotificationCenter = .default
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 var diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -463,6 +464,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
                     }
                 }
+                let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
+                    deviceCache: deviceCache,
+                    allTransactionsProvider: SK2AllTransactionsProvider()
+                )
 
                 return .init(
                     productsManager: productsManager,
@@ -484,6 +489,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     beginRefundRequestHelper: beginRefundRequestHelper,
                     storeKit2TransactionListener: StoreKit2TransactionListener(delegate: nil),
                     storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                    storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer
                 )
@@ -537,7 +543,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   backend: backend,
                   paymentQueueWrapper: paymentQueueWrapper,
                   userDefaults: userDefaults,
-                  notificationCenter: .default,
+                  notificationCenter: notificationCenter,
                   systemInfo: systemInfo,
                   offeringsFactory: offeringsFactory,
                   deviceCache: deviceCache,
@@ -1178,7 +1184,6 @@ public extension Purchases {
             throw NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
         }
     }
-
 }
 
 // swiftlint:enable missing_docs
@@ -1787,6 +1792,10 @@ private extension Purchases {
         self.delegate?.purchases?(self, receivedUpdated: new)
     }
 
+    @objc func applicationDidBecomeActive() {
+        purchasesOrchestrator.handleApplicationDidBecomeActive()
+    }
+
     @objc func applicationWillEnterForeground() {
         Logger.debug(Strings.configure.application_foregrounded)
 
@@ -1823,6 +1832,11 @@ private extension Purchases {
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationDidEnterBackground),
                                             name: SystemInfo.applicationDidEnterBackgroundNotification,
+                                            object: nil)
+
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationDidBecomeActive),
+                                            name: SystemInfo.applicationDidBecomeActiveNotification,
                                             object: nil)
     }
 

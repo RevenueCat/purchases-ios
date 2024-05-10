@@ -36,24 +36,11 @@ class PurchasesDelegateTests: BasePurchasesTests {
     }
 
     func testSubscribesToUIApplicationWillEnterForeground() throws {
-        expect(self.notificationCenter.observers).to(haveCount(2))
+        expect(self.notificationCenter.observers).to(haveCount(3))
 
         let (_, _, name, _) = try XCTUnwrap(self.notificationCenter.observers.first)
         expect(name) == SystemInfo.applicationWillEnterForegroundNotification
     }
-
-    #if os(iOS) || VISION_OS
-
-    // We shouldn't use this notification because it's called when
-    // apps lose focus when presenting popups during a purchase.
-    func testDoesNotSubscribeToUIApplicationDidBecomeActive() throws {
-        expect(self.notificationCenter.observers)
-            .toNot(containElementSatisfying { _, _, name, _ in
-                name == UIApplication.didBecomeActiveNotification
-            })
-    }
-
-    #endif
 
     func testTriggersCallToBackend() {
         self.notificationCenter.fireNotifications()
@@ -67,6 +54,13 @@ class PurchasesDelegateTests: BasePurchasesTests {
         self.notificationCenter.fireNotifications()
 
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(2))
+    }
+
+    func testSubscribesToUIApplicationDidBecomeActive() throws {
+        let applicationDidBecomeActiveNotificationObservers = self.notificationCenter.observers
+            .filter { $0.notificationName == SystemInfo.applicationDidBecomeActiveNotification }
+
+        expect(applicationDidBecomeActiveNotificationObservers.count) == 1
     }
 
     func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
@@ -86,7 +80,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
     func testDoesntRemoveObservationWhenDelegateNil() {
         self.purchases.delegate = nil
 
-        expect(self.notificationCenter.observers).to(haveCount(2))
+        expect(self.notificationCenter.observers).to(haveCount(3))
     }
 
     // See https://github.com/RevenueCat/purchases-ios/issues/2410

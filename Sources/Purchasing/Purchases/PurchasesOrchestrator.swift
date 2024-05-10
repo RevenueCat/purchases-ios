@@ -75,6 +75,7 @@ final class PurchasesOrchestrator {
     var _storeKit2TransactionListener: Any?
     var _storeKit2StorefrontListener: Any?
     var _diagnosticsSynchronizer: Any?
+    var _storeKit2ObserverModePurchaseDetector: Any?
     // swiftlint:enable identifier_name
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -92,6 +93,11 @@ final class PurchasesOrchestrator {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
         return self._diagnosticsSynchronizer as? DiagnosticsSynchronizerType
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    var storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType? {
+        return self._storeKit2ObserverModePurchaseDetector as? StoreKit2ObserverModePurchaseDetectorType
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -114,6 +120,7 @@ final class PurchasesOrchestrator {
                      beginRefundRequestHelper: BeginRefundRequestHelper,
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
+                     storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?
     ) {
@@ -142,6 +149,7 @@ final class PurchasesOrchestrator {
 
         self._storeKit2TransactionListener = storeKit2TransactionListener
         self._storeKit2StorefrontListener = storeKit2StorefrontListener
+        self._storeKit2ObserverModePurchaseDetector = storeKit2ObserverModePurchaseDetector
 
         storeKit2StorefrontListener.delegate = self
         if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
@@ -1499,6 +1507,32 @@ extension PurchasesOrchestrator {
         if systemInfo.storeKitVersion == .storeKit2 {
             await storeKit2TransactionListener.listenForTransactions()
         }
+    }
+}
+
+// MARK: - Application Lifecycle
+extension PurchasesOrchestrator {
+    func handleApplicationDidBecomeActive() {
+
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
+           self.observerMode && self.systemInfo.storeKitVersion == .storeKit2 {
+            Task(priority: .utility) {
+                await self.storeKit2ObserverModePurchaseDetector?.detectUnobservedTransactions(delegate: self)
+            }
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PurchasesOrchestrator: StoreKit2ObserverModePurchaseDetectorDelegate {
+
+    func handleSK2ObserverModeTransaction(verifiedTransaction: StoreKit.Transaction,
+                                          jwsRepresentation: String) async throws {
+        try await self.storeKit2TransactionListener.handleSK2ObserverModeTransaction(
+            verifiedTransaction: verifiedTransaction,
+            jwsRepresentation: jwsRepresentation
+        )
     }
 
 }
