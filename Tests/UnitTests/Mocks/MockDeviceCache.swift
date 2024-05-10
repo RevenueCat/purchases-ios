@@ -312,9 +312,9 @@ class MockDeviceCache: DeviceCache {
     }
 
     var invokedRegisterNewSyncedSK2ObserverModeTransactionID = false
-    override func registerNewSyncedSK2ObserverModeTransactionID(_ id: UInt64) {
+    override func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
         invokedRegisterNewSyncedSK2ObserverModeTransactionID = true
-        cachedSyncedSK2TransactionIDs.append(id)
+        cachedSyncedSK2TransactionIDs.append(contentsOf: ids)
     }
 
 }

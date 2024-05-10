@@ -30,7 +30,17 @@ final class MockAllTransactionsProvider: AllTransactionsProviderType {
         return mockedTransactions
     }
 
-    func getMostRecentVerifiedTransaction() async -> StoreKit.VerificationResult<StoreKit.Transaction>? {
-        return mockedTransactions.last
+    func getMostRecentVerifiedTransaction(
+        from transactions: [StoreKit.VerificationResult<StoreKit.Transaction>]
+    ) async -> StoreKit.VerificationResult<StoreKit.Transaction>? {
+        let verifiedTransactions = transactions.filter { transaction in
+            return transaction.verifiedTransaction != nil
+        }
+        if verifiedTransactions.isEmpty { return nil }
+        guard let mostRecentTransaction = verifiedTransactions.max(by: {
+            $0.verifiedTransaction?.purchaseDate ?? .distantPast < $1.verifiedTransaction?.purchaseDate ?? .distantPast
+        }) else { return nil }
+
+        return mostRecentTransaction
     }
 }

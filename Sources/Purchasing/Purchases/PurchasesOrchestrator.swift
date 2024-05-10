@@ -1493,6 +1493,7 @@ extension PurchasesOrchestrator {
 // MARK: - Application Lifecycle
 extension PurchasesOrchestrator {
     func handleApplicationDidBecomeActive() {
+
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *),
            self.observerMode && self.systemInfo.storeKitVersion == .storeKit2 {
             Task(priority: .utility) {
@@ -1500,10 +1501,12 @@ extension PurchasesOrchestrator {
             }
         }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchasesOrchestrator: StoreKit2ObserverModePurchaseDetectorDelegate {
+
     func handleSK2ObserverModeTransaction(verifiedTransaction: StoreKit.Transaction,
                                           jwsRepresentation: String) async throws {
         try await self.storeKit2TransactionListener.handleSK2ObserverModeTransaction(
@@ -1511,4 +1514,5 @@ extension PurchasesOrchestrator: StoreKit2ObserverModePurchaseDetectorDelegate {
             jwsRepresentation: jwsRepresentation
         )
     }
+
 }

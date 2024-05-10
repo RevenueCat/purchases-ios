@@ -341,14 +341,14 @@ class DeviceCache {
     // MARK: - StoreKit 2
     private let cachedSyncedSK2ObserverModeTransactionIDsLock = Lock(.nonRecursive)
 
-    func registerNewSyncedSK2ObserverModeTransactionID(_ id: UInt64) {
+    func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
         cachedSyncedSK2ObserverModeTransactionIDsLock.perform {
             var transactionIDs = self.userDefaults.read { userDefaults in
                 userDefaults.array(
                     forKey: CacheKey.syncedSK2ObserverModeTransactionIDs.rawValue) as? [UInt64]
             } ?? []
 
-            transactionIDs.append(id)
+            transactionIDs.append(contentsOf: ids)
 
             self.userDefaults.write {
                 $0.set(

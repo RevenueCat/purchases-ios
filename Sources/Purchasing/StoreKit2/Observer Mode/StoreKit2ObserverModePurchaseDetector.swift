@@ -57,9 +57,13 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
     func detectUnobservedTransactions(
         delegate: StoreKit2ObserverModePurchaseDetectorDelegate
     ) async {
-        guard let mostRecentTransaction = await allTransactionsProvider.getMostRecentVerifiedTransaction() else {
-            return
-        }
+
+
+        let allTransactions = await allTransactionsProvider.getAllTransactions()
+
+        guard let mostRecentTransaction = await allTransactionsProvider.getMostRecentVerifiedTransaction(
+            from: allTransactions
+        ) else { return }
 
         let jwsRepresentation = mostRecentTransaction.jwsRepresentation
         guard let transaction = mostRecentTransaction.verifiedTransaction else { return }
@@ -68,6 +72,12 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
             self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()
         )
         if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
+        
+        let unsyncedTransactionIDs = allTransactions
+            .filter {
+                !cachedSyncedSK2ObserverModeTransactionIDs.contains($0.underlyingTransaction.id)
+            }
+            .map { $0.underlyingTransaction.id }
 
         do {
             try await delegate.handleSK2ObserverModeTransaction(
@@ -75,7 +85,7 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
                 jwsRepresentation: jwsRepresentation
             )
 
-            deviceCache.registerNewSyncedSK2ObserverModeTransactionID(transaction.id)
+            deviceCache.registerNewSyncedSK2ObserverModeTransactionIDs(unsyncedTransactionIDs)
         } catch {
             Logger.error(Strings.purchase.sk2_observer_mode_error_processing_transaction(error))
         }
@@ -87,7 +97,9 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol AllTransactionsProviderType: Sendable {
     func getAllTransactions() async -> [StoreKit.VerificationResult<StoreKit.Transaction>]
-    func getMostRecentVerifiedTransaction() async -> StoreKit.VerificationResult<StoreKit.Transaction>?
+    func getMostRecentVerifiedTransaction(
+        from transactions: [StoreKit.VerificationResult<StoreKit.Transaction>]
+    ) async -> StoreKit.VerificationResult<StoreKit.Transaction>?
 }
 
 /// A concretete implementation of `AllTransactionsProviderType` that fetches 
@@ -98,9 +110,10 @@ struct SK2AllTransactionsProvider: AllTransactionsProviderType, Sendable {
         return await StoreKit.Transaction.all.extractValues()
     }
 
-    func getMostRecentVerifiedTransaction() async -> StoreKit.VerificationResult<StoreKit.Transaction>? {
-        let allTransactions = await self.getAllTransactions()
-        let verifiedTransactions = allTransactions.filter { transaction in
+    func getMostRecentVerifiedTransaction(
+        from transactions: [StoreKit.VerificationResult<StoreKit.Transaction>]
+    ) async -> StoreKit.VerificationResult<StoreKit.Transaction>? {
+        let verifiedTransactions = transactions.filter { transaction in
             return transaction.verifiedTransaction != nil
         }
         if verifiedTransactions.isEmpty { return nil }
