@@ -1741,11 +1741,6 @@ private extension Purchases {
 
     func subscribeToAppStateNotifications() {
         self.notificationCenter.addObserver(self,
-                                            selector: #selector(self.applicationDidBecomeActive),
-                                            name: SystemInfo.applicationDidBecomeActiveNotification,
-                                            object: nil)
-
-        self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationWillEnterForeground),
                                             name: SystemInfo.applicationWillEnterForegroundNotification,
                                             object: nil)
@@ -1753,6 +1748,11 @@ private extension Purchases {
         self.notificationCenter.addObserver(self,
                                             selector: #selector(self.applicationDidEnterBackground),
                                             name: SystemInfo.applicationDidEnterBackgroundNotification,
+                                            object: nil)
+
+        self.notificationCenter.addObserver(self,
+                                            selector: #selector(self.applicationDidBecomeActive),
+                                            name: SystemInfo.applicationDidBecomeActiveNotification,
                                             object: nil)
     }
 
