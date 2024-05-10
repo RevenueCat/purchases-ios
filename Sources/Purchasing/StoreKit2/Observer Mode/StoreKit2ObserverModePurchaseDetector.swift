@@ -58,7 +58,6 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
         delegate: StoreKit2ObserverModePurchaseDetectorDelegate
     ) async {
 
-
         let allTransactions = await allTransactionsProvider.getAllTransactions()
 
         guard let mostRecentTransaction = await allTransactionsProvider.getMostRecentVerifiedTransaction(
@@ -72,7 +71,7 @@ actor StoreKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetect
             self.deviceCache.cachedSyncedSK2ObserverModeTransactionIDs()
         )
         if cachedSyncedSK2ObserverModeTransactionIDs.contains(transaction.id) { return }
-        
+
         let unsyncedTransactionIDs = allTransactions
             .filter {
                 !cachedSyncedSK2ObserverModeTransactionIDs.contains($0.underlyingTransaction.id)
