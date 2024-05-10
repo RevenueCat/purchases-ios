@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2D708C7F2AC6050000336AC8 /* UpsellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D708C7E2AC6050000336AC8 /* UpsellView.swift */; };
 		2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */; };
 		4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F102E262A840ECC0059EED6 /* CustomPaywall.swift */; };
 		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
@@ -70,7 +69,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2D708C7E2AC6050000336AC8 /* UpsellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpsellView.swift; sourceTree = "<group>"; };
 		2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallViewMode+Extensions.swift"; sourceTree = "<group>"; };
 		4F0B5EA02A97CD9300DB0FC9 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F0B5EA12A97CDAC00DB0FC9 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -251,7 +249,6 @@
 				4FDF111F2A7270F3004F3680 /* SamplePaywallsList.swift */,
 				4F102E262A840ECC0059EED6 /* CustomPaywall.swift */,
 				4F71CDD12A992292001B9BEF /* CustomPaywallContent.swift */,
-				2D708C7E2AC6050000336AC8 /* UpsellView.swift */,
 				2DBCEDFC2AC4BC060064C274 /* PaywallViewMode+Extensions.swift */,
 			);
 			path = Views;
@@ -439,7 +436,6 @@
 				88DFC1902BCF48B000273B6D /* AppList.swift in Sources */,
 				88B4380C2BDB0FCB000AF27C /* PaywallPresenter.swift in Sources */,
 				88DFC12E2BC7335200273B6D /* ApplicationData.swift in Sources */,
-				2D708C7F2AC6050000336AC8 /* UpsellView.swift in Sources */,
 				2DBCEDFD2AC4BC060064C274 /* PaywallViewMode+Extensions.swift in Sources */,
 				4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */,
 				88B2F98B2BE19B1200B43E0B /* OfferingButton.swift in Sources */,
