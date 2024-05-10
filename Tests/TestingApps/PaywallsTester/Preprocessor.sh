@@ -53,7 +53,7 @@ find "$base_directory" -type f -name "*.swift" | while read -r file; do
         sed -i.orig -E \
         '/\/\/ @PublicForExternalTesting[[:space:]]*$/{
         N
-        s/\/\/ @PublicForExternalTesting[[:space:]]*\n[[:space:]]*(static[[:space:]]+)?(struct|class|final[[:space:]]+class|enum|init|func)/public \1\2/
+        s/\/\/ @PublicForExternalTesting[[:space:]]*\n[[:space:]]*(static[[:space:]]+)?(struct|class|final[[:space:]]+class|enum|init|convenience[[:space:]]+init|func|var|let|typealias)/public \1\2/
         }' "$file"
 
         # Log changes made to the file
