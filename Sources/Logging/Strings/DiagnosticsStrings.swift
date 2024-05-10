@@ -28,6 +28,11 @@ enum DiagnosticsStrings {
 
     case could_not_synchronize_diagnostics(error: Error)
 
+    case invalid_sent_diagnostics_count(count: Int)
+    case failed_to_clean_sent_diagnostics(error: Error)
+    case failed_to_empty_diagnostics_file(error: Error)
+    case failed_check_diagnostics_size(error: Error)
+
 }
 
 extension DiagnosticsStrings: LogMessage {
@@ -55,6 +60,18 @@ extension DiagnosticsStrings: LogMessage {
 
         case let .could_not_synchronize_diagnostics(error):
             return "Failed to synchronize diagnostics: \(error.localizedDescription)"
+
+        case let .invalid_sent_diagnostics_count(count):
+            return "Invalid sent diagnostics count: \(count)"
+
+        case let .failed_to_clean_sent_diagnostics(error):
+            return "Failed to clean sent diagnostics: \(error.localizedDescription)"
+
+        case let .failed_to_empty_diagnostics_file(error):
+            return "Failed to empty diagnostics file: \(error.localizedDescription)"
+
+        case let .failed_check_diagnostics_size(error):
+            return "Failed to check whether diagnostics file is too big: \(error.localizedDescription)"
 
         }
     }

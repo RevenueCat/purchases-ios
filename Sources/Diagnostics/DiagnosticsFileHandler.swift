@@ -72,14 +72,14 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
 
     func cleanSentDiagnostics(diagnosticsSentCount: Int) async {
         guard diagnosticsSentCount > 0 else {
-            Logger.error("Invalid sent diagnostics count: \(diagnosticsSentCount)")
+            Logger.error(Strings.diagnostics.invalid_sent_diagnostics_count(count: diagnosticsSentCount))
             return
         }
 
         do {
             try await self.fileHandler.removeFirstLines(diagnosticsSentCount)
         } catch {
-            Logger.error("Failed to clean sent diagnostics: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.failed_to_clean_sent_diagnostics(error: error))
         }
     }
 
@@ -87,7 +87,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         do {
             try await self.fileHandler.emptyFile()
         } catch {
-            Logger.error("Failed to empty diagnostics file: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.failed_to_empty_diagnostics_file(error: error))
         }
     }
 
@@ -95,7 +95,7 @@ actor DiagnosticsFileHandler: DiagnosticsFileHandlerType {
         do {
             return try await self.fileHandler.fileSizeInKB() > Self.maxFileSizeInKb
         } catch {
-            Logger.error("Failed to check whether diagnostics file is too big: \(error.localizedDescription)")
+            Logger.error(Strings.diagnostics.failed_check_diagnostics_size(error: error))
             return true
         }
     }
