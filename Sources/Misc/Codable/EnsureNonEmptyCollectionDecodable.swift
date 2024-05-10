@@ -25,17 +25,19 @@ import Foundation
 struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable {
 
     struct Error: LocalizedError {
-        
+
         var path: String?
 
         init(codingPath: String? = nil) {
             self.path = codingPath
         }
 
+        /// Error message explaining that the collection cannot be empty
         public var localizedDescription: String? {
             "Collection cannot be empty"
         }
 
+        /// Error message that includes the path that contains the empty collection
         public var failureReason: String? {
             "A collection at \(path ?? "unknown") was unexpectedly empty."
         }
