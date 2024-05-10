@@ -302,4 +302,19 @@ class MockDeviceCache: DeviceCache {
         return self.stubbedIsProductEntitlementMappingCacheStale
     }
 
+    // MARK: - CachedSyncedSK2TransactionIDs
+    private var cachedSyncedSK2TransactionIDs: [UInt64] = []
+
+    var invokedReadCachedSyncedSK2ObserverModeTransactionIDs = false
+    override func cachedSyncedSK2ObserverModeTransactionIDs() -> [UInt64] {
+        invokedReadCachedSyncedSK2ObserverModeTransactionIDs = true
+        return cachedSyncedSK2TransactionIDs
+    }
+
+    var invokedRegisterNewSyncedSK2ObserverModeTransactionID = false
+    override func registerNewSyncedSK2ObserverModeTransactionIDs(_ ids: [UInt64]) {
+        invokedRegisterNewSyncedSK2ObserverModeTransactionID = true
+        cachedSyncedSK2TransactionIDs.append(contentsOf: ids)
+    }
+
 }

@@ -563,9 +563,11 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()
+        let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil))
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector)
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
         expect(transactionListener.invokedListenForTransactions) == false
