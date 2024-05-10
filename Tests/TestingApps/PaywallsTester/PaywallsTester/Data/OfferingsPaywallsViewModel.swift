@@ -155,7 +155,7 @@ private extension OfferingsPaywallsViewModel {
             }
         case .error(let error):
             Self.logger.log(level: .error, "Could not find a paywall for id \(id), error: \(error)")
-            self.error = error as! LocalizedError
+            self.error = error
             self.presentedPaywall = nil
         }
     }
