@@ -130,9 +130,10 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     private var headerImage: some View {
         if let header = self.configuration.headerImageURL {
-            RemoteImage(url: header,
-                        aspectRatio: self.headerAspectRatio,
-                        maxWidth: .infinity)
+            RemoteVideo(videoURL: URL(string: "https://videos.pexels.com/video-files/20576968/20576968-sd_640_360_25fps.mp4")!)
+//            RemoteImage(url: header,
+//                        aspectRatio: self.headerAspectRatio,
+//                        maxWidth: .infinity)
             .clipped()
         }
     }
