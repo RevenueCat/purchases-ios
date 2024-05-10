@@ -25,10 +25,11 @@ import Foundation
 struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable {
 
     struct Error: LocalizedError {
-        var type: String?
+        
+        var path: String?
 
-        init(type: String? = nil) {
-            self.type = type
+        init(codingPath: String? = nil) {
+            self.path = codingPath
         }
 
         public var localizedDescription: String? {
@@ -36,7 +37,7 @@ struct EnsureNonEmptyCollectionDecodable<Value: Collection> where Value: Codable
         }
 
         public var failureReason: String? {
-            "A collection of type \(type ?? "unknown") was unexpectedly empty."
+            "A collection at \(path ?? "unknown") was unexpectedly empty."
         }
 
     }
@@ -55,7 +56,7 @@ extension EnsureNonEmptyCollectionDecodable: Decodable {
         let array = try container.decode(Value.self)
 
         if array.isEmpty {
-            throw Error(type: "\(Value.self)")
+            throw Error(codingPath: "\(decoder.codingPath)")
         } else {
             self.wrappedValue = array
         }
@@ -79,7 +80,7 @@ extension KeyedDecodingContainer {
         forKey key: Key
     ) throws -> EnsureNonEmptyCollectionDecodable<T> {
         return try self.decodeIfPresent(type, forKey: key)
-            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error(type: "\(type)"))
+            .orThrow(EnsureNonEmptyCollectionDecodable<T>.Error(codingPath: "\(self.codingPath)"))
     }
 
 }
