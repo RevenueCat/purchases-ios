@@ -261,6 +261,27 @@ extension SystemInfo {
         #endif
     }
 
+    /// Returns the appropriate `Notification.Name` for the OS's didBecomeActive notification,
+    /// indicating that the application did become active. This value is only nil for watchOS
+    /// versions below 7.0.
+    static var applicationDidBecomeActiveNotification: Notification.Name? {
+        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+            return UIApplication.didBecomeActiveNotification
+        #elseif os(macOS)
+            return NSApplication.didBecomeActiveNotification
+        #elseif os(watchOS)
+        if #available(watchOS 9, *) {
+            return WKApplication.didBecomeActiveNotification
+        } else if #available(watchOS 7, *) {
+            // Work around for "Symbol not found" dyld crashes on watchOS 7.0..<9.0
+            return Notification.Name("WKApplicationDidBecomeActiveNotification")
+        } else {
+            // There's no equivalent notification available on watchOS <7.
+            return nil
+        }
+        #endif
+    }
+
     var isAppExtension: Bool {
         return self.bundle.bundlePath.hasSuffix(".appex")
     }
