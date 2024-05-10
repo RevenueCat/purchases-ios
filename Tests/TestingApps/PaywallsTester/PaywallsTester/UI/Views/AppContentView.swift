@@ -40,14 +40,12 @@ struct AppContentView: View {
                 .navigationViewStyle(StackNavigationViewStyle())
             }
 
-            #if DEBUG
             SamplePaywallsList()
                 .tabItem {
                     Image("logo")
                         .renderingMode(.template)
                     Text("Examples")
                 }
-            #endif
 
             AppList()
                 .tabItem {
