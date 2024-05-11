@@ -16,6 +16,37 @@ import SwiftUI
 // @PublicForExternalTesting
 enum TestData {
 
+    // @PublicForExternalTesting
+    static let customerInfo: CustomerInfo = {
+        return .decode(
+        """
+        {
+            "schema_version": "4",
+            "request_date": "2022-03-08T17:42:58Z",
+            "request_date_ms": 1646761378845,
+            "subscriber": {
+                "first_seen": "2022-03-08T17:42:58Z",
+                "last_seen": "2022-03-08T17:42:58Z",
+                "management_url": "https://apps.apple.com/account/subscriptions",
+                "non_subscriptions": {
+                },
+                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+                "original_application_version": "1.0",
+                "original_purchase_date": "2022-04-12T00:03:24Z",
+                "other_purchases": {
+                },
+                "subscriptions": {
+                },
+                "entitlements": {
+                }
+            }
+        }
+        """
+        )
+    }()
+
+    #if DEBUG
+
     static let weeklyProduct = TestStoreProduct(
         localizedTitle: "Weekly",
         price: 1.99,
@@ -469,35 +500,6 @@ enum TestData {
     static let colors: PaywallData.Configuration.Colors = .combine(light: Self.lightColors, dark: Self.darkColors)
     #endif
 
-    // @PublicForExternalTesting
-    static let customerInfo: CustomerInfo = {
-        return .decode(
-        """
-        {
-            "schema_version": "4",
-            "request_date": "2022-03-08T17:42:58Z",
-            "request_date_ms": 1646761378845,
-            "subscriber": {
-                "first_seen": "2022-03-08T17:42:58Z",
-                "last_seen": "2022-03-08T17:42:58Z",
-                "management_url": "https://apps.apple.com/account/subscriptions",
-                "non_subscriptions": {
-                },
-                "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
-                "original_application_version": "1.0",
-                "original_purchase_date": "2022-04-12T00:03:24Z",
-                "other_purchases": {
-                },
-                "subscriptions": {
-                },
-                "entitlements": {
-                }
-            }
-        }
-        """
-        )
-    }()
-
     static let localization1: PaywallData.LocalizedConfiguration = .init(
         title: "Ignite your child's *curiosity*",
         subtitle: "Get access to all our educational content trusted by **thousands** of parents.",
@@ -551,9 +553,13 @@ enum TestData {
         )
     }
 
+    #endif
+
 }
 
 // MARK: -
+
+#if DEBUG
 
 extension PaywallColor: ExpressibleByStringLiteral {
 
@@ -565,6 +571,8 @@ extension PaywallColor: ExpressibleByStringLiteral {
     }
 
 }
+
+#endif
 
 extension PackageType {
 
