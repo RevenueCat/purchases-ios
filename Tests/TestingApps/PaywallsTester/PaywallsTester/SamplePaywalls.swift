@@ -454,14 +454,14 @@ private extension SamplePaywallLoader {
 // But we want to be able to use it in release builds too.
 #if !DEBUG
 
-//extension PaywallColor: ExpressibleByStringLiteral {
-//
-//    public init(stringLiteral value: StringLiteralType) {
-//        // swiftlint:disable:next force_try
-//        try! self.init(stringRepresentation: value)
-//    }
-//
-//}
+extension PaywallColor: ExpressibleByStringLiteral {
+
+    public init(stringLiteral value: StringLiteralType) {
+        // swiftlint:disable:next force_try
+        try! self.init(stringRepresentation: value)
+    }
+
+}
 
 #endif
 
