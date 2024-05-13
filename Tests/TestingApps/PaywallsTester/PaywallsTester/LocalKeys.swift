@@ -7,7 +7,6 @@
 
 import Foundation
 
-// Add this file to .gitignore and modify to add keys, eg
 // This file is used to store keys for local development
 // DO NOT CHECK IN CHANGES TO THIS FILE
 // Mark this file --skip-worktree:
