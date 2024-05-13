@@ -107,7 +107,6 @@ class BasePurchasesOrchestratorTests: StoreKitConfigTestCase {
         self.setUpOrchestrator()
         self.setUpStoreKit2Listener()
 
-
     }
 
     fileprivate func setUpDiagnosticSynchronizer() {
