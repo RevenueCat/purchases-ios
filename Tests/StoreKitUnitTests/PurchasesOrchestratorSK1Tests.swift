@@ -564,10 +564,12 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchaseDetector = MockStoreKit2ObserverModePurchaseDetector()
+        let diagnosticsSynchronizer = MockDiagnosticsSynchronizer()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
                                storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil),
-                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector)
+                               storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                               diagnosticsSynchronizer: diagnosticsSynchronizer)
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
         expect(transactionListener.invokedListenForTransactions) == false
