@@ -300,6 +300,9 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
+        .with(observerMode: true, storeKitVersion: .default)
+        .build())
+    Purchases.configure(with: Configuration.Builder(withAPIKey: "")
         .with(showStoreMessagesAutomatically: false)
         .build())
 
