@@ -52,7 +52,7 @@ struct RemoteImage: View {
         }
         .transition(Self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
-            await self.loader.load(url: self.url)
+            self.loader.load(url: self.url)
         }
     }
 
