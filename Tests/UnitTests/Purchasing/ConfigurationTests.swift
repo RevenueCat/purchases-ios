@@ -38,8 +38,6 @@ class ConfigurationTests: TestCase {
 
         expect(configuration.observerMode) == false
         expect(configuration.storeKitVersion) == .storeKit1
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
     func testNoObserverModeWithStoreKit2() {
@@ -49,8 +47,6 @@ class ConfigurationTests: TestCase {
 
         expect(configuration.observerMode) == false
         expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
     func testObserverModeWithStoreKit1() {
@@ -60,8 +56,6 @@ class ConfigurationTests: TestCase {
 
         expect(configuration.observerMode) == true
         expect(configuration.storeKitVersion) == .storeKit1
-
-        self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
     func testObserverModeWithStoreKit2() {
@@ -71,9 +65,6 @@ class ConfigurationTests: TestCase {
 
         expect(configuration.observerMode) == true
         expect(configuration.storeKitVersion) == .storeKit2
-
-        self.logger.verifyMessageWasLogged(Strings.configure.observer_mode_with_storekit2,
-                                           level: .warn)
     }
 
     func testDiagnosticsEnabled() throws {

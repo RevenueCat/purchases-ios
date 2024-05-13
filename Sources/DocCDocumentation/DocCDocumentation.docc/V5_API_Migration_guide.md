@@ -44,13 +44,6 @@ Purchases.configure(with: .builder(withAPIKey: apiKey)
     .build()
 ```
 
-Additionally, because of the way in which StoreKit 2 operates, you must manually handle newly purchased transactions by calling `Purchases.shared.handleObserverModeTransaction()`. Subscription updates will be automatically tracked.
-
-```swift
-let result = try await product.purchase()
-Purchases.shared.handleObserverModeTransaction(result)
-```
-
 If you're using observer mode with StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
 
 ```swift
@@ -74,7 +67,7 @@ See the [Trusted Entitlements documentation](https://www.revenuecat.com/docs/tru
 
 ## Deployment Target
 
-The minimum targets have been raised to the folllowing:
+The minimum targets have been raised to the following:
 - iOS 13.0
 - tvOS 13.0
 - watchOS 6.2
