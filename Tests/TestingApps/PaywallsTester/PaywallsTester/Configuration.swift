@@ -27,7 +27,6 @@ final class Configuration: ObservableObject {
     #warning("Configure API key if you want to test paywalls from your dashboard")
     // Note: you can leave this empty to use the production server, or point to your own instance.
     private static let proxyURL = ""
-    private static let apiKey = ""
 
     private init() {
 
@@ -41,7 +40,7 @@ final class Configuration: ObservableObject {
 
     private func configure() {
         Purchases.configure(
-            with: .init(withAPIKey: Self.apiKey)
+            with: .init(withAPIKey: Keys.api)
                 .with(entitlementVerificationMode: .informational)
                 .with(usesStoreKit2IfAvailable: true)
         )
