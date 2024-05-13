@@ -33,7 +33,7 @@
         "asset_base_url" : "https://assets.pawwalls.com",
         "config" : {
           "blurred_background_image" : false,
-          "color_overrides_by_tier" : {
+          "colors_by_tier" : {
 
           },
           "colors" : {
@@ -48,7 +48,7 @@
           },
           "default_package" : "$rc_monthly",
           "display_restore_purchases" : true,
-          "image_overrides_by_tier" : {
+          "images_by_tier" : {
 
           },
           "images" : {

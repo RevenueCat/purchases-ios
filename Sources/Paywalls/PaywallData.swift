@@ -239,23 +239,8 @@ extension PaywallData {
 
         /// The images for each of the tiers.
         public internal(set) var imagesByTier: [String: Images] {
-            get {
-                let images = self.images
-
-                return Set(self.tiers.map(\.id))
-                    .dictionaryWithValues { tier in
-                        return Self.merge(
-                            source: self._imageOverridesByTier[tier],
-                            fallback: images
-                        )
-                    }
-            }
-
-            /// Internal `set`ter because it doesn't fully match the semantics of the getter.
-            /// Only meant for testing.
-            set {
-                self._imageOverridesByTier = newValue
-            }
+            get { self._imagesByTier }
+            set { self._imagesByTier = newValue }
         }
 
         /// Whether the background image will be blurred (in templates with one).
@@ -287,13 +272,8 @@ extension PaywallData {
 
         /// The set of colors for each of the tiers.
         public var colorsByTier: [String: ColorInformation] {
-            let colors = self.colors
-            let overrides = self._colorOverridesByTier
-
-            return Set(self.tiers.map(\.id))
-                .dictionaryWithValues { tier in
-                    return Self.merge(source: colors, override: overrides[tier])
-                }
+            get { self._colorsByTier }
+            set { self._colorsByTier = newValue }
         }
 
         /// Creates a single-tier ``PaywallData/Configuration``.
@@ -320,9 +300,9 @@ extension PaywallData {
         /// Creates a multi-tier ``PaywallData/Configuration``.
         public init(
             images: Images,
-            imageOverridesByTier: [String: Images] = [:],
+            imagesByTier: [String: Images] = [:],
             colors: ColorInformation,
-            colorOverridesByTier: [String: ColorInformation] = [:],
+            colorsByTier: [String: ColorInformation] = [:],
             tiers: [Tier],
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
@@ -332,9 +312,9 @@ extension PaywallData {
             self._packages = []
             self.defaultPackage = nil
             self._imagesHeic = images
-            self._imageOverridesByTier = imageOverridesByTier
+            self._imagesByTier = imagesByTier
             self.colors = colors
-            self._colorOverridesByTier = colorOverridesByTier
+            self._colorsByTier = colorsByTier
             self._tiers = tiers
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
@@ -364,10 +344,10 @@ extension PaywallData {
         var _privacyURL: URL?
 
         @DefaultDecodable.EmptyDictionary
-        var _colorOverridesByTier: [String: ColorInformation]
+        var _colorsByTier: [String: ColorInformation]
 
         @DefaultDecodable.EmptyDictionary
-        var _imageOverridesByTier: [String: Images]
+        var _imagesByTier: [String: Images]
 
     }
 
@@ -680,8 +660,8 @@ extension PaywallData.Configuration: Codable {
         case _termsOfServiceURL = "tosUrl"
         case _privacyURL = "privacyUrl"
         case colors
-        case _colorOverridesByTier = "colorOverridesByTier"
-        case _imageOverridesByTier = "imageOverridesByTier"
+        case _colorsByTier = "colorsByTier"
+        case _imagesByTier = "imagesByTier"
     }
 
 }

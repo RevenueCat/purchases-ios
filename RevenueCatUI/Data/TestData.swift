@@ -446,7 +446,7 @@ internal enum TestData {
                 images: .init(
                     header: "954459_1692992845.png"
                 ),
-                imageOverridesByTier: [
+                imagesByTier: [
                     "basic": .init(
                         header: "954459_1703109702.png"
                     ),
@@ -472,7 +472,7 @@ internal enum TestData {
                         accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                     )
                 ),
-                colorOverridesByTier: [
+                colorsByTier: [
                     "basic": .init(
                         light: .init(
                             callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,

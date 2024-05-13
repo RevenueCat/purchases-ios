@@ -24,11 +24,9 @@ struct UpsellView: View {
             requiredEntitlementIdentifier: Configuration.entitlement,
             purchaseStarted: { _ in
                 print("Purchase started")
-            },
-            purchaseCompleted: { _ in
+            }, purchaseCompleted: { customerInfo in
                 print("Purchase completed")
-            },
-            purchaseCancelled: {
+            }, purchaseCancelled: {
                 print("Purchase cancelled")
             },
             restoreStarted: {
