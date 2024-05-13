@@ -19,12 +19,14 @@ struct AppContentView: View {
     var body: some View {
         TabView {
 
+            #if DEBUG
             SamplePaywallsList()
                 .tabItem {
                     Image("logo")
                         .renderingMode(.template)
                     Text("Examples")
                 }
+            #endif
 
             AppList()
                 .tabItem {
