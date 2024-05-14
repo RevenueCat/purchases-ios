@@ -12,13 +12,13 @@ import Foundation
 // DO NOT CHECK IN CHANGES TO THIS FILE
 //
 // To help prevent mistakes, mark this file inn your working directory sith --skip-worktree:
-// git update-index --skip-worktree LocalKeys.swift
+// git update-index --skip-worktree LocalConfigItems.swift
 // OR assume unchanged:
-// git update-index --assume-unchanged LocalKeys.swift
+// git update-index --assume-unchanged LocalConfigItems.swift
 //
 // You will need to unset these when switching branches
-// git update-index --no-skip-worktree LocalKeys.swift
-// git update-index --no-assume-unchanged LocalKeys.swift
+// git update-index --no-skip-worktree LocalConfigItems.swift
+// git update-index --no-assume-unchanged LocalConfigItems.swift
 //
 // Then add local keys:
 // extension ConfigItem {
