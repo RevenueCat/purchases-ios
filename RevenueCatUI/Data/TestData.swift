@@ -531,6 +531,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.threeMonthPackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Three Month",
+                            offerBadge: ""
+                        ),
+                        TestData.lifetimePackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Lifetime",
+                            offerBadge: ""
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
                         .init(title: "Standard fonts", iconID: "tick"),
@@ -545,6 +559,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.weeklyPackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Week",
+                            offerBadge: ""
+                        ),
+                        TestData.monthlyPackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Month",
+                            offerBadge: ""
+                        )
+                    ],
                     features: [
                         .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
                         .init(title: "Pro fonts and transition effects", iconID: "tick"),
@@ -559,6 +587,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
+                    offerOverrides: [
+                        TestData.sixMonthPackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Six Month",
+                            offerBadge: ""
+                        ),
+                        TestData.annualPackage.identifier: .init(
+                            offerDetails: "Details",
+                            offerDetailsWithIntroOffer: "",
+                            offerName: "OVERRIDE Annual",
+                            offerBadge: ""
+                        )
+                    ],
                     features: [
                         .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
                         .init(title: "Custom design tools and transition effects", iconID: "tick"),
