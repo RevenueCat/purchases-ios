@@ -46,8 +46,10 @@ struct ProcessedLocalizedConfiguration: PaywallLocalizedConfiguration {
         let offerBadge: String?
         if let offerOverrides {
             offerBadge = offerOverrides.offerBadge
+        } else if let discount = context.discountRelativeToMostExpensivePerMonth {
+            offerBadge = dataProvider.localizedRelativeDiscount(discount, locale)
         } else {
-            offerBadge = dataProvider.localizedRelativeDiscount(context.discountRelativeToMostExpensivePerMonth, locale)
+            offerBadge = nil
         }
 
         self.init(
