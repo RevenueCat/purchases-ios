@@ -44,7 +44,6 @@ changelog_path = './CHANGELOG.md'
 platform :ios do
   before_all do
     setup_circle_ci
-    update_fastlane
 
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
       app_store_connect_api_key # This will create a shared client that all the tools know how to use and will look for
