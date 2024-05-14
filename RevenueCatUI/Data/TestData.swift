@@ -443,55 +443,81 @@ internal enum TestData {
         paywall: .init(
             templateName: PaywallTemplate.template7.rawValue,
             config: .init(
-                images: .init(
-                    header: "954459_1692992845.png"
-                ),
+                images: .init(),
                 imagesByTier: [
                     "basic": .init(
                         header: "954459_1703109702.png"
+                    ),
+                    "standard": .init(
+                        header: "954459_1692992845.png"
                     ),
                     "premium": .init(
                         header: "954459_1701267532.jpeg"
                     )
                 ],
-                colors: .init(
-                    light: .init(
-                        background: "#ffffff",
-                        text1: "#000000",
-                        text2: "#adf5c5",
-                        text3: "#b15d5d",
-                        callToActionForeground: "#ffffff",
-                        accent2: "#7676801F"
-                    ),
-                    dark: .init(
-                        background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
-                        text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
-                        text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
-                        text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
-                        callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
-                        accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
-                    )
-                ),
+                colors: .init(light: .init()),
                 colorsByTier: [
                     "basic": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.06274510175, green: 0, blue: 0.1921568662, alpha: 1).asPaywallColor
+                        ),
+                        dark: .init(
+                            background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                            text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                            text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                            accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                         )
                     ),
                     "standard": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.8549019694, green: 0.250980407, blue: 0.4784313738, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.09019608051, alpha: 1).asPaywallColor
+                        ),
+                        dark: .init(
+                            background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                            text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                            text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                            accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                         )
                     ),
                     "premium": .init(
                         light: .init(
+                            background: "#ffffff",
+                            text1: "#000000",
+                            text2: "#adf5c5",
+                            text3: "#b15d5d",
                             callToActionBackground: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1).asPaywallColor,
+                            callToActionForeground: "#ffffff",
                             accent1: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1).asPaywallColor,
+                            accent2: "#7676801F",
                             accent3: #colorLiteral(red: 0.1294117719, green: 0.2156862766, blue: 0.06666667014, alpha: 1).asPaywallColor
+                        ),
+                        dark: .init(
+                            background: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            text1: #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1).asPaywallColor,
+                            text2: #colorLiteral(red: 0.8039215803, green: 0.8039215803, blue: 0.8039215803, alpha: 1).asPaywallColor,
+                            text3: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).asPaywallColor,
+                            callToActionForeground: #colorLiteral(red: 0.5315951397, green: 1, blue: 0.4162791786, alpha: 1).asPaywallColor,
+                            accent2: #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1).asPaywallColor
                         )
                     )
                 ],
@@ -531,20 +557,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
-                    offerOverrides: [
-                        TestData.threeMonthPackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Three Month",
-                            offerBadge: ""
-                        ),
-                        TestData.lifetimePackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Lifetime",
-                            offerBadge: ""
-                        )
-                    ],
+//                    offerOverrides: [
+//                        TestData.threeMonthPackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Three Month",
+//                            offerBadge: ""
+//                        ),
+//                        TestData.lifetimePackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Lifetime",
+//                            offerBadge: ""
+//                        )
+//                    ],
                     features: [
                         .init(title: "Access to 10 cinematic LUTs", iconID: "tick"),
                         .init(title: "Standard fonts", iconID: "tick"),
@@ -559,20 +585,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
-                    offerOverrides: [
-                        TestData.weeklyPackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Week",
-                            offerBadge: ""
-                        ),
-                        TestData.monthlyPackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Month",
-                            offerBadge: ""
-                        )
-                    ],
+//                    offerOverrides: [
+//                        TestData.weeklyPackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Week",
+//                            offerBadge: ""
+//                        ),
+//                        TestData.monthlyPackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Month",
+//                            offerBadge: ""
+//                        )
+//                    ],
                     features: [
                         .init(title: "Access to 30 cinematic LUTs", iconID: "tick"),
                         .init(title: "Pro fonts and transition effects", iconID: "tick"),
@@ -587,20 +613,20 @@ internal enum TestData {
                     offerDetails: "{{ total_price_and_per_month }}",
                     offerDetailsWithIntroOffer: "Free for {{ sub_offer_duration }}, " +
                     "then {{ total_price_and_per_month }}",
-                    offerOverrides: [
-                        TestData.sixMonthPackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Six Month",
-                            offerBadge: ""
-                        ),
-                        TestData.annualPackage.identifier: .init(
-                            offerDetails: "Details",
-                            offerDetailsWithIntroOffer: "",
-                            offerName: "OVERRIDE Annual",
-                            offerBadge: ""
-                        )
-                    ],
+//                    offerOverrides: [
+//                        TestData.sixMonthPackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Six Month",
+//                            offerBadge: ""
+//                        ),
+//                        TestData.annualPackage.identifier: .init(
+//                            offerDetails: "Details",
+//                            offerDetailsWithIntroOffer: "",
+//                            offerName: "OVERRIDE Annual",
+//                            offerBadge: ""
+//                        )
+//                    ],
                     features: [
                         .init(title: "Access to all 150 of our cinematic LUTs", iconID: "tick"),
                         .init(title: "Custom design tools and transition effects", iconID: "tick"),
