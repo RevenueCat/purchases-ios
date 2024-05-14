@@ -366,7 +366,7 @@ struct Template7View: TemplateViewType {
         _ package: TemplateViewConfiguration.Package,
         selected: Bool
     ) -> some View {
-        if let badge = package.localization.offerBadge {
+        if let badge = package.localization.offerBadge, !badge.isEmpty {
             let colors = self.currentColors
 
             Text(badge)
