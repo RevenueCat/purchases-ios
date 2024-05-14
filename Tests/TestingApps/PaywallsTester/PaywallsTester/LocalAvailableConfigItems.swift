@@ -21,11 +21,11 @@ import Foundation
 // git update-index --no-assume-unchanged LocalKeys.swift
 //
 // Then add local keys:
-// extension Keys {
-//     static var api: String {
+// extension ConfigItem {
+//     static var apiKey: String {
 //         "appl_FOObar"
 //     }
 // }
- extension Keys {
-
+ extension ConfigItem {
+    #warning("Configure API key if you want to test paywalls from your dashboard")
  }
