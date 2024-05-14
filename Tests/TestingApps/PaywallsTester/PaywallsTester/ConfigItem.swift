@@ -1,12 +1,11 @@
 //
-//  Keys.swift
+//  ConfigItem.swift
 //  PaywallsTester
 //
 //  Created by James Borthwick on 2024-05-13.
 //
 
 import Foundation
-
 
 protocol AvailableConfigItems {
     static var apiKey: String { get }

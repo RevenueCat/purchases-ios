@@ -1,5 +1,5 @@
 //
-//  LocalKeys.swift
+//  LocalConfigItems.swift
 //  PaywallsTester
 //
 //  Created by James Borthwick on 2024-05-13.
