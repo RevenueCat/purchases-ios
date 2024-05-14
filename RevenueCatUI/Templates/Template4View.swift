@@ -284,7 +284,7 @@ private struct PackageButton: View {
                     .frame(maxHeight: .infinity)
             }
             .background { // Discount overlay
-                if let badge = self.package.localization.offerBadge {
+                if let badge = self.package.localization.offerBadge, !badge.isEmpty {
                     self.discountOverlay(badge)
                 } else {
                     self.discountOverlay("")
