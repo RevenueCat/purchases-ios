@@ -71,7 +71,6 @@ public protocol PaywallLocalizedConfiguration {
     var features: [PaywallData.LocalizedConfiguration.Feature] { get }
     /// An optional name representing the ``PaywallData/Tier``.
     var tierName: String? { get }
-
 }
 
 extension PaywallData {
@@ -99,6 +98,8 @@ extension PaywallData {
         var _features: [Feature]
         @NonEmptyStringDecodable
         var _tierName: String?
+        @DefaultDecodable.EmptyDictionary
+        var _offerOverrides: [String: OfferOverride]
 
         public var subtitle: String? {
             get { return self._subtitle }
@@ -120,6 +121,10 @@ extension PaywallData {
             get { return self._offerName }
             set { self._offerName = newValue }
         }
+        public var offerOverrides: [String: OfferOverride] {
+            get { return self._offerOverrides }
+            set { self._offerOverrides = newValue }
+        }
         public var features: [Feature] {
             get { return self._features }
             set { self._features = newValue }
@@ -137,6 +142,7 @@ extension PaywallData {
             offerDetails: String? = nil,
             offerDetailsWithIntroOffer: String? = nil,
             offerName: String? = nil,
+            offerOverrides: [String: OfferOverride] = [:],
             features: [Feature] = [],
             tierName: String? = nil
         ) {
@@ -147,6 +153,7 @@ extension PaywallData {
             self._offerDetails = offerDetails
             self._offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
             self._offerName = offerName
+            self._offerOverrides = offerOverrides
             self.features = features
             self._tierName = tierName
         }
@@ -197,6 +204,38 @@ extension PaywallData.LocalizedConfiguration {
             self.title = title
             self.content = content
             self.iconID = iconID
+        }
+
+    }
+
+}
+
+extension PaywallData.LocalizedConfiguration {
+
+    /// Custom displayable overrides for a package 
+    public struct OfferOverride {
+
+        /// Description for the offer to be purchased.
+        public var offerDetails: String?
+        /// Description for the offer to be purchased when an intro offer is available.
+        /// If `nil`, no information regarding trial eligibility will be displayed.
+        public var offerDetailsWithIntroOffer: String?
+        /// The name representing each of the packages, most commonly a variable.
+        public var offerName: String?
+        /// An optional string to put in a badge on the package..
+        public var offerBadge: String?
+
+        // swiftlint:disable:next missing_docs
+        public init(
+            offerDetails: String? = nil,
+            offerDetailsWithIntroOffer: String? = nil,
+            offerName: String? = nil,
+            offerBadge: String? = nil
+        ) {
+            self.offerDetails = offerDetails
+            self.offerDetailsWithIntroOffer = offerDetailsWithIntroOffer
+            self.offerName = offerName
+            self.offerBadge = offerBadge
         }
 
     }
@@ -641,6 +680,8 @@ extension PaywallData.LocalizedConfiguration.Feature: Codable {
 
 }
 
+extension PaywallData.LocalizedConfiguration.OfferOverride: Codable {}
+
 extension PaywallData.LocalizedConfiguration: Codable {
 
     private enum CodingKeys: String, CodingKey {
@@ -653,6 +694,7 @@ extension PaywallData.LocalizedConfiguration: Codable {
         case _offerName = "offerName"
         case _features = "features"
         case _tierName = "tierName"
+        case _offerOverrides = "offerOverrides"
     }
 
 }
@@ -710,6 +752,7 @@ extension PaywallData: Codable {
 
 extension PaywallData.Tier: Hashable {}
 extension PaywallData.LocalizedConfiguration.Feature: Hashable {}
+extension PaywallData.LocalizedConfiguration.OfferOverride: Hashable {}
 extension PaywallData.LocalizedConfiguration: Hashable {}
 extension PaywallData.Configuration.ColorInformation: Hashable {}
 extension PaywallData.Configuration.Colors: Hashable {}
@@ -720,6 +763,7 @@ extension PaywallData: Hashable {}
 // MARK: - Sendable
 
 extension PaywallData.LocalizedConfiguration.Feature: Sendable {}
+extension PaywallData.LocalizedConfiguration.OfferOverride: Sendable {}
 extension PaywallData.LocalizedConfiguration: Sendable {}
 extension PaywallData.Tier: Sendable {}
 extension PaywallData.Configuration.ColorInformation: Sendable {}
