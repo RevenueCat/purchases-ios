@@ -28,6 +28,7 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     private var observerModePurchaseDetector: StoreKit2ObserverModePurchaseDetector!
 
     override func setUp() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         deviceCache = .init()
     }
 
