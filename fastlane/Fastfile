@@ -688,7 +688,7 @@ platform :ios do
     merged_report = merge_reports(original_report, retry_report)
     save_report(merged_report, original_report)
 
-    FileUtils.rm('./test_output_retry/')
+    FileUtils.rm_rf('./test_output_retry/')
 
     puts "Merged report saved to #{original_report}"
   end
