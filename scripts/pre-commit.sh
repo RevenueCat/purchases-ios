@@ -39,6 +39,7 @@ verify_no_included_apikeys() {
     "${SCRIPT_DIR}/../Examples/MagicWeatherSwiftUI/Shared/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTesterSwiftUI/Core/Constants.swift"
     "${SCRIPT_DIR}/../Tests/TestingApps/PurchaseTester/PurchaseTester/Constants.swift"
+    "${SCRIPT_DIR}/../Tests/TestingApps/PaywallsTester/PaywallsTester/Config/LocalConfigItems.swift"
   )
   PATTERN="\"REVENUECAT_API_KEY\""
 
