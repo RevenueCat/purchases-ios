@@ -39,6 +39,11 @@ extension DiagnosticsEvent {
     enum DiagnosticsPropertyKey: String, Codable {
 
         case verificationResultKey
+        case endpointNameKey
+        case responseTimeMillisKey
+        case successfulKey
+        case responseCodeKey
+        case eTagHitKey
 
     }
 

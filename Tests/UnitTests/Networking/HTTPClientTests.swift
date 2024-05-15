@@ -25,6 +25,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
     var signing: MockSigning!
     var client: HTTPClient!
     var eTagManager: ETag!
+    var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
 
     fileprivate let apiKey = "MockAPIKey"
@@ -39,6 +40,11 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
 
         self.systemInfo = MockSystemInfo(finishTransactions: true)
         self.signing = MockSigning()
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
         self.operationDispatcher = OperationDispatcher()
         MockDNSChecker.resetData()
 
@@ -61,6 +67,7 @@ class BaseHTTPClientTests<ETag: ETagManager>: TestCase {
                           systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
+                          diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
                           requestTimeout: defaultTimeout.seconds)
     }

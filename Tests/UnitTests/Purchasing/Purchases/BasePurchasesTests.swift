@@ -73,9 +73,17 @@ class BasePurchasesTests: TestCase {
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
 
         let apiKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: apiKey, systemInfo: self.systemInfo, eTagManager: MockETagManager())
+        let httpClient = MockHTTPClient(apiKey: apiKey,
+                                        systemInfo: self.systemInfo,
+                                        eTagManager: MockETagManager(),
+                                        diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createBackendQueue(),
@@ -184,6 +192,7 @@ class BasePurchasesTests: TestCase {
     var mockManageSubsHelper: MockManageSubscriptionsHelper!
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
+    var diagnosticsTracker: DiagnosticsTrackerType?
 
     // swiftlint:disable:next weak_delegate
     var purchasesDelegate: MockPurchasesDelegate!
