@@ -11,7 +11,7 @@ import Foundation
 //
 // DO NOT CHECK IN CHANGES TO THIS FILE
 //
-// To help prevent mistakes, mark this file inn your working directory sith --skip-worktree:
+// To help prevent mistakes, mark this file inn your working directory with skip worktree:
 // git update-index --skip-worktree LocalConfigItems.swift
 // OR assume unchanged:
 // git update-index --assume-unchanged LocalConfigItems.swift
@@ -27,7 +27,5 @@ import Foundation
 //     }
 // }
  extension ConfigItem {
-     static var apiKey: String {
-         "appl_FOObar"
-     }
+
  }
