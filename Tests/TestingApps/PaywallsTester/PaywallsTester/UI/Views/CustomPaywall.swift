@@ -42,8 +42,6 @@ struct CustomPaywall: View {
 
 }
 
-#endif
-
 #if DEBUG
 
 struct CustomPaywall_Previews: PreviewProvider {
@@ -92,4 +90,4 @@ struct CustomPaywall_Previews: PreviewProvider {
 
 #endif
 
-
+#endif
