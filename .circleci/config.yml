@@ -345,7 +345,7 @@ commands:
           environment:
             SCAN_DEVICE: iPhone 14 (17.2.0)
       - run:
-          name: Run RETRY backend_integration Tests
+          name: Run RETRY 1 backend_integration Tests
           command: bundle exec fastlane retry_failed_tests
           no_output_timeout: 5m
           environment:
