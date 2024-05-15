@@ -40,7 +40,7 @@ Version 5.0 of the SDK introduces support for observer mode when making purchase
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-	.with(observerMode: true, storeKitVersion: .storeKit2)
+  .with(observerMode: true, storeKitVersion: .storeKit2)
   .build()
 ```
 
