@@ -287,7 +287,7 @@ private struct PackageButton: View {
                 if let badge = self.package.localization.offerBadge, !badge.isEmpty {
                     self.discountOverlay(badge)
                 } else {
-                    self.discountOverlay("")
+                    self.discountOverlay(Localization.localized(discount: 0, locale: self.locale))
                         .hidden()
                 }
             }
