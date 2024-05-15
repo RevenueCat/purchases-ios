@@ -605,16 +605,73 @@ platform :ios do
   lane :backend_integration_tests do |options|
     fetch_snapshots
     replace_api_key_integration_tests
-    scan(
-      scheme: "BackendIntegrationTests",
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      testplan: options[:test_plan],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
-    )
+
+    begin
+      scan(
+        scheme: "BackendIntegrationTests",
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        testplan: options[:test_plan],
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output/xctest/ios",
+
+        fail_build: false # TODO: Need this for retry but maybe find a way to fail if we don't want this
+      )
+    rescue => ex
+        UI.error("Tests failed: #{ex}")
+    end
+    save_failed_tests
+
+  end
+
+  private_lane :save_failed_tests do
+    require 'nokogiri'
+    
+    failed_tests = []
+    report_path = './test_output/xctest/ios/report.junit' # TODO: Don't hardoce this
+    
+    if File.exist?(report_path)
+      doc = Nokogiri::XML(File.open(report_path))
+  
+      doc.xpath('//testcase[failure]').each do |test_case|
+        suitename = test_case.parent['name'] # Retrieve the suitename
+        classname = test_case['classname']
+        name = test_case['name']
+        failed_tests << "#{suitename}/#{classname}/#{name}"
+      end
+
+      failed_tests = failed_tests.uniq
+  
+      File.open('./test_output/xctest/failed_tests.txt', 'w') do |file|
+        file.puts(failed_tests)
+      end
+    end
+  end
+
+  lane :retry_failed_tests do
+    # TODO: Don't hardcode
+    failed_tests = File.read('./test_output/xctest/failed_tests.txt').split("\n")
+    
+    if failed_tests.empty?
+      UI.message('No failed tests to retry')
+    else
+      scan(
+        scheme: "BackendIntegrationTests",
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: "fastlane/test_output_retry/xctest/ios",
+
+        reinstall_app: true, # TODO: Determine if we need this
+        app_identifier: "com.revenuecat.StoreKitTestApp",
+        only_testing: failed_tests,
+        fail_build: true
+      )
+    end
   end
 
   desc "Run LoadShedder tests"
