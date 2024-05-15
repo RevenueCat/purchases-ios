@@ -658,23 +658,27 @@ platform :ios do
     if failed_tests.empty?
       UI.message('No failed tests to retry')
     else
-      scan(
-        scheme: "BackendIntegrationTests",
-        derived_data_path: "scan_derived_data",
-        output_types: 'junit',
-        output_style: 'raw',
-        result_bundle: true,
-        configuration: 'Debug',
-        output_directory: "fastlane/test_output_retry/xctest/ios",
+      begin
+        scan(
+          scheme: "BackendIntegrationTests",
+          derived_data_path: "scan_derived_data",
+          output_types: 'junit',
+          output_style: 'raw',
+          result_bundle: true,
+          configuration: 'Debug',
+          output_directory: "fastlane/test_output_retry/xctest/ios",
 
-        reinstall_app: true, # TODO: Determine if we need this
-        app_identifier: "com.revenuecat.StoreKitTestApp",
-        only_testing: failed_tests,
-        fail_build: true
-      )
+          reinstall_app: true, # TODO: Determine if we need this
+          app_identifier: "com.revenuecat.StoreKitTestApp",
+          only_testing: failed_tests,
+          fail_build: true
+        )
+        merge_and_replace_junit
+      rescue => e
+        merge_and_replace_junit
+        raise
+      end
     end
-
-    merge_and_replace_junit
   end
 
   lane :merge_and_replace_junit do
