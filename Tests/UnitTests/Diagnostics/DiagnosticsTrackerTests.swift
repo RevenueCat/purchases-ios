@@ -106,6 +106,29 @@ class DiagnosticsTrackerTests: TestCase {
         ]
     }
 
+    // MARK: - http request performed
+
+    func testTracksHttpRequestPerformedWithExpectedParameters() async {
+        await self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                                     responseTime: 50,
+                                                     wasSuccessful: true,
+                                                     responseCode: 200,
+                                                     resultOrigin: .cache,
+                                                     verificationResult: .verified)
+        let entries = await self.handler.getEntries()
+        expect(entries) == [
+            .init(eventType: .httpRequestPerformed,
+                  properties: [
+                    .endpointNameKey: AnyEncodable("mock_endpoint"),
+                    .responseTimeMillisKey: AnyEncodable(50000),
+                    .successfulKey: AnyEncodable(true),
+                    .responseCodeKey: AnyEncodable(200),
+                    .eTagHitKey: AnyEncodable(true),
+                    .verificationResultKey: AnyEncodable("VERIFIED")],
+                  timestamp: Self.eventTimestamp1)
+        ]
+    }
+
     // MARK: - empty diagnostics file when too big
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
