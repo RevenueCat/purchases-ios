@@ -30,7 +30,10 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
         trackedCustomerInfo.append(customerInfo)
     }
 
-    private(set) var trackedHttpRequestPerformedCount = 0
+    private(set) var trackedHttpRequestPerformedParams: [
+        // swiftlint:disable:next large_tuple
+        (String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)
+    ] = []
     // swiftlint:disable:next function_parameter_count
     func trackHttpRequestPerformed(endpointName: String,
                                    responseTime: TimeInterval,
@@ -38,7 +41,9 @@ class MockDiagnosticsTracker: DiagnosticsTrackerType {
                                    responseCode: Int,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: VerificationResult) async {
-        self.trackedHttpRequestPerformedCount += 1
+        self.trackedHttpRequestPerformedParams.append(
+            (endpointName, responseTime, wasSuccessful, responseCode, resultOrigin, verificationResult)
+        )
     }
 
 }

@@ -1582,7 +1582,78 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         )
     }
 
+    // - MARK: Diagnostics http request performed tracking
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnSuccess() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        stub(condition: isPath(request.path)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let trackedParams = (self.diagnosticsTracker as! MockDiagnosticsTracker).trackedHttpRequestPerformedParams
+        expect(trackedParams.count) == 1
+        expect(trackedParams[0]).to(matchTrackParams((
+            "log_in",
+            -1, // Any
+            true,
+            200,
+            .backend,
+            .notRequested
+        )))
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsHttpRequestPerformedTrackedOnError() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        // swiftlint:disable:next force_cast
+        let trackedParams = (self.diagnosticsTracker as! MockDiagnosticsTracker).trackedHttpRequestPerformedParams
+        expect(trackedParams.count) == 1
+        expect(trackedParams[0]).to(matchTrackParams((
+            "log_in",
+            -1, // Any
+            false,
+            -1,
+            nil,
+            .notRequested
+        )))
+    }
+
 }
+
+// swiftlint:disable large_tuple
+
+private func matchTrackParams(
+    _ data: (String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)
+) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)> {
+    return .init {
+        let other = try $0.evaluate()
+        let matches = (other?.0 == data.0 &&
+                       other?.2 == data.2 &&
+                       other?.3 == data.3 &&
+                       other?.4 == data.4 &&
+                       other?.5 == data.5)
+
+        return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
+    }
+}
+
+// swiftlint:enable large_tuple
 
 func isPath(_ path: HTTPRequestPath) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
