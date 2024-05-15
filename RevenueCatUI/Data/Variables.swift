@@ -31,6 +31,8 @@ protocol VariableDataProvider {
 
     var applicationName: String { get }
 
+    var packageIdentifier: String { get }
+
     var localizedPrice: String { get }
     var localizedPricePerWeek: String { get }
     var localizedPricePerMonth: String { get }
