@@ -5,10 +5,10 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-#if DEBUG
+
 
 import RevenueCat
-@testable import RevenueCatUI
+import RevenueCatUI
 import SwiftUI
 
 struct SamplePaywallsList: View {
@@ -254,4 +254,3 @@ struct SamplePaywallsList_Previews: PreviewProvider {
     }
 }
 
-#endif

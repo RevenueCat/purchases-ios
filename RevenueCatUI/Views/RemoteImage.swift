@@ -40,10 +40,12 @@ struct RemoteImage: View {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
                         .frame(maxWidth: self.maxWidth)
+                        .accessibilityHidden(true)
 
                 } else {
                     image
                         .resizable()
+                        .accessibilityHidden(true)
                 }
 
             case let .failure(error):
