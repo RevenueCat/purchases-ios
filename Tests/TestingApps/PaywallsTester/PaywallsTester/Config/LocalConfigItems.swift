@@ -27,5 +27,7 @@ import Foundation
 //     }
 // }
  extension ConfigItem {
-    #warning("Configure API key if you want to test paywalls from your dashboard")
+     static var apiKey: String {
+         "appl_FOObar"
+     }
  }
