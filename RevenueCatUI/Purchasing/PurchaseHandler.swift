@@ -70,6 +70,7 @@ final class PurchaseHandler: ObservableObject {
         self.purchases = purchases
     }
 
+    // @PublicForExternalTesting
     static func `default`() -> Self {
         return Purchases.isConfigured ? .init() : Self.notConfigured()
     }

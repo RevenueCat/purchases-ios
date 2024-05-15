@@ -5,11 +5,11 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-#if DEBUG
+
 
 import Foundation
 import RevenueCat
-@testable import RevenueCatUI
+import RevenueCatUI
 
 final class SamplePaywallLoader {
 
@@ -465,4 +465,3 @@ extension PaywallColor: ExpressibleByStringLiteral {
 
 #endif
 
-#endif
