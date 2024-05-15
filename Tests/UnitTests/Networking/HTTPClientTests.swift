@@ -1599,9 +1599,13 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         // swiftlint:disable:next force_cast
-        let trackedParams = (self.diagnosticsTracker as! MockDiagnosticsTracker).trackedHttpRequestPerformedParams
-        expect(trackedParams.count) == 1
-        expect(trackedParams[0]).to(matchTrackParams((
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+            fail("Should have at least one call to tracked diagnostics")
+            return
+        }
+        expect(trackedParams).to(matchTrackParams((
             "log_in",
             -1, // Any
             true,
@@ -1622,9 +1626,13 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
         }
 
         // swiftlint:disable:next force_cast
-        let trackedParams = (self.diagnosticsTracker as! MockDiagnosticsTracker).trackedHttpRequestPerformedParams
-        expect(trackedParams.count) == 1
-        expect(trackedParams[0]).to(matchTrackParams((
+        let mockDiagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(mockDiagnosticsTracker.trackedHttpRequestPerformedParams.count).toEventually(equal(1))
+        guard let trackedParams = mockDiagnosticsTracker.trackedHttpRequestPerformedParams.first else {
+            fail("Should have at least one call to tracked diagnostics")
+            return
+        }
+        expect(trackedParams).to(matchTrackParams((
             "log_in",
             -1, // Any
             false,
@@ -1643,7 +1651,9 @@ private func matchTrackParams(
 ) -> Nimble.Predicate<(String, TimeInterval, Bool, Int, HTTPResponseOrigin?, VerificationResult)> {
     return .init {
         let other = try $0.evaluate()
+        let timeInterval = other?.1 ?? -1
         let matches = (other?.0 == data.0 &&
+                       timeInterval > 0 && timeInterval.isLess(than: 1) &&
                        other?.2 == data.2 &&
                        other?.3 == data.3 &&
                        other?.4 == data.4 &&
