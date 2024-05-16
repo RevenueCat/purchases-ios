@@ -32,7 +32,7 @@ struct RemoteImage: View {
     private var lowResLoader: ImageLoader = .init()
 
     init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, lowResSuffix: String? = "_low_res") {
-        self.url = url.appendingPathComponent("ASDASD")
+        self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
         self.lowResSuffix = lowResSuffix
