@@ -104,6 +104,7 @@ commands:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
+      # Also, not using macos/switch-ruby because its broken
       - run:
           name: Set Ruby 3.2.2
           command: |
