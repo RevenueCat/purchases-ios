@@ -1636,7 +1636,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager> {
             "log_in",
             -1, // Any
             false,
-            -1,
+            401,
             nil,
             .notRequested
         )))
