@@ -14,8 +14,10 @@
 import Nimble
 @testable import RevenueCat
 import StoreKit
+import StoreKitTest
 import XCTest
 
+// swiftlint:disable file_length
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
@@ -245,7 +247,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         if #available(iOS 16.4, *) {
             self.testSession.timeRate = .oneRenewalEveryTwoSeconds
         } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
+            self.testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
 
         // This test requires the "production" behavior to make sure

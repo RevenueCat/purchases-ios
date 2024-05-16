@@ -360,7 +360,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         if #available(iOS 16.4, *) {
             self.testSession.timeRate = .oneRenewalEveryTwoSeconds
         } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
+            self.testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
 
         let prefix = UUID().uuidString
@@ -398,7 +398,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         if #available(iOS 16.4, *) {
             self.testSession.timeRate = .oneRenewalEveryTwoSeconds
         } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
+            self.testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
 
         let prefix = UUID().uuidString
@@ -647,7 +647,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
-    @available(iOS 16.4, *)
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
         if #available(iOS 16.4, *) {
@@ -668,8 +667,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 2. Simulate closing app
         Purchases.clearSingleton()
-
-        self.testSession.timeRate = .oneRenewalEveryTwoSeconds
 
         // 3. Force several renewals while app is closed.
         for _ in 0..<3 {
