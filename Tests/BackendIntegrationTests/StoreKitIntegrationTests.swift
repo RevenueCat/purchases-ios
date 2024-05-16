@@ -614,7 +614,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await subscribe()
     }
 
+    @available(iOS 16.4, *)
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
         func waitForNewPurchaseDate() async {
             // The backend uses the transaction purchase date as a way to disambiguate transactions.
             // Therefor we need to sleep to force these to have unique dates.
@@ -628,10 +631,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 2. Simulate closing app
         Purchases.clearSingleton()
 
+        self.testSession.timeRate = .oneRenewalEveryTwoSeconds
+
         // 3. Force several renewals while app is closed.
         for _ in 0..<3 {
             await waitForNewPurchaseDate()
-            try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
         }
 
         await waitForNewPurchaseDate()
