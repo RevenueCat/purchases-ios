@@ -228,15 +228,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseFailuresAreReportedCorrectly() async throws {
-        self.testSession.failTransactionsEnabled = true
-        self.testSession.failureError = .invalidSignature
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try await self.testSession.setSimulatedError(
+            .purchase(Product.PurchaseError.purchaseNotAllowed),
+            forAPI: .purchase
+        )
 
         do {
             try await self.purchaseMonthlyOffering()
             fail("Expected error")
         } catch {
-            expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
+            expect(error).to(matchError(ErrorCode.purchaseNotAllowedError))
         }
     }
 
