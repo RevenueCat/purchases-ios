@@ -21,7 +21,10 @@ struct RemoteImage: View {
     let maxWidth: CGFloat?
 
     @StateObject
-    private var loader: ImageLoader = .init()
+    private var highResLoader: ImageLoader = .init()
+
+    @StateObject
+    private var lowResLoader: ImageLoader = .init()
 
     init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
         self.url = url
@@ -31,29 +34,44 @@ struct RemoteImage: View {
 
     var body: some View {
         Group {
-            switch self.loader.result {
-            case .none:
-                self.emptyView(error: nil)
-
-            case let .success(image):
-                if let aspectRatio {
-                    image
-                        .fitToAspect(aspectRatio, contentMode: .fill)
-                        .frame(maxWidth: self.maxWidth)
-
-                } else {
-                    image
-                        .resizable()
-                }
-
-            case let .failure(error):
-                self.emptyView(error: error)
+            if case let .success(image) = highResLoader.result {
+                displayImage(image)
+            } else if case let .success(image) = lowResLoader.result {
+                displayImage(image)
+            } else if case let .failure(highResError) = highResLoader.result,
+                      case .failure = lowResLoader.result{
+                emptyView(error: highResError)
+            } else {
+                emptyView(error: nil)
             }
         }
         .transition(Self.transition)
-        .task(id: self.url) { // This cancels the previous task when the URL changes.
-            await self.loader.load(url: self.url)
+        .task(id: self.url) {
+            await loadImages()
         }
+    }
+
+    private func displayImage(_ image: Image) -> some View {
+            if let aspectRatio {
+                return AnyView(
+                    image
+                        .fitToAspect(aspectRatio, contentMode: .fill)
+                        .frame(maxWidth: self.maxWidth)
+                )
+            } else {
+                return AnyView(image.resizable())
+            }
+        }
+
+    private func loadImages() async {
+        let lowResURL = url.deletingLastPathComponent()
+                            .appendingPathComponent(url.deletingPathExtension().lastPathComponent + "_low_res")
+                            .appendingPathExtension(url.pathExtension)
+
+        async let lowResLoad: Void = lowResLoader.load(url: lowResURL)
+        async let highResLoad: Void = highResLoader.load(url: url)
+
+        _ = await (lowResLoad, highResLoad)
     }
 
     @ViewBuilder
