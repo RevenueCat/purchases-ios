@@ -645,7 +645,7 @@ platform :ios do
 
       failed_tests = failed_tests.uniq
   
-      File.open('./test_output/xctest/failed_tests.txt', 'w') do |file|
+      File.open('./test_output/xctest/ios/failed_tests.txt', 'w') do |file|
         file.puts(failed_tests)
       end
     end
@@ -653,7 +653,7 @@ platform :ios do
 
   lane :retry_failed_tests do
     # TODO: Don't hardcode
-    failed_tests = File.read('./test_output/xctest/failed_tests.txt').split("\n")
+    failed_tests = File.read('./test_output/xctest/ios/failed_tests.txt').split("\n")
     
     if failed_tests.empty?
       UI.message('No failed tests to retry')
@@ -666,7 +666,7 @@ platform :ios do
           output_style: 'raw',
           result_bundle: true,
           configuration: 'Debug',
-          output_directory: "fastlane/test_output_retry/xctest/ios",
+          output_directory: "fastlane/test_output/xctest/ios/retry",
 
           reinstall_app: true, # TODO: Determine if we need this
           app_identifier: "com.revenuecat.StoreKitTestApp",
@@ -683,12 +683,12 @@ platform :ios do
 
   lane :merge_and_replace_junit do
     original_report = File.absolute_path('./test_output/xctest/ios/report.junit')
-    retry_report = File.absolute_path('./test_output_retry/xctest/ios/report.junit')
+    retry_report = File.absolute_path('./test_output/xctest/ios/retry/report.junit')
 
     merged_report = merge_reports(original_report, retry_report)
     save_report(merged_report, original_report)
 
-    FileUtils.rm_rf('./test_output_retry/')
+    FileUtils.rm_rf('./test_output/xctest/ios/retry')
 
     puts "Merged report saved to #{original_report}"
   end
