@@ -68,9 +68,14 @@ struct RemoteImage: View {
                     image
                         .fitToAspect(aspectRatio, contentMode: .fill)
                         .frame(maxWidth: self.maxWidth)
+                        .accessibilityHidden(true)
                 )
             } else {
-                return AnyView(image.resizable())
+                return AnyView(
+                    image
+                        .resizable()
+                        .accessibilityHidden(true)
+                )
             }
         }
 
