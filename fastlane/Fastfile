@@ -657,6 +657,7 @@ platform :ios do
   end
 
   lane :retry_failed_tests do |options|
+    fail_build = options[:fail_build]
     retry_attempt = options[:retry_attempt]
     failed_tests = File.read(failed_tests_path).split("\n")
     
@@ -667,30 +668,26 @@ platform :ios do
       report_dir = "test_output_retry_#{retry_attempt}/xctest/ios"
       report_path = File.absolute_path(File.join(".", report_dir, "report.junit"))
 
-      begin
-        scan(
-          scheme: "BackendIntegrationTests",
-          derived_data_path: "scan_derived_data",
-          output_types: 'junit',
-          output_style: 'raw',
-          result_bundle: true,
-          configuration: 'Debug',
-          output_directory: File.join('fastlane', report_dir),
+      scan(
+        scheme: "BackendIntegrationTests",
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: File.join('fastlane', report_dir),
 
-          reinstall_app: true, # TODO: Determine if we need this
-          app_identifier: "com.revenuecat.StoreKitTestApp",
-          only_testing: failed_tests,
-          fail_build: false
-        )
+        reinstall_app: true, # TODO: Determine if we need this
+        app_identifier: "com.revenuecat.StoreKitTestApp",
+        only_testing: failed_tests,
+        fail_build: fail_build == "true"
+      )
 
-        moved_report_path = File.join(artifact_path, "report.junit.retry.#{retry_attempt}")
-        FileUtils.mv(report_path, moved_report_path)
+      moved_report_path = File.join(artifact_path, "report.junit.retry.#{retry_attempt}")
+      FileUtils.mv(report_path, moved_report_path)
 
-        save_failed_tests(path: moved_report_path)
-        merge_and_replace_junit(retry_path: moved_report_path)
-      rescue => ex
-        UI.error("Tests failed: #{ex}")
-      end
+      save_failed_tests(path: moved_report_path)
+      merge_and_replace_junit(retry_path: moved_report_path)
     end
   end
 
