@@ -663,7 +663,8 @@ platform :ios do
     if failed_tests.empty?
       UI.message('No failed tests to retry')
     else
-      report_dir = "test_output/xctest/ios/retry_#{retry_attempt}"
+      artifact_path = "./test_output/xctest/ios"
+      report_dir = "test_output_retry_#{retry_attempt}/xctest/ios"
       report_path = File.absolute_path(File.join(".", report_dir, "report.junit"))
 
       begin
@@ -682,12 +683,12 @@ platform :ios do
           fail_build: false
         )
 
-        moved_report_path = File.expand_path('../' + File.basename(report_path), File.dirname(report_path))
-        FileUtils.mv(report_path, "#{moved_report_path}.retry.#{retry_attempt}")
+        moved_report_path = File.join(artifact_path, "report.junit.retry.#{retry_attempt}")
+        FileUtils.mv(report_path, moved_report_path)
 
         save_failed_tests(path: moved_report_path)
         merge_and_replace_junit(retry_path: moved_report_path)
-      rescue => e
+      rescue => ex
         UI.error("Tests failed: #{ex}")
       end
     end
