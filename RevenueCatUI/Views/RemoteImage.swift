@@ -19,7 +19,11 @@ struct RemoteImage: View {
     let url: URL
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
-    let fetchLowRes: Bool
+    let lowResSuffix: String?
+
+    var fetchLowRes: Bool {
+        lowResSuffix != nil
+    }
 
     @StateObject
     private var highResLoader: ImageLoader = .init()
@@ -27,11 +31,11 @@ struct RemoteImage: View {
     @StateObject
     private var lowResLoader: ImageLoader = .init()
 
-    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, fetchLowRes: Bool = true) {
-        self.url = url
+    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, lowResSuffix: String? = "_low_res") {
+        self.url = url.appendingPathComponent("ASDASD")
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
-        self.fetchLowRes = fetchLowRes
+        self.lowResSuffix = lowResSuffix
     }
 
     var body: some View {
@@ -71,16 +75,17 @@ struct RemoteImage: View {
         }
 
     private func loadImages() async {
-        if !fetchLowRes {
-            await highResLoader.load(url: url)
-        } else {
+        if let suffix = lowResSuffix {
             let lowResURL = url.deletingLastPathComponent()
-                                .appendingPathComponent(url.deletingPathExtension().lastPathComponent + "_low_res")
+                                .appendingPathComponent(url.deletingPathExtension().lastPathComponent + suffix)
                                 .appendingPathExtension(url.pathExtension)
 
             async let lowResLoad: Void = lowResLoader.load(url: lowResURL)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)
+
+        } else {
+            await highResLoader.load(url: url)
         }
     }
 
