@@ -27,7 +27,7 @@ struct RemoteImage: View {
     @StateObject
     private var lowResLoader: ImageLoader = .init()
 
-    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, fetchLowRes: Bool = false) {
+    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, fetchLowRes: Bool = true) {
         self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
