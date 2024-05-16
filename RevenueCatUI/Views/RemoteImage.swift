@@ -22,7 +22,9 @@ struct RemoteImage: View {
     let lowResSuffix: String?
 
     var fetchLowRes: Bool {
-        lowResSuffix != nil
+        return false
+        // TODO: Replace `return false` with the following when the back end is ready
+        // lowResSuffix != nil
     }
 
     @StateObject
