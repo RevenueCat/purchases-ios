@@ -544,31 +544,31 @@ private extension HTTPClient {
                                                    requestStartTime: Date,
                                                    result: Result<VerifiedHTTPResponse<Data>, NetworkError>?) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            if let diagnosticsTracker = self.diagnosticsTracker {
-                let responseTime = self.dateProvider.now().timeIntervalSince(requestStartTime)
-                if let result = result {
-                    let requestPathName = request.httpRequest.path.name
-                    Task(priority: .background) {
-                        switch result {
-                        case let .success(response):
-                            let httpStatusCode = response.httpStatusCode.rawValue
-                            let verificationResult = response.verificationResult
-                            await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                                               responseTime: responseTime,
-                                                                               wasSuccessful: true,
-                                                                               responseCode: httpStatusCode,
-                                                                               resultOrigin: response.origin,
-                                                                               verificationResult: verificationResult)
-                        // swiftlint:disable:next empty_enum_arguments
-                        case .failure(_):
-                            await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
-                                                                               responseTime: responseTime,
-                                                                               wasSuccessful: false,
-                                                                               responseCode: -1,
-                                                                               resultOrigin: nil,
-                                                                               verificationResult: .notRequested)
-                        }
+            guard let diagnosticsTracker = self.diagnosticsTracker, let result else { return }
+            let responseTime = self.dateProvider.now().timeIntervalSince(requestStartTime)
+            let requestPathName = request.httpRequest.path.name
+            Task(priority: .background) {
+                switch result {
+                case let .success(response):
+                    let httpStatusCode = response.httpStatusCode.rawValue
+                    let verificationResult = response.verificationResult
+                    await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                                       responseTime: responseTime,
+                                                                       wasSuccessful: true,
+                                                                       responseCode: httpStatusCode,
+                                                                       resultOrigin: response.origin,
+                                                                       verificationResult: verificationResult)
+                case let .failure(error):
+                    var responseCode = -1
+                    if case let .errorResponse(_, code, _) = error {
+                        responseCode = code.rawValue
                     }
+                    await diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
+                                                                       responseTime: responseTime,
+                                                                       wasSuccessful: false,
+                                                                       responseCode: responseCode,
+                                                                       resultOrigin: nil,
+                                                                       verificationResult: .notRequested)
                 }
             }
         }
