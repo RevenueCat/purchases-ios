@@ -622,16 +622,21 @@ platform :ios do
     rescue => ex
         UI.error("Tests failed: #{ex}")
     end
-    FileUtils.cp('./test_output/xctest/ios/report.junit', './test_output/xctest/ios/report.junit.original')
-    save_failed_tests
 
+    report_path = File.absolute_path('./test_output/xctest/ios/report.junit')
+    FileUtils.cp(report_path, "#{report_path}.original")
+    save_failed_tests(path: report_path)
   end
 
-  private_lane :save_failed_tests do
+  private_lane :failed_tests_path do
+    File.absolute_path('./test_output/xctest/ios/failed_tests.txt')
+  end
+
+  private_lane :save_failed_tests do |options|
     require 'nokogiri'
     
     failed_tests = []
-    report_path = './test_output/xctest/ios/report.junit' # TODO: Don't hardoce this
+    report_path = options[:path]
     
     if File.exist?(report_path)
       doc = Nokogiri::XML(File.open(report_path))
@@ -645,19 +650,22 @@ platform :ios do
 
       failed_tests = failed_tests.uniq
   
-      File.open('./test_output/xctest/ios/failed_tests.txt', 'w') do |file|
+      File.open(failed_tests_path, 'w') do |file|
         file.puts(failed_tests)
       end
     end
   end
 
-  lane :retry_failed_tests do
-    # TODO: Don't hardcode
-    failed_tests = File.read('./test_output/xctest/ios/failed_tests.txt').split("\n")
+  lane :retry_failed_tests do |options|
+    retry_attempt = options[:retry_attempt]
+    failed_tests = File.read(failed_tests_path).split("\n")
     
     if failed_tests.empty?
       UI.message('No failed tests to retry')
     else
+      report_dir = "test_output/xctest/ios/retry_#{retry_attempt}"
+      report_path = File.absolute_path(File.join(".", report_dir, "report.junit"))
+
       begin
         scan(
           scheme: "BackendIntegrationTests",
@@ -666,24 +674,29 @@ platform :ios do
           output_style: 'raw',
           result_bundle: true,
           configuration: 'Debug',
-          output_directory: "fastlane/test_output/xctest/ios/retry",
+          output_directory: File.join('fastlane', report_dir),
 
           reinstall_app: true, # TODO: Determine if we need this
           app_identifier: "com.revenuecat.StoreKitTestApp",
           only_testing: failed_tests,
-          fail_build: true
+          fail_build: false
         )
-        merge_and_replace_junit
+
+        moved_report_path = File.expand_path('../' + File.basename(report_path), File.dirname(report_path))
+        FileUtils.mv(report_path, "#{moved_report_path}.retry.#{retry_attempt}")
+
+        save_failed_tests(path: moved_report_path)
+        merge_and_replace_junit(retry_path: moved_report_path)
       rescue => e
-        merge_and_replace_junit
-        raise
+        UI.error("Tests failed: #{ex}")
       end
     end
   end
 
-  lane :merge_and_replace_junit do
+  lane :merge_and_replace_junit do |options|
+    retry_report = options[:retry_path]
+
     original_report = File.absolute_path('./test_output/xctest/ios/report.junit')
-    retry_report = File.absolute_path('./test_output/xctest/ios/retry/report.junit')
 
     merged_report = merge_reports(original_report, retry_report)
     save_report(merged_report, original_report)

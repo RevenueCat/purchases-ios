@@ -306,6 +306,14 @@ Run BackendIntegrationTests
 
 
 
+### ios merge_and_replace_junit
+
+```sh
+[bundle exec] fastlane ios merge_and_replace_junit
+```
+
+
+
 ### ios v3_loadshedder_integration_tests
 
 ```sh
