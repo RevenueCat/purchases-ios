@@ -677,8 +677,6 @@ platform :ios do
         configuration: 'Debug',
         output_directory: File.join('fastlane', report_dir),
 
-        reinstall_app: true, # TODO: Determine if we need this
-        app_identifier: "com.revenuecat.StoreKitTestApp",
         only_testing: failed_tests,
         fail_build: !!fail_build
       )
