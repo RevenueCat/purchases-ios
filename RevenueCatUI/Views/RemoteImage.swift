@@ -65,21 +65,21 @@ struct RemoteImage: View {
     }
 
     private func displayImage(_ image: Image) -> some View {
-            if let aspectRatio {
-                return AnyView(
-                    image
-                        .fitToAspect(aspectRatio, contentMode: .fill)
-                        .frame(maxWidth: self.maxWidth)
-                        .accessibilityHidden(true)
-                )
-            } else {
-                return AnyView(
-                    image
-                        .resizable()
-                        .accessibilityHidden(true)
-                )
-            }
+        if let aspectRatio {
+            return AnyView(
+                image
+                    .fitToAspect(aspectRatio, contentMode: .fill)
+                    .frame(maxWidth: self.maxWidth)
+                    .accessibilityHidden(true)
+            )
+        } else {
+            return AnyView(
+                image
+                    .resizable()
+                    .accessibilityHidden(true)
+            )
         }
+    }
 
     private func loadImages() async {
         if fetchLowRes, let suffix = lowResSuffix {
