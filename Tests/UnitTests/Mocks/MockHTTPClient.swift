@@ -57,6 +57,7 @@ class MockHTTPClient: HTTPClient {
     init(apiKey: String,
          systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          requestTimeout: TimeInterval = 7,
          sourceTestFile: StaticString = #file) {
@@ -66,6 +67,7 @@ class MockHTTPClient: HTTPClient {
                    systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: FakeSigning.default,
+                   diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout)
     }

@@ -31,12 +31,14 @@ class Backend {
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+        diagnosticsTracker: DiagnosticsTrackerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(apiKey: apiKey,
                                     systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: apiKey, clock: systemInfo.clock),
+                                    diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
