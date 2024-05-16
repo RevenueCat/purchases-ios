@@ -680,7 +680,7 @@ platform :ios do
         reinstall_app: true, # TODO: Determine if we need this
         app_identifier: "com.revenuecat.StoreKitTestApp",
         only_testing: failed_tests,
-        fail_build: fail_build == "true"
+        fail_build: !!fail_build
       )
 
       moved_report_path = File.join(artifact_path, "report.junit.retry.#{retry_attempt}")

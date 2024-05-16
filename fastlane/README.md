@@ -298,6 +298,14 @@ Export XCFramework
 
 Run BackendIntegrationTests
 
+### ios test
+
+```sh
+[bundle exec] fastlane ios test
+```
+
+
+
 ### ios retry_failed_tests
 
 ```sh
