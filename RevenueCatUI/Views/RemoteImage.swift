@@ -75,7 +75,7 @@ struct RemoteImage: View {
         }
 
     private func loadImages() async {
-        if let suffix = lowResSuffix {
+        if fetchLowRes, let suffix = lowResSuffix {
             let lowResURL = url.deletingLastPathComponent()
                                 .appendingPathComponent(url.deletingPathExtension().lastPathComponent + suffix)
                                 .appendingPathExtension(url.pathExtension)
