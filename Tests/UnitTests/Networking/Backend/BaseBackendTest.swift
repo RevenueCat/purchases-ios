@@ -22,6 +22,7 @@ class BaseBackendTests: TestCase {
 
     private(set) var systemInfo: SystemInfo!
     private(set) var httpClient: MockHTTPClient!
+    private(set) var diagnosticsTracker: DiagnosticsTrackerType?
     private(set) var operationDispatcher: MockOperationDispatcher!
     private(set) var mockProductEntitlementMappingFetcher: MockProductEntitlementMappingFetcher!
     private(set) var mockOfflineCustomerInfoCreator: MockOfflineCustomerInfoCreator!
@@ -101,9 +102,16 @@ extension BaseBackendTests {
     final func createClient(_ file: StaticString) -> MockHTTPClient {
         let eTagManager = MockETagManager()
 
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            self.diagnosticsTracker = MockDiagnosticsTracker()
+        } else {
+            self.diagnosticsTracker = nil
+        }
+
         return MockHTTPClient(apiKey: Self.apiKey,
                               systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }
 

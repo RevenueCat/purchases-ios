@@ -299,6 +299,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasedProductsFetcher = OfflineCustomerInfoCreator.createPurchasedProductsFetcherIfAvailable()
         let transactionFetcher = StoreKit2TransactionFetcher()
 
+        let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
+            guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
+            return DiagnosticsFileHandler()
+        }()
+
+        let diagnosticsTracker: DiagnosticsTrackerType? = {
+            if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+            } else {
+                if diagnosticsEnabled {
+                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                }
+            }
+            return nil
+        }()
+
         let backend = Backend(
             apiKey: apiKey,
             systemInfo: systemInfo,
@@ -310,7 +326,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 with: purchasedProductsFetcher,
                 productEntitlementMappingFetcher: deviceCache,
                 observerMode: observerMode
-            )
+            ),
+            diagnosticsTracker: diagnosticsTracker
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKit2Setting.shouldOnlyUseStoreKit2
@@ -346,22 +363,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                                     operationDispatcher: operationDispatcher,
                                                                     api: backend.offlineEntitlements,
                                                                     systemInfo: systemInfo)
-
-        let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
-            return DiagnosticsFileHandler()
-        }()
-
-        let diagnosticsTracker: DiagnosticsTrackerType? = {
-            if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                return DiagnosticsTracker(diagnosticsFileHandler: handler)
-            } else {
-                if diagnosticsEnabled {
-                    Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
-                }
-            }
-            return nil
-        }()
 
         let customerInfoManager: CustomerInfoManager
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {

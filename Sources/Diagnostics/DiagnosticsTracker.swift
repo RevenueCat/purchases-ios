@@ -21,6 +21,15 @@ protocol DiagnosticsTrackerType {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func trackCustomerInfoVerificationResultIfNeeded(_ customerInfo: CustomerInfo) async
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_parameter_count
+    func trackHttpRequestPerformed(endpointName: String,
+                                   responseTime: TimeInterval,
+                                   wasSuccessful: Bool,
+                                   responseCode: Int,
+                                   resultOrigin: HTTPResponseOrigin?,
+                                   verificationResult: VerificationResult) async
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -54,6 +63,29 @@ final class DiagnosticsTracker: DiagnosticsTrackerType {
             timestamp: self.dateProvider.now()
         )
         await track(event)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func trackHttpRequestPerformed(endpointName: String,
+                                   responseTime: TimeInterval,
+                                   wasSuccessful: Bool,
+                                   responseCode: Int,
+                                   resultOrigin: HTTPResponseOrigin?,
+                                   verificationResult: VerificationResult) async {
+        await track(
+            DiagnosticsEvent(
+                eventType: DiagnosticsEvent.EventType.httpRequestPerformed,
+                properties: [
+                    .endpointNameKey: AnyEncodable(endpointName),
+                    .responseTimeMillisKey: AnyEncodable(responseTime * 1000),
+                    .successfulKey: AnyEncodable(wasSuccessful),
+                    .responseCodeKey: AnyEncodable(responseCode),
+                    .eTagHitKey: AnyEncodable(resultOrigin == .cache),
+                    .verificationResultKey: AnyEncodable(verificationResult.name)
+                ],
+                timestamp: self.dateProvider.now()
+            )
+        )
     }
 
 }

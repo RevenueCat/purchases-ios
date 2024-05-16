@@ -76,6 +76,16 @@ private extension DiagnosticsEvent.DiagnosticsPropertyKey {
         switch self {
         case .verificationResultKey:
             return "verification_result"
+        case .endpointNameKey:
+            return "endpoint_name"
+        case .responseTimeMillisKey:
+            return "response_time_millis"
+        case .successfulKey:
+            return "successful"
+        case .responseCodeKey:
+            return "response_code"
+        case .eTagHitKey:
+            return "etag_hit"
         }
     }
 
