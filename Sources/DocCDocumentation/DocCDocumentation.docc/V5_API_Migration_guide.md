@@ -11,7 +11,7 @@ Here's some of the benefits you get with StoreKit 2:
 - Better handling of a few specific edge cases which were unfixable with StoreKit 1:
 - No more "Missing receipt" errors in Sandbox that could result in failure restoring purchases or getting trial eligibility status "unknown".
 - No more "The purchased product was missing in the receipt" error that could cause an invalid receipt error when making a purchase.
-- Future proofing:  StoreKit 1 APIs are being progressively deprecated by Apple, and new features are being added to StoreKit 2.
+- Future proofing: StoreKit 1 APIs are being progressively deprecated by Apple, and new features are being added to StoreKit 2.
 - Faster processing time: More efficient and performant implementation of receipts validation. We have found that receipts validation can be ~200ms faster comparing to SK1 implementation for p95 of the requests.
 
 In order to use StoreKit 2, you will need to configure your [In-App Purchase Key](https://www.revenuecat.com/docs/in-app-purchase-key-configuration) in the RevenueCat dashboard.
@@ -24,8 +24,8 @@ If for any reason you need to always use StoreKit 1, it is possible to switch ba
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-    .with(storeKitVersion: .storeKit1)
-    .build()
+  .with(storeKitVersion: .storeKit1)
+  .build()
 ```
 
 ### 3rd Party Analytics SDKs
@@ -40,16 +40,29 @@ Version 5.0 of the SDK introduces support for observer mode when making purchase
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-		.with(observerMode: true, storeKitVersion: .storeKit2)
-    .build()
+  .with(observerMode: true, storeKitVersion: .storeKit2)
+  .build()
 ```
+
+#### ⚠️ StoreKit 2 Observer Mode on macOS
+
+By default, Observer Mode with StoreKit 2 on macOS does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.handleObserverModeTransaction(purchaseResult)` for any new purchases, like so:
+
+```swift
+let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
+let result = try await product?.purchase()
+
+_ = try await Purchases.shared.handleObserverModeTransaction(result)
+```
+
+#### StoreKit 1 Observer Mode Support
 
 If you're using observer mode with StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-		.with(observerMode: true, storeKitVersion: .storeKit1)
-    .build()
+  .with(observerMode: true, storeKitVersion: .storeKit1)
+  .build()
 ```
 
 ### Original Application Version
@@ -68,6 +81,7 @@ See the [Trusted Entitlements documentation](https://www.revenuecat.com/docs/tru
 ## Deployment Target
 
 The minimum targets have been raised to the following:
+
 - iOS 13.0
 - tvOS 13.0
 - watchOS 6.2
