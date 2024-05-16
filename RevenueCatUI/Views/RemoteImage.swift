@@ -19,6 +19,7 @@ struct RemoteImage: View {
     let url: URL
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
+    let fetchLowRes: Bool
 
     @StateObject
     private var highResLoader: ImageLoader = .init()
@@ -26,10 +27,11 @@ struct RemoteImage: View {
     @StateObject
     private var lowResLoader: ImageLoader = .init()
 
-    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
+    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil, fetchLowRes: Bool = false) {
         self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
+        self.fetchLowRes = fetchLowRes
     }
 
     var body: some View {
@@ -38,9 +40,14 @@ struct RemoteImage: View {
                 displayImage(image)
             } else if case let .success(image) = lowResLoader.result {
                 displayImage(image)
-            } else if case let .failure(highResError) = highResLoader.result,
-                      case .failure = lowResLoader.result{
-                emptyView(error: highResError)
+            } else if case let .failure(highResError) = highResLoader.result {
+                if !fetchLowRes {
+                    emptyView(error: highResError)
+                } else if case .failure = lowResLoader.result {
+                    emptyView(error: highResError)
+                } else {
+                    emptyView(error: nil)
+                }
             } else {
                 emptyView(error: nil)
             }
@@ -68,10 +75,13 @@ struct RemoteImage: View {
                             .appendingPathComponent(url.deletingPathExtension().lastPathComponent + "_low_res")
                             .appendingPathExtension(url.pathExtension)
 
-        async let lowResLoad: Void = lowResLoader.load(url: lowResURL)
-        async let highResLoad: Void = highResLoader.load(url: url)
-
-        _ = await (lowResLoad, highResLoad)
+        if fetchLowRes {
+            async let lowResLoad: Void = lowResLoader.load(url: lowResURL)
+            async let highResLoad: Void = highResLoader.load(url: url)
+            _ = await (lowResLoad, highResLoad)
+        } else {
+            await highResLoader.load(url: url)
+        }
     }
 
     @ViewBuilder
