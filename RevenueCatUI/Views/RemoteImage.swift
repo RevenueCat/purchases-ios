@@ -71,16 +71,16 @@ struct RemoteImage: View {
         }
 
     private func loadImages() async {
-        let lowResURL = url.deletingLastPathComponent()
-                            .appendingPathComponent(url.deletingPathExtension().lastPathComponent + "_low_res")
-                            .appendingPathExtension(url.pathExtension)
+        if !fetchLowRes {
+            await highResLoader.load(url: url)
+        } else {
+            let lowResURL = url.deletingLastPathComponent()
+                                .appendingPathComponent(url.deletingPathExtension().lastPathComponent + "_low_res")
+                                .appendingPathExtension(url.pathExtension)
 
-        if fetchLowRes {
             async let lowResLoad: Void = lowResLoader.load(url: lowResURL)
             async let highResLoad: Void = highResLoader.load(url: url)
             _ = await (lowResLoad, highResLoad)
-        } else {
-            await highResLoader.load(url: url)
         }
     }
 
