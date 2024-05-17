@@ -27,6 +27,9 @@ aliases:
       xcode_version:
         type: string
         default: '15.3'
+      mint_version:
+        type: string
+        default: latest
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -109,9 +112,9 @@ commands:
       install_xcbeautify:
         type: boolean
         default: true
-      install_mint:
-        type: boolean
-        default: false
+      mint_version:
+        type: string
+        default: latest
     steps:
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
@@ -138,14 +141,9 @@ commands:
       - install-brew-dependency:
           dependency_name: 'mint'
       - run:
-          name: Install swiftlint with mint
+          name: Install swiftlint@<< parameters.mint_version >> using Mint 
           command: |
-            mint install realm/swiftlint@0.53.0
-      - when:
-          condition: << parameters.install_mint >>
-          steps:
-            - install-brew-dependency:
-                dependency_name: 'mint'
+            mint install realm/swiftlint@<< parameters.mint_version >>
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
@@ -669,7 +667,6 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
-          install_mint: true
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -985,6 +982,7 @@ jobs:
       - run:
           name: Run fastlane swiftlint lane
           command: |
+            export FL_SWIFTLINT_EXECUTABLE=$(mint which swiftlint)
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
       - store_test_results:
@@ -1153,14 +1151,19 @@ workflows:
           xcode_version: '15.2'
       - run-test-ios-16:
           xcode_version: '14.3.0'
+          mint_version: '0.53.0'
       - run-test-ios-15:
           xcode_version: '14.3.0'
+          mint_version: '0.53.0'
       - run-test-ios-14:
           xcode_version: '14.2.0'
+          mint_version: '0.53.0'
       - run-test-ios-13:
           xcode_version: '14.2.0'
+          mint_version: '0.53.0'
       - run-test-ios-12:
           xcode_version: '14.2.0'
+          mint_version: '0.53.0'
       - run-test-macos
 
   generate_revenuecatui_snapshots:
@@ -1168,8 +1171,10 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
+          mint_version: '0.53.0'
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
+          mint_version: '0.53.0'
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.2'
 
