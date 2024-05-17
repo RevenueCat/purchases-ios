@@ -601,6 +601,10 @@ platform :ios do
 
   end
 
+  private_lane :test_artifact_path do
+    File.absolute_path('./test_output/xctest/ios')
+  end
+
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
     fetch_snapshots
@@ -615,7 +619,7 @@ platform :ios do
         result_bundle: true,
         testplan: options[:test_plan],
         configuration: 'Debug',
-        output_directory: "fastlane/test_output/xctest/ios",
+        output_directory: test_artifact_path,
 
         fail_build: false # TODO: Need this for retry but maybe find a way to fail if we don't want this
       )
@@ -623,50 +627,27 @@ platform :ios do
         UI.error("Tests failed: #{ex}")
     end
 
-    report_path = File.absolute_path('./test_output/xctest/ios/report.junit')
-    FileUtils.cp(report_path, "#{report_path}.original")
-    save_failed_tests(path: report_path)
+    retry_scan_save_failed_tests(
+      junit_report_path: File.join(test_artifact_path, 'report.junit'),
+      copy_path: File.join(test_artifact_path, 'report.junit.original')
+    )
   end
 
   private_lane :failed_tests_path do
-    File.absolute_path('./test_output/xctest/ios/failed_tests.txt')
-  end
-
-  private_lane :save_failed_tests do |options|
-    require 'nokogiri'
-    
-    failed_tests = []
-    report_path = options[:path]
-    
-    if File.exist?(report_path)
-      doc = Nokogiri::XML(File.open(report_path))
-  
-      doc.xpath('//testcase[failure]').each do |test_case|
-        suitename = test_case.parent['name'] # Retrieve the suitename
-        classname = test_case['classname']
-        name = test_case['name']
-        failed_tests << "#{suitename}/#{classname}/#{name}"
-      end
-
-      failed_tests = failed_tests.uniq
-  
-      File.open(failed_tests_path, 'w') do |file|
-        file.puts(failed_tests)
-      end
-    end
+    File.join(test_artifact_path, 'failed_tests.txt')
   end
 
   lane :retry_failed_tests do |options|
     fail_build = options[:fail_build]
     retry_attempt = options[:retry_attempt]
+    
     failed_tests = File.read(failed_tests_path).split("\n")
     
     if failed_tests.empty?
       UI.message('No failed tests to retry')
     else
-      artifact_path = "./test_output/xctest/ios"
-      report_dir = "test_output_retry_#{retry_attempt}/xctest/ios"
-      report_path = File.absolute_path(File.join(".", report_dir, "report.junit"))
+      report_dir = "./test_output_retry_#{retry_attempt}/xctest/ios"
+      report_path = File.absolute_path(File.join(report_dir, "report.junit"))
 
       scan(
         scheme: "BackendIntegrationTests",
@@ -681,77 +662,12 @@ platform :ios do
         fail_build: !!fail_build
       )
 
-      moved_report_path = File.join(artifact_path, "report.junit.retry.#{retry_attempt}")
-      FileUtils.mv(report_path, moved_report_path)
-
-      save_failed_tests(path: moved_report_path)
-      merge_and_replace_junit(retry_path: moved_report_path)
+      retry_scan_save_failed_tests(
+        junit_report_path: report_path,
+        copy_path: File.join(test_artifact_path, "report.junit.retry.#{retry_attempt}"),
+        merge_path: File.join(test_artifact_path, "report.junit")
+      )
     end
-  end
-
-  lane :merge_and_replace_junit do |options|
-    retry_report = options[:retry_path]
-
-    original_report = File.absolute_path('./test_output/xctest/ios/report.junit')
-
-    merged_report = merge_reports(original_report, retry_report)
-    save_report(merged_report, original_report)
-
-    FileUtils.rm_rf('./test_output/xctest/ios/retry')
-
-    puts "Merged report saved to #{original_report}"
-  end
-
-  require 'nokogiri'
-
-def parse_report(file_path)
-  Nokogiri::XML(File.open(file_path))
-end
-
-def merge_reports(original_report, retry_report)
-    original_doc = parse_report(original_report)
-    retry_doc = parse_report(retry_report)
-  
-    original_testcases = original_doc.xpath('//testcase')
-    retry_testcases = retry_doc.xpath('//testcase')
-  
-    retry_count = 0
-  
-    retry_testcases.each do |retry_testcase|
-      suitename = retry_testcase.parent['name'] # Retrieve suitename
-      classname = retry_testcase['classname']
-      name = retry_testcase['name']
-  
-      original_testcase = original_testcases.find do |tc|
-        tc['classname'] == classname && tc['name'] == name && tc.parent['name'] == suitename
-      end
-  
-      if original_testcase
-        original_testcase.at('failure')&.remove # Remove failure from original
-  
-        # Add retry count attribute to the testcase
-        current_retry_count = original_testcase['retry_count'].to_i
-        original_testcase['retry_count'] = (current_retry_count + 1).to_s
-  
-        retry_count += 1
-      end
-    end
-  
-    # Add total retry count as a property in the testsuite
-    properties_node = original_doc.at('testsuite > properties') || Nokogiri::XML::Node.new('properties', original_doc.at('testsuite'))
-    original_doc.at('testsuite').add_child(properties_node) unless original_doc.at('testsuite > properties')
-  
-    retry_property = Nokogiri::XML::Node.new('property', original_doc)
-    retry_property['name'] = 'total_retries'
-    retry_property['value'] = retry_count.to_s
-  
-    properties_node.add_child(retry_property)
-  
-    original_doc
-  end
-
-  def save_report(doc, output_path)
-    File.open(output_path, 'w') { |file| file.write(doc.to_xml) }
   end
 
   desc "Run LoadShedder tests"

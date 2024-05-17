@@ -467,6 +467,7 @@ private extension HTTPClient {
 
         Logger.debug(Strings.network.api_request_started(request.httpRequest))
 
+        // swiftlint:disable:next redundant_void_return
         let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
             self.handle(urlResponse: urlResponse,
                         request: request,
