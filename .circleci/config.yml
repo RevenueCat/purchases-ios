@@ -140,7 +140,7 @@ commands:
       - run:
           name: Install swiftlint with mint
           command: |
-            mint install realm/swiftlint
+            mint install realm/swiftlint@0.53.0
       - when:
           condition: << parameters.install_mint >>
           steps:
