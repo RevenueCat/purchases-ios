@@ -386,7 +386,7 @@ commands:
           command: bundle exec fastlane retry_failed_tests retry_attempt:4 fail_build:true
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+            SCAN_DEVICE: iPhone SE (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -739,11 +739,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
@@ -1167,6 +1163,7 @@ workflows:
           install_swiftlint: false
       - run-test-ios-13:
           xcode_version: "14.2.0"
+          install_swiftlint: false
       - run-test-macos
 
   generate_revenuecatui_snapshots:
