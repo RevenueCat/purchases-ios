@@ -113,7 +113,7 @@ private func checkTypealiases(
                                                   userCancelled: userCancelled)
 
     // swiftlint:disable:next line_length
-    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
+    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     let startPurchaseBlock: StartPurchaseBlock = { (_: PurchaseCompletedBlock) in }
 

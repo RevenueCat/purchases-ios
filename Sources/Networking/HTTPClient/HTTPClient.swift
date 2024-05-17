@@ -487,7 +487,7 @@ private extension HTTPClient {
 
         let requestStartTime = self.dateProvider.now()
 
-        let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) -> Void in
+        let task = self.session.dataTask(with: urlRequest) { (data, urlResponse, error) in
             self.handle(urlResponse: urlResponse,
                         request: request,
                         urlRequest: urlRequest,
