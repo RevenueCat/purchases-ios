@@ -26,7 +26,10 @@ aliases:
     parameters:
       xcode_version:
         type: string
-        default: "15.3"
+        default: '15.3'
+      install_swiftlint:
+        type: boolean
+        default: true
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -125,6 +128,9 @@ commands:
       install_mint:
         type: boolean
         default: false
+      install_swiftlint:
+        type: boolean
+        default: true
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
@@ -136,13 +142,16 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "xcbeautify"
-      - install-brew-dependency:
-          dependency_name: "swiftlint"
       - when:
           condition: << parameters.install_mint >>
           steps:
             - install-brew-dependency:
                 dependency_name: "mint"
+      - when:
+          condition: << parameters.install_swiftlint >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: "swiftlint"
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
@@ -343,7 +352,31 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 14 (17.2.0)
+            SCAN_DEVICE: iPhone 15 (17.4.0)
+      - run:
+          name: Run RETRY 1 (of 4) backend_integration Tests
+          command: bundle exec fastlane retry_failed_tests retry_attempt:1
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+      - run:
+          name: Run RETRY 2 (of 4) backend_integration Tests
+          command: bundle exec fastlane retry_failed_tests retry_attempt:2
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 15 Pro Max (17.4.0)
+      - run:
+          name: Run RETRY 3 (of 4) backend_integration Tests
+          command: bundle exec fastlane retry_failed_tests retry_attempt:3
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone 15 Plus (17.4.0)
+      - run:
+          name: Run RETRY 4 (of 4) backend_integration Tests
+          command: bundle exec fastlane retry_failed_tests retry_attempt:4 fail_build:true
+          no_output_timeout: 5m
+          environment:
+            SCAN_DEVICE: iPhone SE (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -412,7 +445,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -437,7 +471,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -471,7 +506,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -545,7 +581,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -569,7 +606,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -599,7 +637,8 @@ jobs:
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -667,6 +706,7 @@ jobs:
       - install-dependencies:
           install_xcbeautify: false
           install_mint: true
+          install_swiftlint: << parameters.install_swiftlint >>
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -696,7 +736,8 @@ jobs:
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
@@ -1116,22 +1157,28 @@ workflows:
       - run-test-ios-17:
           xcode_version: "15.2"
       - run-test-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - run-test-ios-14:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
+          install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
+          install_swiftlint: false
       - run-test-macos
 
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
 
@@ -1145,17 +1192,20 @@ workflows:
     jobs:
       - lint
       - spm-release-build-xcode-14:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-release-build-xcode-15:
           xcode_version: "15.2"
       - spm-xcode-14-1:
-          xcode_version: "14.1.0"
+          xcode_version: '14.1.0'
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
       - spm-revenuecat-ui-watchos
@@ -1163,17 +1213,21 @@ workflows:
       - run-test-ios-17:
           xcode_version: "15.2"
       - run-test-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - run-test-watchos
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
+          install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
+          install_swiftlint: false
           <<: *release-branches-and-main
       - build-tv-watch-and-macos
       - build-visionos
