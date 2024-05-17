@@ -129,7 +129,7 @@ commands:
         type: boolean
         default: false
       install_swiftlint:
-        type: bolean
+        type: boolean
         default: true
     steps:
       - install-bundle-dependencies:
