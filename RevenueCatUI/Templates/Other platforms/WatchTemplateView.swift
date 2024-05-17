@@ -48,8 +48,12 @@ struct WatchTemplateView: TemplateViewType {
     var body: some View {
         ScrollView {
             VStack(spacing: self.defaultVerticalPaddingLength) {
-                if let url = self.configuration.headerImageURL {
-                    RemoteImage(url: url, aspectRatio: Self.imageAspectRatio, maxWidth: .infinity)
+                if let headerImageURL = self.configuration.headerImageURL {
+                    let headerLowResImageURL = self.configuration.headerLowResImageURL
+                    RemoteImage(url: headerImageURL,
+                                lowResUrl: headerLowResImageURL,
+                                aspectRatio: Self.imageAspectRatio,
+                                maxWidth: .infinity)
                         .clipped()
                         .roundedCorner(Self.imageRoundedCorner, corners: [.bottomLeft, .bottomRight])
                         .padding(.bottom)

@@ -73,6 +73,9 @@
                     "images_heic": {
                         "header": "header.heic"
                     },
+                    "images_heic_low_res": {
+                        "header": "header_low_res.heic"
+                    },
                     "colors": {
                         "light": {
                             "background": "#FF00AA",

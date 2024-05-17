@@ -201,6 +201,12 @@ extension PaywallData {
             }
         }
 
+        /// Low resolution images for this template.
+        public var imagesLowRes: Images {
+            get { self._imagesHeicLowRes ?? Images() }
+            set { self._imagesHeicLowRes = newValue }
+        }
+
         /// Whether the background image will be blurred (in templates with one).
         public var blurredBackgroundImage: Bool {
             get { self._blurredBackgroundImage }
@@ -233,6 +239,7 @@ extension PaywallData {
             packages: [String],
             defaultPackage: String? = nil,
             images: Images,
+            imagesLowRes: Images = Images(),
             colors: ColorInformation,
             blurredBackgroundImage: Bool = false,
             displayRestorePurchases: Bool = true,
@@ -242,6 +249,7 @@ extension PaywallData {
             self.packages = packages
             self.defaultPackage = defaultPackage
             self._imagesHeic = images
+            self._imagesHeicLowRes = imagesLowRes
             self.colors = colors
             self._blurredBackgroundImage = blurredBackgroundImage
             self._displayRestorePurchases = displayRestorePurchases
@@ -251,6 +259,7 @@ extension PaywallData {
 
         var _legacyImages: Images?
         var _imagesHeic: Images?
+        var _imagesHeicLowRes: Images?
 
         @DefaultDecodable.False
         var _blurredBackgroundImage: Bool
@@ -479,6 +488,7 @@ extension PaywallData.Configuration: Codable {
         case defaultPackage
         case _legacyImages = "images"
         case _imagesHeic = "imagesHeic"
+        case _imagesHeicLowRes = "imagesHeicLowRes"
         case _blurredBackgroundImage = "blurredBackgroundImage"
         case _displayRestorePurchases = "displayRestorePurchases"
         case _termsOfServiceURL = "tosUrl"
