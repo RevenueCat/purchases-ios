@@ -114,7 +114,7 @@ commands:
         default: true
       mint_version:
         type: string
-        default: latest
+        default: ""
     steps:
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
@@ -141,7 +141,9 @@ commands:
       - install-brew-dependency:
           dependency_name: 'mint'
       - when:
-          condition: << parameters.install_xcbeautify >>
+          condition:
+            not:
+              equal: ["", << parameters.mint_version >>]
           steps:
             - run:
               name: Install swiftlint@<< parameters.mint_version >> using Mint 
@@ -149,7 +151,7 @@ commands:
                 mint install realm/swiftlint@<< parameters.mint_version >>
       - when:
           condition:
-            - not: << parameters.install_xcbeautify >>
+            equal: ["", << parameters.mint_version >>]
           steps:
             - install-brew-dependency:
                 dependency_name: 'mint'
