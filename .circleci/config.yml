@@ -27,9 +27,9 @@ aliases:
       xcode_version:
         type: string
         default: '15.3'
-      swiftlint_version:
-        type: string
-        default: ""
+      install_swiftlint:
+        type: boolean
+        default: true
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -125,9 +125,12 @@ commands:
       install_xcbeautify:
         type: boolean
         default: true
-      swiftlint_version:
-        type: string
-        default: ""
+      install_mint:
+        type: boolean
+        default: false
+      install_swiftlint:
+        type: bolean
+        default: true
     steps:
       - install-bundle-dependencies:
           directory: << parameters.directory >>
@@ -139,23 +142,16 @@ commands:
           steps:
             - install-brew-dependency:
                 dependency_name: "xcbeautify"
-      - install-brew-dependency:
-          dependency_name: 'mint'
-      # - when:
-      #     condition:
-      #       not:
-      #         equal: ["", << parameters.swiftlint_version >>]
-      #     steps:
-      #       - run:
-      #           name: Install swiftlint@<< parameters.swiftlint_version >> using Mint 
-      #           command: |
-      #             mint install realm/swiftlint@<< parameters.swiftlint_version >>
       - when:
-          condition:
-            equal: ["", << parameters.swiftlint_version >>]
+          condition: << parameters.install_mint >>
           steps:
             - install-brew-dependency:
-                dependency_name: 'swiftlint'
+                dependency_name: "mint"
+      - when:
+          condition: << parameters.install_swiftlint >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: "swiftlint"
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
@@ -450,7 +446,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -476,7 +472,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -510,7 +506,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -584,7 +581,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          install_swiftlint: << parameters.install_swiftlint >>
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -609,7 +607,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -640,7 +638,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -706,8 +704,9 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
           install_xcbeautify: false
+          install_mint: true
+          install_swiftlint: << parameters.install_swiftlint >>
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
@@ -738,7 +737,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
-          swiftlint_version: << parameters.swiftlint_version >>
+          install_swiftlint: << parameters.install_swiftlint >>
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
@@ -1159,16 +1158,16 @@ workflows:
           xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-ios-15:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-ios-14:
           xcode_version: '14.2.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-ios-13:
           xcode_version: '14.2.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-macos
 
   generate_revenuecatui_snapshots:
@@ -1176,10 +1175,10 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
 
@@ -1194,20 +1193,19 @@ workflows:
       - lint
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - spm-release-build-xcode-15:
           xcode_version: "15.2"
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
-          swiftlint_version: '0.53.0'
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
       - spm-revenuecat-ui-watchos
@@ -1216,20 +1214,20 @@ workflows:
           xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-ios-15:
           xcode_version: '14.3.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-watchos
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
           xcode_version: '14.2.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
       - run-test-ios-13:
           xcode_version: '14.2.0'
-          swiftlint_version: '0.53.0'
+          install_swiftlint: false
           <<: *release-branches-and-main
       - build-tv-watch-and-macos
       - build-visionos
