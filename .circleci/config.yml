@@ -140,10 +140,19 @@ commands:
                 dependency_name: 'xcbeautify'
       - install-brew-dependency:
           dependency_name: 'mint'
-      - run:
-          name: Install swiftlint@<< parameters.mint_version >> using Mint 
-          command: |
-            mint install realm/swiftlint@<< parameters.mint_version >>
+      - when:
+          condition: << parameters.install_xcbeautify >>
+          steps:
+            - run:
+              name: Install swiftlint@<< parameters.mint_version >> using Mint 
+              command: |
+                mint install realm/swiftlint@<< parameters.mint_version >>
+      - when:
+          condition:
+            - not: << parameters.install_xcbeautify >>
+          steps:
+            - install-brew-dependency:
+                dependency_name: 'mint'
       - run: brew tap robotsandpencils/made
       - save_cache:
           key: homebrew-cache-{{ checksum "Brewfile.lock.json" }}-{{ arch }}
