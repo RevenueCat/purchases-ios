@@ -92,6 +92,18 @@ commands:
       - restore_cache:
           keys:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
+      # CircleCI images fail on Ruby 3.3
+      # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
+      - run:
+          name: Set Ruby 3.2.2
+          command: |
+            eval "$(rbenv init -)"
+            rbenv install -s 3.2.2  # Replace with your required Ruby version
+            rbenv global 3.2.2
+            rbenv rehash
+      - run:
+          name: Verify Ruby version
+          command: ruby -v
       - run:
           name: Bundle install
           working_directory: << parameters.directory >>
@@ -119,18 +131,6 @@ commands:
         type: boolean
         default: true
     steps:
-      # CircleCI images fail on Ruby 3.3
-      # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
-      - run:
-          name: Set Ruby 3.2.2
-          command: |
-            eval "$(rbenv init -)"
-            rbenv install -s 3.2.2  # Replace with your required Ruby version
-            rbenv global 3.2.2
-            rbenv rehash
-      - run:
-          name: Verify Ruby version
-          command: ruby -v
       - install-bundle-dependencies:
           directory: << parameters.directory >>
       - restore_cache:
