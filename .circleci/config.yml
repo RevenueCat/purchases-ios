@@ -27,9 +27,9 @@ aliases:
       xcode_version:
         type: string
         default: '15.3'
-      mint_version:
+      swiftlint_version:
         type: string
-        default: latest
+        default: ""
     environment:
       CIRCLECI_TESTS_GENERATE_SNAPSHOTS: << pipeline.parameters.generate_snapshots >>
       CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -112,7 +112,7 @@ commands:
       install_xcbeautify:
         type: boolean
         default: true
-      mint_version:
+      swiftlint_version:
         type: string
         default: ""
     steps:
@@ -143,15 +143,15 @@ commands:
       - when:
           condition:
             not:
-              equal: ["", << parameters.mint_version >>]
+              equal: ["", << parameters.swiftlint_version >>]
           steps:
             - run:
-                name: Install swiftlint@<< parameters.mint_version >> using Mint 
+                name: Install swiftlint@<< parameters.swiftlint_version >> using Mint 
                 command: |
-                  mint install realm/swiftlint@<< parameters.mint_version >>
+                  mint install realm/swiftlint@<< parameters.swiftlint_version >>
       - when:
           condition:
-            equal: ["", << parameters.mint_version >>]
+            equal: ["", << parameters.swiftlint_version >>]
           steps:
             - install-brew-dependency:
                 dependency_name: 'swiftlint'
@@ -424,7 +424,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Tests
@@ -449,7 +450,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - run:
           name: SPM RevenueCatUI Release Build
@@ -581,7 +583,8 @@ jobs:
     <<: *base-job
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -611,7 +614,8 @@ jobs:
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - run:
           name: Run tests
@@ -677,6 +681,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
           install_xcbeautify: false
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
@@ -707,7 +712,8 @@ jobs:
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
@@ -736,7 +742,8 @@ jobs:
     resource_class: macos.x86.medium.gen2
     steps:
       - checkout
-      - install-dependencies
+      - install-dependencies:
+          swiftlint_version: << parameters.swiftlint_version >>
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 12.4
@@ -1161,19 +1168,19 @@ workflows:
           xcode_version: '15.2'
       - run-test-ios-16:
           xcode_version: '14.3.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - run-test-ios-15:
           xcode_version: '14.3.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - run-test-ios-14:
           xcode_version: '14.2.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - run-test-ios-13:
           xcode_version: '14.2.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - run-test-ios-12:
           xcode_version: '14.2.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - run-test-macos
 
   generate_revenuecatui_snapshots:
@@ -1181,10 +1188,10 @@ workflows:
     jobs:
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - spm-revenuecat-ui-ios-16:
           xcode_version: '14.3.0'
-          mint_version: '0.53.0'
+          swiftlint_version: '0.53.0'
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.2'
 
