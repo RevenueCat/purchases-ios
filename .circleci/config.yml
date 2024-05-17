@@ -146,9 +146,9 @@ commands:
               equal: ["", << parameters.mint_version >>]
           steps:
             - run:
-              name: Install swiftlint@<< parameters.mint_version >> using Mint 
-              command: |
-                mint install realm/swiftlint@<< parameters.mint_version >>
+                name: Install swiftlint@<< parameters.mint_version >> using Mint 
+                command: |
+                  mint install realm/swiftlint@<< parameters.mint_version >>
       - when:
           condition:
             equal: ["", << parameters.mint_version >>]
