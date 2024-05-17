@@ -27,7 +27,7 @@ extension XCTestCase {
     func setShortestTestSessionTimeRate(_ testSession: SKTestSession) {
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
             testSession.timeRate = .oneRenewalEveryTwoSeconds
-        } else if #available(iOS 15.2, *) {
+        } else if #available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *) {
             testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
     }
