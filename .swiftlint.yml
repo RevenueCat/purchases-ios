@@ -22,8 +22,6 @@ disabled_rules:
   - blanket_disable_command
   # Broken: https://github.com/realm/SwiftLint/issues/5153
   - unneeded_synthesized_initializer
-  - non_optional_string_data_conversion
-  - static_over_final_class
 
 custom_rules:
   xctestcase_superclass:
