@@ -136,7 +136,11 @@ commands:
             - install-brew-dependency:
                 dependency_name: 'xcbeautify'
       - install-brew-dependency:
-          dependency_name: 'swiftlint'
+          dependency_name: 'mint'
+      - run:
+          name: Install swiftlint with mint
+          command: |
+            mint install realm/swiftlint
       - when:
           condition: << parameters.install_mint >>
           steps:
