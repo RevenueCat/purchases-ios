@@ -62,11 +62,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRenewalsPostReceipt() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
-        if #available(iOS 16.4, *) {
-            self.testSession.timeRate = .oneRenewalEveryTwoSeconds
-        } else {
-            self.testSession.timeRate = .oneSecondIsOneDay
-        }
+        setShortestTestSessionTimeRate(self.testSession)
 
         let productID = Self.group3MonthlyNoTrialProductID
 

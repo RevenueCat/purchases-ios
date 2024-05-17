@@ -24,6 +24,14 @@ extension XCTestCase {
         case invalidTransactions([StoreKit.VerificationResult<Transaction>])
     }
 
+    func setShortestTestSessionTimeRate(_ testSession: SKTestSession) {
+        if #available(iOS 16.4, *) {
+            testSession.timeRate = .oneRenewalEveryTwoSeconds
+        } else {
+            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
+        }
+    }
+
     func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
         let unfinished = await StoreKit.Transaction.unfinished.extractValues()
         expect(file: file, line: line, unfinished).to(beEmpty())

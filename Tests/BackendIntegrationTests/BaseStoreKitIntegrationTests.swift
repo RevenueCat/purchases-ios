@@ -178,7 +178,7 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async throws -> PurchaseResultData {
         let logger = TestLogHandler()
-        let product = try await StoreKit.Product.products(for: ["shortest_duration"]).first!
+        let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
 
