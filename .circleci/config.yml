@@ -77,11 +77,18 @@ commands:
     steps:
       - install-brew-dependency:
           dependency_name: "xcodes"
+      - restore_cache:
+          keys:
+            - ios-simulators-runtimes-cache-{{ .Environment.XCODE_VERSION }}
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
             xcodes runtimes
             sudo xcodes runtimes install "<< parameters.runtime-name >>"
+      - save_cache:
+          paths:
+            - ~/Library/Developer/CoreSimulator
+          key: ios-simulators-runtimes-cache-{{ .Environment.XCODE_VERSION }}
 
   install-bundle-dependencies:
     parameters:
