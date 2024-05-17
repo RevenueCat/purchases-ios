@@ -30,7 +30,7 @@ module Fastlane
     
         FileUtils.rm_rf('./test_output/xctest/ios/retry')
     
-        puts "Merged report saved to #{original_report}"
+        UI.message "Merged report saved to #{original_report}"
       end
 
       def self.parse_report(file_path)

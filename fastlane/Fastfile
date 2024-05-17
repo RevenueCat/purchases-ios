@@ -607,12 +607,15 @@ platform :ios do
 
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
+    fail_build = options[:fail_build]
+
     fetch_snapshots
     replace_api_key_integration_tests
 
     begin
       scan(
         scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
         output_style: 'raw',
@@ -621,7 +624,7 @@ platform :ios do
         configuration: 'Debug',
         output_directory: test_artifact_path,
 
-        fail_build: false # TODO: Need this for retry but maybe find a way to fail if we don't want this
+        fail_build: !!fail_build
       )
     rescue => ex
         UI.error("Tests failed: #{ex}")
@@ -651,6 +654,7 @@ platform :ios do
 
       scan(
         scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
         derived_data_path: "scan_derived_data",
         output_types: 'junit',
         output_style: 'raw',
@@ -676,6 +680,7 @@ platform :ios do
     scan(
       project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
       scheme: "v3LoadShedderIntegration",
+      ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
