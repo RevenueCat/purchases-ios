@@ -609,20 +609,77 @@ platform :ios do
 
   end
 
+  private_lane :test_artifact_path do
+    File.absolute_path('./test_output/xctest/ios')
+  end
+
   desc "Run BackendIntegrationTests"
   lane :backend_integration_tests do |options|
+    fail_build = options[:fail_build]
+
     fetch_snapshots
     replace_api_key_integration_tests
-    scan(
-      scheme: "BackendIntegrationTests",
-      derived_data_path: "scan_derived_data",
-      output_types: 'junit',
-      output_style: 'raw',
-      result_bundle: true,
-      testplan: options[:test_plan],
-      configuration: 'Debug',
-      output_directory: "fastlane/test_output/xctest/ios"
+
+    begin
+      scan(
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        testplan: options[:test_plan],
+        configuration: 'Debug',
+        output_directory: test_artifact_path,
+
+        fail_build: !!fail_build
+      )
+    rescue => ex
+        UI.error("Tests failed: #{ex}")
+    end
+
+    retry_scan_save_failed_tests(
+      junit_report_path: File.join(test_artifact_path, 'report.junit'),
+      copy_path: File.join(test_artifact_path, 'report.junit.original')
     )
+  end
+
+  private_lane :failed_tests_path do
+    File.join(test_artifact_path, 'failed_tests.txt')
+  end
+
+  lane :retry_failed_tests do |options|
+    fail_build = options[:fail_build]
+    retry_attempt = options[:retry_attempt]
+    
+    failed_tests = File.read(failed_tests_path).split("\n")
+    
+    if failed_tests.empty?
+      UI.message('No failed tests to retry')
+    else
+      report_dir = "./test_output_retry_#{retry_attempt}/xctest/ios"
+      report_path = File.absolute_path(File.join(report_dir, "report.junit"))
+
+      scan(
+        scheme: "BackendIntegrationTests",
+        ensure_devices_found: true,
+        derived_data_path: "scan_derived_data",
+        output_types: 'junit',
+        output_style: 'raw',
+        result_bundle: true,
+        configuration: 'Debug',
+        output_directory: File.join('fastlane', report_dir),
+
+        only_testing: failed_tests,
+        fail_build: !!fail_build
+      )
+
+      retry_scan_save_failed_tests(
+        junit_report_path: report_path,
+        copy_path: File.join(test_artifact_path, "report.junit.retry.#{retry_attempt}"),
+        merge_path: File.join(test_artifact_path, "report.junit")
+      )
+    end
   end
 
   desc "Run LoadShedder tests"
@@ -631,6 +688,7 @@ platform :ios do
     scan(
       project: "./Tests/v3LoadShedderIntegration/v3LoadShedderIntegration.xcodeproj",
       scheme: "v3LoadShedderIntegration",
+      ensure_devices_found: true,
       derived_data_path: "scan_derived_data",
       output_types: 'junit',
       output_style: 'raw',
