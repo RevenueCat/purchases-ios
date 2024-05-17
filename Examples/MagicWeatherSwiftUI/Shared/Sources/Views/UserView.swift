@@ -7,7 +7,7 @@
 
 import SwiftUI
 import RevenueCat
-
+import RevenueCatUI
 /*
  The app's user tab to display user's details like subscription status and ID's.
  */
@@ -16,6 +16,7 @@ struct UserView: View {
     @ObservedObject var model = UserViewModel.shared
     
     @State var newUserId: String = ""
+    @State var paywallPresented = false
     
     var body: some View {
         VStack {
@@ -32,9 +33,13 @@ struct UserView: View {
                 .font(.headline)
                 .padding([.top, .bottom], 8.0)
             
-            Text(model.subscriptionActive ? "Active" : "Not Active")
-                .foregroundColor(model.subscriptionActive ? .green : .red)
-                          
+            Button {
+                paywallPresented.toggle()
+            } label: {
+                Text(model.subscriptionActive ? "Active" : "Not Active")
+                    .foregroundColor(model.subscriptionActive ? .green : .red)
+            }
+            
             /// - Authentication UI
             if !Purchases.shared.isAnonymous {
                 /// - If the user is not anonymous, we should give them the option to logout
@@ -81,6 +86,10 @@ struct UserView: View {
             .font(.headline)
             .frame(maxWidth: .infinity, minHeight: 64.0)
             
-        }.padding(.all, 16.0)
+        }
+        .padding(.all, 16.0)
+        .sheet(isPresented: $paywallPresented, content: {
+            PaywallView(displayCloseButton: true)
+        })
     }
 }

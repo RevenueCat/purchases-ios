@@ -6,7 +6,8 @@
 //
 
 import SwiftUI
-
+import RevenueCat
+import RevenueCatUI
 /*
  The main view to hold our weather view and user view tabs.
  */
@@ -41,7 +42,10 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $paywallPresented, content: {
-            PaywallView(isPresented: $paywallPresented)
+            if let offerings = (UserViewModel.shared.offerings?.currentOffering(forPlacement: "change_weather") ?? Purchases.shared.cachedOfferings?.current) {
+                PaywallView(offering: offerings,
+                            displayCloseButton: true)
+            }
         })
     }
 }
