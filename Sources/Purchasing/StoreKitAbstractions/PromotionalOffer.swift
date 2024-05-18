@@ -76,7 +76,7 @@ extension PromotionalOffer: Sendable {}
             return self == other
         }
 
-        // swiftlint:disable:next missing_docs
+        // swiftlint:disable:next missing_docs nsobject_prefer_isequal
         public static func == (
             lhs: PromotionalOffer.SignedData,
             rhs: PromotionalOffer.SignedData
