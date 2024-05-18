@@ -4,7 +4,6 @@
 //
 //  Created by Andrés Boedo on 11/29/23.
 //
-
 import Foundation
 import RevenueCat
 
@@ -17,22 +16,18 @@ import AppKit
 import SwiftUI
 
 protocol URLSessionType {
-
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
-
 }
 
 @MainActor
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
-final class ImageLoader: ObservableObject {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class ImageLoader: NSObject, ObservableObject  {
 
     enum Error: Swift.Error, Equatable {
-
         case responseError(NSError)
         case badResponse(URLError)
         case invalidImage
-
     }
 
     typealias Value = Result<Image, Error>
@@ -46,74 +41,60 @@ final class ImageLoader: ObservableObject {
         }
     }
 
-    private let urlSession: URLSessionType
+    private var urlSession: URLSession!
+    private var dataTask: URLSessionDataTask?
+    private var receivedData = Data()
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    convenience init() {
-        self.init(urlSession: Purchases.paywallImageDownloadSession)
+    override convenience init() {
+        self.init(urlSession: URLSession(configuration: .default, delegate: nil, delegateQueue: .main))
     }
 
-    init(urlSession: URLSessionType) {
-        self.urlSession = urlSession
+    init(urlSession: URLSession) {
+        super.init()
+        let configuration = URLSessionConfiguration.default
+        self.urlSession = URLSession(configuration: configuration, delegate: self, delegateQueue: .main)
     }
+
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func load(url: URL) async {
+    func load(url: URL) {
         Logger.verbose(Strings.image_starting_request(url))
 
         // Reset previous image before loading new one
         self.result = nil
-        self.result = await self.loadImage(url)
+        self.receivedData = Data()
+
+        let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad)
+        self.dataTask = self.urlSession.dataTask(with: request)
+        self.dataTask?.resume()
     }
 
-    /// - Returns: `nil` if the Task was cancelled.
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    private func loadImage(_ url: URL) async -> Value? {
-        do {
-            let (data, response) = try await self
-                .urlSession
-                .data(for: .init(url: url, cachePolicy: .returnCacheDataElseLoad))
+    private func appendData(_ data: Data) {
+        self.receivedData.append(data)
 
-            do {
-                try Task.checkCancellation()
-            } catch {
-                return nil
-            }
-
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
-                return .failure(.badResponse(.init(.badServerResponse)))
-            }
-
-            // Load images in a background thread
-            return await Task<Value, Never>
-                .detached(priority: .medium) { data.toImage() }
-                .value
-        } catch let error {
-            return .failure(.responseError(error as NSError))
-        }
-    }
-
-}
-
-extension URLSession: URLSessionType {}
-
-private extension Data {
-
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-    func toImage() -> ImageLoader.Value {
         #if os(macOS)
-        if let image = NSImage(data: self) {
-            return .success(.init(nsImage: image))
-        } else {
-            return .failure(.invalidImage)
+        if let image = NSImage(data: self.receivedData) {
+            self.result = .success(.init(nsImage: image))
         }
         #else
-        if let image = UIImage(data: self) {
-            return .success(.init(uiImage: image))
-        } else {
-            return .failure(.invalidImage)
+        if let image = UIImage(data: self.receivedData) {
+            self.result = .success(.init(uiImage: image))
         }
         #endif
     }
+}
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+extension ImageLoader: URLSessionDataDelegate {
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        appendData(data)
+    }
+
+    // func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?)
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            self.result = .failure(.responseError(error as NSError))
+        }
+    }
 }
