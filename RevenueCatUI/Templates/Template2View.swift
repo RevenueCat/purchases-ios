@@ -298,7 +298,7 @@ struct Template2View: TemplateViewType {
                             self.placeholderIconImage
                         }
                     } else {
-                        RemoteImage(url: iconUrl, lowResUrl:iconLowResURL, aspectRatio: 1, maxWidth: self.iconSize)
+                        RemoteImage(url: iconUrl, lowResUrl:iconLowResURL, aspectRatio:1, maxWidth: self.iconSize)
                     }
                 }
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
