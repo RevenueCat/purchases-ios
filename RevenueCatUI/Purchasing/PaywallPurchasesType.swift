@@ -24,6 +24,9 @@ protocol PaywallPurchasesType: Sendable {
     func restorePurchases() async throws -> CustomerInfo
 
     @Sendable
+    func customerInfo() async throws -> CustomerInfo
+
+    @Sendable
     func track(paywallEvent: PaywallEvent) async
 
 }

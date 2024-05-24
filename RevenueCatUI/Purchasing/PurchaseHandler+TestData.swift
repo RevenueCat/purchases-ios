@@ -32,6 +32,8 @@ extension PurchaseHandler {
                 return customerInfo
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                return customerInfo
             }
         )
     }
@@ -55,6 +57,8 @@ extension PurchaseHandler {
                 throw error
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                throw error
             }
         )
     }

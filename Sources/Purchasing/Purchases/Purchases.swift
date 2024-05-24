@@ -30,6 +30,9 @@ public typealias PurchaseResultData = (transaction: StoreTransaction?,
                                        customerInfo: CustomerInfo,
                                        userCancelled: Bool)
 
+public typealias InitiatePurchaseRequestData = (storeProduct: StoreProduct,
+                                                callback: (Error?) -> Void)
+
 /**
  Completion block for ``Purchases/purchase(product:completion:)``
  */

@@ -310,6 +310,8 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(data: self.purchaseHandler.purchaseResult))
+            .preference(key: InitiatePurchasedRequestedPreferenceKey.self,
+                        value: .init(data: self.purchaseHandler.initiatePurchaseRequest))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,

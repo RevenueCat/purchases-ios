@@ -14,6 +14,8 @@
 import RevenueCat
 import SwiftUI
 
+import StoreKit
+
 /// A closure used for notifying of purchase or restore completion.
 public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (CustomerInfo) -> Void
 
@@ -34,6 +36,11 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
+
+public typealias InitatePurchaseRequestComplete = (Error?) -> Void
+
+/// A closure used for notifying of purchase initiation is requred.
+public typealias InitiatePurchaseRequestedHandler = @MainActor @Sendable (_ storeProduct: StoreProduct, _ callback: @escaping InitatePurchaseRequestComplete) -> Void
 
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
@@ -270,6 +277,20 @@ extension View {
         self.environment(\.onRequestedDismissal, action)
     }
 
+    /// Invokes the given closure when a purchase needs initiated
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onObserverModePurchaseRequested {
+    ///         print("TODO")
+    ///     }
+    /// ```
+    public func handleObserverModePurchase(
+        _ handler: @escaping InitiatePurchaseRequestedHandler
+    ) -> some View {
+        return self.modifier(OnInitiatePurchaseRequestedModifier(handler: handler))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -280,6 +301,11 @@ private struct OnPurchaseStartedModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(PurchaseInProgressPreferenceKey.self) { package in
+                let isObserverMode = true
+                guard !isObserverMode else {
+                    return
+                }
+
                 if let package {
                     self.handler(package)
                 }
@@ -326,6 +352,31 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
                     self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnInitiatePurchaseRequestedModifier: ViewModifier {
+
+    let handler: InitiatePurchaseRequestedHandler
+
+    init(handler: @escaping InitiatePurchaseRequestedHandler) {
+        self.handler = handler
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(InitiatePurchasedRequestedPreferenceKey.self) { data in
+                let isObserverMode = true
+                guard isObserverMode else {
+                    return
+                }
+
+                if let storeProduct = data?.storeProduct, let callback = data?.callback {
+                    self.handler(storeProduct, callback)
                 }
             }
     }
