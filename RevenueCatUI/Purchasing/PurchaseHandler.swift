@@ -15,6 +15,8 @@ import RevenueCat
 import StoreKit
 import SwiftUI
 
+// swiftlint:disable file_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
@@ -41,7 +43,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
     @Published
-    fileprivate(set) var initiatePurchaseRequest: InitiatePurchaseRequestData?
+    fileprivate(set) var handlePurchase: HandlePurchaseData?
 
     /// Whether a restore is currently in progress
     @Published
@@ -87,42 +89,17 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
-    func doneWithObserverModeThing(_ error: Error?) {
-        if let error {
-            self.purchaseError = error
-        } else {
-            withAnimation(Constants.defaultAnimation) {
-                self.purchased = true
-            }
-//            if result.userCancelled {
-//                self.trackCancelledPurchase()
-//            } else {
-//                withAnimation(Constants.defaultAnimation) {
-//                    self.purchased = true
-//                }
-//            }
-        }
-    }
-
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
-        let isObserverMode = true
-        if isObserverMode {
-            self.packageBeingPurchased = package
-            self.purchaseResult = nil
-            self.purchaseError = nil
-            self.initiatePurchaseRequest = (package.storeProduct, self.doneWithObserverModeThing)
-
-            self.startAction()
-
-            return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
+        if self.purchases.finishTransactions {
+            return try await performPurchase(package: package)
         } else {
-            return try await purchaseNormal(package: package)
+            return try await performDeveloperPurchaseLogic(package: package)
         }
     }
 
     @MainActor
-    func purchaseNormal(package: Package) async throws -> PurchaseResultData {
+    func performPurchase(package: Package) async throws -> PurchaseResultData {
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
@@ -134,7 +111,6 @@ extension PurchaseHandler {
         }
 
         do {
-            // JOSH
             let result = try await self.purchases.purchase(package: package)
             self.purchaseResult = result
 
@@ -150,6 +126,35 @@ extension PurchaseHandler {
         } catch {
             self.purchaseError = error
             throw error
+        }
+    }
+
+    @MainActor
+    func performDeveloperPurchaseLogic(package: Package) async throws -> PurchaseResultData {
+        self.packageBeingPurchased = package
+        self.purchaseResult = nil
+        self.purchaseError = nil
+        self.handlePurchase = (package.storeProduct, self.completeHandlePurchase)
+
+        self.startAction()
+
+        return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
+    }
+
+    func completeHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
+        self.actionInProgress = false
+        self.handlePurchase = nil
+
+        if let error {
+            self.purchaseError = error
+        } else {
+            if userCancelled {
+                self.trackCancelledPurchase()
+            } else {
+                withAnimation(Constants.defaultAnimation) {
+                    self.purchased = true
+                }
+            }
         }
     }
 
@@ -269,6 +274,11 @@ private extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
+    var finishTransactions: Bool {
+        get { return false }
+        set { _ = newValue }
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         throw ErrorCode.configurationError
     }
@@ -310,27 +320,32 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct InitiatePurchasedRequestedPreferenceKey: PreferenceKey {
+struct HandlePurchasePreferenceKey: PreferenceKey {
 
-    typealias Callback = (Error?) -> Void
+    typealias Callback = (_ userCancelled: Bool, _ error: Error?) -> Void
 
     struct PurchaseResult: Equatable {
-        static func == (lhs: InitiatePurchasedRequestedPreferenceKey.PurchaseResult, rhs: InitiatePurchasedRequestedPreferenceKey.PurchaseResult) -> Bool {
+
+        static func == (
+            lhs: HandlePurchasePreferenceKey.PurchaseResult,
+            rhs: HandlePurchasePreferenceKey.PurchaseResult
+        ) -> Bool {
             return lhs.storeProduct == rhs.storeProduct
         }
-        
+
         var storeProduct: StoreProduct?
         var callback: Callback?
 
-        init(data: InitiatePurchaseRequestData) {
+        init(data: HandlePurchaseData) {
             self.storeProduct = data.storeProduct
             self.callback = data.callback
         }
 
-        init?(data: InitiatePurchaseRequestData?) {
+        init?(data: HandlePurchaseData?) {
             guard let data else { return nil }
             self.init(data: data)
         }
+
     }
 
     static var defaultValue: PurchaseResult?

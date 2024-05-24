@@ -29,6 +29,11 @@ final class MockPurchases: PaywallPurchasesType {
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
 
+    var finishTransactions: Bool {
+        get { return false }
+        set { _ = newValue }
+    }
+
     init(
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,

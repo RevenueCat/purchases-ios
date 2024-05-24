@@ -142,7 +142,12 @@ private extension LoadingPaywallView {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private final class LoadingPaywallPurchases: PaywallPurchasesType {
-    
+
+    var finishTransactions: Bool {
+        get { return false }
+        set { _ = newValue }
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")
     }
