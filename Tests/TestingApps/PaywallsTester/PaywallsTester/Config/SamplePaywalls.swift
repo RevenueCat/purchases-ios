@@ -199,6 +199,7 @@ private extension SamplePaywallLoader {
             config: .init(
                 packages: [Package.string(from: PackageType.monthly)!],
                 images: Self.images,
+                imagesLowRes: Self.imagesLowRes,
                 colors:  .init(
                     light: .init(
                         background: "#FFFFFF",
@@ -442,6 +443,12 @@ private extension SamplePaywallLoader {
         header: "9a17e0a7_1689854430..jpeg",
         background: "9a17e0a7_1689854342..jpg",
         icon: "9a17e0a7_1689854430..jpeg"
+    )
+
+    static let imagesLowRes: PaywallData.Configuration.Images = .init(
+        header: "954459_1692984654.jpg",
+        background: "954459_1692984654.jpg",
+        icon: "954459_1692984654.jpg"
     )
 
     static let offeringIdentifier = "offering"

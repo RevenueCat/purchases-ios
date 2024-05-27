@@ -47,6 +47,9 @@
             "header": "header.jpg",
             "background": "background.jpg"
         },
+        "images_heic_low_res": {
+            "header": "header_low_res.heic"
+        },
         "blurred_background_image": true,
         "display_restore_purchases": false,
         "tos_url": "https://revenuecat.com/tos",
