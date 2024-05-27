@@ -30,6 +30,11 @@ class PaywallDataTests: BaseHTTPResponseTest {
             background: "background.jpg",
             icon: "icon.heic"
         )
+        expect(paywall.config.imagesLowRes) == .init(
+            header: "header_low_res.heic",
+            background: nil,
+            icon: nil
+        )
         expect(paywall.config.blurredBackgroundImage) == true
         expect(paywall.config.displayRestorePurchases) == false
         expect(paywall.config.termsOfServiceURL) == URL(string: "https://revenuecat.com/tos")!

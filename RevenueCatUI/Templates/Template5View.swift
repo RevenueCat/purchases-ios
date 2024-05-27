@@ -129,8 +129,10 @@ struct Template5View: TemplateViewType {
 
     @ViewBuilder
     private var headerImage: some View {
-        if let header = self.configuration.headerImageURL {
-            RemoteImage(url: header,
+        if let headerImageURL = self.configuration.headerImageURL {
+            let headerLowResImageURL = self.configuration.headerLowResImageURL
+            RemoteImage(url: headerImageURL,
+                        lowResUrl: headerLowResImageURL,
                         aspectRatio: self.headerAspectRatio,
                         maxWidth: .infinity)
             .clipped()

@@ -102,7 +102,8 @@ struct Template1View: TemplateViewType {
     @ViewBuilder
     private var asyncImage: some View {
         if let headerImage = self.configuration.headerImageURL {
-            RemoteImage(url: headerImage, aspectRatio: self.imageAspectRatio)
+            let headerImageLowRes = self.configuration.headerLowResImageURL
+            RemoteImage(url: headerImage, lowResUrl: headerImageLowRes, aspectRatio: self.imageAspectRatio)
             .frame(maxWidth: .infinity)
             .aspectRatio(self.imageAspectRatio, contentMode: .fit)
         }

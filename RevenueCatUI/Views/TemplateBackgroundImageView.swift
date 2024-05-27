@@ -18,23 +18,26 @@ import SwiftUI
 struct TemplateBackgroundImageView: View {
 
     private let url: URL?
+    private let urlLowRes: URL?
     private let blurred: Bool
     private let ignoreSafeArea: Bool
 
     init(configuration: TemplateViewConfiguration) {
         self.init(url: configuration.backgroundImageURLToDisplay,
+                  lowResUrl: configuration.backgroundLowResImageToDisplay,
                   blurred: configuration.configuration.blurredBackgroundImage)
     }
 
-    init(url: URL?, blurred: Bool, ignoreSafeArea: Bool = true) {
+    init(url: URL?, lowResUrl: URL?, blurred: Bool, ignoreSafeArea: Bool = true) {
         self.url = url
+        self.urlLowRes = lowResUrl
         self.blurred = blurred
         self.ignoreSafeArea = ignoreSafeArea
     }
 
     var body: some View {
         if let url = self.url {
-            let image = self.image(url)
+            let image = self.image(url, lowResUrl: self.urlLowRes)
                 .unredacted()
 
             if self.ignoreSafeArea {
@@ -49,9 +52,9 @@ struct TemplateBackgroundImageView: View {
     }
 
     @ViewBuilder
-    private func image(_ url: URL) -> some View {
+    private func image(_ url: URL, lowResUrl: URL?) -> some View {
         if self.blurred {
-            RemoteImage(url: url)
+            RemoteImage(url: url, lowResUrl: lowResUrl)
                 .blur(radius: 40)
                 .opacity(0.7)
                 .background {
@@ -64,7 +67,7 @@ struct TemplateBackgroundImageView: View {
                     #endif
                 }
         } else {
-            RemoteImage(url: url)
+            RemoteImage(url: url, lowResUrl: lowResUrl)
         }
     }
 
@@ -82,24 +85,28 @@ struct TemplateBackgroundImageView_Previews: PreviewProvider {
     static var previews: some View {
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallHeaderImageName),
+            lowResUrl: nil,
             blurred: false
         )
         .previewDisplayName("Wrong aspect ratio not blured")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallHeaderImageName),
+            lowResUrl: nil,
             blurred: true
         )
         .previewDisplayName("Wrong aspect ratio blured")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallBackgroundImageName),
+            lowResUrl: nil,
             blurred: false
         )
         .previewDisplayName("Correct aspect ratio not blured")
 
         TemplateBackgroundImageView(
             url: TestData.paywallAssetBaseURL.appendingPathComponent(TestData.paywallBackgroundImageName),
+            lowResUrl: nil,
             blurred: true
         )
         .previewDisplayName("Correct aspect ratio blured")

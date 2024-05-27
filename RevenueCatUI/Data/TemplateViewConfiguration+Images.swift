@@ -21,6 +21,10 @@ extension TemplateViewConfiguration {
     var backgroundImageURL: URL? { self.url(for: \.background) }
     var iconImageURL: URL? { self.url(for: \.icon) }
 
+    var headerLowResImageURL: URL? { self.url(forLowRes: \.header) }
+    var backgroundLowResImageURL: URL? { self.url(forLowRes: \.background) }
+    var iconLowResImageURL: URL? { self.url(forLowRes: \.icon) }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -30,6 +34,12 @@ extension TemplateViewConfiguration {
         guard self.mode.shouldDisplayBackground else { return nil }
 
         return self.backgroundImageURL
+    }
+
+    var backgroundLowResImageToDisplay: URL? {
+        guard self.mode.shouldDisplayBackground else { return nil }
+
+        return self.backgroundLowResImageURL
     }
 
 }
@@ -45,6 +55,14 @@ private extension TemplateViewConfiguration {
         )
     }
 
+    func url(forLowRes lowResImage: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
+        return PaywallData.url(
+            for: lowResImage,
+            in: self.configuration.imagesLowRes,
+            assetBaseURL: self.assetBaseURL
+        )
+    }
+
 }
 
 // MARK: -
@@ -56,10 +74,22 @@ extension PaywallData {
     var backgroundImageURL: URL? { self.url(for: \.background) }
     var iconImageURL: URL? { self.url(for: \.icon) }
 
+    var headerLowResImageURL: URL? { self.url(forLowRes: \.header) }
+    var backgroundLowResImageURL: URL? { self.url(forLowRes: \.background) }
+    var iconLowResImageURL: URL? { self.url(forLowRes: \.icon) }
+
     private func url(for image: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
         return PaywallData.url(
             for: image,
             in: self.config.images,
+            assetBaseURL: self.assetBaseURL
+        )
+    }
+
+    private func url(forLowRes lowResImage: KeyPath<PaywallData.Configuration.Images, String?>) -> URL? {
+        return PaywallData.url(
+            for: lowResImage,
+            in: self.config.imagesLowRes,
             assetBaseURL: self.assetBaseURL
         )
     }
