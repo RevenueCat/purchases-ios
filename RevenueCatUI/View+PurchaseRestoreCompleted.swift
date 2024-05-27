@@ -39,16 +39,14 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
-/// A closure used for notifying when custom purchase logic is finished in ``HandlePurchaseHandler``
-public typealias HandlePurchaseComplete = (
-    _ userCancelled: Bool,
-    _ error: Error?
-) -> Void
 
 /// A closure used for notifying of purchase initiation is requred.
 public typealias HandlePurchaseHandler = @MainActor @Sendable (
     _ storeProduct: StoreProduct,
-    _ callback: @escaping HandlePurchaseComplete
+    _ handlePurchaseComplete: @escaping (
+        _ userCancelled: Bool,
+        _ error: Error?
+    ) -> Void
 ) -> Void
 
 /// A closure used for notifying of failures during purchases or restores.
