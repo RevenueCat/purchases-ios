@@ -46,12 +46,6 @@ func assertSnapshot<Value, Format>(
     )
 
     if let message = failure {
-        if #available(iOS 13.4, *) {
-            try! FileHandle.standardError.write(contentsOf: Data("CircleCI Visible: \(message)\n".utf8))
-            try! FileHandle.standardError.write(contentsOf: Data("=-=-=-=-=-=-=-=-=-=-=-\n".utf8))
-        } else {
-            fatalError()
-        }
         XCTFail(message, file: file, line: line)
     }
 }
