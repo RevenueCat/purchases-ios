@@ -17,44 +17,76 @@ import SwiftUI
 struct RemoteImage: View {
 
     let url: URL
+    let lowResUrl: URL?
     let aspectRatio: CGFloat?
     let maxWidth: CGFloat?
 
-    @StateObject
-    private var loader: ImageLoader = .init()
+    var fetchLowRes: Bool {
+        lowResUrl != nil
+    }
 
-    init(url: URL, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
+    @StateObject
+    private var highResLoader: ImageLoader = .init()
+
+    @StateObject
+    private var lowResLoader: ImageLoader = .init()
+
+    init(url: URL, lowResUrl: URL? = nil, aspectRatio: CGFloat? = nil, maxWidth: CGFloat? = nil) {
         self.url = url
         self.aspectRatio = aspectRatio
         self.maxWidth = maxWidth
+        self.lowResUrl = lowResUrl
     }
 
     var body: some View {
         Group {
-            switch self.loader.result {
-            case .none:
-                self.emptyView(error: nil)
-
-            case let .success(image):
-                if let aspectRatio {
-                    image
-                        .fitToAspect(aspectRatio, contentMode: .fill)
-                        .frame(maxWidth: self.maxWidth)
-                        .accessibilityHidden(true)
-
+            if case let .success(image) = highResLoader.result {
+                displayImage(image)
+            } else if case let .success(image) = lowResLoader.result {
+                displayImage(image)
+            } else if case let .failure(highResError) = highResLoader.result {
+                if !fetchLowRes {
+                    emptyView(error: highResError)
+                } else if case .failure = lowResLoader.result {
+                    emptyView(error: highResError)
                 } else {
-                    image
-                        .resizable()
-                        .accessibilityHidden(true)
+                    emptyView(error: nil)
                 }
-
-            case let .failure(error):
-                self.emptyView(error: error)
+            } else {
+                emptyView(error: nil)
             }
         }
         .transition(Self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
-            await self.loader.load(url: self.url)
+            await loadImages()
+        }
+    }
+
+    private func displayImage(_ image: Image) -> some View {
+        if let aspectRatio {
+            return AnyView(
+                image
+                    .fitToAspect(aspectRatio, contentMode: .fill)
+                    .frame(maxWidth: self.maxWidth)
+                    .accessibilityHidden(true)
+            )
+        } else {
+            return AnyView(
+                image
+                    .resizable()
+                    .accessibilityHidden(true)
+            )
+        }
+    }
+
+    private func loadImages() async {
+        if fetchLowRes, let lowResLoc = lowResUrl {
+            async let lowResLoad: Void = lowResLoader.load(url: lowResLoc)
+            async let highResLoad: Void = highResLoader.load(url: url)
+            _ = await (lowResLoad, highResLoad)
+
+        } else {
+            await highResLoader.load(url: url)
         }
     }
 

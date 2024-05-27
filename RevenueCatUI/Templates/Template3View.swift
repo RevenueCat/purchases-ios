@@ -105,8 +105,9 @@ struct Template3View: TemplateViewType {
 
     @ViewBuilder
     private var headerIcon: some View {
-        if let url = self.configuration.iconImageURL {
-            RemoteImage(url: url, aspectRatio: 1)
+        if let iconImageURL = self.configuration.iconImageURL {
+            let iconImageLowResURL = self.configuration.iconLowResImageURL
+            RemoteImage(url: iconImageURL, lowResUrl: iconImageLowResURL, aspectRatio: 1)
                 .frame(width: self.iconSize, height: self.iconSize)
                 .cornerRadius(8)
                 .matchedGeometryEffect(id: Geometry.icon, in: self.namespace)

@@ -52,6 +52,7 @@ struct LoadingPaywallView: View {
         .background {
             TemplateBackgroundImageView(
                 url: Self.defaultPaywall.backgroundImageURL,
+                lowResUrl: Self.defaultPaywall.backgroundLowResImageURL,
                 blurred: true,
                 ignoreSafeArea: self.mode.shouldDisplayBackground
             )
