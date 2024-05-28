@@ -24,9 +24,11 @@ class CustomerCenterViewModel: ObservableObject {
     }
 
     enum State {
+
         case notLoaded
         case success
         case error(Error)
+
     }
 
     var error: Error?
@@ -53,14 +55,14 @@ class CustomerCenterViewModel: ObservableObject {
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             self.hasSubscriptions = customerInfo.activeSubscriptions.count > 0
-            guard let firstActiveEntitlement: EntitlementInfo = customerInfo.entitlements.active.first?.value else {
+            guard let firstActiveEntitlementStore = customerInfo.entitlements.active.first?.value.store else {
                 self.areSubscriptionsFromApple = false
                 return
             }
 
-            self.areSubscriptionsFromApple = firstActiveEntitlement.store == .appStore || firstActiveEntitlement.store == .macAppStore
+            self.areSubscriptionsFromApple =
+            firstActiveEntitlementStore == .appStore || firstActiveEntitlementStore == .macAppStore
         } catch {
-            // TODO: log and handle maybe?
             self.state = .error(error)
         }
     }

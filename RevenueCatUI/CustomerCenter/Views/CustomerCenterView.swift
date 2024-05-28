@@ -9,17 +9,17 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
-public struct CustomerCenterView: View {
+struct CustomerCenterView: View {
 
     @StateObject private var viewModel = CustomerCenterViewModel()
 
-    public init() { }
+    init() { }
 
     init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
-    public var body: some View {
+    var body: some View {
         NavigationView {
             NavigationLink(destination: destinationView()) {
                 Text("Billing and subscription help")
@@ -34,7 +34,12 @@ public struct CustomerCenterView: View {
         }
     }
 
-    private func checkAndLoadSubscriptions() {
+}
+
+@available(iOS 15.0, *)
+private extension CustomerCenterView {
+
+    func checkAndLoadSubscriptions() {
         if !viewModel.isLoaded {
             Task {
                 await viewModel.loadHasSubscriptions()
@@ -43,7 +48,7 @@ public struct CustomerCenterView: View {
     }
 
     @ViewBuilder
-    private func destinationView() -> some View {
+    func destinationView() -> some View {
         if viewModel.hasSubscriptions {
             if viewModel.areSubscriptionsFromApple {
                 ManageSubscriptionsView()

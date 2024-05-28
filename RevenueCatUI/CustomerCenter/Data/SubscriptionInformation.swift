@@ -8,6 +8,7 @@
 import Foundation
 
 struct SubscriptionInformation {
+
     let title: String
     let duration: String
     let price: String
@@ -19,4 +20,5 @@ struct SubscriptionInformation {
     var renewalString: String {
         return active ? (willRenew ? "Renews" : "Expires") : "Expired"
     }
+
 }

@@ -10,26 +10,34 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
-public struct RestorePurchasesAlert: ViewModifier {
-    @Binding var isPresented: Bool
-    @State private var alertType: AlertType = .restorePurchases
+struct RestorePurchasesAlert: ViewModifier {
+
+    @Binding
+    var isPresented: Bool
+    @Environment(\.openURL)
+    var openURL
+
+    @State
+    private var alertType: AlertType = .restorePurchases
+    @Environment(\.dismiss)
+    private var dismiss
 
     enum AlertType: Identifiable {
         case purchasesRecovered, purchasesNotFound, restorePurchases
         var id: Self { self }
     }
 
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) var openURL
-
-    public func body(content: Content) -> some View {
+    func body(content: Content) -> some View {
         content
             .alert(isPresented: $isPresented) {
                 switch self.alertType {
                 case .restorePurchases:
                     Alert(
                         title: Text("Restore purchases"),
-                        message: Text("Let’s take a look! We’re going to check your Apple account for missing purchases."),
+                        message: Text(
+                                    """
+                                    Let’s take a look! We’re going to check your Apple account for missing purchases.
+                                    """),
                         primaryButton: .default(Text("Check past purchases"), action: {
                             Task {
                                 guard let customerInfo = try? await Purchases.shared.restorePurchases() else {
@@ -72,7 +80,12 @@ public struct RestorePurchasesAlert: ViewModifier {
             }
     }
 
-    private func setAlertType(_ newType: AlertType) {
+}
+
+@available(iOS 15.0, *)
+private extension RestorePurchasesAlert {
+
+    func setAlertType(_ newType: AlertType) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.alertType = newType
             self.isPresented = true
@@ -82,7 +95,7 @@ public struct RestorePurchasesAlert: ViewModifier {
 }
 
 @available(iOS 15.0, *)
-public extension View {
+extension View {
     func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {
         self.modifier(RestorePurchasesAlert(isPresented: isPresented))
     }

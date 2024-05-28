@@ -9,7 +9,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
-public struct ManageSubscriptionsView: View {
+struct ManageSubscriptionsView: View {
 
     @Environment(\.openURL)
     var openURL
@@ -17,13 +17,13 @@ public struct ManageSubscriptionsView: View {
     @StateObject
     private var viewModel = ManageSubscriptionsViewModel()
 
-    public init() { }
+    init() { }
 
     init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
-    public var body: some View {
+    var body: some View {
         VStack {
             HeaderView()
 
@@ -35,17 +35,22 @@ public struct ManageSubscriptionsView: View {
             Spacer()
 
             ManageSubscriptionsButtonsView(viewModel: viewModel,
-                              openURL: openURL)
+                                           openURL: openURL)
         }
         .onAppear {
             checkAndLoadSubscriptionInformation()
         }
     }
 
-    private func checkAndLoadSubscriptionInformation() {
+}
+
+@available(iOS 15.0, *)
+private extension ManageSubscriptionsView {
+
+    func checkAndLoadSubscriptionInformation() {
         if !viewModel.isLoaded {
             Task {
-                try! await viewModel.loadSubscriptionInformation()
+                await viewModel.loadSubscriptionInformation()
             }
         }
     }
@@ -133,7 +138,9 @@ struct ManageSubscriptionsButtonsView: View {
         case .refundRequest:
             Task {
                 guard let subscriptionInformation = self.viewModel.subscriptionInformation else { return }
-                let status = try await Purchases.shared.beginRefundRequest(forProduct: subscriptionInformation.productIdentifier)
+                let status = try await Purchases.shared.beginRefundRequest(
+                    forProduct: subscriptionInformation.productIdentifier
+                )
                 switch status {
                 case .error:
                     self.viewModel.refundRequestStatus = "Error when requesting refund, try again"
@@ -155,6 +162,7 @@ struct ManageSubscriptionsButtonsView: View {
             break
         }
     }
+
 }
 
 #if DEBUG
@@ -165,8 +173,9 @@ struct ManageSubscriptionsButtonsView: View {
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {
-        let viewModel = ManageSubscriptionsViewModel(configuration: CustomerCenterTestData.customerCenterData,
-                                                     subscriptionInformation: CustomerCenterTestData.subscriptionInformation)
+        let viewModel = ManageSubscriptionsViewModel(
+            configuration: CustomerCenterTestData.customerCenterData,
+            subscriptionInformation: CustomerCenterTestData.subscriptionInformation)
         ManageSubscriptionsView(viewModel: viewModel)
     }
 

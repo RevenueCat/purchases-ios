@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct URLUtilities {
+enum URLUtilities {
 
     static func createMailURL() -> URL? {
         let subject = "Support Request"
