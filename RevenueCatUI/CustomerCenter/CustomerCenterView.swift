@@ -1,0 +1,74 @@
+//
+//  CustomerCenterView.swift
+//
+//
+//  Created by Andrés Boedo on 5/3/24.
+//
+
+import SwiftUI
+import RevenueCat
+
+@available(iOS 15.0, *)
+public struct CustomerCenterView: View {
+
+    @StateObject private var viewModel = CustomerCenterViewModel()
+
+    public init() { }
+
+    init(viewModel: CustomerCenterViewModel) {
+        self._viewModel = .init(wrappedValue: viewModel)
+    }
+
+    public var body: some View {
+        NavigationView {
+            NavigationLink(destination: destinationView()) {
+                Text("Billing and subscription help")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .onAppear {
+            checkAndLoadSubscriptions()
+        }
+    }
+
+    private func checkAndLoadSubscriptions() {
+        if !viewModel.isLoaded {
+            Task {
+                await viewModel.loadHasSubscriptions()
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func destinationView() -> some View {
+        if viewModel.hasSubscriptions {
+            if viewModel.areSubscriptionsFromApple {
+                ManageSubscriptionsView()
+            } else {
+                WrongPlatformView()
+            }
+        } else {
+            NoSubscriptionsView()
+        }
+    }
+
+}
+
+#if DEBUG
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct CustomerCenterView_Previews: PreviewProvider {
+
+   static var previews: some View {
+       let viewModel = CustomerCenterViewModel(hasSubscriptions: false, areSubscriptionsFromApple: false)
+       CustomerCenterView(viewModel: viewModel)
+   }
+
+}
+
+#endif
