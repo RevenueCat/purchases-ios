@@ -10,7 +10,7 @@ import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, *)
-public struct WrongPlatformView: View {
+struct WrongPlatformView: View {
 
     @State
     private var store: Store?
@@ -18,15 +18,15 @@ public struct WrongPlatformView: View {
     @Environment(\.openURL)
     private var openURL
 
-    public init() {
+    init() {
         self._store = State(initialValue: nil)
     }
 
-    public init(store: Store) {
+    init(store: Store) {
         self._store = State(initialValue: store)
     }
 
-    public var body: some View {
+    var body: some View {
         VStack {
 
             switch store {

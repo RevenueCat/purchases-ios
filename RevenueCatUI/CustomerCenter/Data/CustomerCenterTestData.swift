@@ -25,7 +25,7 @@ enum CustomerCenterTestData {
                 type: .refundRequest,
                 promotionalOffer: CustomerCenterData.PromotionalOffer(
                     iosOfferId: "rc-refund-offer",
-                    eligibility: CustomerCenterData.Eligibility(first_seen: "> 30")
+                    eligibility: CustomerCenterData.Eligibility(firstSeen: "> 30")
                 ),
                 feedbackSurvey: nil
             ),
@@ -49,7 +49,7 @@ enum CustomerCenterTestData {
                             title: CustomerCenterData.LocalizedString(en_US: "Too expensive"),
                             promotionalOffer: CustomerCenterData.PromotionalOffer(
                                 iosOfferId: "rc-cancel-offer",
-                                eligibility: CustomerCenterData.Eligibility(first_seen: "> 14")
+                                eligibility: CustomerCenterData.Eligibility(firstSeen: "> 14")
                             )
                         ),
                         CustomerCenterData.FeedbackSurvey.Option(
@@ -57,7 +57,7 @@ enum CustomerCenterTestData {
                             title: CustomerCenterData.LocalizedString(en_US: "Don't use the app"),
                             promotionalOffer: CustomerCenterData.PromotionalOffer(
                                 iosOfferId: "rc-cancel-offer",
-                                eligibility: CustomerCenterData.Eligibility(first_seen: "> 7")
+                                eligibility: CustomerCenterData.Eligibility(firstSeen: "> 7")
                             )
                         ),
                         CustomerCenterData.FeedbackSurvey.Option(

@@ -15,15 +15,15 @@ struct CustomerCenterData: Decodable {
     let supportEmail: String
     let appearance: Appearance
 
-    struct HelpPath: Decodable {
+    enum HelpPathType: String, Decodable {
+        case missingPurchase = "MISSING_PURCHASE"
+        case refundRequest = "REFUND_REQUEST"
+        case changePlans = "CHANGE_PLANS"
+        case cancel = "CANCEL"
+        case unknown
+    }
 
-        enum HelpPathType: String, Decodable {
-            case missingPurchase = "MISSING_PURCHASE"
-            case refundRequest = "REFUND_REQUEST"
-            case changePlans = "CHANGE_PLANS"
-            case cancel = "CANCEL"
-            case unknown
-        }
+    struct HelpPath: Decodable {
 
         let id: String
         let title: LocalizedString
@@ -35,7 +35,7 @@ struct CustomerCenterData: Decodable {
 
     struct LocalizedString: Decodable {
 
-        let en_US: String
+        let enUS: String
 
     }
 
@@ -48,22 +48,22 @@ struct CustomerCenterData: Decodable {
 
     struct Eligibility: Decodable {
 
-        let first_seen: String
+        let firstSeen: String
 
     }
 
     struct FeedbackSurvey: Decodable {
 
         let title: LocalizedString
-        let options: [Option]
+        let options: [FeedbackSurveyOption]
 
-        struct Option: Decodable {
+    }
 
-            let id: String
-            let title: LocalizedString
-            let promotionalOffer: PromotionalOffer?
+    struct FeedbackSurveyOption: Decodable {
 
-        }
+        let id: String
+        let title: LocalizedString
+        let promotionalOffer: PromotionalOffer?
 
     }
 

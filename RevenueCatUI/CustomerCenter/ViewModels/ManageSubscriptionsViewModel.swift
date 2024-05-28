@@ -11,12 +11,6 @@ import RevenueCat
 @available(iOS 15.0, *)
 class ManageSubscriptionsViewModel: ObservableObject {
 
-    enum State {
-        case notLoaded
-        case success
-        case error(Error)
-    }
-
     var isLoaded: Bool {
         if case .notLoaded = state {
             return false
@@ -33,6 +27,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var configuration: CustomerCenterData?
     var error: Error?
+
+    enum State {
+
+        case notLoaded
+        case success
+        case error(Error)
+
+    }
 
     private(set) var state: State {
         didSet {
@@ -57,30 +59,35 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .success
     }
 
-    func loadSubscriptionInformation() async throws {
-        guard let customerInfo = try? await Purchases.shared.customerInfo(),
-              let currentEntitlementDict = customerInfo.entitlements.active.first,
-              let subscribedProductID = try? await Purchases.shared.customerInfo().activeSubscriptions.first,
-              let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
-            return
-        }
-        let currentEntitlement = currentEntitlementDict.value
+    func loadSubscriptionInformation() async {
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            guard let currentEntitlementDict = customerInfo.entitlements.active.first,
+                  let subscribedProductID = customerInfo.activeSubscriptions.first,
+                  let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
+                return
+            }
+            let currentEntitlement = currentEntitlementDict.value
 
-        self.subscriptionInformation = SubscriptionInformation(
-            title: subscribedProduct.localizedTitle,
-            duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
-            price: subscribedProduct.localizedPriceString,
-            nextRenewal: "\(String(describing: currentEntitlement.expirationDate!))",
-            willRenew: currentEntitlement.willRenew,
-            productIdentifier: subscribedProductID,
-            active: currentEntitlement.isActive
-        )
+            self.subscriptionInformation = SubscriptionInformation(
+                title: subscribedProduct.localizedTitle,
+                duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
+                price: subscribedProduct.localizedPriceString,
+                nextRenewal: "\(String(describing: currentEntitlement.expirationDate!))",
+                willRenew: currentEntitlement.willRenew,
+                productIdentifier: subscribedProductID,
+                active: currentEntitlement.isActive
+            )
+        } catch {
+            self.state = .error(error)
+        }
     }
 
 }
 
 @available(iOS 15.0, *)
 private extension SubscriptionPeriod {
+
     var durationTitle: String {
         switch self.unit {
         case .day: return "day"
@@ -96,4 +103,5 @@ private extension SubscriptionPeriod {
         let pluralized = self.value > 1 ?  periodString + "s" : periodString
         return pluralized
     }
+
 }
