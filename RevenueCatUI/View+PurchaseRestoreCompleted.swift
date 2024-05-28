@@ -43,7 +43,7 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 /// A closure used for notifying of purchase initiation is requred.
 public typealias HandlePurchaseHandler = @MainActor @Sendable (
     _ storeProduct: StoreProduct,
-    _ handlePurchaseComplete: @escaping (
+    _ purchaseCompletedHandler: @escaping (
         _ userCancelled: Bool,
         _ error: Error?
     ) -> Void
@@ -284,19 +284,25 @@ extension View {
         self.environment(\.onRequestedDismissal, action)
     }
 
-    /// Invokes the given closure when a purchase needs initiated
+    /// Use this method if you wish to execute your own StoreKit purchase logic,
+    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
+    /// confiugured with `finishTransactions` set to `false`. This is typically used
+    /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
+    ///
+    /// After executing your StoreKit purchaecode, you must call `purchaseCompletedHandler`
+    /// for accurate statistics.
     ///
     /// Example:
     /// ```swift
     ///  PaywallView()
-    ///     .handlePurchase { storeProduct, callback in
+    ///     .handlePurchase { storeProduct, purchaseCompletedHandler in
     ///        var userCancelled: Bool = false
     ///        var error: Error? = nil
     ///
     ///        // Manually call StoreKit purchasing logic
     ///        // and update userCancelled and error
     ///
-    ///        callback(userCancelled, error)
+    ///        purchaseCompletedHandler(userCancelled, error)
     ///     }
     /// ```
     public func handlePurchase(
