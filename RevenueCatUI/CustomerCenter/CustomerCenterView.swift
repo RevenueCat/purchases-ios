@@ -5,8 +5,8 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct CustomerCenterView: View {

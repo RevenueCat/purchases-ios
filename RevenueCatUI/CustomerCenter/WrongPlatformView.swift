@@ -29,8 +29,7 @@ public struct WrongPlatformView: View {
     public var body: some View {
         VStack {
 
-
-            switch(store) {
+            switch store {
             case .appStore, .macAppStore, .playStore, .amazon:
                 let platformName = humanReadablePlatformName(store: store!)
 
@@ -47,7 +46,6 @@ public struct WrongPlatformView: View {
 
             Spacer()
 
-
             Button("Contact support") {
                 Task {
                     openURL(URLUtilities.createMailURL()!)
@@ -57,7 +55,7 @@ public struct WrongPlatformView: View {
 
         }
         .onAppear {
-            if (store == nil) {
+            if store == nil {
                 Task {
                     if let customerInfo = try? await Purchases.shared.customerInfo(),
                        let firstEntitlement = customerInfo.entitlements.active.first {

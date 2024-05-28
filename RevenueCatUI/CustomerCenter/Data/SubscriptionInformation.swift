@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SubscriptionInformation {
+struct SubscriptionInformation {
     let title: String
     let duration: String
     let price: String
