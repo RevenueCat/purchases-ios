@@ -12,7 +12,6 @@
 //  Created by Nacho Soto on 9/12/23.
 
 import RevenueCat
-import Foundation
 
 #if DEBUG
 
