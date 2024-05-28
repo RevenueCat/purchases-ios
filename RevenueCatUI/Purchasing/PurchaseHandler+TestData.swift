@@ -19,9 +19,9 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
-    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo) -> Self {
+    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo, finishTransactions: Bool = true) -> Self {
         return self.init(
-            purchases: MockPurchases { _ in
+            purchases: MockPurchases(finishTransactions: finishTransactions) { _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
@@ -38,8 +38,8 @@ extension PurchaseHandler {
         )
     }
 
-    static func cancelling() -> Self {
-        return .mock()
+    static func cancelling(finishTransactions: Bool = true) -> Self {
+        return .mock(finishTransactions: finishTransactions)
             .map { block in {
                     var result = try await block($0)
                     result.userCancelled = true

@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 9/12/23.
 
 import RevenueCat
+import Foundation
 
 #if DEBUG
 
@@ -28,13 +29,15 @@ final class MockPurchases: PaywallPurchasesType {
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
+    private let _finishTransactions: Bool
 
     var finishTransactions: Bool {
-        get { return false }
+        get { return _finishTransactions }
         set { _ = newValue }
     }
 
     init(
+        finishTransactions: Bool = true,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
@@ -44,6 +47,7 @@ final class MockPurchases: PaywallPurchasesType {
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
+        self._finishTransactions = finishTransactions
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
