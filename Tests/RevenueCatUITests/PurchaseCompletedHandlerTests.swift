@@ -190,6 +190,30 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testHandleExternalPurchase() throws {
+        var completed = false
+        var customPurchaseCodeExecuted = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.externalPurchaseHandler
+        )
+        .handlePurchase { storeProduct, purchaseCompletedHandler in
+            customPurchaseCodeExecuted = true
+        }
+        .addToHierarchy()
+
+        Task {
+            _ = try await Self.externalPurchaseHandler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customPurchaseCodeExecuted) == true
+    }
+
     func testOnRestoreStarted() throws {
         var started = false
 
@@ -255,6 +279,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    private static let externalPurchaseHandler: PurchaseHandler = .mock(finishTransactions: false)
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
