@@ -5,15 +5,14 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct NoSubscriptionsView: View {
 
     @Environment(\.dismiss) var dismiss
     @State private var showRestoreAlert: Bool = false
-
 
     public var body: some View {
         VStack {
@@ -37,7 +36,6 @@ public struct NoSubscriptionsView: View {
             }
 
         }
-
 
     }
 

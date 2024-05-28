@@ -11,11 +11,11 @@ import RevenueCat
 @available(iOS 15.0, *)
 class CustomerCenterViewModel: ObservableObject {
 
-    @Published 
+    @Published
     var hasSubscriptions: Bool = false
-    @Published 
+    @Published
     var areSubscriptionsFromApple: Bool = false
-    
+
     var isLoaded: Bool {
         if case .notLoaded = state {
             return false
@@ -30,7 +30,7 @@ class CustomerCenterViewModel: ObservableObject {
     }
 
     var error: Error?
-    
+
     private(set) var state: State {
         didSet {
             if case let .error(stateError) = state {

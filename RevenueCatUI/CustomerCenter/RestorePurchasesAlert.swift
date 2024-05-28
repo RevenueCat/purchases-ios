@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct RestorePurchasesAlert: ViewModifier {
@@ -21,7 +21,6 @@ public struct RestorePurchasesAlert: ViewModifier {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) var openURL
-
 
     public func body(content: Content) -> some View {
         content

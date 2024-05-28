@@ -25,13 +25,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     @Published
-    var subscriptionInformation: SubscriptionInformation? = nil
-
-    @Published 
-    var refundRequestStatus: String? = nil
+    var subscriptionInformation: SubscriptionInformation?
 
     @Published
-    var configuration: CustomerCenterData? = nil
+    var refundRequestStatus: String?
+
+    @Published
+    var configuration: CustomerCenterData?
     var error: Error?
 
     private(set) var state: State {

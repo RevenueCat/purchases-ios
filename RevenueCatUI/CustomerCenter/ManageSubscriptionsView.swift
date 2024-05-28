@@ -5,8 +5,8 @@
 //  Created by Andrés Boedo on 5/3/24.
 //
 
-import SwiftUI
 import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct ManageSubscriptionsView: View {
@@ -99,16 +99,16 @@ struct SubscriptionDetailsView: View {
 @available(iOS 15.0, *)
 struct ManageSubscriptionsButtonsView: View {
 
-    @ObservedObject 
+    @ObservedObject
     var viewModel: ManageSubscriptionsViewModel
     let openURL: OpenURLAction
-    @State 
+    @State
     private var showRestoreAlert: Bool = false
 
     var body: some View {
         VStack(spacing: 16) {
             if let configuration = viewModel.configuration {
-                ForEach(configuration.paths, id: \.id){ path in
+                ForEach(configuration.paths, id: \.id) { path in
                     Button(path.title.en_US) {
                         handleAction(for: path)
                     }
