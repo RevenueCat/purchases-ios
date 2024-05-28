@@ -131,6 +131,9 @@ extension PurchaseHandler {
 
     @MainActor
     func performDeveloperPurchaseLogic(package: Package) async throws -> PurchaseResultData {
+
+        Logger.debug(Strings.executing_external_purchase_logic)
+
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
