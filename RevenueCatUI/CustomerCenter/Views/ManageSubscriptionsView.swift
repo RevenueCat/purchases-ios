@@ -19,7 +19,7 @@ struct ManageSubscriptionsView: View {
 
     init() { }
 
-    init(viewModel: ManageSubscriptionsViewModel) {
+    fileprivate init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
