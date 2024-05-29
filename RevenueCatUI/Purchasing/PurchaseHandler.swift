@@ -85,7 +85,7 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    private var continuation: CheckedContinuation<(success: Bool, error: Error?), Never>?
+    private var continuation: CheckedContinuation<Bool, Error>?
 
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
@@ -186,7 +186,12 @@ extension PurchaseHandler {
     }
 
     func completeRestorePurchases(success: Bool, error: Error?) {
-        continuation?.resume(returning: (success, error))
+        if let error {
+            self.restoreError = error
+            continuation?.resume(throwing: error)
+        } else {
+            continuation?.resume(returning: success)
+        }
         continuation = nil
     }
 
@@ -245,16 +250,11 @@ extension PurchaseHandler {
             self.actionInProgress = false
         }
 
-        let result = await withCheckedContinuation { cont in
+        let success = try await withCheckedThrowingContinuation { cont in
             continuation = cont
         }
 
-        if let error = result.error {
-            self.restoreError = error
-            throw error
-        }
-
-        return (info: try await self.purchases.customerInfo(), result.success)
+        return (info: try await self.purchases.customerInfo(), success)
     }
 
     @MainActor
