@@ -85,7 +85,7 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    private var continuation: CheckedContinuation<Bool, Error>?
+    private var externalRestorePurchaseContinuation: CheckedContinuation<Bool, Error>?
 
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
@@ -188,11 +188,11 @@ extension PurchaseHandler {
     func completeRestorePurchases(success: Bool, error: Error?) {
         if let error {
             self.restoreError = error
-            continuation?.resume(throwing: error)
+            externalRestorePurchaseContinuation?.resume(throwing: error)
         } else {
-            continuation?.resume(returning: success)
+            externalRestorePurchaseContinuation?.resume(returning: success)
         }
-        continuation = nil
+        externalRestorePurchaseContinuation = nil
     }
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
@@ -238,7 +238,7 @@ extension PurchaseHandler {
         self.restoreError = nil
 
         DispatchQueue.main.async {
-            // this triggers the view `.handleRestore` function, and its callback must be called
+            // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
             self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeRestorePurchases)
         }
@@ -250,8 +250,8 @@ extension PurchaseHandler {
             self.actionInProgress = false
         }
 
-        let success = try await withCheckedThrowingContinuation { cont in
-            continuation = cont
+        let success = try await withCheckedThrowingContinuation { continuation in
+            externalRestorePurchaseContinuation = continuation
         }
 
         return (info: try await self.purchases.customerInfo(), success)
