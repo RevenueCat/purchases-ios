@@ -20,13 +20,19 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     @Published
     var subscriptionInformation: SubscriptionInformation?
-
     @Published
     var refundRequestStatus: String?
-
     @Published
     var configuration: CustomerCenterData?
-    var error: Error?
+    @Published var state: State {
+        didSet {
+            if case let .error(stateError) = state {
+                self.error = stateError
+            }
+        }
+    }
+
+    private var error: Error?
 
     enum State {
 
@@ -34,14 +40,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
         case success
         case error(Error)
 
-    }
-
-    private(set) var state: State {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
     }
 
     init() {
@@ -65,6 +63,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
             guard let currentEntitlementDict = customerInfo.entitlements.active.first,
                   let subscribedProductID = customerInfo.activeSubscriptions.first,
                   let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
+                Logger.warning(Strings.could_not_find_subscription_information)
+                self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
                 return
             }
             let currentEntitlement = currentEntitlementDict.value
