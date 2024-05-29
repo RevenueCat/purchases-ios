@@ -44,7 +44,7 @@ enum CustomerCenterTestData {
                 feedbackSurvey: CustomerCenterData.FeedbackSurvey(
                     title: CustomerCenterData.LocalizedString(en_US: "Why are you cancelling?"),
                     options: [
-                        CustomerCenterData.FeedbackSurvey.Option(
+                        CustomerCenterData.FeedbackSurveyOption(
                             id: "iewrthals",
                             title: CustomerCenterData.LocalizedString(en_US: "Too expensive"),
                             promotionalOffer: CustomerCenterData.PromotionalOffer(
@@ -52,7 +52,7 @@ enum CustomerCenterTestData {
                                 eligibility: CustomerCenterData.Eligibility(firstSeen: "> 14")
                             )
                         ),
-                        CustomerCenterData.FeedbackSurvey.Option(
+                        CustomerCenterData.FeedbackSurveyOption(
                             id: "qklpadsfj",
                             title: CustomerCenterData.LocalizedString(en_US: "Don't use the app"),
                             promotionalOffer: CustomerCenterData.PromotionalOffer(
@@ -60,7 +60,7 @@ enum CustomerCenterTestData {
                                 eligibility: CustomerCenterData.Eligibility(firstSeen: "> 7")
                             )
                         ),
-                        CustomerCenterData.FeedbackSurvey.Option(
+                        CustomerCenterData.FeedbackSurveyOption(
                             id: "jargnapocps",
                             title: CustomerCenterData.LocalizedString(en_US: "Bought by mistake"),
                             promotionalOffer: nil
