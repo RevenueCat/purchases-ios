@@ -34,7 +34,6 @@ class HandleRestoreCallbackContainer: Equatable {
 
 }
 
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
@@ -168,8 +167,6 @@ extension PurchaseHandler {
 
         return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
     }
-
-
 
     @MainActor
     func completeExternalHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
