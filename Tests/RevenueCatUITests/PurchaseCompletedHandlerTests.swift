@@ -225,7 +225,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handleRestore { purchaseRestoreHandler in
+        .handleRestorePurchases { purchaseRestoreHandler in
             purchaseRestoreHandler(true, nil)
             customRestoreCodeExecuted = true
         }
