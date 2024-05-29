@@ -1127,7 +1127,7 @@ private extension PurchasesOrchestrator {
                 let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
                 let appTransactionJWS: String?
-                if #available(iOSApplicationExtension 16.0, *) {
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
                     appTransactionJWS = await self.transactionFetcher.appTransactionJWS
                 } else {
                     appTransactionJWS = nil
