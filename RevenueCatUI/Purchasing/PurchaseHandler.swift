@@ -45,6 +45,9 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var handlePurchase: HandlePurchaseData?
 
+    @Published
+    fileprivate(set) var handleRestore: HandleRestoreCallback?
+
     /// Whether a restore is currently in progress
     @Published
     fileprivate(set) var restoreInProgress: Bool = false
@@ -161,13 +164,21 @@ extension PurchaseHandler {
         }
     }
 
+    func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+        if self.purchases.finishTransactions {
+            return try await performRestorePurchases()
+        } else {
+            return try await performDeveloperRestoreLogic()
+        }
+    }
+
     /// - Returns: `success` is `true` only when the resulting `CustomerInfo`
     /// had any transactions
     /// - Note: `restoredCustomerInfo` will be not be set after this method,
     /// instead `setRestored(_:)` must be manually called afterwards.
     /// This allows the UI to display an alert before dismissing the paywall.
     @MainActor
-    func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+    func performRestorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
@@ -187,6 +198,18 @@ extension PurchaseHandler {
             self.restoreError = error
             throw error
         }
+    }
+
+    @MainActor
+    func performDeveloperRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
+        self.restoreInProgress = true
+        self.restoredCustomerInfo = nil
+        self.restoreError = nil
+        self.handleRestore = self.completeHandlePurchase //TODO: This needs a different correct callback
+
+        self.startAction()
+
+        return (info: try await self.purchases.customerInfo(), true)
     }
 
     @MainActor
@@ -358,6 +381,40 @@ struct HandlePurchasePreferenceKey: PreferenceKey {
     }
 
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HandleRestorePreferenceKey: PreferenceKey {
+
+    struct RestoreResult: Equatable {
+
+        static func == (
+            lhs: HandleRestorePreferenceKey.RestoreResult,
+            rhs: HandleRestorePreferenceKey.RestoreResult
+        ) -> Bool {
+            return lhs.callback as AnyObject === rhs.callback as AnyObject
+        }
+
+        var callback: HandleRestoreCallback?
+
+        init(callback: @escaping HandleRestoreCallback) {
+            self.callback = callback
+        }
+
+        init?(callback: HandleRestoreCallback?) {
+            guard let callback else { return nil }
+            self.init(callback: callback)
+        }
+
+    }
+
+    static var defaultValue: RestoreResult?
+
+    static func reduce(value: inout RestoreResult?, nextValue: () -> RestoreResult?) {
+        value = nextValue()
+    }
+
+}
+
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {
