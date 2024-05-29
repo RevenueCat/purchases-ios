@@ -25,7 +25,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - StoreFront Changes
 
     func testClearCachedProductsAndOfferingsAfterStorefrontChanges() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.orchestrator.storefrontDidUpdate(with: MockStorefront(countryCode: "ESP"))
 
@@ -36,7 +36,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - Purchasing
 
     func testPurchasePostsReceipt() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
@@ -64,7 +64,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseReturnsCorrectValues() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
         let mockTransaction = try await self.simulateAnyPurchase()
@@ -86,7 +86,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseDoesNotPostReceiptIfPurchaseFailed() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         // As of Xcode 15.2 this makes purchases fail with `StoreKitError.unknown`
         testSession.failTransactionsEnabled = true
@@ -104,13 +104,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseWithPromotionalOfferPostsReceiptIfSuccessful() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         throw XCTSkip("Purchasing with a promo offer in SK2 using a StoreKit Config file returns an unknown error")
     }
 
     func testPurchaseWithInvalidPromotionalOfferSignatureFails() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let product = try await self.fetchSk2Product()
         let offer = PromotionalOffer.SignedData(
@@ -133,7 +133,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseCancelled() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
         self.mockStoreKit2TransactionListener?.mockResult = .init(.userCancelled)
@@ -153,7 +153,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     #if swift(>=5.9)
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseSK2CancelledWithSimulatedError() async throws {
-        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
@@ -189,7 +189,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - Purchasing, StoreKit 2 only
 
     func testPurchaseSK2IncludesAppUserIdIfUUID() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let uuid = UUID()
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: uuid.uuidString)
@@ -205,7 +205,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseSK2DoesNotIncludeAppUserIdIfNotUUID() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.currentUserProvider = MockCurrentUserProvider(mockAppUserID: "not_a_uuid")
         self.setUpOrchestrator()
@@ -258,7 +258,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - Paywalls
 
     func testPurchaseWithPresentedPaywall() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
@@ -284,7 +284,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testPurchaseFailureRemembersPresentedPaywall() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let mockListener = try XCTUnwrap(
             self.orchestrator.storeKit2TransactionListener as? MockStoreKit2TransactionListener
@@ -314,7 +314,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - AdServices and Attributes
 
     func testPurchaseDoesNotPostAdServicesTokenIfNotEnabled() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
 
         let mockListener = try XCTUnwrap(
@@ -335,7 +335,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     #if !os(tvOS) && !os(watchOS)
     func testPurchasePostsAdServicesTokenAndSubscriberAttributes() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         try AvailabilityChecks.skipIfTVOrWatchOSOrMacOS()
 
         // Test for custom entitlement computation mode.
@@ -477,7 +477,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     // MARK: - TransactionListenerDelegate
 
     func testSK2TransactionListenerDelegate() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setUpStoreKit2Listener()
 
@@ -501,7 +501,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSK2TransactionListenerDoesNotFinishTransactionIfPostingReceiptFails() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setUpStoreKit2Listener()
 
@@ -528,7 +528,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSK2TransactionListenerOnlyFinishesTransactionsAfterPostingReceipt() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         enum Operation {
             case receiptPost
@@ -556,7 +556,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSK2TransactionListenerDelegateWithObserverMode() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setUpSystemInfo(finishTransactions: false)
         self.setUpOrchestrator()
@@ -579,7 +579,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     func testSK2ListensForSK2Transactions() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let transactionListener = MockStoreKit2TransactionListener()
         let storeKit2ObserverModePurchasesDetector = MockStoreKit2ObserverModePurchaseDetector()
