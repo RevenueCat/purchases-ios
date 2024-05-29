@@ -25,8 +25,8 @@ class HandleRestoreCallbackContainer: Equatable {
     let handleRestoreCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
     init(callback: @escaping (Bool, Error?) -> Void) {
-            self.handleRestoreCallback = callback
-        }
+        self.handleRestoreCallback = callback
+    }
 
     static func == (lhs: HandleRestoreCallbackContainer, rhs: HandleRestoreCallbackContainer) -> Bool {
         return lhs === rhs
@@ -112,12 +112,14 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+    // MARK: - Purchase
+
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
         if self.purchases.finishTransactions {
             return try await performPurchase(package: package)
         } else {
-            return try await performDeveloperPurchaseLogic(package: package)
+            return try await performExternalPurchaseLogic(package: package)
         }
     }
 
@@ -154,21 +156,23 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performDeveloperPurchaseLogic(package: Package) async throws -> PurchaseResultData {
-
+    func performExternalPurchaseLogic(package: Package) async throws -> PurchaseResultData {
         Logger.debug(Strings.executing_external_purchase_logic)
 
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
-        self.handlePurchase = (package.storeProduct, self.completeHandlePurchase)
+        self.handlePurchase = (package.storeProduct, self.completeExternalHandlePurchase)
 
         self.startAction()
 
         return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
     }
 
-    func completeHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
+
+
+    @MainActor
+    func completeExternalHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
         self.actionInProgress = false
         self.handlePurchase = nil
 
@@ -185,21 +189,13 @@ extension PurchaseHandler {
         }
     }
 
-    func completeRestorePurchases(success: Bool, error: Error?) {
-        if let error {
-            self.restoreError = error
-            externalRestorePurchaseContinuation?.resume(throwing: error)
-        } else {
-            externalRestorePurchaseContinuation?.resume(returning: success)
-        }
-        externalRestorePurchaseContinuation = nil
-    }
+    // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         if self.purchases.finishTransactions {
             return try await performRestorePurchases()
         } else {
-            return try await performDeveloperRestoreLogic()
+            return try await performExternalRestoreLogic()
         }
     }
 
@@ -233,7 +229,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performDeveloperRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
+    func performExternalRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
         Logger.debug(Strings.executing_external_restore_logic)
 
         self.restoreInProgress = true
@@ -243,7 +239,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
-            self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeRestorePurchases)
+            self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeExternalRestorePurchases)
         }
 
         self.startAction()
@@ -258,6 +254,17 @@ extension PurchaseHandler {
         }
 
         return (info: try await self.purchases.customerInfo(), success)
+    }
+
+    @MainActor
+    func completeExternalRestorePurchases(success: Bool, error: Error?) {
+        if let error {
+            self.restoreError = error
+            externalRestorePurchaseContinuation?.resume(throwing: error)
+        } else {
+            externalRestorePurchaseContinuation?.resume(returning: success)
+        }
+        externalRestorePurchaseContinuation = nil
     }
 
     @MainActor
