@@ -19,7 +19,6 @@ struct WrongPlatformView: View {
     private var openURL
 
     init() {
-        self._store = State(initialValue: nil)
     }
 
     fileprivate init(store: Store) {
