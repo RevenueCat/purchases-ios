@@ -200,7 +200,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handlePurchase { storeProduct, purchaseCompletedHandler in
+        .handlePurchase { _, purchaseCompletedHandler in
             purchaseCompletedHandler(false, nil)
             customPurchaseCodeExecuted = true
         }

@@ -17,7 +17,6 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-
 typealias HandlePurchaseData = (storeProduct: StoreProduct,
                                     callback: (_ userCancelled: Bool, _ error: Error?) -> Void)
 
@@ -29,7 +28,7 @@ class HandleRestoreCallbackContainer: Equatable {
             self.handleRestoreCallback = callback
         }
 
-    static func ==(lhs: HandleRestoreCallbackContainer, rhs: HandleRestoreCallbackContainer) -> Bool {
+    static func == (lhs: HandleRestoreCallbackContainer, rhs: HandleRestoreCallbackContainer) -> Bool {
         return lhs === rhs
     }
 
@@ -441,7 +440,6 @@ struct HandleRestorePreferenceKey: PreferenceKey {
     }
 
 }
-
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {
