@@ -73,8 +73,7 @@ struct SubscriptionDetailsView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("\(subscriptionInformation.title) - \(subscriptionInformation.duration)")
                 .font(.subheadline)
-                .padding(.horizontal)
-                .padding(.top)
+                .padding([.horizontal, .top])
 
             Text("\(subscriptionInformation.price)")
                 .font(.caption)
@@ -84,16 +83,14 @@ struct SubscriptionDetailsView: View {
             Text("\(subscriptionInformation.renewalString): \(subscriptionInformation.nextRenewal)")
                 .font(.caption)
                 .foregroundColor(Color.gray)
-                .padding(.horizontal)
-                .padding(.bottom)
+                .padding([.horizontal, .bottom])
 
             if let refundRequestStatus = refundRequestStatus {
                 Text("Refund request status: \(refundRequestStatus)")
                     .font(.caption)
                     .bold()
                     .foregroundColor(Color.gray)
-                    .padding(.horizontal)
-                    .padding(.bottom)
+                    .padding([.horizontal, .bottom])
             }
         }
     }
@@ -103,7 +100,7 @@ struct SubscriptionDetailsView: View {
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
-    var viewModel: ManageSubscriptionsViewModel
+    private(set) var viewModel: ManageSubscriptionsViewModel
     let openURL: OpenURLAction
     @State
     private var showRestoreAlert: Bool = false

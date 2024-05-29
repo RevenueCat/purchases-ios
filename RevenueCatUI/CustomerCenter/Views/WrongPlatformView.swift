@@ -22,7 +22,7 @@ struct WrongPlatformView: View {
         self._store = State(initialValue: nil)
     }
 
-    init(store: Store) {
+    fileprivate init(store: Store) {
         self._store = State(initialValue: store)
     }
 
