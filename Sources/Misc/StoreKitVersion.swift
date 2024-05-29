@@ -52,7 +52,7 @@ extension StoreKitVersion {
 
     /// - Returns: `true` if SK2 is available in this device.
     static var isStoreKit2Available: Bool {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *) {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             return true
         } else {
             return false
