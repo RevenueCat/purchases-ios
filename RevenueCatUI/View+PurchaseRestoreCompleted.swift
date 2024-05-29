@@ -50,7 +50,7 @@ public typealias HandlePurchaseHandler = @MainActor @Sendable (
 
 /// A closure used for notifying that custom restore logic has completed.
 public typealias HandleRestoreHandler = @MainActor @Sendable (
-    _ purchaseRestoreHandler: @escaping (
+    _ restorePurchasesCompletedHandler: @escaping (
         _ success: Bool,
         _ error: Error?
     ) -> Void
@@ -335,10 +335,10 @@ extension View {
     ///        // Manually call StoreKit purchasing logic
     ///        // and update success and error
     ///
-    ///        purchaseRestoreHandler(success, error)
+    ///        restorePurchasesCompletedHandler(success, error)
     ///     }
     /// ```
-    public func handleRestore(
+    public func handleRestorePurchases(
         _ handler: @escaping HandleRestoreHandler
     ) -> some View {
         return self.modifier(HandleRestoreModifier(handler: handler))
@@ -410,10 +410,6 @@ private struct HandlePurchaseModifier: ViewModifier {
 
     let handler: HandlePurchaseHandler
 
-    init(handler: @escaping HandlePurchaseHandler) {
-        self.handler = handler
-    }
-
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(HandlePurchasePreferenceKey.self) { data in
@@ -432,8 +428,8 @@ private struct HandleRestoreModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(HandleRestorePreferenceKey.self) { result in
-                if let callback = result?.handleRestoreCallback {
+            .onPreferenceChange(HandleRestorePreferenceKey.self) { callbackContainer in
+                if let callback = callbackContainer?.handleRestoreCallback {
                     self.handler(callback)
                 }
             }
