@@ -85,6 +85,8 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
+    private var continuation: CheckedContinuation<(success: Bool, error: Error?), Never>?
+
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
     }
@@ -183,6 +185,11 @@ extension PurchaseHandler {
         }
     }
 
+    func completeRestorePurchases(success: Bool, error: Error?) {
+        continuation?.resume(returning: (success, error))
+        continuation = nil
+    }
+
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         if self.purchases.finishTransactions {
             return try await performRestorePurchases()
@@ -224,11 +231,30 @@ extension PurchaseHandler {
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
-        self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeHandlePurchase) //TODO: This needs a different correct callback
+
+        DispatchQueue.main.async {
+            // this triggers the view `.handleRestore` function, and its callback must be called
+            // after the continuation is set below
+            self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeRestorePurchases)
+        }
 
         self.startAction()
 
-        return (info: try await self.purchases.customerInfo(), true)
+        defer {
+            self.restoreInProgress = false
+            self.actionInProgress = false
+        }
+
+        let result = await withCheckedContinuation { cont in
+            continuation = cont
+        }
+
+        if let error = result.error {
+            self.restoreError = error
+            throw error
+        }
+
+        return (info: try await self.purchases.customerInfo(), result.success)
     }
 
     @MainActor
