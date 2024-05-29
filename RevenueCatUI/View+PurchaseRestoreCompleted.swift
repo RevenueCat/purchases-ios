@@ -51,7 +51,7 @@ public typealias HandlePurchaseHandler = @MainActor @Sendable (
 
 public typealias HandleRestoreHandler = @MainActor @Sendable (
     _ purchaseRestoreHandler: @escaping (
-        _ userCancelled: Bool,
+        _ success: Bool,
         _ error: Error?
     ) -> Void
 ) -> Void
