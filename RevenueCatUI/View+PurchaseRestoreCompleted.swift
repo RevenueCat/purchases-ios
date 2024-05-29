@@ -410,10 +410,6 @@ private struct HandleRestoreModifier: ViewModifier {
 
     let handler: HandleRestoreHandler
 
-    init(handler: @escaping HandleRestoreHandler) {
-        self.handler = handler
-    }
-
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(HandleRestorePreferenceKey.self) { result in
