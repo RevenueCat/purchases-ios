@@ -279,6 +279,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
             try productData.encode(to: encoder)
         }
 
+        try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
