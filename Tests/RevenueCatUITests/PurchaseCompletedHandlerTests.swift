@@ -201,6 +201,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             purchaseHandler: Self.externalPurchaseHandler
         )
         .handlePurchase { storeProduct, purchaseCompletedHandler in
+            purchaseCompletedHandler(false, nil)
             customPurchaseCodeExecuted = true
         }
         .addToHierarchy()
@@ -212,6 +213,31 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         expect(completed).toEventually(beTrue())
         expect(customPurchaseCodeExecuted) == true
+    }
+
+    func testHandleExternalRestore() throws {
+        var completed = false
+        var customRestoreCodeExecuted = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.externalPurchaseHandler
+        )
+        .handleRestore { purchaseRestoreHandler in
+            purchaseRestoreHandler(true, nil)
+            customRestoreCodeExecuted = true
+        }
+        .addToHierarchy()
+
+        Task {
+            _ = try await Self.externalPurchaseHandler.restorePurchases()
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customRestoreCodeExecuted) == true
     }
 
     func testOnRestoreStarted() throws {
