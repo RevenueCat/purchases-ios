@@ -27,8 +27,8 @@ struct CustomerCenterView: View {
                     .cornerRadius(10)
             }
         }
-        .onAppear {
-            checkAndLoadSubscriptions()
+        .task {
+            await checkAndLoadSubscriptions()
         }
     }
 
@@ -37,11 +37,9 @@ struct CustomerCenterView: View {
 @available(iOS 15.0, *)
 private extension CustomerCenterView {
 
-    func checkAndLoadSubscriptions() {
+    func checkAndLoadSubscriptions() async {
         if !viewModel.isLoaded {
-            Task {
-                await viewModel.loadHasSubscriptions()
-            }
+            await viewModel.loadHasSubscriptions()
         }
     }
 

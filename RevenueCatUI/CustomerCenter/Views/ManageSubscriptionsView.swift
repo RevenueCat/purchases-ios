@@ -37,8 +37,8 @@ struct ManageSubscriptionsView: View {
             ManageSubscriptionsButtonsView(viewModel: viewModel,
                                            openURL: openURL)
         }
-        .onAppear {
-            checkAndLoadSubscriptionInformation()
+        .task {
+            await checkAndLoadSubscriptionInformation()
         }
     }
 
@@ -47,11 +47,9 @@ struct ManageSubscriptionsView: View {
 @available(iOS 15.0, *)
 private extension ManageSubscriptionsView {
 
-    func checkAndLoadSubscriptionInformation() {
+    func checkAndLoadSubscriptionInformation() async {
         if !viewModel.isLoaded {
-            Task {
-                await viewModel.loadSubscriptionInformation()
-            }
+            await viewModel.loadSubscriptionInformation()
         }
     }
 

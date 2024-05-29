@@ -54,13 +54,11 @@ struct WrongPlatformView: View {
             .padding()
 
         }
-        .onAppear {
+        .task {
             if store == nil {
-                Task {
-                    if let customerInfo = try? await Purchases.shared.customerInfo(),
-                       let firstEntitlement = customerInfo.entitlements.active.first {
-                        self.store = firstEntitlement.value.store
-                    }
+                if let customerInfo = try? await Purchases.shared.customerInfo(),
+                   let firstEntitlement = customerInfo.entitlements.active.first {
+                    self.store = firstEntitlement.value.store
                 }
             }
         }
