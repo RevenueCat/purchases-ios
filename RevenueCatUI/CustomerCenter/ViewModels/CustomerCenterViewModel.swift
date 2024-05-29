@@ -31,7 +31,7 @@ class CustomerCenterViewModel: ObservableObject {
 
     }
 
-    var error: Error?
+    private var error: Error?
 
     private(set) var state: State {
         didSet {
