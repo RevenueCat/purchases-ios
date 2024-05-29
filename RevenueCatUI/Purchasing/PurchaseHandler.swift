@@ -23,9 +23,9 @@ typealias HandlePurchaseData = (storeProduct: StoreProduct,
 
 class HandleRestoreCallbackContainer: Equatable {
 
-    let handleRestoreCallback: ((_ userCancelled: Bool, _ error: Error?) -> Void)?
+    let handleRestoreCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
-    init(callback: ((Bool, Error?) -> Void)?) {
+    init(callback: @escaping (Bool, Error?) -> Void) {
             self.handleRestoreCallback = callback
         }
 
