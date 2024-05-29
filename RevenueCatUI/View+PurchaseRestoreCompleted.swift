@@ -417,7 +417,7 @@ private struct HandleRestoreModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(HandleRestorePreferenceKey.self) { result in
-                if let callback = result?.callback {
+                if let callback = result?.handleRestoreCallback {
                     self.handler(callback)
                 }
             }

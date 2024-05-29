@@ -17,6 +17,25 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
+
+typealias HandlePurchaseData = (storeProduct: StoreProduct,
+                                    callback: (_ userCancelled: Bool, _ error: Error?) -> Void)
+
+class HandleRestoreCallbackContainer: Equatable {
+
+    let handleRestoreCallback: ((_ userCancelled: Bool, _ error: Error?) -> Void)?
+
+    init(callback: ((Bool, Error?) -> Void)?) {
+            self.handleRestoreCallback = callback
+        }
+
+    static func ==(lhs: HandleRestoreCallbackContainer, rhs: HandleRestoreCallbackContainer) -> Bool {
+        return lhs === rhs
+    }
+
+}
+
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
@@ -46,7 +65,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var handlePurchase: HandlePurchaseData?
 
     @Published
-    fileprivate(set) var handleRestore: HandleRestoreCallback?
+    fileprivate(set) var handleRestore: HandleRestoreCallbackContainer?
 
     /// Whether a restore is currently in progress
     @Published
@@ -205,7 +224,7 @@ extension PurchaseHandler {
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
-        self.handleRestore = self.completeHandlePurchase //TODO: This needs a different correct callback
+        self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeHandlePurchase) //TODO: This needs a different correct callback
 
         self.startAction()
 
@@ -385,31 +404,9 @@ struct HandlePurchasePreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandleRestorePreferenceKey: PreferenceKey {
 
-    struct RestoreResult: Equatable {
+    static var defaultValue: HandleRestoreCallbackContainer?
 
-        static func == (
-            lhs: HandleRestorePreferenceKey.RestoreResult,
-            rhs: HandleRestorePreferenceKey.RestoreResult
-        ) -> Bool {
-            return lhs.callback as AnyObject === rhs.callback as AnyObject
-        }
-
-        var callback: HandleRestoreCallback?
-
-        init(callback: @escaping HandleRestoreCallback) {
-            self.callback = callback
-        }
-
-        init?(callback: HandleRestoreCallback?) {
-            guard let callback else { return nil }
-            self.init(callback: callback)
-        }
-
-    }
-
-    static var defaultValue: RestoreResult?
-
-    static func reduce(value: inout RestoreResult?, nextValue: () -> RestoreResult?) {
+    static func reduce(value: inout HandleRestoreCallbackContainer?, nextValue: () -> HandleRestoreCallbackContainer?) {
         value = nextValue()
     }
 
