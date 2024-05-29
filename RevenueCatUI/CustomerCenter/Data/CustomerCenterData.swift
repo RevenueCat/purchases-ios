@@ -34,8 +34,9 @@ struct CustomerCenterData: Decodable {
     }
 
     struct LocalizedString: Decodable {
-
-        let enUS: String
+        
+        // swiftlint:disable:next identifier_name
+        let en_US: String
 
     }
 
