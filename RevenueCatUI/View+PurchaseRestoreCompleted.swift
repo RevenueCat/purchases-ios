@@ -296,7 +296,7 @@ extension View {
     /// confiugured with `finishTransactions` set to `false`. This is typically used
     /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
     ///
-    /// After executing your StoreKit purchaecode, you must call `purchaseCompletedHandler`
+    /// After executing your StoreKit purchae code, you must call `purchaseCompletedHandler`
     /// for accurate statistics.
     ///
     /// Example:
@@ -318,6 +318,26 @@ extension View {
         return self.modifier(HandlePurchaseModifier(handler: handler))
     }
 
+    /// Use this method if you wish to execute your own StoreKit restore purchases logic,
+    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
+    /// confiugured with `finishTransactions` set to `false`. This is typically used
+    /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
+    ///
+    /// After executing your StoreKit purchae code, you must call `purchaseRestoreHandler`.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .handleRestore { purchaseRestoreHandler in
+    ///        var success: Bool = false
+    ///        var error: Error? = nil
+    ///
+    ///        // Manually call StoreKit purchasing logic
+    ///        // and update success and error
+    ///
+    ///        purchaseRestoreHandler(success, error)
+    ///     }
+    /// ```
     public func handleRestore(
         _ handler: @escaping HandleRestoreHandler
     ) -> some View {
