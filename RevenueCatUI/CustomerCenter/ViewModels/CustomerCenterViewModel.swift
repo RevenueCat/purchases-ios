@@ -15,6 +15,14 @@ class CustomerCenterViewModel: ObservableObject {
     var hasSubscriptions: Bool = false
     @Published
     var subscriptionsAreFromApple: Bool = false
+    @Published
+    var state: State {
+        didSet {
+            if case let .error(stateError) = state {
+                self.error = stateError
+            }
+        }
+    }
 
     var isLoaded: Bool {
         if case .notLoaded = state {
@@ -32,14 +40,6 @@ class CustomerCenterViewModel: ObservableObject {
     }
 
     private var error: Error?
-
-    private(set) var state: State {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
 
     init() {
         self.state = .notLoaded
