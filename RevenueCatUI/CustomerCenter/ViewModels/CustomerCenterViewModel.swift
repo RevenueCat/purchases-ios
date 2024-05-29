@@ -14,7 +14,7 @@ class CustomerCenterViewModel: ObservableObject {
     @Published
     var hasSubscriptions: Bool = false
     @Published
-    var areSubscriptionsFromApple: Bool = false
+    var subscriptionsAreFromApple: Bool = false
 
     var isLoaded: Bool {
         if case .notLoaded = state {
@@ -47,7 +47,7 @@ class CustomerCenterViewModel: ObservableObject {
 
     init(hasSubscriptions: Bool = false, areSubscriptionsFromApple: Bool = false) {
         self.hasSubscriptions = hasSubscriptions
-        self.areSubscriptionsFromApple = areSubscriptionsFromApple
+        self.subscriptionsAreFromApple = areSubscriptionsFromApple
         self.state = .success
     }
 
@@ -56,11 +56,11 @@ class CustomerCenterViewModel: ObservableObject {
             let customerInfo = try await Purchases.shared.customerInfo()
             self.hasSubscriptions = customerInfo.activeSubscriptions.count > 0
             guard let firstActiveEntitlementStore = customerInfo.entitlements.active.first?.value.store else {
-                self.areSubscriptionsFromApple = false
+                self.subscriptionsAreFromApple = false
                 return
             }
 
-            self.areSubscriptionsFromApple =
+            self.subscriptionsAreFromApple =
             firstActiveEntitlementStore == .appStore || firstActiveEntitlementStore == .macAppStore
         } catch {
             self.state = .error(error)
