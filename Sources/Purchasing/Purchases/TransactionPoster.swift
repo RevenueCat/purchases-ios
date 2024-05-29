@@ -243,6 +243,7 @@ private extension TransactionPoster {
         }
     }
 
+    // swiftlint:disable function_parameter_count
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
                      receipt: EncodedAppleReceipt,
