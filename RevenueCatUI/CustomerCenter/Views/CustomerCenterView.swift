@@ -13,8 +13,6 @@ struct CustomerCenterView: View {
 
     @StateObject private var viewModel = CustomerCenterViewModel()
 
-    init() { }
-
     init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
     }
