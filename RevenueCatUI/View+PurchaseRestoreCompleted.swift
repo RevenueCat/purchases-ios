@@ -49,6 +49,13 @@ public typealias HandlePurchaseHandler = @MainActor @Sendable (
     ) -> Void
 ) -> Void
 
+public typealias HandleRestoreHandler = @MainActor @Sendable (
+    _ purchaseRestoreHandler: @escaping (
+        _ userCancelled: Bool,
+        _ error: Error?
+    ) -> Void
+) -> Void
+
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
 
@@ -310,6 +317,12 @@ extension View {
     ) -> some View {
         return self.modifier(HandlePurchaseModifier(handler: handler))
     }
+
+    public func handleRestore(
+        _ handler: @escaping HandleRestoreHandler
+    ) -> some View {
+        return self.modifier(HandleRestoreModifier(handler: handler))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -386,6 +399,26 @@ private struct HandlePurchaseModifier: ViewModifier {
             .onPreferenceChange(HandlePurchasePreferenceKey.self) { data in
                 if let storeProduct = data?.storeProduct, let callback = data?.callback {
                     self.handler(storeProduct, callback)
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct HandleRestoreModifier: ViewModifier {
+
+    let handler: HandleRestoreHandler
+
+    init(handler: @escaping HandleRestoreHandler) {
+        self.handler = handler
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(HandleRestorePreferenceKey.self) { result in
+                if let callback = result?.callback {
+                    self.handler(callback)
                 }
             }
     }
