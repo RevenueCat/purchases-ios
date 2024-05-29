@@ -70,7 +70,7 @@ class StoreTransactionTests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2DetailsWrapCorrectly() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let sk2Transaction = try await self.createTransactionWithPurchase()
         let jwsRepresentation = UUID().uuidString

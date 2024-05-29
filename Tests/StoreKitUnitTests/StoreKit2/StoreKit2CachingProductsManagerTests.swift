@@ -26,7 +26,7 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let systemInfo = MockSystemInfo(finishTransactions: false)
 
