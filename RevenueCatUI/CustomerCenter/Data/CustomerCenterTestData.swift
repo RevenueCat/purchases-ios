@@ -70,7 +70,7 @@ enum CustomerCenterTestData {
             )
         ],
         title: CustomerCenterData.LocalizedString(en_US: "How can we help?"),
-        supportEmail: "ryan@revenuecat.com",
+        supportEmail: "support@revenuecat.com",
         appearance: CustomerCenterData.Appearance(
             mode: "SYSTEM",
             light: "#000000",
