@@ -124,6 +124,7 @@ extension PurchaseHandler {
 
     @MainActor
     func performPurchase(package: Package) async throws -> PurchaseResultData {
+        Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
@@ -210,6 +211,7 @@ extension PurchaseHandler {
     /// This allows the UI to display an alert before dismissing the paywall.
     @MainActor
     func performRestorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+        Logger.debug(Strings.executing_restore_logic)
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
@@ -233,6 +235,8 @@ extension PurchaseHandler {
 
     @MainActor
     func performDeveloperRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
+        Logger.debug(Strings.executing_external_restore_logic)
+
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
