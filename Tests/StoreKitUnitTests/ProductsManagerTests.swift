@@ -36,6 +36,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsWithIdentifiersSK2() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
