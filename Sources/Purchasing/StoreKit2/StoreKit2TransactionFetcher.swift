@@ -31,6 +31,12 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? { get async }
 
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    var appTransactionJWS: String? { get async }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func appTransactionJWS(_ completionHandler: @escaping (String?) -> Void)
+
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -99,6 +105,19 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         )
     }
 
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    var appTransactionJWS: String? {
+        get async {
+            return try? await AppTransaction.shared.jwsRepresentation
+        }
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
+        Async.call(with: completion) {
+            try? await AppTransaction.shared.jwsRepresentation
+        }
+    }
 }
 
 // MARK: -
