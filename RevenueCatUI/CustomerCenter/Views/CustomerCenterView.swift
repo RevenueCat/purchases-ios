@@ -50,7 +50,7 @@ private extension CustomerCenterView {
     @ViewBuilder
     func destinationView() -> some View {
         if viewModel.hasSubscriptions {
-            if viewModel.areSubscriptionsFromApple {
+            if viewModel.subscriptionsAreFromApple {
                 ManageSubscriptionsView()
             } else {
                 WrongPlatformView()
@@ -70,7 +70,7 @@ private extension CustomerCenterView {
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {
-       let viewModel = CustomerCenterViewModel(hasSubscriptions: false, areSubscriptionsFromApple: false)
+       let viewModel = CustomerCenterViewModel(hasSubscriptions: false, subscriptionsAreFromApple: false)
        CustomerCenterView(viewModel: viewModel)
    }
 
