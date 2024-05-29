@@ -40,7 +40,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
     }
 
     func testFetchProductsWithIdentifiersSK2() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+        guard #available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
@@ -92,7 +92,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
     }
 
     func testFetchCachedSK2Products() throws {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else {
+        guard #available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *) else {
             throw XCTSkip("Required API is not available for this test.")
         }
 
