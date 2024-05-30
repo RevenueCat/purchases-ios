@@ -103,11 +103,13 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         )
     }
 
-    /// A computed property that retrieves the JWS (JSON Web Signature) representation of the app transaction asynchronously.
+    /// A computed property that retrieves the JWS (JSON Web Signature) representation 
+    /// of the app transaction asynchronously.
     ///
     /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil`.
     ///
-    /// - Returns: A `String` containing the JWS representation of the app transaction, or `nil` if the feature is unavailable on the current platform version.
+    /// - Returns: A `String` containing the JWS representation of the app transaction, 
+    /// or `nil` if the feature is unavailable on the current platform version.
     var appTransactionJWS: String? {
         get async {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {

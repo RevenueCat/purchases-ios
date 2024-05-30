@@ -1114,24 +1114,28 @@ private extension PurchasesOrchestrator {
         self.attribution.unsyncedAdServicesToken { adServicesToken in
             _ = Task<Void, Never> {
                 let transaction = await self.transactionFetcher.firstVerifiedTransaction
-                guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
-                    self.customerInfoManager.customerInfo(appUserID: currentAppUserID,
-                                                          fetchPolicy: .cachedOrFetched) { result in
-                        self.operationDispatcher.dispatchOnMainThread {
-                            completion?(result.mapError(\.asPurchasesError))
-                        }
+                let appTransactionJWS = await self.transactionFetcher.appTransactionJWS
+
+                guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation else {
+                    // No receipt is found, just post the AppTransaction.
+                    self.backend.post(receipt: .empty,
+                                      productData: nil,
+                                      transactionData: .init(appUserID: self.appUserID,
+                                                             source: .init(isRestore: true, 
+                                                                           initiationSource: .restore)),
+                                      observerMode: self.observerMode,
+                                      appTransaction: appTransactionJWS) { result in
+
+                        self.handleReceiptPost(result: result,
+                                               transactionData: nil,
+                                               subscriberAttributes: unsyncedAttributes,
+                                               adServicesToken: adServicesToken,
+                                               completion: completion)
                     }
                     return
                 }
 
                 let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
-
-                let appTransactionJWS: String?
-                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                    appTransactionJWS = await self.transactionFetcher.appTransactionJWS
-                } else {
-                    appTransactionJWS = nil
-                }
 
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
@@ -1159,7 +1163,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleReceiptPost(result: Result<CustomerInfo, BackendError>,
-                           transactionData: PurchasedTransactionData,
+                           transactionData: PurchasedTransactionData?,
                            subscriberAttributes: SubscriberAttribute.Dictionary,
                            adServicesToken: String?,
                            completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)?) {
@@ -1178,7 +1182,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handlePostReceiptResult(_ result: Result<CustomerInfo, BackendError>,
-                                 transactionData: PurchasedTransactionData,
+                                 transactionData: PurchasedTransactionData?,
                                  subscriberAttributes: SubscriberAttribute.Dictionary,
                                  adServicesToken: String?) {
         switch result {
@@ -1187,7 +1191,7 @@ private extension PurchasesOrchestrator {
 
         case .failure:
             // Cache paywall again in case purchase is retried.
-            if let paywall = transactionData.presentedPaywall {
+            if let paywall = transactionData?.presentedPaywall {
                 self.cachePresentedPaywall(paywall)
             }
         }
