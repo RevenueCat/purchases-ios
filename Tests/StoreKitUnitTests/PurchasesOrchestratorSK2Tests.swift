@@ -24,6 +24,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     override func setUp() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try await super.setUp()
     }
 
     // MARK: - StoreFront Changes
