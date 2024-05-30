@@ -876,6 +876,16 @@ platform :ios do
     update_snapshots_commit(new_hash)
   end
 
+  lane :deploy_to_spm do
+    source_repo = ENV["CIRCLE_REPOSITORY_URL"]
+    destination_repo = source_repo.sub(/\.git\z/, "-spm3.git")
+  
+    git_clone_and_push(
+      source_repo: source_repo,
+      destination_repo: destination_repo
+    )
+  end
+
   desc "Create or delete sandbox testers"
   lane :sandbox_testers do
     Spaceship::ConnectAPI.login(use_portal: false)
