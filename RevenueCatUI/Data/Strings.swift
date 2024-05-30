@@ -105,8 +105,9 @@ extension Strings: CustomStringConvertible {
             return "Setting restored customer info"
 
         case .executing_external_purchase_logic:
-            return "Will execute custom StoreKit purchase logic provided by the SDK adopter. " +
-            "No StoreKit purchasing logic will be performed by RevenueCat."
+            return "Will execute custom StoreKit purchase logic provided by yourapp. " +
+            "No StoreKit purchasing logic will be performed by RevenueCat. " +
+            "You must use `.handlePurchase` on your `PaywallView`"
 
         case .executing_purchase_logic:
             return "Will execute purchase logic provided by RevenueCat."
@@ -115,8 +116,9 @@ extension Strings: CustomStringConvertible {
             return "Will execute restore purchases logic provided by RevenueCat."
 
         case .executing_external_restore_logic:
-            return "Will execute custom StoreKit restore purchases logic provided by the SDK adopter. " +
-            "No StoreKit restore purchases logic will be performed by RevenueCat."
+            return "Will execute custom StoreKit restore purchases logic provided by your app. " +
+            "No StoreKit restore purchases logic will be performed by RevenueCat. " +
+            "You must use `.handleRestorePurchases` on your `PaywallView`"
         }
     }
 
