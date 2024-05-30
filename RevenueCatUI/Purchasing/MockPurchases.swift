@@ -30,7 +30,7 @@ final class MockPurchases: PaywallPurchasesType {
     private let trackEventBlock: TrackEventBlock
     private let _finishTransactions: Bool
 
-    var finishTransactions: Bool {
+    var purchasesAreCompletedBy: Bool {
         get { return _finishTransactions }
         set { _ = newValue }
     }

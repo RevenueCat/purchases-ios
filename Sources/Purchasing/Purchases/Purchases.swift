@@ -228,7 +228,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @objc public let attribution: Attribution
 
+
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead")
     @objc public var finishTransactions: Bool {
+        get { self.systemInfo.finishTransactions }
+        set { self.systemInfo.finishTransactions = newValue }
+    }
+
+    @objc public var purchasesAreCompletedBy: Bool {
         get { self.systemInfo.finishTransactions }
         set { self.systemInfo.finishTransactions = newValue }
     }

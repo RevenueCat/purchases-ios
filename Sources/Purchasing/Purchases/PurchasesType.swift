@@ -37,7 +37,10 @@ public protocol PurchasesType: AnyObject {
      * will turn up every time the app is opened.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead")
     var finishTransactions: Bool { get set }
+
+    var purchasesAreCompletedBy: Bool { get set }
 
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and

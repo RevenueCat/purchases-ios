@@ -115,7 +115,7 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
-        if self.purchases.finishTransactions {
+        if self.purchases.purchasesAreCompletedBy {
             return try await performPurchase(package: package)
         } else {
             return try await performExternalPurchaseLogic(package: package)
@@ -189,7 +189,7 @@ extension PurchaseHandler {
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
-        if self.purchases.finishTransactions {
+        if self.purchases.purchasesAreCompletedBy {
             return try await performRestorePurchases()
         } else {
             return try await performExternalRestoreLogic()
@@ -352,7 +352,7 @@ private extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
-    var finishTransactions: Bool {
+    var purchasesAreCompletedBy: Bool {
         get { return false }
         set { _ = newValue }
     }
