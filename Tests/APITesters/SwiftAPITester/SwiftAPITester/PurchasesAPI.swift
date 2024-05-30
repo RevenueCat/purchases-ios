@@ -19,7 +19,7 @@ func checkPurchasesAPI() {
     let purch = checkConfigure()!
 
     // initializers
-    let purchasesAreCompletedBy: Bool = purch.purchasesAreCompletedBy
+    let purchasesAreCompletedBy: PurchasesAreCompletedBy = purch.purchasesAreCompletedBy
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
