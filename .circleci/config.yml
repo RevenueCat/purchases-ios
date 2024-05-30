@@ -707,8 +707,6 @@ jobs:
 
   run-test-ios-13:
     <<: *base-job
-    # M1 unsupported
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies:
@@ -724,7 +722,7 @@ jobs:
           command: bundle exec fastlane test_ios
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 (13.7)
+            SCAN_DEVICE: iPhone 11 (13.7)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
@@ -1173,5 +1171,5 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - run-test-ios-13:
-          xcode_version: '15.2'
+          xcode_version: '14.2.0'
           install_swiftlint: false
