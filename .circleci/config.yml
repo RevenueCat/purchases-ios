@@ -1159,9 +1159,6 @@ jobs:
             git push --tags
 
   deploy-to-spm-fastlane:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
     steps:
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
