@@ -19,12 +19,12 @@ func checkPurchasesAPI() {
     let purch = checkConfigure()!
 
     // initializers
-    let finishTransactions: Bool = purch.finishTransactions
+    let purchasesAreCompletedBy: Bool = purch.purchasesAreCompletedBy
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
 
-    print(finishTransactions, delegate!, appUserID, isAnonymous)
+    print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
     checkStaticMethods()
     checkIdentity(purchases: purch)
