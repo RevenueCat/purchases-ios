@@ -101,18 +101,17 @@ struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
     private(set) var viewModel: ManageSubscriptionsViewModel
+
     let openURL: OpenURLAction
-    @State
-    private var showRestoreAlert: Bool = false
 
     var body: some View {
         VStack(spacing: 16) {
             if let configuration = viewModel.configuration {
                 ForEach(configuration.paths, id: \.id) { path in
                     Button(path.title.en_US) {
-                        handleAction(for: path)
+                        viewModel.handleAction(for: path)
                     }
-                    .restorePurchasesAlert(isPresented: self.$showRestoreAlert)
+                    .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
                     .buttonStyle(ManageSubscriptionsButtonStyle())
                 }
             }
@@ -123,38 +122,6 @@ struct ManageSubscriptionsButtonsView: View {
                 }
             }
             .padding()
-        }
-    }
-
-    private func handleAction(for path: CustomerCenterData.HelpPath) {
-        switch path.type {
-        case .missingPurchase:
-            self.showRestoreAlert = true
-        case .refundRequest:
-            Task {
-                guard let subscriptionInformation = self.viewModel.subscriptionInformation else { return }
-                let status = try await Purchases.shared.beginRefundRequest(
-                    forProduct: subscriptionInformation.productIdentifier
-                )
-                switch status {
-                case .error:
-                    self.viewModel.refundRequestStatus = "Error when requesting refund, try again"
-                case .success:
-                    self.viewModel.refundRequestStatus = "Refund granted successfully!"
-                case .userCancelled:
-                    self.viewModel.refundRequestStatus = "Refund canceled"
-                }
-            }
-        case .changePlans:
-            Task {
-                try await Purchases.shared.showManageSubscriptions()
-            }
-        case .cancel:
-            Task {
-                try await Purchases.shared.showManageSubscriptions()
-            }
-        default:
-            break
         }
     }
 
