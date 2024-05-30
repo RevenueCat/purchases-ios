@@ -126,6 +126,12 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    var finishTransactions: Bool {
+        get { self.unimplemented() }
+        // swiftlint:disable:next unused_setter_value
+        set { self.unimplemented() }
+    }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { self.unimplemented() }
         // swiftlint:disable:next unused_setter_value
