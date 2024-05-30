@@ -40,7 +40,7 @@ public protocol PurchasesType: AnyObject {
     @available(*, deprecated, message: "Use purchasesAreCompletedBy instead")
     var finishTransactions: Bool { get set }
 
-    var purchasesAreCompletedBy: Bool { get set }
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
 
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
