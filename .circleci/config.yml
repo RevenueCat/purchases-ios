@@ -1158,6 +1158,15 @@ jobs:
             git push origin
             git push --tags
 
+  deploy-to-spm-fastlane:
+  docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: Clone purchases-ios and push to purchases-ios-spm
+          command: bundle exec fastlane deploy_to_spm
+
 workflows:
   version: 2
   generate-snapshot:
@@ -1340,6 +1349,9 @@ workflows:
   danger:
     jobs:
       - danger
+  spm-deploy:
+    jobs:
+      - deploy-to-spm-fastlane
   weekly-run-workflow:
     when:
       and:
