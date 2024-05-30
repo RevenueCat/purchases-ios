@@ -717,9 +717,12 @@ jobs:
           install_swiftlint: << parameters.install_swiftlint >>
       - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
+      - run: xcrun simctl list devices --json
+      - run: xcrun simctl list devices
       - install-runtime:
           runtime-name: iOS 13.7
-      - run: xcrun simctl create "iPhone 11 with iOS 13.7" "iPhone 11" iOS13.7
+      - run: xcrun simctl list devices --json
+      - run: xcrun simctl list devices
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
