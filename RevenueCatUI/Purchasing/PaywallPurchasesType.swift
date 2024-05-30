@@ -17,7 +17,7 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol PaywallPurchasesType: Sendable {
 
-    var purchasesAreCompletedBy: Bool { get set }
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
 
     @Sendable
     func purchase(package: Package) async throws -> PurchaseResultData

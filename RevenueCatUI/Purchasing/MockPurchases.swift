@@ -28,15 +28,15 @@ final class MockPurchases: PaywallPurchasesType {
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
-    private let _finishTransactions: Bool
+    private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
 
-    var purchasesAreCompletedBy: Bool {
-        get { return _finishTransactions }
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { return _purchasesAreCompletedBy }
         set { _ = newValue }
     }
 
     init(
-        finishTransactions: Bool = true,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
@@ -46,7 +46,7 @@ final class MockPurchases: PaywallPurchasesType {
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
         self.customerInfoBlock = customerInfo
-        self._finishTransactions = finishTransactions
+        self._purchasesAreCompletedBy = purchasesAreCompletedBy
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
