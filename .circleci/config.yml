@@ -1171,7 +1171,7 @@ workflows:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: '15.2'
+          xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-ios-12:
           xcode_version: '14.2.0'
