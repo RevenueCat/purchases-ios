@@ -293,7 +293,7 @@ extension View {
 
     /// Use this method if you wish to execute your own StoreKit purchase logic,
     /// skipping RevenueCat's. This method is **only** called if `Purchases` is
-    /// confiugured with `finishTransactions` set to `false`. This is typically used
+    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
     /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
     ///
     /// After executing your StoreKit purchae code, you must call `purchaseCompletedHandler`
@@ -320,7 +320,7 @@ extension View {
 
     /// Use this method if you wish to execute your own StoreKit restore purchases logic,
     /// skipping RevenueCat's. This method is **only** called if `Purchases` is
-    /// confiugured with `finishTransactions` set to `false`. This is typically used
+    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
     /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
     ///
     /// After executing your StoreKit purchae code, you must call `purchaseRestoreHandler`.
