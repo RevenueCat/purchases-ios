@@ -1121,7 +1121,7 @@ private extension PurchasesOrchestrator {
                     self.backend.post(receipt: .empty,
                                       productData: nil,
                                       transactionData: .init(appUserID: self.appUserID,
-                                                             source: .init(isRestore: true, 
+                                                             source: .init(isRestore: true,
                                                                            initiationSource: .restore)),
                                       observerMode: self.observerMode,
                                       appTransaction: appTransactionJWS) { result in
