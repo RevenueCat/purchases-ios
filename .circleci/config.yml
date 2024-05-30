@@ -1281,7 +1281,8 @@ workflows:
           <<: *release-branches
       - installation-tests-cocoapods:
           <<: *release-branches
-      - installation-tests-swift-package-manager
+      - installation-tests-swift-package-manager:
+          <<: *release-branches
       - installation-tests-custom-entitlement-computation-swift-package-manager:
           <<: *release-branches
       - installation-tests-receipt-parser:
