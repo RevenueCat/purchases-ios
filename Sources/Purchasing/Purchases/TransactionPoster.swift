@@ -106,21 +106,12 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                        self.transactionFetcher.appTransactionJWS { appTransaction in
-                            self.postReceipt(transaction: transaction,
-                                             purchasedTransactionData: data,
-                                             receipt: encodedReceipt,
-                                             product: product,
-                                             appTransaction: appTransaction,
-                                             completion: completion)
-                        }
-                    } else {
+                    self.transactionFetcher.appTransactionJWS { appTransaction in
                         self.postReceipt(transaction: transaction,
                                          purchasedTransactionData: data,
                                          receipt: encodedReceipt,
                                          product: product,
-                                         appTransaction: nil,
+                                         appTransaction: appTransaction,
                                          completion: completion)
                     }
                 }
