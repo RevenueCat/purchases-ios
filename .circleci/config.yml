@@ -710,13 +710,13 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
-      - run:
-          name: list simulatores
-          command: xcrun simctl list devices --json
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
