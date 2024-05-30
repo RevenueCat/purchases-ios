@@ -9,7 +9,7 @@ Sign up for a free RevenueCat account [here](https://www.revenuecat.com).
 This sample uses:
 
 - SwiftUI
-- Xcode 14.0
+- Xcode 15.3
 - iOS 15.0
 - Swift 5
 
@@ -20,9 +20,10 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 | Feature                          | Sample Project Location                   |
 | -------------------------------- | ----------------------------------------- |
 | 🕹 Configuring the *Purchases* SDK  | [Lifecycle/MagicWeatherApp.swift](Shared/Sources/Lifecycle/MagicWeatherApp.swift) |
-| 💰 Building a basic paywall         | [Views/PaywallView.swift](Shared/Sources/Views/PaywallView.swift) |
-| 🔐 Checking subscription status   | [Views/WeatherView.swift](Shared/Sources/Views/WeatherView.swift#L59) |
-| 🤑 Restoring transactions           | [Views/UserView.swift](Shared/Sources/Views/UserView.swift#L72) |
+| 💰 Display a basic paywall         | [Views/UserView.swift](Shared/Sources/Views/UserView.swift#92) |
+| 💰 Display a targeted paywall      | [Views/ContentView.swift](Shared/Sources/Views/ContentView.swift#46) |
+| 🔐 Checking subscription status    | [Views/WeatherView.swift](Shared/Sources/Views/WeatherView.swift#L63) |
+| 🤑 Restoring transactions           | [Views/UserView.swift](Shared/Sources/Views/UserView.swift#L82) |
 | 👥 Identifying the user             | [ViewModels/UserViewModel.swift](Shared/Sources/ViewModels/UserViewModel.swift) |
 | 🚪 Logging out the user             | [ViewModels/UserViewModel.swift](Shared/Sources/ViewModels/UserViewModel.swift) |
 
@@ -40,6 +41,7 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
     - Attach the product to a [package](https://docs.revenuecat.com/docs/entitlements#adding-packages) (e.g. `Annual`) inside an [offering](https://docs.revenuecat.com/docs/entitlements#creating-an-offering) (e.g. `sale` or `default`).
 - If you're testing on a simulator instead of a physical device, be sure to set up your [StoreKit configuration files](https://docs.revenuecat.com/docs/apple-app-store#ios-14-only-testing-on-the-simulator).
 - Get your [API key](https://docs.revenuecat.com/docs/authentication#obtaining-api-keys) from your RevenueCat project.
+- Create a [Paywall](https://www.revenuecat.com/docs/tools/paywalls) for your default offering.
 
 ### Steps to Run
 1. Open the file `Magic Weather SwiftUI.xcworkspace` in Xcode.
