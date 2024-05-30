@@ -134,6 +134,9 @@ extension PostReceiptDataOperation {
         /// - Note: this is only used for the backend to disambiguate receipts created in `SKTestSession`s.
         let testReceiptIdentifier: String?
 
+        /// The [AppTransaction](https://developer.apple.com/documentation/storekit/apptransaction) JWS token
+        /// retrieved from StoreKit 2.
+        let appTransaction: String?
     }
 
     struct Paywall {
@@ -162,7 +165,8 @@ extension PostReceiptDataOperation.PostData {
         productData: ProductRequestData?,
         receipt: EncodedAppleReceipt,
         observerMode: Bool,
-        testReceiptIdentifier: String?
+        testReceiptIdentifier: String?,
+        appTransaction: String?
     ) {
         self.init(
             appUserID: data.appUserID,
@@ -179,7 +183,8 @@ extension PostReceiptDataOperation.PostData {
             initiationSource: data.source.initiationSource,
             subscriberAttributesByKey: data.unsyncedAttributes,
             aadAttributionToken: data.aadAttributionToken,
-            testReceiptIdentifier: testReceiptIdentifier
+            testReceiptIdentifier: testReceiptIdentifier,
+            appTransaction: appTransaction
         )
     }
 
@@ -257,6 +262,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case appliedTargetingRule
         case paywall
         case testReceiptIdentifier = "test_receipt_identifier"
+        case appTransaction = "app_transaction"
 
     }
 
@@ -273,6 +279,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
             try productData.encode(to: encoder)
         }
 
+        try container.encodeIfPresent(self.appTransaction, forKey: .appTransaction)
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)

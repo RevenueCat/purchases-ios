@@ -22,7 +22,7 @@ class StorefrontTests: StoreKitConfigTestCase {
     @MainActor
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCurrentStorefrontSK2() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let expectedStorefront = try await XCTAsyncUnwrap(await StoreKit.Storefront.current)
         let currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)

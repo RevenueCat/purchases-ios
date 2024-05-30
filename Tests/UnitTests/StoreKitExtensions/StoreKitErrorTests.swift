@@ -22,7 +22,7 @@ class StoreKitErrorTests: BaseErrorTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
     func testErrorUtilsCreation() {

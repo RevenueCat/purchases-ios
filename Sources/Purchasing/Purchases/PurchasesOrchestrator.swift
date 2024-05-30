@@ -1126,6 +1126,13 @@ private extension PurchasesOrchestrator {
 
                 let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
+                let appTransactionJWS: String?
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                    appTransactionJWS = await self.transactionFetcher.appTransactionJWS
+                } else {
+                    appTransactionJWS = nil
+                }
+
                 self.createProductRequestData(with: transaction.productIdentifier) { productRequestData in
                     let transactionData: PurchasedTransactionData = .init(
                         appUserID: currentAppUserID,
@@ -1138,7 +1145,8 @@ private extension PurchasesOrchestrator {
                     self.backend.post(receipt: receipt,
                                       productData: productRequestData,
                                       transactionData: transactionData,
-                                      observerMode: self.observerMode) { result in
+                                      observerMode: self.observerMode,
+                                      appTransaction: appTransactionJWS) { result in
                         self.handleReceiptPost(result: result,
                                                transactionData: transactionData,
                                                subscriberAttributes: unsyncedAttributes,

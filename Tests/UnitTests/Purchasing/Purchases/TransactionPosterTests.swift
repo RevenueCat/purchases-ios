@@ -101,7 +101,7 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsJWS() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
@@ -130,7 +130,7 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsSK2Receipt() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
