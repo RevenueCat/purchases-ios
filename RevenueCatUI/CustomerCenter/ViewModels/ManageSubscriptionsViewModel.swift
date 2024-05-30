@@ -24,6 +24,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var refundRequestStatus: String?
     @Published
     var configuration: CustomerCenterData?
+    @Published
+    var showRestoreAlert: Bool = false
     @Published var state: State {
         didSet {
             if case let .error(stateError) = state {
@@ -80,6 +82,38 @@ class ManageSubscriptionsViewModel: ObservableObject {
             )
         } catch {
             self.state = .error(error)
+        }
+    }
+
+    func handleAction(for path: CustomerCenterData.HelpPath) {
+        switch path.type {
+        case .missingPurchase:
+            self.showRestoreAlert = true
+        case .refundRequest:
+            Task {
+                guard let subscriptionInformation = self.subscriptionInformation else { return }
+                let status = try await Purchases.shared.beginRefundRequest(
+                    forProduct: subscriptionInformation.productIdentifier
+                )
+                switch status {
+                case .error:
+                    self.refundRequestStatus = "Error when requesting refund, try again"
+                case .success:
+                    self.refundRequestStatus = "Refund granted successfully!"
+                case .userCancelled:
+                    self.refundRequestStatus = "Refund canceled"
+                }
+            }
+        case .changePlans:
+            Task {
+                try await Purchases.shared.showManageSubscriptions()
+            }
+        case .cancel:
+            Task {
+                try await Purchases.shared.showManageSubscriptions()
+            }
+        default:
+            break
         }
     }
 
