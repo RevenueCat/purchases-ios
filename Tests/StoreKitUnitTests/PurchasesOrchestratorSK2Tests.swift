@@ -629,15 +629,26 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
-    func testSyncPurchasesDoesntPostReceiptAndReturnsCustomerInfoIfNoTransaction() async throws {
+    func testSyncPurchasesPostsAppTransactionAndReturnsCustomerInfoIfNoTransaction() async throws {
+        let appTransactionJWS = "some_jws"
+
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
-        self.customerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
+        self.mockTransactionFetcher.stubbedAppTransactionJWS = appTransactionJWS
+        self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
         let customerInfo = try await self.orchestrator.syncPurchases(receiptRefreshPolicy: .always,
-                                                                     isRestore: false,
-                                                                     initiationSource: .purchase)
-        expect(self.backend.invokedPostReceiptData).to(beFalse())
-        expect(self.customerInfoManager.invokedCustomerInfo).to(beTrue())
+                                                                     isRestore: true,
+                                                                     initiationSource: .restore)
+
+        expect(self.backend.invokedPostReceiptData).to(beTrue())
+        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataParameters?.appTransaction) == appTransactionJWS
+        expect(self.backend.invokedPostReceiptDataParameters?.data) == .empty // No fetch_token
+        expect(
+            self.backend.invokedPostReceiptDataParameters?.transactionData.appUserID
+        ) == Self.mockUserID
+
+        expect(self.customerInfoManager.invokedCustomerInfo).to(beFalse())
         expect(customerInfo) == mockCustomerInfo
     }
 

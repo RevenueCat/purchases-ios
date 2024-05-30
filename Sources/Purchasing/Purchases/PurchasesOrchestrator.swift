@@ -1120,7 +1120,7 @@ private extension PurchasesOrchestrator {
                     // No receipt is found, just post the AppTransaction.
                     self.backend.post(receipt: .empty,
                                       productData: nil,
-                                      transactionData: .init(appUserID: self.appUserID,
+                                      transactionData: .init(appUserID: currentAppUserID,
                                                              source: .init(isRestore: true,
                                                                            initiationSource: .restore)),
                                       observerMode: self.observerMode,
