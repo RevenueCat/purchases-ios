@@ -1160,12 +1160,12 @@ jobs:
 
   deploy-to-spm-fastlane:
     docker:
-        - image: cimg/base:stable
-      resource_class: small
-      steps:
-        - run:
-            name: Clone purchases-ios and push to purchases-ios-spm
-            command: bundle exec fastlane deploy_to_spm
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run:
+          name: Clone purchases-ios and push to purchases-ios-spm
+          command: bundle exec fastlane deploy_to_spm
 
 workflows:
   version: 2
