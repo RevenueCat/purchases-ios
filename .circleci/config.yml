@@ -26,7 +26,7 @@ aliases:
     parameters:
       xcode_version:
         type: string
-        default: '15.3'
+        default: '15.4'
       install_swiftlint:
         type: boolean
         default: true
@@ -77,6 +77,8 @@ commands:
     steps:
       - install-brew-dependency:
           dependency_name: 'xcodes'
+      - install-brew-dependency:
+          dependency_name: 'aria2'
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
@@ -707,15 +709,20 @@ jobs:
 
   run-test-ios-13:
     <<: *base-job
-    # M1 unsupported
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
+      - run: xcrun simctl list devices --json
+      - run: xcrun simctl list devices
       - install-runtime:
           runtime-name: iOS 13.7
+      - run: xcrun simctl list devices --json
+      - run: xcrun simctl list devices
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -1160,39 +1167,6 @@ jobs:
 
 workflows:
   version: 2
-  generate-snapshot:
-    when: << pipeline.parameters.generate_snapshots >>
-    jobs:
-      - run-test-ios-17:
-          xcode_version: '15.2'
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - run-test-ios-14:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-      - run-test-ios-13:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-      - run-test-macos
-
-  generate_revenuecatui_snapshots:
-    when: << pipeline.parameters.generate_revenuecatui_snapshots >>
-    jobs:
-      - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
 
   build-test:
     when:
@@ -1202,163 +1176,5 @@ workflows:
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
-      - lint
-      - spm-release-build-xcode-14:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - spm-release-build-xcode-15:
-          xcode_version: '15.2'
-      - spm-xcode-14-1:
-          xcode_version: '14.1.0'
-          install_swiftlint: false
-      - spm-custom-entitlement-computation-build
-      - spm-receipt-parser
-      - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
-      - spm-revenuecat-ui-watchos
-      - run-test-macos
-      - run-test-ios-17:
-          xcode_version: '15.2'
-      - run-test-ios-16:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - run-test-ios-15:
-          xcode_version: '14.3.0'
-          install_swiftlint: false
-      - run-test-watchos
-      - run-test-tvos
-      # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
-      # See https://circleci.com/docs/using-macos/#supported-xcode-versions
-      - run-test-ios-14:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: '14.2.0'
           install_swiftlint: false
-          <<: *release-branches-and-main
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches-and-main
-      - build-tv-watch-and-macos
-      - build-visionos
-      - backend-integration-tests-SK1:
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
-      - backend-integration-tests-SK2:
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
-      - backend-integration-tests-other:
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
-      - backend-integration-tests-offline:
-          # These tests are flaky due to FB13133387 so we don't want the noise in every PR
-          <<: *release-branches-and-main
-      - backend-integration-tests-custom-entitlements:
-          filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
-
-  deploy:
-    when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - release-checks:
-          <<: *release-branches
-      - installation-tests-cocoapods:
-          <<: *release-branches
-      - installation-tests-swift-package-manager:
-          <<: *release-branches
-      - installation-tests-custom-entitlement-computation-swift-package-manager:
-          <<: *release-branches
-      - installation-tests-receipt-parser:
-          <<: *release-branches
-      - installation-tests-carthage:
-          <<: *release-branches
-      - installation-tests-xcode-direct-integration:
-          <<: *release-branches
-      - hold:
-          type: approval
-          requires:
-            - release-checks
-            - installation-tests-cocoapods
-            - installation-tests-swift-package-manager
-            - installation-tests-custom-entitlement-computation-swift-package-manager
-            - installation-tests-carthage
-            - installation-tests-xcode-direct-integration
-            - installation-tests-receipt-parser
-          <<: *release-branches
-      - tag-release-branch:
-          requires:
-            - hold
-          <<: *release-branches
-      - make-release:
-          <<: *release-tags
-      - push-revenuecat-pod:
-          requires:
-            - make-release
-          <<: *release-tags
-      - push-revenuecatui-pod:
-          requires:
-            - make-release
-            - push-revenuecat-pod
-          <<: *release-tags
-      - deploy-to-spm:
-          requires:
-            - make-release
-          <<: *release-tags
-      - docs-deploy:
-          <<: *release-tags
-      - deploy-purchase-tester:
-          <<: *release-tags
-      - notify-on-non-patch-release-branches:
-          requires:
-            - make-release
-          <<: *non-patch-release-branches
-          context: slack-secrets
-  snapshot-bump:
-    when:
-      not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-    jobs:
-      - prepare-next-version:
-          <<: *only-main-branch
-  danger:
-    jobs:
-      - danger
-  weekly-run-workflow:
-    when:
-      and:
-        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-        - equal: [ "release-train", << pipeline.schedule.name >> ]
-    jobs:
-      - release-train
-
-  daily-loadshedder-integration-tests:
-    when:
-      and:
-        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-        - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
-    jobs:
-      - loadshedder-integration-tests-v3
-      - integration-tests-all
-
-  manual-trigger-bump:
-    when:
-      equal: [ bump, << pipeline.parameters.action >> ]
-    jobs:
-      - release-train
