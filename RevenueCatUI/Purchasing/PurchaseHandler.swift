@@ -27,7 +27,7 @@ class PerformPurchaseInfo: Equatable {
         self.reportPurchaseResultCallback = reportPurchaseResult
     }
 
-    public func reportPurchaseResult(userCancelled: Bool, error: Error?) -> Void {
+    public func reportResult(userCancelled: Bool, error: Error?) -> Void {
         reportPurchaseResultCallback(userCancelled, error)
     }
 
@@ -46,7 +46,7 @@ public class RestoreResultReporter: Equatable {
         self.reportRestoreResultCallback = callback
     }
 
-    public func report(success: Bool, error: Error?) -> Void {
+    public func reportResult(success: Bool, error: Error?) -> Void {
         reportRestoreResultCallback(success, error)
     }
 
