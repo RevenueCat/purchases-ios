@@ -41,9 +41,9 @@ public protocol PurchasesType: AnyObject {
     var finishTransactions: Bool { get set }
 
     /** Whether transactions should be finished automatically. `.revenueCat` by default.
-     * - Warning: Setting this value to `.myApp` will prevent the SDK from finishing transactions.
-     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
-     * will turn up every time the app is opened.
+     * - Warning: Setting this value to `.myApp` will prevent the SDK from making purchaes and finishing transactions.
+     * In this case, you *must* perform all of this logic in your app. If using a `PaywallView`, use the modifier
+     * `.handlePurchaseAndRestore`.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
