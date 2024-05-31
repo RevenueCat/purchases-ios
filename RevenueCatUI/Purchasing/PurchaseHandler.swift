@@ -132,6 +132,8 @@ final class PurchaseHandler: ObservableObject {
         self.purchases = purchases
     }
 
+    /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
+    /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     public static func `default`() -> Self {
         return Purchases.isConfigured ? .init() : Self.notConfigured()
     }
