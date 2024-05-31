@@ -233,7 +233,7 @@ import Foundation
         /// Defaults to ``false``
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-        @objc internal func with(diagnosticsEnabled: Bool) -> Builder {
+        @objc public func with(diagnosticsEnabled: Bool) -> Builder {
             self.diagnosticsEnabled = diagnosticsEnabled
             return self
         }

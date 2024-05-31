@@ -46,6 +46,7 @@ public final class ConfiguredPurchases {
         let purchases = Purchases.configure(
             with: .builder(withAPIKey: apiKey)
                 .with(usesStoreKit2IfAvailable: useStoreKit2)
+                .with(diagnosticsEnabled: true)
                 .with(observerMode: observerMode)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
                 #if DEBUG
