@@ -190,7 +190,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
-    func testHandleExternalPurchase() throws {
+    func testHandleExternalPurchaseAndRestore() throws {
         var completed = false
         var customPurchaseCodeExecuted = false
 
@@ -200,10 +200,12 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handlePurchase { _, purchaseCompletedHandler in
-            purchaseCompletedHandler(false, nil)
+        .handlePurchaseAndRestore(performPurchase: { storeProduct, purchaseResultReporter in
+            purchaseResultReporter.reportResult(userCancelled: false, error: nil)
             customPurchaseCodeExecuted = true
-        }
+        }, performRestore: { restoreResultReporter in
+
+        })
         .addToHierarchy()
 
         Task {
@@ -225,10 +227,12 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handleRestorePurchases { purchaseRestoreHandler in
-            purchaseRestoreHandler(true, nil)
+        .handlePurchaseAndRestore(performPurchase: { storeProduct, purchaseResultReporter in
+
+        }, performRestore: { restoreResultReporter in
+            restoreResultReporter.reportResult(success: true, error: nil)
             customRestoreCodeExecuted = true
-        }
+        })
         .addToHierarchy()
 
         Task {
