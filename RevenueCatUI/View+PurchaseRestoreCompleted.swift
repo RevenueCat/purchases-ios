@@ -292,7 +292,7 @@ extension View {
     /// RevenueCat for experiments and growth tools only.
     ///
     /// After executing your StoreKit purchae code, you **must** communicate the result of your purchase
-    /// code by calling `reportPurchaseResult` and `reportRestoreResult` when your code
+    /// code by calling `reportResult`on the passed result reporter object when your code
     /// has finished executing. Failure to do so will result in undefined behavior.
     ///
     /// Example:
