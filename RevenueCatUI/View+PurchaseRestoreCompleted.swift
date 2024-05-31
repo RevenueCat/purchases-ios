@@ -299,21 +299,17 @@ extension View {
     /// ```swift
     /// PaywallView()
     ///     .handlePurchaseAndRestore(
-    ///         performPurchase: { storeProduct, reportPurchaseResult in
-    ///             var userDidCancel = false
-    ///             var error: Error?
+    ///         performPurchase: { storeProduct, purchaseResultReporter in
+    ///             // make purchase for `storeProduct`
     ///
-    ///             // your app's purchase logic
+    ///             // report result to RevenueCat
+    ///             purchaseResultReporter.reportResult(userCancelled: false, error: nil)
+    ///     }, performRestore: { restoreResultReporter in
+    ///             // restore purchases
     ///
-    ///             reportPurchaseResult(userDidCancel, error)
-    ///         }, performRestore: { reportRestoreResult in
-    ///             var success = false
-    ///             var error: Error?
-    ///
-    ///             // your app's restore logic
-    ///
-    ///             reportRestoreResult(success, error)
-    ///         })
+    ///             // report result to RevenueCat
+    ///             restoreResultReporter.reportResult(success: true, error: nil)
+    ///     })
     /// ```
     ///
     public func handlePurchaseAndRestore(
