@@ -1159,6 +1159,10 @@ jobs:
             git push --tags
 
   deploy-to-spm-fastlane:
+    docker:
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
     steps:
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
