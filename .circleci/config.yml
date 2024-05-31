@@ -1332,9 +1332,6 @@ workflows:
   danger:
     jobs:
       - danger
-  spm-deploy:
-    jobs:
-      - deploy-to-spm-fastlane
   weekly-run-workflow:
     when:
       and:
