@@ -1161,6 +1161,7 @@ jobs:
   deploy-to-spm-fastlane:
     <<: *base-job
     steps:
+      - checkout
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: bundle exec fastlane deploy_to_spm
