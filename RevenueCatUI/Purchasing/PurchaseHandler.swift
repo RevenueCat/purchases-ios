@@ -19,7 +19,7 @@ import SwiftUI
 
 class PerformPurchaseInfo: Equatable {
 
-    public let storeProduct: StoreProduct
+    let storeProduct: StoreProduct
     let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
     init(storeProduct: StoreProduct, reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
@@ -27,26 +27,30 @@ class PerformPurchaseInfo: Equatable {
         self.reportPurchaseResultCallback = reportPurchaseResult
     }
 
-    public func reportPurchaseResult2(userCancelled: Bool, error: Error?) -> Void {
+    public func reportPurchaseResult(userCancelled: Bool, error: Error?) -> Void {
         reportPurchaseResultCallback(userCancelled, error)
     }
 
-    public static func == (lhs: PerformPurchaseInfo, rhs: PerformPurchaseInfo) -> Bool {
+    public static func == (lhs: PurchaseResultReporter, rhs: PurchaseResultReporter) -> Bool {
         return lhs.storeProduct == rhs.storeProduct
     }
 
 }
 
 
-class PerformRestoreInfo: Equatable {
+public class RestoreResultReporter: Equatable {
 
-    let handleRestoreCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
+    let reportRestoreResultCallback: (_ success: Bool, _ error: Error?) -> Void
 
     init(callback: @escaping (Bool, Error?) -> Void) {
-        self.handleRestoreCallback = callback
+        self.reportRestoreResultCallback = callback
     }
 
-    static func == (lhs: PerformRestoreInfo, rhs: PerformRestoreInfo) -> Bool {
+    public func report(success: Bool, error: Error?) -> Void {
+        reportRestoreResultCallback(success, error)
+    }
+
+    public static func == (lhs: RestoreResultReporter, rhs: RestoreResultReporter) -> Bool {
         return lhs === rhs
     }
 
@@ -79,11 +83,11 @@ final class PurchaseHandler: ObservableObject {
 
     /// Information used to perform a purchase in the app (rather than in RevenueCat)
     @Published
-    fileprivate(set) var performPurchase: PerformPurchaseInfo?
+    fileprivate(set) var performPurchase: PurchaseResultReporter?
 
     /// Information used to perform restoring a purchase in the app (rather than in RevenueCat)
     @Published
-    fileprivate(set) var performRestore: PerformRestoreInfo?
+    fileprivate(set) var performRestore: RestoreResultReporter?
 
     /// Whether a restore is currently in progress
     @Published
@@ -180,7 +184,7 @@ extension PurchaseHandler {
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
-        self.performPurchase = PerformPurchaseInfo(storeProduct: package.storeProduct,
+        self.performPurchase = PurchaseResultReporter(storeProduct: package.storeProduct,
                                                    reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
@@ -256,7 +260,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
-            self.performRestore = PerformRestoreInfo(callback: self.reportExternalRestoreResult)
+            self.performRestore = RestoreResultReporter(callback: self.reportExternalRestoreResult)
         }
 
         self.startAction()
@@ -420,9 +424,9 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandlePurchasePreferenceKey: PreferenceKey {
 
-    static var defaultValue: PerformPurchaseInfo?
+    static var defaultValue: PurchaseResultReporter?
 
-    static func reduce(value: inout PerformPurchaseInfo?, nextValue: () -> PerformPurchaseInfo?) {
+    static func reduce(value: inout PurchaseResultReporter?, nextValue: () -> PurchaseResultReporter?) {
         value = nextValue()
     }
 
@@ -431,9 +435,9 @@ struct HandlePurchasePreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandleRestorePreferenceKey: PreferenceKey {
 
-    static var defaultValue: PerformRestoreInfo?
+    static var defaultValue: RestoreResultReporter?
 
-    static func reduce(value: inout PerformRestoreInfo?, nextValue: () -> PerformRestoreInfo?) {
+    static func reduce(value: inout RestoreResultReporter?, nextValue: () -> RestoreResultReporter?) {
         value = nextValue()
     }
 

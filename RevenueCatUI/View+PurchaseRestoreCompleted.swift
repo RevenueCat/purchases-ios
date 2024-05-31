@@ -41,15 +41,13 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
 /// A closure used for notifying that custom purchase logic has completed.
 public typealias PerformPurchase = @MainActor @Sendable (
-    _ reportPurchaseResult: PerformPurchaseInfo
+    _ storeProduct: StoreProduct,
+    _ purchaseResultReporter: PurchaseResultReporter
 ) -> Void
 
 /// A closure used for notifying that custom restore logic has completed.
 public typealias PerformRestore = @MainActor @Sendable (
-    _ reportRestoreResult: @escaping (
-        _ success: Bool,
-        _ error: Error?
-    ) -> Void
+    _ restoreResultReporter: RestoreResultReporter
 ) -> Void
 
 /// A closure used for notifying of failures during purchases or restores.
@@ -412,7 +410,7 @@ private struct HandlePurchaseModifier: ViewModifier {
         content
             .onPreferenceChange(HandlePurchasePreferenceKey.self) { performPurchaseInfo in
                 if let performPurchaseInfo {
-                    self.handler(performPurchaseInfo)
+                    self.handler(performPurchaseInfo.storeProduct, performPurchaseInfo)
                 }
             }
     }
@@ -426,9 +424,9 @@ private struct HandleRestoreModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(HandleRestorePreferenceKey.self) { callbackContainer in
-                if let callback = callbackContainer?.handleRestoreCallback {
-                    self.handler(callback)
+            .onPreferenceChange(HandleRestorePreferenceKey.self) { performRestoreInfo in
+                if let performRestoreInfo {
+                    self.handler(performRestoreInfo)
                 }
             }
     }
