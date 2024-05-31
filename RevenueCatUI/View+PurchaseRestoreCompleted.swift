@@ -294,8 +294,8 @@ extension View {
     /// Use this method if you wish to execute your own StoreKit purchase and restore logic,
     /// skipping RevenueCat's. This method is **only** called if `Purchases` is
     /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
-    /// when migrating from a direct StoreKit implementation to RevenueCat in stages, or when using
-    /// RevenueCat for experiments and growth tools.
+    /// when migrating from a direct StoreKit implementation to RevenueCat in stages, or if integrating
+    /// RevenueCat for experiments and growth tools only.
     ///
     /// After executing your StoreKit purchae code, you **must** communicate the result of your purchase
     /// code by calling `reportPurchaseResult` and `reportRestoreResult` when your code
