@@ -661,10 +661,6 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_watchos
           no_output_timeout: 5m
-          environment:
-            SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 9 (45mm) (10.4)
-            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
@@ -1231,7 +1227,8 @@ workflows:
       - run-test-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-      - run-test-watchos
+      - run-test-watchos:
+          xcode_version: '14.3.0'
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
@@ -1278,6 +1275,7 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
+          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
           <<: *release-branches
@@ -1307,6 +1305,7 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
+          xcode_version: '14.3.0'
           <<: *release-tags
       - push-revenuecat-pod:
           requires:
