@@ -61,6 +61,7 @@ public class RestoreResultReporter: Equatable {
         reportRestoreResultCallback(success, error)
     }
 
+    /// Returns true if objects are the same object (same memory address); false otherwise.
     public static func == (lhs: RestoreResultReporter, rhs: RestoreResultReporter) -> Bool {
         return lhs === rhs
     }
