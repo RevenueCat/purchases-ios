@@ -17,8 +17,22 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-typealias HandlePurchaseData = (storeProduct: StoreProduct,
-                                    callback: (_ userCancelled: Bool, _ error: Error?) -> Void)
+class PerformPurchaseInfo: Equatable {
+
+    let storeProduct: StoreProduct
+    let reportPurchaseResult: (_ userCancelled: Bool, _ error: Error?) -> Void
+
+    init(storeProduct: StoreProduct, reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
+        self.storeProduct = storeProduct
+        self.reportPurchaseResult = reportPurchaseResult
+    }
+
+    static func == (lhs: PerformPurchaseInfo, rhs: PerformPurchaseInfo) -> Bool {
+        return lhs.storeProduct == rhs.storeProduct
+    }
+
+}
+
 
 class PerformRestoreInfo: Equatable {
 
@@ -60,7 +74,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
     @Published
-    fileprivate(set) var handlePurchase: HandlePurchaseData?
+    fileprivate(set) var handlePurchase: PerformPurchaseInfo?
 
     @Published
     fileprivate(set) var handleRestore: PerformRestoreInfo?
@@ -161,7 +175,8 @@ extension PurchaseHandler {
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
-        self.handlePurchase = (package.storeProduct, self.completeExternalHandlePurchase)
+        self.handlePurchase = PerformPurchaseInfo(storeProduct: package.storeProduct,
+                                                  reportPurchaseResult: self.completeExternalHandlePurchase)
 
         self.startAction()
 
@@ -400,35 +415,9 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandlePurchasePreferenceKey: PreferenceKey {
 
-    typealias Callback = (_ userCancelled: Bool, _ error: Error?) -> Void
+    static var defaultValue: PerformPurchaseInfo?
 
-    struct PurchaseResult: Equatable {
-
-        static func == (
-            lhs: HandlePurchasePreferenceKey.PurchaseResult,
-            rhs: HandlePurchasePreferenceKey.PurchaseResult
-        ) -> Bool {
-            return lhs.storeProduct == rhs.storeProduct
-        }
-
-        var storeProduct: StoreProduct?
-        var callback: Callback?
-
-        init(data: HandlePurchaseData) {
-            self.storeProduct = data.storeProduct
-            self.callback = data.callback
-        }
-
-        init?(data: HandlePurchaseData?) {
-            guard let data else { return nil }
-            self.init(data: data)
-        }
-
-    }
-
-    static var defaultValue: PurchaseResult?
-
-    static func reduce(value: inout PurchaseResult?, nextValue: () -> PurchaseResult?) {
+    static func reduce(value: inout PerformPurchaseInfo?, nextValue: () -> PerformPurchaseInfo?) {
         value = nextValue()
     }
 

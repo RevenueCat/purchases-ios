@@ -415,7 +415,7 @@ private struct HandlePurchaseModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(HandlePurchasePreferenceKey.self) { data in
-                if let storeProduct = data?.storeProduct, let callback = data?.callback {
+                if let storeProduct = data?.storeProduct, let callback = data?.reportPurchaseResult {
                     self.handler(storeProduct, callback)
                 }
             }
