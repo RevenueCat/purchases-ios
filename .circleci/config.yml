@@ -1162,10 +1162,11 @@ jobs:
     <<: *base-job
     steps:
       - checkout
+      - install-bundle-dependencies
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: bundle exec fastlane deploy_to_spm
-
+            
 workflows:
   version: 2
   generate-snapshot:
