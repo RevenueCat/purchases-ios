@@ -103,11 +103,13 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         )
     }
 
-    /// A computed property that retrieves the JWS (JSON Web Signature) representation of the app transaction asynchronously.
+    /// A computed property that retrieves the JWS (JSON Web Signature) representation 
+    /// of the app transaction asynchronously.
     ///
     /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil`.
     ///
-    /// - Returns: A `String` containing the JWS representation of the app transaction, or `nil` if the feature is unavailable on the current platform version.
+    /// - Returns: A `String` containing the JWS representation of the app transaction, 
+    /// or `nil` if the feature is unavailable on the current platform version.
     var appTransactionJWS: String? {
         get async {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
@@ -121,11 +123,13 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
     /// Retrieves the JWS (JSON Web Signature) representation of the AppTransaction asynchronously and
     /// passes it to the provided completion handler.
     ///
-    /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil` through the completion handler.
+    /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil` through the 
+    /// completion handler.
     ///
     /// - Parameter completion: A closure that is called with the JWS representation of the app transaction, or `nil`
     /// if the feature is unavailable on the current platform version.
-    /// - Parameter result: A `String?` containing the JWS representation of the app transaction, or `nil` if unavailable.
+    /// - Parameter result: A `String?` containing the JWS representation of the app transaction, 
+    /// or `nil` if unavailable.
     func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
         Async.call(with: completion) {
             if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {

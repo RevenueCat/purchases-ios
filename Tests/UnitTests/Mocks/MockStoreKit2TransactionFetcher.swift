@@ -74,14 +74,12 @@ final class MockStoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         }
     }
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     var appTransactionJWS: String? {
         get async {
             return self.stubbedAppTransactionJWS
         }
     }
 
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
         completion(self.stubbedAppTransactionJWS)
     }
