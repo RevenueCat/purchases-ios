@@ -12,7 +12,8 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
     // SST requires iOS 13 starting from version 1.13.0
-    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0")),
+    .package(url: "https://github.com/realm/SwiftLint.git", .upToNextMinor(from: "0.55.0"))
 ]
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
@@ -50,7 +51,8 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting]),
+                swiftSettings: [visionOSSetting],
+                plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")]),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -60,7 +62,8 @@ let package = Package(
                 swiftSettings: [
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
-                ]),
+                ],
+                plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")]),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),
@@ -75,7 +78,8 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
-                ]),
+                ],
+                plugins: [.plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
