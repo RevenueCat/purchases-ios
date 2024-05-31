@@ -1164,6 +1164,7 @@ jobs:
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
+      - install-rubydocker-dependencies
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
           command: bundle exec fastlane deploy_to_spm
