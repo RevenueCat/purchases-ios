@@ -40,38 +40,21 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
 /// A closure used for notifying that custom purchase logic has completed.
-public typealias HandlePurchaseHandler = @MainActor @Sendable (
+public typealias PerformPurchase = @MainActor @Sendable (
     _ storeProduct: StoreProduct,
-    _ purchaseCompletedHandler: @escaping (
+    _ reportPurchaseResult: @escaping (
         _ userCancelled: Bool,
         _ error: Error?
     ) -> Void
 ) -> Void
 
 /// A closure used for notifying that custom restore logic has completed.
-public typealias HandleRestoreHandler = @MainActor @Sendable (
-    _ restorePurchasesCompletedHandler: @escaping (
+public typealias PerformRestore = @MainActor @Sendable (
+    _ reportRestoreResult: @escaping (
         _ success: Bool,
         _ error: Error?
     ) -> Void
 ) -> Void
-
-/// A closure used for notifying that custom purchase logic has completed.
-public typealias HandlePurchaseAndRestoreHandler = (
-    purchaseHandler: @MainActor @Sendable (
-        _ storeProduct: StoreProduct,
-        _ purchaseCompletedHandler: @escaping (
-            _ userCancelled: Bool,
-            _ error: Error?
-        ) -> Void
-    ) -> Void,
-    restoreHandler: @MainActor @Sendable (
-        _ restorePurchasesCompletedHandler: @escaping (
-            _ success: Bool,
-            _ error: Error?
-        ) -> Void
-    ) -> Void
-)
 
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
@@ -308,70 +291,47 @@ extension View {
         self.environment(\.onRequestedDismissal, action)
     }
 
+    /// Use this method if you wish to execute your own StoreKit purchase and restore logic,
+    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
+    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
+    /// when migrating from a direct StoreKit implementation to RevenueCat in stages, or when using
+    /// RevenueCat for experiments and growth tools.
+    ///
+    /// After executing your StoreKit purchae code, you **must** communicate the result of your purchase
+    /// code by calling `reportPurchaseResult` and `reportRestoreResult` when your code
+    /// has finished executing. Failure to do so will result in undefined behavior.
+    ///
+    /// Example:
+    /// ```swift
+    /// PaywallView()
+    ///     .handlePurchaseAndRestore(
+    ///         performPurchase: { storeProduct, reportPurchaseResult in
+    ///             var userDidCancel = false
+    ///             var error: Error?
+    ///
+    ///             // your app's purchase logic
+    ///
+    ///             reportPurchaseResult(userDidCancel, error)
+    ///         }, performRestore: { reportRestoreResult in
+    ///             var success = false
+    ///             var error: Error?
+    ///
+    ///             // your app's restore logic
+    ///
+    ///             reportRestoreResult(success, error)
+    ///         })
+    /// ```
+    ///
     public func handlePurchaseAndRestore(
-        purchaseHandler: @escaping HandlePurchaseHandler,
-        restoreHandler: @escaping HandleRestoreHandler
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
     ) -> some View {
         return self.modifier(
             HandlePurchaseAndRestoreModifier(
-                purchaseHandler: purchaseHandler,
-                restoreHandler: restoreHandler
+                performPurchase: performPurchase,
+                performRestore: performRestore
             )
         )
-    }
-
-    
-    /// Use this method if you wish to execute your own StoreKit purchase logic,
-    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
-    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
-    /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
-    ///
-    /// After executing your StoreKit purchae code, you must call `purchaseCompletedHandler`
-    /// for accurate statistics.
-    ///
-    /// Example:
-    /// ```swift
-    ///  PaywallView()
-    ///     .handlePurchase { storeProduct, purchaseCompletedHandler in
-    ///        var userCancelled: Bool = false
-    ///        var error: Error? = nil
-    ///
-    ///        // Manually call StoreKit purchasing logic
-    ///        // and update userCancelled and error
-    ///
-    ///        purchaseCompletedHandler(userCancelled, error)
-    ///     }
-    /// ```
-    public func handlePurchase(
-        _ handler: @escaping HandlePurchaseHandler
-    ) -> some View {
-        return self.modifier(HandlePurchaseModifier(handler: handler))
-    }
-
-    /// Use this method if you wish to execute your own StoreKit restore purchases logic,
-    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
-    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
-    /// when migrating from a direct StoreKit implementation to RevenueCat in stages.
-    ///
-    /// After executing your StoreKit purchae code, you must call `purchaseRestoreHandler`.
-    ///
-    /// Example:
-    /// ```swift
-    ///  PaywallView()
-    ///     .handleRestore { purchaseRestoreHandler in
-    ///        var success: Bool = false
-    ///        var error: Error? = nil
-    ///
-    ///        // Manually call StoreKit purchasing logic
-    ///        // and update success and error
-    ///
-    ///        restorePurchasesCompletedHandler(success, error)
-    ///     }
-    /// ```
-    public func handleRestorePurchases(
-        _ handler: @escaping HandleRestoreHandler
-    ) -> some View {
-        return self.modifier(HandleRestoreModifier(handler: handler))
     }
 }
 
@@ -437,20 +397,20 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandlePurchaseAndRestoreModifier: ViewModifier {
-    let purchaseHandler: HandlePurchaseHandler
-    let restoreHandler: HandleRestoreHandler
+    let performPurchase: PerformPurchase
+    let performRestore: PerformRestore
 
     func body(content: Content) -> some View {
         content
-            .modifier(HandlePurchaseModifier(handler: purchaseHandler))
-            .modifier(HandleRestoreModifier(handler: restoreHandler))
+            .modifier(HandlePurchaseModifier(handler: performPurchase))
+            .modifier(HandleRestoreModifier(handler: performRestore))
     }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct HandlePurchaseModifier: ViewModifier {
 
-    let handler: HandlePurchaseHandler
+    let handler: PerformPurchase
 
     func body(content: Content) -> some View {
         content
@@ -466,7 +426,7 @@ private struct HandlePurchaseModifier: ViewModifier {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct HandleRestoreModifier: ViewModifier {
 
-    let handler: HandleRestoreHandler
+    let handler: PerformRestore
 
     func body(content: Content) -> some View {
         content
