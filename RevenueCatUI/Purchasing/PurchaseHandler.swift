@@ -20,7 +20,7 @@ import SwiftUI
 typealias HandlePurchaseData = (storeProduct: StoreProduct,
                                     callback: (_ userCancelled: Bool, _ error: Error?) -> Void)
 
-class HandleRestoreCallbackContainer: Equatable {
+class PerformRestoreInfo: Equatable {
 
     let handleRestoreCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
@@ -28,7 +28,7 @@ class HandleRestoreCallbackContainer: Equatable {
         self.handleRestoreCallback = callback
     }
 
-    static func == (lhs: HandleRestoreCallbackContainer, rhs: HandleRestoreCallbackContainer) -> Bool {
+    static func == (lhs: PerformRestoreInfo, rhs: PerformRestoreInfo) -> Bool {
         return lhs === rhs
     }
 
@@ -63,7 +63,7 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var handlePurchase: HandlePurchaseData?
 
     @Published
-    fileprivate(set) var handleRestore: HandleRestoreCallbackContainer?
+    fileprivate(set) var handleRestore: PerformRestoreInfo?
 
     /// Whether a restore is currently in progress
     @Published
@@ -236,7 +236,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
-            self.handleRestore = HandleRestoreCallbackContainer(callback: self.completeExternalRestorePurchases)
+            self.handleRestore = PerformRestoreInfo(callback: self.completeExternalRestorePurchases)
         }
 
         self.startAction()
@@ -437,9 +437,9 @@ struct HandlePurchasePreferenceKey: PreferenceKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct HandleRestorePreferenceKey: PreferenceKey {
 
-    static var defaultValue: HandleRestoreCallbackContainer?
+    static var defaultValue: PerformRestoreInfo?
 
-    static func reduce(value: inout HandleRestoreCallbackContainer?, nextValue: () -> HandleRestoreCallbackContainer?) {
+    static func reduce(value: inout PerformRestoreInfo?, nextValue: () -> PerformRestoreInfo?) {
         value = nextValue()
     }
 
