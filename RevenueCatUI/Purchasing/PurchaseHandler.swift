@@ -19,15 +19,19 @@ import SwiftUI
 
 class PerformPurchaseInfo: Equatable {
 
-    let storeProduct: StoreProduct
-    let reportPurchaseResult: (_ userCancelled: Bool, _ error: Error?) -> Void
+    public let storeProduct: StoreProduct
+    let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
     init(storeProduct: StoreProduct, reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
         self.storeProduct = storeProduct
-        self.reportPurchaseResult = reportPurchaseResult
+        self.reportPurchaseResultCallback = reportPurchaseResult
     }
 
-    static func == (lhs: PerformPurchaseInfo, rhs: PerformPurchaseInfo) -> Bool {
+    public func reportPurchaseResult2(userCancelled: Bool, error: Error?) -> Void {
+        reportPurchaseResultCallback(userCancelled, error)
+    }
+
+    public static func == (lhs: PerformPurchaseInfo, rhs: PerformPurchaseInfo) -> Bool {
         return lhs.storeProduct == rhs.storeProduct
     }
 
@@ -113,8 +117,7 @@ final class PurchaseHandler: ObservableObject {
         self.purchases = purchases
     }
 
-    // @PublicForExternalTesting
-    static func `default`() -> Self {
+    public static func `default`() -> Self {
         return Purchases.isConfigured ? .init() : Self.notConfigured()
     }
 
@@ -178,7 +181,7 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
         self.performPurchase = PerformPurchaseInfo(storeProduct: package.storeProduct,
-                                                  reportPurchaseResult: self.completeExternalHandlePurchase)
+                                                   reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
 
@@ -186,7 +189,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func completeExternalHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
+    func reportExternalPurchaseResult(_ userCancelled: Bool, _ error: Error?) {
         self.actionInProgress = false
         self.performPurchase = nil
 
@@ -253,7 +256,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
-            self.performRestore = PerformRestoreInfo(callback: self.completeExternalRestorePurchases)
+            self.performRestore = PerformRestoreInfo(callback: self.reportExternalRestoreResult)
         }
 
         self.startAction()
@@ -271,7 +274,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func completeExternalRestorePurchases(success: Bool, error: Error?) {
+    func reportExternalRestoreResult(success: Bool, error: Error?) {
         if let error {
             self.restoreError = error
             externalRestorePurchaseContinuation?.resume(throwing: error)
