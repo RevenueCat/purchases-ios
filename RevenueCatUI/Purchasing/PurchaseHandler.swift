@@ -73,9 +73,11 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
+    /// Information used to perform a purchase in the app (rather than in RevenueCat)
     @Published
     fileprivate(set) var performPurchase: PerformPurchaseInfo?
 
+    /// Information used to perform restoring a purchase in the app (rather than in RevenueCat)
     @Published
     fileprivate(set) var performRestore: PerformRestoreInfo?
 
