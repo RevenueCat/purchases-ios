@@ -64,4 +64,6 @@ protocol PurchasesOrchestratorTests {
 
     func testSyncPurchasesPostsReceiptIfNoTransactionsAndEmptyOriginalPurchaseDate() async throws
 
+    func testSyncPurchasesPostsReceiptIfNoTransactionsAndNoCachedCustomerInfo() async throws
+
 }

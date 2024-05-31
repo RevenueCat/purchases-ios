@@ -1120,10 +1120,9 @@ private extension PurchasesOrchestrator {
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation else {
                     // No transactions are present. If we have the originalPurchaseDate and originalApplicationVersion
                     // in the cached CustomerInfo, return it. Otherwise, post the AppTransaction.
+                    let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(appUserID: currentAppUserID)
 
-                    if let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(
-                        appUserID: currentAppUserID
-                    ),
+                    if let cachedCustomerInfo,
                        cachedCustomerInfo.originalPurchaseDate != nil,
                        cachedCustomerInfo.originalApplicationVersion != nil {
                         completion?(.success(cachedCustomerInfo))

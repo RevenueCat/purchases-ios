@@ -672,7 +672,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(customerInfo) == mockCustomerInfo
     }
 
-    func testSyncPurchasesPostsReceiptIfNoTransactionsAndEmptyOriginalApplicationVersion() async throws {
+    func testSyncPurchasesPostsReceiptIfNoTransactionsAndEmptyOriginalApplicationVersionSK2() async throws {
         let appTransactionJWS = "some_jws"
 
         self.mockTransactionFetcher.stubbedFirstVerifiedTransaction = nil
