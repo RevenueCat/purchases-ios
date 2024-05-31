@@ -40,7 +40,8 @@ public protocol PurchasesType: AnyObject {
     @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
     var finishTransactions: Bool { get set }
 
-    /** Whether purchaess should be made and transactions finished automatically by RevenueCat. `.revenueCat` by default.
+    /** Controls if purchaess should be made and transactions finished automatically by RevenueCat.
+     * `.revenueCat` by default.
      * - Warning: Setting this value to `.myApp` will prevent the SDK from making purchaes and finishing transactions.
      * In this case, you *must* perform all of this logic in your app. If using a `PaywallView`, use the modifier
      * `.handlePurchaseAndRestore`.

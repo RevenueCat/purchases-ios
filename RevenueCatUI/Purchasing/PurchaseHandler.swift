@@ -27,17 +27,23 @@ class PerformPurchaseInfo: Equatable {
         self.reportPurchaseResultCallback = reportPurchaseResult
     }
 
-    public func reportResult(userCancelled: Bool, error: Error?) -> Void {
+    /// Use this method to report the result of the purchase.
+    /// - Parameters:
+    ///   - userCancelled: A boolean indicating whether the user cancelled the purchase.
+    ///   - error: An optional error object if an error occurred during the purchase.
+    public func reportResult(userCancelled: Bool, error: Error?) {
         reportPurchaseResultCallback(userCancelled, error)
     }
 
+    /// Checks whether two `PurchaseResultReporter` instances are equal.
+    /// They are considered equal if the object represents the same `StoreProduct`
     public static func == (lhs: PurchaseResultReporter, rhs: PurchaseResultReporter) -> Bool {
         return lhs.storeProduct == rhs.storeProduct
     }
 
 }
 
-
+/// A class that can be used to report the result of a restoring purchases.
 public class RestoreResultReporter: Equatable {
 
     let reportRestoreResultCallback: (_ success: Bool, _ error: Error?) -> Void
@@ -46,7 +52,11 @@ public class RestoreResultReporter: Equatable {
         self.reportRestoreResultCallback = callback
     }
 
-    public func reportResult(success: Bool, error: Error?) -> Void {
+    /// Use this method to report the result of a restore operation.
+    /// - Parameters:
+    ///   - success: A boolean indicating whether the restore operation was successful.
+    ///   - error: An optional error object if an error occurred during the restore operation.
+    public func reportResult(success: Bool, error: Error?) {
         reportRestoreResultCallback(success, error)
     }
 

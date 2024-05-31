@@ -200,10 +200,10 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handlePurchaseAndRestore(performPurchase: { storeProduct, purchaseResultReporter in
+        .handlePurchaseAndRestore(performPurchase: { _, purchaseResultReporter in
             purchaseResultReporter.reportResult(userCancelled: false, error: nil)
             customPurchaseCodeExecuted = true
-        }, performRestore: { restoreResultReporter in
+        }, performRestore: { _ in
 
         })
         .addToHierarchy()
@@ -227,7 +227,7 @@ class PurchaseCompletedHandlerTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.externalPurchaseHandler
         )
-        .handlePurchaseAndRestore(performPurchase: { storeProduct, purchaseResultReporter in
+        .handlePurchaseAndRestore(performPurchase: { _, _ in
 
         }, performRestore: { restoreResultReporter in
             restoreResultReporter.reportResult(success: true, error: nil)
