@@ -17,7 +17,8 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-class PerformPurchaseInfo: Equatable {
+/// A class that can be used to report the result of a purchase.
+public class PurchaseResultReporter: Equatable {
 
     let storeProduct: StoreProduct
     let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
