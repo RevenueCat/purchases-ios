@@ -74,10 +74,10 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
     @Published
-    fileprivate(set) var handlePurchase: PerformPurchaseInfo?
+    fileprivate(set) var performPurchase: PerformPurchaseInfo?
 
     @Published
-    fileprivate(set) var handleRestore: PerformRestoreInfo?
+    fileprivate(set) var performRestore: PerformRestoreInfo?
 
     /// Whether a restore is currently in progress
     @Published
@@ -175,7 +175,7 @@ extension PurchaseHandler {
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
-        self.handlePurchase = PerformPurchaseInfo(storeProduct: package.storeProduct,
+        self.performPurchase = PerformPurchaseInfo(storeProduct: package.storeProduct,
                                                   reportPurchaseResult: self.completeExternalHandlePurchase)
 
         self.startAction()
@@ -186,7 +186,7 @@ extension PurchaseHandler {
     @MainActor
     func completeExternalHandlePurchase(_ userCancelled: Bool, _ error: Error?) {
         self.actionInProgress = false
-        self.handlePurchase = nil
+        self.performPurchase = nil
 
         if let error {
             self.purchaseError = error
@@ -251,7 +251,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handleRestore` function, and its callback must be called
             // after the continuation is set below
-            self.handleRestore = PerformRestoreInfo(callback: self.completeExternalRestorePurchases)
+            self.performRestore = PerformRestoreInfo(callback: self.completeExternalRestorePurchases)
         }
 
         self.startAction()
