@@ -878,7 +878,7 @@ platform :ios do
 
   lane :deploy_to_spm do
     source_repo = ENV["CIRCLE_REPOSITORY_URL"]
-    destination_repo = source_repo.sub(/\.git\z/, "-spm3.git")
+    destination_repo = source_repo.sub(/\.git\z/, "-spm.git")
   
     git_clone_and_push(
       source_repo: source_repo,
