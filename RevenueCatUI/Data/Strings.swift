@@ -105,7 +105,7 @@ extension Strings: CustomStringConvertible {
             return "Setting restored customer info"
 
         case .executing_external_purchase_logic:
-            return "Will execute custom StoreKit purchase logic provided by yourapp. " +
+            return "Will execute custom StoreKit purchase logic provided by your app. " +
             "No StoreKit purchasing logic will be performed by RevenueCat. " +
             "You must use `.handlePurchase` on your `PaywallView`."
 
