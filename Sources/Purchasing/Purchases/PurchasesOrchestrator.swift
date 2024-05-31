@@ -1104,6 +1104,7 @@ private extension PurchasesOrchestrator {
         }
     }
 
+    // swiftlint:disable function_body_length
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func syncPurchasesSK2(isRestore: Bool,
                                   initiationSource: ProductRequestData.InitiationSource,
@@ -1117,12 +1118,23 @@ private extension PurchasesOrchestrator {
                 let appTransactionJWS = await self.transactionFetcher.appTransactionJWS
 
                 guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation else {
-                    // No receipt is found, just post the AppTransaction.
+                    // No transactions are present. If we have the originalPurchaseDate and originalApplicationVersion
+                    // in the cached CustomerInfo, return it. Otherwise, post the AppTransaction.
+
+                    if let cachedCustomerInfo = self.customerInfoManager.cachedCustomerInfo(
+                        appUserID: currentAppUserID
+                    ),
+                       cachedCustomerInfo.originalPurchaseDate != nil,
+                       cachedCustomerInfo.originalApplicationVersion != nil {
+                        completion?(.success(cachedCustomerInfo))
+                        return
+                    }
+
                     self.backend.post(receipt: .empty,
                                       productData: nil,
                                       transactionData: .init(appUserID: currentAppUserID,
-                                                             source: .init(isRestore: true,
-                                                                           initiationSource: .restore)),
+                                                             source: .init(isRestore: isRestore,
+                                                                           initiationSource: initiationSource)),
                                       observerMode: self.observerMode,
                                       appTransaction: appTransactionJWS) { result in
 
