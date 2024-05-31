@@ -1142,23 +1142,6 @@ jobs:
               }
 
   deploy-to-spm:
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - checkout
-      - setup-git-credentials
-      - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
-          command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
-            cd purchases-ios
-            git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
-            git push origin
-            git push --tags
-
-  deploy-to-spm-fastlane:
     <<: *base-job
     steps:
       - checkout
