@@ -185,7 +185,7 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
         self.performPurchase = PurchaseResultReporter(storeProduct: package.storeProduct,
-                                                   reportPurchaseResult: self.reportExternalPurchaseResult)
+                                                      reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
 

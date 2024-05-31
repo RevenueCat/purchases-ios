@@ -404,9 +404,9 @@ private struct HandlePurchaseModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(HandlePurchasePreferenceKey.self) { performPurchaseInfo in
-                if let performPurchaseInfo {
-                    self.handler(performPurchaseInfo.storeProduct, performPurchaseInfo)
+            .onPreferenceChange(HandlePurchasePreferenceKey.self) { purchaseResultReporter in
+                if let purchaseResultReporter {
+                    self.handler(purchaseResultReporter.storeProduct, purchaseResultReporter)
                 }
             }
     }
@@ -420,9 +420,9 @@ private struct HandleRestoreModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(HandleRestorePreferenceKey.self) { performRestoreInfo in
-                if let performRestoreInfo {
-                    self.handler(performRestoreInfo)
+            .onPreferenceChange(HandleRestorePreferenceKey.self) { restoreResultReporter in
+                if let restoreResultReporter {
+                    self.handler(restoreResultReporter)
                 }
             }
     }
