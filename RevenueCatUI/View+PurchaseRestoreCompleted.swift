@@ -56,6 +56,23 @@ public typealias HandleRestoreHandler = @MainActor @Sendable (
     ) -> Void
 ) -> Void
 
+/// A closure used for notifying that custom purchase logic has completed.
+public typealias HandlePurchaseAndRestoreHandler = (
+    purchaseHandler: @MainActor @Sendable (
+        _ storeProduct: StoreProduct,
+        _ purchaseCompletedHandler: @escaping (
+            _ userCancelled: Bool,
+            _ error: Error?
+        ) -> Void
+    ) -> Void,
+    restoreHandler: @MainActor @Sendable (
+        _ restorePurchasesCompletedHandler: @escaping (
+            _ success: Bool,
+            _ error: Error?
+        ) -> Void
+    ) -> Void
+)
+
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
 
@@ -291,6 +308,19 @@ extension View {
         self.environment(\.onRequestedDismissal, action)
     }
 
+    public func handlePurchaseAndRestore(
+        purchaseHandler: @escaping HandlePurchaseHandler,
+        restoreHandler: @escaping HandleRestoreHandler
+    ) -> some View {
+        return self.modifier(
+            HandlePurchaseAndRestoreModifier(
+                purchaseHandler: purchaseHandler,
+                restoreHandler: restoreHandler
+            )
+        )
+    }
+
+    
     /// Use this method if you wish to execute your own StoreKit purchase logic,
     /// skipping RevenueCat's. This method is **only** called if `Purchases` is
     /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
@@ -403,6 +433,18 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
             }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HandlePurchaseAndRestoreModifier: ViewModifier {
+    let purchaseHandler: HandlePurchaseHandler
+    let restoreHandler: HandleRestoreHandler
+
+    func body(content: Content) -> some View {
+        content
+            .modifier(HandlePurchaseModifier(handler: purchaseHandler))
+            .modifier(HandleRestoreModifier(handler: restoreHandler))
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
