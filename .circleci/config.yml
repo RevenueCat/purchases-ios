@@ -1321,6 +1321,7 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
+          xcode_version: '14.3.0'
           <<: *release-tags
       - deploy-purchase-tester:
           <<: *release-tags
