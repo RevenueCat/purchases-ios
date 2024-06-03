@@ -29,6 +29,10 @@
         RCConfiguration *config __unused = [[builder
                                              withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]                                            build];
     }
+
+    if (@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)) {
+        RCConfiguration *config __unused = [[builder withDiagnosticsEnabled:true] build];
+    }
 }
 
 @end

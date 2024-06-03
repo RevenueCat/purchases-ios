@@ -28,6 +28,12 @@ func checkConfigurationAPI() {
             .with(entitlementVerificationMode: .informational)
             .build()
     }
+
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        let _: Configuration = builder
+            .with(diagnosticsEnabled: true)
+            .build()
+    }
 }
 
 @available(*, deprecated)
