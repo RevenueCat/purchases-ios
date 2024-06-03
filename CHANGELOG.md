@@ -1,3 +1,10 @@
+## 4.43.0
+### New Features
+* Diagnostics (#3931) via Toni Rico (@tonidero)
+### Other Changes
+* Revert docs-deploy to xcode 14 (#3935) via Cesar de la Vega (@vegaro)
+* Diagnostics: Add logic to retry on server errors (#3930) via Toni Rico (@tonidero)
+
 ## 4.42.0
 ### New Features
 * RemoteImage Low Res Image support (#3906) via James Borthwick (@jamesrb1)
