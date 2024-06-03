@@ -56,6 +56,7 @@ struct RemoteImage: View {
                 emptyView(error: nil)
             }
         }
+        .accessibilityHidden(true)
         .transition(Self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
             await loadImages()
@@ -68,11 +69,9 @@ struct RemoteImage: View {
             image
                 .fitToAspect(aspectRatio, contentMode: .fill)
                 .frame(maxWidth: self.maxWidth)
-                .accessibilityHidden(true)
         } else {
             image
                 .resizable()
-                .accessibilityHidden(true)
         }
     }
 
