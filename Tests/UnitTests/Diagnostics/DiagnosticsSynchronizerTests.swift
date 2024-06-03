@@ -23,6 +23,7 @@ class DiagnosticsSynchronizerTests: TestCase {
     fileprivate var fileHandler: FileHandler!
     fileprivate var handler: DiagnosticsFileHandler!
     fileprivate var synchronizer: DiagnosticsSynchronizer!
+    fileprivate var userDefaults: MockUserDefaults!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -32,8 +33,10 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.api = .init()
         self.fileHandler = try Self.createWithTemporaryFile()
         self.handler = .init(self.fileHandler)
+        self.userDefaults = .init()
         self.synchronizer = .init(internalAPI: self.api,
-                                  handler: self.handler)
+                                  handler: self.handler,
+                                  userDefaults: .init(userDefaults: self.userDefaults))
     }
 
     // MARK: - syncDiagnosticsIfNeeded
@@ -129,6 +132,49 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.diagnostics.event_sync_already_in_progress,
                                            level: .debug,
                                            expectedCount: 1)
+    }
+
+    func testClearsDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+        _ = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .errorResponse(.defaultResponse, .invalidRequest)
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        self.userDefaults.mockValues = [cacheKey: 3]
+
+        do {
+            try await self.synchronizer.syncDiagnosticsIfNeeded()
+
+            fail("Should have errored")
+        } catch {
+            await self.verifyEmptyStore()
+            expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
+        }
+    }
+
+    func testMultipleErrorsEventuallyClearDiagnosticsFileAndRetriesIfMaxRetriesReached() async throws {
+        let event = await self.storeEvent()
+
+        let cacheKey = "com.revenuecat.diagnostics.number_sync_retries"
+
+        let expectedError: NetworkError = .offlineConnection()
+
+        self.api.stubbedPostDiagnosticsEventsCompletionResult = .networkError(expectedError)
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+        await self.verifyEvents([event])
+
+        expect(self.userDefaults.mockValues[cacheKey] as? Int) == 3
+
+        try? await self.synchronizer.syncDiagnosticsIfNeeded()
+
+        await self.verifyEmptyStore()
+        expect(self.userDefaults.removeObjectForKeyCalledValues) == [cacheKey]
     }
 
 }
