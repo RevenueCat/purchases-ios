@@ -853,7 +853,7 @@ jobs:
           name: Build docs
           command: bundle exec fastlane generate_docs
           environment:
-            DOCS_IOS_VERSION: "16.1"
+            DOCS_IOS_VERSION: "17.4"
 
   make-release:
     <<: *base-job
@@ -1321,6 +1321,7 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
+          xcode_version: '14.3.0'
           <<: *release-tags
       - deploy-purchase-tester:
           <<: *release-tags
