@@ -62,20 +62,17 @@ struct RemoteImage: View {
         }
     }
 
+    @ViewBuilder
     private func displayImage(_ image: Image) -> some View {
         if let aspectRatio {
-            return AnyView(
-                image
-                    .fitToAspect(aspectRatio, contentMode: .fill)
-                    .frame(maxWidth: self.maxWidth)
-                    .accessibilityHidden(true)
-            )
+            image
+                .fitToAspect(aspectRatio, contentMode: .fill)
+                .frame(maxWidth: self.maxWidth)
+                .accessibilityHidden(true)
         } else {
-            return AnyView(
-                image
-                    .resizable()
-                    .accessibilityHidden(true)
-            )
+            image
+                .resizable()
+                .accessibilityHidden(true)
         }
     }
 
