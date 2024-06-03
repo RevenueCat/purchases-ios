@@ -700,7 +700,7 @@ platform :ios do
        "--target", "RevenueCat",
        # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
        "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
-       "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-ios#{ios_version}-simulator",
+       "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios#{ios_version}-simulator",
        "-Xswiftc", "-emit-symbol-graph",
        "-Xswiftc", "-emit-symbol-graph-dir",
        "-Xswiftc", ".build")
