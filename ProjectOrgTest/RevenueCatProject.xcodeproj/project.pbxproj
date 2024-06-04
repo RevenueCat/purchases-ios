@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		883FBF652C0F8FC4001A2A7F /* RevenueCatProject.h in Headers */ = {isa = PBXBuildFile; fileRef = 883FBF642C0F8FC4001A2A7F /* RevenueCatProject.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		883FBF652C0F8FC4001A2A7F /* RevenueCat.h in Headers */ = {isa = PBXBuildFile; fileRef = 883FBF642C0F8FC4001A2A7F /* RevenueCat.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		883FBF9D2C0F977B001A2A7F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBF9C2C0F977B001A2A7F /* RevenueCat */; };
 		883FBF9F2C0F977B001A2A7F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBF9E2C0F977B001A2A7F /* RevenueCatUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		883FBF612C0F8FC4001A2A7F /* RevenueCatProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		883FBF642C0F8FC4001A2A7F /* RevenueCatProject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCatProject.h; sourceTree = "<group>"; };
+		883FBF612C0F8FC4001A2A7F /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		883FBF642C0F8FC4001A2A7F /* RevenueCat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCat.h; sourceTree = "<group>"; };
 		883FBF9A2C0F9761001A2A7F /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
 		883FBF9B2C0F976A001A2A7F /* RevenueCat */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCat; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -46,7 +46,7 @@
 		883FBF622C0F8FC4001A2A7F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				883FBF612C0F8FC4001A2A7F /* RevenueCatProject.framework */,
+				883FBF612C0F8FC4001A2A7F /* RevenueCat.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -54,7 +54,7 @@
 		883FBF632C0F8FC4001A2A7F /* RevenueCatProject */ = {
 			isa = PBXGroup;
 			children = (
-				883FBF642C0F8FC4001A2A7F /* RevenueCatProject.h */,
+				883FBF642C0F8FC4001A2A7F /* RevenueCat.h */,
 			);
 			path = RevenueCatProject;
 			sourceTree = "<group>";
@@ -73,16 +73,16 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				883FBF652C0F8FC4001A2A7F /* RevenueCatProject.h in Headers */,
+				883FBF652C0F8FC4001A2A7F /* RevenueCat.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		883FBF602C0F8FC4001A2A7F /* RevenueCatProject */ = {
+		883FBF602C0F8FC4001A2A7F /* RevenueCat */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 883FBF682C0F8FC4001A2A7F /* Build configuration list for PBXNativeTarget "RevenueCatProject" */;
+			buildConfigurationList = 883FBF682C0F8FC4001A2A7F /* Build configuration list for PBXNativeTarget "RevenueCat" */;
 			buildPhases = (
 				883FBF5C2C0F8FC4001A2A7F /* Headers */,
 				883FBF5D2C0F8FC4001A2A7F /* Sources */,
@@ -93,13 +93,13 @@
 			);
 			dependencies = (
 			);
-			name = RevenueCatProject;
+			name = RevenueCat;
 			packageProductDependencies = (
 				883FBF9C2C0F977B001A2A7F /* RevenueCat */,
 				883FBF9E2C0F977B001A2A7F /* RevenueCatUI */,
 			);
 			productName = RevenueCatProject;
-			productReference = 883FBF612C0F8FC4001A2A7F /* RevenueCatProject.framework */;
+			productReference = 883FBF612C0F8FC4001A2A7F /* RevenueCat.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -131,7 +131,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				883FBF602C0F8FC4001A2A7F /* RevenueCatProject */,
+				883FBF602C0F8FC4001A2A7F /* RevenueCat */,
 			);
 		};
 /* End PBXProject section */
@@ -371,7 +371,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		883FBF682C0F8FC4001A2A7F /* Build configuration list for PBXNativeTarget "RevenueCatProject" */ = {
+		883FBF682C0F8FC4001A2A7F /* Build configuration list for PBXNativeTarget "RevenueCat" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				883FBF692C0F8FC4001A2A7F /* Debug */,
