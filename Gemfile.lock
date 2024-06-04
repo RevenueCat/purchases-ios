@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: 8ec007234d81f7a17a09a7e9243983485fac84b2
+  revision: 5f55466a2a8308cddb0c9f08bc4f3bc4c06a6549
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       rest-client
@@ -240,7 +240,7 @@ GEM
       signet (>= 0.16, < 2.a)
     highline (2.0.3)
     http-accept (1.7.0)
-    http-cookie (1.0.5)
+    http-cookie (1.0.6)
       domain_name (~> 0.5)
     httpclient (2.8.3)
     i18n (1.14.5)
