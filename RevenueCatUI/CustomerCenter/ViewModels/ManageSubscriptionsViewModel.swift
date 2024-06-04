@@ -132,8 +132,4 @@ private extension SubscriptionPeriod {
         }
     }
 
-    func periodTitle() -> String {
-        return "^[\(self.value) \(self.durationTitle)](inflect: true)"
-    }
-
 }
