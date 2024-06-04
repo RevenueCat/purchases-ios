@@ -894,6 +894,7 @@ jobs:
   prepare-next-version:
     <<: *base-job
     steps:
+      - setup-git-credentials
       - checkout
       - install-dependencies
       - trust-github-key
