@@ -133,9 +133,7 @@ private extension SubscriptionPeriod {
     }
 
     func periodTitle() -> String {
-        let periodString = "\(self.value) \(self.durationTitle)"
-        let pluralized = self.value > 1 ?  periodString + "s" : periodString
-        return pluralized
+        return "^[\(self.value) \(self.durationTitle)](inflect: true)"
     }
 
 }
