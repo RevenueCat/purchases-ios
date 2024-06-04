@@ -11,15 +11,27 @@ import RevenueCat
 import RevenueCatUI
 
 struct ContentView: View {
+    @State private var showingPaywall = false
+
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
-            TestView()
+                .onAppear {
+                    Purchases.configure(withAPIKey: "haha!")
+                }
+            Button(action: {
+                showingPaywall = true
+            }, label: {
+                Text("Show Paywall")
+            })
         }
         .padding()
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
+        }
     }
 }
 

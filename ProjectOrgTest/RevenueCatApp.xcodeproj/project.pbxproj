@@ -11,8 +11,8 @@
 		883FBF832C0F9058001A2A7F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 883FBF822C0F9058001A2A7F /* ContentView.swift */; };
 		883FBF852C0F9059001A2A7F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF842C0F9059001A2A7F /* Assets.xcassets */; };
 		883FBF892C0F9059001A2A7F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF882C0F9059001A2A7F /* Preview Assets.xcassets */; };
-		883FBFA62C0F9BDA001A2A7F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFA52C0F9BDA001A2A7F /* RevenueCat */; };
-		883FBFA82C0F9BDA001A2A7F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */; };
+		883FBFDF2C0FC2E5001A2A7F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFDE2C0FC2E5001A2A7F /* RevenueCat */; };
+		883FBFE12C0FC2E5001A2A7F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFE02C0FC2E5001A2A7F /* RevenueCatUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,8 +32,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				883FBFA82C0F9BDA001A2A7F /* RevenueCatUI in Frameworks */,
-				883FBFA62C0F9BDA001A2A7F /* RevenueCat in Frameworks */,
+				883FBFE12C0FC2E5001A2A7F /* RevenueCatUI in Frameworks */,
+				883FBFDF2C0FC2E5001A2A7F /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -104,8 +104,8 @@
 			);
 			name = RevenueCatApp;
 			packageProductDependencies = (
-				883FBFA52C0F9BDA001A2A7F /* RevenueCat */,
-				883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */,
+				883FBFDE2C0FC2E5001A2A7F /* RevenueCat */,
+				883FBFE02C0FC2E5001A2A7F /* RevenueCatUI */,
 			);
 			productName = RevenueCatApp;
 			productReference = 883FBF7D2C0F9058001A2A7F /* RevenueCatApp.app */;
@@ -385,11 +385,11 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		883FBFA52C0F9BDA001A2A7F /* RevenueCat */ = {
+		883FBFDE2C0FC2E5001A2A7F /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat;
 		};
-		883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */ = {
+		883FBFE02C0FC2E5001A2A7F /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCatUI;
 		};

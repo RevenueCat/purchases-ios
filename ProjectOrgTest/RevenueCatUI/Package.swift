@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "RevenueCatUI",
+    defaultLocalization: "en",
     platforms: [
             .iOS(.v16) // Specifies that the package supports iOS 16 and later
         ],
