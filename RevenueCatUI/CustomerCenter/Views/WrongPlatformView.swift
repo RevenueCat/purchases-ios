@@ -32,7 +32,7 @@ struct WrongPlatformView: View {
             case .appStore, .macAppStore, .playStore, .amazon:
                 let platformName = humanReadablePlatformName(store: store!)
 
-                Text("Your subscription is being billed through \(platformName).")
+                Text("Your subscription is a \(platformName) subscription.")
                     .font(.title)
                     .padding()
                 Text("Go the app settings on \(platformName) to manage your subscription and billing.")
@@ -64,25 +64,23 @@ struct WrongPlatformView: View {
     }
 
     private func humanReadablePlatformName(store: Store) -> String {
-            switch store {
-            case .appStore, .macAppStore:
-                return "Apple App Store"
-            case .playStore:
-                return "Google Play Store"
-            case .stripe:
-                return "Stripe"
-            case .promotional:
-                return "Promotional"
-            case .amazon:
-                return "Amazon Appstore"
-            case .rcBilling:
-                return "RCBilling"
-            case .external:
-                return "External"
-            case .unknownStore:
-                return "Unknown"
-            }
+        switch store {
+        case .appStore, .macAppStore:
+            return "Apple App Store"
+        case .playStore:
+            return "Google Play Store"
+        case .stripe,
+                .rcBilling,
+                .external:
+            return "Web"
+        case .promotional:
+            return "Free"
+        case .amazon:
+            return "Amazon Appstore"
+        case .unknownStore:
+            return "Unknown"
         }
+    }
 
 }
 
