@@ -19,7 +19,7 @@ struct NoSubscriptionsView: View {
             Text("No Subscriptions found")
                 .font(.title)
                 .padding()
-            Text("We can try checking your Apple account for any previously purchased products")
+            Text("We can try checking your Apple account for any previous purchases")
                 .font(.body)
                 .padding()
 
