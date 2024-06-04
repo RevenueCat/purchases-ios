@@ -36,5 +36,13 @@ let package = Package(
                 .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
             ]),
+        .testTarget(
+            name: "OtherTests",
+            dependencies: [
+                "RevenueCat",
+                "Nimble",
+                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+            ])
     ]
 )
