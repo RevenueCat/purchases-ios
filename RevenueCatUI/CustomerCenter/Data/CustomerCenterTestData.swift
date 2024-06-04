@@ -6,9 +6,11 @@
 //
 
 import Foundation
+import RevenueCat
 
 enum CustomerCenterTestData {
 
+    @available(iOS 14.0, *)
     static let customerCenterData = CustomerCenterData(
         id: "ccenter_lasdlfalaowpwp",
         paths: [
@@ -69,8 +71,10 @@ enum CustomerCenterTestData {
         supportEmail: "support@revenuecat.com",
         appearance: CustomerCenterData.Appearance(
             mode: "SYSTEM",
-            light: "#000000",
-            dark: "#ffffff"
+            color: PaywallColor(
+                light: PaywallColor(stringLiteral: "#000000"),
+                dark: PaywallColor(stringLiteral: "#ffffff")
+            )
         )
     )
 
@@ -78,7 +82,7 @@ enum CustomerCenterTestData {
         title: "Basic",
         duration: "Monthly",
         price: "$4.99 / month",
-        nextRenewal: "June 1st, 2024",
+        nextRenewal: Date(),
         willRenew: true,
         productIdentifier: "product_id",
         active: true

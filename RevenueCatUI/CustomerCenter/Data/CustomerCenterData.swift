@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 struct CustomerCenterData {
 
@@ -77,8 +78,7 @@ struct CustomerCenterData {
     struct Appearance {
 
         let mode: String
-        let light: String
-        let dark: String
+        let color: PaywallColor
 
     }
 

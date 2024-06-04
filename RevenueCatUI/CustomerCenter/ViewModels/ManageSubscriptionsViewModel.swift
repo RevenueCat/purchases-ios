@@ -71,11 +71,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
             }
             let currentEntitlement = currentEntitlementDict.value
 
+            // swiftlint:disable:next todo
+            // TODO: support non-consumables
             self.subscriptionInformation = SubscriptionInformation(
                 title: subscribedProduct.localizedTitle,
                 duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
                 price: subscribedProduct.localizedPriceString,
-                nextRenewal: "\(String(describing: currentEntitlement.expirationDate!))",
+                nextRenewal: currentEntitlement.expirationDate!,
                 willRenew: currentEntitlement.willRenew,
                 productIdentifier: subscribedProductID,
                 active: currentEntitlement.isActive

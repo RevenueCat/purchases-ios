@@ -12,7 +12,7 @@ struct SubscriptionInformation {
     let title: String
     let duration: String
     let price: String
-    let nextRenewal: String
+    let nextRenewal: Date?
     let willRenew: Bool
     let productIdentifier: String
     let active: Bool
