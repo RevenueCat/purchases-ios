@@ -1,0 +1,23 @@
+{
+  "currency" : "UYU",
+  "offers" : [
+    {
+      "offer_identifier" : "offerid1",
+      "payment_mode" : 0,
+      "price" : "11.1"
+    },
+    {
+      "offer_identifier" : "offerid2",
+      "payment_mode" : 1,
+      "price" : "12.2"
+    },
+    {
+      "offer_identifier" : "offerid3",
+      "payment_mode" : 2,
+      "price" : "13.3"
+    }
+  ],
+  "price" : "15.99",
+  "product_id" : "product_id",
+  "store_country" : "ESP"
+}

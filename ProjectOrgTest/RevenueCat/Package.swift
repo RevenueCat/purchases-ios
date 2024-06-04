@@ -3,6 +3,13 @@
 
 import PackageDescription
 
+var dependencies: [Package.Dependency] = [
+    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
+    // SST requires iOS 13 starting from version 1.13.0
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0")),
+    .package(url: "git@github.com:AliSoftware/OHHTTPStubs.git", .upToNextMinor(from: "9.1.0"))
+]
+
 let package = Package(
     name: "RevenueCat",
     platforms: [
@@ -14,6 +21,7 @@ let package = Package(
             name: "RevenueCat",
             targets: ["RevenueCat"]),
     ],
+    dependencies: dependencies,
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
@@ -22,6 +30,11 @@ let package = Package(
             exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
         .testTarget(
             name: "RevenueCatTests",
-            dependencies: ["RevenueCat"]),
+            dependencies: [
+                "RevenueCat",
+                "Nimble",
+                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+            ]),
     ]
 )

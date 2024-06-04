@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "08B10DBF-3956-432B-AC4E-32955715C775",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "RevenueCatTests",
+        "name" : "RevenueCatTests"
+      }
+    }
+  ],
+  "version" : 1
+}
