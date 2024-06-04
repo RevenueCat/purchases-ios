@@ -8,6 +8,9 @@
 import Foundation
 import RevenueCat
 
+/// Represents a color to be used by `RevenueCatUI`
+public typealias RCColor = PaywallColor
+
 struct CustomerCenterData {
 
     let id: String
@@ -78,7 +81,7 @@ struct CustomerCenterData {
     struct Appearance {
 
         let mode: String
-        let color: PaywallColor
+        let color: RCColor
 
     }
 
