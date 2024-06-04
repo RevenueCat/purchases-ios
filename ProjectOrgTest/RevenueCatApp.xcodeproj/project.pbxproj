@@ -11,23 +11,9 @@
 		883FBF832C0F9058001A2A7F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 883FBF822C0F9058001A2A7F /* ContentView.swift */; };
 		883FBF852C0F9059001A2A7F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF842C0F9059001A2A7F /* Assets.xcassets */; };
 		883FBF892C0F9059001A2A7F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF882C0F9059001A2A7F /* Preview Assets.xcassets */; };
-		883FBF912C0F9091001A2A7F /* RevenueCatProject.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 883FBF902C0F9091001A2A7F /* RevenueCatProject.framework */; };
-		883FBF922C0F9091001A2A7F /* RevenueCatProject.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 883FBF902C0F9091001A2A7F /* RevenueCatProject.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		883FBFA62C0F9BDA001A2A7F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFA52C0F9BDA001A2A7F /* RevenueCat */; };
+		883FBFA82C0F9BDA001A2A7F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		883FBF932C0F9091001A2A7F /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				883FBF922C0F9091001A2A7F /* RevenueCatProject.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		883FBF7D2C0F9058001A2A7F /* RevenueCatApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RevenueCatApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -37,6 +23,8 @@
 		883FBF862C0F9059001A2A7F /* RevenueCatApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RevenueCatApp.entitlements; sourceTree = "<group>"; };
 		883FBF882C0F9059001A2A7F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		883FBF902C0F9091001A2A7F /* RevenueCatProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCatProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		883FBFA32C0F9BBC001A2A7F /* RevenueCat */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCat; sourceTree = "<group>"; };
+		883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,7 +32,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				883FBF912C0F9091001A2A7F /* RevenueCatProject.framework in Frameworks */,
+				883FBFA82C0F9BDA001A2A7F /* RevenueCatUI in Frameworks */,
+				883FBFA62C0F9BDA001A2A7F /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,6 +43,8 @@
 		883FBF742C0F9058001A2A7F = {
 			isa = PBXGroup;
 			children = (
+				883FBFA32C0F9BBC001A2A7F /* RevenueCat */,
+				883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */,
 				883FBF7F2C0F9058001A2A7F /* RevenueCatApp */,
 				883FBF7E2C0F9058001A2A7F /* Products */,
 				883FBF8F2C0F9091001A2A7F /* Frameworks */,
@@ -106,13 +97,16 @@
 				883FBF792C0F9058001A2A7F /* Sources */,
 				883FBF7A2C0F9058001A2A7F /* Frameworks */,
 				883FBF7B2C0F9058001A2A7F /* Resources */,
-				883FBF932C0F9091001A2A7F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = RevenueCatApp;
+			packageProductDependencies = (
+				883FBFA52C0F9BDA001A2A7F /* RevenueCat */,
+				883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */,
+			);
 			productName = RevenueCatApp;
 			productReference = 883FBF7D2C0F9058001A2A7F /* RevenueCatApp.app */;
 			productType = "com.apple.product-type.application";
@@ -320,7 +314,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RevenueCatApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -358,7 +353,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RevenueCatApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -387,6 +383,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		883FBFA52C0F9BDA001A2A7F /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCat;
+		};
+		883FBFA72C0F9BDA001A2A7F /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 883FBF752C0F9058001A2A7F /* Project object */;
 }

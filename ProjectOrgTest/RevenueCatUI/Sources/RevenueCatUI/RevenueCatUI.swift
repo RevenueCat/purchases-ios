@@ -1,8 +1,15 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
+import SwiftUI
 import RevenueCat
 
-open class RCUClass: RCClass {
+public struct TestView: View {
 
+    public init() { }
+
+    public var body: some View {
+        let text = RCMessages.message()
+        Text("\(text)")
+    }
 }
