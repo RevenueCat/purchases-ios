@@ -15,6 +15,7 @@ enum URLUtilities {
         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
 
+        // swiftlint:disable:next todo
         // TODO: make configurable
         let urlString = "mailto:support@revenuecat.com?subject=\(encodedSubject)&body=\(encodedBody)"
         return URL(string: urlString)

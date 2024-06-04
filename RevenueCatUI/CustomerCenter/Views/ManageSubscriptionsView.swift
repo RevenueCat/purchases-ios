@@ -80,10 +80,12 @@ struct SubscriptionDetailsView: View {
                 .foregroundColor(Color.gray)
                 .padding(.horizontal)
 
-            Text("\(subscriptionInformation.renewalString): \(subscriptionInformation.nextRenewal)")
-                .font(.caption)
-                .foregroundColor(Color.gray)
-                .padding([.horizontal, .bottom])
+            if let nextRenewal =  subscriptionInformation.nextRenewal {
+                Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
+                    .font(.caption)
+                    .foregroundColor(Color.gray)
+                    .padding([.horizontal, .bottom])
+            }
 
             if let refundRequestStatus = refundRequestStatus {
                 Text("Refund request status: \(refundRequestStatus)")
