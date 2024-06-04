@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CustomerCenterData: Decodable {
+struct CustomerCenterData {
 
     let id: String
     let paths: [HelpPath]
@@ -15,7 +15,7 @@ struct CustomerCenterData: Decodable {
     let supportEmail: String
     let appearance: Appearance
 
-    enum HelpPathType: String, Decodable {
+    enum HelpPathType: String {
         case missingPurchase = "MISSING_PURCHASE"
         case refundRequest = "REFUND_REQUEST"
         case changePlans = "CHANGE_PLANS"
@@ -23,44 +23,50 @@ struct CustomerCenterData: Decodable {
         case unknown
     }
 
-    struct HelpPath: Decodable {
+    enum HelpPathDetail {
+
+        case promotionalOffer(PromotionalOffer)
+        case feedbackSurvey(FeedbackSurvey)
+
+    }
+
+    struct HelpPath {
 
         let id: String
         let title: LocalizedString
         let type: HelpPathType
-        let promotionalOffer: PromotionalOffer?
-        let feedbackSurvey: FeedbackSurvey?
+        let detail: HelpPathDetail?
 
     }
 
-    struct LocalizedString: Decodable {
-        
+    struct LocalizedString {
+
         // swiftlint:disable:next identifier_name
         let en_US: String
 
     }
 
-    struct PromotionalOffer: Decodable {
+    struct PromotionalOffer {
 
         let iosOfferId: String
         let eligibility: Eligibility
 
     }
 
-    struct Eligibility: Decodable {
+    struct Eligibility {
 
         let firstSeen: String
 
     }
 
-    struct FeedbackSurvey: Decodable {
+    struct FeedbackSurvey {
 
         let title: LocalizedString
         let options: [FeedbackSurveyOption]
 
     }
 
-    struct FeedbackSurveyOption: Decodable {
+    struct FeedbackSurveyOption {
 
         let id: String
         let title: LocalizedString
@@ -68,26 +74,12 @@ struct CustomerCenterData: Decodable {
 
     }
 
-    struct Appearance: Decodable {
+    struct Appearance {
 
         let mode: String
         let light: String
         let dark: String
 
-    }
-
-}
-
-extension CustomerCenterData {
-
-    static func decode(_ json: String) -> CustomerCenterData {
-        let data = Data(json.utf8)
-        let decoder = JSONDecoder()
-        do {
-            return try decoder.decode(CustomerCenterData.self, from: data)
-        } catch {
-            fatalError("Failed to decode JSON: \(error)")
-        }
     }
 
 }
