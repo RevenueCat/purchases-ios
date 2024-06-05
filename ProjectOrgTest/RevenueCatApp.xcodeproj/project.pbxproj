@@ -12,7 +12,7 @@
 		883FBF852C0F9059001A2A7F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF842C0F9059001A2A7F /* Assets.xcassets */; };
 		883FBF892C0F9059001A2A7F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 883FBF882C0F9059001A2A7F /* Preview Assets.xcassets */; };
 		883FBFDF2C0FC2E5001A2A7F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFDE2C0FC2E5001A2A7F /* RevenueCat */; };
-		883FBFE32C0FC6E1001A2A7F /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 883FBFE22C0FC6E1001A2A7F /* RevenueCatUI */; settings = {ATTRIBUTES = (Weak, ); }; };
+		8880C49C2C0FECAB001BF2ED /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 8880C49B2C0FECAB001BF2ED /* RevenueCatUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,7 +26,8 @@
 		883FBFA32C0F9BBC001A2A7F /* RevenueCat */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCat; sourceTree = "<group>"; };
 		883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
 		883FBFF72C0FD80D001A2A7F /* RevenueCatCommon */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatCommon; sourceTree = "<group>"; };
-		883FBFF92C0FDEFD001A2A7F /* RevenueCatCommon-Package.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RevenueCatCommon-Package.xctestplan"; path = "RevenueCatCommon/Tests/RevenueCatCommon-Package.xctestplan"; sourceTree = "<group>"; };
+		886EC42A2C10187700C320ED /* UnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = UnitTests.xctestplan; path = RevenueCatCommon/TestPlans/UnitTests.xctestplan; sourceTree = "<group>"; };
+		886EC42B2C10189000C320ED /* StoreKitUnitTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = StoreKitUnitTests.xctestplan; path = RevenueCatCommon/TestPlans/StoreKitUnitTests.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				883FBFE32C0FC6E1001A2A7F /* RevenueCatUI in Frameworks */,
+				8880C49C2C0FECAB001BF2ED /* RevenueCatUI in Frameworks */,
 				883FBFDF2C0FC2E5001A2A7F /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -45,7 +46,8 @@
 		883FBF742C0F9058001A2A7F = {
 			isa = PBXGroup;
 			children = (
-				883FBFF92C0FDEFD001A2A7F /* RevenueCatCommon-Package.xctestplan */,
+				886EC42B2C10189000C320ED /* StoreKitUnitTests.xctestplan */,
+				886EC42A2C10187700C320ED /* UnitTests.xctestplan */,
 				883FBFF72C0FD80D001A2A7F /* RevenueCatCommon */,
 				883FBFA32C0F9BBC001A2A7F /* RevenueCat */,
 				883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */,
@@ -109,7 +111,7 @@
 			name = RevenueCatApp;
 			packageProductDependencies = (
 				883FBFDE2C0FC2E5001A2A7F /* RevenueCat */,
-				883FBFE22C0FC6E1001A2A7F /* RevenueCatUI */,
+				8880C49B2C0FECAB001BF2ED /* RevenueCatUI */,
 			);
 			productName = RevenueCatApp;
 			productReference = 883FBF7D2C0F9058001A2A7F /* RevenueCatApp.app */;
@@ -395,7 +397,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCat;
 		};
-		883FBFE22C0FC6E1001A2A7F /* RevenueCatUI */ = {
+		8880C49B2C0FECAB001BF2ED /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = RevenueCatUI;
 		};

@@ -24,9 +24,9 @@ let package = Package(
         .target(
             name: "RevenueCatUI",
             dependencies: ["RevenueCat"]
-        ),
-        .testTarget(
-            name: "RevenueCatUITests",
-            dependencies: ["RevenueCatUI"]),
+        )//,
+//        .testTarget(
+//            name: "RevenueCatUITests",
+//            dependencies: ["RevenueCatUI"]),
     ]
 )

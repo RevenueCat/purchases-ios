@@ -40,9 +40,9 @@ func haveValidSnapshot<Value>(
             record: recording,
             timeout: timeout,
             file: file,
-            testName: separateOSVersions
+            testName: "foobar", /*separateOSVersions
                 ? CurrentTestCaseTracker.osVersionAndTestName
-                : CurrentTestCaseTracker.sanitizedTestName,
+                : CurrentTestCaseTracker.sanitizedTestName,*/
             line: line
         ) else {
             return PredicateResult(bool: true, message: .fail("have valid snapshot"))

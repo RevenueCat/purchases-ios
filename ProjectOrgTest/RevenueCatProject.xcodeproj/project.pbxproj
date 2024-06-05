@@ -13,6 +13,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		883389322C1018E10079CB42 /* RevenueCatCommon */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatCommon; sourceTree = "<group>"; };
 		883FBF612C0F8FC4001A2A7F /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		883FBF642C0F8FC4001A2A7F /* RevenueCat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCat.h; sourceTree = "<group>"; };
 		883FBF9A2C0F9761001A2A7F /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
@@ -35,6 +36,7 @@
 		883FBF572C0F8FC4001A2A7F = {
 			isa = PBXGroup;
 			children = (
+				883389322C1018E10079CB42 /* RevenueCatCommon */,
 				883FBF9B2C0F976A001A2A7F /* RevenueCat */,
 				883FBF9A2C0F9761001A2A7F /* RevenueCatUI */,
 				883FBF632C0F8FC4001A2A7F /* RevenueCatProject */,

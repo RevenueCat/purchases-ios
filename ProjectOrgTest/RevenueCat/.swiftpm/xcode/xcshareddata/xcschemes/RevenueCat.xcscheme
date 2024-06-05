@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RevenueCatCommon"
-               BuildableName = "RevenueCatCommon"
-               BlueprintName = "RevenueCatCommon"
+               BlueprintIdentifier = "RevenueCat"
+               BuildableName = "RevenueCat"
+               BlueprintName = "RevenueCat"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -27,28 +27,8 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
-      <TestPlans>
-         <TestPlanReference
-            reference = "container:TestPlans/UnitTests.xctestplan"
-            default = "YES">
-         </TestPlanReference>
-         <TestPlanReference
-            reference = "container:TestPlans/StoreKitUnitTests.xctestplan">
-         </TestPlanReference>
-      </TestPlans>
-      <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RevenueCatCommonTests"
-               BuildableName = "RevenueCatCommonTests"
-               BlueprintName = "RevenueCatCommonTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldAutocreateTestPlan = "YES">
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -70,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "RevenueCatCommon"
-            BuildableName = "RevenueCatCommon"
-            BlueprintName = "RevenueCatCommon"
+            BlueprintIdentifier = "RevenueCat"
+            BuildableName = "RevenueCat"
+            BlueprintName = "RevenueCat"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

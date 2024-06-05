@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "81A58886-6E89-4F19-9D92-FC306C6083EB",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UnitTests",
+        "name" : "UnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

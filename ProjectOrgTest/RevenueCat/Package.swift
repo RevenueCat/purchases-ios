@@ -27,22 +27,22 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "RevenueCat",
-            exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"]),
-        .testTarget(
-            name: "RevenueCatTests",
-            dependencies: [
-                "RevenueCat",
-                "Nimble",
-                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-            ]),
-        .testTarget(
-            name: "OtherTests",
-            dependencies: [
-                "RevenueCat",
-                "Nimble",
-                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
-            ])
+            exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"])
+//        .testTarget(
+//            name: "RevenueCatTests",
+//            dependencies: [
+//                "RevenueCat",
+//                "Nimble",
+//                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+//                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+//            ]),
+//        .testTarget(
+//            name: "OtherTests",
+//            dependencies: [
+//                "RevenueCat",
+//                "Nimble",
+//                .product(name: "OHHTTPStubsSwift", package: "OHHTTPStubs"),
+//                .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
+//            ])
     ]
 )

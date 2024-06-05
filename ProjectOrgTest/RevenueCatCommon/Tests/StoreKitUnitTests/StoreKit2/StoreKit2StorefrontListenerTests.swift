@@ -12,6 +12,7 @@
 //  Created by Juanpe Catalán on 9/5/22.
 
 import Nimble
+@testable import RevenueCatCommon
 @testable import RevenueCat
 import StoreKit
 import XCTest

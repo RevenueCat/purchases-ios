@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "873EC6E5-FAA4-4A9A-B041-15759159F227",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "StoreKitUnitTests",
+        "name" : "StoreKitUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}
