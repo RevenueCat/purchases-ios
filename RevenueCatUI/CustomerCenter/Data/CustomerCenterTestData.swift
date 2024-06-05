@@ -70,7 +70,7 @@ enum CustomerCenterTestData {
         title: CustomerCenterData.LocalizedString(en_US: "How can we help?"),
         supportEmail: "support@revenuecat.com",
         appearance: CustomerCenterData.Appearance(
-            mode: "SYSTEM",
+            mode: .system,
             color: PaywallColor(
                 light: PaywallColor(stringLiteral: "#000000"),
                 dark: PaywallColor(stringLiteral: "#ffffff")

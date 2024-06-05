@@ -11,6 +11,7 @@ import RevenueCat
 /// Represents a color to be used by `RevenueCatUI`
 public typealias RCColor = PaywallColor
 
+// swiftlint:disable nesting
 struct CustomerCenterData {
 
     let id: String
@@ -80,8 +81,12 @@ struct CustomerCenterData {
 
     struct Appearance {
 
-        let mode: String
+        let mode: Mode
         let color: RCColor
+
+        enum Mode: String {
+            case system = "SYSTEM"
+        }
 
     }
 
