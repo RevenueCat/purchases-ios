@@ -18,6 +18,7 @@ import Nimble
 import SnapshotTesting
 import SwiftUI
 
+
 /// - Parameter separateOSVersions: pass `true` if you want to generate separate snapshots for each version.
 func haveValidSnapshot<Value>(
     as strategy: Snapshotting<Value, some Any>,

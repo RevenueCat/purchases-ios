@@ -25,6 +25,8 @@
 		883FBF902C0F9091001A2A7F /* RevenueCatProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCatProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		883FBFA32C0F9BBC001A2A7F /* RevenueCat */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCat; sourceTree = "<group>"; };
 		883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
+		883FBFF72C0FD80D001A2A7F /* RevenueCatCommon */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatCommon; sourceTree = "<group>"; };
+		883FBFF92C0FDEFD001A2A7F /* RevenueCatCommon-Package.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RevenueCatCommon-Package.xctestplan"; path = "RevenueCatCommon/Tests/RevenueCatCommon-Package.xctestplan"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +45,8 @@
 		883FBF742C0F9058001A2A7F = {
 			isa = PBXGroup;
 			children = (
+				883FBFF92C0FDEFD001A2A7F /* RevenueCatCommon-Package.xctestplan */,
+				883FBFF72C0FD80D001A2A7F /* RevenueCatCommon */,
 				883FBFA32C0F9BBC001A2A7F /* RevenueCat */,
 				883FBFA42C0F9BC0001A2A7F /* RevenueCatUI */,
 				883FBF7F2C0F9058001A2A7F /* RevenueCatApp */,

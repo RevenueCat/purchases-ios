@@ -1,0 +1,78 @@
+
+{
+  "asset_base_url" : "https:\/\/assets.pawwalls.com",
+  "config" : {
+    "blurred_background_image" : false,
+    "colors" : {
+      "dark" : {
+        "accent1" : "#f25a5a",
+        "accent2" : "#f25a5a",
+        "accent3" : "#606463",
+        "background" : "#000000",
+        "call_to_action_background" : "#f25a5a",
+        "call_to_action_foreground" : "#FFFFFF",
+        "text1" : "#FFFFFF",
+        "text2" : "#000000",
+        "text3" : "#FFFFFF"
+      },
+      "light" : {
+        "accent1" : "#f25a5a",
+        "accent2" : "#f25a5a",
+        "accent3" : "#DFDFDF",
+        "background" : "#FFFFFF",
+        "call_to_action_background" : "#f25a5a",
+        "call_to_action_foreground" : "#FFFFFF",
+        "text1" : "#000000",
+        "text2" : "#FFFFFF",
+        "text3" : "#000000"
+      }
+    },
+    "default_package" : "$rc_annual",
+    "display_restore_purchases" : true,
+    "images" : {
+      "background" : null,
+      "header" : "954459_1703109702.png",
+      "icon" : null
+    },
+    "packages" : [
+      "$rc_annual",
+      "$rc_monthly"
+    ],
+    "privacy_url" : "https:\/\/www.revenuecat.com\/privacy\/",
+    "tos_url" : "https:\/\/www.revenuecat.com\/terms\/"
+  },
+  "localized_strings" : {
+    "zh_Hans" : {
+      "call_to_action" : "Continue simplified",
+      "call_to_action_with_intro_offer" : null,
+      "features" : [
+        {
+          "icon_id" : "tick",
+          "title" : "Simplified"
+        }
+      ],
+      "offer_details" : "{{ price_per_period }}",
+      "offer_details_with_intro_offer" : null,
+      "offer_name" : "{{ sub_period }}",
+      "subtitle" : null,
+      "title" : "Simplified"
+    },
+    "zh_Hant" : {
+      "call_to_action" : "Continue",
+      "call_to_action_with_intro_offer" : null,
+      "features" : [
+        {
+          "icon_id" : "tick",
+          "title" : "Traditional"
+        }
+      ],
+      "offer_details" : "{{ price_per_period }}",
+      "offer_details_with_intro_offer" : null,
+      "offer_name" : "{{ sub_period }}",
+      "subtitle" : null,
+      "title" : "Traditional"
+    }
+  },
+  "revision" : 7,
+  "template_name" : "5"
+}
