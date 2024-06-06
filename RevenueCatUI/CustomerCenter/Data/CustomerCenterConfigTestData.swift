@@ -49,7 +49,8 @@ enum CustomerCenterConfigTestData {
                                 options: [
                                     .init(
                                         id: "iewrthals",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive")                                    ),
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive")
+                                    ),
                                     .init(
                                         id: "qklpadsfj",
                                         title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app")
@@ -66,7 +67,9 @@ enum CustomerCenterConfigTestData {
         supportEmail: "support@revenuecat.com",
         appearance: .init(
             mode: .system,
+            // swiftlint:disable:next force_try
             light: try! .init(stringRepresentation: "#000000"),
+            // swiftlint:disable:next force_try
             dark: try! .init(stringRepresentation: "#ffffff")
         )
     )

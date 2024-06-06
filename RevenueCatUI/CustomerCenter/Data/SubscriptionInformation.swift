@@ -30,7 +30,7 @@ struct SubscriptionInformation {
     private let willRenew: Bool
     private let active: Bool
 
-    init(title: String, 
+    init(title: String,
          durationTitle: String,
          price: String,
          nextRenewalString: String?,
