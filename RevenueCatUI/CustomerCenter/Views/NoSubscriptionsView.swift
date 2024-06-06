@@ -16,6 +16,8 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -52,6 +54,8 @@ struct NoSubscriptionsView: View {
 
 }
 
+#if DEBUG
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -63,3 +67,7 @@ struct NoSubscriptionsView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
+
+#endif

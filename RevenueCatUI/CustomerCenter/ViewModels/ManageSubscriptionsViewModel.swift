@@ -98,12 +98,12 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
+    #if os(iOS) || targetEnvironment(macCatalyst)
     func handleAction(for path: CustomerCenterConfigData.HelpPath) {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
-            #if os(iOS) || targetEnvironment(macCatalyst)
             Task {
                 guard let subscriptionInformation = self.subscriptionInformation else { return }
                 let status = try await Purchases.shared.beginRefundRequest(
@@ -118,7 +118,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
                     self.refundRequestStatus = "Refund canceled"
                 }
             }
-            #endif
         case .changePlans:
             Task {
                 try await Purchases.shared.showManageSubscriptions()
@@ -131,6 +130,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             break
         }
     }
+    #endif
 
 }
 
