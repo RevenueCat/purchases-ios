@@ -59,19 +59,6 @@ struct CustomerCenterConfigData {
 
     }
 
-    struct PromotionalOffer {
-
-        let iosOfferId: String
-        let eligibility: Eligibility
-
-    }
-
-    struct Eligibility {
-
-        let firstSeen: String
-
-    }
-
     struct FeedbackSurvey {
 
         let title: LocalizedString
@@ -83,7 +70,6 @@ struct CustomerCenterConfigData {
 
         let id: String
         let title: LocalizedString
-        let promotionalOffer: PromotionalOffer?
 
     }
 

@@ -32,10 +32,7 @@ enum CustomerCenterConfigTestData {
                 id: "nwodkdnfaoeb",
                 title: .init(en_US: "Request a refund"),
                 type: .refundRequest,
-                detail: .promotionalOffer(.init(
-                                iosOfferId: "rc-refund-offer",
-                                eligibility: .init(firstSeen: "> 30")
-                            ))
+                detail: nil
             ),
             .init(
                 id: "nfoaiodifj9",
@@ -52,24 +49,14 @@ enum CustomerCenterConfigTestData {
                                 options: [
                                     .init(
                                         id: "iewrthals",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive"),
-                                        promotionalOffer: CustomerCenterConfigData.PromotionalOffer(
-                                            iosOfferId: "rc-cancel-offer",
-                                            eligibility: CustomerCenterConfigData.Eligibility(firstSeen: "> 14")
-                                        )
-                                    ),
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive")                                    ),
                                     .init(
                                         id: "qklpadsfj",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app"),
-                                        promotionalOffer: CustomerCenterConfigData.PromotionalOffer(
-                                            iosOfferId: "rc-cancel-offer",
-                                            eligibility: CustomerCenterConfigData.Eligibility(firstSeen: "> 7")
-                                        )
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app")
                                     ),
                                     .init(
                                         id: "jargnapocps",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Bought by mistake"),
-                                        promotionalOffer: nil
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Bought by mistake")
                                     )
                                 ]
                             ))
