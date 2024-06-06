@@ -34,7 +34,8 @@ public struct CustomerCenterView: View {
         self._viewModel = .init(wrappedValue: viewModel)
     }
 
-    var body: some View {
+    // swiftlint:disable:next missing_docs
+    public var body: some View {
         NavigationView {
             NavigationLink(destination: destinationView()) {
                 Text("Billing and subscription help")
