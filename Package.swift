@@ -40,8 +40,8 @@ let package = Package(
                  targets: ["RevenueCat_CustomEntitlementComputation"]),
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
-        /*.library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"])*/
+        .library(name: "RevenueCatUI",
+                 targets: ["RevenueCatUI"])
     ],
     dependencies: dependencies,
     targets: [
@@ -69,7 +69,7 @@ let package = Package(
                     dependencies: ["ReceiptParser", "Nimble"],
                     exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
-        /*.target(name: "RevenueCatUI",
+        .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
                 resources: [
@@ -84,6 +84,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])*/
+                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )
