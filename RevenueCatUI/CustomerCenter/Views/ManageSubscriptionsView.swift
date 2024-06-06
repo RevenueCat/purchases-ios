@@ -16,6 +16,8 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -134,7 +136,7 @@ struct ManageSubscriptionsButtonsView: View {
             if let configuration = viewModel.configuration {
                 let filteredPaths = configuration.paths.filter { path in
                     #if targetEnvironment(macCatalyst)
-                        return path.type != .refundRequest
+                        return path.type == .refundRequest
                     #else
                         return true
                     #endif
@@ -175,5 +177,7 @@ struct ManageSubscriptionsView_Previews: PreviewProvider {
     }
 
 }
+
+#endif
 
 #endif

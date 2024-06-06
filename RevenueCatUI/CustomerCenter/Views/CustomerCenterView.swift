@@ -16,13 +16,19 @@
 import RevenueCat
 import SwiftUI
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS)
+
+/// A SwiftUI view for displaying a customer support common tasks
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-struct CustomerCenterView: View {
+public struct CustomerCenterView: View {
 
     @StateObject private var viewModel = CustomerCenterViewModel()
+
+    /// Create a view to handle common customer support tasks
+    public init() {}
 
     fileprivate init(viewModel: CustomerCenterViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
@@ -32,10 +38,7 @@ struct CustomerCenterView: View {
         NavigationView {
             NavigationLink(destination: destinationView()) {
                 Text("Billing and subscription help")
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .buttonStyle(ManageSubscriptionsButtonStyle())
             }
         }
         .task {
@@ -86,5 +89,7 @@ struct CustomerCenterView_Previews: PreviewProvider {
    }
 
 }
+
+#endif
 
 #endif
