@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  TestData.swift
+//  CustomerCenterConfigTestData.swift
 //
 //
 //  Created by Cesar de la Vega on 28/5/24.
@@ -16,10 +16,10 @@
 import Foundation
 import RevenueCat
 
-enum CustomerCenterTestData {
+enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
-    static let customerCenterData = CustomerCenterData(
+    static let customerCenterData = CustomerCenterConfigData(
         id: "ccenter_lasdlfalaowpwp",
         paths: [
             .init(
@@ -52,23 +52,23 @@ enum CustomerCenterTestData {
                                 options: [
                                     .init(
                                         id: "iewrthals",
-                                        title: CustomerCenterData.LocalizedString(en_US: "Too expensive"),
-                                        promotionalOffer: CustomerCenterData.PromotionalOffer(
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive"),
+                                        promotionalOffer: CustomerCenterConfigData.PromotionalOffer(
                                             iosOfferId: "rc-cancel-offer",
-                                            eligibility: CustomerCenterData.Eligibility(firstSeen: "> 14")
+                                            eligibility: CustomerCenterConfigData.Eligibility(firstSeen: "> 14")
                                         )
                                     ),
                                     .init(
                                         id: "qklpadsfj",
-                                        title: CustomerCenterData.LocalizedString(en_US: "Don't use the app"),
-                                        promotionalOffer: CustomerCenterData.PromotionalOffer(
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app"),
+                                        promotionalOffer: CustomerCenterConfigData.PromotionalOffer(
                                             iosOfferId: "rc-cancel-offer",
-                                            eligibility: CustomerCenterData.Eligibility(firstSeen: "> 7")
+                                            eligibility: CustomerCenterConfigData.Eligibility(firstSeen: "> 7")
                                         )
                                     ),
                                     .init(
                                         id: "jargnapocps",
-                                        title: CustomerCenterData.LocalizedString(en_US: "Bought by mistake"),
+                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Bought by mistake"),
                                         promotionalOffer: nil
                                     )
                                 ]

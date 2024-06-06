@@ -1,4 +1,12 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  ManageSubscriptionsViewModel.swift
 //
 //
@@ -26,7 +34,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var refundRequestStatus: String?
     @Published
-    var configuration: CustomerCenterData?
+    var configuration: CustomerCenterConfigData?
     @Published
     var showRestoreAlert: Bool = false
     @Published var state: State {
@@ -51,12 +59,12 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .notLoaded
     }
 
-    init(configuration: CustomerCenterData) {
+    init(configuration: CustomerCenterConfigData) {
         state = .notLoaded
         self.configuration = configuration
     }
 
-    init(configuration: CustomerCenterData, subscriptionInformation: SubscriptionInformation) {
+    init(configuration: CustomerCenterConfigData, subscriptionInformation: SubscriptionInformation) {
         self.configuration = configuration
         self.subscriptionInformation = subscriptionInformation
         state = .success
@@ -90,7 +98,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    func handleAction(for path: CustomerCenterData.HelpPath) {
+    func handleAction(for path: CustomerCenterConfigData.HelpPath) {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
