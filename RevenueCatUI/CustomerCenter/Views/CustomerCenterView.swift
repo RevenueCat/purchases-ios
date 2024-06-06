@@ -8,7 +8,10 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct CustomerCenterView: View {
 
     @StateObject private var viewModel = CustomerCenterViewModel()
@@ -34,7 +37,10 @@ struct CustomerCenterView: View {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private extension CustomerCenterView {
 
     func checkAndLoadSubscriptions() async {
@@ -63,6 +69,7 @@ private extension CustomerCenterView {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {

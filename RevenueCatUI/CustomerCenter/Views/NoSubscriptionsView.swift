@@ -8,7 +8,10 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct NoSubscriptionsView: View {
 
     @Environment(\.dismiss) var dismiss
@@ -41,7 +44,14 @@ struct NoSubscriptionsView: View {
 
 }
 
-@available(iOS 15.0, *)
-#Preview {
-    NoSubscriptionsView()
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+struct NoSubscriptionsView_Previews: PreviewProvider {
+
+    static var previews: some View {
+        NoSubscriptionsView()
+    }
+
 }

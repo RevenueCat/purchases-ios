@@ -9,7 +9,10 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct WrongPlatformView: View {
 
     @State
@@ -84,7 +87,10 @@ struct WrongPlatformView: View {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct WrongPlatformView_Previews: PreviewProvider {
 
     static var previews: some View {
