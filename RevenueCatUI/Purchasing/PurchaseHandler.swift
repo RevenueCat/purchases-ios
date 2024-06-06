@@ -152,10 +152,11 @@ extension PurchaseHandler {
 
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
-        if self.purchases.purchasesAreCompletedBy == .revenueCat {
-            return try await performPurchase(package: package)
-        } else {
-            return try await performExternalPurchaseLogic(package: package)
+        switch self.purchases.purchasesAreCompletedBy {
+        case .revenueCat:
+            try await performPurchase(package: package)
+        case .myApp:
+            try await performExternalPurchaseLogic(package: package)
         }
     }
 
@@ -227,10 +228,11 @@ extension PurchaseHandler {
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
-        if self.purchases.purchasesAreCompletedBy == .revenueCat {
-            return try await performRestorePurchases()
-        } else {
-            return try await performExternalRestoreLogic()
+        switch self.purchases.purchasesAreCompletedBy {
+        case .revenueCat:
+            try await performRestorePurchases()
+        case .myApp:
+            try await performExternalRestoreLogic()
         }
     }
 
