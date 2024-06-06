@@ -35,7 +35,7 @@ struct IconView<S: ShapeStyle>: View {
 /// An icon to be displayed by `IconView`.
 enum PaywallIcon: String, CaseIterable {
 
-    case add
+    case addplus
     case android
     case apple
     case attachMoney = "attach_money"
