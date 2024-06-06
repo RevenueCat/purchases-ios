@@ -269,6 +269,11 @@ extension PurchaseHandler {
     func performExternalRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
         Logger.debug(Strings.executing_external_restore_logic)
 
+        defer {
+            self.restoreInProgress = false
+            self.actionInProgress = false
+        }
+
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
@@ -280,11 +285,6 @@ extension PurchaseHandler {
         }
 
         self.startAction()
-
-        defer {
-            self.restoreInProgress = false
-            self.actionInProgress = false
-        }
 
         let success = try await withCheckedThrowingContinuation { continuation in
             externalRestorePurchaseContinuation = continuation
