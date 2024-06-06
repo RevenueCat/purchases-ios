@@ -86,9 +86,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
             // TODO: support non-consumables
             self.subscriptionInformation = SubscriptionInformation(
                 title: subscribedProduct.localizedTitle,
-                duration: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
+                durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
                 price: subscribedProduct.localizedPriceString,
-                nextRenewal: currentEntitlement.expirationDate!,
+                nextRenewalString: currentEntitlement.expirationDate.map { "\($0)" } ?? nil,
                 willRenew: currentEntitlement.willRenew,
                 productIdentifier: subscribedProductID,
                 active: currentEntitlement.isActive
