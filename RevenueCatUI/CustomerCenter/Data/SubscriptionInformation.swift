@@ -18,15 +18,33 @@ import Foundation
 struct SubscriptionInformation {
 
     let title: String
-    let duration: String
+    let durationTitle: String
     let price: String
-    let nextRenewal: Date?
-    let willRenew: Bool
+    let nextRenewalString: String?
     let productIdentifier: String
-    let active: Bool
 
     var renewalString: String {
         return active ? (willRenew ? "Renews" : "Expires") : "Expired"
+    }
+
+    private let willRenew: Bool
+    private let active: Bool
+
+    init(title: String, 
+         durationTitle: String,
+         price: String,
+         nextRenewalString: String?,
+         willRenew: Bool,
+         productIdentifier: String,
+         active: Bool
+    ) {
+        self.title = title
+        self.durationTitle = durationTitle
+        self.price = price
+        self.nextRenewalString = nextRenewalString
+        self.productIdentifier = productIdentifier
+        self.willRenew = willRenew
+        self.active = active
     }
 
 }

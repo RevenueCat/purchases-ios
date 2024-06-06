@@ -91,7 +91,7 @@ struct SubscriptionDetailsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(subscriptionInformation.title) - \(subscriptionInformation.duration)")
+            Text("\(subscriptionInformation.title) - \(subscriptionInformation.durationTitle)")
                 .font(.subheadline)
                 .padding([.horizontal, .top])
 
@@ -100,7 +100,7 @@ struct SubscriptionDetailsView: View {
                 .foregroundColor(Color.gray)
                 .padding(.horizontal)
 
-            if let nextRenewal =  subscriptionInformation.nextRenewal {
+            if let nextRenewal =  subscriptionInformation.nextRenewalString {
                 Text("\(subscriptionInformation.renewalString): \(String(describing: nextRenewal))")
                     .font(.caption)
                     .foregroundColor(Color.gray)
