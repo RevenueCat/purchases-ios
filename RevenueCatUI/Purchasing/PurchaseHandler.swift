@@ -272,7 +272,7 @@ extension PurchaseHandler {
         self.restoreError = nil
 
         DispatchQueue.main.async {
-            // this triggers the view's `.handleRestore` function, and its callback must be called
+            // this triggers the view's `.handlePurchaseAndRestore` function, and its callback must be called
             // after the continuation is set below
             self.performRestore = RestoreResultReporter(callback: self.reportExternalRestoreResult)
         }
