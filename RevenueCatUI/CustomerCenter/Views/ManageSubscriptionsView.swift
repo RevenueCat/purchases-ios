@@ -8,7 +8,10 @@
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct ManageSubscriptionsView: View {
 
     @Environment(\.openURL)
@@ -44,7 +47,10 @@ struct ManageSubscriptionsView: View {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private extension ManageSubscriptionsView {
 
     func checkAndLoadSubscriptionInformation() async {
@@ -55,7 +61,10 @@ private extension ManageSubscriptionsView {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct HeaderView: View {
     var body: some View {
         Text("How can we help?")
@@ -64,7 +73,10 @@ struct HeaderView: View {
     }
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatus: String?
@@ -98,7 +110,10 @@ struct SubscriptionDetailsView: View {
     }
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
@@ -109,7 +124,14 @@ struct ManageSubscriptionsButtonsView: View {
     var body: some View {
         VStack(spacing: 16) {
             if let configuration = viewModel.configuration {
-                ForEach(configuration.paths, id: \.id) { path in
+                let filteredPaths = configuration.paths.filter { path in
+                    #if targetEnvironment(macCatalyst)
+                        return path.type != .refundRequest
+                    #else
+                        return true
+                    #endif
+                }
+                ForEach(filteredPaths, id: \.id) { path in
                     Button(path.title.en_US) {
                         viewModel.handleAction(for: path)
                     }
@@ -134,6 +156,7 @@ struct ManageSubscriptionsButtonsView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct ManageSubscriptionsView_Previews: PreviewProvider {
 
     static var previews: some View {

@@ -82,7 +82,8 @@ struct CustomerCenterData {
     struct Appearance {
 
         let mode: Mode
-        let color: RCColor
+        let light: RCColor
+        let dark: RCColor
 
         enum Mode: String {
             case system = "SYSTEM"

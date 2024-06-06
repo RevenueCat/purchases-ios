@@ -9,7 +9,10 @@ import Foundation
 import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 struct RestorePurchasesAlert: ViewModifier {
 
     @Binding
@@ -82,7 +85,10 @@ struct RestorePurchasesAlert: ViewModifier {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private extension RestorePurchasesAlert {
 
     func setAlertType(_ newType: AlertType) {
@@ -94,7 +100,10 @@ private extension RestorePurchasesAlert {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension View {
     func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {
         self.modifier(RestorePurchasesAlert(isPresented: isPresented))

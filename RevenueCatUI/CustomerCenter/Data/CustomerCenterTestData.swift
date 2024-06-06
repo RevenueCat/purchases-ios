@@ -1,4 +1,12 @@
 //
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
 //  TestData.swift
 //
 //
@@ -14,35 +22,35 @@ enum CustomerCenterTestData {
     static let customerCenterData = CustomerCenterData(
         id: "ccenter_lasdlfalaowpwp",
         paths: [
-            CustomerCenterData.HelpPath(
+            .init(
                 id: "ownmsldfow",
-                title: CustomerCenterData.LocalizedString(en_US: "Didn't receive purchase"),
+                title: .init(en_US: "Didn't receive purchase"),
                 type: .missingPurchase,
                 detail: nil
             ),
-            CustomerCenterData.HelpPath(
+            .init(
                 id: "nwodkdnfaoeb",
-                title: CustomerCenterData.LocalizedString(en_US: "Request a refund"),
+                title: .init(en_US: "Request a refund"),
                 type: .refundRequest,
-                detail: .promotionalOffer(CustomerCenterData.PromotionalOffer(
+                detail: .promotionalOffer(.init(
                                 iosOfferId: "rc-refund-offer",
-                                eligibility: CustomerCenterData.Eligibility(firstSeen: "> 30")
+                                eligibility: .init(firstSeen: "> 30")
                             ))
             ),
-            CustomerCenterData.HelpPath(
+            .init(
                 id: "nfoaiodifj9",
-                title: CustomerCenterData.LocalizedString(en_US: "Change plans"),
+                title: .init(en_US: "Change plans"),
                 type: .changePlans,
                 detail: nil
             ),
-            CustomerCenterData.HelpPath(
+            .init(
                 id: "jnkasldfhas",
-                title: CustomerCenterData.LocalizedString(en_US: "Cancel subscription"),
+                title: .init(en_US: "Cancel subscription"),
                 type: .cancel,
-                detail: .feedbackSurvey(CustomerCenterData.FeedbackSurvey(
-                                title: CustomerCenterData.LocalizedString(en_US: "Why are you cancelling?"),
+                detail: .feedbackSurvey(.init(
+                                title: .init(en_US: "Why are you cancelling?"),
                                 options: [
-                                    CustomerCenterData.FeedbackSurveyOption(
+                                    .init(
                                         id: "iewrthals",
                                         title: CustomerCenterData.LocalizedString(en_US: "Too expensive"),
                                         promotionalOffer: CustomerCenterData.PromotionalOffer(
@@ -50,7 +58,7 @@ enum CustomerCenterTestData {
                                             eligibility: CustomerCenterData.Eligibility(firstSeen: "> 14")
                                         )
                                     ),
-                                    CustomerCenterData.FeedbackSurveyOption(
+                                    .init(
                                         id: "qklpadsfj",
                                         title: CustomerCenterData.LocalizedString(en_US: "Don't use the app"),
                                         promotionalOffer: CustomerCenterData.PromotionalOffer(
@@ -58,7 +66,7 @@ enum CustomerCenterTestData {
                                             eligibility: CustomerCenterData.Eligibility(firstSeen: "> 7")
                                         )
                                     ),
-                                    CustomerCenterData.FeedbackSurveyOption(
+                                    .init(
                                         id: "jargnapocps",
                                         title: CustomerCenterData.LocalizedString(en_US: "Bought by mistake"),
                                         promotionalOffer: nil
@@ -67,14 +75,12 @@ enum CustomerCenterTestData {
                             ))
             )
         ],
-        title: CustomerCenterData.LocalizedString(en_US: "How can we help?"),
+        title: .init(en_US: "How can we help?"),
         supportEmail: "support@revenuecat.com",
-        appearance: CustomerCenterData.Appearance(
+        appearance: .init(
             mode: .system,
-            color: PaywallColor(
-                light: PaywallColor(stringLiteral: "#000000"),
-                dark: PaywallColor(stringLiteral: "#ffffff")
-            )
+            light: try! .init(stringRepresentation: "#000000"),
+            dark: try! .init(stringRepresentation: "#ffffff")
         )
     )
 
