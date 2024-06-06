@@ -12,8 +12,7 @@ let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "tr
 var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
     // SST requires iOS 13 starting from version 1.13.0
-    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0")),
-    .package(name: "RevenueCatUI", path: "RevenueCatUI")
+    .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
 ]
 if shouldIncludeDocCPlugin {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
@@ -40,8 +39,8 @@ let package = Package(
                  targets: ["RevenueCat_CustomEntitlementComputation"]),
         .library(name: "ReceiptParser",
                  targets: ["ReceiptParser"]),
-        /*.library(name: "RevenueCatUI",
-                 targets: ["RevenueCatUI"])*/
+        .library(name: "RevenueCatUI",
+                 targets: ["RevenueCatUI"])
     ],
     dependencies: dependencies,
     targets: [
@@ -69,7 +68,7 @@ let package = Package(
                     dependencies: ["ReceiptParser", "Nimble"],
                     exclude: ["ReceiptParserTests-Info.plist"]),
         // RevenueCatUI
-        /*.target(name: "RevenueCatUI",
+        .target(name: "RevenueCatUI",
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
                 resources: [
@@ -84,6 +83,6 @@ let package = Package(
                         .product(name: "SnapshotTesting", package: "swift-snapshot-testing")
                     ],
                     exclude: ["Templates/__Snapshots__", "Data/__Snapshots__", "TestPlans"],
-                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])*/
+                    resources: [.copy("Resources/header.jpg"), .copy("Resources/background.jpg")])
     ]
 )
