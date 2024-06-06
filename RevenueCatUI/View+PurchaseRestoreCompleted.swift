@@ -423,6 +423,9 @@ private struct HandleRestoreModifier: ViewModifier {
             .onPreferenceChange(HandleRestorePreferenceKey.self) { restoreResultReporter in
                 if let restoreResultReporter {
                     self.handler(restoreResultReporter)
+                } else {
+                    Logger.error("Change to `HandleRestorePreferenceKey` with a value of `nil` means " +
+                                 "the performPurchase modifier cannot be called.")
                 }
             }
     }
