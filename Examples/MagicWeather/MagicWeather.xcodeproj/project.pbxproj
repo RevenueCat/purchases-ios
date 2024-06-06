@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E3BE86A2BF7C3540045B504 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3BE8692BF7C3540045B504 /* RevenueCatUI */; };
+		4E3BE8732C11BF590045B504 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3BE8722C11BF590045B504 /* RevenueCat */; };
+		4E3BE8752C11BF590045B504 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3BE8742C11BF590045B504 /* RevenueCatUI */; };
 		5539DF1D258806A10073FB19 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF1C258806A10073FB19 /* Errors.swift */; };
 		5539DF2025880AB80073FB19 /* WeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF1F25880AB80073FB19 /* WeatherViewController.swift */; };
 		5539DF24258A9AA70073FB19 /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5539DF23258A9AA70073FB19 /* SampleData.swift */; };
@@ -21,7 +22,6 @@
 		5582ECE02587EF8800ACB34B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECDF2587EF8800ACB34B /* Assets.xcassets */; };
 		5582ECE32587EF8800ACB34B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5582ECE12587EF8800ACB34B /* LaunchScreen.storyboard */; };
 		5582ECFA2587F29600ACB34B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582ECF92587F29600ACB34B /* Constants.swift */; };
-		8380C26626FE001500922AB1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 8380C26526FE001500922AB1 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,8 +48,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E3BE86A2BF7C3540045B504 /* RevenueCatUI in Frameworks */,
-				8380C26626FE001500922AB1 /* RevenueCat in Frameworks */,
+				4E3BE8752C11BF590045B504 /* RevenueCatUI in Frameworks */,
+				4E3BE8732C11BF590045B504 /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,8 +175,8 @@
 			);
 			name = MagicWeather;
 			packageProductDependencies = (
-				8380C26526FE001500922AB1 /* RevenueCat */,
-				4E3BE8692BF7C3540045B504 /* RevenueCatUI */,
+				4E3BE8722C11BF590045B504 /* RevenueCat */,
+				4E3BE8742C11BF590045B504 /* RevenueCatUI */,
 			);
 			productName = "Magic Weather";
 			productReference = 5582ECD32587EF8500ACB34B /* MagicWeather.app */;
@@ -206,7 +206,7 @@
 			);
 			mainGroup = 5582ECCA2587EF8500ACB34B;
 			packageReferences = (
-				5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				4E3BE8712C11BF590045B504 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			productRefGroup = 5582ECD42587EF8500ACB34B /* Products */;
 			projectDirPath = "";
@@ -450,26 +450,26 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		4E3BE8712C11BF590045B504 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.41.0;
+				minimumVersion = 4.43.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4E3BE8692BF7C3540045B504 /* RevenueCatUI */ = {
+		4E3BE8722C11BF590045B504 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */;
-			productName = RevenueCatUI;
-		};
-		8380C26526FE001500922AB1 /* RevenueCat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5582ECEB2587EFC800ACB34B /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			package = 4E3BE8712C11BF590045B504 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
+		};
+		4E3BE8742C11BF590045B504 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E3BE8712C11BF590045B504 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
