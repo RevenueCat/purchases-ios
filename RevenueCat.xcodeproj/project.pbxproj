@@ -1364,6 +1364,7 @@
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		887E73EB2C12244A002977DE /* RevenueCatUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RevenueCatUI; sourceTree = "<group>"; };
 		9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogIntent.swift; sourceTree = "<group>"; };
 		9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConfigureStrings.swift; sourceTree = "<group>"; };
 		9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomerInfoStrings.swift; sourceTree = "<group>"; };
@@ -2047,6 +2048,7 @@
 		352629F41F7C4B9100C04F2C = {
 			isa = PBXGroup;
 			children = (
+				887E73EB2C12244A002977DE /* RevenueCatUI */,
 				2DC5621724EC63420031F69B /* Sources */,
 				2DDE870027E5238500D8B390 /* Tests */,
 				352629FF1F7C4B9100C04F2C /* Products */,
@@ -3188,6 +3190,49 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
+				zh_Hans,
+				he,
+				en_AU,
+				ar,
+				el,
+				ja,
+				uk,
+				es_419,
+				en_US,
+				pt_BR,
+				da,
+				it,
+				bg,
+				sk,
+				kk,
+				pt_PT,
+				ms,
+				sv,
+				cs,
+				ko,
+				zh_Hant,
+				en_CA,
+				no,
+				hu,
+				tr,
+				pl,
+				en_GB,
+				vi,
+				ru,
+				fr_CA,
+				es_ES,
+				fi,
+				id,
+				nl,
+				th,
+				ro,
+				hr,
+				hi,
+				ca,
+				"zh-Hans",
+				"zh-Hant",
+				nb,
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
