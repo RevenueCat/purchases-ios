@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E3BE8662BF77F420045B504 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3BE8652BF77F420045B504 /* RevenueCat */; };
-		4E3BE8682BF77F420045B504 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4E3BE8672BF77F420045B504 /* RevenueCatUI */; };
+		4E8A68712C11CB0300DEC18D /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4E8A68702C11CB0300DEC18D /* RevenueCat */; };
+		4E8A68732C11CB0300DEC18D /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4E8A68722C11CB0300DEC18D /* RevenueCatUI */; };
 		4FDA13832A33D9B900C45CFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4FDA13822A33D86100C45CFE /* PrivacyInfo.xcprivacy */; };
 		55413BE725B735AF00ECCA5A /* UserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BE625B735AF00ECCA5A /* UserView.swift */; };
 		55413BEC25B735C500ECCA5A /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55413BEB25B735C500ECCA5A /* WeatherView.swift */; };
@@ -58,8 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E3BE8682BF77F420045B504 /* RevenueCatUI in Frameworks */,
-				4E3BE8662BF77F420045B504 /* RevenueCat in Frameworks */,
+				4E8A68732C11CB0300DEC18D /* RevenueCatUI in Frameworks */,
+				4E8A68712C11CB0300DEC18D /* RevenueCat in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -177,8 +177,8 @@
 			);
 			name = "Magic Weather SwiftUI (iOS)";
 			packageProductDependencies = (
-				4E3BE8652BF77F420045B504 /* RevenueCat */,
-				4E3BE8672BF77F420045B504 /* RevenueCatUI */,
+				4E8A68702C11CB0300DEC18D /* RevenueCat */,
+				4E8A68722C11CB0300DEC18D /* RevenueCatUI */,
 			);
 			productName = "Magic Weather SwiftUI (iOS)";
 			productReference = 5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */;
@@ -208,7 +208,7 @@
 			);
 			mainGroup = 5597797125ACDC3A00C33DFB;
 			packageReferences = (
-				4E3BE8642BF77F420045B504 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				4E8A686F2C11CB0300DEC18D /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
 			);
 			productRefGroup = 5597797F25ACDC3E00C33DFB /* Products */;
 			projectDirPath = "";
@@ -438,25 +438,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		4E3BE8642BF77F420045B504 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+		4E8A686F2C11CB0300DEC18D /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.41.2;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4E3BE8652BF77F420045B504 /* RevenueCat */ = {
+		4E8A68702C11CB0300DEC18D /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E3BE8642BF77F420045B504 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			package = 4E8A686F2C11CB0300DEC18D /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
-		4E3BE8672BF77F420045B504 /* RevenueCatUI */ = {
+		4E8A68722C11CB0300DEC18D /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4E3BE8642BF77F420045B504 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			package = 4E8A686F2C11CB0300DEC18D /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
