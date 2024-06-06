@@ -43,7 +43,7 @@ struct RestorePurchasesAlert: ViewModifier {
             .alert(isPresented: $isPresented) {
                 switch self.alertType {
                 case .restorePurchases:
-                    Alert(
+                    return Alert(
                         title: Text("Restore purchases"),
                         message: Text(
                                     """
@@ -68,23 +68,18 @@ struct RestorePurchasesAlert: ViewModifier {
                     )
 
                 case .purchasesRecovered:
-                    Alert(title: Text("Purchases recovered!"),
-                          message: Text("We applied the previously purchased items to your account. " +
-                                        "Sorry for the inconvenience."),
-                          dismissButton: .default(Text("Dismiss")) {
+                    return Alert(title: Text("Purchases recovered!"),
+                                 message: Text("We applied the previously purchased items to your account. " +
+                                               "Sorry for the inconvenience."),
+                                 dismissButton: .default(Text("Dismiss")) {
                         dismiss()
                     })
 
                 case .purchasesNotFound:
-
-                    Alert(title: Text(""),
-                          message: Text("We couldn’t find any additional purchases under this account. \n\n" +
-                                        "Contact support for assistance if you think this is an error."),
-                          primaryButton: .default(Text("Contact Support"), action: {
-                        // todo: make configurable
-                        openURL(URLUtilities.createMailURL()!)
-                    }),
-                          secondaryButton: .cancel(Text("Cancel")) {
+                    return Alert(title: Text(""),
+                                 message: Text("We couldn’t find any additional purchases under this account. \n\n" +
+                                               "Contact support for assistance if you think this is an error."),
+                                 dismissButton: .default(Text("Dismiss")) {
                         dismiss()
                     })
                 }
