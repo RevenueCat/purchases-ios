@@ -84,11 +84,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
             // swiftlint:disable:next todo
             // TODO: support non-consumables
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .medium
+
             self.subscriptionInformation = SubscriptionInformation(
                 title: subscribedProduct.localizedTitle,
                 durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
                 price: subscribedProduct.localizedPriceString,
-                nextRenewalString: currentEntitlement.expirationDate.map { "\($0)" } ?? nil,
+                nextRenewalString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
                 willRenew: currentEntitlement.willRenew,
                 productIdentifier: subscribedProductID,
                 active: currentEntitlement.isActive
