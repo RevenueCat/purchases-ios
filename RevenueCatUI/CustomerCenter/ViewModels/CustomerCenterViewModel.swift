@@ -67,17 +67,23 @@ class CustomerCenterViewModel: ObservableObject {
             // swiftlint:disable:next todo
             // TODO: support non-consumables
             let customerInfo = try await Purchases.shared.customerInfo()
-            self.hasSubscriptions = customerInfo.activeSubscriptions.count > 0
+            let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
 
-            self.subscriptionsAreFromApple = customerInfo.entitlements.active.first(where: {
+            let subscriptionsAreFromApple = customerInfo.entitlements.active.first(where: {
                 $0.value.store == .appStore || $0.value.store == .macAppStore
             }).map { entitlement in
                 customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
             } ?? false
 
-            self.state = .success
+            DispatchQueue.main.async {
+                self.hasSubscriptions = hasSubscriptions
+                self.subscriptionsAreFromApple = subscriptionsAreFromApple
+                self.state = .success
+            }
         } catch {
-            self.state = .error(error)
+            DispatchQueue.main.async {
+                self.state = .error(error)
+            }
         }
     }
 
