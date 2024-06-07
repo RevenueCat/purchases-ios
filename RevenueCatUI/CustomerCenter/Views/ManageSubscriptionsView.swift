@@ -150,13 +150,6 @@ struct ManageSubscriptionsButtonsView: View {
                     .buttonStyle(ManageSubscriptionsButtonStyle())
                 }
             }
-
-            Button("Contact support") {
-                Task {
-                    openURL(URLUtilities.createMailURL()!)
-                }
-            }
-            .padding()
         }
     }
 
