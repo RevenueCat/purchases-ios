@@ -20,47 +20,47 @@ enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
     static let customerCenterData = CustomerCenterConfigData(
-        id: "ccenter_lasdlfalaowpwp",
+        id: "customer_center_id",
         paths: [
             .init(
-                id: "ownmsldfow",
+                id: "1",
                 title: .init(en_US: "Didn't receive purchase"),
                 type: .missingPurchase,
                 detail: nil
             ),
             .init(
-                id: "nwodkdnfaoeb",
+                id: "2",
                 title: .init(en_US: "Request a refund"),
                 type: .refundRequest,
                 detail: nil
             ),
             .init(
-                id: "nfoaiodifj9",
+                id: "3",
                 title: .init(en_US: "Change plans"),
                 type: .changePlans,
                 detail: nil
             ),
             .init(
-                id: "jnkasldfhas",
+                id: "4",
                 title: .init(en_US: "Cancel subscription"),
                 type: .cancel,
                 detail: .feedbackSurvey(.init(
-                                title: .init(en_US: "Why are you cancelling?"),
-                                options: [
-                                    .init(
-                                        id: "iewrthals",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive")
-                                    ),
-                                    .init(
-                                        id: "qklpadsfj",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app")
-                                    ),
-                                    .init(
-                                        id: "jargnapocps",
-                                        title: CustomerCenterConfigData.LocalizedString(en_US: "Bought by mistake")
-                                    )
-                                ]
-                            ))
+                    title: .init(en_US: "Why are you cancelling?"),
+                    options: [
+                        .init(
+                            id: "1",
+                            title: CustomerCenterConfigData.LocalizedString(en_US: "Too expensive")
+                        ),
+                        .init(
+                            id: "2",
+                            title: CustomerCenterConfigData.LocalizedString(en_US: "Don't use the app")
+                        ),
+                        .init(
+                            id: "3",
+                            title: CustomerCenterConfigData.LocalizedString(en_US: "Bought by mistake")
+                        )
+                    ]
+                ))
             )
         ],
         title: .init(en_US: "How can we help?"),
