@@ -26,7 +26,7 @@ struct ManageSubscriptionsButtonStyle: ButtonStyle {
         configuration.label
             .padding()
             .frame(width: 300)
-            .background(Color.blue)
+            .background(Color.accentColor)
             .foregroundColor(.white)
             .cornerRadius(10)
     }

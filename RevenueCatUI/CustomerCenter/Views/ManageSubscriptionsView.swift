@@ -51,7 +51,7 @@ struct ManageSubscriptionsView: View {
                                            openURL: openURL)
         }
         .task {
-            await checkAndLoadSubscriptionInformation()
+            await checkAndLoadInformation()
         }
     }
 
@@ -63,9 +63,10 @@ struct ManageSubscriptionsView: View {
 @available(watchOS, unavailable)
 private extension ManageSubscriptionsView {
 
-    func checkAndLoadSubscriptionInformation() async {
+    func checkAndLoadInformation() async {
         if !viewModel.isLoaded {
             await viewModel.loadSubscriptionInformation()
+            await viewModel.loadCustomerCenterConfig()
         }
     }
 
