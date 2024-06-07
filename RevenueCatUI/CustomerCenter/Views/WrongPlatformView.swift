@@ -56,15 +56,6 @@ struct WrongPlatformView: View {
                     .padding()
             }
 
-            Spacer()
-
-            Button("Contact support") {
-                Task {
-                    openURL(URLUtilities.createMailURL()!)
-                }
-            }
-            .padding()
-
         }
         .task {
             if store == nil {
