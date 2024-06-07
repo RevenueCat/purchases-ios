@@ -102,11 +102,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     func loadCustomerCenterConfig() async {
-        do {
-            self.configuration = CustomerCenterConfigTestData.customerCenterData
-        } catch {
-            self.state = .error(error)
-        }
+        self.configuration = CustomerCenterConfigTestData.customerCenterData
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
