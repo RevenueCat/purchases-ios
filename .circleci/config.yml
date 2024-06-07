@@ -395,6 +395,10 @@ jobs:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 30m
 
   spm-custom-entitlement-computation-build:
     <<: *base-job
