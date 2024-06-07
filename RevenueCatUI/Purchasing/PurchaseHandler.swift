@@ -155,9 +155,9 @@ extension PurchaseHandler {
     func purchase(package: Package) async throws -> PurchaseResultData {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            try await performPurchase(package: package)
+            return try await performPurchase(package: package)
         case .myApp:
-            try await performExternalPurchaseLogic(package: package)
+            return try await performExternalPurchaseLogic(package: package)
         }
     }
 
@@ -231,9 +231,9 @@ extension PurchaseHandler {
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            try await performRestorePurchases()
+            return try await performRestorePurchases()
         case .myApp:
-            try await performExternalRestoreLogic()
+            return try await performExternalRestoreLogic()
         }
     }
 
