@@ -291,7 +291,7 @@ extension View {
     /// when migrating from a direct StoreKit implementation to RevenueCat in stages, or if integrating
     /// RevenueCat for experiments and growth tools only.
     ///
-    /// After executing your StoreKit purchae code, you **must** communicate the result of your purchase
+    /// After executing your StoreKit purchase code, you **must** communicate the result of your purchase
     /// code by calling `reportResult`on the passed result reporter object when your code
     /// has finished executing. Failure to do so will result in undefined behavior.
     ///
