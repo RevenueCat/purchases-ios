@@ -86,7 +86,15 @@ import Foundation
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
-        private(set) var observerMode: Bool = false
+        var observerMode: Bool {
+            switch purchasesAreCompletedBy {
+            case .revenueCat:
+                false
+            case .myApp:
+                true
+            }
+        }
+        private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
@@ -143,12 +151,26 @@ import Foundation
          * RevenueCat's backend. Default is `false`.
          *
          * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * `.myApp` is not compatible with StoreKit 2.
          */
+        @available(*, deprecated, message: "Use with(purchasesAreCompletedBy:) instead.")
         @objc public func with(observerMode: Bool) -> Configuration.Builder {
-            self.observerMode = observerMode
+            self.purchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
             return self
         }
+        /**
+         * Set `purchasesAreCompletedBy`.
+         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and want to use only
+         * RevenueCat's backend. Default is `.revenueCat`.
+         *
+         * - Warning: This assumes your IAP implementation uses StoreKit 1.
+         * `.myApp` is not compatible with StoreKit 2.
+         */
+        @objc public func with(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Configuration.Builder {
+            self.purchasesAreCompletedBy = purchasesAreCompletedBy
+            return self
+        }
+
         /**
          * Set `userDefaults`.
          * - Parameter userDefaults: Custom `UserDefaults` to use
