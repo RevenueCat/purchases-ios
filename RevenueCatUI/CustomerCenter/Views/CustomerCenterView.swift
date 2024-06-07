@@ -36,13 +36,11 @@ public struct CustomerCenterView: View {
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
-        NavigationView {
-            NavigationLink(destination: destinationView()) {
-                Text("Billing and subscription help")
-                    .padding()
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+        Group {
+            if !viewModel.isLoaded {
+                ProgressView()
+            } else {
+                destinationView()
             }
         }
         .task {
