@@ -89,9 +89,9 @@ import Foundation
         var observerMode: Bool {
             switch purchasesAreCompletedBy {
             case .revenueCat:
-                false
+                return false
             case .myApp:
-                true
+                return true
             }
         }
         private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
