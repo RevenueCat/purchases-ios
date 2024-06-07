@@ -39,7 +39,10 @@ public struct CustomerCenterView: View {
         NavigationView {
             NavigationLink(destination: destinationView()) {
                 Text("Billing and subscription help")
-                    .buttonStyle(ManageSubscriptionsButtonStyle())
+                    .padding()
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
         }
         .task {
