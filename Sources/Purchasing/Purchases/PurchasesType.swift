@@ -37,7 +37,15 @@ public protocol PurchasesType: AnyObject {
      * will turn up every time the app is opened.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
     var finishTransactions: Bool { get set }
+
+    /** Controls if purchaess should be made and transactions finished automatically by RevenueCat.
+     * `.revenueCat` by default.
+     * - Warning: Setting this value to `.myApp` will prevent the SDK from making purchaes and finishing transactions.
+     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
+     */
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
 
     /**
      * Delegate for ``Purchases`` instance. The delegate is responsible for handling promotional product purchases and
