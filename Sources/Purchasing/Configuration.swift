@@ -160,8 +160,8 @@ import Foundation
         }
         /**
          * Set `purchasesAreCompletedBy`.
-         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and want to use only
-         * RevenueCat's backend. Default is `.revenueCat`.
+         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and
+         * want to use only RevenueCat's backend. Default is `.revenueCat`.
          *
          * - Warning: This assumes your IAP implementation uses StoreKit 1.
          * `.myApp` is not compatible with StoreKit 2.
