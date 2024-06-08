@@ -1233,7 +1233,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false)
+     *               .with(purchasesAreCompletedBy: .revenueCat)
      *               .with(appUserID: "<app_user_id>")
      *               .build()
      *      )
