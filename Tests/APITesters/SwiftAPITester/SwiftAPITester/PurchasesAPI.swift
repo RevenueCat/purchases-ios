@@ -376,6 +376,8 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
                         useStoreKit2IfAvailable: true,
                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
 
+    let _: Bool = purchases.finishTransactions
+
     _ = Configuration
         .builder(withAPIKey: "")
         .with(observerMode: true)
