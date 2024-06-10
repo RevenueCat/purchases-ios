@@ -63,15 +63,7 @@ enum CustomerCenterConfigTestData {
                 ))
             )
         ],
-        title: .init(en_US: "How can we help?"),
-        supportEmail: "support@revenuecat.com",
-        appearance: .init(
-            mode: .system,
-            // swiftlint:disable:next force_try
-            light: try! .init(stringRepresentation: "#000000"),
-            // swiftlint:disable:next force_try
-            dark: try! .init(stringRepresentation: "#ffffff")
-        )
+        title: .init(en_US: "How can we help?")
     )
 
     static let subscriptionInformation: SubscriptionInformation = .init(

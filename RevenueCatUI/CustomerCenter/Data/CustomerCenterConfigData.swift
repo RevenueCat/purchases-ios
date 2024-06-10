@@ -16,17 +16,11 @@
 import Foundation
 import RevenueCat
 
-/// Represents a color to be used by `RevenueCatUI`
-public typealias RCColor = PaywallColor
-
-// swiftlint:disable nesting
 struct CustomerCenterConfigData {
 
     let id: String
     let paths: [HelpPath]
     let title: LocalizedString
-    let supportEmail: String
-    let appearance: Appearance
 
     enum HelpPathType: String {
         case missingPurchase = "MISSING_PURCHASE"
@@ -70,18 +64,6 @@ struct CustomerCenterConfigData {
 
         let id: String
         let title: LocalizedString
-
-    }
-
-    struct Appearance {
-
-        let mode: Mode
-        let light: RCColor
-        let dark: RCColor
-
-        enum Mode: String {
-            case system = "SYSTEM"
-        }
 
     }
 
