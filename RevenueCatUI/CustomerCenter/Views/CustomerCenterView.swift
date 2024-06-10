@@ -16,13 +16,14 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) && !os(watchOS)
+#if !os(macOS) && !os(tvOS) && !os(watchOS) && !os(visionOS)
 
 /// A SwiftUI view for displaying a customer support common tasks
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(visionOS, unavailable)
 public struct CustomerCenterView: View {
 
     @StateObject private var viewModel = CustomerCenterViewModel()
@@ -54,6 +55,7 @@ public struct CustomerCenterView: View {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(visionOS, unavailable)
 private extension CustomerCenterView {
 
     func checkAndLoadSubscriptions() async {
@@ -83,6 +85,7 @@ private extension CustomerCenterView {
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(visionOS, unavailable)
 struct CustomerCenterView_Previews: PreviewProvider {
 
    static var previews: some View {
