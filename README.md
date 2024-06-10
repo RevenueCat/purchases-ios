@@ -55,15 +55,15 @@ Or view our iOS sample apps:
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
 ## Requirements
-- Xcode 14.0+
+- Xcode 15.0+
 
 | Platform | Minimum target |
-| --- | --- |
-| iOS | 13.0+ |
-| tvOS | 13.0+ |
-| macOS | 10.15+ |
-| watchOS | 6.2+ |
-| visionOS | 1.0+ |
+|----------|----------------|
+| iOS      | 13.0+          |
+| tvOS     | 13.0+          |
+| macOS    | 10.15+         |
+| watchOS  | 6.2+           |
+| visionOS | 1.0+           |
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).

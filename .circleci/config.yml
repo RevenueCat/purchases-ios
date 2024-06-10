@@ -397,7 +397,7 @@ commands:
           destination: scan-test-output
 
 jobs:
-  spm-release-build-xcode-14:
+  spm-release-build:
     <<: *base-job
     steps:
       - checkout
@@ -405,14 +405,9 @@ jobs:
           name: SPM Release Build
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
-
-  spm-release-build-xcode-15:
-    <<: *base-job
-    steps:
-      - checkout
       - run:
-          name: SPM Release Build
-          command: swift build -c release --target RevenueCat
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
   spm-custom-entitlement-computation-build:
@@ -436,19 +431,6 @@ jobs:
       - run:
           name: SPM Receipt Parser
           command: swift build -c release --target ReceiptParser
-          no_output_timeout: 30m
-
-  spm-xcode-14-1:
-    <<: *base-job
-    steps:
-      - checkout
-      - run:
-          name: SPM RevenueCat Release Build
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-      - run:
-          name: SPM RevenueCatUI Release Build
-          command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
   spm-revenuecat-ui-ios-15:
