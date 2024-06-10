@@ -335,6 +335,12 @@ public extension Purchases {
         self.attribution.setCreative(creative)
     }
 
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
+    @objc var finishTransactions: Bool {
+        get { self.systemInfo.finishTransactions }
+        set { self.systemInfo.finishTransactions = newValue }
+    }
+
 }
 
 public extension StoreProduct {
