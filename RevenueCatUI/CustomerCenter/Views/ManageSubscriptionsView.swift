@@ -38,17 +38,21 @@ struct ManageSubscriptionsView: View {
 
     var body: some View {
         VStack {
-            HeaderView()
+            if viewModel.isLoaded {
+                HeaderView(viewModel: viewModel)
 
-            if let subscriptionInformation = self.viewModel.subscriptionInformation {
-                SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                        refundRequestStatus: viewModel.refundRequestStatus)
+                if let subscriptionInformation = self.viewModel.subscriptionInformation {
+                    SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
+                                            refundRequestStatus: viewModel.refundRequestStatus)
+                }
+
+                Spacer()
+
+                ManageSubscriptionsButtonsView(viewModel: viewModel)
+            } else {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
             }
-
-            Spacer()
-
-            ManageSubscriptionsButtonsView(viewModel: viewModel,
-                                           openURL: openURL)
         }
         .task {
             await checkAndLoadInformation()
@@ -65,8 +69,7 @@ private extension ManageSubscriptionsView {
 
     func checkAndLoadInformation() async {
         if !viewModel.isLoaded {
-            await viewModel.loadSubscriptionInformation()
-            await viewModel.loadCustomerCenterConfig()
+            await viewModel.loadScreen()
         }
     }
 
@@ -77,11 +80,18 @@ private extension ManageSubscriptionsView {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct HeaderView: View {
+
+    @ObservedObject
+    private(set) var viewModel: ManageSubscriptionsViewModel
+
     var body: some View {
-        Text("How can we help?")
-            .font(.title)
-            .padding()
+        if let configuration = viewModel.configuration {
+            Text(configuration.title.en_US)
+                .font(.title)
+                .padding()
+        }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -89,6 +99,7 @@ struct HeaderView: View {
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct SubscriptionDetailsView: View {
+
     let subscriptionInformation: SubscriptionInformation
     let refundRequestStatus: String?
 
@@ -119,6 +130,7 @@ struct SubscriptionDetailsView: View {
             }
         }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -129,8 +141,6 @@ struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
     private(set) var viewModel: ManageSubscriptionsViewModel
-
-    let openURL: OpenURLAction
 
     var body: some View {
         VStack(spacing: 16) {

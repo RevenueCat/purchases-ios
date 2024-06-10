@@ -70,23 +70,38 @@ class ManageSubscriptionsViewModel: ObservableObject {
         state = .success
     }
 
-    func loadSubscriptionInformation() async {
+    func loadScreen() async {
         do {
-            let customerInfo = try await Purchases.shared.customerInfo()
-            guard let currentEntitlementDict = customerInfo.entitlements.active.first,
-                  let subscribedProductID = customerInfo.activeSubscriptions.first,
-                  let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
-                Logger.warning(Strings.could_not_find_subscription_information)
-                self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
-                return
+            try await loadSubscriptionInformation()
+            await loadCustomerCenterConfig()
+            DispatchQueue.main.async {
+                self.state = .success
             }
-            let currentEntitlement = currentEntitlementDict.value
+        } catch {
+            DispatchQueue.main.async {
+                self.state = .error(error)
+            }
+        }
+    }
 
-            // swiftlint:disable:next todo
-            // TODO: support non-consumables
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .medium
+    func loadSubscriptionInformation() async throws {
+        let customerInfo = try await Purchases.shared.customerInfo()
+        guard let currentEntitlementDict = customerInfo.entitlements.active.first,
+              let subscribedProductID = customerInfo.activeSubscriptions.first,
+              let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
+            Logger.warning(Strings.could_not_find_subscription_information)
+            DispatchQueue.main.async {
+                self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
+            }
+            return
+        }
+        let currentEntitlement = currentEntitlementDict.value
 
+        // swiftlint:disable:next todo
+        // TODO: support non-consumables
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        DispatchQueue.main.async {
             self.subscriptionInformation = SubscriptionInformation(
                 title: subscribedProduct.localizedTitle,
                 durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
@@ -96,13 +111,13 @@ class ManageSubscriptionsViewModel: ObservableObject {
                 productIdentifier: subscribedProductID,
                 active: currentEntitlement.isActive
             )
-        } catch {
-            self.state = .error(error)
         }
     }
 
     func loadCustomerCenterConfig() async {
-        self.configuration = CustomerCenterConfigTestData.customerCenterData
+        DispatchQueue.main.async {
+            self.configuration = CustomerCenterConfigTestData.customerCenterData
+        }
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
