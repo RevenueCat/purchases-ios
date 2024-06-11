@@ -35,6 +35,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalPurchaseDateAvailableAfterPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
+
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
 
@@ -44,6 +46,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalApplicationVersionAvailableAfterPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
+
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
 
@@ -52,18 +56,26 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     }
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
-    func testOriginalPurchaseDateAvailableWithoutPurchase() async throws {
+    func testOriginalPurchaseDateAvailableAfterSyncPurchasesWithoutPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
+        // called
+
         return // TODO: the backend work for this test is not deployed yet, so don't run this test for now
         self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
+        try await Purchases.shared.syncPurchases()
 
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
-    func testOriginalApplicationVersionAvailableWithoutPurchase() async throws {
+    func testOriginalApplicationVersionAvailableAfterSyncPurchasesWithoutPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
+        // called
+        
         return // TODO: the backend work for this test is not deployed yet, so don't run this test for now
         self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
+        try await Purchases.shared.syncPurchases()
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
