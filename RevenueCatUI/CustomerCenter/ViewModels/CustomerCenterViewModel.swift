@@ -22,12 +22,14 @@ import RevenueCat
 @available(watchOS, unavailable)
 @MainActor class CustomerCenterViewModel: ObservableObject {
 
+    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
+
     @Published
     var hasSubscriptions: Bool = false
     @Published
     var subscriptionsAreFromApple: Bool = false
     @Published
-    var state: State {
+    var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError
@@ -36,29 +38,40 @@ import RevenueCat
     }
 
     var isLoaded: Bool {
-        if case .notLoaded = state {
-            return false
-        }
-        return true
+        return state != .notLoaded
     }
 
-    enum State {
-
-        case notLoaded
-        case success
-        case error(Error)
-
-    }
+    private var customerInfoFetcher: CustomerInfoFetcher
 
     private var error: Error?
 
-    init() {
-        self.state = .notLoaded
+    convenience init() {
+        self.init(customerInfoFetcher: {
+            guard Purchases.isConfigured else {
+                throw PaywallError.purchasesNotConfigured
+            }
+
+            return try await Purchases.shared.customerInfo()
+        })
     }
 
+    // @PublicForExternalTesting
+    init(customerInfoFetcher: @escaping CustomerInfoFetcher) {
+        self.state = .notLoaded
+        self.customerInfoFetcher = customerInfoFetcher
+    }
+
+    // @PublicForExternalTesting
     init(hasSubscriptions: Bool = false, areSubscriptionsFromApple: Bool = false) {
         self.hasSubscriptions = hasSubscriptions
         self.subscriptionsAreFromApple = areSubscriptionsFromApple
+        self.customerInfoFetcher = {
+            guard Purchases.isConfigured else {
+                throw PaywallError.purchasesNotConfigured
+            }
+
+            return try await Purchases.shared.customerInfo()
+        }
         self.state = .success
     }
 
@@ -66,7 +79,7 @@ import RevenueCat
         do {
             // swiftlint:disable:next todo
             // TODO: support non-consumables
-            let customerInfo = try await Purchases.shared.customerInfo()
+            let customerInfo = try await self.customerInfoFetcher()
             let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
 
             let subscriptionsAreFromApple = customerInfo.entitlements.active.first(where: {
