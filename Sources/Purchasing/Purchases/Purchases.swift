@@ -1537,7 +1537,10 @@ public extension Purchases {
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
     }
 
-    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
+    /**
+     * Deprecated. Where responsibility for completing purchase transactions lies.
+     */
+    @available(*, deprecated, message: "Use ``purchasesAreCompletedBy`` instead.")
     @objc var finishTransactions: Bool {
         get { self.systemInfo.finishTransactions }
         set { self.systemInfo.finishTransactions = newValue }
