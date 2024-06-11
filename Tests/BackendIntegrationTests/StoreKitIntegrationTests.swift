@@ -35,12 +35,44 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
     func testOriginalPurchaseDateAvailableAfterPurchase() async throws {
+        try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
 
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalApplicationVersionAvailableAfterPurchase() async throws {
+        try await self.signInAsNewAppUserID()
+        try await self.purchaseMonthlyProduct()
+
+        let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
+        expect(originalApplicationVersion).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalPurchaseDateAvailableWithoutPurchase() async throws {
+        return // TODO: the backend work for this test is not deployed yet, so don't run this test for now
+        self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
+
+        let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
+        expect(originalPurchaseDate).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalApplicationVersionAvailableWithoutPurchase() async throws {
+        return // TODO: the backend work for this test is not deployed yet, so don't run this test for now
+        self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
+
+        let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
+        expect(originalApplicationVersion).toNot(beNil())
+    }
+
+    private func signInAsNewAppUserID() async throws {
+        _ = try await Purchases.shared.logOut()
+        _ = try await Purchases.shared.logIn("integration-test-user-\(UUID().uuidString)")
+    }
 }
 
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
