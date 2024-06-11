@@ -546,7 +546,6 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
-     * - Warning: If you're using observer mode with StoreKit 2, configure the SDK with `configure(withAPIKey:appUserID:observerMode:storeKitVersion:)` passing in `.storeKit2` as the `storeKitVersion` and ensure that you call ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
     @available(iOS, obsoleted: 1,
                message: "Explicitly setting the StoreKit version is now required when using observer mode.",

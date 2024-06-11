@@ -1018,8 +1018,9 @@ public protocol PurchasesSwiftType: AnyObject {
     #endif
 
     /**
-     * Use this method only if you already have your own IAP implementation using StoreKit 2 and want to use
-     * RevenueCat's backend. If you are using StoreKit 1 for your implementation, you do not need this method.
+     * Use this method only if you already have your own IAP implementation using StoreKit 2, want to use
+     * RevenueCat's backend, and want RevenueCat to handle the transaction outside of how the SDK 
+     * typically detects transactions. If you are using StoreKit 1 for your implementation, you do not need this method.
      *
      * You only need to use this method with *new* purchases. Subscription updates are observed automatically.
      *
@@ -1031,7 +1032,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * guard let product = product else { return }
      * let result = try await product.purchase()
      * // Let RevenueCat handle the transaction result
-     * _ = try await Purchases.shared.handleObserverModeTransaction(result)
+     * _ = try await Purchases.shared.handlePurchaseResult(result)
      * // Handle the result and finish the transaction
      * switch result {
      * case .success(let verification):
@@ -1063,7 +1064,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * ``Configuration/Builder/with(observerMode:storeKitVersion:)``
      */
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func handleObserverModeTransaction(
+    func handlePurchaseResult(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 

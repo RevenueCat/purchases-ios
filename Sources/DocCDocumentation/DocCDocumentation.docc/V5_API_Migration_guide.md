@@ -46,13 +46,13 @@ Purchases.configure(with: .builder(withAPIKey: apiKey)
 
 #### ⚠️ StoreKit 2 Observer Mode on macOS
 
-By default, Observer Mode with StoreKit 2 on macOS does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.handleObserverModeTransaction(purchaseResult)` for any new purchases, like so:
+By default, Observer Mode with StoreKit 2 on macOS does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.handlePurchaseResult(purchaseResult)` for any new purchases, like so:
 
 ```swift
 let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
 let result = try await product?.purchase()
 
-_ = try await Purchases.shared.handleObserverModeTransaction(result)
+_ = try await Purchases.shared.handlePurchaseResult(result)
 ```
 
 #### StoreKit 1 Observer Mode Support

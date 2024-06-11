@@ -26,7 +26,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         let result = try await manager.purchaseProductFromStoreKit2()
 
         do {
-            _ = try await Purchases.shared.handleObserverModeTransaction(result)
+            _ = try await Purchases.shared.handlePurchaseResult(result)
             fail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.configurationError))

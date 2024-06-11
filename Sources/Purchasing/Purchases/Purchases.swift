@@ -1159,7 +1159,7 @@ public extension Purchases {
 #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func handleObserverModeTransaction(
+    func handlePurchaseResult(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
@@ -1353,9 +1353,6 @@ public extension Purchases {
      * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
-     *
-     * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
-     * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
     @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
