@@ -23,13 +23,6 @@ import RevenueCat
 @MainActor
 class ManageSubscriptionsViewModel: ObservableObject {
 
-    var isLoaded: Bool {
-        if case .notLoaded = state {
-            return false
-        }
-        return true
-    }
-
     @Published
     var subscriptionInformation: SubscriptionInformation?
     @Published
@@ -38,7 +31,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var configuration: CustomerCenterConfigData?
     @Published
     var showRestoreAlert: Bool = false
-    @Published var state: State {
+    @Published
+    var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError
@@ -46,15 +40,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    private var error: Error?
-
-    enum State {
-
-        case notLoaded
-        case success
-        case error(Error)
-
+    var isLoaded: Bool {
+        return state != .notLoaded
     }
+
+    private var error: Error?
 
     init() {
         state = .notLoaded
