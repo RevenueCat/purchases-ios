@@ -65,12 +65,6 @@ Purchases.configure(with: .builder(withAPIKey: apiKey)
   .build()
 ```
 
-### Original Application Version
-
-If you're converting a paid app to in-app subscriptions, and want to provide existing customers with certain features, [we recommend](https://www.revenuecat.com/blog/engineering/converting-a-paid-ios-app-to-subscriptions/) using the "original app version" field in customer info.
-
-Because of a limitation of StoreKit 2, this field is not available if the customer is running on iOS 15, tvOS 15, macOS 12 or watchOS 8. If this is a requirement for you, we recommend switching back to StoreKit 1.
-
 ## Trusted Entitlements
 
 Version 5.0 of the SDK enables the Informational mode for Trusted Entitlements by default.
