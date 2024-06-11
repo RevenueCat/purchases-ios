@@ -72,7 +72,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     func testOriginalApplicationVersionAvailableAfterSyncPurchasesWithoutPurchase() async throws {
         // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
         // called
-        
+
         return // TODO: the backend work for this test is not deployed yet, so don't run this test for now
         self.assertNoPurchases(try XCTUnwrap(self.purchasesDelegate.customerInfo))
         try await Purchases.shared.syncPurchases()
