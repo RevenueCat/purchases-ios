@@ -33,6 +33,14 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         }
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalPurchaseDateAvailableAfterPurchase() async throws {
+        try await self.purchaseMonthlyProduct()
+
+        let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
+        expect(originalPurchaseDate).toNot(beNil())
+    }
+
 }
 
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
