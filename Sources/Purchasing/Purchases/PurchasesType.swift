@@ -1019,8 +1019,8 @@ public protocol PurchasesSwiftType: AnyObject {
 
     /**
      * Use this method only if you already have your own IAP implementation using StoreKit 2, want to use
-     * RevenueCat's backend, and want RevenueCat to handle the transaction outside of how the SDK 
-     * typically detects transactions. If you are using StoreKit 1 for your implementation, you do not need this method.
+     * RevenueCat's backend, and need RevenueCat to process the transaction at a time other than when the
+     * app is foregrounded. If you are using StoreKit 1 for your implementation, you do not need this method.
      *
      * You only need to use this method with *new* purchases. Subscription updates are observed automatically.
      *
