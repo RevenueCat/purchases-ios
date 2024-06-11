@@ -20,6 +20,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@MainActor
 class ManageSubscriptionsViewModel: ObservableObject {
 
     var isLoaded: Bool {
@@ -74,13 +75,9 @@ class ManageSubscriptionsViewModel: ObservableObject {
         do {
             try await loadSubscriptionInformation()
             await loadCustomerCenterConfig()
-            DispatchQueue.main.async {
-                self.state = .success
-            }
+            self.state = .success
         } catch {
-            DispatchQueue.main.async {
-                self.state = .error(error)
-            }
+            self.state = .error(error)
         }
     }
 
@@ -90,9 +87,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
               let subscribedProductID = customerInfo.activeSubscriptions.first,
               let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
             Logger.warning(Strings.could_not_find_subscription_information)
-            DispatchQueue.main.async {
-                self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
-            }
+            self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
             return
         }
         let currentEntitlement = currentEntitlementDict.value
@@ -101,23 +96,19 @@ class ManageSubscriptionsViewModel: ObservableObject {
         // TODO: support non-consumables
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
-        DispatchQueue.main.async {
-            self.subscriptionInformation = SubscriptionInformation(
-                title: subscribedProduct.localizedTitle,
-                durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
-                price: subscribedProduct.localizedPriceString,
-                nextRenewalString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
-                willRenew: currentEntitlement.willRenew,
-                productIdentifier: subscribedProductID,
-                active: currentEntitlement.isActive
-            )
-        }
+        self.subscriptionInformation = SubscriptionInformation(
+            title: subscribedProduct.localizedTitle,
+            durationTitle: subscribedProduct.subscriptionPeriod?.durationTitle ?? "",
+            price: subscribedProduct.localizedPriceString,
+            nextRenewalString: currentEntitlement.expirationDate.map { dateFormatter.string(from: $0) } ?? nil,
+            willRenew: currentEntitlement.willRenew,
+            productIdentifier: subscribedProductID,
+            active: currentEntitlement.isActive
+        )
     }
 
     func loadCustomerCenterConfig() async {
-        DispatchQueue.main.async {
-            self.configuration = CustomerCenterConfigTestData.customerCenterData
-        }
+        self.configuration = CustomerCenterConfigTestData.customerCenterData
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
@@ -128,9 +119,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
         case .refundRequest:
             Task {
                 guard let subscriptionInformation = self.subscriptionInformation else { return }
-                let status = try await Purchases.shared.beginRefundRequest(
-                    forProduct: subscriptionInformation.productIdentifier
-                )
+                let productId = subscriptionInformation.productIdentifier
+                let status = try await Purchases.shared.beginRefundRequest(forProduct: productId)
                 switch status {
                 case .error:
                     self.refundRequestStatus = "Error when requesting refund, try again"
@@ -140,11 +130,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
                     self.refundRequestStatus = "Refund canceled"
                 }
             }
-        case .changePlans:
-            Task {
-                try await Purchases.shared.showManageSubscriptions()
-            }
-        case .cancel:
+        case .changePlans, .cancel:
             Task {
                 try await Purchases.shared.showManageSubscriptions()
             }

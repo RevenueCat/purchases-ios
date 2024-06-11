@@ -20,7 +20,7 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-class CustomerCenterViewModel: ObservableObject {
+@MainActor class CustomerCenterViewModel: ObservableObject {
 
     @Published
     var hasSubscriptions: Bool = false
@@ -75,15 +75,11 @@ class CustomerCenterViewModel: ObservableObject {
                 customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
             } ?? false
 
-            DispatchQueue.main.async {
-                self.hasSubscriptions = hasSubscriptions
-                self.subscriptionsAreFromApple = subscriptionsAreFromApple
-                self.state = .success
-            }
+            self.hasSubscriptions = hasSubscriptions
+            self.subscriptionsAreFromApple = subscriptionsAreFromApple
+            self.state = .success
         } catch {
-            DispatchQueue.main.async {
-                self.state = .error(error)
-            }
+            self.state = .error(error)
         }
     }
 
