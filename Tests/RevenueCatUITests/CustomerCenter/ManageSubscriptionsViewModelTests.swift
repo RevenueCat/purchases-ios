@@ -14,10 +14,10 @@
 //
 
 import Nimble
-import XCTest
-@testable import RevenueCatUI
 import RevenueCat
+@testable import RevenueCatUI
 import StoreKit
+import XCTest
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
@@ -84,7 +84,6 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.nextRenewalString) == "12 Apr 2062"
         expect(viewModel.subscriptionInformation?.productIdentifier) == "com.revenuecat.product"
     }
-
 
     func testLoadScreenNoActiveSubscription() async {
         let viewModel = ManageSubscriptionsViewModel(purchasesProvider: MockManageSubscriptionsPurchases(
@@ -311,7 +310,7 @@ private extension CustomerCenterViewModelTests {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-fileprivate class MockSK1Product: SK1Product {
+private class MockSK1Product: SK1Product {
     var mockProductIdentifier: String
     var mockLocalizedTitle: String
 
@@ -385,4 +384,3 @@ fileprivate extension SKProductSubscriptionPeriod {
         self.setValue(unit.rawValue, forKey: "unit")
     }
 }
-
