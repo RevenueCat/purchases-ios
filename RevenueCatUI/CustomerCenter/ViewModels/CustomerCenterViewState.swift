@@ -21,7 +21,7 @@ enum CustomerCenterViewState: Equatable {
     case success
     case error(Error)
 
-    static func ==(lhs: CustomerCenterViewState, rhs: CustomerCenterViewState) -> Bool {
+    static func == (lhs: CustomerCenterViewState, rhs: CustomerCenterViewState) -> Bool {
         switch (lhs, rhs) {
         case (.notLoaded, .notLoaded):
             return true
