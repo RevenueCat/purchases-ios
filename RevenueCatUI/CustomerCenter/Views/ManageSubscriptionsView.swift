@@ -44,7 +44,7 @@ struct ManageSubscriptionsView: View {
 
                 if let subscriptionInformation = self.viewModel.subscriptionInformation {
                     SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                            refundRequestStatus: viewModel.refundRequestStatusMessage)
+                                            refundRequestStatusMessage: viewModel.refundRequestStatusMessage)
                 }
 
                 Spacer()
@@ -104,7 +104,7 @@ struct HeaderView: View {
 struct SubscriptionDetailsView: View {
 
     let subscriptionInformation: SubscriptionInformation
-    let refundRequestStatus: String?
+    let refundRequestStatusMessage: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -124,8 +124,8 @@ struct SubscriptionDetailsView: View {
                     .padding([.horizontal, .bottom])
             }
 
-            if let refundRequestStatus = refundRequestStatus {
-                Text("Refund request status: \(refundRequestStatus)")
+            if let refundRequestStatusMessage = refundRequestStatusMessage {
+                Text("Refund request status: \(refundRequestStatusMessage)")
                     .font(.caption)
                     .bold()
                     .foregroundColor(Color.gray)

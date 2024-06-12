@@ -17,3 +17,7 @@
 "%d%% off" = "%d%% off";
 "Continue" = "Continue";
 "Default_offer_details_with_intro_offer" = "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.";
+"Error when requesting refund, try again" = "Error when requesting refund, try again"
+"Refund granted successfully!" = "Refund granted successfully!"
+"Refund canceled" = "Refund canceled"
+"Refund request status: %@" = "Refund request status: %@"
