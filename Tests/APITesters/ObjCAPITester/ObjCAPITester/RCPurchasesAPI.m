@@ -45,7 +45,7 @@ BOOL isAnonymous;
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat];
     [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp];
     [RCPurchases configureWithAPIKey:@""
                            appUserID:nil
                         observerMode:false
