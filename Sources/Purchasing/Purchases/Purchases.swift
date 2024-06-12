@@ -228,9 +228,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @objc public let attribution: Attribution
 
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
     @objc public var finishTransactions: Bool {
         get { self.systemInfo.finishTransactions }
         set { self.systemInfo.finishTransactions = newValue }
+    }
+
+    @objc public var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { self.systemInfo.finishTransactions ? .revenueCat : .myApp }
+        set { self.systemInfo.finishTransactions = (newValue == .revenueCat ? true : false) }
     }
 
     private let attributionFetcher: AttributionFetcher
@@ -1264,7 +1270,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: .init(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false, storeKitVersion: .default)
+     *               .with(userDefaults: customUserDefaults)
      *               .with(appUserID: "<app_user_id>")
      *      )
      * ```
@@ -1317,7 +1323,10 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: .default)
+        Self.configure(withAPIKey: apiKey,
+                       appUserID: appUserID,
+                       purchasesAreCompletedBy: .revenueCat,
+                       storeKitVersion: .default)
     }
 
     @available(*, deprecated, message: """
@@ -1330,7 +1339,7 @@ public extension Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
         return Self.configure(withAPIKey: apiKey,
                               appUserID: "\(appUserID)",
-                              observerMode: false,
+                              purchasesAreCompletedBy: .revenueCat,
                               storeKitVersion: .default)
     }
 
@@ -1347,8 +1356,8 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
+     * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `.revenueCat`.
      *
      * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
      *
@@ -1357,19 +1366,21 @@ public extension Purchases {
      * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
      * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
      */
-    @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
+    @_disfavoredOverload
+    @objc(configureWithAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
-                                             observerMode: Bool,
+                                             purchasesAreCompletedBy: PurchasesAreCompletedBy,
                                              storeKitVersion: StoreKitVersion) -> Purchases {
-        Self.configure(
+        return Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(observerMode: observerMode, storeKitVersion: storeKitVersion)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
+
 
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
@@ -1381,11 +1392,14 @@ public extension Purchases {
                                              appUserID: StaticString,
                                              observerMode: Bool) -> Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
+
+        let purchasesBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
+
         return Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: "\(appUserID)")
-                .with(observerMode: observerMode, storeKitVersion: .default)
+                .with(purchasesAreCompletedBy: purchasesBy, storeKitVersion: .default)
                 .build()
         )
     }

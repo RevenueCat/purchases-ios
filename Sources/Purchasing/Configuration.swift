@@ -82,7 +82,15 @@ import Foundation
 
         private(set) var apiKey: String
         private(set) var appUserID: String?
-        private(set) var observerMode: Bool = false
+        var observerMode: Bool {
+            switch purchasesAreCompletedBy {
+            case .revenueCat:
+                return false
+            case .myApp:
+                return true
+            }
+        }
+        private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
         private(set) var networkTimeout = Configuration.networkTimeoutDefault
@@ -136,15 +144,15 @@ import Foundation
 
         /**
          * Set `observerMode`.
-         * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-         * RevenueCat's backend. Default is `false`.
+         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation
+         * and want to use only RevenueCat's backend. Default is `.revenueCat`.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
         @objc public func with(
-            observerMode: Bool,
+            purchasesAreCompletedBy: PurchasesAreCompletedBy,
             storeKitVersion: StoreKitVersion
         ) -> Configuration.Builder {
-            self.observerMode = observerMode
+            self.purchasesAreCompletedBy = purchasesAreCompletedBy
             self.storeKitVersion = storeKitVersion
             return self
         }
