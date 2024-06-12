@@ -95,11 +95,17 @@ final class PurchaseHandler: ObservableObject {
 
     /// Information used to perform a purchase by the app (rather than by RevenueCat)
     @Published
-    fileprivate(set) var performPurchase: PurchaseResultReporter?
+    fileprivate(set) var performPurchaseReporter: PurchaseResultReporter?
 
     /// Information used to perform restoring a purchase by the app (rather than by RevenueCat)
     @Published
-    fileprivate(set) var performRestore: RestoreResultReporter?
+    fileprivate(set) var performRestoreReporter: RestoreResultReporter?
+
+    @Published
+    fileprivate(set) var performRestore: PerformRestore?
+
+    @Published
+    fileprivate(set) var performPurchase: PerformPurchase?
 
     /// Whether a restore is currently in progress
     @Published
@@ -121,13 +127,17 @@ final class PurchaseHandler: ObservableObject {
 
     private var externalRestorePurchaseContinuation: CheckedContinuation<Bool, Error>?
 
-    convenience init(purchases: Purchases = .shared) {
+    convenience init(purchases: Purchases = .shared,
+                     performPurchase: PerformPurchase? = nil,
+                     performRestore: PerformRestore? = nil) {
         self.init(isConfigured: true, purchases: purchases)
     }
 
     init(
         isConfigured: Bool = true,
-        purchases: PaywallPurchasesType
+        purchases: PaywallPurchasesType,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
@@ -136,8 +146,10 @@ final class PurchaseHandler: ObservableObject {
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     // @PublicForExternalTesting
-    static func `default`() -> Self {
-        return Purchases.isConfigured ? .init() : Self.notConfigured()
+    static func `default`(performPurchase: PerformPurchase?,
+                          performRestore: PerformRestore?) -> Self {
+        return Purchases.isConfigured ? .init(performPurchase: performPurchase,
+        performRestore: performRestore) : Self.notConfigured()
     }
 
     private static func notConfigured() -> Self {
@@ -200,7 +212,10 @@ extension PurchaseHandler {
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
-        self.performPurchase = PurchaseResultReporter(storeProduct: package.storeProduct,
+
+        
+
+        self.performPurchaseReporter = PurchaseResultReporter(storeProduct: package.storeProduct,
                                                       reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
@@ -211,7 +226,6 @@ extension PurchaseHandler {
     @MainActor
     func reportExternalPurchaseResult(_ userCancelled: Bool, _ error: Error?) {
         self.actionInProgress = false
-        self.performPurchase = nil
 
         if let error {
             self.purchaseError = error
@@ -282,7 +296,7 @@ extension PurchaseHandler {
         DispatchQueue.main.async {
             // this triggers the view's `.handlePurchaseAndRestore` function, and its callback must be called
             // after the continuation is set below
-            self.performRestore = RestoreResultReporter(callback: self.reportExternalRestoreResult)
+            self.performRestoreReporter = RestoreResultReporter(callback: self.reportExternalRestoreResult)
         }
 
         self.startAction()

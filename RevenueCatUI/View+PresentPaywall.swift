@@ -413,7 +413,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default())
+        // TODO: support initializer based purchase actions from `presentPaywallIfNeeded`
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default(performPurchase: nil, performRestore: nil))
     }
 
     @StateObject
@@ -461,7 +462,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
-            )
+            ),
+            performPurchase: nil,
+            performRestore: nil // TODO support this?
         )
         .onPurchaseStarted {
             self.purchaseStarted?($0)

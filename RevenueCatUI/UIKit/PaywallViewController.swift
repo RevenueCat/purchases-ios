@@ -382,7 +382,9 @@ private struct PaywallContainerView: View {
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
-        PaywallView(configuration: self.configuration)
+        PaywallView(configuration: self.configuration,
+        performPurchase: nil,
+        performRestore: nil)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)

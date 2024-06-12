@@ -30,6 +30,10 @@ public struct PaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
 
+
+    private var performPurchase: PerformPurchase?
+    private var performRestore: PerformRestore?
+
     @Environment(\.locale)
     private var locale
 
@@ -57,13 +61,17 @@ public struct PaywallView: View {
     /// If you want to handle that, you can use ``init(offering:)`` instead.
     public init(
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) {
         self.init(
             configuration: .init(
                 fonts: fonts,
                 displayCloseButton: displayCloseButton
-            )
+            ),
+            performPurchase: performPurchase,
+            performRestore: performRestore
         )
     }
 
@@ -80,21 +88,26 @@ public struct PaywallView: View {
     public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false
+        displayCloseButton: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) {
         self.init(
             configuration: .init(
                 offering: offering,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton
-            )
+            ),
+            performPurchase: performPurchase,
+            performRestore: performRestore
         )
     }
 
-    // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration) {
+    public init(configuration: PaywallViewConfiguration,
+                performPurchase: PerformPurchase?,
+                performRestore: PerformRestore?) {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
-        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default())
+        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default(performPurchase: performPurchase, performRestore: performRestore))
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
@@ -105,6 +118,17 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
+
+        switch Purchases.shared.purchasesAreCompletedBy {
+                case .revenueCat:
+                    break
+                case .myApp:
+                    if performPurchase != nil, performRestore != nil {
+                        self._error.wrappedValue = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
+                    }
+                }
     }
 
     // swiftlint:disable:next missing_docs
@@ -311,9 +335,9 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(data: self.purchaseHandler.purchaseResult))
             .preference(key: HandlePurchasePreferenceKey.self,
-                        value: self.purchaseHandler.performPurchase)
+                        value: self.purchaseHandler.performPurchaseReporter)
             .preference(key: HandleRestorePreferenceKey.self,
-                        value: self.purchaseHandler.performRestore)
+                        value: self.purchaseHandler.performRestoreReporter)
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,
@@ -456,7 +480,9 @@ struct PaywallView_Previews: PreviewProvider {
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
                         purchaseHandler: PreviewHelpers.purchaseHandler
-                    )
+                    ),
+                    performPurchase: nil,
+                    performRestore: nil
                 )
                 .previewLayout(mode.layout)
                 .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")

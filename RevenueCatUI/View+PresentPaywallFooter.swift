@@ -238,7 +238,9 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
-                PaywallView(configuration: self.configuration)
+                PaywallView(configuration: self.configuration,
+                performPurchase: nil,
+                performRestore: nil) // TODO support footer view
                     .onPurchaseStarted {
                         self.purchaseStarted?($0)
                     }

@@ -25,7 +25,12 @@ struct PaywallPresenter: View {
                 displayCloseButton: displayCloseButton,
                 introEligibility: .producing(eligibility: introEligility)
             )
-            PaywallView(configuration: config)
+            PaywallView(configuration: config) { storeProduct, purchaseResultReporter in
+                print("purchase callback")
+            } performRestore: { restoreResultReporter in
+                print("restore callback")
+            }
+
 
 #if !os(watchOS)
         case .footer:

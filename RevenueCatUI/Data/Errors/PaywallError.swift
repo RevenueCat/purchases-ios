@@ -25,6 +25,9 @@ enum PaywallError: Error {
     /// The selected offering was not found.
     case offeringNotFound(identifier: String)
 
+    /// The PaywallView must be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.myApp``
+    case performPurchaseAndRestoreHandlersNotDefined
+
 }
 
 extension PaywallError: CustomNSError {
@@ -45,6 +48,9 @@ extension PaywallError: CustomNSError {
 
         case let .offeringNotFound(identifier):
             return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
+        case .performPurchaseAndRestoreHandlersNotDefined:
+            return "A PaywallView must be initialized with a PerformPurchase and PerformRestore hander " +
+            "when purchasesAreCompletedBy is equal to .myApp"
         }
     }
 

@@ -38,6 +38,7 @@ final class Configuration: ObservableObject {
             with: .init(withAPIKey: ConfigItem.apiKey)
                 .with(entitlementVerificationMode: .informational)
                 .with(usesStoreKit2IfAvailable: true)
+                .with(purchasesAreCompletedBy: .myApp)
         )
     }
 
