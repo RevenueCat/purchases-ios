@@ -120,11 +120,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
                 let status = try await purchasesProvider.beginRefundRequest(forProduct: productId)
                 switch status {
                 case .error:
-                    self.refundRequestStatusMessage = "Error when requesting refund, try again"
+                    self.refundRequestStatusMessage = String(localized: "Error when requesting refund, try again")
                 case .success:
-                    self.refundRequestStatusMessage = "Refund granted successfully!"
+                    self.refundRequestStatusMessage = String(localized: "Refund granted successfully!")
                 case .userCancelled:
-                    self.refundRequestStatusMessage = "Refund canceled"
+                    self.refundRequestStatusMessage = String(localized: "Refund canceled")
                 }
             }
         case .changePlans, .cancel:
