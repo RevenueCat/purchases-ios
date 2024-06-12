@@ -1223,7 +1223,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false, storeKitVersion: .storeKit1)
+     *               .with(userDefaults: customUserDefaults),
      *               .with(appUserID: "<app_user_id>")
      *               .build()
      *      )
@@ -1338,10 +1338,10 @@ public extension Purchases {
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a specified API key, app user ID, observer mode
+     * Configures an instance of the Purchases SDK with a specified API key, app user ID, purchasesAreCompletedBy
      * setting, and StoreKit version.
      *
-     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK 
+     * Use this constructor if you want to set purchasesAreCompletedBy. The instance of the Purchases SDK
      * will be set as a singleton. You should access the singleton instance using ``Purchases/shared``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
@@ -1357,8 +1357,8 @@ public extension Purchases {
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
-     * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
+     * - Warning: If purchasesAreCompletedBy is ``.myApp`` and storeKitVersion is ``.storeKit2``, ensure that you're
+     * calling ``Purchases/addPurchaseCompletedByMyAppPurchaseResult(_:)`` after making a purchase.
      */
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)
