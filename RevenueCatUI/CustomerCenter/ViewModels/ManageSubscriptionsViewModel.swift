@@ -16,6 +16,8 @@
 import Foundation
 import RevenueCat
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -138,6 +140,10 @@ class ManageSubscriptionsViewModel: ObservableObject {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType {
 
     func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
@@ -175,3 +181,5 @@ private extension SubscriptionPeriod {
     }
 
 }
+
+#endif
