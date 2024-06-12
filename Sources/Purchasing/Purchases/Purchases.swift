@@ -1159,7 +1159,7 @@ public extension Purchases {
 #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func addPurchaseCompletedByMyAppPurchaseResult(
+    func didCompletePurchaseWithResult(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
