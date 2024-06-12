@@ -44,7 +44,7 @@ struct ManageSubscriptionsView: View {
 
                 if let subscriptionInformation = self.viewModel.subscriptionInformation {
                     SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                            refundRequestStatus: viewModel.refundRequestStatus)
+                                            refundRequestStatus: viewModel.refundRequestStatusMessage)
                 }
 
                 Spacer()

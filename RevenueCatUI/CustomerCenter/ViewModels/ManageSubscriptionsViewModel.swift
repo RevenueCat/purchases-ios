@@ -28,7 +28,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     var subscriptionInformation: SubscriptionInformation?
     @Published
-    var refundRequestStatus: String?
+    var refundRequestStatusMessage: String?
     @Published
     var configuration: CustomerCenterConfigData?
     @Published
@@ -120,11 +120,11 @@ class ManageSubscriptionsViewModel: ObservableObject {
                 let status = try await purchasesProvider.beginRefundRequest(forProduct: productId)
                 switch status {
                 case .error:
-                    self.refundRequestStatus = "Error when requesting refund, try again"
+                    self.refundRequestStatusMessage = "Error when requesting refund, try again"
                 case .success:
-                    self.refundRequestStatus = "Refund granted successfully!"
+                    self.refundRequestStatusMessage = "Refund granted successfully!"
                 case .userCancelled:
-                    self.refundRequestStatus = "Refund canceled"
+                    self.refundRequestStatusMessage = "Refund canceled"
                 }
             }
         case .changePlans, .cancel:
