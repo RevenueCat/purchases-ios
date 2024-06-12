@@ -42,8 +42,8 @@ public protocol PurchasesType: AnyObject {
     var finishTransactions: Bool { get set }
 
     /** Controls if purchases should be made and transactions finished automatically by RevenueCat.
-     * `.revenueCat` by default.
-     * - Warning: Setting this value to `.myApp` will prevent the SDK from making purchases and finishing transactions.
+     * ``.revenueCat`` by default.
+     * - Warning: Setting this value to ``.myApp`` will prevent the SDK from making purchases and finishing transactions.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }

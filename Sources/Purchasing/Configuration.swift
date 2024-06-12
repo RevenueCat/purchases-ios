@@ -144,8 +144,8 @@ import Foundation
 
         /**
          * Set `observerMode`.
-         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation
-         * and want to use only RevenueCat's backend. Default is `.revenueCat`.
+         * - Parameter purchasesAreCompletedBy: Set this to ``.myApp`` if you have your own IAP implementation
+         * and want to use only RevenueCat's backend. Default is ``.revenueCat``.
          * - Parameter storeKitVersion: Set the StoreKit version you're using to make purchases.
          */
         @objc public func with(

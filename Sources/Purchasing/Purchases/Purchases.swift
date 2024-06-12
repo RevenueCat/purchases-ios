@@ -1350,8 +1350,8 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `.revenueCat`.
+     * - Parameter purchasesAreCompletedBy: Set this to ``.myApp`` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is ``.revenueCat``.
      *
      * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
      *
