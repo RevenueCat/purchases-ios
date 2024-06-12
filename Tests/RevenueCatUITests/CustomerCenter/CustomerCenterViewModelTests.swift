@@ -18,6 +18,8 @@ import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
+#if !os(macOS) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
@@ -257,3 +259,5 @@ private extension CustomerCenterViewModelTests {
     }()
 
 }
+
+#endif
