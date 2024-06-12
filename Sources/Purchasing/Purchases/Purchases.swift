@@ -1381,7 +1381,6 @@ public extension Purchases {
         )
     }
 
-
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
     This is likely a programmer error. This ID is used to identify the current user.
