@@ -44,20 +44,26 @@ class ManageSubscriptionsViewModel: ObservableObject {
         return state != .notLoaded
     }
 
+    private var purchasesProvider: ManageSubscriptionsPurchaseType
+
     private var error: Error?
 
-    init() {
-        state = .notLoaded
+    convenience init() {
+        self.init(purchasesProvider: ManageSubscriptionPurchases())
     }
 
-    init(configuration: CustomerCenterConfigData) {
-        state = .notLoaded
-        self.configuration = configuration
+    // @PublicForExternalTesting
+    init(purchasesProvider: ManageSubscriptionsPurchaseType) {
+        self.state = .notLoaded
+        self.purchasesProvider = purchasesProvider
     }
 
-    init(configuration: CustomerCenterConfigData, subscriptionInformation: SubscriptionInformation) {
+    // @PublicForExternalTesting
+    init(configuration: CustomerCenterConfigData,
+         subscriptionInformation: SubscriptionInformation) {
         self.configuration = configuration
         self.subscriptionInformation = subscriptionInformation
+        self.purchasesProvider = ManageSubscriptionPurchases()
         state = .success
     }
 
@@ -72,13 +78,12 @@ class ManageSubscriptionsViewModel: ObservableObject {
     }
 
     func loadSubscriptionInformation() async throws {
-        let customerInfo = try await Purchases.shared.customerInfo()
+        let customerInfo = try await purchasesProvider.customerInfo()
         guard let currentEntitlementDict = customerInfo.entitlements.active.first,
               let subscribedProductID = customerInfo.activeSubscriptions.first,
-              let subscribedProduct = await Purchases.shared.products([subscribedProductID]).first else {
+              let subscribedProduct = await purchasesProvider.products([subscribedProductID]).first else {
             Logger.warning(Strings.could_not_find_subscription_information)
-            self.state = .error(CustomerCenterError.couldNotFindSubscriptionInformation)
-            return
+            throw CustomerCenterError.couldNotFindSubscriptionInformation
         }
         let currentEntitlement = currentEntitlementDict.value
 
@@ -110,7 +115,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             Task {
                 guard let subscriptionInformation = self.subscriptionInformation else { return }
                 let productId = subscriptionInformation.productIdentifier
-                let status = try await Purchases.shared.beginRefundRequest(forProduct: productId)
+                let status = try await purchasesProvider.beginRefundRequest(forProduct: productId)
                 switch status {
                 case .error:
                     self.refundRequestStatus = "Error when requesting refund, try again"
@@ -122,13 +127,34 @@ class ManageSubscriptionsViewModel: ObservableObject {
             }
         case .changePlans, .cancel:
             Task {
-                try await Purchases.shared.showManageSubscriptions()
+                try await purchasesProvider.showManageSubscriptions()
             }
         default:
             break
         }
     }
     #endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType {
+
+    func beginRefundRequest(forProduct productID: String) async throws -> RevenueCat.RefundRequestStatus {
+        try await Purchases.shared.beginRefundRequest(forProduct: productID)
+    }
+
+    func showManageSubscriptions() async throws {
+        try await Purchases.shared.showManageSubscriptions()
+    }
+
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        return try await Purchases.shared.customerInfo()
+    }
+
+    func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
+        return await Purchases.shared.products(productIdentifiers)
+    }
 
 }
 
