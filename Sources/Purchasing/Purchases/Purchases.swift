@@ -1383,16 +1383,15 @@ public extension Purchases {
     // swiftlint:disable:next missing_docs
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: StaticString,
-                                             observerMode: Bool) -> Purchases {
+                                             purchasesAreCompletedBy: PurchasesAreCompletedBy,
+                                             storeKitVersion: StoreKitVersion) -> Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
-
-        let purchasesBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
 
         return Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: "\(appUserID)")
-                .with(purchasesAreCompletedBy: purchasesBy, storeKitVersion: .default)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
