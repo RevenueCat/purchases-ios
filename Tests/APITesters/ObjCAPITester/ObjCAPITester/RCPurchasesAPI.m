@@ -252,6 +252,7 @@ BOOL isAnonymous;
         case RCPurchasesAreCompletedByMyApp:
         case RCPurchasesAreCompletedByRevenueCat:
             NSLog(@"%ld", (long)pacb);
+    }
 }
 
 + (void)checkConstants {
