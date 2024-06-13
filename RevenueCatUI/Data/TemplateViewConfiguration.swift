@@ -27,6 +27,7 @@ struct TemplateViewConfiguration {
     let colorsByTier: [PaywallData.Tier: PaywallData.Configuration.Colors]
     let fonts: PaywallFontProvider
     let assetBaseURL: URL
+    let components: PaywallComponent.Data?
 
 }
 

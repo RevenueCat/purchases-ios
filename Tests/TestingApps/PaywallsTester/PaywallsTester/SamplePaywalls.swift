@@ -74,6 +74,8 @@ final class SamplePaywallLoader {
             return Self.template5()
         case .template7:
             return Self.template7()
+        case .templateComponents:
+            return Self.templateComponents()
         }
     }
 
@@ -564,34 +566,454 @@ private extension SamplePaywallLoader {
         )
     }
 
-    static func unrecognizedTemplate() -> PaywallData {
+    static func templateComponents() -> PaywallData {
         return .init(
-            templateName: "unrecognized_template_name",
+            templateName: PaywallTemplate.templateComponents.rawValue,
             config: .init(
-                packages: [Package.string(from: PackageType.monthly)!],
-                images: Self.images,
-                colors:  .init(
-                    light: .init(
-                        background: "#FFFFFF",
-                        text1: "#000000",
-                        callToActionBackground: "#5CD27A",
-                        callToActionForeground: "#FFFFFF",
-                        accent1: "#BC66FF"
-                    )
+                packages: [PackageType.annual.identifier,
+                           PackageType.monthly.identifier],
+                defaultPackage: PackageType.annual.identifier,
+                images: .init(),
+                colors: .init(
+                    light: .init()
                 ),
-                termsOfServiceURL: Self.tosURL
+                termsOfServiceURL: nil
             ),
             localization: .init(
-                title: "Ignite your child's curiosity",
-                subtitle: "Get access to all our educational content trusted by thousands of parents.",
-                callToAction: "Purchase for {{ price }}",
-                callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
-                offerDetails: "{{ sub_price_per_month }} per month",
-                offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
+                title: "",
+                callToAction: "Continue"
             ),
-            assetBaseURL: Self.paywallAssetBaseURL
+            assetBaseURL: Self.paywallAssetBaseURL,
+
+            componentData: PaywallComponent.Data(
+                components: multiTierFull
+            )
         )
     }
+
+    static var singleTier1: [PaywallComponent] {
+            return [
+                .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+                .spacer(.init()),
+                .text(.init(
+                    text: .init(value: [
+                        "en_US": "Get started with our plan"
+                    ]),
+                    color: .init(light: "#000000"),
+                    textStyle: .largeTitle
+                )),
+                .text(.init(
+                    text: .init(value: [
+                        "en_US": "Get access to all our educational content trusted by thousands of parents. And bunch of other awesome stuff and this we are trying to just make this super super duper long."
+                    ]),
+                    color: .init(light: "#000000"),
+                    textStyle: .body
+                )),
+                .spacer(.init()),
+                .text(.init(
+                    text: .init(value: [
+                        "en_US": "Subscribe for $9.99/mo"
+                    ]),
+                    color: .init(light: "#999999"),
+                    textStyle: .body
+                )),
+                .purchaseButton(.init(cta: .init(value: [
+                    "en_US": "Continue"
+                ])))
+            ]
+        }
+
+
+    static var singleTier5: [PaywallComponent] {
+        return [
+            .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+            discountLabel,
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get started with our plan"
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .largeTitle
+            )),
+            .features(.init(features: [
+                .init(iconID: "tick", text: .init(value: [
+                    "en_US": "Access to all 150 of our cinematic LUTs"
+                ])),
+                .init(iconID: "tick", text: .init(value: [
+                    "en_US": "Custom design tools and transition effects"
+                ])),
+                .init(iconID: "tick", text: .init(value: [
+                    "en_US": "100+ exclusive templates"
+                ]))
+            ])),
+            .packages(.init(packages: .init(
+                default: annualPackageComponent,
+                packages: [annualPackageComponent, monthlyPackageComponent]
+            ))),
+            .spacer(.init()),
+            .purchaseButton(.init(cta: .init(value: [
+                "en_US": "Continue"
+            ])))
+        ]
+    }
+
+    static var discountLabel: PaywallComponent {
+        return .text(.init(
+            text: .init(value: [
+                "en_US": "Discounted for a limited time"
+            ]),
+            color: .init(light: "#ffffff"),
+            backgroundColor: .init(light: "#be2d94"),
+            padding: .init(top: 10, bottom: 10, leading: 0, trailing: 0)
+        ))
+    }
+
+    static var multiTier: [PaywallComponent] {
+        return [
+            .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get started with one of our plans"
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .largeTitle
+            )),
+            .tiers(.init(tiers: [
+                .init(
+                    id: "basic",
+                    displayName: .init(value: [
+                        "en_US": "Basic"
+                    ]),
+                    components: [
+                        .features(.init(features: [
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "Access to 10 cinematic LUTs"
+                            ])),
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "Standard fonts"
+                            ])),
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "2 templates"
+                            ]))
+                        ])),
+                        .packages(.init(packages: .init(
+                            default: annualPackageComponent,
+                            packages: [annualPackageComponent, monthlyPackageComponent]
+                        )))
+                    ]
+                ),
+                .init(
+                    id: "premium",
+                    displayName: .init(value: [
+                        "en_US": "Premium"
+                    ]),
+                    components: [
+                        .features(.init(features: [
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "Access to all 150 of our cinematic LUTs"
+                            ])),
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "Custom design tools and transition effects"
+                            ])),
+                            .init(iconID: "tick", text: .init(value: [
+                                "en_US": "100+ exclusive templates"
+                            ]))
+                        ])),
+                        .packages(.init(packages: .init(
+                            default: annualPackageComponent,
+                            packages: [annualPackageComponent, monthlyPackageComponent]
+                        )))
+                    ]
+                )
+            ])),
+            .purchaseButton(.init(cta: .init(value: [
+                "en_US": "Subscribe"
+            ])))
+        ]
+    }
+
+    static var multiTierFull: [PaywallComponent] {
+            return [
+                .tiers(.init(tiers: [
+                    .init(
+                        id: "basic",
+                        displayName: .init(value: [
+                            "en_US": "Basic"
+                        ]),
+                        components: [
+                            .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1692992845.png")!)),
+                            .text(.init(
+                                text: .init(value: [
+                                    "en_US": "Get started with our Basic plan"
+                                ]),
+                                color: .init(light: "#000000"),
+                                textStyle: .largeTitle
+                            )),
+                            .tierSelector(.init()),
+                            .features(.init(features: [
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "Access to 10 cinematic LUTs"
+                                ])),
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "Standard fonts"
+                                ])),
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "2 templates"
+                                ]))
+                            ])),
+                            .packages(.init(packages: .init(
+                                default: annualPackageComponent,
+                                packages: [annualPackageComponent, monthlyPackageComponent]
+                            )))
+                        ]
+                    ),
+                    .init(
+                        id: "premium",
+                        displayName: .init(value: [
+                            "en_US": "Premium"
+                        ]),
+                        components: [
+                            .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+                            .text(.init(
+                                text: .init(value: [
+                                    "en_US": "Get started with our Premium plan"
+                                ]),
+                                color: .init(light: "#000000"),
+                                textStyle: .largeTitle
+                            )),
+                            .tierSelector(.init()),
+                            .features(.init(features: [
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "Access to all 150 of our cinematic LUTs"
+                                ])),
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "Custom design tools and transition effects"
+                                ])),
+                                .init(iconID: "tick", text: .init(value: [
+                                    "en_US": "100+ exclusive templates"
+                                ]))
+                            ])),
+                            .packages(.init(packages: .init(
+                                default: annualPackageComponent,
+                                packages: [annualPackageComponent, monthlyPackageComponent]
+                            )))
+                        ]
+                    )
+                ])),
+                .purchaseButton(.init(cta: .init(value: [
+                    "en_US": "Subscribe"
+                ])))
+            ]
+        }
+
+    static let annualPackageComponent = PaywallComponent.Packages.Package(
+        packageId: PackageType.annual.identifier,
+        name: .init(value: [
+            "en_US": "Annual"
+        ]),
+        details: .init(value: [
+            "en_US": "{{ total_price_and_per_month }}"
+        ]),
+        detailsIntroOffer: .init(value: [
+            "en_US": "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}"
+        ])
+    )
+    static let monthlyPackageComponent = PaywallComponent.Packages.Package(
+        packageId: PackageType.monthly.identifier,
+        name: .init(value: [
+            "en_US": "Monthly"
+        ]),
+        details: .init(value: [
+            "en_US": "{{ total_price_and_per_month }}"
+        ]),
+        detailsIntroOffer: .init(value: [
+            "en_US": "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}"
+        ])
+    )
+
+//    static func templateComponents() -> PaywallData {
+//            let annualPackage = PaywallComponent.Packages.Package(
+//                packageId: PackageType.annual.identifier,
+//                name: .init(value: [
+//                    "en_US": "Annual"
+//                ]),
+//                details: .init(value: [
+//                    "en_US": "{{ total_price_and_per_month }}"
+//                ]),
+//                detailsIntroOffer: .init(value: [
+//                    "en_US": "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}"
+//                ])
+//            )
+//            let monthlyPackage = PaywallComponent.Packages.Package(
+//                packageId: PackageType.monthly.identifier,
+//                name: .init(value: [
+//                    "en_US": "Monthly"
+//                ]),
+//                details: .init(value: [
+//                    "en_US": "{{ total_price_and_per_month }}"
+//                ]),
+//                detailsIntroOffer: .init(value: [
+//                    "en_US": "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}"
+//                ])
+//            )
+//
+//            return .init(
+//                templateName: PaywallTemplate.templateComponents.rawValue,
+//                config: .init(
+//                    packages: [PackageType.annual.identifier,
+//                               PackageType.monthly.identifier],
+//                    defaultPackage: PackageType.annual.identifier,
+//                    images: .init(),
+//                    colors: .init(
+//                        light: .init()
+//                    ),
+//                    termsOfServiceURL: nil
+//                ),
+//                localization: .init(
+//                    title: "",
+//                    callToAction: ""
+//                ),
+//                assetBaseURL: Self.paywallAssetBaseURL,
+//
+//                componentData: PaywallComponent.Data(components: [
+//                    .tiers(.init(tiers: [
+//                        .init(
+//                            id: "basic",
+//                            displayName: .init(value: [
+//                                "en_US": "Basic"
+//                            ]),
+//                            components: [
+//                                .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1692992845.png")!)),
+//                                .text(.init(
+//                                    text: .init(value: [
+//                                        "en_US": "Get started with our Basic plan"
+//                                    ]),
+//                                    color: .init(light: "#000000"),
+//                                    textStyle: .largeTitle
+//                                )),
+//                                .tierSelector(.init()),
+//                                .features(.init(features: [
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Access to 10 cinematic LUTs"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Standard fonts"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "2 templates"
+//                                    ]))
+//                                ])),
+//                                .packages(.init(packages: .init(
+//                                    default: annualPackage,
+//                                    packages: [annualPackage, monthlyPackage]
+//                                ))),
+//                            ]
+//                        ),
+//                        .init(
+//                            id: "standard",
+//                            displayName: .init(value: [
+//                                "en_US": "Standard"
+//                            ]),
+//                            components: [
+//                                .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1703109702.png")!)),
+//                                .text(.init(
+//                                    text: .init(value: [
+//                                        "en_US": "Get started with our Standard plan"
+//                                    ]),
+//                                    color: .init(light: "#000000"),
+//                                    textStyle: .largeTitle
+//                                )),
+//                                .tierSelector(.init()),
+//                                .features(.init(features: [
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Access to 30 cinematic LUTs"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Pro fonts and transition effects"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "10+ templates"
+//                                    ]))
+//                                ])),
+//                                .packages(.init(packages: .init(
+//                                    default: annualPackage,
+//                                    packages: [annualPackage, monthlyPackage]
+//                                )))
+//                            ]
+//                        ),
+//                        .init(
+//                            id: "premium",
+//                            displayName: .init(value: [
+//                                "en_US": "Premium"
+//                            ]),
+//                            components: [
+//                                .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+//    //                                    .text(.init(
+//    //                                        text: .init(value: [
+//    //                                            "en_US": "Discounted for a limited time"
+//    //                                        ]),
+//    //                                        color: .init(light: "#ffffff"),
+//    //                                        backgroundColor: .init(light: "#be2d94"),
+//    //                                        padding: .init(top: 10, bottom: 10, leading: 0, trailing: 0)
+//    //                                    )),
+//                                .text(.init(
+//                                    text: .init(value: [
+//                                        "en_US": "Get started with our Premium plan"
+//                                    ]),
+//                                    color: .init(light: "#000000"),
+//                                    textStyle: .largeTitle
+//                                )),
+//                                .tierSelector(.init()),
+//                                .features(.init(features: [
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Access to all 150 of our cinematic LUTs"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "Custom design tools and transition effects"
+//                                    ])),
+//                                    .init(iconID: "tick", text: .init(value: [
+//                                        "en_US": "100+ exclusive templates"
+//                                    ]))
+//                                ])),
+//                                .packages(.init(packages: .init(
+//                                    default: annualPackage,
+//                                    packages: [annualPackage, monthlyPackage]
+//                                )))
+//                            ]
+//                        )
+//                    ]))
+//                ])
+//            )
+//        }
+
+        static func unrecognizedTemplate() -> PaywallData {
+            return .init(
+                templateName: "unrecognized_template_name",
+                config: .init(
+                    packages: [Package.string(from: PackageType.monthly)!],
+                    images: Self.images,
+                    colors:  .init(
+                        light: .init(
+                            background: "#FFFFFF",
+                            text1: "#000000",
+                            callToActionBackground: "#5CD27A",
+                            callToActionForeground: "#FFFFFF",
+                            accent1: "#BC66FF"
+                        )
+                    ),
+                    termsOfServiceURL: Self.tosURL
+                ),
+                localization: .init(
+                    title: "Ignite your child's curiosity",
+                    subtitle: "Get access to all our educational content trusted by thousands of parents.",
+                    callToAction: "Purchase for {{ price }}",
+                    callToActionWithIntroOffer: "Purchase for {{ sub_price_per_month }} per month",
+                    offerDetails: "{{ sub_price_per_month }} per month",
+                    offerDetailsWithIntroOffer: "Start your {{ sub_offer_duration }} trial, then {{ sub_price_per_month }} per month"
+                ),
+                assetBaseURL: Self.paywallAssetBaseURL
+            )
+        }
 
 }
 

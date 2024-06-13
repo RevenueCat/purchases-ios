@@ -107,7 +107,8 @@ extension PaywallData {
                 colors: self.config.colors.multiScheme,
                 colorsByTier: self.config.multiSchemeColorsByTier,
                 fonts: fonts,
-                assetBaseURL: self.assetBaseURL
+                assetBaseURL: self.assetBaseURL,
+                components: self.componentData
             )
         }
     }
@@ -131,6 +132,8 @@ extension PaywallData {
             Template5View(configuration)
         case .template7:
             Template7View(configuration)
+        case .templateComponents:
+            TemplateComponentsView(configuration)
         }
         #endif
     }
