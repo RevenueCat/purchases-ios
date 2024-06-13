@@ -53,6 +53,7 @@ public struct PaywallData {
     @DefaultDecodable.EmptyDictionary
     internal private(set) var localizationByTier: [String: [String: LocalizedConfiguration]]
 
+    public var componentData: PaywallComponent.Data? = nil
 }
 
 /// Defines the necessary localized information for a paywall.
@@ -623,15 +624,17 @@ extension PaywallData {
         localizationByTier: [String: [String: LocalizedConfiguration]],
         assetBaseURL: URL,
         revision: Int = 0,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        componentData: PaywallComponent.Data? = nil
     ) {
         self.templateName = templateName
         self.config = config
         self.localization = localization
         self.localizationByTier = localizationByTier
         self.assetBaseURL = assetBaseURL
-        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
         self.revision = revision
+        self._zeroDecimalPlaceCountries = .init(apple: zeroDecimalPlaceCountries)
+        self.componentData = componentData
     }
 
     /// Creates a test ``PaywallData`` with one localization.
@@ -642,7 +645,8 @@ extension PaywallData {
         assetBaseURL: URL,
         revision: Int = 0,
         locale: Locale = .current,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        componentData: PaywallComponent.Data? = nil
     ) {
         self.init(
             templateName: templateName,
@@ -651,7 +655,8 @@ extension PaywallData {
             localizationByTier: [:],
             assetBaseURL: assetBaseURL,
             revision: revision,
-            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries,
+            componentData: componentData
         )
     }
 

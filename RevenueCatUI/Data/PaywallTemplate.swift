@@ -24,6 +24,8 @@ enum PaywallTemplate: String {
     case template5 = "5"
     case template7 = "7"
 
+    case templateComponents = "components"
+
 }
 
 extension PaywallTemplate: Equatable {}
