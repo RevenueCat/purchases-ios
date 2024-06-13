@@ -1350,15 +1350,17 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter purchasesAreCompletedBy: Set this to ``.myApp`` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is ``.revenueCat``.
+     * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
+     *  if you have your own IAP implementation and want to use only RevenueCat's backend.
+     *  Default is ``PurchasesAreCompletedBy/revenueCat``.
      *
      * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Warning: If purchasesAreCompletedBy is ``.myApp`` and storeKitVersion is ``.storeKit2``, ensure that you're
-     * calling ``Purchases/addPurchaseCompletedByMyAppPurchaseResult(_:)`` after making a purchase.
+     * - Warning: If purchasesAreCompletedBy is ``PurchasesAreCompletedBy/myApp``
+     * and storeKitVersion is ``StoreKitVersion/storeKit2``, ensure that you're
+     * calling ``Purchases/register(_:)`` after making a purchase.
      */
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)
