@@ -452,7 +452,7 @@ extension MockPurchases: PurchasesSwiftType {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func didCompletePurchaseWithResult(
+    func register(
         _ purchaseResult: Product.PurchaseResult
     ) async throws -> RevenueCat.StoreTransaction? {
         self.unimplemented()
