@@ -32,15 +32,6 @@ public protocol PurchasesType: AnyObject {
      */
     var isAnonymous: Bool { get }
 
-    /** Whether transactions should be finished automatically. `true` by default.
-     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
-     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
-     * will turn up every time the app is opened.
-     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
-     */
-    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
-    var finishTransactions: Bool { get set }
-
     /** Controls if purchases should be made and transactions finished automatically by RevenueCat.
      * ``.revenueCat`` by default.
      * - Warning: Setting this value to ``.myApp`` will prevent the SDK from making purchases and finishing transactions.
@@ -919,6 +910,15 @@ public protocol PurchasesType: AnyObject {
     // swiftlint:enable missing_docs
 
     #endif
+
+    /** Whether transactions should be finished automatically. `true` by default.
+     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
+     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
+     * will turn up every time the app is opened.
+     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
+     */
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
+    var finishTransactions: Bool { get set }
 
 }
 
