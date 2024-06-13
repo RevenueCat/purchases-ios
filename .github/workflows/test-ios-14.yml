@@ -1,0 +1,28 @@
+name: Test iOS 14 (WIP)
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    name: Testing Swift Package and iOS app
+    runs-on: macos-13
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      # TODO: Install Ruby version
+      - name: Install Bundler
+        run: gem install bundler
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Install runtime
+        run: sudo xcodes runtimes install "iOS 14.5"
+
+      - name: Run tests
+        env:
+          SCAN_DEVICE: iPhone 12 (14.5)
+        run: bundle exec fastlane test_ios skip_sk_tests:true
