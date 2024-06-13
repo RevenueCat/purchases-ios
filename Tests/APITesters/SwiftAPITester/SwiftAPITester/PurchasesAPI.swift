@@ -300,7 +300,7 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
-        .with(observerMode: true, storeKitVersion: .default)
+        .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .default)
         .build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
         .with(showStoreMessagesAutomatically: false)
@@ -350,8 +350,6 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: "")
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
     Purchases.configure(withAPIKey: "",
                         appUserID: nil,
                         observerMode: true,
@@ -378,7 +376,4 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     let _: Bool = purchases.finishTransactions
 
-    _ = Configuration
-        .builder(withAPIKey: "")
-        .with(observerMode: true)
 }
