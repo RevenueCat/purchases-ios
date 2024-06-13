@@ -42,7 +42,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
 
         expect(viewModel.state) == .notLoaded
         expect(viewModel.subscriptionInformation).to(beNil())
-        expect(viewModel.refundRequestStatus).to(beNil())
+        expect(viewModel.refundRequestStatusMessage).to(beNil())
         expect(viewModel.configuration).to(beNil())
         expect(viewModel.showRestoreAlert) == false
         expect(viewModel.isLoaded) == false

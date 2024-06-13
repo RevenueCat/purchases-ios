@@ -89,7 +89,7 @@ struct HeaderView: View {
 
     var body: some View {
         if let configuration = viewModel.configuration {
-            Text(configuration.title.en_US)
+            Text(configuration.title)
                 .font(.title)
                 .padding()
         }
@@ -157,7 +157,7 @@ struct ManageSubscriptionsButtonsView: View {
                     #endif
                 }
                 ForEach(filteredPaths, id: \.id) { path in
-                    Button(path.title.en_US) {
+                    Button(path.title) {
                         self.viewModel.handleAction(for: path)
                     }
                     .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)

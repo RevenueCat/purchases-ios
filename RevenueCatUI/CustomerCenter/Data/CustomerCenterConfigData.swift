@@ -20,7 +20,7 @@ struct CustomerCenterConfigData {
 
     let id: String
     let paths: [HelpPath]
-    let title: LocalizedString
+    let title: String
 
     enum HelpPathType: String {
         case missingPurchase = "MISSING_PURCHASE"
@@ -40,22 +40,15 @@ struct CustomerCenterConfigData {
     struct HelpPath {
 
         let id: String
-        let title: LocalizedString
+        let title: String
         let type: HelpPathType
         let detail: HelpPathDetail?
 
     }
 
-    struct LocalizedString {
-
-        // swiftlint:disable:next identifier_name
-        let en_US: String
-
-    }
-
     struct FeedbackSurvey {
 
-        let title: LocalizedString
+        let title: String
         let options: [FeedbackSurveyOption]
 
     }
@@ -63,7 +56,7 @@ struct CustomerCenterConfigData {
     struct FeedbackSurveyOption {
 
         let id: String
-        let title: LocalizedString
+        let title: String
 
     }
 
