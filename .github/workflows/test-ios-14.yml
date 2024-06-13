@@ -19,10 +19,10 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      - name: Install runtime
-        run: sudo xcodes runtimes install "iOS 14.5"
+      # - name: Install runtime
+      #   run: sudo xcodes runtimes install "iOS 14.5"
 
       - name: Run tests
         env:
-          SCAN_DEVICE: iPhone 12 (14.5)
+          SCAN_DEVICE: iPhone 14 (17.0)
         run: bundle exec fastlane test_ios skip_sk_tests:true
