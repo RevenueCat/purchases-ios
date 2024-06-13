@@ -74,16 +74,26 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
+        let nonStaticString = String(123)
+        let purchases = Purchases.configure(withAPIKey: "",
+                                            appUserID: nonStaticString,
+                                            purchasesAreCompletedBy: .myApp,
+                                            storeKitVersion: .storeKit2)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == false
+        expect(Purchases.shared.purchasesAreCompletedBy) == .myApp
     }
 
     @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverModeDisabled() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+        let nonStaticString = String(123)
+        let purchases = Purchases.configure(withAPIKey: "",
+                                            appUserID: nonStaticString,
+                                            purchasesAreCompletedBy: .revenueCat,
+                                            storeKitVersion: .storeKit2)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
