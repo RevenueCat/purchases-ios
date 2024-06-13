@@ -113,9 +113,11 @@ private extension RestorePurchasesAlert {
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 extension View {
+
     func restorePurchasesAlert(isPresented: Binding<Bool>) -> some View {
         self.modifier(RestorePurchasesAlert(isPresented: isPresented))
     }
+
 }
 
 #endif
