@@ -64,6 +64,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
         // called
 
+        try await self.signInAsNewAppUserID()
         _ = try await Purchases.shared.syncPurchases()
 
         try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
@@ -77,6 +78,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
         // called
 
+        try await self.signInAsNewAppUserID()
         _ = try await Purchases.shared.syncPurchases()
 
         try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
