@@ -41,6 +41,38 @@ struct ManageSubscriptionsView: View {
     }
 
     var body: some View {
+        if #available(iOS 16.0, *) {
+            NavigationStack {
+                content
+                    .navigationDestination(isPresented: .constant(self.viewModel.feedbackSurveyData != nil)) {
+                        if let feedbackSurveyData = self.viewModel.feedbackSurveyData {
+                            FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
+                                .onDisappear {
+                                    self.viewModel.feedbackSurveyData = nil
+                                }
+                        }
+                    }
+            }
+        } else {
+            NavigationView {
+                content
+                    .background(NavigationLink(
+                        destination: self.viewModel.feedbackSurveyData.map { data in
+                            FeedbackSurveyView(feedbackSurveyData: data)
+                                .onDisappear {
+                                    self.viewModel.feedbackSurveyData = nil
+                                }
+                        },
+                        isActive: .constant(self.viewModel.feedbackSurveyData != nil)
+                    ) {
+                        EmptyView()
+                    })
+            }
+        }
+    }
+
+    @ViewBuilder
+    var content: some View {
         VStack {
             if self.viewModel.isLoaded {
                 HeaderView(viewModel: self.viewModel)
@@ -53,6 +85,7 @@ struct ManageSubscriptionsView: View {
                 Spacer()
 
                 ManageSubscriptionsButtonsView(viewModel: self.viewModel)
+
             } else {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
@@ -61,8 +94,8 @@ struct ManageSubscriptionsView: View {
         .task {
             await loadInformationIfNeeded()
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -158,7 +191,7 @@ struct ManageSubscriptionsButtonsView: View {
             }
             ForEach(filteredPaths, id: \.id) { path in
                 AsyncButton(action: {
-                    await self.viewModel.handleAction(for: path)
+                    await self.viewModel.determineFlow(for: path)
                 }, label: {
                     Text(path.title)
                 })
