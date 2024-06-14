@@ -1040,7 +1040,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * guard let product = product else { return }
      * let result = try await product.purchase()
      * // Let RevenueCat handle the transaction result
-     * _ = try await Purchases.shared.handleObserverModeTransaction(result)
+     * _ = try await Purchases.shared.recordPurchase(result)
      * // Handle the result and finish the transaction
      * switch result {
      * case .success(let verification):
