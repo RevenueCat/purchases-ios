@@ -1,5 +1,5 @@
 orbs:
-  macos: circleci/macos@2.0.1
+  macos: circleci/macos@2.5.1
   slack: circleci/slack@4.10.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
@@ -75,13 +75,23 @@ commands:
       runtime-name:
         type: string
     steps:
-      - install-brew-dependency:
-          dependency_name: 'xcodes'
+      # - install-brew-dependency:
+      #     dependency_name: 'xcodes'
+      # - run:
+      #     name: Install simulator
+      #     command: | # Print all available simulators and install required one
+      #         xcodes runtimes
+      #         sudo xcodes runtimes install "<< parameters.runtime-name >>"
+      # Xcodes got broken with latest iOS 18 betas. This is a temporary workaround. https://github.com/XcodesOrg/xcodes/issues/368
+      - run:
+          name: Install fixed xcodes version
+          command: |
+              mint install https://github.com/alvar-bolt/xcodes.git@alvar/ios-18-quickfix
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
-              xcodes runtimes
-              sudo xcodes runtimes install "<< parameters.runtime-name >>"
+              $HOME/.mint/bin/xcodes runtimes
+              sudo $HOME/.mint/bin/xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -608,8 +618,6 @@ jobs:
 
   run-test-ios-15:
     <<: *base-job
-    # Fix-me: running on M1 makes these tests crash
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies:
@@ -703,12 +711,14 @@ jobs:
 
   run-test-ios-13:
     <<: *base-job
-    # M1 unsupported
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
+      - macos/install-rosetta
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
@@ -733,12 +743,14 @@ jobs:
 
   run-test-ios-12:
     <<: *base-job
-    # M1 unsupported
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
+      - macos/install-rosetta
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 12.4
