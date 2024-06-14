@@ -1072,7 +1072,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * ``Configuration/Builder/with(purchasesAreCompletedBy:storeKitVersion:)``
      */
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func register(
+    func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 

@@ -1159,7 +1159,7 @@ public extension Purchases {
 #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func register(
+    func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
@@ -1360,7 +1360,7 @@ public extension Purchases {
      *
      * - Warning: If purchasesAreCompletedBy is ``PurchasesAreCompletedBy/myApp``
      * and storeKitVersion is ``StoreKitVersion/storeKit2``, ensure that you're
-     * calling ``Purchases/register(_:)`` after making a purchase.
+     * calling ``Purchases/recordPurchase(_:)`` after making a purchase.
      */
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)
