@@ -14,6 +14,10 @@
 import RevenueCat
 import SwiftUI
 
+import StoreKit
+
+// swiftlint:disable file_length
+
 /// A closure used for notifying of purchase or restore completion.
 public typealias PurchaseOrRestoreCompletedHandler = @MainActor @Sendable (CustomerInfo) -> Void
 
@@ -34,6 +38,17 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
+
+/// A closure used for notifying that custom purchase logic has completed.
+public typealias PerformPurchase = @MainActor @Sendable (
+    _ storeProduct: StoreProduct,
+    _ purchaseResultReporter: PurchaseResultReporter
+) -> Void
+
+/// A closure used for notifying that custom restore logic has completed.
+public typealias PerformRestore = @MainActor @Sendable (
+    _ restoreResultReporter: RestoreResultReporter
+) -> Void
 
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
@@ -270,6 +285,44 @@ extension View {
         self.environment(\.onRequestedDismissal, action)
     }
 
+    /// Use this method if you wish to execute your own StoreKit purchase and restore logic,
+    /// skipping RevenueCat's. This method is **only** called if `Purchases` is
+    /// confiugured with `purchasesAreCompletedBy` set to `.myApp`. This is typically used
+    /// when migrating from a direct StoreKit implementation to RevenueCat in stages, or if integrating
+    /// RevenueCat for experiments and growth tools only.
+    ///
+    /// After executing your StoreKit purchase code, you **must** communicate the result of your purchase
+    /// code by calling `reportResult`on the passed result reporter object when your code
+    /// has finished executing. Failure to do so will result in undefined behavior.
+    ///
+    /// Example:
+    /// ```swift
+    /// PaywallView()
+    ///     .handlePurchaseAndRestore(
+    ///         performPurchase: { storeProduct, purchaseResultReporter in
+    ///             // make purchase for `storeProduct`
+    ///
+    ///             // report result to RevenueCat
+    ///             purchaseResultReporter.reportResult(userCancelled: false, error: nil)
+    ///     }, performRestore: { restoreResultReporter in
+    ///             // restore purchases
+    ///
+    ///             // report result to RevenueCat
+    ///             restoreResultReporter.reportResult(success: true, error: nil)
+    ///     })
+    /// ```
+    ///
+    public func handlePurchaseAndRestore(
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
+    ) -> some View {
+        return self.modifier(
+            HandlePurchaseAndRestoreModifier(
+                performPurchase: performPurchase,
+                performRestore: performRestore
+            )
+        )
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -326,6 +379,53 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
                     self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HandlePurchaseAndRestoreModifier: ViewModifier {
+    let performPurchase: PerformPurchase
+    let performRestore: PerformRestore
+
+    func body(content: Content) -> some View {
+        content
+            .modifier(HandlePurchaseModifier(handler: performPurchase))
+            .modifier(HandleRestoreModifier(handler: performRestore))
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct HandlePurchaseModifier: ViewModifier {
+
+    let handler: PerformPurchase
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(HandlePurchasePreferenceKey.self) { purchaseResultReporter in
+                if let purchaseResultReporter {
+                    self.handler(purchaseResultReporter.storeProduct, purchaseResultReporter)
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct HandleRestoreModifier: ViewModifier {
+
+    let handler: PerformRestore
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(HandleRestorePreferenceKey.self) { restoreResultReporter in
+                if let restoreResultReporter {
+                    self.handler(restoreResultReporter)
+                } else {
+                    Logger.error("Change to `HandleRestorePreferenceKey` with a value of `nil` means " +
+                                 "the performPurchase modifier cannot be called.")
                 }
             }
     }

@@ -190,6 +190,60 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testHandleExternalPurchaseAndRestore() throws {
+        var completed = false
+        var customPurchaseCodeExecuted = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.externalPurchaseHandler
+        )
+        .handlePurchaseAndRestore(performPurchase: { _, purchaseResultReporter in
+            purchaseResultReporter.reportResult(userCancelled: false, error: nil)
+            customPurchaseCodeExecuted = true
+        }, performRestore: { _ in
+
+        })
+        .addToHierarchy()
+
+        Task {
+            _ = try await Self.externalPurchaseHandler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customPurchaseCodeExecuted) == true
+    }
+
+    func testHandleExternalRestore() throws {
+        var completed = false
+        var customRestoreCodeExecuted = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.externalPurchaseHandler
+        )
+        .handlePurchaseAndRestore(performPurchase: { _, _ in
+
+        }, performRestore: { restoreResultReporter in
+            restoreResultReporter.reportResult(success: true, error: nil)
+            customRestoreCodeExecuted = true
+        })
+        .addToHierarchy()
+
+        Task {
+            _ = try await Self.externalPurchaseHandler.restorePurchases()
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customRestoreCodeExecuted) == true
+    }
+
     func testOnRestoreStarted() throws {
         var started = false
 
@@ -255,6 +309,7 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    private static let externalPurchaseHandler: PurchaseHandler = .mock(purchasesAreCompletedBy: .myApp)
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer

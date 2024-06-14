@@ -63,6 +63,21 @@ enum Logger {
         )
     }
 
+    static func error(
+        _ text: CustomStringConvertible,
+        file: String = #file,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        Self.log(
+            text,
+            .error,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+
     private static func log(
         _ text: CustomStringConvertible,
         _ level: LogLevel,

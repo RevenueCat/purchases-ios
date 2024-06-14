@@ -15,6 +15,59 @@ import RevenueCat
 import StoreKit
 import SwiftUI
 
+// swiftlint:disable file_length
+
+/// A class that can be used to report the result of a purchase.
+public class PurchaseResultReporter: Equatable {
+
+    let storeProduct: StoreProduct
+    let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
+
+    init(storeProduct: StoreProduct, reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
+        self.storeProduct = storeProduct
+        self.reportPurchaseResultCallback = reportPurchaseResult
+    }
+
+    /// Use this method to report the result of the purchase.
+    /// - Parameters:
+    ///   - userCancelled: A boolean indicating whether the user cancelled the purchase.
+    ///   - error: An optional error object if an error occurred during the purchase.
+    public func reportResult(userCancelled: Bool, error: Error?) {
+        reportPurchaseResultCallback(userCancelled, error)
+    }
+
+    /// Checks whether two `PurchaseResultReporter` instances are equal.
+    /// They are considered equal if the object represents the same `StoreProduct`
+    public static func == (lhs: PurchaseResultReporter, rhs: PurchaseResultReporter) -> Bool {
+        return lhs.storeProduct == rhs.storeProduct
+    }
+
+}
+
+/// A class that can be used to report the result of a restoring purchases.
+public class RestoreResultReporter: Equatable {
+
+    let reportRestoreResultCallback: (_ success: Bool, _ error: Error?) -> Void
+
+    init(callback: @escaping (Bool, Error?) -> Void) {
+        self.reportRestoreResultCallback = callback
+    }
+
+    /// Use this method to report the result of a restore operation.
+    /// - Parameters:
+    ///   - success: A boolean indicating whether the restore operation was successful.
+    ///   - error: An optional error object if an error occurred during the restore operation.
+    public func reportResult(success: Bool, error: Error?) {
+        reportRestoreResultCallback(success, error)
+    }
+
+    /// Returns true if objects are the same object (same memory address); false otherwise.
+    public static func == (lhs: RestoreResultReporter, rhs: RestoreResultReporter) -> Bool {
+        return lhs === rhs
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // @PublicForExternalTesting
 final class PurchaseHandler: ObservableObject {
@@ -40,6 +93,14 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
+    /// Information used to perform a purchase by the app (rather than by RevenueCat)
+    @Published
+    fileprivate(set) var performPurchase: PurchaseResultReporter?
+
+    /// Information used to perform restoring a purchase by the app (rather than by RevenueCat)
+    @Published
+    fileprivate(set) var performRestore: RestoreResultReporter?
+
     /// Whether a restore is currently in progress
     @Published
     fileprivate(set) var restoreInProgress: Bool = false
@@ -58,6 +119,8 @@ final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
+    private var externalRestorePurchaseContinuation: CheckedContinuation<Bool, Error>?
+
     convenience init(purchases: Purchases = .shared) {
         self.init(isConfigured: true, purchases: purchases)
     }
@@ -70,6 +133,8 @@ final class PurchaseHandler: ObservableObject {
         self.purchases = purchases
     }
 
+    /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
+    /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     // @PublicForExternalTesting
     static func `default`() -> Self {
         return Purchases.isConfigured ? .init() : Self.notConfigured()
@@ -84,8 +149,21 @@ final class PurchaseHandler: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
+    // MARK: - Purchase
+
     @MainActor
     func purchase(package: Package) async throws -> PurchaseResultData {
+        switch self.purchases.purchasesAreCompletedBy {
+        case .revenueCat:
+            return try await performPurchase(package: package)
+        case .myApp:
+            return try await performExternalPurchaseLogic(package: package)
+        }
+    }
+
+    @MainActor
+    func performPurchase(package: Package) async throws -> PurchaseResultData {
+        Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
@@ -115,13 +193,58 @@ extension PurchaseHandler {
         }
     }
 
+    @MainActor
+    func performExternalPurchaseLogic(package: Package) async throws -> PurchaseResultData {
+        Logger.debug(Strings.executing_external_purchase_logic)
+
+        self.packageBeingPurchased = package
+        self.purchaseResult = nil
+        self.purchaseError = nil
+        self.performPurchase = PurchaseResultReporter(storeProduct: package.storeProduct,
+                                                      reportPurchaseResult: self.reportExternalPurchaseResult)
+
+        self.startAction()
+
+        return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
+    }
+
+    @MainActor
+    func reportExternalPurchaseResult(_ userCancelled: Bool, _ error: Error?) {
+        self.actionInProgress = false
+        self.performPurchase = nil
+
+        if let error {
+            self.purchaseError = error
+        } else {
+            if userCancelled {
+                self.trackCancelledPurchase()
+            } else {
+                withAnimation(Constants.defaultAnimation) {
+                    self.purchased = true
+                }
+            }
+        }
+    }
+
+    // MARK: - Restore
+
+    func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+        switch self.purchases.purchasesAreCompletedBy {
+        case .revenueCat:
+            return try await performRestorePurchases()
+        case .myApp:
+            return try await performExternalRestoreLogic()
+        }
+    }
+
     /// - Returns: `success` is `true` only when the resulting `CustomerInfo`
     /// had any transactions
     /// - Note: `restoredCustomerInfo` will be not be set after this method,
     /// instead `setRestored(_:)` must be manually called afterwards.
     /// This allows the UI to display an alert before dismissing the paywall.
     @MainActor
-    func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+    func performRestorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
+        Logger.debug(Strings.executing_restore_logic)
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
@@ -141,6 +264,45 @@ extension PurchaseHandler {
             self.restoreError = error
             throw error
         }
+    }
+
+    @MainActor
+    func performExternalRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
+        Logger.debug(Strings.executing_external_restore_logic)
+
+        defer {
+            self.restoreInProgress = false
+            self.actionInProgress = false
+        }
+
+        self.restoreInProgress = true
+        self.restoredCustomerInfo = nil
+        self.restoreError = nil
+
+        DispatchQueue.main.async {
+            // this triggers the view's `.handlePurchaseAndRestore` function, and its callback must be called
+            // after the continuation is set below
+            self.performRestore = RestoreResultReporter(callback: self.reportExternalRestoreResult)
+        }
+
+        self.startAction()
+
+        let success = try await withCheckedThrowingContinuation { continuation in
+            externalRestorePurchaseContinuation = continuation
+        }
+
+        return (info: try await self.purchases.customerInfo(), success)
+    }
+
+    @MainActor
+    func reportExternalRestoreResult(success: Bool, error: Error?) {
+        if let error {
+            self.restoreError = error
+            externalRestorePurchaseContinuation?.resume(throwing: error)
+        } else {
+            externalRestorePurchaseContinuation?.resume(returning: success)
+        }
+        externalRestorePurchaseContinuation = nil
     }
 
     @MainActor
@@ -231,6 +393,15 @@ private extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { return .myApp }
+        set { _ = newValue }
+    }
+
+    func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        throw ErrorCode.configurationError
+    }
+
     func purchase(package: Package) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
@@ -262,6 +433,28 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
     static var defaultValue: Bool = false
 
     static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HandlePurchasePreferenceKey: PreferenceKey {
+
+    static var defaultValue: PurchaseResultReporter?
+
+    static func reduce(value: inout PurchaseResultReporter?, nextValue: () -> PurchaseResultReporter?) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct HandleRestorePreferenceKey: PreferenceKey {
+
+    static var defaultValue: RestoreResultReporter?
+
+    static func reduce(value: inout RestoreResultReporter?, nextValue: () -> RestoreResultReporter?) {
         value = nextValue()
     }
 

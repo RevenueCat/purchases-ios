@@ -14,7 +14,7 @@
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
     RCConfiguration *config __unused = [[[[[[[[[[[builder withApiKey:@""]
-                                                 withObserverMode:false]
+                                                 withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat]
                                                 withUserDefaults:NSUserDefaults.standardUserDefaults]
                                                withAppUserID:@""]
                                               withAppUserID:nil]
@@ -24,6 +24,8 @@
                                           withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
                                          withUsesStoreKit2IfAvailable:false]
                                         build];
+
+    RCConfiguration *configDeprecated __unused = [[[builder withApiKey:@""] withObserverMode:true] build];
 
     if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {
         RCConfiguration *config __unused = [[builder

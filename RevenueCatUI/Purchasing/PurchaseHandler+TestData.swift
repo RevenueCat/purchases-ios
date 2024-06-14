@@ -19,9 +19,11 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
 
-    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo) -> Self {
+    static func mock(_ customerInfo: CustomerInfo = TestData.customerInfo,
+                     purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat)
+    -> Self {
         return self.init(
-            purchases: MockPurchases { _ in
+            purchases: MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy) { _ in
                 return (
                     // No current way to create a mock transaction with RevenueCat's public methods.
                     transaction: nil,
@@ -32,12 +34,14 @@ extension PurchaseHandler {
                 return customerInfo
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                return customerInfo
             }
         )
     }
 
-    static func cancelling() -> Self {
-        return .mock()
+    static func cancelling(purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
+        return .mock(purchasesAreCompletedBy: purchasesAreCompletedBy)
             .map { block in {
                     var result = try await block($0)
                     result.userCancelled = true
@@ -55,6 +59,8 @@ extension PurchaseHandler {
                 throw error
             } trackEvent: { event in
                 Logger.debug("Tracking event: \(event)")
+            } customerInfo: {
+                throw error
             }
         )
     }
