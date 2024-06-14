@@ -40,6 +40,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
 
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
+
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
@@ -50,6 +52,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
+
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
@@ -62,6 +66,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
         _ = try await Purchases.shared.syncPurchases()
 
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
+
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
@@ -72,6 +78,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         // called
 
         _ = try await Purchases.shared.syncPurchases()
+
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
@@ -88,6 +96,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         _ = try await product.purchase()
         _ = try await Purchases.shared.syncPurchases()
 
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
+
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
@@ -102,6 +112,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         }
         _ = try await product.purchase()
         _ = try await Purchases.shared.syncPurchases()
+
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
