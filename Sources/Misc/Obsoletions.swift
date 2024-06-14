@@ -587,6 +587,42 @@ public extension Purchases {
         fatalError()
     }
 
+    @available(iOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?) -> Purchases {
+        fatalError()
+
+    }
 }
 
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")

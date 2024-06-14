@@ -63,25 +63,6 @@ public extension Purchases {
     @available(watchOS, deprecated: 1, renamed: "configure(with:)")
     @available(macOS, deprecated: 1, renamed: "configure(with:)")
     @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: StoreKitVersion.default == .storeKit2
-        )
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
     @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
