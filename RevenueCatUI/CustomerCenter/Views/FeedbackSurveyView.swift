@@ -30,7 +30,7 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         VStack {
-            Text("Why are you cancelling?")
+            Text(feedbackSurveyData.configuration.title)
                 .font(.title)
                 .padding()
 
