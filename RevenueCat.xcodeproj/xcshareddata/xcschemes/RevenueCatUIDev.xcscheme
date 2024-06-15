@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "887A5FB92C1D036200E1A461"
-               BuildableName = "RevenueCatUIDev.framework"
-               BlueprintName = "RevenueCatUIDev"
+               BuildableName = "RevenueCatUI.framework"
+               BlueprintName = "RevenueCatUI"
                ReferencedContainer = "container:RevenueCat.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -56,8 +56,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "887A5FB92C1D036200E1A461"
-            BuildableName = "RevenueCatUIDev.framework"
-            BlueprintName = "RevenueCatUIDev"
+            BuildableName = "RevenueCatUI.framework"
+            BlueprintName = "RevenueCatUI"
             ReferencedContainer = "container:RevenueCat.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
