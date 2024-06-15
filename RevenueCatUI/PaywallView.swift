@@ -14,6 +14,9 @@
 import RevenueCat
 import SwiftUI
 
+
+
+
 #if !os(macOS) && !os(tvOS)
 
 /// A SwiftUI view for displaying a `PaywallData` for an `Offering`.
@@ -486,6 +489,10 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .device
         case .footer, .condensedFooter: return .sizeThatFits
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 

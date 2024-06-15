@@ -18,31 +18,56 @@ extension PaywallViewMode {
     var displayAllPlansByDefault: Bool {
         switch self {
         case .fullScreen: return true
+#if !os(watchOS)
         case .footer: return true
         case .condensedFooter: return false
+#endif
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 
     var displayAllPlansButton: Bool {
         switch self {
         case .fullScreen: return false
+#if !os(watchOS)
         case .footer: return false
+
         case .condensedFooter: return true
+#endif
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 
     var shouldDisplayBackground: Bool {
         switch self {
         case .fullScreen: return true
+#if !os(watchOS)
         case .footer, .condensedFooter: return false
+#endif
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 
     func shouldDisplayInlineOfferDetails(displayingAllPlans: Bool) -> Bool {
         switch self {
         case .fullScreen: return false
+#if !os(watchOS)
         case .footer: return false
         case .condensedFooter: return !displayingAllPlans
+#endif
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 

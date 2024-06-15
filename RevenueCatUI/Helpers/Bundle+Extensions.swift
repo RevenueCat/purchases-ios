@@ -14,7 +14,8 @@
 
 import Foundation
 
-#if COCOAPODS
+// SPM does this automatically somehow, needs to be added for non-spm integration
+#if COCOAPODS || !SWIFT_PACKAGE
 
 extension Bundle {
 

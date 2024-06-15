@@ -75,6 +75,10 @@ let package = Package(
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets")
+                ],
+                swiftSettings: [
+                    .unsafeFlags(["-warnings-as-errors"], .when(configuration: .debug)),
+                    .unsafeFlags(["-warnings-as-errors"], .when(configuration: .release))
                 ]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [

@@ -178,6 +178,10 @@ extension View {
             self
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 
@@ -205,6 +209,10 @@ private extension TemplateViewConfiguration {
                 )
             #endif
         #endif
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 

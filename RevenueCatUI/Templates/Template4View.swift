@@ -75,6 +75,10 @@ struct Template4View: TemplateViewType {
 
         case .footer, .condensedFooter:
             self.footerContent
+#if !SWIFT_PACKAGE
+        @unknown default:
+            fatalError()
+#endif
         }
     }
 
