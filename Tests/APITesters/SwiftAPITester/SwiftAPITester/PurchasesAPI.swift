@@ -345,10 +345,6 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: "")
     Purchases.configure(withAPIKey: "",
                         appUserID: nil,
