@@ -1271,9 +1271,7 @@ workflows:
               branches:
                 # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
                 ignore: /pull\/[0-9]+/
-      - backend-integration-tests-offline:
-          # These tests are flaky due to FB13133387 so we don't want the noise in every PR
-          <<: *release-branches-and-main
+      - backend-integration-tests-offline
       - backend-integration-tests-custom-entitlements:
           filters:
               branches:
