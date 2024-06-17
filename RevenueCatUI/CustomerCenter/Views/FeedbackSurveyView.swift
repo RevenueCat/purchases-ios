@@ -43,6 +43,11 @@ struct FeedbackSurveyView: View {
             FeedbackSurveyButtonsView(options: viewModel.feedbackSurveyData.configuration.options,
                                       action: viewModel.handleAction(for:))
         }
+        .sheet(isPresented: $viewModel.isShowingPromotionalOffer) {
+            if let promotionalOffer = viewModel.selectedPromotionalOffer {
+                PromotionalOfferView(promotionalOffer: promotionalOffer)
+            }
+        }
     }
 
 }

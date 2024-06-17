@@ -22,9 +22,15 @@ import RevenueCat
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@MainActor
 class FeedbackSurveyViewModel: ObservableObject {
 
-    @Published var feedbackSurveyData: FeedbackSurveyData
+    @Published
+    var feedbackSurveyData: FeedbackSurveyData
+    @Published
+    var isShowingPromotionalOffer: Bool = false
+    @Published
+    var selectedPromotionalOffer: CustomerCenterConfigData.HelpPath.PromotionalOffer?
 
     init(feedbackSurveyData: FeedbackSurveyData) {
         self.feedbackSurveyData = feedbackSurveyData
@@ -39,7 +45,8 @@ class FeedbackSurveyViewModel: ObservableObject {
     }
 
     private func applyPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
-
+        selectedPromotionalOffer = offer
+        isShowingPromotionalOffer = true
     }
 
 }
