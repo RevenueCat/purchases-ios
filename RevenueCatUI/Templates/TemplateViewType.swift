@@ -178,6 +178,8 @@ extension View {
             self
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
+        @unknown default:
+            self
         }
     }
 
@@ -205,6 +207,8 @@ private extension TemplateViewConfiguration {
                 )
             #endif
         #endif
+        @unknown default:
+            self.backgroundContent
         }
     }
 

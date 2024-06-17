@@ -126,6 +126,8 @@ private extension PaywallViewMode {
         case .fullScreen: return .device
         case .footer: return .fixed(width: 400, height: 280)
         case .condensedFooter: return .fixed(width: 400, height: 150)
+        @unknown default:
+            return .device
         }
     }
 

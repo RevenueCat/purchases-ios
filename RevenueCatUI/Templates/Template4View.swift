@@ -75,6 +75,8 @@ struct Template4View: TemplateViewType {
 
         case .footer, .condensedFooter:
             self.footerContent
+        @unknown default:
+            self.footerContent
         }
     }
 

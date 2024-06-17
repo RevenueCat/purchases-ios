@@ -20,6 +20,8 @@ extension PaywallViewMode {
         case .fullScreen: return true
         case .footer: return true
         case .condensedFooter: return false
+        @unknown default:
+            return true
         }
     }
 
@@ -28,6 +30,8 @@ extension PaywallViewMode {
         case .fullScreen: return false
         case .footer: return false
         case .condensedFooter: return true
+        @unknown default:
+            return true
         }
     }
 
@@ -35,6 +39,8 @@ extension PaywallViewMode {
         switch self {
         case .fullScreen: return true
         case .footer, .condensedFooter: return false
+        @unknown default:
+            return true
         }
     }
 
@@ -43,6 +49,8 @@ extension PaywallViewMode {
         case .fullScreen: return false
         case .footer: return false
         case .condensedFooter: return !displayingAllPlans
+        @unknown default:
+            return true
         }
     }
 

@@ -235,6 +235,9 @@ private extension SubscriptionPeriod.Unit {
         case .week: return .weekOfMonth
         case .month: return .month
         case .year: return .year
+        @unknown default:
+            // TOOD LOG
+            fatalError()
         }
     }
 
@@ -272,6 +275,8 @@ private extension PackageType {
         case .lifetime: return "Lifetime"
 
         case .unknown, .custom:
+            return nil
+        @unknown default:
             return nil
         }
     }
