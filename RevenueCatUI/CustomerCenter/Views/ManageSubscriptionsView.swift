@@ -45,7 +45,7 @@ struct ManageSubscriptionsView: View {
             VStack {
                 if viewModel.isLoaded {
                     HeaderView(viewModel: viewModel)
-                    
+
                     if let subscriptionInformation = self.viewModel.subscriptionInformation {
                         SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
                                                 refundRequestStatusMessage: viewModel.refundRequestStatusMessage)

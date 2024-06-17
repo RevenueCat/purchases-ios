@@ -25,19 +25,23 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct FeedbackSurveyView: View {
 
-    @ObservedObject
-    var feedbackSurveyData: FeedbackSurveyData
+    @StateObject
+    private var viewModel: FeedbackSurveyViewModel
+
+    init(feedbackSurveyData: FeedbackSurveyData) {
+        self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData))
+    }
 
     var body: some View {
         VStack {
-            Text(feedbackSurveyData.configuration.title)
+            Text(viewModel.feedbackSurveyData.configuration.title)
                 .font(.title)
                 .padding()
 
             Spacer()
 
-            FeedbackSurveyButtonsView(options: feedbackSurveyData.configuration.options, 
-                                      action: feedbackSurveyData.action)
+            FeedbackSurveyButtonsView(options: viewModel.feedbackSurveyData.configuration.options,
+                                      action: viewModel.handleAction(for:))
         }
     }
 
@@ -51,14 +55,14 @@ struct FeedbackSurveyView: View {
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
-    let action: (() -> Void)
+    let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) -> Void
 
     var body: some View {
         VStack(spacing: 16) {
             ForEach(options, id: \.id) { option in
                 Button(option.title) {
                     Task {
-                        self.action()
+                        self.action(option)
                     }
                 }
                 .buttonStyle(ManageSubscriptionsButtonStyle())
