@@ -624,8 +624,6 @@ custom UserDefaults.
     }
 }
 
-
-
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")
 @available(tvOS, obsoleted: 1, renamed: "StartPurchaseBlock")
 @available(watchOS, obsoleted: 1, renamed: "StartPurchaseBlock")
