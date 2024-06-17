@@ -580,7 +580,6 @@ public extension Purchases {
     @available(macOS, obsoleted: 1,
                message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
                renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
-    // swiftlint:disable:next missing_docs
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: StaticString,
                                              observerMode: Bool) -> Purchases {
@@ -624,6 +623,8 @@ custom UserDefaults.
 
     }
 }
+
+
 
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")
 @available(tvOS, obsoleted: 1, renamed: "StartPurchaseBlock")

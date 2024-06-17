@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs file_length
+// swiftlint:disable line_length missing_docs
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
