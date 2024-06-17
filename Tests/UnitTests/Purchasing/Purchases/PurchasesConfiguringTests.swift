@@ -98,9 +98,15 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
+        let nonStaticString = String(123)
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(appUserID: nonStaticString)
+            .with(userDefaults: UserDefaults.standard)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
@@ -112,6 +118,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                                             useStoreKit2IfAvailable: true)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     func testUserIdIsSetWhenConfiguringWithUserID() {
