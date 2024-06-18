@@ -49,9 +49,9 @@ class ConfigurationTests: TestCase {
         expect(configuration.storeKitVersion) == .storeKit2
     }
 
-    func testObserverModeWithStoreKit1() {
+    func testPurchasesAreCompletedByMyAppWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true, storeKitVersion: .storeKit1)
+            .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
             .build()
 
         expect(configuration.observerMode) == true
@@ -60,7 +60,7 @@ class ConfigurationTests: TestCase {
 
     func testObserverModeWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true, storeKitVersion: .storeKit2)
+            .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
             .build()
 
         expect(configuration.observerMode) == true

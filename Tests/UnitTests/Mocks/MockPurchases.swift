@@ -129,6 +129,12 @@ extension MockPurchases: PurchasesType {
         set { self.unimplemented() }
     }
 
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { self.unimplemented() }
+        // swiftlint:disable:next unused_setter_value
+        set { self.unimplemented() }
+    }
+
     var delegate: PurchasesDelegate? {
         get { self.unimplemented() }
         // swiftlint:disable:next unused_setter_value
@@ -446,7 +452,7 @@ extension MockPurchases: PurchasesSwiftType {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func handleObserverModeTransaction(
+    func recordPurchase(
         _ purchaseResult: Product.PurchaseResult
     ) async throws -> RevenueCat.StoreTransaction? {
         self.unimplemented()

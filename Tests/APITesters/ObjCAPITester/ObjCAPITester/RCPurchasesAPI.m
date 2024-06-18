@@ -25,6 +25,7 @@ RCPurchases *sharedPurchases;
 BOOL isConfigured;
 BOOL allowSharingAppStoreAccount;
 BOOL finishTransactions;
+RCPurchasesAreCompletedBy purchasesAreCompletedBy;
 id<RCPurchasesDelegate> delegate;
 NSString *appUserID;
 BOOL isAnonymous;
@@ -35,12 +36,8 @@ BOOL isAnonymous;
     [RCPurchases configureWithConfigurationBuilder:[RCConfiguration builderWithAPIKey:@""]];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false storeKitVersion:RCStoreKitVersion1];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false storeKitVersion:RCStoreKitVersion2];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp storeKitVersion:RCStoreKitVersion1];
     [RCPurchases configureWithAPIKey:@""
                            appUserID:nil
                         observerMode:false
@@ -96,6 +93,7 @@ BOOL isAnonymous;
     allowSharingAppStoreAccount = [p allowSharingAppStoreAccount];
 
     finishTransactions = [p finishTransactions];
+    purchasesAreCompletedBy = [p purchasesAreCompletedBy];
     delegate = [p delegate];
     appUserID = [p appUserID];
     isAnonymous = [p isAnonymous];
@@ -230,7 +228,7 @@ BOOL isAnonymous;
         case RCLogLevelInfo:
         case RCLogLevelWarn:
         case RCLogLevelError:
-            NSLog(@"%ld", (long)o);
+            NSLog(@"%ld", (long)l);
     }
 
     RCStoreMessageType smt = RCStoreMessageTypeBillingIssue;
@@ -238,7 +236,14 @@ BOOL isAnonymous;
         case RCStoreMessageTypeBillingIssue:
         case RCStoreMessageTypePriceIncreaseConsent:
         case RCStoreMessageTypeGeneric:
-            NSLog(@"%ld", (long)o);
+            NSLog(@"%ld", (long)smt);
+    }
+
+    RCPurchasesAreCompletedBy pacb = RCPurchasesAreCompletedByRevenueCat;
+    switch(pacb) {
+        case RCPurchasesAreCompletedByMyApp:
+        case RCPurchasesAreCompletedByRevenueCat:
+            NSLog(@"%ld", (long)pacb);
     }
 }
 

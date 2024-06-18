@@ -74,23 +74,39 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverMode() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true)
+        let nonStaticString = String(123)
+        let purchases = Purchases.configure(withAPIKey: "",
+                                            appUserID: nonStaticString,
+                                            purchasesAreCompletedBy: .myApp,
+                                            storeKitVersion: .storeKit2)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == false
+        expect(Purchases.shared.purchasesAreCompletedBy) == .myApp
     }
 
     @available(*, deprecated)
     func testSharedInstanceIsSetWhenConfiguringWithObserverModeDisabled() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+        let nonStaticString = String(123)
+        let purchases = Purchases.configure(withAPIKey: "",
+                                            appUserID: nonStaticString,
+                                            purchasesAreCompletedBy: .revenueCat,
+                                            storeKitVersion: .storeKit2)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
     func testSharedInstanceIsSetWhenConfiguringWithAppUserIDAndUserDefaults() {
-        let purchases = Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false, userDefaults: nil)
+        let nonStaticString = String(123)
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(appUserID: nonStaticString)
+            .with(userDefaults: UserDefaults.standard)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     @available(*, deprecated) // Ignore deprecation warnings
@@ -102,6 +118,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
                                             useStoreKit2IfAvailable: true)
         expect(Purchases.shared) === purchases
         expect(Purchases.shared.finishTransactions) == true
+        expect(Purchases.shared.purchasesAreCompletedBy) == .revenueCat
     }
 
     func testUserIdIsSetWhenConfiguringWithUserID() {
@@ -493,8 +510,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // MARK: - OfflineCustomerInfoCreator
 
-    func testObserverModeDoesNotCreateOfflineCustomerInfoCreator() {
-        expect(Self.create(observerMode: true).offlineCustomerInfoEnabled) == false
+    func testPurchaesAreCompletedByMyAppDoesNotCreateOfflineCustomerInfoCreator() {
+        expect(Self.create(purchasesAreCompletedBy: .myApp).offlineCustomerInfoEnabled) == false
     }
 
     func testOlderVersionsDoNoCreateOfflineCustomerInfo() throws {
@@ -502,19 +519,19 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             throw XCTSkip("Test for older versions")
         }
 
-        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == false
+        expect(Self.create(purchasesAreCompletedBy: .revenueCat).offlineCustomerInfoEnabled) == false
     }
 
     func testOfflineCustomerInfoEnabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == true
+        expect(Self.create(purchasesAreCompletedBy: .revenueCat).offlineCustomerInfoEnabled) == true
     }
 
-    private static func create(observerMode: Bool) -> Purchases {
+    private static func create(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
-                .with(observerMode: observerMode, storeKitVersion: .storeKit1)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: .storeKit1)
         )
     }
 

@@ -214,7 +214,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
     }
 
     func testDoesntFinishTransactionsIfFinishingDisabled() throws {
-        self.purchases.finishTransactions = false
+        self.purchases.purchasesAreCompletedBy = .myApp
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
         self.purchases.purchase(product: product) { (_, _, _, _) in }
 

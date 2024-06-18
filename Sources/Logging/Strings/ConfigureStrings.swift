@@ -99,7 +99,7 @@ extension ConfigureStrings: LogMessage {
         case .debug_enabled:
             return "Debug logging enabled"
         case .observer_mode_enabled:
-            return "Purchases is configured in observer mode"
+            return "Purchases is configured with purchasesAreCompletedBy set to .myApp"
         case let .response_verification_mode(mode):
             switch mode {
             case .disabled:
@@ -189,8 +189,9 @@ extension ConfigureStrings: LogMessage {
             "when configuring the SDK."
 
         case .handle_transaction_observer_mode_required:
-            return "Attempted to manually handle transactions with observer mode not enabled. " +
-            "You must use `.with(observerMode: true, storeKitVersion: .storeKit2)` when configuring the SDK."
+            return "Attempted to manually handle transactions with purchasesAreCompletedBy not set to .myApp. " +
+            "You must use `.with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)` " +
+            "when configuring the SDK."
 
         case .sk2_required:
             return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` " +

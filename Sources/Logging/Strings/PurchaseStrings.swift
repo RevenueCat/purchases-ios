@@ -141,7 +141,7 @@ extension PurchaseStrings: LogMessage {
             "it's a non-subscription and it's missing in CustomerInfo list: \(nonSubscriptions)"
 
         case .purchasing_with_observer_mode_and_finish_transactions_false_warning:
-            return "Observer mode is active (finishTransactions is set to false) and " +
+            return "purchasesAreCompletedBy is not set to .myApp and " +
             "purchase has been initiated. RevenueCat will not finish the " +
             "transaction, are you sure you want to do this?"
 
@@ -341,7 +341,7 @@ extension PurchaseStrings: LogMessage {
             return "allowSharingAppStoreAccount is set to false and restorePurchases has been called. " +
             "Are you sure you want to do this?"
         case let .sk2_observer_mode_error_processing_transaction(error):
-            return "Observer mode could not process transaction: \(error)"
+            return "RevenueCat could not process transaction completed by your app: \(error)"
         }
     }
 

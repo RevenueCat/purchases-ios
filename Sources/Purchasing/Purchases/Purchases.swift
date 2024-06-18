@@ -228,9 +228,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @objc public let attribution: Attribution
 
-    @objc public var finishTransactions: Bool {
-        get { self.systemInfo.finishTransactions }
-        set { self.systemInfo.finishTransactions = newValue }
+    @objc public var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { self.systemInfo.finishTransactions ? .revenueCat : .myApp }
+        set { self.systemInfo.finishTransactions = newValue.finishTransactions }
     }
 
     private let attributionFetcher: AttributionFetcher
@@ -253,7 +253,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
-    private let systemInfo: SystemInfo
+    fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
 
@@ -1159,7 +1159,7 @@ public extension Purchases {
 #endif
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func handleObserverModeTransaction(
+    func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
@@ -1223,7 +1223,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: Configuration.Builder(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false, storeKitVersion: .storeKit1)
+     *               .with(userDefaults: customUserDefaults),
      *               .with(appUserID: "<app_user_id>")
      *               .build()
      *      )
@@ -1264,7 +1264,7 @@ public extension Purchases {
      * ```swift
      *  Purchases.configure(
      *      with: .init(withAPIKey: Constants.apiKey)
-     *               .with(observerMode: false, storeKitVersion: .default)
+     *               .with(userDefaults: customUserDefaults)
      *               .with(appUserID: "<app_user_id>")
      *      )
      * ```
@@ -1317,7 +1317,10 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(configureWithAPIKey:appUserID:)
     @discardableResult static func configure(withAPIKey apiKey: String, appUserID: String?) -> Purchases {
-        Self.configure(withAPIKey: apiKey, appUserID: appUserID, observerMode: false, storeKitVersion: .default)
+        Self.configure(withAPIKey: apiKey,
+                       appUserID: appUserID,
+                       purchasesAreCompletedBy: .revenueCat,
+                       storeKitVersion: .default)
     }
 
     @available(*, deprecated, message: """
@@ -1330,15 +1333,15 @@ public extension Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
         return Self.configure(withAPIKey: apiKey,
                               appUserID: "\(appUserID)",
-                              observerMode: false,
+                              purchasesAreCompletedBy: .revenueCat,
                               storeKitVersion: .default)
     }
 
     /**
-     * Configures an instance of the Purchases SDK with a specified API key, app user ID, observer mode
+     * Configures an instance of the Purchases SDK with a specified API key, app user ID, purchasesAreCompletedBy
      * setting, and StoreKit version.
      *
-     * Use this constructor if you want to use observer mode. The instance of the Purchases SDK 
+     * Use this constructor if you want to set purchasesAreCompletedBy. The instance of the Purchases SDK
      * will be set as a singleton. You should access the singleton instance using ``Purchases/shared``.
      *
      * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
@@ -1347,26 +1350,29 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
-     * RevenueCat's backend. Default is `false`.
+     * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
+     *  if you have your own IAP implementation and want to use only RevenueCat's backend.
+     *  Default is ``PurchasesAreCompletedBy/revenueCat``.
      *
      * - Parameter storeKitVersion: The StoreKit version Purchases will use to process your purchases.
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
-     * - Warning: If you are using observer mode with StoreKit 2, ensure that you're
-     * calling ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
+     * - Warning: If purchasesAreCompletedBy is ``PurchasesAreCompletedBy/myApp``
+     * and storeKitVersion is ``StoreKitVersion/storeKit2``, ensure that you're
+     * calling ``Purchases/recordPurchase(_:)`` after making a purchase.
      */
-    @objc(configureWithAPIKey:appUserID:observerMode:storeKitVersion:)
+    @_disfavoredOverload
+    @objc(configureWithAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: String?,
-                                             observerMode: Bool,
+                                             purchasesAreCompletedBy: PurchasesAreCompletedBy,
                                              storeKitVersion: StoreKitVersion) -> Purchases {
-        Self.configure(
+        return Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: appUserID)
-                .with(observerMode: observerMode, storeKitVersion: storeKitVersion)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
@@ -1379,13 +1385,15 @@ public extension Purchases {
     // swiftlint:disable:next missing_docs
     @discardableResult static func configure(withAPIKey apiKey: String,
                                              appUserID: StaticString,
-                                             observerMode: Bool) -> Purchases {
+                                             purchasesAreCompletedBy: PurchasesAreCompletedBy,
+                                             storeKitVersion: StoreKitVersion) -> Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
+
         return Self.configure(
             with: Configuration
                 .builder(withAPIKey: apiKey)
                 .with(appUserID: "\(appUserID)")
-                .with(observerMode: observerMode, storeKitVersion: .default)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
                 .build()
         )
     }
@@ -1528,6 +1536,15 @@ public extension Purchases {
     @objc var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
+    }
+
+    /**
+     * Deprecated. Where responsibility for completing purchase transactions lies.
+     */
+    @available(*, deprecated, message: "Use ``purchasesAreCompletedBy`` instead.")
+    @objc var finishTransactions: Bool {
+        get { self.systemInfo.finishTransactions }
+        set { self.systemInfo.finishTransactions = newValue }
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
