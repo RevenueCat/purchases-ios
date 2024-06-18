@@ -25,4 +25,10 @@ public enum PurchasesAreCompletedBy: Int {
 
 }
 
+extension PurchasesAreCompletedBy {
+    var finishTransactions: Bool {
+        self == .revenueCat
+    }
+}
+
 extension PurchasesAreCompletedBy: Sendable {}

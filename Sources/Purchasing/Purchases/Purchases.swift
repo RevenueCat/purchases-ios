@@ -259,7 +259,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let receiptFetcher: ReceiptFetcher
     private let requestFetcher: StoreKitRequestFetcher
     private let paymentQueueWrapper: EitherPaymentQueueWrapper
-    private let systemInfo: SystemInfo
+    fileprivate let systemInfo: SystemInfo
     private let storeMessagesHelper: StoreMessagesHelperType?
     private var customerInfoObservationDisposable: (() -> Void)?
 
@@ -1394,8 +1394,8 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation
-     * and want to use only RevenueCat's backend. Default is `.revenueCat`.
+     * - Parameter purchasesAreCompletedBy: Set this to ``.myApp`` if you have your own IAP implementation
+     * and want to use only RevenueCat's backend. Default is ``.revenueCat``.
      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
@@ -1426,6 +1426,7 @@ public extension Purchases {
                                              appUserID: StaticString,
                                              observerMode: Bool) -> Purchases {
         Logger.warn(Strings.identity.logging_in_with_static_string)
+        
         let purchasesBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
 
         return Self.configure(
@@ -1575,6 +1576,15 @@ public extension Purchases {
     @objc var allowSharingAppStoreAccount: Bool {
         get { purchasesOrchestrator.allowSharingAppStoreAccount }
         set { purchasesOrchestrator.allowSharingAppStoreAccount = newValue }
+    }
+
+    /**
+     * Deprecated. Where responsibility for completing purchase transactions lies.
+     */
+    @available(*, deprecated, message: "Use ``purchasesAreCompletedBy`` instead.")
+    @objc var finishTransactions: Bool {
+        get { self.systemInfo.finishTransactions }
+        set { self.systemInfo.finishTransactions = newValue }
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION

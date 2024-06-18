@@ -23,6 +23,12 @@ final class MockPurchases: PaywallPurchasesType {
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
+    private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { return _purchasesAreCompletedBy }
+        set { _ = newValue }
+    }
 
     private let customerInfoBlock: CustomerInfoBlock
     private let purchaseBlock: PurchaseBlock
