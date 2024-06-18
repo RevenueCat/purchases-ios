@@ -22,7 +22,7 @@ extension PaywallViewMode {
         case .footer: return true
         case .condensedFooter: return false
 #endif
-#if REVENUE_CAT_UI_DEV
+#if REVENUE_CAT_UI_DEV && !COCOAPODS
         @unknown default:
             return true
 #endif
@@ -37,7 +37,7 @@ extension PaywallViewMode {
 
         case .condensedFooter: return true
 #endif
-#if REVENUE_CAT_UI_DEV
+#if REVENUE_CAT_UI_DEV && !COCOAPODS
         @unknown default:
             return false
 #endif
@@ -50,7 +50,7 @@ extension PaywallViewMode {
 #if !os(watchOS)
         case .footer, .condensedFooter: return false
 #endif
-#if REVENUE_CAT_UI_DEV
+#if REVENUE_CAT_UI_DEV && !COCOAPODS
         @unknown default:
             return false
 #endif
@@ -64,7 +64,7 @@ extension PaywallViewMode {
         case .footer: return false
         case .condensedFooter: return !displayingAllPlans
 #endif
-#if REVENUE_CAT_UI_DEV
+#if REVENUE_CAT_UI_DEV && !COCOAPODS
         @unknown default:
             return false
 #endif
