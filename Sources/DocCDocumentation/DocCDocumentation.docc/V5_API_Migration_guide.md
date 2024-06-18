@@ -61,7 +61,7 @@ let result = try await product?.purchase()
 _ = try await Purchases.shared.recordPurchase(result)
 ```
 
-#### StoreKit 1 Observer Mode Support
+#### Observing Purchases Completed by Your App with StoreKit 1
 
 If purchases are completed by your app using StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
 
