@@ -504,7 +504,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // MARK: - OfflineCustomerInfoCreator
 
-    func testPurchaesAreCompletedByMyAppDoesNotCreateOfflineCustomerInfoCreator() {
+    func testPurchasesAreCompletedByMyAppDoesNotCreateOfflineCustomerInfoCreator() {
         expect(Self.create(purchasesAreCompletedBy: .myApp).offlineCustomerInfoEnabled) == false
     }
 
