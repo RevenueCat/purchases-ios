@@ -19,12 +19,12 @@ func checkPurchasesAPI() {
     let purch = checkConfigure()!
 
     // initializers
-    let finishTransactions: Bool = purch.finishTransactions
+    let purchasesAreCompletedBy: PurchasesAreCompletedBy = purch.purchasesAreCompletedBy
     let delegate: PurchasesDelegate? = purch.delegate
     let appUserID: String = purch.appUserID
     let isAnonymous: Bool = purch.isAnonymous
 
-    print(finishTransactions, delegate!, appUserID, isAnonymous)
+    print(purchasesAreCompletedBy, delegate!, appUserID, isAnonymous)
 
     checkStaticMethods()
     checkIdentity(purchases: purch)
@@ -306,7 +306,7 @@ private func checkConfigure() -> Purchases! {
 
     Purchases.configure(withAPIKey: "")
     Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
+    Purchases.configure(withAPIKey: "", appUserID: nil, purchasesAreCompletedBy: .myApp)
 
     return nil
 }
@@ -339,6 +339,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
     let _: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
     Purchases.automaticAppleSearchAdsAttributionCollection = false
+    purchases.finishTransactions = true
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
@@ -350,6 +351,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: "")
     Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
+    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
     Purchases.configure(withAPIKey: "",
                         appUserID: nil,
                         observerMode: true,
@@ -373,4 +375,10 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
                         userDefaults: UserDefaults(),
                         useStoreKit2IfAvailable: true,
                         dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+
+    let _: Bool = purchases.finishTransactions
+
+    _ = Configuration
+        .builder(withAPIKey: "")
+        .with(observerMode: true)
 }

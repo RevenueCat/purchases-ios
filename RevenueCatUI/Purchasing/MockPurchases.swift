@@ -22,12 +22,19 @@ final class MockPurchases: PaywallPurchasesType {
     typealias PurchaseBlock = @Sendable (Package) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
+    private let _purchasesAreCompletedBy: PurchasesAreCompletedBy
+
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        get { return _purchasesAreCompletedBy }
+        set { _ = newValue }
+    }
 
     private let purchaseBlock: PurchaseBlock
     private let restoreBlock: RestoreBlock
     private let trackEventBlock: TrackEventBlock
 
     init(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock
@@ -35,6 +42,7 @@ final class MockPurchases: PaywallPurchasesType {
         self.purchaseBlock = purchase
         self.restoreBlock = restorePurchases
         self.trackEventBlock = trackEvent
+        self._purchasesAreCompletedBy = purchasesAreCompletedBy
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {
