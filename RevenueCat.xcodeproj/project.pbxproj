@@ -760,9 +760,9 @@
 		887A634C2C1D17EF00E1A461 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = 887A634B2C1D17EF00E1A461 /* OHHTTPStubs */; };
 		887A634E2C1D17EF00E1A461 /* OHHTTPStubsSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 887A634D2C1D17EF00E1A461 /* OHHTTPStubsSwift */; };
 		887A63502C1D17EF00E1A461 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 887A634F2C1D17EF00E1A461 /* SnapshotTesting */; };
+		887E7B592C13CD2C002977DE /* PurchasesAreCompletedBy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */; };
 		88DE93E12C211CBC0086B6D8 /* RevenueCat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; };
 		88DE93E22C211CBC0086B6D8 /* RevenueCat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2DC5621624EC63420031F69B /* RevenueCat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		887E7B592C13CD2C002977DE /* PurchasesAreCompletedBy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887E7B582C13CD2C002977DE /* PurchasesAreCompletedBy.swift */; };
 		9A65DFDE258AD60A00DE00B0 /* LogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65DFDD258AD60A00DE00B0 /* LogIntent.swift */; };
 		9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */; };
 		9A65E03B25918B0900DE00B0 /* CustomerInfoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A65E03A25918B0900DE00B0 /* CustomerInfoStrings.swift */; };
