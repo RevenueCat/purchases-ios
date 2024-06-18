@@ -504,8 +504,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     // MARK: - OfflineCustomerInfoCreator
 
-    func testObserverModeDoesNotCreateOfflineCustomerInfoCreator() {
-        expect(Self.create(observerMode: true).offlineCustomerInfoEnabled) == false
+    func testPurchasesAreCompletedByMyAppDoesNotCreateOfflineCustomerInfoCreator() {
+        expect(Self.create(purchasesAreCompletedBy: .myApp).offlineCustomerInfoEnabled) == false
     }
 
     func testOlderVersionsDoNoCreateOfflineCustomerInfo() throws {
@@ -513,19 +513,19 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             throw XCTSkip("Test for older versions")
         }
 
-        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == false
+        expect(Self.create(purchasesAreCompletedBy: .revenueCat).offlineCustomerInfoEnabled) == false
     }
 
     func testOfflineCustomerInfoEnabled() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        expect(Self.create(observerMode: false).offlineCustomerInfoEnabled) == true
+        expect(Self.create(purchasesAreCompletedBy: .revenueCat).offlineCustomerInfoEnabled) == true
     }
 
-    private static func create(observerMode: Bool) -> Purchases {
+    private static func create(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Purchases {
         return Purchases.configure(
             with: .init(withAPIKey: "")
-                .with(observerMode: observerMode)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy)
         )
     }
 

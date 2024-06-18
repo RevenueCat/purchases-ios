@@ -13,7 +13,7 @@ func checkConfigurationAPI() {
         .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: nil)
-        .with(observerMode: false)
+        .with(purchasesAreCompletedBy: .myApp)
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
