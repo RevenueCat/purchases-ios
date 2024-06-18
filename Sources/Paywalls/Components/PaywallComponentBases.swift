@@ -21,6 +21,7 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
 
     case tiers(TiersComponent)
     case tierSelector(TierSelectorComponent)
+    case tierToggle(TierToggleComponent)
     case text(TextComponent)
     case image(ImageComponent)
     case packages(PackagesComponent)
@@ -35,6 +36,7 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
     enum ComponentType: String, Codable {
         case tiers
         case tierSelector
+        case tierToggle
         case text
         case image
         case packages
@@ -52,6 +54,8 @@ public enum PaywallComponent: Decodable, Sendable, Hashable, Equatable {
             self = .tiers(try TiersComponent(from: decoder))
         case .tierSelector:
             self = .tierSelector(try TierSelectorComponent(from: decoder))
+        case .tierToggle:
+            self = .tierToggle(try TierToggleComponent(from: decoder))
         case .text:
             self = .text(try TextComponent(from: decoder))
         case .image:
