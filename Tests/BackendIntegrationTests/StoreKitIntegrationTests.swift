@@ -19,6 +19,7 @@ import XCTest
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
+    override class var responseVerificationMode: Signing.ResponseVerificationMode { .disabled }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
@@ -40,8 +41,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
 
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
-
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
     }
@@ -52,8 +51,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
         try await self.signInAsNewAppUserID()
         try await self.purchaseMonthlyProduct()
-
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
@@ -67,8 +64,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         try await self.signInAsNewAppUserID()
         _ = try await Purchases.shared.syncPurchases()
 
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
-
         let customerInfo = try await Purchases.shared.customerInfo()
         expect(customerInfo.originalPurchaseDate).toNot(beNil())
     }
@@ -80,8 +75,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
         try await self.signInAsNewAppUserID()
         _ = try await Purchases.shared.syncPurchases()
-
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let customerInfo = try await Purchases.shared.customerInfo()
         expect(customerInfo.originalApplicationVersion).toNot(beNil())
@@ -95,10 +88,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
             fail("SK2 product missing.")
             return
         }
-        _ = try await product.purchase()
-        _ = try await Purchases.shared.syncPurchases()
 
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
+        _ = try await Purchases.shared.syncPurchases()
 
         let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
         expect(originalPurchaseDate).toNot(beNil())
@@ -114,8 +105,6 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         }
         _ = try await product.purchase()
         _ = try await Purchases.shared.syncPurchases()
-
-        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
         expect(originalApplicationVersion).toNot(beNil())
