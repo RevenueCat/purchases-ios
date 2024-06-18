@@ -180,7 +180,7 @@ extension View {
                 .edgesIgnoringSafeArea(.bottom)
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            self
 #endif
         }
     }
@@ -211,7 +211,7 @@ private extension TemplateViewConfiguration {
         #endif
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            self.backgroundContent
 #endif
         }
     }

@@ -77,7 +77,7 @@ struct Template4View: TemplateViewType {
             self.footerContent
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            self.footerContent
 #endif
         }
     }

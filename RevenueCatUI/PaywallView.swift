@@ -488,7 +488,7 @@ private extension PaywallViewMode {
         case .footer, .condensedFooter: return .sizeThatFits
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            return .device
 #endif
         }
     }

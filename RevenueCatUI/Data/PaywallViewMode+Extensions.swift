@@ -24,7 +24,7 @@ extension PaywallViewMode {
 #endif
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            return true
 #endif
         }
     }
@@ -39,7 +39,7 @@ extension PaywallViewMode {
 #endif
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            return false
 #endif
         }
     }
@@ -52,7 +52,7 @@ extension PaywallViewMode {
 #endif
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            return false
 #endif
         }
     }
@@ -66,7 +66,7 @@ extension PaywallViewMode {
 #endif
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            return false
 #endif
         }
     }

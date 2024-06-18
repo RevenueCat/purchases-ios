@@ -59,7 +59,7 @@ private struct FooterHidingModifier: ViewModifier {
                 .blur(radius: self.hide ? Self.blurRadius : 0)
 #if !SWIFT_PACKAGE
         @unknown default:
-            fatalError()
+            content
 #endif
         }
     }
