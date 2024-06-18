@@ -620,7 +620,6 @@
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
-		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
 		887A60682C1D037000E1A461 /* TemplateError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC82C1D037000E1A461 /* TemplateError.swift */; };
 		887A60692C1D037000E1A461 /* IntroEligibilityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FCA2C1D037000E1A461 /* IntroEligibilityViewModel.swift */; };
@@ -1525,7 +1524,6 @@
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCatUIDev.h; sourceTree = "<group>"; };
 		887A5FC72C1D037000E1A461 /* PaywallError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallError.swift; sourceTree = "<group>"; };
 		887A5FC82C1D037000E1A461 /* TemplateError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateError.swift; sourceTree = "<group>"; };
 		887A5FCA2C1D037000E1A461 /* IntroEligibilityViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntroEligibilityViewModel.swift; sourceTree = "<group>"; };
@@ -2587,7 +2585,6 @@
 				887A60652C1D037000E1A461 /* RevenueCatUI */,
 				2DC5621724EC63420031F69B /* Sources */,
 				2DDE870027E5238500D8B390 /* Tests */,
-				887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */,
 				352629FF1F7C4B9100C04F2C /* Products */,
 				3530C18722653E8F00D6DF52 /* Frameworks */,
 				57B530E52858F3FD00FA4E37 /* SwiftStyleGuide.swift */,
@@ -3294,14 +3291,6 @@
 				4F34AEEB2A5DCCBA00F4BCB0 /* VerificationResultTests.swift */,
 			);
 			path = Security;
-			sourceTree = "<group>";
-		};
-		887A5FBB2C1D036200E1A461 /* RevenueCatUIDev */ = {
-			isa = PBXGroup;
-			children = (
-				887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */,
-			);
-			path = RevenueCatUIDev;
 			sourceTree = "<group>";
 		};
 		887A5FC92C1D037000E1A461 /* Errors */ = {
@@ -4101,7 +4090,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6640,7 +6628,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -6687,7 +6675,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -6715,6 +6703,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -6740,6 +6729,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RevenueCatUITestsDev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
