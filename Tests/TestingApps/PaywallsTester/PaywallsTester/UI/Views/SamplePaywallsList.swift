@@ -21,11 +21,11 @@ struct SamplePaywallsList: View {
             self.list(with: Self.loader)
                 .navigationTitle("Example Paywalls")
         }
-            .sheet(item: self.$display) { display in
-                self.view(for: display)
-            }
-            .navigationTitle("Paywalls")
-            .navigationViewStyle(StackNavigationViewStyle())
+        .sheet(item: self.$display) { display in
+            self.view(for: display)
+        }
+        .navigationTitle("Paywalls")
+        .navigationViewStyle(StackNavigationViewStyle())
     }
 
     @ViewBuilder
