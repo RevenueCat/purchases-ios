@@ -1348,6 +1348,9 @@ workflows:
   danger:
     jobs:
       - danger
+  spm-test-deploy:
+    jobs:
+      - deploy-to-spm
   weekly-run-workflow:
     when:
       and:
