@@ -14,7 +14,7 @@
 
 import Foundation
 
-#if COCOAPODS
+#if COCOAPODS || !SWIFT_PACKAGE
 
 extension Bundle {
 
