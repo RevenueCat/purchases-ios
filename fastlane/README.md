@@ -354,6 +354,14 @@ Clones or updates snapshots repo
 
 Updates purchases-ios-snapshots-commit to point to latest commit on main
 
+### ios deploy_to_spm
+
+```sh
+[bundle exec] fastlane ios deploy_to_spm
+```
+
+
+
 ### ios sandbox_testers
 
 ```sh
