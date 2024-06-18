@@ -178,7 +178,7 @@ extension View {
             self
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
-        @unknown default:
+        default:
             self
         }
     }
