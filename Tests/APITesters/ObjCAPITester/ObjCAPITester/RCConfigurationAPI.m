@@ -13,17 +13,18 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config __unused = [[[[[[[[[[[builder withApiKey:@""]
-                                                 withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat]
-                                                withUserDefaults:NSUserDefaults.standardUserDefaults]
-                                               withAppUserID:@""]
-                                              withAppUserID:nil]
-                                             withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true]]
-                                            withNetworkTimeout:1]
-                                           withStoreKit1Timeout: 1]
-                                          withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
-                                         withUsesStoreKit2IfAvailable:false]
-                                        withStoreKitVersion:RCStoreKitVersionStoreKit2]
+    RCConfiguration *config __unused = [[[[[[[[[[[[[builder withApiKey:@""]
+                                                   withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2]
+                                                  withUserDefaults:NSUserDefaults.standardUserDefaults]
+                                                 withAppUserID:@""]
+                                                withAppUserID:nil]
+                                               withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true]]
+                                              withNetworkTimeout:1]
+                                             withStoreKit1Timeout: 1]
+                                            withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
+                                           withUsesStoreKit2IfAvailable:false]
+                                          withStoreKitVersion:RCStoreKitVersion2]
+                                         withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]
                                         build];
 
     RCConfiguration *configDeprecated __unused = [[[builder withApiKey:@""] withObserverMode:true] build];

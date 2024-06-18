@@ -51,7 +51,7 @@ class ConfigurationTests: TestCase {
 
     func testPurchasesAreCompletedByMyAppWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(purchasesAreCompletedBy: .myApp)
+            .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
             .build()
 
         expect(configuration.observerMode) == true
@@ -61,8 +61,7 @@ class ConfigurationTests: TestCase {
     @available(*, deprecated)
     func testPurchasesAreCompletedByMyAppWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(purchasesAreCompletedBy: .myApp)
-            .with(usesStoreKit2IfAvailable: true)
+            .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
             .build()
 
         expect(configuration.observerMode) == true

@@ -36,16 +36,8 @@ BOOL isAnonymous;
     [RCPurchases configureWithConfigurationBuilder:[RCConfiguration builderWithAPIKey:@""]];
     [RCPurchases configureWithAPIKey:@"" appUserID:@""];
     [RCPurchases configureWithAPIKey:@"" appUserID:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false storeKitVersion:RCStoreKitVersion1];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false storeKitVersion:RCStoreKitVersion2];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:nil];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil observerMode:false userDefaults:[[NSUserDefaults alloc] init]];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat];
-    [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp];
-    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp];
+    [RCPurchases configureWithAPIKey:@"" appUserID:@"" purchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2];
+    [RCPurchases configureWithAPIKey:@"" appUserID:nil purchasesAreCompletedBy:RCPurchasesAreCompletedByMyApp storeKitVersion:RCStoreKitVersion1];
     [RCPurchases configureWithAPIKey:@""
                            appUserID:nil
                         observerMode:false

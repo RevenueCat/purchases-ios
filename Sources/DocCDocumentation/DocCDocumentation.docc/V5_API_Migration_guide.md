@@ -34,34 +34,40 @@ If you are using any 3rd party analytics SDKs to automatically track in-app purc
 
 If you're using the Firebase SDK, you'll need to follow [these instructions](https://firebase.google.com/docs/analytics/measure-in-app-purchases#swift) to log purchases made with StoreKit 2.
 
-### Observer Mode
+### Observer Mode is now PurchasesAreCompletedBy
 
-Version 5.0 of the SDK introduces support for observer mode when making purchases with StoreKit 2. You can enable it when configuring the SDK:
+Version 5.0 of the SDK  deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
+with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
-```swift
-Purchases.configure(with: .builder(withAPIKey: apiKey)
-  .with(observerMode: true, storeKitVersion: .storeKit2)
-  .build()
-```
+Version 5.0 of the SDK also introduces support for recording purchases made directly by your app calling StoreKit 2. 
 
-#### ⚠️ StoreKit 2 Observer Mode on macOS
+You can enable it when configuring the SDK:
 
-By default, Observer Mode with StoreKit 2 on macOS does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.handleObserverModeTransaction(purchaseResult)` for any new purchases, like so:
+| Version 4 | Version 5 |
+|------------|------------|
+| <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(observerMode: true)<br>  .build()</code></pre> | <pre lang="swift"><code>Purchases.configure(with: .builder(withAPIKey: apiKey)<br>  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)<br>  .build()</code></pre> |
+
+
+
+
+#### ⚠️ Observing Purchases Completed by Your App on macOS
+
+By default, when purchases are completed by your app using StoreKit 2 on macOS, the SDK does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.recordPurchase(purchaseResult)` for any new purchases, like so:
 
 ```swift
 let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
 let result = try await product?.purchase()
 
-_ = try await Purchases.shared.handleObserverModeTransaction(result)
+_ = try await Purchases.shared.recordPurchase(result)
 ```
 
-#### StoreKit 1 Observer Mode Support
+#### Observing Purchases Completed by Your App with StoreKit 1
 
-If you're using observer mode with StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
+If purchases are completed by your app using StoreKit 1, you will need to explicitly configure the SDK to use StoreKit 1:
 
 ```swift
 Purchases.configure(with: .builder(withAPIKey: apiKey)
-  .with(observerMode: true, storeKitVersion: .storeKit1)
+  .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit1)
   .build()
 ```
 

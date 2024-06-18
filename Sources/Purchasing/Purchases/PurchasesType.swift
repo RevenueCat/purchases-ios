@@ -32,18 +32,10 @@ public protocol PurchasesType: AnyObject {
      */
     var isAnonymous: Bool { get }
 
-    /** Whether transactions should be finished automatically. `true` by default.
-     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
-     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
-     * will turn up every time the app is opened.
-     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
-     */
-    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
-    var finishTransactions: Bool { get set }
-
     /** Controls if purchases should be made and transactions finished automatically by RevenueCat.
-     * `.revenueCat` by default.
-     * - Warning: Setting this value to `.myApp` will prevent the SDK from making purchases and finishing transactions.
+     * ``PurchasesAreCompletedBy/revenueCat`` by default.
+     * - Warning: Setting this value to ``PurchasesAreCompletedBy/myApp``
+     * will prevent the SDK from making purchases and finishing transactions.
      * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
      */
     var purchasesAreCompletedBy: PurchasesAreCompletedBy { get set }
@@ -920,6 +912,15 @@ public protocol PurchasesType: AnyObject {
 
     #endif
 
+    /** Whether transactions should be finished automatically. `true` by default.
+     * - Warning: Setting this value to `false` will prevent the SDK from finishing transactions.
+     * In this case, you *must* finish transactions in your app, otherwise they will remain in the queue and
+     * will turn up every time the app is opened.
+     * More information on finishing transactions manually [is available here](https://rev.cat/finish-transactions).
+     */
+    @available(*, deprecated, message: "Use purchasesAreCompletedBy instead.")
+    var finishTransactions: Bool { get set }
+
 }
 
 /// Interface for ``Purchases``'s `Swift`-only methods.
@@ -1039,7 +1040,7 @@ public protocol PurchasesSwiftType: AnyObject {
      * guard let product = product else { return }
      * let result = try await product.purchase()
      * // Let RevenueCat handle the transaction result
-     * _ = try await Purchases.shared.handleObserverModeTransaction(result)
+     * _ = try await Purchases.shared.recordPurchase(result)
      * // Handle the result and finish the transaction
      * switch result {
      * case .success(let verification):
@@ -1067,11 +1068,12 @@ public protocol PurchasesSwiftType: AnyObject {
      *
      * - Returns: A ``StoreTransaction`` if there was a transacton found and handled for the provided product ID.
      *
-     * - Important: This should only be used if you have enabled observer mode during SDK configuration using 
-     * ``Configuration/Builder/with(observerMode:storeKitVersion:)``
+     * - Important: This should only be used if you are processing transactions directly within your app, configuring
+     * the SDK by passing ``PurchasesAreCompletedBy/myApp`` to `purchasesAreCompletedBy`: in
+     * ``Configuration/Builder/with(purchasesAreCompletedBy:storeKitVersion:)``
      */
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func handleObserverModeTransaction(
+    func recordPurchase(
         _ purchaseResult: StoreKit.Product.PurchaseResult
     ) async throws -> StoreTransaction?
 

@@ -20,7 +20,7 @@ public enum PurchasesAreCompletedBy: Int {
     /// Purchase transactions are to be finished by RevenueCat.
     case revenueCat
 
-    /// Purchase transactions are to be finished by the app.
+    /// Purchase transactions are to be finished by your app.
     case myApp
 
 }

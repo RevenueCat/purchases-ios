@@ -14,7 +14,7 @@
 import Foundation
 import StoreKit
 
-// swiftlint:disable line_length missing_docs file_length
+// swiftlint:disable line_length missing_docs
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -56,25 +56,6 @@ public extension Purchases {
     @available(macCatalyst, introduced: 13.0, deprecated, renamed: "eligiblePromotionalOffers(forProduct:)")
     func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: StoreKitVersion.default == .storeKit2
-        )
     }
 
     @available(iOS, deprecated: 1, renamed: "configure(with:)")

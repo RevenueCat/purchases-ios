@@ -546,20 +546,20 @@ public extension Purchases {
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.
-     * - Warning: If you're using observer mode with StoreKit 2, configure the SDK with `configure(withAPIKey:appUserID:observerMode:storeKitVersion:)` passing in `.storeKit2` as the `storeKitVersion` and ensure that you call ``Purchases/handleObserverModeTransaction(_:)`` after making a purchase.
+     * - Warning: If you're using observer mode with StoreKit 2, configure the SDK with `configure(withAPIKey:appUserID:observerMode:storeKitVersion:)` passing in `.storeKit2` as the `storeKitVersion` and ensure that you call ``Purchases/recordPurchase(_:)`` after making a purchase.
      */
     @available(iOS, obsoleted: 1,
-               message: "Explicitly setting the StoreKit version is now required when using observer mode.",
-               renamed: "configure(withAPIKey:appUserID:observerMode:storeKitVersion:)")
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
     @available(tvOS, obsoleted: 1,
-               message: "Explicitly setting the StoreKit version is now required when using observer mode.",
-               renamed: "configure(withAPIKey:appUserID:storeKitVersion:)")
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
     @available(watchOS, obsoleted: 1,
-               message: "Explicitly setting the StoreKit version is now required when using observer mode.",
-               renamed: "configure(withAPIKey:appUserID:observerMode:storeKitVersion:)")
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
     @available(macOS, obsoleted: 1,
-               message: "Explicitly setting the StoreKit version is now required when using observer mode.",
-               renamed: "configure(withAPIKey:appUserID:observerMode:storeKitVersion:)")
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
     @objc(configureWithAPIKey:appUserID:observerMode:)
     @_disfavoredOverload
     @discardableResult static func configure(withAPIKey apiKey: String,
@@ -568,6 +568,60 @@ public extension Purchases {
         fatalError()
     }
 
+    @available(iOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: StaticString,
+                                             observerMode: Bool) -> Purchases {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?) -> Purchases {
+        fatalError()
+
+    }
 }
 
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")

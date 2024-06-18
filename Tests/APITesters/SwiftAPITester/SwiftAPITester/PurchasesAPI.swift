@@ -261,7 +261,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             let result = try await StoreKit.Product.products(for: [""]).first!.purchase()
-            let _: StoreTransaction? = try await purchases.handleObserverModeTransaction(result)
+            let _: StoreTransaction? = try await purchases.recordPurchase(result)
         }
 
         for try await _: CustomerInfo in purchases.customerInfoStream {}
@@ -300,7 +300,7 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(with: Configuration.Builder(withAPIKey: ""))
     Purchases.configure(with: Configuration.Builder(withAPIKey: "").build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
-        .with(observerMode: true, storeKitVersion: .default)
+        .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .default)
         .build())
     Purchases.configure(with: Configuration.Builder(withAPIKey: "")
         .with(showStoreMessagesAutomatically: false)
@@ -308,7 +308,7 @@ private func checkConfigure() -> Purchases! {
 
     Purchases.configure(withAPIKey: "")
     Purchases.configure(withAPIKey: "", appUserID: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, purchasesAreCompletedBy: .myApp)
+    Purchases.configure(withAPIKey: "", appUserID: nil, purchasesAreCompletedBy: .myApp, storeKitVersion: .default)
 
     return nil
 }
@@ -345,13 +345,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: nil)
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: true, userDefaults: UserDefaults())
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true, userDefaults: UserDefaults())
     Purchases.configure(withAPIKey: "", appUserID: "")
-    Purchases.configure(withAPIKey: "", appUserID: "", observerMode: false)
-    Purchases.configure(withAPIKey: "", appUserID: nil, observerMode: true)
     Purchases.configure(withAPIKey: "",
                         appUserID: nil,
                         observerMode: true,
@@ -378,7 +372,4 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     let _: Bool = purchases.finishTransactions
 
-    _ = Configuration
-        .builder(withAPIKey: "")
-        .with(observerMode: true)
 }

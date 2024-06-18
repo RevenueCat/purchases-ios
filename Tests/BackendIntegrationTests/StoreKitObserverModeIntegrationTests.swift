@@ -197,7 +197,7 @@ class StoreKit2NotEnabledObserverModeIntegrationTests: BaseStoreKitObserverModeI
         let result = try await manager.purchaseProductFromStoreKit2()
 
         do {
-            _ = try await Purchases.shared.handleObserverModeTransaction(result)
+            _ = try await Purchases.shared.recordPurchase(result)
             fail("Expected error")
         } catch {
             expect(error).to(matchError(ErrorCode.configurationError))

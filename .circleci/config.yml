@@ -721,7 +721,11 @@ jobs:
     steps:
       - checkout
       - install-dependencies:
+          install_xcbeautify: false
+          install_mint: true
           install_swiftlint: << parameters.install_swiftlint >>
+      - macos/install-rosetta
+      - install-xcbeautify-for-xcode14
       - update-spm-installation-commit
       - install-runtime:
           runtime-name: iOS 13.7
