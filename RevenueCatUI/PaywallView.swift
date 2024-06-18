@@ -486,9 +486,6 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .device
         case .footer, .condensedFooter: return .sizeThatFits
-        default:
-            Logger.warning("Unexpected PaywallViewMode")
-            return .device
         }
     }
 

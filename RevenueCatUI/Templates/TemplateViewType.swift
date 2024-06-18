@@ -207,8 +207,6 @@ private extension TemplateViewConfiguration {
                 )
             #endif
         #endif
-        default:
-            self.backgroundContent
         }
     }
 

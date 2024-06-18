@@ -22,9 +22,6 @@ extension PaywallViewMode {
         case .footer: return true
         case .condensedFooter: return false
 #endif
-        default:
-            Logger.warning("Unexpected PaywallViewMode")
-            return true
         }
     }
 
@@ -36,10 +33,6 @@ extension PaywallViewMode {
 
         case .condensedFooter: return true
 #endif
-        default:
-            Logger.warning("Unexpected PaywallViewMode")
-            return false
-
         }
     }
 
@@ -49,9 +42,6 @@ extension PaywallViewMode {
 #if !os(watchOS)
         case .footer, .condensedFooter: return false
 #endif
-        default:
-            Logger.warning("Unexpected PaywallViewMode")
-            return false
         }
     }
 
@@ -62,9 +52,6 @@ extension PaywallViewMode {
         case .footer: return false
         case .condensedFooter: return !displayingAllPlans
 #endif
-        default:
-            Logger.warning("Unexpected PaywallViewMode")
-            return false
         }
     }
 

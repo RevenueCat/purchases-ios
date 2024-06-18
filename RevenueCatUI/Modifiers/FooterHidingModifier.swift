@@ -57,8 +57,6 @@ private struct FooterHidingModifier: ViewModifier {
                 )
                 .frame(height: self.hide ? 0 : nil)
                 .blur(radius: self.hide ? Self.blurRadius : 0)
-        default:
-            content
         }
     }
 
