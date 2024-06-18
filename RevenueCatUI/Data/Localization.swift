@@ -256,6 +256,7 @@ private extension SubscriptionPeriod {
         case .year:
             return DateComponents(year: self.value)
         @unknown default:
+            Logger.warning("Unknown SubscriptionPeriod")
             return .init()
         }
     }
@@ -277,6 +278,7 @@ private extension PackageType {
         case .unknown, .custom:
             return nil
         @unknown default:
+            Logger.warning("Unknown localizationKey")
             return nil
         }
     }
