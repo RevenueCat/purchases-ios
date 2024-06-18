@@ -52,9 +52,9 @@ class ConfigurationTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Strings.configure.observer_mode_with_storekit2)
     }
 
-    func testObserverModeWithStoreKit1() {
+    func testPurchasesAreCompletedByMyAppWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
+            .with(purchasesAreCompletedBy: .myApp)
             .build()
 
         expect(configuration.observerMode) == true
@@ -64,9 +64,9 @@ class ConfigurationTests: TestCase {
     }
 
     @available(*, deprecated)
-    func testObserverModeWithStoreKit2() {
+    func testPurchasesAreCompletedByMyAppWithStoreKit2() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(observerMode: true)
+            .with(purchasesAreCompletedBy: .myApp)
             .with(usesStoreKit2IfAvailable: true)
             .build()
 
