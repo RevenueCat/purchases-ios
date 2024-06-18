@@ -34,10 +34,10 @@ If you are using any 3rd party analytics SDKs to automatically track in-app purc
 
 If you're using the Firebase SDK, you'll need to follow [these instructions](https://firebase.google.com/docs/analytics/measure-in-app-purchases#swift) to log purchases made with StoreKit 2.
 
-### Observer Mode is now Purchasea Are Completed By
+### Observer Mode is now PurchasesAreCompletedBy
 
 Version 5.0 of the SDK  deprecates the term "Observer Mode" (and the APIs where this term was used), and replaces it
-with Purchases Are Completed By (either RevenueCat or your app).
+with `PurchasesAreCompletedBy` (either RevenueCat or your app).
 
 Version 5.0 of the SDK also introduces support for recording purchases made directly by your app calling StoreKit 2. 
 
@@ -50,9 +50,9 @@ You can enable it when configuring the SDK:
 
 
 
-#### ⚠️ StoreKit 2 Observer Mode on macOS
+#### ⚠️ Observing Purchases Completed by Your App on macOS
 
-By default, when purchases are completed by your app using StoreKit 2 on macOS, the app does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.recordPurchase(purchaseResult)` for any new purchases, like so:
+By default, when purchases are completed by your app using StoreKit 2 on macOS, the SDK does not detect a user's purchase until after the user foregrounds the app after the purchase has been made. If you'd like RevenueCat to immediately detect the user's purchase, call `Purchases.shared.recordPurchase(purchaseResult)` for any new purchases, like so:
 
 ```swift
 let product = try await StoreKit.Product.products(for: ["my_product_id"]).first
