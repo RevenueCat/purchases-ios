@@ -486,7 +486,7 @@ private extension PaywallViewMode {
         switch self {
         case .fullScreen: return .device
         case .footer, .condensedFooter: return .sizeThatFits
-#if !SWIFT_PACKAGE
+#if REVENUE_CAT_UI_DEV
         @unknown default:
             return .device
 #endif

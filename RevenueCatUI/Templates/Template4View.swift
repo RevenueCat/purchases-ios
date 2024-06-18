@@ -75,7 +75,7 @@ struct Template4View: TemplateViewType {
 
         case .footer, .condensedFooter:
             self.footerContent
-#if !SWIFT_PACKAGE
+#if REVENUE_CAT_UI_DEV
         @unknown default:
             self.footerContent
 #endif

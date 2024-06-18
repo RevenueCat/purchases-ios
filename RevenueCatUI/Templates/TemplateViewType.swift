@@ -178,7 +178,7 @@ extension View {
             self
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
-#if !SWIFT_PACKAGE
+#if REVENUE_CAT_UI_DEV
         @unknown default:
             self
 #endif
@@ -209,7 +209,7 @@ private extension TemplateViewConfiguration {
                 )
             #endif
         #endif
-#if !SWIFT_PACKAGE
+#if REVENUE_CAT_UI_DEV
         @unknown default:
             self.backgroundContent
 #endif
