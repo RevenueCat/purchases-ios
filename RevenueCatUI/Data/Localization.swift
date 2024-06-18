@@ -236,7 +236,8 @@ private extension SubscriptionPeriod.Unit {
         case .month: return .month
         case .year: return .year
         @unknown default:
-            fatalError()
+            Logger.warning("Unknown SubscriptionPeriod.Unit")
+            return .year
         }
     }
 
@@ -276,7 +277,7 @@ private extension PackageType {
         case .unknown, .custom:
             return nil
         @unknown default:
-            fatalError()
+            return nil
         }
     }
 
