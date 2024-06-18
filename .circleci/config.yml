@@ -1152,21 +1152,16 @@ jobs:
 
   deploy-to-spm:
     docker:
-      - image: cimg/base:stable
-    resource_class: small
+      - image: cimg/ruby:3.1.2
+    working_directory: ~/purchases-ios
+    shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - setup-git-credentials
+      - install-rubydocker-dependencies
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
-          command: |
-            git clone https://github.com/RevenueCat/purchases-ios.git
-            cd purchases-ios
-            git fetch --tags
-            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
-            git push origin
-            git push --tags
-
+          command: bundle exec fastlane deploy_to_spm
+            
 workflows:
   version: 2
   generate-snapshot:
