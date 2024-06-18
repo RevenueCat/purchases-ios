@@ -44,3 +44,37 @@ public extension PaywallComponent {
 
     }
 }
+
+public extension PaywallComponent {
+    struct TierToggleComponent: Decodable, Sendable, Hashable, Equatable {
+
+        let type: String
+        public let text: DisplayString
+        public let defaultValue: Bool
+        public let color: ColorInfo
+        public let textStyle: TextStyle
+        public let horizontalAlignment: HorizontalAlignment
+        public let backgroundColor: ColorInfo?
+        public let padding: Padding
+
+        public init(
+            text: DisplayString,
+            defaultValue: Bool = false,
+            color: ColorInfo,
+            backgroundColor: ColorInfo? = nil,
+            padding: Padding = .default,
+            textStyle: TextStyle = .body,
+            horitzontalAlignment: HorizontalAlignment = .center
+        ) {
+            self.type = "text"
+            self.text = text
+            self.defaultValue = defaultValue
+            self.color = color
+            self.backgroundColor = backgroundColor
+            self.padding = padding
+            self.textStyle = textStyle
+            self.horizontalAlignment = horitzontalAlignment
+        }
+
+    }
+}

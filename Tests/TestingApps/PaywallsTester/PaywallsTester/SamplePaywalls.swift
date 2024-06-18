@@ -749,7 +749,13 @@ private extension SamplePaywallLoader {
                                 color: .init(light: "#000000"),
                                 textStyle: .largeTitle
                             )),
-                            .tierSelector(.init()),
+//                            .tierSelector(.init()),
+                            .tierToggle(.init(
+                                text: .init(value: [
+                                    "en_US": "Premium Plan?"
+                                ]),
+                                color: .init(light: "#000000")
+                            )),
                             .features(.init(features: [
                                 .init(iconID: "tick", text: .init(value: [
                                     "en_US": "Access to 10 cinematic LUTs"
@@ -781,7 +787,13 @@ private extension SamplePaywallLoader {
                                 color: .init(light: "#000000"),
                                 textStyle: .largeTitle
                             )),
-                            .tierSelector(.init()),
+//                            .tierSelector(.init()),
+                            .tierToggle(.init(
+                                text: .init(value: [
+                                    "en_US": "Premium Plan?"
+                                ]),
+                                color: .init(light: "#000000")
+                            )),
                             .features(.init(features: [
                                 .init(iconID: "tick", text: .init(value: [
                                     "en_US": "Access to all 150 of our cinematic LUTs"
