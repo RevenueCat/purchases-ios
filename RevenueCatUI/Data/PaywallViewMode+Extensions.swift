@@ -30,7 +30,6 @@ extension PaywallViewMode {
         case .fullScreen: return false
 #if !os(watchOS)
         case .footer: return false
-
         case .condensedFooter: return true
 #endif
         }
