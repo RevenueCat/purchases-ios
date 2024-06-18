@@ -62,7 +62,7 @@ extension PaywallViewMode {
         case .footer: return false
         case .condensedFooter: return !displayingAllPlans
 #endif
-        @unknown default:
+        default:
             Logger.warning("Unexpected PaywallViewMode")
             return false
         }
