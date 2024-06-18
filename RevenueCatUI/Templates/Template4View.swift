@@ -75,10 +75,8 @@ struct Template4View: TemplateViewType {
 
         case .footer, .condensedFooter:
             self.footerContent
-#if REVENUE_CAT_UI_DEV && !COCOAPODS
-        @unknown default:
+        default:
             self.footerContent
-#endif
         }
     }
 

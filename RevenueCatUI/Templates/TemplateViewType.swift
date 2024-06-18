@@ -178,10 +178,8 @@ extension View {
             self
                 .fixedSize(horizontal: false, vertical: true)
                 .edgesIgnoringSafeArea(.bottom)
-#if REVENUE_CAT_UI_DEV && !COCOAPODS
         @unknown default:
             self
-#endif
         }
     }
 
@@ -209,10 +207,8 @@ private extension TemplateViewConfiguration {
                 )
             #endif
         #endif
-#if REVENUE_CAT_UI_DEV && !COCOAPODS
-        @unknown default:
+        default:
             self.backgroundContent
-#endif
         }
     }
 
