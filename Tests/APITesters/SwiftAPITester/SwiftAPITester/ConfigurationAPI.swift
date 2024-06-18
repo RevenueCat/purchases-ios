@@ -13,7 +13,7 @@ func checkConfigurationAPI() {
         .builder(withAPIKey: "")
         .with(apiKey: "")
         .with(appUserID: nil)
-        .with(observerMode: true)
+        .with(purchasesAreCompletedBy: .myApp)
         .with(userDefaults: UserDefaults.standard)
         .with(dangerousSettings: DangerousSettings())
         .with(dangerousSettings: DangerousSettings(autoSyncPurchases: true))
@@ -26,6 +26,12 @@ func checkConfigurationAPI() {
     if #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) {
         let _: Configuration = builder
             .with(entitlementVerificationMode: .informational)
+            .build()
+    }
+
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        let _: Configuration = builder
+            .with(diagnosticsEnabled: true)
             .build()
     }
 }
