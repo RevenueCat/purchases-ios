@@ -150,12 +150,12 @@ commands:
           condition: << parameters.install_xcbeautify >>
           steps:
             - install-brew-dependency:
-                dependency_name: "xcbeautify"
+                dependency_name: 'xcbeautify'
       - when:
           condition: << parameters.install_mint >>
           steps:
             - install-brew-dependency:
-                dependency_name: "mint"
+                dependency_name: 'mint'
       - when:
           condition: << parameters.install_swiftlint >>
           steps:
@@ -361,31 +361,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 (17.4.0)
-      - run:
-          name: Run RETRY 1 (of 4) backend_integration Tests
-          command: bundle exec fastlane retry_failed_tests retry_attempt:1
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
-      - run:
-          name: Run RETRY 2 (of 4) backend_integration Tests
-          command: bundle exec fastlane retry_failed_tests retry_attempt:2
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 15 Pro Max (17.4.0)
-      - run:
-          name: Run RETRY 3 (of 4) backend_integration Tests
-          command: bundle exec fastlane retry_failed_tests retry_attempt:3
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 15 Plus (17.4.0)
-      - run:
-          name: Run RETRY 4 (of 4) backend_integration Tests
-          command: bundle exec fastlane retry_failed_tests retry_attempt:4 fail_build:true
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+            SCAN_DEVICE: iPhone 14 (17.2.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -837,6 +813,8 @@ jobs:
 
   backend-integration-tests-offline:
     <<: *base-job
+    # These tests are even flakier running on M1
+    resource_class: macos.x86.medium.gen2
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
