@@ -53,7 +53,7 @@ public extension PaywallData {
 
     // Visible for testing
     /// - Returns: The list of locales that paywalls should try to search for.
-    /// Includes `Locale.current` and `Locale.preferredLanguages`.
+    /// Includes `Locale.current` and `Locale.preferredLocales`.
     internal static var localesOrderedByPriority: [Locale] {
         return [.current] + Locale.preferredLocales
     }

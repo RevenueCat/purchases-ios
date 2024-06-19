@@ -432,7 +432,10 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: << parameters.install_swiftlint >>
+          install_mint: true
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: SPM RevenueCatUI Tests
           command: bundle exec fastlane test_revenuecatui
@@ -622,7 +625,10 @@ jobs:
       - checkout
       - install-dependencies:
           install_swiftlint: << parameters.install_swiftlint >>
+          install_mint: true
       - update-spm-installation-commit
+      - install-runtime:
+          runtime-name: iOS 15.5
       - run:
           name: Run tests
           command: bundle exec fastlane test_ios
@@ -1175,10 +1181,8 @@ workflows:
       - run-test-ios-17:
           xcode_version: '15.2'
       - run-test-ios-16:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-14:
           xcode_version: '14.2.0'
@@ -1195,10 +1199,8 @@ workflows:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.2'
@@ -1223,10 +1225,8 @@ workflows:
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: '15.2'
@@ -1235,10 +1235,8 @@ workflows:
       - run-test-ios-17:
           xcode_version: '15.2'
       - run-test-ios-16:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-watchos:
           xcode_version: '14.3.0'
