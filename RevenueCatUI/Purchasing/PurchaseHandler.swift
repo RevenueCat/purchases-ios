@@ -453,27 +453,6 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct HandlePurchasePreferenceKey: PreferenceKey {
-
-    static var defaultValue: PurchaseResultReporter?
-
-    static func reduce(value: inout PurchaseResultReporter?, nextValue: () -> PurchaseResultReporter?) {
-        value = nextValue()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct HandleRestorePreferenceKey: PreferenceKey {
-
-    static var defaultValue: RestoreResultReporter?
-
-    static func reduce(value: inout RestoreResultReporter?, nextValue: () -> RestoreResultReporter?) {
-        value = nextValue()
-    }
-
-}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {
