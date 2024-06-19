@@ -14,10 +14,10 @@
 import Nimble
 @testable import RevenueCat
 import StoreKit
-import StoreKitTest
 import XCTest
 
 // swiftlint:disable type_name file_length
+
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {

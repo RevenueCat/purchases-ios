@@ -50,54 +50,6 @@
     }
   ],
   "settings" : {
-    "_failTransactionsEnabled" : false,
-    "_storeKitErrors" : [
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Load Products"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Purchase"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Verification"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "App Store Sync"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Subscription Status"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "App Transaction"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Manage Subscriptions Sheet"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Refund Request Sheet"
-      },
-      {
-        "current" : null,
-        "enabled" : false,
-        "name" : "Offer Code Redeem Sheet"
-      }
-    ],
     "_timeRate" : 6
   },
   "subscriptionGroups" : [
@@ -425,45 +377,6 @@
           "type" : "RecurringSubscription"
         }
       ]
-    },
-    {
-      "id" : "3B8FF1D7",
-      "localizations" : [
-
-      ],
-      "name" : "shortest_durations_group",
-      "subscriptions" : [
-        {
-          "adHocOffers" : [
-
-          ],
-          "codeOffers" : [
-
-          ],
-          "displayPrice" : "0.99",
-          "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "D8DAF7AC",
-          "introductoryOffer" : {
-            "displayPrice" : "0.99",
-            "internalID" : "AC7330E8",
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
-          },
-          "localizations" : [
-            {
-              "description" : "",
-              "displayName" : "",
-              "locale" : "en_US"
-            }
-          ],
-          "productID" : "shortest_duration",
-          "recurringSubscriptionPeriod" : "P1W",
-          "referenceName" : "shortest_duration",
-          "subscriptionGroupID" : "3B8FF1D7",
-          "type" : "RecurringSubscription"
-        }
-      ]
     }
   ],
   "subscriptionOffersKeyPair" : {
@@ -471,7 +384,7 @@
     "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgMpw0LScUC+8o+WsEAM20KOMzZOMSWKFjUixtwDidPMugCgYIKoZIzj0DAQehRANCAAQIMw4YEVZrDPrk/1dx5WV3hpkuy8enQs+yDAuJRtsrOnzRH6EFgTyiydprKlgUOHW6xBocrRNTMZXioCBQtchg"
   },
   "version" : {
-    "major" : 3,
+    "major" : 2,
     "minor" : 0
   }
 }

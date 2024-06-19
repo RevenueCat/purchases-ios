@@ -58,11 +58,9 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
         self.verifyTransactionHandled(with: transaction, sessionID: nil)
     }
 
-    @available(iOS 17.0, *)
     func testPurchasingAfterAFailureRemembersPresentedPaywall() async throws {
-        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
-
-        try await self.testSession.setSimulatedError(.generic(.networkError(URLError(.unknown))), forAPI: .purchase)
+        self.testSession.failTransactionsEnabled = true
+        self.testSession.failureError = .unknown
 
         try await self.purchases.track(paywallEvent: .impression(.init(), self.eventData))
 
@@ -75,11 +73,7 @@ class PaywallEventsIntegrationTests: BaseStoreKitIntegrationTests {
 
         self.logger.clearMessages()
 
-        try await self.testSession.setSimulatedError(nil, forAPI: .purchase)
-
-        self.testSession.resetToDefaultState()
-        self.testSession.disableDialogs = true
-
+        self.testSession.failTransactionsEnabled = false
         let transaction = try await XCTAsyncUnwrap(try await self.purchases.purchase(package: self.package).transaction)
 
         self.verifyTransactionHandled(with: transaction, sessionID: self.eventData.sessionIdentifier)
