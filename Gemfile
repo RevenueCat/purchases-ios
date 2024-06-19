@@ -5,4 +5,5 @@ gem 'cocoapods'
 gem 'cocoapods-trunk'
 gem 'danger'
 gem 'rest-client'
+gem 'nokogiri'
 eval_gemfile("fastlane/Pluginfile")
