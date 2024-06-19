@@ -66,8 +66,6 @@ public final class PurchaseHandler: ObservableObject {
 
     private var eventData: PaywallEvent.Data?
 
-    private var externalRestorePurchaseContinuation: CheckedContinuation<Bool, Error>?
-
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil) {
@@ -125,11 +123,12 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
 
-        self.startAction()
         defer {
             self.packageBeingPurchased = nil
             self.actionInProgress = false
         }
+
+        self.startAction()
 
         do {
             let result = try await self.purchases.purchase(package: package)
@@ -161,6 +160,11 @@ extension PurchaseHandler {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
         }
 
+        defer {
+            self.restoreInProgress = false
+            self.actionInProgress = false
+        }
+
         self.startAction()
 
         let result = await externalPurchaseMethod(package)
@@ -180,23 +184,6 @@ extension PurchaseHandler {
             }
         }
 
-    }
-
-    @MainActor
-    func reportExternalPurchaseResult(_ userCancelled: Bool, _ error: Error?) {
-        self.actionInProgress = false
-
-        if let error {
-            self.purchaseError = error
-        } else {
-            if userCancelled {
-                self.trackCancelledPurchase()
-            } else {
-                withAnimation(Constants.defaultAnimation) {
-                    self.purchased = true
-                }
-            }
-        }
     }
 
     // MARK: - Restore
@@ -265,17 +252,6 @@ extension PurchaseHandler {
         }
 
         return (info: try await self.purchases.customerInfo(), result.success)
-    }
-
-    @MainActor
-    func reportExternalRestoreResult(success: Bool, error: Error?) {
-        if let error {
-            self.restoreError = error
-            externalRestorePurchaseContinuation?.resume(throwing: error)
-        } else {
-            externalRestorePurchaseContinuation?.resume(returning: success)
-        }
-        externalRestorePurchaseContinuation = nil
     }
 
     @MainActor
