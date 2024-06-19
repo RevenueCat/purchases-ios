@@ -259,6 +259,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.serverDown()
 
         try await self.purchaseShortestDuration(allowOfflineEntitlements: true)
+        try self.testSession.forceRenewalOfSubscription(
+            productIdentifier: await self.shortestDurationProduct.productIdentifier
+        )
 
         // swiftlint:disable:next force_try
         try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
