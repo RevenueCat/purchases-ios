@@ -92,9 +92,6 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
-    /// Information used to perform a purchase by the app (rather than by RevenueCat)
-    private var performPurchaseReporter: PurchaseResultReporter?
-
     /// Information used to perform restoring a purchase by the app (rather than by RevenueCat)
     private var performRestoreReporter: RestoreResultReporter?
 
@@ -215,11 +212,11 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
 
-        self.performPurchaseReporter = PurchaseResultReporter(reportPurchaseResult: self.reportExternalPurchaseResult)
+        let reporter = PurchaseResultReporter(reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
 
-        self.performPurchase!(package.storeProduct, self.performPurchaseReporter!)
+        self.performPurchase!(package.storeProduct, reporter)
 
         return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
     }
