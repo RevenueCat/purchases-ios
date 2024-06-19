@@ -17,30 +17,6 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-/// A class that can be used to report the result of a restoring purchases.
-public class RestoreResultReporter: Equatable {
-
-    let reportRestoreResultCallback: (_ success: Bool, _ error: Error?) -> Void
-
-    init(callback: @escaping (Bool, Error?) -> Void) {
-        self.reportRestoreResultCallback = callback
-    }
-
-    /// Use this method to report the result of a restore operation.
-    /// - Parameters:
-    ///   - success: A boolean indicating whether the restore operation was successful.
-    ///   - error: An optional error object if an error occurred during the restore operation.
-    public func reportResult(success: Bool, error: Error?) {
-        reportRestoreResultCallback(success, error)
-    }
-
-    /// Returns true if objects are the same object (same memory address); false otherwise.
-    public static func == (lhs: RestoreResultReporter, rhs: RestoreResultReporter) -> Bool {
-        return lhs === rhs
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class PurchaseHandler: ObservableObject {
 
@@ -65,8 +41,6 @@ public final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
-    /// Information used to perform restoring a purchase by the app (rather than by RevenueCat)
-    private var performRestoreReporter: RestoreResultReporter?
 
     @Published
     fileprivate(set) var performRestore: PerformRestore?
@@ -278,21 +252,19 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = nil
         self.restoreError = nil
 
-        DispatchQueue.main.async {
-            // this triggers the view's `.handlePurchaseAndRestore` function, and its callback must be called
-            // after the continuation is set below
-            self.performRestoreReporter = RestoreResultReporter(callback: self.reportExternalRestoreResult)
+        guard let externalRestoreMethod = self.performRestore else {
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
         }
-
-        let reporter = RestoreResultReporter(callback: self.reportExternalRestoreResult)
 
         self.startAction()
 
-        let success = try await withCheckedThrowingContinuation { continuation in
-            externalRestorePurchaseContinuation = continuation
+        let result = await externalRestoreMethod()
+
+        if let error = result.error {
+            throw error
         }
 
-        return (info: try await self.purchases.customerInfo(), success)
+        return (info: try await self.purchases.customerInfo(), result.success)
     }
 
     @MainActor

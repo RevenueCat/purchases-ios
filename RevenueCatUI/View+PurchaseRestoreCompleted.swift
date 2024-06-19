@@ -46,8 +46,7 @@ public typealias PerformPurchase = @MainActor @Sendable (
 
 /// A closure used for notifying that custom restore logic has completed.
 public typealias PerformRestore = @MainActor @Sendable (
-    _ restoreResultReporter: RestoreResultReporter
-) -> Void
+) async -> (success: Bool, error: Error?)
 
 /// A closure used for notifying of failures during purchases or restores.
 public typealias PurchaseFailureHandler = @MainActor @Sendable (NSError) -> Void
