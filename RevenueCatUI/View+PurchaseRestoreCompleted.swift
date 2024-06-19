@@ -39,12 +39,14 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
-/// A closure used for notifying that custom purchase logic has completed.
+/// A closure used to perform custom purchase logic implemented by your app.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @MainActor @Sendable (
     _ package: Package
 ) async -> (userCancelled: Bool, error: Error?)
 
-/// A closure used for notifying that custom restore logic has completed.
+/// A closure used to perform custom restore logic implemented by your app.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformRestore = @MainActor @Sendable (
 ) async -> (success: Bool, error: Error?)
 
