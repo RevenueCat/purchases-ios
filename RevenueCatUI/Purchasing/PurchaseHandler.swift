@@ -183,17 +183,21 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
 
+        guard let externalPurchaseMethod = self.performPurchase else {
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
+        }
+
         self.startAction()
 
-        let result = self.performPurchase!(package)
+        let result = await externalPurchaseMethod(package)
 
         if result.userCancelled {
             self.trackCancelledPurchase()
         }
 
-        if result.error != nil {
-            self.purchaseError = result.error
-            throw result.error
+        if let error = result.error {
+            self.purchaseError = error
+            throw error
         }
 
         if !result.userCancelled && result.error == nil {
