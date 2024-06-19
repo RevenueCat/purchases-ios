@@ -17,32 +17,6 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
-/// A class that can be used to report the result of a purchase.
-public class PurchaseResultReporter: Equatable {
-
-    let id = UUID()
-    let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
-
-    init(reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
-        self.reportPurchaseResultCallback = reportPurchaseResult
-    }
-
-    /// Use this method to report the result of the purchase.
-    /// - Parameters:
-    ///   - userCancelled: A boolean indicating whether the user cancelled the purchase.
-    ///   - error: An optional error object if an error occurred during the purchase.
-    public func reportResult(userCancelled: Bool, error: Error?) {
-        reportPurchaseResultCallback(userCancelled, error)
-    }
-
-    /// Checks whether two `PurchaseResultReporter` instances are equal.
-    /// They are considered equal if the object represents the same `StoreProduct`
-    public static func == (lhs: PurchaseResultReporter, rhs: PurchaseResultReporter) -> Bool {
-        return lhs.id == rhs.id
-    }
-
-}
-
 /// A class that can be used to report the result of a restoring purchases.
 public class RestoreResultReporter: Equatable {
 
@@ -68,8 +42,7 @@ public class RestoreResultReporter: Equatable {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// @PublicForExternalTesting
-final class PurchaseHandler: ObservableObject {
+public final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
@@ -144,8 +117,7 @@ final class PurchaseHandler: ObservableObject {
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
-    // @PublicForExternalTesting
-    static func `default`(performPurchase: PerformPurchase?,
+    public static func `default`(performPurchase: PerformPurchase?,
                           performRestore: PerformRestore?) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
         performRestore: performRestore) : Self.notConfigured()
@@ -163,17 +135,17 @@ extension PurchaseHandler {
     // MARK: - Purchase
 
     @MainActor
-    func purchase(package: Package) async throws -> PurchaseResultData {
+    func purchase(package: Package) async throws {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            return try await performPurchase(package: package)
+            try await performPurchase(package: package)
         case .myApp:
-            return try await performExternalPurchaseLogic(package: package)
+            try await performExternalPurchaseLogic(package: package)
         }
     }
 
     @MainActor
-    func performPurchase(package: Package) async throws -> PurchaseResultData {
+    func performPurchase(package: Package) async throws {
         Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
@@ -197,7 +169,7 @@ extension PurchaseHandler {
                 }
             }
 
-            return result
+
         } catch {
             self.purchaseError = error
             throw error
@@ -205,20 +177,16 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performExternalPurchaseLogic(package: Package) async throws -> PurchaseResultData {
+    func performExternalPurchaseLogic(package: Package) async throws  {
         Logger.debug(Strings.executing_external_purchase_logic)
-
         self.packageBeingPurchased = package
         self.purchaseResult = nil
         self.purchaseError = nil
 
-        let reporter = PurchaseResultReporter(reportPurchaseResult: self.reportExternalPurchaseResult)
-
         self.startAction()
 
-        self.performPurchase!(package.storeProduct, reporter)
+        self.performPurchase!(package)
 
-        return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
     }
 
     @MainActor
@@ -296,6 +264,8 @@ extension PurchaseHandler {
             // after the continuation is set below
             self.performRestoreReporter = RestoreResultReporter(callback: self.reportExternalRestoreResult)
         }
+
+        let reporter = RestoreResultReporter(callback: self.reportExternalRestoreResult)
 
         self.startAction()
 

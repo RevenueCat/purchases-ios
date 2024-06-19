@@ -41,9 +41,8 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
 /// A closure used for notifying that custom purchase logic has completed.
 public typealias PerformPurchase = @MainActor @Sendable (
-    _ storeProduct: StoreProduct,
-    _ purchaseResultReporter: PurchaseResultReporter
-) -> Void
+    _ package: Package
+) -> (userCancelled: Bool, error: Error?)
 
 /// A closure used for notifying that custom restore logic has completed.
 public typealias PerformRestore = @MainActor @Sendable (

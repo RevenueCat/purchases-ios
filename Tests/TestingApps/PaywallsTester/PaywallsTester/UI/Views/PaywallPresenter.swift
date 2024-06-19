@@ -25,8 +25,11 @@ struct PaywallPresenter: View {
                 displayCloseButton: displayCloseButton,
                 introEligibility: .producing(eligibility: introEligility)
             )
-            PaywallView(configuration: config) { storeProduct, purchaseResultReporter in
+            PaywallView(configuration: config) { package in
                 print("purchase callback")
+
+                return (userCancelled: true, error: nil)
+
             } performRestore: { restoreResultReporter in
                 print("restore callback")
             }
