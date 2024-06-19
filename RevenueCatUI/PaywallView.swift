@@ -104,8 +104,8 @@ public struct PaywallView: View {
     }
 
     public init(configuration: PaywallViewConfiguration,
-                performPurchase: PerformPurchase?,
-                performRestore: PerformRestore?) {
+                performPurchase: PerformPurchase? = nil,
+                performRestore: PerformRestore? = nil) {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
         self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default(performPurchase: performPurchase, performRestore: performRestore))
         self._offering = .init(
@@ -125,8 +125,8 @@ public struct PaywallView: View {
                 case .revenueCat:
                     break
                 case .myApp:
-                    if performPurchase != nil, performRestore != nil {
-                        self._error.wrappedValue = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
+                    if performPurchase == nil || performRestore == nil {
+                        self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
                     }
                 }
     }
@@ -141,7 +141,10 @@ public struct PaywallView: View {
     @ViewBuilder
     private var content: some View {
         VStack { // Necessary to work around FB12674350 and FB12787354
-            if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
+            if let error = self.initializationError {
+                DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
+            }
+            else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
