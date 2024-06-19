@@ -169,31 +169,6 @@ import Foundation
          */
         @objc public func with(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Configuration.Builder {
             self.purchasesAreCompletedBy = purchasesAreCompletedBy
-
-            return self
-        }
-        /**
-         * Set `purchasesAreCompletedBy`.
-         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and
-         * want to use only RevenueCat's backend. Default is `.revenueCat`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * `.myApp` is not compatible with StoreKit 2.
-         */
-        @objc public func with(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Configuration.Builder {
-            self.purchasesAreCompletedBy = purchasesAreCompletedBy
-            return self
-        }
-        /**
-         * Set `purchasesAreCompletedBy`.
-         * - Parameter purchasesAreCompletedBy: Set this to `.myApp` if you have your own IAP implementation and
-         * want to use only RevenueCat's backend. Default is `.revenueCat`.
-         *
-         * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * `.myApp` is not compatible with StoreKit 2.
-         */
-        @objc public func with(purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Configuration.Builder {
-            self.purchasesAreCompletedBy = purchasesAreCompletedBy
             return self
         }
 
