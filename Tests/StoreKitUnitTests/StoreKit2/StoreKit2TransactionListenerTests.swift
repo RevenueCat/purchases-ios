@@ -217,11 +217,16 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func testNotifiesDelegateForRenewals() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        setShortestTestSessionTimeRate(self.testSession)
+
         try await self.simulateAnyPurchase(finishTransaction: true)
 
         await self.listener.listenForTransactions()
 
-        try? self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.waitForTransactionUpdated()
 
