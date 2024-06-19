@@ -250,7 +250,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptOnlyOnce() async throws {
         // forceRenewalOfSubscription doesn't work well, so we use this instead
-        setShortestTestSessionTimeRate(self.testSession)
+//        setShortestTestSessionTimeRate(self.testSession)
 
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
@@ -258,13 +258,18 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         self.serverDown()
 
-        try await self.purchaseShortestDuration(allowOfflineEntitlements: true)
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
         try self.testSession.forceRenewalOfSubscription(
-            productIdentifier: await self.shortestDurationProduct.productIdentifier
+            productIdentifier: await self.monthlyPackage.storeProduct.productIdentifier
         )
 
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+//        try await self.purchaseShortestDuration(allowOfflineEntitlements: true)
+//        try self.testSession.forceRenewalOfSubscription(
+//            productIdentifier: await self.shortestDurationProduct.productIdentifier
+//        )
+//
+//        // swiftlint:disable:next force_try
+//        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.waitUntilUnfinishedTransactions { $0 >= 2 }
 
