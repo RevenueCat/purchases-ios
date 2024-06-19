@@ -50,6 +50,8 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
+    private var initializationError: NSError?
+
     /// Create a view to display the paywall in `Offerings.current`.
     ///
     /// - Parameter fonts: An optional ``PaywallFontProvider``.
