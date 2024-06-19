@@ -152,13 +152,14 @@ extension PurchaseHandler {
     @MainActor
     func performExternalPurchaseLogic(package: Package) async throws  {
         Logger.debug(Strings.executing_external_purchase_logic)
-        self.packageBeingPurchased = package
-        self.purchaseResult = nil
-        self.purchaseError = nil
 
         guard let externalPurchaseMethod = self.performPurchase else {
             throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
         }
+
+        self.packageBeingPurchased = package
+        self.purchaseResult = nil
+        self.purchaseError = nil
 
         defer {
             self.restoreInProgress = false
@@ -230,6 +231,10 @@ extension PurchaseHandler {
     func performExternalRestoreLogic() async throws -> (info: CustomerInfo, success: Bool) {
         Logger.debug(Strings.executing_external_restore_logic)
 
+        guard let externalRestoreMethod = self.performRestore else {
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
+        }
+
         defer {
             self.restoreInProgress = false
             self.actionInProgress = false
@@ -238,10 +243,6 @@ extension PurchaseHandler {
         self.restoreInProgress = true
         self.restoredCustomerInfo = nil
         self.restoreError = nil
-
-        guard let externalRestoreMethod = self.performRestore else {
-            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
-        }
 
         self.startAction()
 
