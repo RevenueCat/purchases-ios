@@ -130,7 +130,10 @@ final class PurchaseHandler: ObservableObject {
     convenience init(purchases: Purchases = .shared,
                      performPurchase: PerformPurchase? = nil,
                      performRestore: PerformRestore? = nil) {
-        self.init(isConfigured: true, purchases: purchases)
+        self.init(isConfigured: true,
+                  purchases: purchases,
+                  performPurchase: performPurchase,
+                  performRestore: performRestore)
     }
 
     init(
@@ -141,6 +144,8 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
     }
 
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
@@ -217,6 +222,8 @@ extension PurchaseHandler {
 
         self.performPurchaseReporter = PurchaseResultReporter(storeProduct: package.storeProduct,
                                                       reportPurchaseResult: self.reportExternalPurchaseResult)
+
+        self.performPurchase!(package.storeProduct, self.performPurchaseReporter!)
 
         self.startAction()
 
