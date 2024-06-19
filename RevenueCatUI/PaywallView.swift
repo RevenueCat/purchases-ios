@@ -124,13 +124,13 @@ public struct PaywallView: View {
         self.performRestore = performRestore
 
         switch Purchases.shared.purchasesAreCompletedBy {
-                case .revenueCat:
-                    break
-                case .myApp:
-                    if performPurchase == nil || performRestore == nil {
-                        self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
-                    }
-                }
+        case .revenueCat:
+            break
+        case .myApp:
+            if performPurchase == nil || performRestore == nil {
+                self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
+            }
+        }
     }
 
     // swiftlint:disable:next missing_docs
