@@ -20,11 +20,10 @@ import SwiftUI
 /// A class that can be used to report the result of a purchase.
 public class PurchaseResultReporter: Equatable {
 
-    let storeProduct: StoreProduct
+    let id = UUID()
     let reportPurchaseResultCallback: (_ userCancelled: Bool, _ error: Error?) -> Void
 
-    init(storeProduct: StoreProduct, reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
-        self.storeProduct = storeProduct
+    init(reportPurchaseResult: @escaping (_: Bool, _: Error?) -> Void) {
         self.reportPurchaseResultCallback = reportPurchaseResult
     }
 
@@ -39,7 +38,7 @@ public class PurchaseResultReporter: Equatable {
     /// Checks whether two `PurchaseResultReporter` instances are equal.
     /// They are considered equal if the object represents the same `StoreProduct`
     public static func == (lhs: PurchaseResultReporter, rhs: PurchaseResultReporter) -> Bool {
-        return lhs.storeProduct == rhs.storeProduct
+        return lhs.id == rhs.id
     }
 
 }
@@ -94,12 +93,10 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var purchaseResult: PurchaseResultData?
 
     /// Information used to perform a purchase by the app (rather than by RevenueCat)
-    @Published
-    fileprivate(set) var performPurchaseReporter: PurchaseResultReporter?
+    private var performPurchaseReporter: PurchaseResultReporter?
 
     /// Information used to perform restoring a purchase by the app (rather than by RevenueCat)
-    @Published
-    fileprivate(set) var performRestoreReporter: RestoreResultReporter?
+    private var performRestoreReporter: RestoreResultReporter?
 
     @Published
     fileprivate(set) var performRestore: PerformRestore?
@@ -218,14 +215,11 @@ extension PurchaseHandler {
         self.purchaseResult = nil
         self.purchaseError = nil
 
-        
-
-        self.performPurchaseReporter = PurchaseResultReporter(storeProduct: package.storeProduct,
-                                                      reportPurchaseResult: self.reportExternalPurchaseResult)
-
-        self.performPurchase!(package.storeProduct, self.performPurchaseReporter!)
+        self.performPurchaseReporter = PurchaseResultReporter(reportPurchaseResult: self.reportExternalPurchaseResult)
 
         self.startAction()
+
+        self.performPurchase!(package.storeProduct, self.performPurchaseReporter!)
 
         return PurchaseResultData(nil, try await self.purchases.customerInfo(), false)
     }
