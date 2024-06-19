@@ -4,8 +4,6 @@
 * Bump rexml from 3.2.6 to 3.2.8 (#3907) via dependabot[bot] (@dependabot[bot])
 * Bump fastlane-plugin-revenuecat_internal from `8ec0072` to `5f55466` (#3938) via dependabot[bot] (@dependabot[bot])
 ### Other Changes
-* Revert "Run offline backend integration tests on M1 machines (#3961)" (#3974) via Toni Rico (@tonidero)
-* Run offline backend integration tests on M1 machines (#3961) via Toni Rico (@tonidero)
 * Xcode project with RevenueCatUI + Tests (#3960) via James Borthwick (@jamesrb1)
 * Clone to spm using fastlane (#3926) via James Borthwick (@jamesrb1)
 * finishTransactions/ObserverMode -> PurchasesAreCompletedBy (#3947) via James Borthwick (@jamesrb1)
