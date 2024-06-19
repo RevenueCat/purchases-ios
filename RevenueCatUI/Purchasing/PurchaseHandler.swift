@@ -185,7 +185,22 @@ extension PurchaseHandler {
 
         self.startAction()
 
-        self.performPurchase!(package)
+        let result = self.performPurchase!(package)
+
+        if result.userCancelled {
+            self.trackCancelledPurchase()
+        }
+
+        if result.error != nil {
+            self.purchaseError = result.error
+            throw result.error
+        }
+
+        if !result.userCancelled && result.error == nil {
+            withAnimation(Constants.defaultAnimation) {
+                self.purchased = true
+            }
+        }
 
     }
 
