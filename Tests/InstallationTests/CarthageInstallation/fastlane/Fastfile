@@ -16,6 +16,6 @@ lane :installation_tests do
     # doesn't try to build the other installation tests
     sh "carthage", "update", "--no-build"
     sh "rm", "-rf", "Carthage/Checkouts/purchases-root/Tests/InstallationTests/"
-    sh "carthage", "build", "--use-xcframeworks", "--scheme RevenueCat", "--verbose"
+    sh "carthage", "build", "--use-xcframeworks", "--verbose"
   end
 end
