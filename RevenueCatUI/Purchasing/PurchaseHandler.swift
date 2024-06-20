@@ -44,12 +44,12 @@ public final class PurchaseHandler: ObservableObject {
     /// When `purchasesAreCompletedBy` is `.myApp`, this is the app-defined
     /// callback method that performs the restore
     @Published
-    fileprivate(set) var performRestore: PerformRestore?
+    private(set) var performRestore: PerformRestore?
 
     /// When `purchasesAreCompletedBy` is `.myApp`, this is the app-defined
     /// callback method that performs the purchase
     @Published
-    fileprivate(set) var performPurchase: PerformPurchase?
+    private(set) var performPurchase: PerformPurchase?
 
     /// Whether a restore is currently in progress
     @Published

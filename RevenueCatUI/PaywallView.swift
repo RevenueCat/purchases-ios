@@ -40,11 +40,11 @@ public struct PaywallView: View {
     // this is internal solely for testing purposes
     let purchaseHandler: PurchaseHandler
 
-    @StateObject
-    private var introEligibility: TrialOrIntroEligibilityChecker
+    let introEligibility: TrialOrIntroEligibilityChecker
 
     @State
     private var offering: Offering?
+
     @State
     private var customerInfo: CustomerInfo?
     @State
@@ -108,8 +108,9 @@ public struct PaywallView: View {
     public init(configuration: PaywallViewConfiguration,
                 performPurchase: PerformPurchase? = nil,
                 performRestore: PerformRestore? = nil) {
-        self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
-        self.purchaseHandler = configuration.purchaseHandler ?? .default(performPurchase: performPurchase, performRestore: performRestore)
+        self.introEligibility = configuration.introEligibility ?? .default()
+        self.purchaseHandler = configuration.purchaseHandler ?? .default(performPurchase: performPurchase,
+                                                                         performRestore: performRestore)
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
