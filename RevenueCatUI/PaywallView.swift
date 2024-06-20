@@ -120,8 +120,19 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.performPurchase = configuration.purchaseHandler?.performPurchase ?? performPurchase
-        self.performRestore = configuration.purchaseHandler?.performRestore ?? performRestore
+        self.performPurchase = performPurchase ?? configuration.purchaseHandler?.performPurchase
+        self.performRestore = performRestore ?? configuration.purchaseHandler?.performRestore
+
+        if configuration.purchaseHandler?.performPurchase != nil && performPurchase != nil {
+            Logger.warning("A perform purchase handler is defined on BOTH the PaywallView and the configuration " +
+            "object it's initialized with. The PaywallView's handler will be used.")
+        }
+
+        if configuration.purchaseHandler?.performRestore != nil && performRestore != nil {
+            Logger.warning("A perform restore handler is defined on BOTH the PaywallView and the configuration " +
+            "object it's initialized with. The PaywallView's handler will be used.")
+        }
+
 
         if (!Purchases.isConfigured || Purchases.shared.purchasesAreCompletedBy == .myApp)  {
             if self.performPurchase == nil || self.performRestore == nil {
