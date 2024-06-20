@@ -1370,6 +1370,9 @@ workflows:
   danger:
     jobs:
       - danger
+  carthage:
+    jobs:
+      - installation-tests-carthage
   weekly-run-workflow:
     when:
       and:
