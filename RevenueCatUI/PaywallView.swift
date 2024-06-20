@@ -37,8 +37,8 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    @StateObject
-    private var purchaseHandler: PurchaseHandler
+    // this is internal solely for testing purposes
+    let purchaseHandler: PurchaseHandler
 
     @StateObject
     private var introEligibility: TrialOrIntroEligibilityChecker
