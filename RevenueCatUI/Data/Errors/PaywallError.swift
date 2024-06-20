@@ -49,8 +49,10 @@ extension PaywallError: CustomNSError {
         case let .offeringNotFound(identifier):
             return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
         case .performPurchaseAndRestoreHandlersNotDefined:
-            return "A PaywallView must be initialized with a PerformPurchase and PerformRestore hander " +
-            "when purchasesAreCompletedBy is equal to .myApp"
+            return "PaywallView has not been correctly initialized. purchasesAreCompletedBy is set to .myApp, and so " +
+            "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler, either" +
+            "via its initializer or via a configuration that is initailized with a PerformRestore and " +
+            "PerformPurchase handler."
         }
     }
 

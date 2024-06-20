@@ -109,7 +109,7 @@ public struct PaywallView: View {
                 performPurchase: PerformPurchase? = nil,
                 performRestore: PerformRestore? = nil) {
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
-        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler ?? .default(performPurchase: performPurchase, performRestore: performRestore))
+        self.purchaseHandler = configuration.purchaseHandler ?? .default(performPurchase: performPurchase, performRestore: performRestore)
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
@@ -120,17 +120,15 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.performPurchase = performPurchase
-        self.performRestore = performRestore
+        self.performPurchase = configuration.purchaseHandler?.performPurchase ?? performPurchase
+        self.performRestore = configuration.purchaseHandler?.performRestore ?? performRestore
 
-        switch Purchases.shared.purchasesAreCompletedBy {
-        case .revenueCat:
-            break
-        case .myApp:
-            if performPurchase == nil || performRestore == nil {
+        if (!Purchases.isConfigured || Purchases.shared.purchasesAreCompletedBy == .myApp)  {
+            if self.performPurchase == nil || self.performRestore == nil {
                 self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
             }
         }
+
     }
 
     // swiftlint:disable:next missing_docs

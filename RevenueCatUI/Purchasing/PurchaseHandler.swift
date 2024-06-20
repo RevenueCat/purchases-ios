@@ -95,11 +95,16 @@ public final class PurchaseHandler: ObservableObject {
     public static func `default`(performPurchase: PerformPurchase?,
                           performRestore: PerformRestore?) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
-        performRestore: performRestore) : Self.notConfigured()
+        performRestore: performRestore) : Self.notConfigured(performPurchase: performPurchase,
+                                                             performRestore: performRestore)
     }
 
-    private static func notConfigured() -> Self {
-        return .init(isConfigured: false, purchases: NotConfiguredPurchases())
+    private static func notConfigured(performPurchase: PerformPurchase?,
+                                      performRestore: PerformRestore?) -> Self {
+        return .init(isConfigured: false,
+                     purchases: NotConfiguredPurchases(),
+                    performPurchase: performPurchase,
+                    performRestore: performRestore)
     }
 
 }
