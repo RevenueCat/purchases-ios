@@ -190,7 +190,26 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
-    
+    func testOnRestoreStarted() throws {
+        var started = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: Self.purchaseHandler
+        )
+            .onRestoreStarted {
+                started = true
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await Self.purchaseHandler.restorePurchases()
+        }
+
+        expect(started).toEventually(beTrue())
+    }
 
     func testOnRestoreCompleted() throws {
         var customerInfo: CustomerInfo?
