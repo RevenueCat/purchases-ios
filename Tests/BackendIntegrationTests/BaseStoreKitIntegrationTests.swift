@@ -90,6 +90,7 @@ extension BaseStoreKitIntegrationTests {
     static let group3MonthlyTrialProductID = "com.revenuecat.monthly.1.99.1_free_week"
     static let group3MonthlyNoTrialProductID = "com.revenuecat.monthly.1.99.no_intro"
     static let group3YearlyTrialProductID = "com.revenuecat.annual.10.99.1_free_week"
+    static let weeklyWith3DayTrial = "shortest_duration"
 
     var currentOffering: Offering {
         get async throws {
@@ -112,6 +113,12 @@ extension BaseStoreKitIntegrationTests {
     var monthlyNoIntroProduct: StoreProduct {
         get async throws {
             return try await self.product(Self.monthlyNoIntroProductID)
+        }
+    }
+
+    var shortestDurationProduct: StoreProduct {
+        get async throws {
+            return try await self.product(Self.weeklyWith3DayTrial)
         }
     }
 
@@ -151,6 +158,29 @@ extension BaseStoreKitIntegrationTests {
         let logger = TestLogHandler()
 
         let data = try await self.purchases.purchase(product: self.monthlyPackage.storeProduct)
+
+        try await self.verifyEntitlementWentThrough(data.customerInfo,
+                                                    file: file,
+                                                    line: line)
+
+        if !allowOfflineEntitlements {
+            // Avoid false positives if the API returned a 500 and customer info was computed offline
+            self.verifyCustomerInfoWasNotComputedOffline(logger: logger, file: file, line: line)
+        }
+
+        return data
+    }
+
+    @discardableResult
+    func purchaseShortestDuration(
+        allowOfflineEntitlements: Bool = false,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws -> PurchaseResultData {
+        let logger = TestLogHandler()
+        let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
+
+        let data = try await self.purchases.purchase(product: StoreProduct(sk2Product: product))
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
                                                     file: file,
