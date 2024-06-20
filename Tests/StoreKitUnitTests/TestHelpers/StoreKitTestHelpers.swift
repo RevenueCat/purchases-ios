@@ -25,13 +25,15 @@ extension XCTestCase {
     }
 
     func setShortestTestSessionTimeRate(_ testSession: SKTestSession) {
-        #if swift(>=5.8)
         if #available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *) {
+            #if swift(>=5.8)
             testSession.timeRate = .oneRenewalEveryTwoSeconds
+            #else
+            testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
+            #endif
         } else if #available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *) {
             testSession.timeRate = SKTestSession.TimeRate.monthlyRenewalEveryThirtySeconds
         }
-        #endif
     }
 
     func verifyNoUnfinishedTransactions(file: StaticString = #file, line: UInt = #line) async {
