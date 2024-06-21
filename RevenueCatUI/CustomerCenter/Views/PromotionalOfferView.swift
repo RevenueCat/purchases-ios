@@ -26,22 +26,27 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct PromotionalOfferView: View {
 
+    private let appearance: CustomerCenterConfigData.Appearance
+
     @StateObject
     private var viewModel: PromotionalOfferViewModel
     @Environment(\.dismiss)
     private var dismiss
     private var promotionalOfferId: String
 
-    init(promotionalOfferId: String) {
+    init(promotionalOfferId: String,
+         appearance: CustomerCenterConfigData.Appearance) {
         let viewModel = PromotionalOfferViewModel()
         self._viewModel = StateObject(wrappedValue: viewModel)
         self.promotionalOfferId = promotionalOfferId
+        self.appearance = appearance
     }
 
     init(promotionalOffer: PromotionalOffer,
          product: StoreProduct,
          promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer,
-         localization: CustomerCenterConfigData.Localization) {
+         localization: CustomerCenterConfigData.Localization,
+         appearance: CustomerCenterConfigData.Appearance) {
         let viewModel = PromotionalOfferViewModel(product: product,
                                                   promotionalOffer: promotionalOffer,
                                                   promoOfferDetails: promoOfferDetails,
@@ -49,6 +54,7 @@ struct PromotionalOfferView: View {
         self._viewModel = StateObject(wrappedValue: viewModel)
         // force unwrap since it is only `nil` for SK1 products before iOS 12.2.
         self.promotionalOfferId = promotionalOffer.discount.offerIdentifier!
+        self.appearance = appearance
     }
 
     var body: some View {
@@ -109,7 +115,7 @@ struct PromoOfferButtonView: View {
                         .font(.subheadline)
                 }
             })
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.viewModel.appearance))
         }
     }
 

@@ -26,6 +26,7 @@ import RevenueCat
 class ManageSubscriptionsViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
+    let appearance: CustomerCenterConfigData.Appearance
 
     @Published
     var showRestoreAlert: Bool = false
@@ -74,25 +75,31 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     private var error: Error?
 
-    convenience init(screen: CustomerCenterConfigData.Screen) {
+    convenience init(screen: CustomerCenterConfigData.Screen,
+                     appearance: CustomerCenterConfigData.Appearance) {
         self.init(screen: screen,
+                  appearance: appearance,
                   purchasesProvider: ManageSubscriptionPurchases(),
                   promotionalOfferViewModel: PromotionalOfferViewModel())
     }
 
     // @PublicForExternalTesting
     init(screen: CustomerCenterConfigData.Screen,
+         appearance: CustomerCenterConfigData.Appearance,
          purchasesProvider: ManageSubscriptionsPurchaseType,
          promotionalOfferViewModel: PromotionalOfferViewModel) {
         self.state = .notLoaded
         self.screen = screen
+        self.appearance = appearance
         self.purchasesProvider = purchasesProvider
         self.promotionalOfferViewModel = promotionalOfferViewModel
     }
 
     init(screen: CustomerCenterConfigData.Screen,
+         appearance: CustomerCenterConfigData.Appearance,
          subscriptionInformation: SubscriptionInformation) {
         self.screen = screen
+        self.appearance = appearance
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         self.promotionalOfferViewModel = PromotionalOfferViewModel()

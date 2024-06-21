@@ -16,6 +16,9 @@
 import Foundation
 
 // swiftlint:disable missing_docs
+public typealias RCColor = PaywallColor
+
+// swiftlint:disable missing_docs
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
@@ -146,45 +149,16 @@ public struct CustomerCenterConfigData {
 
     public struct Appearance {
 
-        let mode: AppearanceMode
-        let light: AppearanceCustomColors
-        let dark: AppearanceCustomColors
-
-        public init(mode: AppearanceMode, light: AppearanceCustomColors, dark: AppearanceCustomColors) {
+        public let mode: AppearanceMode
+        
+        public init(mode: AppearanceMode) {
             self.mode = mode
-            self.light = light
-            self.dark = dark
         }
 
-        public struct AppearanceCustomColors {
-
-            let accentColor: String
-            let backgroundColor: String
-            let textColor: String
-
-            public init(accentColor: String, backgroundColor: String, textColor: String) {
-                self.accentColor = accentColor
-                self.backgroundColor = backgroundColor
-                self.textColor = textColor
-            }
-
-        }
-
-        public enum AppearanceMode: String {
-
-            case custom = "CUSTOM"
-            case system = "SYSTEM"
-
-            init(from rawValue: String) {
-                switch rawValue {
-                case "CUSTOM":
-                    self = .custom
-                case "SYSTEM":
-                    self = .system
-                default:
-                    self = .system
-                }
-            }
+        public enum AppearanceMode {
+            
+            case system
+            case custom(accentColor: RCColor, backgroundColor: RCColor, textColor: RCColor)
 
         }
 
@@ -225,6 +199,7 @@ public struct CustomerCenterConfigData {
 
 }
 
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension CustomerCenterConfigData {
 
     init(from response: CustomerCenterConfigResponse) {
@@ -251,24 +226,38 @@ extension CustomerCenterConfigData.Screen {
 
 }
 
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
 extension CustomerCenterConfigData.Appearance {
 
     init(from response: CustomerCenterConfigResponse.Appearance) {
-        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response.mode)
-        self.light = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.light)
-        self.dark = CustomerCenterConfigData.Appearance.AppearanceCustomColors(from: response.dark)
+        self.mode = CustomerCenterConfigData.Appearance.AppearanceMode(from: response)
     }
 
 }
 
-extension CustomerCenterConfigData.Appearance.AppearanceCustomColors {
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension CustomerCenterConfigData.Appearance.AppearanceMode {
 
-    init(from response: CustomerCenterConfigResponse.Appearance.AppearanceCustomColors) {
-        // swiftlint:disable:next todo
-        // TODO: convert colors to PaywallColor (RCColor)
-        self.accentColor = response.accentColor
-        self.backgroundColor = response.backgroundColor
-        self.textColor = response.textColor
+    init(from response: CustomerCenterConfigResponse.Appearance) {
+        switch (response.mode) {
+        case .system:
+            self = .system
+        case .custom:
+            do {
+                let accent = RCColor(light: try RCColor(stringRepresentation: response.light.accentColor),
+                                     dark: try RCColor(stringRepresentation:  response.dark.accentColor))
+                let background = RCColor(light: try RCColor(stringRepresentation: response.light.backgroundColor),
+                                         dark: try RCColor(stringRepresentation:  response.dark.backgroundColor))
+                let text = RCColor(light: try RCColor(stringRepresentation: response.light.textColor),
+                                   dark: try RCColor(stringRepresentation:  response.dark.textColor))
+                self = .custom(accentColor: accent,
+                           backgroundColor: background,
+                           textColor: text)
+            } catch {
+                Logger.error("Failed to parse appearance colors")
+                self = .system
+            }
+        }
     }
 
 }
