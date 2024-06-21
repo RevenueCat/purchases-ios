@@ -849,8 +849,6 @@ jobs:
 
   release-checks:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
@@ -891,8 +889,6 @@ jobs:
 
   make-release:
     <<: *base-job
-    # Fix-me: Carthage can't build fat frameworks on Apple Silicon. See https://github.com/RevenueCat/purchases-ios/pull/3582
-    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - trust-github-key
@@ -1305,7 +1301,6 @@ workflows:
         equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - release-checks:
-          xcode_version: '14.3.0'
           <<: *release-branches
       - installation-tests-cocoapods:
           <<: *release-branches
@@ -1335,7 +1330,6 @@ workflows:
             - hold
           <<: *release-branches
       - make-release:
-          xcode_version: '14.3.0'
           <<: *release-tags
       - push-revenuecat-pod:
           requires:
