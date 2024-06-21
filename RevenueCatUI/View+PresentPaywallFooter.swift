@@ -81,8 +81,7 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -96,8 +95,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            performPurchase: performPurchase,
-            performRestore: performRestore
+            performPurchase: myAppPurchaseLogic?.performPurchase,
+            performRestore: myAppPurchaseLogic?.performRestore
         )
     }
 
@@ -118,6 +117,7 @@ extension View {
     @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
+    @_disfavoredOverload
     public func paywallFooter(
         offering: Offering,
         condensed: Bool = false,
@@ -168,8 +168,7 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
@@ -184,8 +183,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            performPurchase: performPurchase,
-            performRestore: performRestore
+            performPurchase: myAppPurchaseLogic?.performPurchase,
+            performRestore: myAppPurchaseLogic?.performRestore
         )
     }
 
@@ -230,6 +229,17 @@ extension View {
                     restoreFailure: restoreFailure
                 )
             )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+public struct MyAppPurchaseLogic {
+    public let performPurchase: PerformPurchase
+    public let performRestore: PerformRestore
+
+    public init(performPurchase: @escaping PerformPurchase, performRestore: @escaping PerformRestore) {
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
     }
 }
 

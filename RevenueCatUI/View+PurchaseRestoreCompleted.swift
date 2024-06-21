@@ -47,7 +47,7 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 ///   - error: An optional error that occurred during the purchase process, or `nil` if no error occurred.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @MainActor @Sendable (
-    _ package: Package
+    _ packageToPurchase: Package
 ) async -> (userCancelled: Bool, error: Error?)
 
 /// A closure used to perform custom restore logic implemented by your app.
