@@ -223,15 +223,20 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(customerInfo)
     }
 
+    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseFailuresAreReportedCorrectly() async throws {
-        self.testSession.failTransactionsEnabled = true
-        self.testSession.failureError = .invalidSignature
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try await self.testSession.setSimulatedError(
+            .purchase(Product.PurchaseError.purchaseNotAllowed),
+            forAPI: .purchase
+        )
 
         do {
             try await self.purchaseMonthlyOffering()
             fail("Expected error")
         } catch {
-            expect(error).to(matchError(ErrorCode.invalidPromotionalOfferError))
+            expect(error).to(matchError(ErrorCode.purchaseNotAllowedError))
         }
     }
 
@@ -351,18 +356,21 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testRenewalsOnASeparateUserDontTransferPurchases() async throws {
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        setShortestTestSessionTimeRate(self.testSession)
+
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
 
         let anonymousUser = try self.purchases.appUserID
-        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+        let productIdentifier = "shortest_duration"
 
         // 1. Purchase with user 1
         let user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
         self.assertNoPurchases(user1CustomerInfo)
         expect(user1CustomerInfo.originalAppUserId) == anonymousUser
-        try await self.purchaseMonthlyOffering()
+        try await self.purchaseShortestDuration()
 
         // 2. Change to user 2
         let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
@@ -370,8 +378,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()
 
@@ -382,18 +390,21 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testUserCanMakePurchaseAfterTransferBlocked() async throws {
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        setShortestTestSessionTimeRate(self.testSession)
+
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
 
         let anonymousUser = try self.purchases.appUserID
-        let productIdentifier = try await self.monthlyPackage.storeProduct.productIdentifier
+        let productIdentifier = "shortest_duration"
 
         // 1. Purchase with user 1
         var user1CustomerInfo = try await self.purchases.logIn(userID1).customerInfo
         self.assertNoPurchases(user1CustomerInfo)
         expect(user1CustomerInfo.originalAppUserId) == anonymousUser
-        try await self.purchaseMonthlyOffering()
+        try await self.purchaseShortestDuration()
 
         // 2. Change to user 2
         let (identifiedCustomerInfo, _) = try await self.purchases.logIn(userID2)
@@ -402,7 +413,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 3. Renew subscription
         self.logger.clearMessages()
 
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: productIdentifier)
+        // swiftlint:disable:next force_try
+        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
 
         try await self.verifyReceiptIsEventuallyPosted()
 
@@ -490,9 +502,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchase() async throws {
-        let product = try await self.monthlyPackage.storeProduct
+        setShortestTestSessionTimeRate(self.testSession)
 
-        try await self.purchaseMonthlyOffering()
+        let product = try await self.shortestDurationProduct
+
+        try await self.purchaseShortestDuration()
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .ineligible
@@ -548,10 +562,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testIneligibleForIntroAfterPurchaseExpires() async throws {
-        let product = try await self.monthlyPackage.storeProduct
+        setShortestTestSessionTimeRate(self.testSession)
+
+        let product = try await self.shortestDurationProduct
 
         // 1. Purchase monthly offering
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let customerInfo = try await self.purchaseShortestDuration().customerInfo
 
         // 2. Expire subscription
         let entitlement = try XCTUnwrap(customerInfo.entitlements[Self.entitlementIdentifier])
@@ -579,10 +595,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: -
 
     func testExpireSubscription() async throws {
+        setShortestTestSessionTimeRate(self.testSession)
+
         let (_, created) = try await self.purchases.logIn(UUID().uuidString)
         expect(created) == true
 
-        let customerInfo = try await self.purchaseMonthlyOffering().customerInfo
+        let customerInfo = try await self.purchaseShortestDuration().customerInfo
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all[Self.entitlementIdentifier])
 
         try await self.expireSubscription(entitlement)
@@ -610,10 +628,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testSubscribeAfterExpirationWhileAppIsClosed() async throws {
+        // forceRenewalOfSubscription doesn't work well, so we use this instead
+        setShortestTestSessionTimeRate(self.testSession)
+
         func waitForNewPurchaseDate() async {
             // The backend uses the transaction purchase date as a way to disambiguate transactions.
             // Therefor we need to sleep to force these to have unique dates.
-            try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(2).nanoseconds)
+            try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(3).nanoseconds)
         }
 
         // 1. Subscribe
@@ -626,7 +647,6 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // 3. Force several renewals while app is closed.
         for _ in 0..<3 {
             await waitForNewPurchaseDate()
-            try self.testSession.forceRenewalOfSubscription(productIdentifier: entitlement.productIdentifier)
         }
 
         await waitForNewPurchaseDate()
@@ -638,11 +658,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         await self.resetSingleton()
 
         // 6. Wait for pending transactions to be posted
-        try await self.waitUntilNoUnfinishedTransactions()
+        // Should be using self.waitUntilNoUnfinishedTransactions() but its been unreliable
+        // Sleeping has been working for now
+        try? await Task.sleep(nanoseconds: DispatchTimeInterval.seconds(5).nanoseconds)
 
         // 7. Purchase again
         self.logger.clearMessages()
-        try await self.purchaseMonthlyProduct()
+        try await self.purchaseShortestDuration()
 
         // 8. Verify transaction is posted as a purchase.
         try await self.verifyReceiptIsEventuallyPosted()
