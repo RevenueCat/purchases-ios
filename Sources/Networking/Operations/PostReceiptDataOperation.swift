@@ -339,14 +339,6 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
             (Self.CodingKeys.fetchToken.stringValue, self.fetchToken)
         ]
         
-        if let fetchToken = self.fetchToken {
-            content.append((Self.CodingKeys.fetchToken.stringValue, fetchToken))
-        }
-        
-        if let appTransaction = self.appTransaction {
-            content.append((Self.CodingKeys.appTransaction.stringValue, appTransaction))
-        }
-        
         return content
     }
 
