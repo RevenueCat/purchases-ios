@@ -283,7 +283,7 @@ struct ManageSubscriptionButton: View {
                                  product: promotionalOfferData.product,
                                  promoOfferDetails: promotionalOfferData.promoOfferDetails)
         })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.viewModel.appearance))
         .disabled(self.viewModel.loadingPath != nil)
     }
 }

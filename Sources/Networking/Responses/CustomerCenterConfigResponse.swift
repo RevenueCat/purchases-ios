@@ -83,9 +83,16 @@ struct CustomerCenterConfigResponse {
 
     struct Appearance {
 
-        let mode: String
+        let mode: AppearanceMode
         let light: AppearanceCustomColors
         let dark: AppearanceCustomColors
+
+        enum AppearanceMode: String {
+
+            case system = "SYSTEM"
+            case custom = "CUSTOM"
+
+        }
 
         struct AppearanceCustomColors {
 
@@ -131,6 +138,7 @@ extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equat
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Appearance.AppearanceMode: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Appearance.AppearanceCustomColors: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen: Codable, Equatable {}
 extension CustomerCenterConfigResponse.Screen.ScreenType: Codable, Equatable {}

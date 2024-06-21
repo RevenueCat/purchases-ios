@@ -27,6 +27,7 @@ struct FeedbackSurveyView: View {
 
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
+    private let appearance: CustomerCenterConfigData.Appearance
 
     @Environment(\.localization)
     private var localization: CustomerCenterConfigData.Localization
@@ -34,6 +35,7 @@ struct FeedbackSurveyView: View {
     init(feedbackSurveyData: FeedbackSurveyData) {
         let viewModel = FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData)
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self.appearance = appearance
     }
 
     var body: some View {
@@ -46,6 +48,7 @@ struct FeedbackSurveyView: View {
 
             FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                       onOptionSelected: self.viewModel.handleAction(for:),
+                                      appearance: self.appearance,
                                       loadingState: self.$viewModel.loadingState)
         }
         .sheet(
@@ -69,6 +72,8 @@ struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
     let onOptionSelected: (_ optionSelected: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
+    let appearance: CustomerCenterConfigData.Appearance
+
     @Binding
     var loadingState: String?
 
@@ -84,7 +89,7 @@ struct FeedbackSurveyButtonsView: View {
                         Text(option.title)
                     }
                 })
-                .buttonStyle(ManageSubscriptionsButtonStyle())
+                .buttonStyle(ManageSubscriptionsButtonStyle(appearance: appearance))
                 .disabled(self.loadingState != nil)
             }
         }

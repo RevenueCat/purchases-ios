@@ -26,7 +26,7 @@ class CustomerCenterConfigDataTests: TestCase {
         let mockResponse = CustomerCenterConfigResponse(
             customerCenter: .init(
                 appearance: .init(
-                    mode: "CUSTOM",
+                    mode: .custom,
                     light: .init(accentColor: "#FFFFFF", backgroundColor: "#000000", textColor: "#FF0000"),
                     dark: .init(accentColor: "#000000", backgroundColor: "#FFFFFF", textColor: "#00FF00")
                 ),
@@ -81,13 +81,14 @@ class CustomerCenterConfigDataTests: TestCase {
         expect(configData.localization.locale) == "en_US"
         expect(configData.localization.localizedStrings["key"]) == "value"
 
-        expect(configData.appearance.mode.rawValue) == "CUSTOM"
-        expect(configData.appearance.light.accentColor) == "#FFFFFF"
-        expect(configData.appearance.light.backgroundColor) == "#000000"
-        expect(configData.appearance.light.textColor) == "#FF0000"
-        expect(configData.appearance.dark.accentColor) == "#000000"
-        expect(configData.appearance.dark.backgroundColor) == "#FFFFFF"
-        expect(configData.appearance.dark.textColor) == "#00FF00"
+        switch configData.appearance.mode {
+        case .system:
+            fatalError("appearance mode should be custom")
+        case .custom(accentColor: let accentColor, backgroundColor: let backgroundColor, textColor: let textColor):
+            expect(accentColor.stringRepresentation) == "#FFFFFF"
+            expect(backgroundColor.stringRepresentation) == "#000000"
+            expect(textColor.stringRepresentation) == "#FF0000"
+        }
 
         expect(configData.screens.count) == 1
         let managementScreen = try XCTUnwrap(configData.screens[.management])

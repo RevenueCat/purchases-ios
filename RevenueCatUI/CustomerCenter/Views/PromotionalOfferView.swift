@@ -26,6 +26,8 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct PromotionalOfferView: View {
 
+    private let appearance: CustomerCenterConfigData.Appearance
+
     @StateObject
     private var viewModel: PromotionalOfferViewModel
     @Environment(\.dismiss)
@@ -41,6 +43,7 @@ struct PromotionalOfferView: View {
                                                         promoOfferDetails: promoOfferDetails)
         let viewModel = PromotionalOfferViewModel(promotionalOfferData: promotionalOfferData)
         self._viewModel = StateObject(wrappedValue: viewModel)
+        self.appearance = appearance
     }
 
     var body: some View {
@@ -109,7 +112,7 @@ struct PromoOfferButtonView: View {
                         .font(.subheadline)
                 }
             })
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: self.viewModel.appearance))
         }
     }
 

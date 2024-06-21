@@ -151,7 +151,7 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(appearance.light.accentColor) == "#000000"
         expect(appearance.light.backgroundColor) == "#ffffff"
         expect(appearance.light.textColor) == "#ffffff"
-        expect(appearance.mode) == "CUSTOM"
+        expect(appearance.mode) == .custom
 
         let screens = try XCTUnwrap(customerCenter.screens)
         expect(screens).to(haveCount(2))
