@@ -80,7 +80,9 @@ extension View {
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil
+        restoreFailure: PurchaseFailureHandler? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -93,7 +95,9 @@ extension View {
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
-            restoreFailure: restoreFailure
+            restoreFailure: restoreFailure,
+            performPurchase: performPurchase,
+            performRestore: performRestore
         )
     }
 
@@ -163,7 +167,9 @@ extension View {
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil
+        restoreFailure: PurchaseFailureHandler? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
@@ -177,7 +183,9 @@ extension View {
             restoreStarted: nil,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
-            restoreFailure: restoreFailure
+            restoreFailure: restoreFailure,
+            performPurchase: performPurchase,
+            performRestore: performRestore
         )
     }
 
