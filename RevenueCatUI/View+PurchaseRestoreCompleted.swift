@@ -40,12 +40,20 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
 /// A closure used to perform custom purchase logic implemented by your app.
+/// - Parameters:
+///   - package: The package to be purchased.
+/// - Returns: A tuple indicating whether the user cancelled the operation and any error encountered during the purchase process.
+///   - userCancelled: `true` if the user cancelled the purchase; otherwise, `false`.
+///   - error: An optional error that occurred during the purchase process, or `nil` if no error occurred.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @MainActor @Sendable (
     _ package: Package
 ) async -> (userCancelled: Bool, error: Error?)
 
 /// A closure used to perform custom restore logic implemented by your app.
+/// - Returns: A tuple indicating whether the restore operation was successful and any error encountered during the process.
+///   - success: `true` if the restore operation succeeded; otherwise, `false`.
+///   - error: An optional error that occurred during the restore process, or `nil` if no error occurred.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformRestore = @MainActor @Sendable (
 ) async -> (success: Bool, error: Error?)
