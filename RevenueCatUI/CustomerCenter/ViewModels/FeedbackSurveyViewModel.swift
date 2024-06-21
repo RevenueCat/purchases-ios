@@ -60,8 +60,7 @@ class FeedbackSurveyViewModel: ObservableObject {
     // @PublicForExternalTesting
     init(feedbackSurveyData: FeedbackSurveyData,
          promotionalOfferViewModel: PromotionalOfferViewModel,
-         customerInfoFetcher: @escaping CustomerInfoFetcher
-    ) {
+         customerInfoFetcher: @escaping CustomerInfoFetcher) {
         self.feedbackSurveyData = feedbackSurveyData
         self.promotionalOfferViewModel = promotionalOfferViewModel
         self.customerInfoFetcher = customerInfoFetcher

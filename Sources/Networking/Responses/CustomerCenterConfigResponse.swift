@@ -72,16 +72,19 @@ struct CustomerCenterConfigResponse {
 
     struct Appearance {
 
-        let mode: String
-        let light: AppearanceMode
-        let dark: AppearanceMode
+        let mode: AppearanceMode
+        let light: Colors
+        let dark: Colors
 
-        struct AppearanceMode {
+        enum AppearanceMode: String {
+            case system = "SYSTEM"
+            case custom = "CUSTOM"
+        }
 
+        struct Colors {
             let accentColor: String
             let backgroundColor: String
             let textColor: String
-
         }
 
     }
