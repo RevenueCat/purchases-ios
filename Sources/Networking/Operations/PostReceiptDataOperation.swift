@@ -339,7 +339,7 @@ extension PostReceiptDataOperation.PostData: HTTPRequestBody {
             (Self.CodingKeys.fetchToken.stringValue, self.fetchToken),
             (Self.CodingKeys.appTransaction.stringValue, self.appTransaction)
         ]
-        
+
         return content
     }
 
