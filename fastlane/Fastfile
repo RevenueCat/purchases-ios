@@ -1069,6 +1069,13 @@ def carthage_archive
   load_spm_dependencies
 
   Dir.chdir("..") do
+    sh("echo 'git \".\" \"main\"' > Cartfile")
+    sh("./scripts/carthage.sh", "update", "--no-build")
+    schemes_directory = "Carthage/Checkouts/purchases-root/RevenueCat.xcodeproj/xcshareddata/xcschemes"
+    Dir.glob("#{schemes_directory}/*.xcscheme").each do |file_path|
+      next if File.basename(file_path) == "RevenueCat.xcscheme"
+      sh "rm", "-f", file_path
+    end
     # As of Carthage 0.38.0, we still can't archive xcframeworks directly.
     # there are also some issues which prevent us from archiving frameworks directly, since
     # carthage can't deal with architectures for simulators and for Apple Silicon correctly.
@@ -1076,6 +1083,8 @@ def carthage_archive
     # https://github.com/Carthage/Carthage/releases/0.38.0
     sh("./scripts/carthage.sh", "build", "--no-skip-current")
     sh("./scripts/carthage.sh", "archive", "RevenueCat")
+    sh("rm", "Cartfile")
+    sh("rm", "Cartfile.resolved")
   end
 end
 
