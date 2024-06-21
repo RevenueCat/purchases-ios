@@ -81,7 +81,7 @@ extension View {
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil,
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -188,8 +188,7 @@ extension View {
         )
     }
 
-    // @PublicForExternalTesting
-    func paywallFooter(
+    public func paywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,
         condensed: Bool = false,
