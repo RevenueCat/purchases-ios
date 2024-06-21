@@ -19,7 +19,6 @@ import XCTest
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
-    override class var responseVerificationMode: Signing.ResponseVerificationMode { .disabled }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testObservingTransactionThrowsIfObserverModeNotEnabled() async throws {
