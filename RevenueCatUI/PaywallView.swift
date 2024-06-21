@@ -134,8 +134,7 @@ public struct PaywallView: View {
             "object it's initialized with. The PaywallView's handler will be used.")
         }
 
-
-        if (!Purchases.isConfigured || Purchases.shared.purchasesAreCompletedBy == .myApp)  {
+        if (self.purchaseHandler.purchasesAreCompletedBy == .myApp)  {
             if self.performPurchase == nil || self.performRestore == nil {
                 self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
             }

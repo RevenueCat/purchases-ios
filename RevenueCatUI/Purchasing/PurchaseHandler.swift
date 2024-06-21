@@ -22,6 +22,11 @@ public final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
 
+    /// Where responsibiliy for completing purchases lies
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
+        purchases.purchasesAreCompletedBy
+    }
+
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
 
