@@ -74,6 +74,7 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -81,7 +82,6 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        myAppPurchaseLogic: MyAppPurchaseLogic? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: nil,
@@ -161,14 +161,14 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil,
-        myAppPurchaseLogic: MyAppPurchaseLogic? = nil
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self.paywallFooter(
             offering: offering,
