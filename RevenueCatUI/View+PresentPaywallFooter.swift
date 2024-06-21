@@ -181,8 +181,7 @@ extension View {
         )
     }
 
-    // @PublicForExternalTesting
-    func paywallFooter(
+    public func paywallFooter(
         offering: Offering?,
         customerInfo: CustomerInfo?,
         condensed: Bool = false,
@@ -195,7 +194,9 @@ extension View {
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil
+        restoreFailure: PurchaseFailureHandler? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
     ) -> some View {
         return self
             .modifier(
@@ -209,6 +210,8 @@ extension View {
                         introEligibility: introEligibility,
                         purchaseHandler: purchaseHandler
                     ),
+                    performPurchase: performPurchase,
+                    performRestore: performRestore,
                     purchaseStarted: purchaseStarted,
                     purchaseCompleted: purchaseCompleted,
                     purchaseCancelled: purchaseCancelled,
@@ -226,6 +229,9 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let configuration: PaywallViewConfiguration
 
+    let performPurchase: PerformPurchase?
+    let performRestore: PerformRestore?
+
     let purchaseStarted: PurchaseOfPackageStartedHandler?
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
     let purchaseCancelled: PurchaseCancelledHandler?
@@ -239,8 +245,8 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
         content
             .safeAreaInset(edge: .bottom) {
                 PaywallView(configuration: self.configuration,
-                performPurchase: nil,
-                performRestore: nil) // TODO support footer view
+                performPurchase: performPurchase,
+                performRestore: performRestore)
                     .onPurchaseStarted {
                         self.purchaseStarted?($0)
                     }
