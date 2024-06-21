@@ -63,13 +63,8 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         try pwv.addToHierarchy()
 
         Task {
-            do {
-                _ = try await pwv.purchaseHandler.restorePurchases()
-                completed = true
-            } catch {
-                print("error: \(error)")
-                print("oh nos")
-            }
+            _ = try await pwv.purchaseHandler.restorePurchases()
+            completed = true
         }
 
         expect(completed).toEventually(beTrue())

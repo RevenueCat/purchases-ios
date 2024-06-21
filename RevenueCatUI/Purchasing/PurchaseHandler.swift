@@ -98,18 +98,30 @@ public final class PurchaseHandler: ObservableObject {
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     public static func `default`(performPurchase: PerformPurchase?,
-                          performRestore: PerformRestore?) -> Self {
+                                 performRestore: PerformRestore?) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
-        performRestore: performRestore) : Self.notConfigured(performPurchase: performPurchase,
-                                                             performRestore: performRestore)
+                                              performRestore: performRestore) :
+                                        Self.notConfigured(performPurchase: performPurchase,
+                                                           performRestore: performRestore)
+    }
+
+    static func `default`(performPurchase: PerformPurchase?,
+                          performRestore: PerformRestore?,
+                          customerInfo: CustomerInfo?) -> Self {
+        return Purchases.isConfigured ? .init(performPurchase: performPurchase,
+                                              performRestore: performRestore) :
+                                        Self.notConfigured(performPurchase: performPurchase,
+                                                           performRestore: performRestore,
+                                                           customerInfo: customerInfo)
     }
 
     private static func notConfigured(performPurchase: PerformPurchase?,
-                                      performRestore: PerformRestore?) -> Self {
+                                      performRestore: PerformRestore?,
+                                      customerInfo: CustomerInfo? = nil) -> Self {
         return .init(isConfigured: false,
-                     purchases: NotConfiguredPurchases(),
-                    performPurchase: performPurchase,
-                    performRestore: performRestore)
+                     purchases: NotConfiguredPurchases(customerInfo: customerInfo),
+                     performPurchase: performPurchase,
+                     performRestore: performRestore)
     }
 
 }
@@ -361,8 +373,15 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         set { _ = newValue }
     }
 
+    let customerInfo: CustomerInfo?
+
+    init(customerInfo: CustomerInfo? = nil) {
+        self.customerInfo = customerInfo
+    }
+
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        throw ErrorCode.configurationError
+        guard let info = customerInfo else { throw ErrorCode.configurationError }
+        return info
     }
 
     func purchase(package: Package) async throws -> PurchaseResultData {

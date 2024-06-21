@@ -110,7 +110,8 @@ public struct PaywallView: View {
                 performRestore: PerformRestore? = nil) {
         self.introEligibility = configuration.introEligibility ?? .default()
         self.purchaseHandler = configuration.purchaseHandler ?? .default(performPurchase: performPurchase,
-                                                                         performRestore: performRestore)
+                                                                         performRestore: performRestore,
+                                                                         customerInfo: configuration.customerInfo)
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
