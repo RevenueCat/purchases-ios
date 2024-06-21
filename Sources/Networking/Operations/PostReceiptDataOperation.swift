@@ -333,11 +333,21 @@ extension PostReceiptDataOperation.AppliedTargetingRule: Codable {
 
 extension PostReceiptDataOperation.PostData: HTTPRequestBody {
 
-    var contentForSignature: [(key: String, value: String)] {
-        return [
+    var contentForSignature: [(key: String, value: String?)] {
+        var content: [(key: String, value: String?)] = [
             (Self.CodingKeys.appUserID.stringValue, self.appUserID),
-            (Self.CodingKeys.fetchToken.stringValue, self.fetchToken ?? "")
+            (Self.CodingKeys.fetchToken.stringValue, self.fetchToken)
         ]
+        
+        if let fetchToken = self.fetchToken {
+            content.append((Self.CodingKeys.fetchToken.stringValue, fetchToken))
+        }
+        
+        if let appTransaction = self.appTransaction {
+            content.append((Self.CodingKeys.appTransaction.stringValue, appTransaction))
+        }
+        
+        return content
     }
 
 }
