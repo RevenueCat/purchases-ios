@@ -25,28 +25,61 @@ import RevenueCat
 @MainActor
 class FeedbackSurveyViewModel: ObservableObject {
 
+    typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
+
     @Published
     var feedbackSurveyData: FeedbackSurveyData
     @Published
     var isShowingPromotionalOffer: Bool = false
     @Published
-    var selectedPromotionalOffer: CustomerCenterConfigData.HelpPath.PromotionalOffer?
+    var loadingStates: [String: Bool] = [:]
 
-    init(feedbackSurveyData: FeedbackSurveyData) {
-        self.feedbackSurveyData = feedbackSurveyData
+    var promotionalOffer: PromotionalOffer? {
+        return promotionalOfferViewModel.promotionalOffer
     }
 
-    func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) {
+    var product: StoreProduct? {
+        return promotionalOfferViewModel.product
+    }
+
+    private var customerInfoFetcher: CustomerInfoFetcher
+    private var promotionalOfferViewModel: PromotionalOfferViewModel
+
+    convenience init(feedbackSurveyData: FeedbackSurveyData) {
+        self.init(feedbackSurveyData: feedbackSurveyData,
+                  promotionalOfferViewModel: PromotionalOfferViewModel(),
+                  customerInfoFetcher: {
+            guard Purchases.isConfigured else {
+                throw PaywallError.purchasesNotConfigured
+            }
+
+            return try await Purchases.shared.customerInfo()
+        })
+    }
+
+    // @PublicForExternalTesting
+    init(feedbackSurveyData: FeedbackSurveyData,
+         promotionalOfferViewModel: PromotionalOfferViewModel,
+         customerInfoFetcher: @escaping CustomerInfoFetcher
+    ) {
+        self.feedbackSurveyData = feedbackSurveyData
+        self.promotionalOfferViewModel = promotionalOfferViewModel
+        self.customerInfoFetcher = customerInfoFetcher
+    }
+
+    func handleAction(for option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async {
         if let promotionalOffer = option.promotionalOffer {
-            applyPromotionalOffer(promotionalOffer)
+            self.loadingStates[option.id] = true
+            await promotionalOfferViewModel.loadPromo(promotionalOfferId: promotionalOffer.iosOfferId)
+            self.isShowingPromotionalOffer = true
         } else {
-            feedbackSurveyData.action()
+            self.feedbackSurveyData.action()
         }
     }
 
-    private func applyPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
-        selectedPromotionalOffer = offer
-        isShowingPromotionalOffer = true
+    func handleSheetDismiss() {
+        self.feedbackSurveyData.action()
+        self.loadingStates.removeAll()
     }
 
 }

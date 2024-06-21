@@ -34,20 +34,27 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         VStack {
-            Text(viewModel.feedbackSurveyData.configuration.title)
+            Text(self.viewModel.feedbackSurveyData.configuration.title)
                 .font(.title)
                 .padding()
 
             Spacer()
 
-            FeedbackSurveyButtonsView(options: viewModel.feedbackSurveyData.configuration.options,
-                                      action: viewModel.handleAction(for:))
+            FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
+                                      action: self.viewModel.handleAction(for:),
+                                      loadingStates: self.$viewModel.loadingStates)
         }
-        .sheet(isPresented: $viewModel.isShowingPromotionalOffer) {
-            if let promotionalOffer = viewModel.selectedPromotionalOffer {
-                PromotionalOfferView(promotionalOffer: promotionalOffer)
-            }
-        }
+        .sheet(
+            isPresented: self.$viewModel.isShowingPromotionalOffer,
+            onDismiss: { self.viewModel.handleSheetDismiss() },
+            content: {
+                if let promotionalOffer = self.viewModel.promotionalOffer,
+                   let product = self.viewModel.product {
+                    PromotionalOfferView(promotionalOffer: promotionalOffer,
+                                         product: product
+                    )
+                }
+            })
     }
 
 }
@@ -60,17 +67,26 @@ struct FeedbackSurveyView: View {
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
-    let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) -> Void
+    let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
+    @Binding
+    var loadingStates: [String: Bool]
 
     var body: some View {
         VStack(spacing: 16) {
             ForEach(options, id: \.id) { option in
-                Button(option.title) {
+                Button {
                     Task {
-                        self.action(option)
+                        await self.action(option)
+                    }
+                } label: {
+                    if self.loadingStates[option.id] ?? false {
+                        ProgressView()
+                    } else {
+                        Text(option.title)
                     }
                 }
                 .buttonStyle(ManageSubscriptionsButtonStyle())
+                .disabled(self.loadingStates[option.id] ?? false)
             }
         }
     }
