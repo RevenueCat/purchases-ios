@@ -491,9 +491,7 @@ struct PaywallView_Previews: PreviewProvider {
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
                         purchaseHandler: PreviewHelpers.purchaseHandler
-                    ),
-                    performPurchase: nil,
-                    performRestore: nil
+                    )
                 )
                 .previewLayout(mode.layout)
                 .previewDisplayName("\(offering.paywall?.templateName ?? "")-\(mode)")
