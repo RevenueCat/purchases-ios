@@ -144,6 +144,11 @@ class SystemInfo {
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
+        // eager-load the isSandbox value from a worker thread so that's immediately available
+        // this is useful on macOS where it may take long for the value to compute
+        self.operationDispatcher.dispatchOnWorkerThread {
+            _ = self._isSandbox
+        }
     }
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`

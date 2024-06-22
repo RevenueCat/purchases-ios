@@ -208,6 +208,20 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
+    @MainActor
+    func testFetchAndCacheCustomerInfoIfStaleExecutesOnWorkerThread() throws {
+        mockDeviceCache.stubbedIsCustomerInfoCacheStale = false
+
+        var invokedCompletion = false
+        customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: Self.appUserID,
+                                                             isAppBackgrounded: false) { _ in
+            invokedCompletion = true
+        }
+
+        expect(invokedCompletion).toEventually(beTrue())
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread) == true
+    }
+
     func testSetLastSentCustomerInfo() {
         expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
         self.customerInfoManager.setLastSentCustomerInfo(self.mockCustomerInfo)

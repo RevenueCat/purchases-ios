@@ -69,6 +69,16 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(2))
     }
 
+    func testAutomaticFetchesOnDidBecomeActiveArePerformedInWorkerThread() {
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+
+        self.deviceCache.stubbedIsCustomerInfoCacheStale = false
+
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThread) == true
+    }
+
     func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
         self.deviceCache.stubbedIsCustomerInfoCacheStale = false
