@@ -28,8 +28,12 @@
       "icon" : null
     },
     "packages" : [
+      "$rc_weekly",
       "$rc_monthly",
-      "$rc_annual"
+      "$rc_six_month",
+      "$rc_three_month",
+      "$rc_annual",
+      "$rc_lifetime"
     ],
     "privacy_url" : null,
     "tiers" : [

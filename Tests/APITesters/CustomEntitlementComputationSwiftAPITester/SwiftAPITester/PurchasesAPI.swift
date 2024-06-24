@@ -98,7 +98,7 @@ private func checkTypealiases(
                                                   customerInfo: customerInfo,
                                                   userCancelled: userCancelled)
 
-    // swiftlint:disable:next line_length redundant_void_return
+    // swiftlint:disable:next line_length
     let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
 
     let startPurchaseBlock: StartPurchaseBlock = { (_: PurchaseCompletedBlock) in }
