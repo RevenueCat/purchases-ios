@@ -34,6 +34,11 @@
       "header" : "9a17e0a7_1689854430..jpeg",
       "icon" : "9a17e0a7_1689854430..jpeg"
     },
+    "images_heic_low_res" : {
+      "background" : null,
+      "header" : null,
+      "icon" : null
+    },
     "packages" : [
       "$rc_annual"
     ],

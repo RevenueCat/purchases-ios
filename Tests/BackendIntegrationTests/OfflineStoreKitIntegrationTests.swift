@@ -17,7 +17,7 @@ import StoreKit
 import StoreKitTest
 import XCTest
 
-// swiftlint:disable type_name file_length
+// swiftlint:disable file_length
 class BaseOfflineStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
