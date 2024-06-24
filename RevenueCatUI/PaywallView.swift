@@ -134,7 +134,7 @@ public struct PaywallView: View {
             "object it's initialized with. The PaywallView's handler will be used.")
         }
 
-        if (self.purchaseHandler.purchasesAreCompletedBy == .myApp)  {
+        if self.purchaseHandler.purchasesAreCompletedBy == .myApp {
             if self.performPurchase == nil || self.performRestore == nil {
                 let missingBlocks: String
                 if self.performPurchase == nil && self.performRestore == nil {
