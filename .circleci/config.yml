@@ -26,7 +26,7 @@ aliases:
     parameters:
       xcode_version:
         type: string
-        default: "15.3"
+        default: '15.3'
       install_swiftlint:
         type: boolean
         default: true
@@ -86,12 +86,12 @@ commands:
       - run:
           name: Install fixed xcodes version
           command: |
-            mint install https://github.com/alvar-bolt/xcodes.git@alvar/ios-18-quickfix
+              mint install https://github.com/alvar-bolt/xcodes.git@alvar/ios-18-quickfix
       - run:
           name: Install simulator
           command: | # Print all available simulators and install required one
-            $HOME/.mint/bin/xcodes runtimes
-            sudo $HOME/.mint/bin/xcodes runtimes install "<< parameters.runtime-name >>"
+              $HOME/.mint/bin/xcodes runtimes
+              sudo $HOME/.mint/bin/xcodes runtimes install "<< parameters.runtime-name >>"
 
   install-bundle-dependencies:
     parameters:
@@ -676,6 +676,10 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_watchos
           no_output_timeout: 5m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 9 (45mm) (10.4)
+            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
@@ -788,6 +792,8 @@ jobs:
 
   backend-integration-tests-offline:
     <<: *base-job
+    # These tests are even flakier running on M1
+    resource_class: macos.x86.medium.gen2
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
@@ -836,7 +842,7 @@ jobs:
           name: Build docs
           command: bundle exec fastlane generate_docs
           environment:
-            DOCS_IOS_VERSION: "17.4"
+            DOCS_IOS_VERSION: "16.1"
 
   make-release:
     <<: *base-job
@@ -875,7 +881,6 @@ jobs:
   prepare-next-version:
     <<: *base-job
     steps:
-      - setup-git-credentials
       - checkout
       - install-dependencies
       - trust-github-key
@@ -1121,15 +1126,20 @@ jobs:
 
   deploy-to-spm:
     docker:
-      - image: cimg/ruby:3.1.2
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+      - image: cimg/base:stable
+    resource_class: small
     steps:
       - checkout
-      - install-rubydocker-dependencies
+      - setup-git-credentials
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
-          command: bundle exec fastlane deploy_to_spm
+          command: |
+            git clone https://github.com/RevenueCat/purchases-ios.git
+            cd purchases-ios
+            git fetch --tags
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
+            git push origin
+            git push --tags
 
 workflows:
   version: 2
@@ -1139,16 +1149,16 @@ workflows:
       - run-test-ios-17:
           xcode_version: "15.2"
       - run-test-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-14:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-macos
 
@@ -1156,10 +1166,10 @@ workflows:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
@@ -1173,21 +1183,14 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
-      - spm-release-build-xcode-14:
-          xcode_version: "14.3.0"
-          install_swiftlint: false
-      - spm-release-build-xcode-15:
-          xcode_version: "15.2"
-      - spm-xcode-14-1:
-          xcode_version: "14.1.0"
-          install_swiftlint: false
+      - spm-release-build
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
           xcode_version: "15.2"
@@ -1196,21 +1199,20 @@ workflows:
       - run-test-ios-17:
           xcode_version: "15.2"
       - run-test-ios-16:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-15:
-          xcode_version: "14.3.0"
+          xcode_version: '14.3.0'
           install_swiftlint: false
-      - run-test-watchos:
-          xcode_version: "14.3.0"
+      - run-test-watchos
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
       - run-test-ios-14:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: "14.2.0"
+          xcode_version: '14.2.0'
           install_swiftlint: false
           <<: *release-branches-and-main
       - build-tv-watch-and-macos
@@ -1289,7 +1291,6 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
-          xcode_version: "14.3.0"
           <<: *release-tags
       - deploy-purchase-tester:
           <<: *release-tags
