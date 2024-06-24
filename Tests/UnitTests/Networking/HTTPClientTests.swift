@@ -1748,7 +1748,7 @@ extension BaseHTTPClientTests {
         var key1: String
         var key2: String
 
-        var contentForSignature: [(key: String, value: String)] {
+        var contentForSignature: [(key: String, value: String?)] {
             return [
                 ("key1", self.key1),
                 ("key2", self.key2)
@@ -1795,6 +1795,6 @@ private struct AnyEncodableRequestBody: HTTPRequestBody, Decodable {
         self.body = .init(body)
     }
 
-    var contentForSignature: [(key: String, value: String)] { [] }
+    var contentForSignature: [(key: String, value: String?)] { [] }
 
 }

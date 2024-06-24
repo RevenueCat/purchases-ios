@@ -106,11 +106,14 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    self.postReceipt(transaction: transaction,
-                                     purchasedTransactionData: data,
-                                     receipt: encodedReceipt,
-                                     product: product,
-                                     completion: completion)
+                    self.transactionFetcher.appTransactionJWS { appTransaction in
+                        self.postReceipt(transaction: transaction,
+                                         purchasedTransactionData: data,
+                                         receipt: encodedReceipt,
+                                         product: product,
+                                         appTransaction: appTransaction,
+                                         completion: completion)
+                    }
                 }
             case .failure(let error):
                 self.handleReceiptPost(withTransaction: transaction,
@@ -231,17 +234,20 @@ private extension TransactionPoster {
         }
     }
 
+    // swiftlint:disable function_parameter_count
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
                      receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
+                     appTransaction: String?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
         self.backend.post(receipt: receipt,
                           productData: productData,
                           transactionData: purchasedTransactionData,
-                          observerMode: self.observerMode) { result in
+                          observerMode: self.observerMode,
+                          appTransaction: appTransaction) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
@@ -260,7 +266,7 @@ private extension TransactionPoster {
                     ))
                 }
             } else {
-                    completion(.success(.jws(jwsRepresentation)))
+                completion(.success(.jws(jwsRepresentation)))
             }
         } else {
             self.receiptFetcher.receiptData(

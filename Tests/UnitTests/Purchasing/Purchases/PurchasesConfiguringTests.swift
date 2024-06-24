@@ -373,7 +373,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testDoesNotInitializeSK1IfSK2Enabled() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
             .with(storeKitVersion: .storeKit2)
@@ -392,7 +392,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     func testSetsPaymentQueueWrapperDelegateToPaymentQueueWrapperIfSK1IsNotEnabled() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.systemInfo = MockSystemInfo(finishTransactions: false,
                                          storeKitVersion: .storeKit2)

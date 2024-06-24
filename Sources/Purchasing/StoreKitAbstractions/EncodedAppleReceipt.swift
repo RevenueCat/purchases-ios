@@ -20,12 +20,13 @@ enum EncodedAppleReceipt: Equatable {
   case jws(String)
   case receipt(Data)
   case sk2receipt(StoreKit2Receipt)
+  case empty
 
 }
 
 extension EncodedAppleReceipt {
 
-    func serialized() -> String {
+    func serialized() -> String? {
         switch self {
         case .jws(let jws):
             return jws
@@ -38,6 +39,8 @@ extension EncodedAppleReceipt {
                 Logger.warn(Strings.storeKit.sk2_error_encoding_receipt(error))
                 return ""
             }
+        case .empty:
+            return nil
         }
     }
 

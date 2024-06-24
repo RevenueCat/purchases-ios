@@ -59,7 +59,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     @MainActor
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
                                      "com.revenuecat.monthly_4.99.1_week_intro",
@@ -82,7 +82,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsync() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
                                      "com.revenuecat.monthly_4.99.1_week_intro",
@@ -111,7 +111,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsyncWithFailure() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
                                      "com.revenuecat.monthly_4.99.1_week_intro",
@@ -142,7 +142,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityForProductIsEligibleForEligibleSubscription() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct()
 
@@ -157,7 +157,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityForLifetimeProductIsNoIntroOfferExists() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct("lifetime")
 
@@ -172,7 +172,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityForProductIsIneligibleAfterPurchasing() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let sk2Product = try await self.fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: sk2Product)
@@ -198,7 +198,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityForInvalidProductIsUnknown() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct()
 

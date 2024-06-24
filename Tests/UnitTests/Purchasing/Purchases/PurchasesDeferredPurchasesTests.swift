@@ -161,7 +161,7 @@ class PurchaseDeferredPurchasesSK2Tests: BasePurchasesTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.setupPurchases()
 
