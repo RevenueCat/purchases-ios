@@ -107,7 +107,7 @@ extension Strings: CustomStringConvertible {
         case .executing_external_purchase_logic:
             return "Will execute custom StoreKit purchase logic provided by your app. " +
             "No StoreKit purchasing logic will be performed by RevenueCat. " +
-            "You must initialize your `PaywallView` appropriately."
+            "You must have initialized your `PaywallView` appropriately."
 
         case .executing_purchase_logic:
             return "Will execute purchase logic provided by RevenueCat."
@@ -118,7 +118,7 @@ extension Strings: CustomStringConvertible {
         case .executing_external_restore_logic:
             return "Will execute custom StoreKit restore purchases logic provided by your app. " +
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
-            "You must initialize your `PaywallView` appropriately."
+            "You must have initialized your `PaywallView` appropriately."
         }
     }
 
