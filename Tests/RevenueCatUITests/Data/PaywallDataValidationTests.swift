@@ -30,6 +30,12 @@ class PaywallDataValidationTests: TestCase {
         expect(result.error) == .missingPaywall(offering)
     }
 
+//    "images_heic_low_res" : {
+//      "background": null,
+//      "header": null,
+//      "icon": null
+//    },
+
     func testValidateSingleTierPaywallWithMissingLocalization() {
         let offering = Self.offeringWithSingleTierTemplateAndMissingLocalization
         let result = offering.validatedPaywall(locale: TestData.locale)
