@@ -24,6 +24,11 @@
       "header" : null,
       "icon" : "revenuecatui_default_paywall_app_icon"
     },
+    "images_heic_low_res" : {
+      "background" : null,
+      "header" : null,
+      "icon" : null
+    },
     "packages" : [
       "$rc_weekly",
       "$rc_monthly",
