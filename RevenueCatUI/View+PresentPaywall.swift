@@ -207,6 +207,7 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: @escaping PurchaseStartedHandler,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -220,6 +221,7 @@ extension View {
             fonts: fonts,
             presentationMode: presentationMode,
             shouldDisplay: shouldDisplay,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             purchaseStarted: { _ in
                 purchaseStarted()
             },
@@ -283,6 +285,7 @@ extension View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -297,6 +300,7 @@ extension View {
             fonts: fonts,
             presentationMode: presentationMode,
             shouldDisplay: shouldDisplay,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -323,6 +327,7 @@ extension View {
         purchaseHandler: PurchaseHandler? = nil,
         presentationMode: PaywallPresentationMode = .default,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        myAppPurchaseLogic: MyAppPurchaseLogic?,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -336,6 +341,7 @@ extension View {
         return self
             .modifier(PresentingPaywallModifier(
                 shouldDisplay: shouldDisplay,
+                myAppPurchaseLogic: myAppPurchaseLogic,
                 presentationMode: presentationMode,
                 purchaseStarted: purchaseStarted,
                 purchaseCompleted: purchaseCompleted,
@@ -362,10 +368,14 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
+        var performPurchase: PerformPurchase?
+        var performRestore: PerformRestore?
         var id: String { self.customerInfo.originalAppUserId }
     }
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
+    var performPurchase: PerformPurchase?
+    var performRestore: PerformRestore?
     var presentationMode: PaywallPresentationMode
     var purchaseStarted: PurchaseOfPackageStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
@@ -384,6 +394,7 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     init(
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
+        myAppPurchaseLogic: MyAppPurchaseLogic?,
         presentationMode: PaywallPresentationMode,
         purchaseStarted: PurchaseOfPackageStartedHandler?,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler?,
@@ -400,6 +411,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseHandler: PurchaseHandler?
     ) {
         self.shouldDisplay = shouldDisplay
+        self.performPurchase = myAppPurchaseLogic?.performPurchase
+        self.performRestore = myAppPurchaseLogic?.performRestore
         self.presentationMode = presentationMode
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
@@ -446,7 +459,9 @@ private struct PresentingPaywallModifier: ViewModifier {
             if self.shouldDisplay(info) {
                 Logger.debug(Strings.displaying_paywall)
 
-                self.data = .init(customerInfo: info)
+                self.data = .init(customerInfo: info,
+                                  performPurchase: self.performPurchase,
+                                  performRestore: self.performRestore)
             } else {
                 Logger.debug(Strings.not_displaying_paywall)
             }
@@ -463,8 +478,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
             ),
-            performPurchase: nil,
-            performRestore: nil // TODO support this?
+            performPurchase: data.performPurchase,
+            performRestore: data.performRestore
         )
         .onPurchaseStarted {
             self.purchaseStarted?($0)
