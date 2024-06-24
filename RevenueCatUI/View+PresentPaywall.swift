@@ -326,7 +326,7 @@ extension View {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler? = nil,
         presentationMode: PaywallPresentationMode = .default,
-        myAppPurchaseLogic: MyAppPurchaseLogic?,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         shouldDisplay: @escaping @Sendable (CustomerInfo) -> Bool,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
