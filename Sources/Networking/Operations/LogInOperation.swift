@@ -117,7 +117,7 @@ extension LogInOperation {
 
 extension LogInOperation.Body: HTTPRequestBody {
 
-    var contentForSignature: [(key: String, value: String)] {
+    var contentForSignature: [(key: String, value: String?)] {
         return [
             (Self.CodingKeys.appUserID.stringValue, self.appUserID),
             (Self.CodingKeys.newAppUserID.stringValue, self.newAppUserID)

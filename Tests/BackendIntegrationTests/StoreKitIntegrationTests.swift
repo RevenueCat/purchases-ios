@@ -33,6 +33,85 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         }
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalPurchaseDateAvailableAfterPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
+
+        try await self.signInAsNewAppUserID()
+        try await self.purchaseMonthlyProduct()
+
+        let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
+        expect(originalPurchaseDate).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalApplicationVersionAvailableAfterPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with the SK2 transaction JWT
+
+        try await self.signInAsNewAppUserID()
+        try await self.purchaseMonthlyProduct()
+
+        let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
+        expect(originalApplicationVersion).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalPurchaseDateAvailableAfterSyncPurchasesWithoutPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
+        // called
+
+        try await self.signInAsNewAppUserID()
+        _ = try await Purchases.shared.syncPurchases()
+
+        let customerInfo = try await Purchases.shared.customerInfo()
+        expect(customerInfo.originalPurchaseDate).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalApplicationVersionAvailableAfterSyncPurchasesWithoutPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted without a SK2 transaction JWT when syncPurchases is
+        // called
+
+        try await self.signInAsNewAppUserID()
+        _ = try await Purchases.shared.syncPurchases()
+
+        let customerInfo = try await Purchases.shared.customerInfo()
+        expect(customerInfo.originalApplicationVersion).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalPurchaseDateAvailableAfterSyncPurchasesWithPreviousPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with a SK2 transaction JWT when syncPurchases is
+        // called
+        guard let product = try await self.monthlyPackage.storeProduct.sk2Product else {
+            fail("SK2 product missing.")
+            return
+        }
+
+        _ = try await Purchases.shared.syncPurchases()
+
+        let originalPurchaseDate = try await Purchases.shared.customerInfo().originalPurchaseDate
+        expect(originalPurchaseDate).toNot(beNil())
+    }
+
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testOriginalApplicationVersionAvailableAfterSyncPurchasesWithPreviousPurchase() async throws {
+        // In this scenario, the AppTransaction should be posted with a SK2 transaction JWT when syncPurchases is
+        // called
+        guard let product = try await self.monthlyPackage.storeProduct.sk2Product else {
+            fail("SK2 product missing.")
+            return
+        }
+        _ = try await product.purchase()
+        _ = try await Purchases.shared.syncPurchases()
+
+        let originalApplicationVersion = try await Purchases.shared.customerInfo().originalApplicationVersion
+        expect(originalApplicationVersion).toNot(beNil())
+    }
+
+    private func signInAsNewAppUserID() async throws {
+        _ = try await Purchases.shared.logIn("integration-test-user-\(UUID().uuidString)")
+    }
 }
 
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {

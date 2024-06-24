@@ -25,7 +25,8 @@ extension HTTPRequestBody {
     }
 
     private var postParameterHash: String {
-        return HTTPRequest.signingParameterHash(self.contentForSignature.map(\.value))
+        let nonNilValues = self.contentForSignature.compactMap { $0.value }
+        return HTTPRequest.signingParameterHash(nonNilValues)
     }
 
 }
