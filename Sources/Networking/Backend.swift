@@ -114,11 +114,13 @@ class Backend {
               productData: ProductRequestData?,
               transactionData: PurchasedTransactionData,
               observerMode: Bool,
+              appTransaction: String? = nil,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         self.customer.post(receipt: receipt,
                            productData: productData,
                            transactionData: transactionData,
                            observerMode: observerMode,
+                           appTransaction: appTransaction,
                            completion: completion)
     }
 

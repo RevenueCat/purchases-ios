@@ -23,7 +23,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.fetcher = .init()
     }

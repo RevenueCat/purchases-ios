@@ -41,7 +41,7 @@ class StoreKit2ObserverModeIntegrationTests: StoreKit1ObserverModeIntegrationTes
     override func setUp() async throws {
         try await super.setUp()
 
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
