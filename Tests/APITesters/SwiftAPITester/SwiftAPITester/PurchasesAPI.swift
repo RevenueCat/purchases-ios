@@ -110,8 +110,8 @@ private func checkTypealiases(
                                                   customerInfo: customerInfo,
                                                   userCancelled: userCancelled)
 
-    // swiftlint:disable:next line_length
-    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
+    // swiftlint:disable:next line_length redundant_void_return
+    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
 
     let startPurchaseBlock: StartPurchaseBlock = { (_: PurchaseCompletedBlock) in }
 
@@ -167,7 +167,7 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
 
-    let purchaseBlock = { (_: @MainActor @Sendable (StoreTransaction?, CustomerInfo?, PublicError?, Bool)) in }
+    let purchaseBlock = { (_: @MainActor @Sendable (StoreTransaction?, CustomerInfo?, PublicError?, Bool) -> Void) in }
     purchases.delegate?.purchases?(purchases, readyForPromotedProduct: storeProduct, purchase: purchaseBlock)
 }
 
