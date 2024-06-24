@@ -144,7 +144,7 @@ public struct PaywallView: View {
                 } else {
                     missingBlocks = "performRestore is"
                 }
-                Logger.error("The purchase handler's purchasesAreCompletedBy is .myApp, but \(missingBlocks) nil."
+                Logger.error("The purchase handler's purchasesAreCompletedBy is .myApp, but \(missingBlocks) nil. " +
                 "Please provide the missing block(s) via the PaywallView's initializer.")
 
                 self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
