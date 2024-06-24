@@ -360,6 +360,9 @@ extension PaywallData {
         @DefaultDecodable.EmptyArray
         var _tiers: [Tier]
 
+        @DefaultDecodable.EmptyArray
+        var _tiers: [Tier]
+
         @DefaultDecodable.False
         var _blurredBackgroundImage: Bool
 

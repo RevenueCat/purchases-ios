@@ -13,6 +13,8 @@ import RevenueCatUI
 
 import UIKit
 
+import UIKit
+
 final class SamplePaywallLoader {
 
     private let packages: [Package]
