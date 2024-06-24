@@ -37,7 +37,6 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    // this is internal solely for testing purposes
     let purchaseHandler: PurchaseHandler
 
     let introEligibility: TrialOrIntroEligibilityChecker
@@ -137,6 +136,17 @@ public struct PaywallView: View {
 
         if (self.purchaseHandler.purchasesAreCompletedBy == .myApp)  {
             if self.performPurchase == nil || self.performRestore == nil {
+                let missingBlocks: String
+                if self.performPurchase == nil && self.performRestore == nil {
+                    missingBlocks = "performPurchase and performRestore are"
+                } else if self.performPurchase == nil {
+                    missingBlocks = "performPurchase is"
+                } else {
+                    missingBlocks = "performRestore is"
+                }
+                Logger.error("The purchase handler's purchasesAreCompletedBy is .myApp, but \(missingBlocks) nil."
+                "Please provide the missing block(s) via the PaywallView's initializer.")
+
                 self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
             }
         }
