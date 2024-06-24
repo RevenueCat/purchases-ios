@@ -25,6 +25,10 @@ extension TemplateViewConfiguration {
     var backgroundLowResImageURL: URL? { self.url(forLowRes: \.background) }
     var iconLowResImageURL: URL? { self.url(forLowRes: \.icon) }
 
+    func headerImageURL(for tier: PaywallData.Tier) -> URL? { self.url(for: \.header, in: tier) }
+    func backgroundImageURL(for tier: PaywallData.Tier) -> URL? { self.url(for: \.background, in: tier) }
+    func iconImageURL(for tier: PaywallData.Tier) -> URL? { self.url(for: \.icon, in: tier) }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -59,6 +63,17 @@ private extension TemplateViewConfiguration {
         return PaywallData.url(
             for: lowResImage,
             in: self.configuration.imagesLowRes,
+            assetBaseURL: self.assetBaseURL
+        )
+    }
+
+    func url(
+        for image: KeyPath<PaywallData.Configuration.Images, String?>,
+        in tier: PaywallData.Tier
+    ) -> URL? {
+        return PaywallData.url(
+            for: image,
+            in: self.configuration.imagesByTier[tier.id],
             assetBaseURL: self.assetBaseURL
         )
     }

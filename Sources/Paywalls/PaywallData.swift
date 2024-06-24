@@ -237,6 +237,27 @@ extension PaywallData {
             }
         }
 
+        /// The images for each of the tiers.
+        public internal(set) var imagesByTier: [String: Images] {
+            get {
+                let images = self.images
+
+                return Set(self.tiers.map(\.id))
+                    .dictionaryWithValues { tier in
+                        return Self.merge(
+                            source: self._imageOverridesByTier[tier],
+                            fallback: images
+                        )
+                    }
+            }
+
+            /// Internal `set`ter because it doesn't fully match the semantics of the getter.
+            /// Only meant for testing.
+            set {
+                self._imageOverridesByTier = newValue
+            }
+        }
+
         /// Low resolution images for this template.
         public var imagesLowRes: Images {
             get { self._imagesHeicLowRes ?? Images() }
