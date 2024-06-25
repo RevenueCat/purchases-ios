@@ -18,7 +18,7 @@ In order to use StoreKit 2, you will need to configure your [In-App Purchase Key
 
 The previously deprecated configuration option `.with(usesStoreKit2IfAvailable: true)` has been removed. Remove it from your configuration option to continue using StoreKit 2.
 
-The SDK will automatically use StoreKit 1 in the following versions where StoreKit 2 is not supported: on macOS 11 or earlier, iOS 14 or earlier, iPadOS 14 or earlier, tvOS 14 or earlier, or watchOS 7 or earlier.
+The SDK will automatically use StoreKit 1 in the following versions where StoreKit 2 is not supported: on macOS 12 or earlier, iOS 15 or earlier, iPadOS 15 or earlier, tvOS 15 or earlier, or watchOS 8 or earlier.
 
 If for any reason you need to always use StoreKit 1, it is possible to switch back using the following configuration API:
 
