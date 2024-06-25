@@ -116,7 +116,8 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        if self.purchaseHandler.purchasesAreCompletedBy == .myApp {
+        switch self.purchaseHandler.purchasesAreCompletedBy {
+        case .myApp:
             if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
                 let missingBlocks: String
                 if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
@@ -126,10 +127,14 @@ public struct PaywallView: View {
                 } else {
                     missingBlocks = "performRestore is"
                 }
-                Logger.error("The purchase handler's purchasesAreCompletedBy is .myApp, but \(missingBlocks) nil. " +
-                "Please provide the missing block(s) via the PaywallView's initializer.")
 
-                self.initializationError = PaywallError.performPurchaseAndRestoreHandlersNotDefined as NSError
+                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: missingBlocks)
+                self.initializationError = error as NSError
+                Logger.error(error)
+            }
+        case .revenueCat:
+            if self.purchaseHandler.performPurchase != nil || self.purchaseHandler.performRestore != nil {
+                Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
 

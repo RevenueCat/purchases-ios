@@ -26,11 +26,13 @@ enum PaywallError: Error {
     case offeringNotFound(identifier: String)
 
     /// The PaywallView must be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.myApp``
-    case performPurchaseAndRestoreHandlersNotDefined
+    case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
+
+    case purchaseAndRestoreDefinedForRevenueCat
 
 }
 
-extension PaywallError: CustomNSError {
+extension PaywallError: CustomNSError, CustomStringConvertible {
 
     var errorUserInfo: [String: Any] {
         return [
@@ -38,7 +40,7 @@ extension PaywallError: CustomNSError {
         ]
     }
 
-    private var description: String {
+    var description: String {
         switch self {
         case .purchasesNotConfigured:
             return "Purchases instance has not been configured yet."
@@ -53,6 +55,11 @@ extension PaywallError: CustomNSError {
             "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler, either" +
             "via its initializer or via a configuration that is initailized with a PerformRestore and " +
             "PerformPurchase handler."
+        case .purchaseAndRestoreDefinedForRevenueCat:
+            return "RevenueCat is configured with purchasesAreCompletedBy set to .revenueCat, but " +
+            "the Paywall has purchase/restore blocks defined. These will NOT be executed. " +
+            "Please set purchasesAreCompletedBy to .myApp if you wish to run these blocks " +
+            "instead of RevenueCat's purchase/restore code."
         }
     }
 

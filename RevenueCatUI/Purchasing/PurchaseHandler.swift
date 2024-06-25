@@ -183,7 +183,7 @@ extension PurchaseHandler {
         Logger.debug(Strings.executing_external_purchase_logic)
 
         guard let externalPurchaseMethod = self.performPurchase else {
-            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performPurchase is")
         }
 
         self.packageBeingPurchased = package
@@ -261,7 +261,7 @@ extension PurchaseHandler {
         Logger.debug(Strings.executing_external_restore_logic)
 
         guard let externalRestoreMethod = self.performRestore else {
-            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined
+            throw PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: "performRestore is")
         }
 
         defer {

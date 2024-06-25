@@ -50,7 +50,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         var completed = false
         var customRestoreCodeExecuted = false
 
-        let purchasHandler = Self.externalPurchaseHandler { package in
+        let purchasHandler = Self.externalPurchaseHandler { _ in
             return (userCancelled: true, error: nil)
         } performRestore: {
             customRestoreCodeExecuted = true
@@ -70,12 +70,72 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(customRestoreCodeExecuted) == true
     }
 
+    func testHandleInternalPurchaseWithPurchaaseHandlers() throws {
+        var completed = false
+        var customPurchaseCodeExecuted = false
+
+        let purchasHandler = Self.internalPurchaseHandler { _ in
+            customPurchaseCodeExecuted = true
+            return (userCancelled: true, error: nil)
+        } performRestore: {
+            return (success: true, error: nil)
+        }
+
+        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
+
+        try PaywallView(configuration: config).addToHierarchy()
+
+        Task {
+            // expect a warning logged to the console
+            _ = try await purchasHandler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customPurchaseCodeExecuted) == false
+    }
+
+    func testHandleInternalRestoreWithPurchaaseHandlers() throws {
+        var completed = false
+        var customRestoreCodeExecuted = false
+
+        let purchasHandler = Self.internalPurchaseHandler { _ in
+            customRestoreCodeExecuted = true
+            return (userCancelled: true, error: nil)
+        } performRestore: {
+            return (success: true, error: nil)
+        }
+
+        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
+
+        try PaywallView(configuration: config).addToHierarchy()
+
+        Task {
+            // expect a warning logged to the console
+            _ = try await purchasHandler.restorePurchases()
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(customRestoreCodeExecuted) == false
+    }
+
+    
+
     private static let package = TestData.annualPackage
     private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
-                                                performRestore:  PerformRestore? = nil)
+                                                performRestore: PerformRestore? = nil)
     -> PurchaseHandler {
         .mock(purchasesAreCompletedBy: .myApp,
               performPurchase: performPurchase,
               performRestore: performRestore)
     }
+    private static func internalPurchaseHandler(performPurchase: PerformPurchase? = nil,
+                                                performRestore: PerformRestore? = nil)
+    -> PurchaseHandler {
+        .mock(purchasesAreCompletedBy: .revenueCat,
+              performPurchase: performPurchase,
+              performRestore: performRestore)
+    }
+
 }
