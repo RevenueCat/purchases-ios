@@ -28,6 +28,7 @@ enum PaywallError: Error {
     /// The PaywallView must be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.myApp``
     case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
 
+    /// The PaywallView need not be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.revenueCat``
     case purchaseAndRestoreDefinedForRevenueCat
 
 }
