@@ -70,6 +70,46 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(customRestoreCodeExecuted) == true
     }
 
+    func testHandleExternalPurchaseWithoutPurchaaseHandler() throws {
+        var errorThrown = false
+
+        let purchasHandler = Self.externalPurchaseHandler()
+
+        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
+
+        try PaywallView(configuration: config).addToHierarchy()
+
+        Task {
+            do {
+                _ = try await purchasHandler.purchase(package: Self.package)
+            } catch {
+                errorThrown = true
+            }
+        }
+
+        expect(errorThrown).toEventually(beTrue())
+    }
+
+    func testHandleExternalRestoreWithoutRestoreHandler() throws {
+        var errorThrown = false
+
+        let purchasHandler = Self.externalPurchaseHandler()
+
+        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
+
+        try PaywallView(configuration: config).addToHierarchy()
+
+        Task {
+            do {
+                _ = try await purchasHandler.restorePurchases()
+            } catch {
+                errorThrown = true
+            }
+        }
+
+        expect(errorThrown).toEventually(beTrue())
+    }
+
     func testHandleInternalPurchaseWithPurchaaseHandlers() throws {
         var completed = false
         var customPurchaseCodeExecuted = false
