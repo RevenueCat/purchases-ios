@@ -368,8 +368,6 @@ private struct PresentingPaywallModifier: ViewModifier {
 
     private struct Data: Identifiable {
         var customerInfo: CustomerInfo
-        var performPurchase: PerformPurchase?
-        var performRestore: PerformRestore?
         var id: String { self.customerInfo.originalAppUserId }
     }
 
@@ -426,8 +424,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        // TODO: support initializer based purchase actions from `presentPaywallIfNeeded`
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? .default(performPurchase: nil, performRestore: nil))
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
+                                                    .default(performPurchase: nil, performRestore: nil))
     }
 
     @StateObject
@@ -459,9 +457,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             if self.shouldDisplay(info) {
                 Logger.debug(Strings.displaying_paywall)
 
-                self.data = .init(customerInfo: info,
-                                  performPurchase: self.performPurchase,
-                                  performRestore: self.performRestore)
+                self.data = .init(customerInfo: info)
             } else {
                 Logger.debug(Strings.not_displaying_paywall)
             }

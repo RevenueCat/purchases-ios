@@ -34,25 +34,20 @@ struct SamplePaywallsList: View {
         case let .template(template, mode):
             switch mode {
             case .fullScreen:
-                PaywallView(
-                    configuration: .init(
-                        offering: Self.loader.offering(for: template),
-                        customerInfo: Self.loader.customerInfo,
-                        displayCloseButton: Self.displayCloseButton,
-                        introEligibility: Self.introEligibility,
-                        purchaseHandler: .default(performPurchase: nil, performRestore: nil)
-                    ),
-                    performPurchase: nil,
-                    performRestore: nil
+                let config = PaywallViewConfiguration(
+                    offering: Self.loader.offering(for: template),
+                    customerInfo: Self.loader.customerInfo,
+                    displayCloseButton: Self.displayCloseButton,
+                    introEligibility: Self.introEligibility
                 )
+                PaywallView(configuration:config)
 
             #if !os(watchOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
                               customerInfo: Self.loader.customerInfo,
                               condensed: mode == .condensedFooter,
-                              introEligibility: Self.introEligibility,
-                              purchaseHandler: .default(performPurchase: nil, performRestore: nil))
+                              introEligibility: Self.introEligibility)
             #endif
             }
 
@@ -63,11 +58,8 @@ struct SamplePaywallsList: View {
                     customerInfo: Self.loader.customerInfo,
                     fonts: Self.customFontProvider,
                     displayCloseButton: Self.displayCloseButton,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default(performPurchase: nil, performRestore: nil)
-                ),
-                performPurchase: nil,
-                performRestore: nil
+                    introEligibility: Self.introEligibility
+                )
             )
 
         #if !os(watchOS)
@@ -81,11 +73,8 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithDefaultPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default(performPurchase: nil, performRestore: nil)
-                ),
-                performPurchase: nil,
-                performRestore: nil
+                    introEligibility: Self.introEligibility
+                )
             )
 
         case .unrecognizedPaywall:
@@ -93,11 +82,8 @@ struct SamplePaywallsList: View {
                 configuration: .init(
                     offering: Self.loader.offeringWithUnrecognizedPaywall(),
                     customerInfo: Self.loader.customerInfo,
-                    introEligibility: Self.introEligibility,
-                    purchaseHandler: .default(performPurchase: nil, performRestore: nil)
-                ),
-                performPurchase: nil,
-                performRestore: nil
+                    introEligibility: Self.introEligibility
+                )
             )
         }
     }
