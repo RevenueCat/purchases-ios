@@ -64,21 +64,6 @@ class AttributionFetcher {
         return nil
     }
 
-    func afficheClientAttributionDetails(completion: @escaping ([String: NSObject]?, Swift.Error?) -> Void) {
-        // Should match available platforms in
-        // https://developer.apple.com/documentation/iad/adclient?language=swift
-#if os(iOS) || VISION_OS
-        guard let afficheClientProxy = attributionFactory.afficheClientProxy() else {
-            Logger.warn(Strings.attribution.search_ads_attribution_cancelled_missing_ad_framework)
-            completion(nil, Error.identifierForAdvertiserFrameworksUnavailable)
-            return
-        }
-        afficheClientProxy.requestAttributionDetails(completion)
-#else
-        completion(nil, Error.identifierForAdvertiserUnavailableForPlatform)
-#endif
-    }
-
     // should match OS availability in https://developer.apple.com/documentation/ad_services
     @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     var adServicesToken: String? {
