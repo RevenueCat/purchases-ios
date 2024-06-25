@@ -119,12 +119,14 @@ public class PaywallViewController: UIViewController {
     ) {
         self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
+        let handler = PurchaseHandler.default(performPurchase: nil, performRestore: nil)
 
         self.configuration = .init(
             content: content,
             mode: Self.mode,
             fonts: fonts,
-            displayCloseButton: displayCloseButton
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: handler
         )
 
         super.init(nibName: nil, bundle: nil)
@@ -382,9 +384,7 @@ private struct PaywallContainerView: View {
     let onSizeChange: (CGSize) -> Void
 
     var body: some View {
-        PaywallView(configuration: self.configuration,
-        performPurchase: nil,
-        performRestore: nil)
+        PaywallView(configuration: self.configuration)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)

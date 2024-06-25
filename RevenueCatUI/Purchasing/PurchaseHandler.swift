@@ -107,19 +107,23 @@ public final class PurchaseHandler: ObservableObject {
 
     static func `default`(performPurchase: PerformPurchase?,
                           performRestore: PerformRestore?,
-                          customerInfo: CustomerInfo?) -> Self {
+                          customerInfo: CustomerInfo,
+                          purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
                                               performRestore: performRestore) :
                                         Self.notConfigured(performPurchase: performPurchase,
                                                            performRestore: performRestore,
-                                                           customerInfo: customerInfo)
+                                                           customerInfo: customerInfo,
+                                                           purchasesAreCompletedBy: purchasesAreCompletedBy)
     }
 
     private static func notConfigured(performPurchase: PerformPurchase?,
                                       performRestore: PerformRestore?,
-                                      customerInfo: CustomerInfo? = nil) -> Self {
+                                      customerInfo: CustomerInfo? = nil,
+                                      purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat) -> Self {
         return .init(isConfigured: false,
-                     purchases: NotConfiguredPurchases(customerInfo: customerInfo),
+                     purchases: NotConfiguredPurchases(customerInfo: customerInfo,
+                                                       purchasesAreCompletedBy: purchasesAreCompletedBy),
                      performPurchase: performPurchase,
                      performRestore: performRestore)
     }
@@ -368,15 +372,13 @@ private extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
-    var purchasesAreCompletedBy: PurchasesAreCompletedBy {
-        get { return .myApp }
-        set { _ = newValue }
-    }
+    var purchasesAreCompletedBy: PurchasesAreCompletedBy
 
     let customerInfo: CustomerInfo?
 
-    init(customerInfo: CustomerInfo? = nil) {
+    init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo
+        self.purchasesAreCompletedBy = purchasesAreCompletedBy
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {

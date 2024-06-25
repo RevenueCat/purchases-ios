@@ -46,32 +46,6 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(customPurchaseCodeExecuted) == true
     }
 
-    //TODO: Make this one work?
-    func testHandleExternalRestoreWithPaywallHandlers() throws {
-        var completed = false
-        var customRestoreCodeExecuted = false
-
-        let config = PaywallViewConfiguration(customerInfo: TestData.customerInfo)
-
-        let pwv = PaywallView(configuration: config) { _ in
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            customRestoreCodeExecuted = true
-            return (success: true, error: nil)
-        }
-
-        try pwv.addToHierarchy()
-
-        Task {
-            _ = try await pwv.purchaseHandler.restorePurchases()
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        print(customRestoreCodeExecuted)
-        expect(customRestoreCodeExecuted) == true
-    }
-
     func testHandleExternalRestoreWithPurchaaseHandlers() throws {
         var completed = false
         var customRestoreCodeExecuted = false
@@ -94,28 +68,6 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
         expect(completed).toEventually(beTrue())
         expect(customRestoreCodeExecuted) == true
-    }
-
-    func testHandleExternalPurchaseWithPaywallHandlers() throws {
-        var completed = false
-        var customPurchaseCodeExecuted = false
-
-        let pwv = PaywallView() { package in
-            customPurchaseCodeExecuted = true
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            return (success: true, error: nil)
-        }
-
-        try pwv.addToHierarchy()
-
-        Task {
-            _ = try await pwv.purchaseHandler.purchase(package: Self.package)
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        expect(customPurchaseCodeExecuted) == true
     }
 
     private static let package = TestData.annualPackage

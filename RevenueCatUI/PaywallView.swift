@@ -30,10 +30,6 @@ public struct PaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
 
-
-    private var performPurchase: PerformPurchase?
-    private var performRestore: PerformRestore?
-
     @Environment(\.locale)
     private var locale
 
@@ -66,13 +62,13 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
                 fonts: fonts,
-                displayCloseButton: displayCloseButton
-            ),
-            performPurchase: performPurchase,
-            performRestore: performRestore
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
+            )
         )
     }
 
@@ -93,24 +89,22 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
         self.init(
             configuration: .init(
                 offering: offering,
                 fonts: fonts,
-                displayCloseButton: displayCloseButton
-            ),
-            performPurchase: performPurchase,
-            performRestore: performRestore
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
+            )
         )
     }
 
-    public init(configuration: PaywallViewConfiguration,
-                performPurchase: PerformPurchase? = nil,
-                performRestore: PerformRestore? = nil) {
+    // Notes: Should this be internal, and public only for dev? Should configuration be totally private, yes?
+    // And these purchase blocks should ONLY be defined on the purchase handler?
+    init(configuration: PaywallViewConfiguration) {
         self.introEligibility = configuration.introEligibility ?? .default()
-        self.purchaseHandler = configuration.purchaseHandler ?? .default(performPurchase: performPurchase,
-                                                                         performRestore: performRestore,
-                                                                         customerInfo: configuration.customerInfo)
+        self.purchaseHandler = configuration.purchaseHandler
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
@@ -121,25 +115,13 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.performPurchase = performPurchase ?? configuration.purchaseHandler?.performPurchase
-        self.performRestore = performRestore ?? configuration.purchaseHandler?.performRestore
-
-        if configuration.purchaseHandler?.performPurchase != nil && performPurchase != nil {
-            Logger.warning("A perform purchase handler is defined on BOTH the PaywallView and the configuration " +
-            "object it's initialized with. The PaywallView's handler will be used.")
-        }
-
-        if configuration.purchaseHandler?.performRestore != nil && performRestore != nil {
-            Logger.warning("A perform restore handler is defined on BOTH the PaywallView and the configuration " +
-            "object it's initialized with. The PaywallView's handler will be used.")
-        }
 
         if self.purchaseHandler.purchasesAreCompletedBy == .myApp {
-            if self.performPurchase == nil || self.performRestore == nil {
+            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if self.performPurchase == nil && self.performRestore == nil {
+                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
                     missingBlocks = "performPurchase and performRestore are"
-                } else if self.performPurchase == nil {
+                } else if self.purchaseHandler.performPurchase == nil {
                     missingBlocks = "performPurchase is"
                 } else {
                     missingBlocks = "performRestore is"

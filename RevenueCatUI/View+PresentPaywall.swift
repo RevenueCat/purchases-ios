@@ -477,9 +477,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
-            ),
-            performPurchase: data.performPurchase,
-            performRestore: data.performRestore
+            )
         )
         .onPurchaseStarted {
             self.purchaseStarted?($0)

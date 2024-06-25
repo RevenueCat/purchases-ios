@@ -83,12 +83,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: nil,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -129,12 +132,14 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: nil, performRestore: nil)
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: { _ in
                 purchaseStarted()
             },
@@ -170,12 +175,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -195,7 +203,7 @@ extension View {
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil,
+        purchaseHandler: PurchaseHandler,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -263,9 +271,7 @@ private struct PresentingPaywallFooterModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .safeAreaInset(edge: .bottom) {
-                PaywallView(configuration: self.configuration,
-                performPurchase: performPurchase,
-                performRestore: performRestore)
+                PaywallView(configuration: self.configuration)
                     .onPurchaseStarted {
                         self.purchaseStarted?($0)
                     }
