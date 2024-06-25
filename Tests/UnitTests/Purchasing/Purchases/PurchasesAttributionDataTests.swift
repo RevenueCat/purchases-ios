@@ -119,34 +119,6 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
-    #if !os(tvOS) && !os(watchOS) && !os(macOS)
-
-    @available(*, deprecated)
-    func testAdClientAttributionDataIsAutomaticallyCollected() throws {
-        self.setupPurchases(automaticCollection: true)
-
-        let invokedMethodParams = try XCTUnwrap(self.backend.invokedPostAttributionDataParameters)
-
-        expect(invokedMethodParams).toNot(beNil())
-        expect(invokedMethodParams.network) == .appleSearchAds
-
-        let obtainedVersionData = try XCTUnwrap(invokedMethodParams.data?["Version3.1"] as? NSDictionary)
-        expect(obtainedVersionData["iad-campaign-id"]).toNot(beNil())
-    }
-
-    func testAttributionDataPostponesMultiple() {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, from: .adjust, forNetworkUserId: "newuser")
-
-        self.setupPurchases(automaticCollection: true)
-
-        expect(self.backend.invokedPostAttributionDataParametersList).toEventually(haveCount(1))
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList).to(haveCount(1))
-    }
-
-    #endif
-
     func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
         self.setupPurchases(automaticCollection: false)
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
