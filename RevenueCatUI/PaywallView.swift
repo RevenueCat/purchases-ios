@@ -102,6 +102,7 @@ public struct PaywallView: View {
 
     // Notes: Should this be internal, and public only for dev? Should configuration be totally private, yes?
     // And these purchase blocks should ONLY be defined on the purchase handler?
+    // @PublicForExternalTesting
     init(configuration: PaywallViewConfiguration) {
         self.introEligibility = configuration.introEligibility ?? .default()
         self.purchaseHandler = configuration.purchaseHandler
