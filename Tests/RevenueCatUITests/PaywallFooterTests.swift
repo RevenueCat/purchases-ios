@@ -151,11 +151,109 @@ class PaywallFooterTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testTrailingClosureHandler() throws {
+        var packageBeingPurchased: Package?
+        var customerInfo: CustomerInfo?
+
+        let handler = Self.purchaseHandler
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler)
+            .addToHierarchy()
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler,
+                purchaseStarted: { package in  }) { info in
+                    customerInfo = info
+                }
+            .addToHierarchy()
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
+    }
+
+    func testExternalRestoreHandler() throws {
+        var completed = false
+        var restoreCodeExecuted = false
+
+        let handler = Self.externalPurchaseHandler(performPurchase: { _ in
+
+            return (userCancelled: true, error: nil)
+        }, performRestore: {
+            restoreCodeExecuted = true
+            return (success: true, error: nil)
+        })
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try? await handler.restorePurchases()
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(restoreCodeExecuted).to(beTrue())
+    }
+
+    func testExternalPurchaseHandler() throws {
+        var completed = false
+        var purchaseCodeExecuted = false
+
+        let handler = Self.externalPurchaseHandler(performPurchase: { _ in
+            purchaseCodeExecuted = true
+            return (userCancelled: true, error: nil)
+        }, performRestore: {
+            return (success: true, error: nil)
+        })
+
+        try Text("")
+            .paywallFooter(
+                offering: Self.offering,
+                customerInfo: TestData.customerInfo,
+                introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler
+            )
+            .addToHierarchy()
+
+        Task {
+            _ = try? await handler.purchase(package: TestData.packageWithIntroOffer)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(purchaseCodeExecuted).to(beTrue())
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
     private static let failureError: Error = ErrorCode.storeProblemError
+    private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
+                                                performRestore:  PerformRestore? = nil)
+    -> PurchaseHandler {
+        .mock(purchasesAreCompletedBy: .myApp,
+              performPurchase: performPurchase,
+              performRestore: performRestore)
+    }
 
 }
 

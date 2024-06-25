@@ -97,9 +97,7 @@ extension View {
             purchaseCancelled: purchaseCancelled,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
-            restoreFailure: restoreFailure,
-            performPurchase: myAppPurchaseLogic?.performPurchase,
-            performRestore: myAppPurchaseLogic?.performRestore
+            restoreFailure: restoreFailure
         )
     }
 
@@ -190,9 +188,7 @@ extension View {
             restoreStarted: nil,
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
-            restoreFailure: restoreFailure,
-            performPurchase: myAppPurchaseLogic?.performPurchase,
-            performRestore: myAppPurchaseLogic?.performRestore
+            restoreFailure: restoreFailure
         )
     }
 
@@ -210,9 +206,7 @@ extension View {
         restoreStarted: RestoreStartedHandler? = nil,
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
-        restoreFailure: PurchaseFailureHandler? = nil,
-        performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
         return self
             .modifier(
@@ -226,8 +220,6 @@ extension View {
                         introEligibility: introEligibility,
                         purchaseHandler: purchaseHandler
                     ),
-                    performPurchase: performPurchase,
-                    performRestore: performRestore,
                     purchaseStarted: purchaseStarted,
                     purchaseCompleted: purchaseCompleted,
                     purchaseCancelled: purchaseCancelled,
@@ -255,9 +247,6 @@ public struct MyAppPurchaseLogic {
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
     let configuration: PaywallViewConfiguration
-
-    let performPurchase: PerformPurchase?
-    let performRestore: PerformRestore?
 
     let purchaseStarted: PurchaseOfPackageStartedHandler?
     let purchaseCompleted: PurchaseOrRestoreCompletedHandler?
