@@ -779,7 +779,6 @@
 		A563F586271E072B00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563F585271E072B00246E0C /* MockBeginRefundRequestHelper.swift */; };
 		A56C2E012819C33500995421 /* BackendPostAdServicesTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C2E002819C33500995421 /* BackendPostAdServicesTokenTests.swift */; };
-		A56DFDEC2866438B00EF2E32 /* AfficheClientProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEB2866438B00EF2E32 /* AfficheClientProxy.swift */; };
 		A56DFDF0286643BF00EF2E32 /* PostAttributionDataOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDEF286643BF00EF2E32 /* PostAttributionDataOperation.swift */; };
 		A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56DFDF1286665E600EF2E32 /* BackendPostAttributionDataTests.swift */; };
 		A56F9AB126990E9200AFC48F /* CustomerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56F9AB026990E9200AFC48F /* CustomerInfo.swift */; };
@@ -4530,7 +4529,6 @@
 				B302206E2728B798008F1A0D /* BackendErrorStrings.swift in Sources */,
 				2D8D03B52799A2B90044C2ED /* DocCDocumentation.docc in Sources */,
 				576C8A8B27CFCB150058FA6E /* AnyEncodable.swift in Sources */,
-				A56DFDEC2866438B00EF2E32 /* AfficheClientProxy.swift in Sources */,
 				35D0E5D026A5886C0099EAD8 /* ErrorUtils.swift in Sources */,
 				B372EC54268FEDC60099171E /* StoreProductDiscount.swift in Sources */,
 				4F7D8E562A56290100F17FFC /* HTTPRequestBody.swift in Sources */,
