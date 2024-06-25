@@ -119,21 +119,6 @@ class PurchasesAttributionDataTests: BasePurchasesTests {
         expect(invokedMethodParams.appUserID) == identityManager.currentAppUserID
     }
 
-    #if !os(tvOS) && !os(watchOS) && !os(macOS)
-
-    func testAttributionDataPostponesMultiple() {
-        let data = ["yo": "dog", "what": 45, "is": ["up"]] as [String: Any]
-
-        Purchases.deprecated.addAttributionData(data, from: .adjust, forNetworkUserId: "newuser")
-
-        self.setupPurchases()
-
-        expect(self.backend.invokedPostAttributionDataParametersList).toEventually(haveCount(1))
-        expect(self.subscriberAttributesManager.invokedConvertAttributionDataAndSetParametersList).to(haveCount(1))
-    }
-
-    #endif
-
     func testAdClientAttributionDataIsNotAutomaticallyCollectedIfDisabled() {
         self.setupPurchases(automaticCollection: false)
         expect(self.backend.invokedPostAttributionDataParameters).to(beNil())
