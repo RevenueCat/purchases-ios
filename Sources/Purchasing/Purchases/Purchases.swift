@@ -660,10 +660,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.subscribeToAppStateNotifications()
         self.attributionPoster.postPostponedAttributionDataIfNeeded()
 
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
-        #endif
-
         self.customerInfoObservationDisposable = customerInfoManager.monitorChanges { [weak self] old, new in
             guard let self = self else { return }
             self.handleCustomerInfoChanged(from: old, to: new)
@@ -721,14 +717,6 @@ extension Purchases {
                       fromNetwork network: AttributionNetwork,
                       forNetworkUserId networkUserId: String?) {
         attributionPoster.post(attributionData: data, fromNetwork: network, networkUserId: networkUserId)
-    }
-
-    @available(*, deprecated)
-    fileprivate func postAppleSearchAddsAttributionCollectionIfNeeded() {
-        guard Self.automaticAppleSearchAdsAttributionCollection else {
-            return
-        }
-        attributionPoster.postAppleSearchAdsAttributionIfNeeded()
     }
     #endif
 }
@@ -1772,7 +1760,6 @@ private extension Purchases {
         self.dispatchSyncSubscriberAttributes()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        (self as DeprecatedSearchAdsAttribution).postAppleSearchAddsAttributionCollectionIfNeeded()
 
         #if os(iOS) || os(macOS) || VISION_OS
         if #available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *) {
@@ -1908,16 +1895,3 @@ private extension Purchases {
     }
 
 }
-
-// MARK: - Deprecations
-
-/// Protocol to be able to call `Purchases.postAppleSearchAddsAttributionCollectionIfNeeded` without warnings
-private protocol DeprecatedSearchAdsAttribution {
-
-    func postAppleSearchAddsAttributionCollectionIfNeeded()
-
-}
-
-#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-extension Purchases: DeprecatedSearchAdsAttribution {}
-#endif

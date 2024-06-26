@@ -337,8 +337,6 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
 
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: "")
     Purchases.addAttributionData([String: Any](), from: AttributionNetwork.adjust, forNetworkUserId: nil)
-    let _: Bool = Purchases.automaticAppleSearchAdsAttributionCollection
-    Purchases.automaticAppleSearchAdsAttributionCollection = false
     purchases.finishTransactions = true
 
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
