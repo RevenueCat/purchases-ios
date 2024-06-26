@@ -652,6 +652,7 @@ custom UserDefaults.
                renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
     @objc static var automaticAppleSearchAdsAttributionCollection: Bool {
         get { fatalError() }
+        // swiftlint:disable:next unused_setter_value
         set { fatalError() }
     }
 
