@@ -207,17 +207,20 @@ extension PurchaseHandler {
             self.trackCancelledPurchase()
         }
 
+        let resultInfo: PurchaseResultData = (transaction: nil,
+                                             customerInfo: try await self.purchases.customerInfo(),
+                                            userCancelled: result.userCancelled)
+
+        self.purchaseResult = resultInfo
+
         if let error = result.error {
             self.purchaseError = error
             throw error
         }
 
         if !result.userCancelled && result.error == nil {
-            let resultInfo: PurchaseResultData = (transaction: nil,
-                                                 customerInfo: try await self.purchases.customerInfo(),
-                                                userCancelled: result.userCancelled)
+
             withAnimation(Constants.defaultAnimation) {
-                self.purchaseResult = resultInfo
                 self.purchased = true
             }
         }
@@ -286,6 +289,7 @@ extension PurchaseHandler {
         let result = await externalRestoreMethod()
 
         if let error = result.error {
+            self.restoreError = error
             throw error
         }
 
