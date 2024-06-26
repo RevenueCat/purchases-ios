@@ -650,7 +650,10 @@ custom UserDefaults.
     AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
     """,
                renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
-    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool {
+        get { fatalError() }
+        set { fatalError() }
+    }
 
 }
 
