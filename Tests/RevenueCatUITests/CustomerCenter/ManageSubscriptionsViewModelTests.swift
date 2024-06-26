@@ -83,7 +83,7 @@ class ManageSubscriptionsViewModelTests: TestCase {
         expect(viewModel.subscriptionInformation?.title) == "title"
         expect(viewModel.subscriptionInformation?.durationTitle) == "month"
         expect(viewModel.subscriptionInformation?.price) == "$2.99"
-        expect(viewModel.subscriptionInformation?.nextRenewalString) == "12 Apr 2062"
+        expect(viewModel.subscriptionInformation?.nextRenewalString) == "Apr 12, 2062"
         expect(viewModel.subscriptionInformation?.productIdentifier) == "com.revenuecat.product"
     }
 
