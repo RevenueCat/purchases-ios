@@ -19,20 +19,35 @@ struct PaywallPresenter: View {
     var body: some View {
         switch self.mode {
         case .fullScreen:
-            let config = PaywallViewConfiguration(
+
+            let handler = PurchaseHandler.default(
+                performPurchase: { package in
+                var userCancelled = false
+                var error: Error?
+
+                // do stuff
+
+                return (userCancelled: userCancelled, error: error)
+
+            }, performRestore: {
+                var success = false
+                var error: Error?
+
+                // do stuff
+
+                return (success: success, error: error)
+            })
+
+            let configuration = PaywallViewConfiguration(
                 offering: offering,
                 fonts: DefaultPaywallFontProvider(),
                 displayCloseButton: displayCloseButton,
-                introEligibility: .producing(eligibility: introEligility)
+                introEligibility: .producing(eligibility: introEligility),
+                purchaseHandler: handler
             )
-            PaywallView(configuration: config) { package in
-                print("purchase callback")
 
-                return (userCancelled: true, error: nil)
+            PaywallView(configuration: configuration)
 
-            } performRestore: { restoreResultReporter in
-                print("restore callback")
-            }
 
 
 #if !os(watchOS)

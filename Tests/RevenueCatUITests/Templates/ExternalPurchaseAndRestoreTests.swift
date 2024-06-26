@@ -140,9 +140,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         var customRestoreCodeExecuted = false
 
         let purchasHandler = Self.internalPurchaseHandler { _ in
-            customRestoreCodeExecuted = true
             return (userCancelled: true, error: nil)
         } performRestore: {
+            customRestoreCodeExecuted = true
             return (success: true, error: nil)
         }
 

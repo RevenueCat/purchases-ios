@@ -34,13 +34,12 @@ struct SamplePaywallsList: View {
         case let .template(template, mode):
             switch mode {
             case .fullScreen:
-                let config = PaywallViewConfiguration(
+                PaywallView(configuration: .init(
                     offering: Self.loader.offering(for: template),
                     customerInfo: Self.loader.customerInfo,
                     displayCloseButton: Self.displayCloseButton,
                     introEligibility: Self.introEligibility
-                )
-                PaywallView(configuration:config)
+                ))
 
             #if !os(watchOS)
             case .footer, .condensedFooter:

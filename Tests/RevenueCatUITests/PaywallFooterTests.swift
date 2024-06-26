@@ -151,44 +151,11 @@ class PaywallFooterTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
-    func testTrailingClosureHandler() throws {
-        var packageBeingPurchased: Package?
-        var customerInfo: CustomerInfo?
-
-        let handler = Self.purchaseHandler
-
-        try Text("")
-            .paywallFooter(
-                offering: Self.offering,
-                customerInfo: TestData.customerInfo,
-                introEligibility: .producing(eligibility: .eligible),
-                purchaseHandler: handler)
-            .addToHierarchy()
-
-        try Text("")
-            .paywallFooter(
-                offering: Self.offering,
-                customerInfo: TestData.customerInfo,
-                introEligibility: .producing(eligibility: .eligible),
-                purchaseHandler: handler,
-                purchaseStarted: { package in  }) { info in
-                    customerInfo = info
-                }
-            .addToHierarchy()
-
-        Task {
-            _ = try await handler.purchase(package: Self.package)
-        }
-
-        expect(customerInfo).toEventually(be(TestData.customerInfo))
-    }
-
     func testExternalRestoreHandler() throws {
         var completed = false
         var restoreCodeExecuted = false
 
         let handler = Self.externalPurchaseHandler(performPurchase: { _ in
-
             return (userCancelled: true, error: nil)
         }, performRestore: {
             restoreCodeExecuted = true

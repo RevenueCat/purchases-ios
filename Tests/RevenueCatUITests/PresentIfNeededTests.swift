@@ -231,7 +231,6 @@ class PresentIfNeededTests: TestCase {
                                     purchaseHandler: handler) { _ in
                 return true
             } restoreCompleted: { _ in
-                print("hi")
             } customerInfoFetcher: {
                 return TestData.customerInfo
             }

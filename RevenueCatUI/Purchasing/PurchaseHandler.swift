@@ -128,8 +128,8 @@ final class PurchaseHandler: ObservableObject {
         return .init(isConfigured: false,
                      purchases: NotConfiguredPurchases(customerInfo: customerInfo,
                                                        purchasesAreCompletedBy: purchasesAreCompletedBy),
-                     performPurchase: performPurchase,
-                     performRestore: performRestore)
+                                                       performPurchase: performPurchase,
+                                                       performRestore: performRestore)
     }
 
 }
