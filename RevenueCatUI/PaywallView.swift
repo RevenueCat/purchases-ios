@@ -142,7 +142,6 @@ public struct PaywallView: View {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
-
     }
 
     // swiftlint:disable:next missing_docs
