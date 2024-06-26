@@ -130,6 +130,7 @@ extension View {
         offering: Offering? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         presentationMode: PaywallPresentationMode = .default,
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -143,6 +144,7 @@ extension View {
             offering: offering,
             fonts: fonts,
             presentationMode: presentationMode,
+            myAppPurchaseLogic: myAppPurchaseLogic,
             shouldDisplay: { info in
                 !info.entitlements
                     .activeInCurrentEnvironment
