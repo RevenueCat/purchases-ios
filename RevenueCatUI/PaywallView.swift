@@ -120,7 +120,7 @@ public struct PaywallView: View {
         checkForConfigurationConsitency()
     }
 
-    private func checkForConfigurationConsitency() {
+    private mutating func checkForConfigurationConsitency() {
         switch self.purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
             if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
