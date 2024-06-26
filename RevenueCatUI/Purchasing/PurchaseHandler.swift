@@ -207,16 +207,16 @@ extension PurchaseHandler {
             self.trackCancelledPurchase()
         }
 
+        if let error = result.error {
+            self.purchaseError = error
+            throw error
+        }
+
         let resultInfo: PurchaseResultData = (transaction: nil,
                                              customerInfo: try await self.purchases.customerInfo(),
                                             userCancelled: result.userCancelled)
 
         self.purchaseResult = resultInfo
-
-        if let error = result.error {
-            self.purchaseError = error
-            throw error
-        }
 
         if !result.userCancelled && result.error == nil {
 
@@ -293,7 +293,12 @@ extension PurchaseHandler {
             throw error
         }
 
-        return (info: try await self.purchases.customerInfo(), result.success)
+        let customerInfo = try await self.purchases.customerInfo()
+
+        // This is done by `RestorePurchasesButton` whend using RevenueCat logic.
+        self.setRestored(customerInfo)
+
+        return (info: customerInfo, result.success)
     }
 
     @MainActor
