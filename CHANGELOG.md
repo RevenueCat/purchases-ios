@@ -1,3 +1,7 @@
+## 4.43.2
+### Bugfixes
+* Remove AdClient framework related code (#3993) via Cesar de la Vega (@vegaro)
+
 ## 4.43.1
 ### Dependency Updates
 * Bump fastlane from 2.220.0 to 2.221.0 (#3971) via dependabot[bot] (@dependabot[bot])
