@@ -141,7 +141,7 @@ final class MockManageSubscriptionsPurchases: ManageSubscriptionsPurchaseType {
         if let customerInfo {
             return customerInfo
         }
-        return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+        return CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
     }
 
     func products(_ productIdentifiers: [String]) async -> [RevenueCat.StoreProduct] {

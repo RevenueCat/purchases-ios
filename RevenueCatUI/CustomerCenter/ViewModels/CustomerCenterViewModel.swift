@@ -28,8 +28,10 @@ import RevenueCat
     private(set) var hasSubscriptions: Bool = false
     @Published
     private(set) var subscriptionsAreFromApple: Bool = false
+
+    // @PublicForExternalTesting
     @Published
-    private(set) var state: CustomerCenterViewState {
+    var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError

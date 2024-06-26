@@ -70,7 +70,7 @@ class CustomerCenterViewModelTests: TestCase {
 
     func testLoadHasSubscriptionsApple() async {
         let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
+            return CustomerCenterViewModelTests.customerInfoWithAppleSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
@@ -82,7 +82,7 @@ class CustomerCenterViewModelTests: TestCase {
 
     func testLoadHasSubscriptionsGoogle() async {
         let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
+            return CustomerCenterViewModelTests.customerInfoWithGoogleSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
@@ -94,7 +94,7 @@ class CustomerCenterViewModelTests: TestCase {
 
     func testLoadHasSubscriptionsNonActive() async {
         let viewModel = CustomerCenterViewModel(customerInfoFetcher: {
-            return await CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
+            return CustomerCenterViewModelTests.customerInfoWithoutSubscriptions
         })
 
         await viewModel.loadHasSubscriptions()
