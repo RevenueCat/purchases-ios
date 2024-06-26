@@ -108,15 +108,6 @@ public extension Purchases {
         )
     }
 
-    /**
-     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
-     */
-    @available(*, deprecated, message: """
-    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
-    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
-    """)
-    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
-
 }
 
 public extension Purchases {

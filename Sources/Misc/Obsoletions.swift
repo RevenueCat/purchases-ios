@@ -622,6 +622,36 @@ custom UserDefaults.
         fatalError()
 
     }
+
+    /**
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     */
+    @available(iOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(tvOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(watchOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(macOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool = false
+
 }
 
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")
