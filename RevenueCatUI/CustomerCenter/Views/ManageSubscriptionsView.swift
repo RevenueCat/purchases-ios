@@ -159,9 +159,9 @@ struct ManageSubscriptionsButtonsView: View {
                 ForEach(filteredPaths, id: \.id) { path in
                     AsyncButton(action: {
                         await self.viewModel.handleAction(for: path)
-                    }) {
+                    }, label: {
                         Text(path.title)
-                    }
+                    })
                     .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
                     .buttonStyle(ManageSubscriptionsButtonStyle())
                 }
