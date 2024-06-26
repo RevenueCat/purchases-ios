@@ -25,6 +25,7 @@ import StoreKit
 /**
  Result for ``Purchases/purchase(product:)``.
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
+ Note that `transaction` will be `nil` when ``purchasesAreCompletedBy`` is ``.myApp``
  */
 public typealias PurchaseResultData = (transaction: StoreTransaction?,
                                        customerInfo: CustomerInfo,
