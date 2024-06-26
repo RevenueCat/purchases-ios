@@ -53,9 +53,7 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
             return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
         case .performPurchaseAndRestoreHandlersNotDefined:
             return "PaywallView has not been correctly initialized. purchasesAreCompletedBy is set to .myApp, and so " +
-            "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler, either" +
-            "via its initializer or via a configuration that is initailized with a PerformRestore and " +
-            "PerformPurchase handler."
+            "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler."
         case .purchaseAndRestoreDefinedForRevenueCat:
             return "RevenueCat is configured with purchasesAreCompletedBy set to .revenueCat, but " +
             "the Paywall has purchase/restore blocks defined. These will NOT be executed. " +
