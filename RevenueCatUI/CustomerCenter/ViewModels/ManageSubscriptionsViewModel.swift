@@ -72,7 +72,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
     func loadScreen() async {
         do {
             try await loadSubscriptionInformation()
-            await loadCustomerCenterConfig()
+            loadCustomerCenterConfig()
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -127,7 +127,8 @@ class ManageSubscriptionsViewModel: ObservableObject {
                     self.refundRequestStatusMessage = String(localized: "Refund canceled")
                 }
             } catch {
-                self.refundRequestStatusMessage = String(localized: "An error occurred while processing the refund request.")
+                self.refundRequestStatusMessage =
+                String(localized: "An error occurred while processing the refund request.")
             }
         case .changePlans, .cancel:
             do {
