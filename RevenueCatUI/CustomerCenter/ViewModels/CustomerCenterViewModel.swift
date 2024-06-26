@@ -25,11 +25,11 @@ import RevenueCat
     typealias CustomerInfoFetcher = @Sendable () async throws -> CustomerInfo
 
     @Published
-    var hasSubscriptions: Bool = false
+    private(set) var hasSubscriptions: Bool = false
     @Published
-    var subscriptionsAreFromApple: Bool = false
+    private(set) var subscriptionsAreFromApple: Bool = false
     @Published
-    var state: CustomerCenterViewState {
+    private(set) var state: CustomerCenterViewState {
         didSet {
             if case let .error(stateError) = state {
                 self.error = stateError
@@ -82,11 +82,10 @@ import RevenueCat
             let customerInfo = try await self.customerInfoFetcher()
             let hasSubscriptions = customerInfo.activeSubscriptions.count > 0
 
-            let subscriptionsAreFromApple = customerInfo.entitlements.active.first(where: {
-                $0.value.store == .appStore || $0.value.store == .macAppStore
-            }).map { entitlement in
+            let subscriptionsAreFromApple = customerInfo.entitlements.active.contains(where: { entitlement in
+                entitlement.value.store == .appStore || entitlement.value.store == .macAppStore &&
                 customerInfo.activeSubscriptions.contains(entitlement.value.productIdentifier)
-            } ?? false
+            })
 
             self.hasSubscriptions = hasSubscriptions
             self.subscriptionsAreFromApple = subscriptionsAreFromApple

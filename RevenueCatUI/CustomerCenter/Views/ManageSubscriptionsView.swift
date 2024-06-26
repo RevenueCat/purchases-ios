@@ -56,7 +56,7 @@ struct ManageSubscriptionsView: View {
             }
         }
         .task {
-            await checkAndLoadInformation()
+            await loadInformationIfNeeded()
         }
     }
 
@@ -69,7 +69,7 @@ struct ManageSubscriptionsView: View {
 @available(visionOS, unavailable)
 private extension ManageSubscriptionsView {
 
-    func checkAndLoadInformation() async {
+    func loadInformationIfNeeded() async {
         if !viewModel.isLoaded {
             await viewModel.loadScreen()
         }
@@ -157,8 +157,10 @@ struct ManageSubscriptionsButtonsView: View {
                     #endif
                 }
                 ForEach(filteredPaths, id: \.id) { path in
-                    Button(path.title) {
-                        self.viewModel.handleAction(for: path)
+                    AsyncButton(action: {
+                        await self.viewModel.handleAction(for: path)
+                    }) {
+                        Text(path.title)
                     }
                     .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
                     .buttonStyle(ManageSubscriptionsButtonStyle())

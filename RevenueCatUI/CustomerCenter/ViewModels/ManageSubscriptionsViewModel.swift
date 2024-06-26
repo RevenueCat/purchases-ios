@@ -26,11 +26,11 @@ import RevenueCat
 class ManageSubscriptionsViewModel: ObservableObject {
 
     @Published
-    var subscriptionInformation: SubscriptionInformation?
+    private(set) var subscriptionInformation: SubscriptionInformation?
     @Published
-    var refundRequestStatusMessage: String?
+    private(set) var refundRequestStatusMessage: String?
     @Published
-    var configuration: CustomerCenterConfigData?
+    private(set) var configuration: CustomerCenterConfigData?
     @Published
     var showRestoreAlert: Bool = false
     @Published
@@ -79,7 +79,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         }
     }
 
-    func loadSubscriptionInformation() async throws {
+    private func loadSubscriptionInformation() async throws {
         let customerInfo = try await purchasesProvider.customerInfo()
         guard let currentEntitlementDict = customerInfo.entitlements.active.first,
               let subscribedProductID = customerInfo.activeSubscriptions.first,
@@ -104,17 +104,17 @@ class ManageSubscriptionsViewModel: ObservableObject {
         )
     }
 
-    func loadCustomerCenterConfig() async {
+    private func loadCustomerCenterConfig() {
         self.configuration = CustomerCenterConfigTestData.customerCenterData
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)
-    func handleAction(for path: CustomerCenterConfigData.HelpPath) {
+    func handleAction(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
         case .refundRequest:
-            Task {
+            do {
                 guard let subscriptionInformation = self.subscriptionInformation else { return }
                 let productId = subscriptionInformation.productIdentifier
                 let status = try await purchasesProvider.beginRefundRequest(forProduct: productId)
@@ -126,10 +126,14 @@ class ManageSubscriptionsViewModel: ObservableObject {
                 case .userCancelled:
                     self.refundRequestStatusMessage = String(localized: "Refund canceled")
                 }
+            } catch {
+                self.refundRequestStatusMessage = String(localized: "An error occurred while processing the refund request.")
             }
         case .changePlans, .cancel:
-            Task {
+            do {
                 try await purchasesProvider.showManageSubscriptions()
+            } catch {
+                self.state = .error(error)
             }
         default:
             break
@@ -155,11 +159,11 @@ private final class ManageSubscriptionPurchases: ManageSubscriptionsPurchaseType
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
-        return try await Purchases.shared.customerInfo()
+        try await Purchases.shared.customerInfo()
     }
 
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
-        return await Purchases.shared.products(productIdentifiers)
+        await Purchases.shared.products(productIdentifiers)
     }
 
 }
