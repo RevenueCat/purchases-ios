@@ -16,7 +16,7 @@
 import RevenueCat
 import SwiftUI
 
-#if !os(macOS) && !os(tvOS) && !os(watchOS) && !os(visionOS)
+#if !os(macOS) && !os(tvOS) && !os(watchOS) && (swift(>=5.9) && !os(visionOS))
 
 /// A SwiftUI view for displaying a customer support common tasks
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
