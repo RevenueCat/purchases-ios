@@ -620,6 +620,7 @@
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
+		8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
 		887A60682C1D037000E1A461 /* TemplateError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC82C1D037000E1A461 /* TemplateError.swift */; };
@@ -754,7 +755,6 @@
 		887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A621F2C1D168B00E1A461 /* LocalizationTests.swift */; };
 		887A63442C1D177800E1A461 /* PaywallFooterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62202C1D168B00E1A461 /* PaywallFooterTests.swift */; };
 		887A63452C1D177800E1A461 /* PaywallViewEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62212C1D168B00E1A461 /* PaywallViewEventsTests.swift */; };
-		887A63462C1D177800E1A461 /* PresentIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */; };
 		887A63472C1D177800E1A461 /* PurchaseCompletedHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */; };
 		887A634A2C1D17EF00E1A461 /* Nimble in Frameworks */ = {isa = PBXBuildFile; productRef = 887A63492C1D17EF00E1A461 /* Nimble */; };
 		887A634C2C1D17EF00E1A461 /* OHHTTPStubs in Frameworks */ = {isa = PBXBuildFile; productRef = 887A634B2C1D17EF00E1A461 /* OHHTTPStubs */; };
@@ -5020,6 +5020,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8834AFA52C2B9375005A72FE /* PresentIfNeededTests.swift in Sources */,
 				887A632B2C1D177800E1A461 /* LocalizedAlertErrorTests.swift in Sources */,
 				887A632C2C1D177800E1A461 /* PackageVariablesTests.swift in Sources */,
 				887A632D2C1D177800E1A461 /* PaywallDataValidationTests.swift in Sources */,
@@ -5048,7 +5049,6 @@
 				887A63432C1D177800E1A461 /* LocalizationTests.swift in Sources */,
 				887A63442C1D177800E1A461 /* PaywallFooterTests.swift in Sources */,
 				887A63452C1D177800E1A461 /* PaywallViewEventsTests.swift in Sources */,
-				887A63462C1D177800E1A461 /* PresentIfNeededTests.swift in Sources */,
 				887A63472C1D177800E1A461 /* PurchaseCompletedHandlerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
