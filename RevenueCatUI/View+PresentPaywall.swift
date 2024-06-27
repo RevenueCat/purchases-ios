@@ -426,8 +426,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
-                                                    .default(performPurchase: nil, performRestore: nil))
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? PurchaseHandler.default())
     }
 
     @StateObject
