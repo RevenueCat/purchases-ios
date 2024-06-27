@@ -232,27 +232,6 @@ extension View {
     }
 }
 
-/// Contains the `PerformPurchase` and `PerformRestore` blocks that are executed when
-/// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-public struct MyAppPurchaseLogic {
-
-    /// When ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
-    /// callback method that performs the purchase.
-    public let performPurchase: PerformPurchase
-
-    /// When  ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined
-    /// callback method that performs the restore.
-    public let performRestore: PerformRestore
-
-    /// Initializes the struct with blocks that are executed when
-    /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
-    public init(performPurchase: @escaping PerformPurchase, performRestore: @escaping PerformRestore) {
-        self.performPurchase = performPurchase
-        self.performRestore = performRestore
-    }
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PresentingPaywallFooterModifier: ViewModifier {
 
