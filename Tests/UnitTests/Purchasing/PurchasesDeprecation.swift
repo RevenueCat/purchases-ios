@@ -24,8 +24,6 @@ protocol PurchasesDeprecatable {
                                    from network: AttributionNetwork,
                                    forNetworkUserId networkUserId: String?)
 
-    static var automaticAppleSearchAdsAttributionCollection: Bool { get set }
-
 }
 
 class PurchasesDeprecation: PurchasesDeprecatable {
@@ -56,12 +54,6 @@ class PurchasesDeprecation: PurchasesDeprecatable {
                                    from network: AttributionNetwork,
                                    forNetworkUserId networkUserId: String?) {
         Purchases.addAttributionData(data, from: network, forNetworkUserId: networkUserId)
-    }
-
-    @available(*, deprecated)
-    static var automaticAppleSearchAdsAttributionCollection: Bool {
-        get { return Purchases.automaticAppleSearchAdsAttributionCollection }
-        set { Purchases.automaticAppleSearchAdsAttributionCollection = newValue }
     }
 
 }
