@@ -33,9 +33,11 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    let purchaseHandler: PurchaseHandler
+    @StateObject
+    private var purchaseHandler: PurchaseHandler
 
-    let introEligibility: TrialOrIntroEligibilityChecker
+    @StateObject
+    private var introEligibility: TrialOrIntroEligibilityChecker
 
     @State
     private var offering: Offering?
@@ -106,6 +108,8 @@ public struct PaywallView: View {
     init(configuration: PaywallViewConfiguration) {
         self.introEligibility = configuration.introEligibility ?? .default()
         self.purchaseHandler = configuration.purchaseHandler
+        self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
+        self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
@@ -117,17 +121,14 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        checkForConfigurationConsitency()
-    }
-
-    private mutating func checkForConfigurationConsitency() {
-        switch self.purchaseHandler.purchasesAreCompletedBy {
+//        checkForConfigurationConsitency()
+        switch configuration.purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
-            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
+            if configuration.purchaseHandler.performPurchase == nil || configuration.purchaseHandler.performRestore == nil {
                 let missingBlocks: String
-                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
+                if configuration.purchaseHandler.performPurchase == nil && configuration.purchaseHandler.performRestore == nil {
                     missingBlocks = "performPurchase and performRestore are"
-                } else if self.purchaseHandler.performPurchase == nil {
+                } else if configuration.purchaseHandler.performPurchase == nil {
                     missingBlocks = "performPurchase is"
                 } else {
                     missingBlocks = "performRestore is"
@@ -138,11 +139,35 @@ public struct PaywallView: View {
                 Logger.error(error)
             }
         case .revenueCat:
-            if self.purchaseHandler.performPurchase != nil || self.purchaseHandler.performRestore != nil {
+            if configuration.purchaseHandler.performPurchase != nil || configuration.purchaseHandler.performRestore != nil {
                 Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
             }
         }
     }
+
+//    private mutating func checkForConfigurationConsitency() {
+//        switch self.purchaseHandler.purchasesAreCompletedBy {
+//        case .myApp:
+//            if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
+//                let missingBlocks: String
+//                if self.purchaseHandler.performPurchase == nil && self.purchaseHandler.performRestore == nil {
+//                    missingBlocks = "performPurchase and performRestore are"
+//                } else if self.purchaseHandler.performPurchase == nil {
+//                    missingBlocks = "performPurchase is"
+//                } else {
+//                    missingBlocks = "performRestore is"
+//                }
+//
+//                let error = PaywallError.performPurchaseAndRestoreHandlersNotDefined(missingBlocks: missingBlocks)
+//                self.initializationError = error as NSError
+//                Logger.error(error)
+//            }
+//        case .revenueCat:
+//            if self.purchaseHandler.performPurchase != nil || self.purchaseHandler.performRestore != nil {
+//                Logger.warning(PaywallError.purchaseAndRestoreDefinedForRevenueCat)
+//            }
+//        }
+//    }
 
     // swiftlint:disable:next missing_docs
     public var body: some View {
