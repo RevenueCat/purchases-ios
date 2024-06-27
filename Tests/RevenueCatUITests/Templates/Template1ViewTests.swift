@@ -65,6 +65,7 @@ class Template1ViewTests: BaseSnapshotTest {
     }
 
     func testSamplePaywallWithLoadingEligibility() {
+        UIView.setAnimationsEnabled(false)
         let view = Self.createPaywall(
             offering: Self.offeringWithIntroOffer,
             introEligibility: Self.ineligibleChecker
