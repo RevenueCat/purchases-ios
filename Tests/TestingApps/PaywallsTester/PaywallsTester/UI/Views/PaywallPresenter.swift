@@ -55,14 +55,16 @@ struct PaywallPresenter: View {
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering,
                                customerInfo: nil,
-                               introEligibility: .producing(eligibility: introEligility))
+                               introEligibility: .producing(eligibility: introEligility),
+                               purchaseHandler: .default())
 
         case .condensedFooter:
             CustomPaywallContent()
                 .paywallFooter(offering: self.offering,
                                customerInfo: nil,
                                condensed: true,
-                               introEligibility: .producing(eligibility: introEligility))
+                               introEligibility: .producing(eligibility: introEligility),
+                               purchaseHandler: .default())
 #endif
         }
     }
