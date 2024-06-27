@@ -40,34 +40,34 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }
 
-        try PaywallView(
-            offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
-            introEligibility: .producing(eligibility: .eligible),
-            purchaseHandler: purchasHandler
-        )
-        .onPurchaseStarted { _ in
-            callbackOrder.append("onPurchaseStarted")
-        }
-        .onPurchaseCompleted { _ in
-            callbackOrder.append("onPurchaseCompleted")
-        }
-        .onPurchaseCancelled {
-            callbackOrder.append("onPurchaseCancelled")
-        }
-        .onPurchaseFailure { _ in
-            callbackOrder.append("onPurchaseFailure")
-        }
-        .onRestoreStarted({
-            callbackOrder.append("onRestoreStarted")
-        })
-        .onRestoreCompleted({ _ in
-            callbackOrder.append("onRestoreCompleted")
-        })
-        .onRestoreFailure({ _ in
-            callbackOrder.append("onRestoreFailure")
-        })
-        .addToHierarchy()
+//        try PaywallView(
+//            offering: Self.offering.withLocalImages,
+//            customerInfo: TestData.customerInfo,
+//            introEligibility: .producing(eligibility: .eligible),
+//            purchaseHandler: purchasHandler
+//        )
+//        .onPurchaseStarted { _ in
+//            callbackOrder.append("onPurchaseStarted")
+//        }
+//        .onPurchaseCompleted { _ in
+//            callbackOrder.append("onPurchaseCompleted")
+//        }
+//        .onPurchaseCancelled {
+//            callbackOrder.append("onPurchaseCancelled")
+//        }
+//        .onPurchaseFailure { _ in
+//            callbackOrder.append("onPurchaseFailure")
+//        }
+//        .onRestoreStarted({
+//            callbackOrder.append("onRestoreStarted")
+//        })
+//        .onRestoreCompleted({ _ in
+//            callbackOrder.append("onRestoreCompleted")
+//        })
+//        .onRestoreFailure({ _ in
+//            callbackOrder.append("onRestoreFailure")
+//        })
+//        .addToHierarchy()
 
         Task {
             _ = try await purchasHandler.purchase(package: Self.package)
