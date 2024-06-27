@@ -106,6 +106,8 @@ public struct PaywallView: View {
     // And these purchase blocks should ONLY be defined on the purchase handler?
     // @PublicForExternalTesting
     init(configuration: PaywallViewConfiguration) {
+        self.introEligibility = configuration.introEligibility ?? .default()
+        self.purchaseHandler = configuration.purchaseHandler
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
         self._purchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
         self._offering = .init(
