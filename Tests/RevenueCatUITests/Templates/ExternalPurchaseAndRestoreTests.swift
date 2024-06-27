@@ -31,10 +31,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
     func testHandleExternalPurchasePaywall() throws {
         var completed = false
-        var customPurchaseCodeExecuted = false
         var callbackOrder = [String]()
 
-        var purchasHandler = Self.externalPurchaseHandler { _ in
+        let purchasHandler = Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
             return (userCancelled: false, error: nil)
         } performRestore: {
@@ -60,6 +59,15 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         .onPurchaseFailure { error in
             callbackOrder.append("onPurchaseFailure")
         }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ info in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ error in
+            callbackOrder.append("onRestoreFailure")
+        })
         .addToHierarchy()
 
         Task {
@@ -73,10 +81,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
     func testHandleExternalPurchaseCancelledPaywall() throws {
         var completed = false
-        var customPurchaseCodeExecuted = false
         var callbackOrder = [String]()
 
-        var purchasHandler = Self.externalPurchaseHandler { _ in
+        let purchasHandler = Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
             return (userCancelled: true, error: nil)
         } performRestore: {
@@ -102,6 +109,15 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         .onPurchaseFailure { error in
             callbackOrder.append("onPurchaseFailure")
         }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ info in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ error in
+            callbackOrder.append("onRestoreFailure")
+        })
         .addToHierarchy()
 
         Task {
@@ -115,11 +131,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
 
     func testHandleExternalPurchaseFailedPaywall() throws {
-        var completed = false
-        var customPurchaseCodeExecuted = false
         var callbackOrder = [String]()
 
-        var purchasHandler = Self.externalPurchaseHandler { _ in
+        let purchasHandler = Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
             return (userCancelled: false, error: TestError.error)
         } performRestore: {
@@ -145,6 +159,15 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         .onPurchaseFailure { error in
             callbackOrder.append("onPurchaseFailure")
         }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ info in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ error in
+            callbackOrder.append("onRestoreFailure")
+        })
         .addToHierarchy()
 
         Task {
@@ -172,17 +195,29 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-            .onRestoreStarted({
-                callbackOrder.append("onRestoreStarted")
-            })
-            .onRestoreCompleted({ info in
-                callbackOrder.append("onRestoreCompleted")
-                customerInfo = info
-            })
-            .onRestoreFailure({ error in
-                callbackOrder.append("onRestoreFailure")
-            })
-            .addToHierarchy()
+        .onPurchaseStarted { package in
+            callbackOrder.append("onPurchaseStarted")
+        }
+        .onPurchaseCompleted { customerInfo in
+            callbackOrder.append("onPurchaseCompleted")
+        }
+        .onPurchaseCancelled {
+            callbackOrder.append("onPurchaseCancelled")
+        }
+        .onPurchaseFailure { error in
+            callbackOrder.append("onPurchaseFailure")
+        }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ info in
+            callbackOrder.append("onRestoreCompleted")
+            customerInfo = info
+        })
+        .onRestoreFailure({ error in
+            callbackOrder.append("onRestoreFailure")
+        })
+        .addToHierarchy()
 
         Task {
             _ = try await purchasHandler.restorePurchases()
@@ -210,16 +245,28 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-            .onRestoreStarted({
-                callbackOrder.append("onRestoreStarted")
-            })
-            .onRestoreCompleted({ info in
-                callbackOrder.append("onRestoreCompleted")
-            })
-            .onRestoreFailure({ error in
-                callbackOrder.append("onRestoreFailure")
-            })
-            .addToHierarchy()
+        .onPurchaseStarted { package in
+            callbackOrder.append("onPurchaseStarted")
+        }
+        .onPurchaseCompleted { customerInfo in
+            callbackOrder.append("onPurchaseCompleted")
+        }
+        .onPurchaseCancelled {
+            callbackOrder.append("onPurchaseCancelled")
+        }
+        .onPurchaseFailure { error in
+            callbackOrder.append("onPurchaseFailure")
+        }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ info in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ error in
+            callbackOrder.append("onRestoreFailure")
+        })
+        .addToHierarchy()
 
         Task {
             _ = try await purchasHandler.restorePurchases()
