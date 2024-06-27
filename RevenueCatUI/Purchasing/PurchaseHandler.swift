@@ -100,8 +100,8 @@ final class PurchaseHandler: ObservableObject {
     /// Returns a new instance of `PurchaseHandler` using `Purchases.shared` if `Purchases`
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     // @PublicForExternalTesting
-    static func `default`(performPurchase: PerformPurchase?,
-                                 performRestore: PerformRestore?) -> Self {
+    static func `default`(performPurchase: PerformPurchase? = nil,
+                                 performRestore: PerformRestore? = nil) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
                                               performRestore: performRestore) :
                                         Self.notConfigured(performPurchase: performPurchase,
@@ -109,8 +109,8 @@ final class PurchaseHandler: ObservableObject {
     }
 
     // @PublicForExternalTesting
-    static func `default`(performPurchase: PerformPurchase?,
-                          performRestore: PerformRestore?,
+    static func `default`(performPurchase: PerformPurchase? = nil,
+                          performRestore: PerformRestore? = nil,
                           customerInfo: CustomerInfo,
                           purchasesAreCompletedBy: PurchasesAreCompletedBy) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
