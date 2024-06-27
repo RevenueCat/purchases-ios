@@ -162,9 +162,11 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(customRestoreCodeExecuted) == false
     }
 
-    
-
+    private static let purchaseHandler: PurchaseHandler = .mock()
+    private static let failingHandler: PurchaseHandler = .failing(failureError)
+    private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
+    private static let failureError: Error = ErrorCode.storeProblemError
     private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
                                                 performRestore: PerformRestore? = nil)
     -> PurchaseHandler {
