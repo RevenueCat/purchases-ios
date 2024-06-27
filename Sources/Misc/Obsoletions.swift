@@ -856,14 +856,14 @@ public extension Purchases {
 }
 
 public extension Configuration.Builder {
-    @available(iOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(tvOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(watchOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
-    @available(macOS, obsoleted: 1, renamed: "with(observerMode:storeKitVersion:)",
-               message: "Explicitly setting the StoreKit version is now required.")
+    @available(iOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(tvOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(watchOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(macOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
     @objc func with(observerMode: Bool) -> Configuration.Builder {
         fatalError()
     }
