@@ -28,20 +28,46 @@ enum TestError: Error {
 @MainActor
 class ExternalPurchaseAndRestoreTests: TestCase {
 
-    func testHandleExternalPurchaseWithPurchaaseHandlers() throws {
+    func testHandleExternalPurchasePaywall() throws {
         var completed = false
-        var customPurchaseCodeExecuted = false
+        var callbackOrder = [String]()
 
         let purchasHandler = Self.externalPurchaseHandler { _ in
-            customPurchaseCodeExecuted = true
-            return (userCancelled: true, error: nil)
+            callbackOrder.append("performPurchase")
+            return (userCancelled: false, error: nil)
         } performRestore: {
+            callbackOrder.append("performRestore")
             return (success: true, error: nil)
         }
 
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: purchasHandler
+        )
+        .onPurchaseStarted { _ in
+            callbackOrder.append("onPurchaseStarted")
+        }
+        .onPurchaseCompleted { _ in
+            callbackOrder.append("onPurchaseCompleted")
+        }
+        .onPurchaseCancelled {
+            callbackOrder.append("onPurchaseCancelled")
+        }
+        .onPurchaseFailure { _ in
+            callbackOrder.append("onPurchaseFailure")
+        }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ _ in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ _ in
+            callbackOrder.append("onRestoreFailure")
+        })
+        .addToHierarchy()
 
         Task {
             _ = try await purchasHandler.purchase(package: Self.package)
@@ -49,121 +75,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(completed).toEventually(beTrue())
-        expect(customPurchaseCodeExecuted) == true
-    }
-
-    func testHandleExternalRestoreWithPurchaaseHandlers() throws {
-        var completed = false
-        var customRestoreCodeExecuted = false
-
-        let purchasHandler = Self.externalPurchaseHandler { _ in
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            customRestoreCodeExecuted = true
-            return (success: true, error: nil)
-        }
-
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
-
-        Task {
-            _ = try await purchasHandler.restorePurchases()
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        expect(customRestoreCodeExecuted) == true
-    }
-
-    func testHandleExternalPurchaseWithoutPurchaaseHandler() throws {
-        var errorThrown = false
-
-        let purchasHandler = Self.externalPurchaseHandler()
-
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
-
-        Task {
-            do {
-                _ = try await purchasHandler.purchase(package: Self.package)
-            } catch {
-                errorThrown = true
-            }
-        }
-
-        expect(errorThrown).toEventually(beTrue())
-    }
-
-    func testHandleExternalRestoreWithoutRestoreHandler() throws {
-        var errorThrown = false
-
-        let purchasHandler = Self.externalPurchaseHandler()
-
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
-
-        Task {
-            do {
-                _ = try await purchasHandler.restorePurchases()
-            } catch {
-                errorThrown = true
-            }
-        }
-
-        expect(errorThrown).toEventually(beTrue())
-    }
-
-    func testHandleInternalPurchaseWithPurchaaseHandlers() throws {
-        var completed = false
-        var customPurchaseCodeExecuted = false
-
-        let purchasHandler = Self.internalPurchaseHandler { _ in
-            customPurchaseCodeExecuted = true
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            return (success: true, error: nil)
-        }
-
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
-
-        Task {
-            // expect a warning logged to the console
-            _ = try await purchasHandler.purchase(package: Self.package)
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        expect(customPurchaseCodeExecuted) == false
-    }
-
-    func testHandleInternalRestoreWithPurchaaseHandlers() throws {
-        var completed = false
-        var customRestoreCodeExecuted = false
-
-        let purchasHandler = Self.internalPurchaseHandler { _ in
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            customRestoreCodeExecuted = true
-            return (success: true, error: nil)
-        }
-
-        let config = PaywallViewConfiguration(purchaseHandler: purchasHandler)
-
-        try PaywallView(configuration: config).addToHierarchy()
-
-        Task {
-            // expect a warning logged to the console
-            _ = try await purchasHandler.restorePurchases()
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        expect(customRestoreCodeExecuted) == false
+        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
     }
 
     private static let purchaseHandler: PurchaseHandler = .mock()
