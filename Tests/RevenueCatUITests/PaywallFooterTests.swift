@@ -215,7 +215,7 @@ class PaywallFooterTests: TestCase {
     private static let package = TestData.annualPackage
     private static let failureError: Error = ErrorCode.storeProblemError
     private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
-                                                performRestore:  PerformRestore? = nil)
+                                                performRestore: PerformRestore? = nil)
     -> PurchaseHandler {
         .mock(purchasesAreCompletedBy: .myApp,
               performPurchase: performPurchase,
