@@ -23,6 +23,56 @@ import XCTest
 @MainActor
 class PurchaseCompletedHandlerTests: TestCase {
 
+    func testHandleExternalPurchasePaywall() throws {
+        var completed = false
+        var callbackOrder = [String]()
+
+        let purchasHandler = Self.purchaseHandler /*Self.externalPurchaseHandler { _ in
+            callbackOrder.append("performPurchase")
+            return (userCancelled: false, error: nil)
+        } performRestore: {
+            callbackOrder.append("performRestore")
+            return (success: true, error: nil)
+        }*/
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: purchasHandler
+        )
+//        .onPurchaseStarted { _ in
+//            callbackOrder.append("onPurchaseStarted")
+//        }
+//        .onPurchaseCompleted { _ in
+//            callbackOrder.append("onPurchaseCompleted")
+//        }
+//        .onPurchaseCancelled {
+//            callbackOrder.append("onPurchaseCancelled")
+//        }
+//        .onPurchaseFailure { _ in
+//            callbackOrder.append("onPurchaseFailure")
+//        }
+//        .onRestoreStarted({
+//            callbackOrder.append("onRestoreStarted")
+//        })
+//        .onRestoreCompleted({ _ in
+//            callbackOrder.append("onRestoreCompleted")
+//        })
+//        .onRestoreFailure({ _ in
+//            callbackOrder.append("onRestoreFailure")
+//        })
+        .addToHierarchy()
+
+        Task {
+            _ = try await purchasHandler.purchase(package: Self.package)
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+//        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
+    }
+
     func testOnPurchaseStarted() throws {
         var started = false
         var packageBeingPurchased: Package?
