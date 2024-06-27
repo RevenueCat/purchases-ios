@@ -70,7 +70,7 @@ struct PurchaseButton: View {
                 return
             }
 
-            try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
+            _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
         } label: {
             ConsistentPackageContentView(
                 packages: self.packages.all,

@@ -392,7 +392,7 @@ private extension PurchaseHandler {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class NotConfiguredPurchases: PaywallPurchasesType {
 
-    var purchasesAreCompletedBy: PurchasesAreCompletedBy
+    let purchasesAreCompletedBy: PurchasesAreCompletedBy
 
     let customerInfo: CustomerInfo?
 
