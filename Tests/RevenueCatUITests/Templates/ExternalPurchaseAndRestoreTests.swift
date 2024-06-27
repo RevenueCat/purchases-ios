@@ -32,13 +32,13 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         var completed = false
         var callbackOrder = [String]()
 
-        let purchasHandler = Self.externalPurchaseHandler { _ in
+        let purchasHandler = Self.purchaseHandler /*Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
             return (userCancelled: false, error: nil)
         } performRestore: {
             callbackOrder.append("performRestore")
             return (success: true, error: nil)
-        }
+        }*/
 
         try PaywallView(
             offering: Self.offering.withLocalImages,
