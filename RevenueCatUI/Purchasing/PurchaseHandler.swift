@@ -177,7 +177,6 @@ extension PurchaseHandler {
 
             return result
 
-
         } catch {
             self.purchaseError = error
             throw error
@@ -228,7 +227,6 @@ extension PurchaseHandler {
         }
 
         return resultInfo
-
     }
 
     // MARK: - Restore
