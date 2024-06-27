@@ -27,7 +27,7 @@ enum TestError: Error {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-class ExternalPurchaseAndRestoreTests: TestCase {
+class ZZExternalPurchaseAndRestoreTests: TestCase {
 
     func testHandleExternalPurchasePaywall() throws {
         var completed = false
