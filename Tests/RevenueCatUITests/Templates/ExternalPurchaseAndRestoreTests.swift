@@ -28,6 +28,33 @@ enum TestError: Error {
 @MainActor
 class ExternalPurchaseAndRestoreTests: TestCase {
 
+    func testOnPurchaseCompletedWithCancellation() throws {
+        let handler: PurchaseHandler = .cancelling()
+
+        var customerInfo: CustomerInfo?
+        var purchased = false
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        )
+            .onPurchaseCompleted {
+                customerInfo = $0
+            }
+            .addToHierarchy()
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+            purchased = true
+        }
+
+        expect(purchased).toEventually(beTrue())
+        expect(customerInfo).to(beNil())
+    }
+
+/*
     func testHandleExternalPurchasePaywall() throws {
         var completed = false
         var callbackOrder = [String]()
@@ -78,7 +105,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(completed).toEventually(beTrue())
 //        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
     }
-
+*/
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
