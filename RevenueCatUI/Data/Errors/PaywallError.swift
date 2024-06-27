@@ -25,10 +25,12 @@ enum PaywallError: Error {
     /// The selected offering was not found.
     case offeringNotFound(identifier: String)
 
-    /// The PaywallView must be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.myApp``
+    /// The PaywallView must be initizlied with performPurchase and performRestore
+    /// when ``purchasesAreCompletedBy`` is ``.myApp``
     case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
 
-    /// The PaywallView need not be initizlied with performPurchase and performRestore when ``purchasesAreCompletedBy`` is ``.revenueCat``
+    /// The PaywallView need not be initizlied with performPurchase and performRestore
+    /// when ``purchasesAreCompletedBy`` is ``.revenueCat``
     case purchaseAndRestoreDefinedForRevenueCat
 
 }
