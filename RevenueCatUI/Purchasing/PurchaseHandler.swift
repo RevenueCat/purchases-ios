@@ -144,9 +144,9 @@ extension PurchaseHandler {
     func purchase(package: Package) async throws -> PurchaseResultData {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
-            try await performPurchase(package: package)
+            return try await performPurchase(package: package)
         case .myApp:
-            try await performExternalPurchaseLogic(package: package)
+            return try await performExternalPurchaseLogic(package: package)
         }
     }
 
@@ -441,7 +441,6 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
     }
 
 }
-
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {
