@@ -104,7 +104,7 @@ public struct PaywallView: View {
         )
     }
 
-    public init(configuration: PaywallViewConfiguration,
+    init(configuration: PaywallViewConfiguration,
                 performPurchase: PerformPurchase? = nil,
                 performRestore: PerformRestore? = nil) {
         self.introEligibility = configuration.introEligibility ?? .default()
