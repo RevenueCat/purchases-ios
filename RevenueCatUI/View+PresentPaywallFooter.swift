@@ -232,10 +232,9 @@ extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
-
 /// Contains the `PerformPurchase` and `PerformRestore` blocks that are executed when
 /// ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 public struct MyAppPurchaseLogic {
 
     /// When ``Purchases/purchasesAreCompletedBy`` is ``PurchasesAreCompletedBy/myApp``, this is the app-defined

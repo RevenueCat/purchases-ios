@@ -102,7 +102,7 @@ final class PurchaseHandler: ObservableObject {
     /// has been configured, and using a PurchaseHandler that cannot be used for purchases otherwise.
     // @PublicForExternalTesting
     static func `default`(performPurchase: PerformPurchase? = nil,
-                                 performRestore: PerformRestore? = nil) -> Self {
+                          performRestore: PerformRestore? = nil) -> Self {
         return Purchases.isConfigured ? .init(performPurchase: performPurchase,
                                               performRestore: performRestore) :
                                         Self.notConfigured(performPurchase: performPurchase,
