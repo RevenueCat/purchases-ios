@@ -28,7 +28,7 @@ enum TestError: Error {
 @MainActor
 class ExternalPurchaseAndRestoreTests: TestCase {
 
-    func testHandleExternalPurchasePaywall() async throws {
+    func testHandleExternalPurchasePaywall() throws {
         var completed = false
         var callbackOrder = [String]()
 
@@ -69,12 +69,10 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         })
         .addToHierarchy()
 
-        let t = Task {
+        Task {
             _ = try await purchasHandler.purchase(package: Self.package)
             completed = true
         }
-
-        let result = try await t.value
 
         expect(completed).toEventually(beTrue())
         expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
