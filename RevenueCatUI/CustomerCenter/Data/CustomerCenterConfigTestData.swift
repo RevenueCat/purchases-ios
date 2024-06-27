@@ -16,8 +16,6 @@
 import Foundation
 import RevenueCat
 
-#if DEBUG
-
 enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
@@ -79,5 +77,3 @@ enum CustomerCenterConfigTestData {
     )
 
 }
-
-#endif
