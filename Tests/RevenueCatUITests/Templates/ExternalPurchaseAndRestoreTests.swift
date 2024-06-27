@@ -184,4 +184,25 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallView {
+
+    init(
+        offering: Offering,
+        customerInfo: CustomerInfo,
+        introEligibility: TrialOrIntroEligibilityChecker,
+        purchaseHandler: PurchaseHandler
+    ) {
+        self.init(
+            configuration: .init(
+                offering: offering,
+                customerInfo: customerInfo,
+                introEligibility: introEligibility,
+                purchaseHandler: purchaseHandler
+            )
+        )
+    }
+
+}
+
 #endif
