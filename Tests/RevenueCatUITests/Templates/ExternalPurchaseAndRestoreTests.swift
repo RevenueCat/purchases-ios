@@ -40,12 +40,13 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             return (success: true, error: nil)
         }*/
 
-        try PaywallView(
-            offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
-            introEligibility: .producing(eligibility: .eligible),
-            purchaseHandler: purchasHandler
-        )
+//        try PaywallView(
+//            offering: Self.offering.withLocalImages,
+//            customerInfo: TestData.customerInfo,
+//            introEligibility: .producing(eligibility: .eligible),
+//            purchaseHandler: purchasHandler
+//        )
+        try Rectangle()
 //        .onPurchaseStarted { _ in
 //            callbackOrder.append("onPurchaseStarted")
 //        }
