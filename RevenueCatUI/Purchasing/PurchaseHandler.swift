@@ -43,7 +43,8 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var purchased: Bool = false
 
-    /// When `purchased` becomes `true`, this will include the `CustomerInfo` associated to it IF RevenueCat is making the purchase.
+    /// When `purchased` becomes `true`, this will include the `CustomerInfo` 
+    /// associated to it IF RevenueCat is making the purchase.
     @Published
     fileprivate(set) var purchaseResult: PurchaseResultData?
 

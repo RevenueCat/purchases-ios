@@ -25,7 +25,8 @@ import StoreKit
 /**
  Result for ``Purchases/purchase(product:)``.
  Counterpart of `PurchaseCompletedBlock` for `async` APIs.
- Note that `transaction` will be `nil` when ``purchasesAreCompletedBy`` is ``.myApp``
+ Note that `transaction` will be `nil` when ``Purchases/purchasesAreCompletedBy``
+ is ``PurchasesAreCompletedBy/myApp``
  */
 public typealias PurchaseResultData = (transaction: StoreTransaction?,
                                        customerInfo: CustomerInfo,
@@ -1389,9 +1390,10 @@ public extension Purchases {
      * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
      * to generate this for you.
      *
-     * - Parameter purchasesAreCompletedBy: Set this to ``.myApp`` if you have your own IAP implementation
-     * and want to use only RevenueCat's backend. Default is ``.revenueCat``.
-     *
+     * - Parameter purchasesAreCompletedBy: Set this to ``PurchasesAreCompletedBy/myApp``
+     * if you have your own IAP implementation and want to use only RevenueCat's backend.
+     * Default is ``PurchasesAreCompletedBy/revenueCat``.
+     *      *
      * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
      *
      * - Warning: This assumes your IAP implementation uses StoreKit 1.

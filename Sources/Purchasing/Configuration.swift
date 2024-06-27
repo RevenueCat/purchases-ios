@@ -253,7 +253,7 @@ import Foundation
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
         /// 
-        /// Defaults to ``false``
+        /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
         @objc public func with(diagnosticsEnabled: Bool) -> Builder {

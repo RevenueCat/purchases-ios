@@ -156,8 +156,7 @@ public struct PaywallView: View {
         VStack { // Necessary to work around FB12674350 and FB12787354
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
-            }
-            else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
+            } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
