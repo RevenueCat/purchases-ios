@@ -140,7 +140,7 @@ extension PurchaseHandler {
     // MARK: - Purchase
 
     @MainActor
-    func purchase(package: Package) async throws {
+    func purchase(package: Package) async throws -> PurchaseResultData {
         switch self.purchases.purchasesAreCompletedBy {
         case .revenueCat:
             try await performPurchase(package: package)
@@ -150,7 +150,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performPurchase(package: Package) async throws {
+    func performPurchase(package: Package) async throws -> PurchaseResultData {
         Logger.debug(Strings.executing_purchase_logic)
         self.packageBeingPurchased = package
         self.purchaseResult = nil
@@ -175,6 +175,8 @@ extension PurchaseHandler {
                 }
             }
 
+            return result
+
 
         } catch {
             self.purchaseError = error
@@ -183,7 +185,7 @@ extension PurchaseHandler {
     }
 
     @MainActor
-    func performExternalPurchaseLogic(package: Package) async throws  {
+    func performExternalPurchaseLogic(package: Package) async throws -> PurchaseResultData {
         Logger.debug(Strings.executing_external_purchase_logic)
 
         guard let externalPurchaseMethod = self.performPurchase else {
@@ -224,6 +226,8 @@ extension PurchaseHandler {
                 self.purchased = true
             }
         }
+
+        return resultInfo
 
     }
 
