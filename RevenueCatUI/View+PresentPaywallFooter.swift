@@ -130,7 +130,7 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
-        let purchaseHandler = PurchaseHandler.default(performPurchase: nil, performRestore: nil)
+        let purchaseHandler = PurchaseHandler.default()
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
