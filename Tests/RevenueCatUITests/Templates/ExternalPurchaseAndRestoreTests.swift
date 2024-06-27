@@ -18,13 +18,13 @@ import RevenueCat
 import SwiftUI
 import XCTest
 
-
 #if !os(watchOS) && !os(macOS)
 
 enum TestError: Error {
     case error
 }
 
+// swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class ExternalPurchaseAndRestoreTests: TestCase {
@@ -47,25 +47,25 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { package in
+        .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { customerInfo in
+        .onPurchaseCompleted { _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
             callbackOrder.append("onPurchaseCancelled")
         }
-        .onPurchaseFailure { error in
+        .onPurchaseFailure { _ in
             callbackOrder.append("onPurchaseFailure")
         }
         .onRestoreStarted({
             callbackOrder.append("onRestoreStarted")
         })
-        .onRestoreCompleted({ info in
+        .onRestoreCompleted({ _ in
             callbackOrder.append("onRestoreCompleted")
         })
-        .onRestoreFailure({ error in
+        .onRestoreFailure({ _ in
             callbackOrder.append("onRestoreFailure")
         })
         .addToHierarchy()
@@ -97,25 +97,25 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { package in
+        .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { customerInfo in
+        .onPurchaseCompleted { _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
             callbackOrder.append("onPurchaseCancelled")
         }
-        .onPurchaseFailure { error in
+        .onPurchaseFailure { _ in
             callbackOrder.append("onPurchaseFailure")
         }
         .onRestoreStarted({
             callbackOrder.append("onRestoreStarted")
         })
-        .onRestoreCompleted({ info in
+        .onRestoreCompleted({ _ in
             callbackOrder.append("onRestoreCompleted")
         })
-        .onRestoreFailure({ error in
+        .onRestoreFailure({ _ in
             callbackOrder.append("onRestoreFailure")
         })
         .addToHierarchy()
@@ -129,9 +129,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCancelled"]))
     }
 
-
     func testHandleExternalPurchaseFailedPaywall() throws {
         var callbackOrder = [String]()
+        var passedError: Error?
 
         let purchasHandler = Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
@@ -147,10 +147,10 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { package in
+        .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { customerInfo in
+        .onPurchaseCompleted { _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
@@ -158,14 +158,15 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         }
         .onPurchaseFailure { error in
             callbackOrder.append("onPurchaseFailure")
+            passedError = error
         }
         .onRestoreStarted({
             callbackOrder.append("onRestoreStarted")
         })
-        .onRestoreCompleted({ info in
+        .onRestoreCompleted({ _ in
             callbackOrder.append("onRestoreCompleted")
         })
-        .onRestoreFailure({ error in
+        .onRestoreFailure({ _ in
             callbackOrder.append("onRestoreFailure")
         })
         .addToHierarchy()
@@ -175,6 +176,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseFailure"]))
+        expect(passedError).toEventually(matchError(TestError.error))
     }
 
     func testHandleExternalRestore() throws {
@@ -195,16 +197,16 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { package in
+        .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { customerInfo in
+        .onPurchaseCompleted { _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
             callbackOrder.append("onPurchaseCancelled")
         }
-        .onPurchaseFailure { error in
+        .onPurchaseFailure { _ in
             callbackOrder.append("onPurchaseFailure")
         }
         .onRestoreStarted({
@@ -214,7 +216,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             callbackOrder.append("onRestoreCompleted")
             customerInfo = info
         })
-        .onRestoreFailure({ error in
+        .onRestoreFailure({ _ in
             callbackOrder.append("onRestoreFailure")
         })
         .addToHierarchy()
@@ -229,8 +231,9 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(callbackOrder).toEventually(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
     }
 
-    func testHandleExternalRestoreWFailure() throws {
+    func testHandleExternalRestoreFailure() throws {
         var callbackOrder = [String]()
+        var passedError: Error?
 
         let purchasHandler = Self.externalPurchaseHandler { _ in
             return (userCancelled: true, error: nil)
@@ -245,26 +248,27 @@ class ExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { package in
+        .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { customerInfo in
+        .onPurchaseCompleted { _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
             callbackOrder.append("onPurchaseCancelled")
         }
-        .onPurchaseFailure { error in
+        .onPurchaseFailure { _ in
             callbackOrder.append("onPurchaseFailure")
         }
         .onRestoreStarted({
             callbackOrder.append("onRestoreStarted")
         })
-        .onRestoreCompleted({ info in
+        .onRestoreCompleted({ _ in
             callbackOrder.append("onRestoreCompleted")
         })
         .onRestoreFailure({ error in
             callbackOrder.append("onRestoreFailure")
+            passedError = error
         })
         .addToHierarchy()
 
@@ -273,6 +277,7 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(callbackOrder).toEventually(equal(["onRestoreStarted", "performRestore", "onRestoreFailure"]))
+        expect(passedError).toEventually(matchError(TestError.error))
     }
 
     func testHandleExternalPurchaseWithoutPurchaseHandler() throws {
@@ -315,7 +320,6 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(errorThrown).toEventually(beTrue())
     }
 
-
     func testHandleInternalRestoreWithPurchaseHandlers() throws {
         var completed = false
         var customRestoreCodeExecuted = false
@@ -341,7 +345,6 @@ class ExternalPurchaseAndRestoreTests: TestCase {
         expect(customRestoreCodeExecuted) == false
     }
 
-
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
@@ -366,7 +369,6 @@ class ExternalPurchaseAndRestoreTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PaywallView {
-
 
     init(
         offering: Offering,
