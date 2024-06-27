@@ -18,6 +18,8 @@ import RevenueCat
 import SwiftUI
 import XCTest
 
+#if !os(watchOS) && !os(macOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 class ExternalPurchaseAndRestoreTests: TestCase {
@@ -179,3 +181,5 @@ class ExternalPurchaseAndRestoreTests: TestCase {
     }
 
 }
+
+#endif
