@@ -43,6 +43,8 @@ enum Strings {
     case executing_external_purchase_logic
     case executing_restore_logic
     case executing_external_restore_logic
+    
+    case could_not_find_subscription_information
 
 }
 
@@ -117,6 +119,9 @@ extension Strings: CustomStringConvertible {
             return "Will execute custom StoreKit restore purchases logic provided by your app. " +
             "No StoreKit restore purchases logic will be performed by RevenueCat. " +
             "You must have initialized your `PaywallView` appropriately."
+        
+        case .could_not_find_subscription_information:
+            return "Could not find any active subscription's information"
         }
     }
 
