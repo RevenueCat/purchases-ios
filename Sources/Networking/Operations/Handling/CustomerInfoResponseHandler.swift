@@ -53,6 +53,7 @@ class CustomerInfoResponseHandler {
             return
         }
 
+        // TODO: Maybe process here
         _ = Task<Void, Never> {
             do {
                 completion(.success(try await offlineCreator.create(for: self.userID)))
