@@ -200,9 +200,9 @@ extension ConfigureStrings: LogMessage {
 
         case .fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug:
             return "Failed to post the transaction to RevenueCat's backend because your Apple In-App Purchase Key is " +
-            "invalid or not present. This error is thrown only in debug builds; in production, it will fail silently. " +
-            "You must configure an In-App Purchase Key. Please see https://rev.cat/in-app-purchase-key-configuration " +
-            "for more info."
+            "invalid or not present. This error is thrown only in debug builds; in production, it will fail " +
+            "silently. You must configure an In-App Purchase Key. Please see " +
+            "https://rev.cat/in-app-purchase-key-configuration for more info."
         }
     }
 
