@@ -56,7 +56,27 @@ class CustomerInfoResponseHandler {
         // TODO: Maybe process here
         _ = Task<Void, Never> {
             do {
-                completion(.success(try await offlineCreator.create(for: self.userID)))
+                var debug = false
+                #if DEBUG
+                debug = true
+                #endif
+
+                switch result {
+                case .success(let success):
+                    completion(.success(try await offlineCreator.create(for: self.userID)))
+                case .failure(let failure):
+                    
+                    if debug, case let .networkError(networkError) = failure,
+                        case let .errorResponse(errorResponse, _, _) = networkError,
+                       errorResponse.code == .invalidAppleSubscriptionKey {
+
+
+                        print("TODO: Log that this only happens in debug")
+                        completion(.failure(failure))
+                    } else {
+                        completion(.success(try await offlineCreator.create(for: self.userID)))
+                    }
+                }
             } catch {
                 Logger.error(Strings.offlineEntitlements.computing_offline_customer_info_failed(error))
                 completion(result)
