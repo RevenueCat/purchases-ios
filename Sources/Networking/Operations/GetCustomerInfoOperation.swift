@@ -29,7 +29,7 @@ final class GetCustomerInfoOperation: CacheableNetworkOperation {
             customerInfoResponseHandler: .init(
                 offlineCreator: offlineCreator,
                 userID: configuration.appUserID,
-                failIfInvalidSubscriptionKeyDetected: false
+                failIfInvalidSubscriptionKeyDetectedInDebug: false
             ),
             customerInfoCallbackCache: customerInfoCallbackCache)
     }

@@ -32,7 +32,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
             customerInfoResponseHandler: .init(
                 offlineCreator: offlineCustomerInfoCreator,
                 userID: configuration.appUserID,
-                failIfInvalidSubscriptionKeyDetected: true
+                failIfInvalidSubscriptionKeyDetectedInDebug: true
             ),
             customerInfoCallbackCache: customerInfoCallbackCache
         )

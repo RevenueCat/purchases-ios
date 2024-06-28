@@ -23,11 +23,11 @@ class CustomerInfoResponseHandler {
     init(
         offlineCreator: OfflineCustomerInfoCreator?,
         userID: String,
-        failIfInvalidSubscriptionKeyDetected: Bool
+        failIfInvalidSubscriptionKeyDetectedInDebug: Bool
     ) {
         self.offlineCreator = offlineCreator
         self.userID = userID
-        self.failIfInvalidSubscriptionKeyDetectedInDebug = failIfInvalidSubscriptionKeyDetected
+        self.failIfInvalidSubscriptionKeyDetectedInDebug = failIfInvalidSubscriptionKeyDetectedInDebug
     }
 
     func handle(customerInfoResponse response: VerifiedHTTPResponse<Response>.Result,
@@ -62,15 +62,16 @@ class CustomerInfoResponseHandler {
         _ = Task<Void, Never> {
             do {
                 switch result {
-                case .success(let success):
+                case .success:
                     completion(.success(try await offlineCreator.create(for: self.userID)))
                 case .failure(let failure):
+                    let failIfInvalidSubscriptionKeyDetectedInDebug = self.failIfInvalidSubscriptionKeyDetectedInDebug
+
                     var debug = false
                     #if DEBUG
                     debug = true
                     #endif
 
-                    // If we're running in debug and the developer hasn't set up their in app purchase
                     if debug && failIfInvalidSubscriptionKeyDetectedInDebug,
                         case let .networkError(networkError) = failure,
                         case let .errorResponse(errorResponse, _, _) = networkError,

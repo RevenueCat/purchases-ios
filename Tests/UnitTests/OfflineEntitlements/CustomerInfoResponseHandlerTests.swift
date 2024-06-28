@@ -251,7 +251,8 @@ private extension BaseCustomerInfoResponseHandlerTests {
                 productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
                 creator: { self.factory.create(products: $0, mapping: $1, userID: $2) }
             ),
-            userID: self.userID
+            userID: self.userID,
+            failIfInvalidSubscriptionKeyDetectedInDebug: false
         )
     }
 
