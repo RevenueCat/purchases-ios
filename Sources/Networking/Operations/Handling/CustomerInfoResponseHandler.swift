@@ -18,16 +18,25 @@ class CustomerInfoResponseHandler {
     private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
     private let failIfInvalidSubscriptionKeyDetectedInDebug: Bool
+    private let isDebug: () -> Bool
 
     /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't or can't be computed.
     init(
         offlineCreator: OfflineCustomerInfoCreator?,
         userID: String,
-        failIfInvalidSubscriptionKeyDetectedInDebug: Bool
+        failIfInvalidSubscriptionKeyDetectedInDebug: Bool,
+        isDebug: @escaping () -> Bool = {
+            var debug = false
+            #if DEBUG
+            debug = true
+            #endif
+            return debug
+        }
     ) {
         self.offlineCreator = offlineCreator
         self.userID = userID
         self.failIfInvalidSubscriptionKeyDetectedInDebug = failIfInvalidSubscriptionKeyDetectedInDebug
+        self.isDebug = isDebug
     }
 
     func handle(customerInfoResponse response: VerifiedHTTPResponse<Response>.Result,
@@ -67,12 +76,7 @@ class CustomerInfoResponseHandler {
                 case .failure(let failure):
                     let failIfInvalidSubscriptionKeyDetectedInDebug = self.failIfInvalidSubscriptionKeyDetectedInDebug
 
-                    var debug = false
-                    #if DEBUG
-                    debug = true
-                    #endif
-
-                    if debug && failIfInvalidSubscriptionKeyDetectedInDebug,
+                    if isDebug() && failIfInvalidSubscriptionKeyDetectedInDebug,
                         case let .networkError(networkError) = failure,
                         case let .errorResponse(errorResponse, _, _) = networkError,
                         errorResponse.code == .invalidAppleSubscriptionKey {
@@ -83,7 +87,8 @@ class CustomerInfoResponseHandler {
 
                         completion(.failure(failure))
                     } else {
-                        completion(.success(try await offlineCreator.create(for: self.userID)))
+                        let customerInfo = try await offlineCreator.create(for: self.userID)
+                        completion(.success(customerInfo))
                     }
                 }
             } catch {
