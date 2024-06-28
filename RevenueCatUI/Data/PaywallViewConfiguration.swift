@@ -20,7 +20,7 @@ struct PaywallViewConfiguration {
     var fonts: PaywallFontProvider
     var displayCloseButton: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
-    var purchaseHandler: PurchaseHandler?
+    var purchaseHandler: PurchaseHandler
 
     init(
         content: Content,
@@ -29,7 +29,7 @@ struct PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil
+        purchaseHandler: PurchaseHandler
     ) {
         self.content = content
         self.customerInfo = customerInfo
@@ -70,8 +70,10 @@ extension PaywallViewConfiguration {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil
+        purchaseHandler: PurchaseHandler = PurchaseHandler.default()
     ) {
+        let handler = purchaseHandler
+
         self.init(
             content: .optionalOffering(offering),
             customerInfo: customerInfo,
@@ -79,7 +81,7 @@ extension PaywallViewConfiguration {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: handler
         )
     }
 

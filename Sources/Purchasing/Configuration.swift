@@ -151,11 +151,12 @@ import Foundation
          * RevenueCat's backend. Default is `false`.
          *
          * - Warning: This assumes your IAP implementation uses StoreKit 1.
-         * Observer mode is not compatible with StoreKit 2.
+         * `.myApp` is not compatible with StoreKit 2.
          */
         @available(*, deprecated, message: "Use with(purchasesAreCompletedBy:) instead.")
         @objc public func with(observerMode: Bool) -> Configuration.Builder {
             self.purchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
+
             return self
         }
         /**
@@ -170,6 +171,7 @@ import Foundation
             self.purchasesAreCompletedBy = purchasesAreCompletedBy
             return self
         }
+
         /**
          * Set `userDefaults`.
          * - Parameter userDefaults: Custom `UserDefaults` to use
@@ -251,7 +253,7 @@ import Foundation
         /// Examples of this information include response times, cache hits or error codes.
         /// This information will be anonymous so it can't be traced back to the end-user
         /// 
-        /// Defaults to ``false``
+        /// Defaults to `false`
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
         @objc public func with(diagnosticsEnabled: Bool) -> Builder {

@@ -119,12 +119,14 @@ public class PaywallViewController: UIViewController {
     ) {
         self.shouldBlockTouchEvents = shouldBlockTouchEvents
         self.dismissRequestedHandler = dismissRequestedHandler
+        let handler = PurchaseHandler.default()
 
         self.configuration = .init(
             content: content,
             mode: Self.mode,
             fonts: fonts,
-            displayCloseButton: displayCloseButton
+            displayCloseButton: displayCloseButton,
+            purchaseHandler: handler
         )
 
         super.init(nibName: nil, bundle: nil)

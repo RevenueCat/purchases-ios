@@ -74,6 +74,7 @@ extension View {
     public func paywallFooter(
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -82,12 +83,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: nil,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -114,6 +118,7 @@ extension View {
     @available(macOS, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     @available(macCatalyst, deprecated: 1, renamed: "paywallFooter(offering:condensed:fonts:purchaseStarted:purchaseCompleted:purchaseCancelled:restoreStarted:restoreCompleted:purchaseFailure:restoreFailure:)")
     // swiftlint:enable line_length
+    @_disfavoredOverload
     public func paywallFooter(
         offering: Offering,
         condensed: Bool = false,
@@ -125,12 +130,14 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default()
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: { _ in
                 purchaseStarted()
             },
@@ -157,6 +164,7 @@ extension View {
         offering: Offering,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        myAppPurchaseLogic: MyAppPurchaseLogic? = nil,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,
@@ -165,12 +173,15 @@ extension View {
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil
     ) -> some View {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                      performRestore: myAppPurchaseLogic?.performRestore)
         return self.paywallFooter(
             offering: offering,
             customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
+            purchaseHandler: purchaseHandler,
             purchaseStarted: purchaseStarted,
             purchaseCompleted: purchaseCompleted,
             purchaseCancelled: purchaseCancelled,
@@ -188,7 +199,7 @@ extension View {
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler? = nil,
+        purchaseHandler: PurchaseHandler,
         purchaseStarted: PurchaseOfPackageStartedHandler? = nil,
         purchaseCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseCancelled: PurchaseCancelledHandler? = nil,

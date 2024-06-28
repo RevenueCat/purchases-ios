@@ -179,11 +179,87 @@ class PresentIfNeededTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testPresentWithMyAppPurchasingLogic() throws {
+        self.continueAfterFailure = false
+
+        var packageBeingPurchased: Package?
+
+        let handler = Self.externalPurchaseHandler(performPurchase: { packageToPurchase in
+            packageBeingPurchased = packageToPurchase
+            return (userCancelled: false, error: nil)
+        }, performRestore: {
+            return (success: true, error: nil)
+        })
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { _ in
+                return true
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+        let task = Task.detached {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        defer {
+            task.cancel()
+            dispose()
+        }
+
+        expect(packageBeingPurchased).toEventuallyNot(beNil())
+        task.cancel()
+    }
+
+    func testPresentWithMyAppRestoreLogic() throws {
+        self.continueAfterFailure = false
+
+        var restored = false
+
+        let handler = Self.externalPurchaseHandler(performPurchase: { _ in
+            return (userCancelled: false, error: nil)
+        }, performRestore: {
+            restored = true
+            return (success: true, error: nil)
+        })
+
+        let dispose = try Text("")
+            .presentPaywallIfNeeded(offering: Self.offering,
+                                    introEligibility: .producing(eligibility: .eligible),
+                                    purchaseHandler: handler) { _ in
+                return true
+            } restoreCompleted: { _ in
+            } customerInfoFetcher: {
+                return TestData.customerInfo
+            }
+            .addToHierarchy()
+        let task = Task.detached {
+            _ = try await handler.restorePurchases()
+        }
+
+        defer {
+            task.cancel()
+            dispose()
+        }
+
+        expect(restored).toEventually(beTrue())
+        task.cancel()
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
     private static let package = TestData.annualPackage
     private static let failureError: Error = ErrorCode.storeProblemError
+    private static func externalPurchaseHandler(performPurchase: PerformPurchase? = nil,
+                                                performRestore: PerformRestore? = nil)
+    -> PurchaseHandler {
+        .mock(purchasesAreCompletedBy: .myApp,
+              performPurchase: performPurchase,
+              performRestore: performRestore)
+    }
 
 }
 
