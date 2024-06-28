@@ -118,7 +118,7 @@ extension BackendError: PurchasesErrorConvertible {
                                                         functionName: source.function,
                                                         line: source.line)
         case let .invalidAppleSubscriptionKey(source):
-            return ErrorUtils.unknownError(
+            return ErrorUtils.configurationError(
                 message: ErrorCode.invalidAppleSubscriptionKeyError.description,
                 fileName: source.file,
                 functionName: source.function,

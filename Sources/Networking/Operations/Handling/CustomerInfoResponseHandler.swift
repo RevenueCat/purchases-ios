@@ -17,11 +17,17 @@ class CustomerInfoResponseHandler {
 
     private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
+    private let failIfInvalidSubscriptionKeyDetectedInDebug: Bool
 
     /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't or can't be computed.
-    init(offlineCreator: OfflineCustomerInfoCreator?, userID: String) {
+    init(
+        offlineCreator: OfflineCustomerInfoCreator?,
+        userID: String,
+        failIfInvalidSubscriptionKeyDetected: Bool
+    ) {
         self.offlineCreator = offlineCreator
         self.userID = userID
+        self.failIfInvalidSubscriptionKeyDetectedInDebug = failIfInvalidSubscriptionKeyDetected
     }
 
     func handle(customerInfoResponse response: VerifiedHTTPResponse<Response>.Result,
@@ -53,23 +59,22 @@ class CustomerInfoResponseHandler {
             return
         }
 
-        // TODO: Maybe process here
         _ = Task<Void, Never> {
             do {
-                var debug = false
-                #if DEBUG
-                debug = true
-                #endif
-
                 switch result {
                 case .success(let success):
                     completion(.success(try await offlineCreator.create(for: self.userID)))
                 case .failure(let failure):
-                    
-                    if debug, case let .networkError(networkError) = failure,
-                        case let .errorResponse(errorResponse, _, _) = networkError,
-                       errorResponse.code == .invalidAppleSubscriptionKey {
+                    var debug = false
+                    #if DEBUG
+                    debug = true
+                    #endif
 
+                    // If we're running in debug and the developer hasn't set up their in app purchase
+                    if debug && failIfInvalidSubscriptionKeyDetectedInDebug,
+                        case let .networkError(networkError) = failure,
+                        case let .errorResponse(errorResponse, _, _) = networkError,
+                        errorResponse.code == .invalidAppleSubscriptionKey {
 
                         print("TODO: Log that this only happens in debug")
                         completion(.failure(failure))
