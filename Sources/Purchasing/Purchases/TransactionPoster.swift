@@ -206,8 +206,6 @@ private extension TransactionPoster {
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let customerInfoResult = result.map(\.info)
 
-        print("---handleReceiptPost result: \(result)")
-
         self.operationDispatcher.dispatchOnMainActor {
             switch result {
             case let .success((customerInfo, product)):
