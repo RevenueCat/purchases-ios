@@ -76,7 +76,10 @@ class CustomerInfoResponseHandler {
                         case let .errorResponse(errorResponse, _, _) = networkError,
                         errorResponse.code == .invalidAppleSubscriptionKey {
 
-                        print("TODO: Log that this only happens in debug")
+                        Logger.warn(
+                            Strings.configure.fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug
+                        )
+
                         completion(.failure(failure))
                     } else {
                         completion(.success(try await offlineCreator.create(for: self.userID)))

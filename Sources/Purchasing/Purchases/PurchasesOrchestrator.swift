@@ -1491,8 +1491,6 @@ extension PurchasesOrchestrator {
             data: transactionData
         )
 
-        print("The result here is \(result)")
-
         self.handlePostReceiptResult(result,
                                      transactionData: transactionData,
                                      subscriberAttributes: unsyncedAttributes,
