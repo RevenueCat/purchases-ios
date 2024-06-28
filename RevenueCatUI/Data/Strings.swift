@@ -39,6 +39,8 @@ enum Strings {
     case restore_purchases_with_empty_result
     case setting_restored_customer_info
 
+    case could_not_find_subscription_information
+
 }
 
 extension Strings: CustomStringConvertible {
@@ -96,6 +98,8 @@ extension Strings: CustomStringConvertible {
 
         case .setting_restored_customer_info:
             return "Setting restored customer info"
+        case .could_not_find_subscription_information:
+            return "Could not find any active subscription's information"
         }
     }
 
