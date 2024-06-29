@@ -731,7 +731,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.changeClientToEnforced()
+        self.changeClient(.enforced)
     }
 
     func testValidSignature() {
@@ -771,7 +771,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
-                                with: Signing.enforcedVerificationMode(),
+                                with: Signing.verificationMode(with: .enforced),
                                 completionHandler: completion)
         }
 
@@ -798,7 +798,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
 
-        self.changeClientToEnforced(forceSignatureFailures: true)
+        self.changeClient(.enforced, forceSignatureFailures: true)
 
         let response: EmptyResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path), completionHandler: completion)
@@ -848,25 +848,22 @@ private extension BaseSignatureVerificationHTTPClientTests {
         forceSignatureFailures: Bool = false,
         disableHeaderSignatureVerification: Bool = false
     ) {
-        self.createClient(Signing.verificationMode(with: verificationMode),
-                          forceSignatureFailures: forceSignatureFailures,
-                          disableHeaderSignatureVerification: disableHeaderSignatureVerification)
-    }
-
-    final func changeClientToEnforced(forceSignatureFailures: Bool = false) {
-        self.createClient(Signing.enforcedVerificationMode(),
-                          forceSignatureFailures: forceSignatureFailures)
+        self.createClient(
+            verificationMode,
+            forceSignatureFailures: forceSignatureFailures,
+            disableHeaderSignatureVerification: disableHeaderSignatureVerification
+        )
     }
 
     private final func createClient(
-        _ mode: Signing.ResponseVerificationMode,
+        _ mode: Configuration.EntitlementVerificationMode,
         forceSignatureFailures: Bool = false,
         disableHeaderSignatureVerification: Bool = false
     ) {
         self.systemInfo = MockSystemInfo(
             platformInfo: nil,
             finishTransactions: false,
-            responseVerificationMode: mode,
+            responseVerificationMode: Signing.verificationMode(with: mode),
             dangerousSettings: .init(
                 autoSyncPurchases: true,
                 internalSettings: DangerousSettings.Internal(
