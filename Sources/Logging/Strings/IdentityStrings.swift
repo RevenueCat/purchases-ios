@@ -26,7 +26,7 @@ enum IdentityStrings {
 
     case log_out_called_for_user
 
-    case log_out_success
+    case log_out_success(newAppUserID: String)
 
     case identifying_app_user_id
 
@@ -41,6 +41,8 @@ enum IdentityStrings {
     case switching_user_same_app_user_id(newUserID: String)
 
     case sync_attributes_and_offerings_rate_limit_reached(maxCalls: Int, period: Int)
+
+    case app_store_logout_detected_anonymous_id_not_sharing
 
 }
 
@@ -62,8 +64,8 @@ extension IdentityStrings: LogMessage {
             return "Log in successful"
         case .log_out_called_for_user:
             return "Log out called for user"
-        case .log_out_success:
-            return "Log out successful"
+        case let .log_out_success(newAppUserID):
+            return "Log out successful, new appUserID: \(newAppUserID)"
         case .identifying_app_user_id:
             return "Identifying App User ID"
         case .null_currentappuserid:
@@ -80,6 +82,12 @@ extension IdentityStrings: LogMessage {
         case let .sync_attributes_and_offerings_rate_limit_reached(maxCalls, period):
             return "Sync attributes and offerings rate limit reached:\(maxCalls) per \(period) seconds. " +
             "Returning offerings from cache."
+
+        case .app_store_logout_detected_anonymous_id_not_sharing:
+            return "The current user doesn't have transactions in their App Store Account, " +
+            "but their corresponding CustomerInfo does. \n " +
+            "The user will be reset under assumption that they've logged out of their App Store Account " +
+            "\n becuase of the disallowSharingAppStoreAccountsForAnonymousIDs dangerousSetting"
         }
     }
 
