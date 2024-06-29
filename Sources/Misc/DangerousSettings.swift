@@ -77,6 +77,12 @@ import Foundation
      */
     @objc public let customEntitlementComputation: Bool
 
+    /**
+     * Experimental. A property meant for apps that don't have an accounts system and want to keep
+     * the appUserID synced across devices through NSUbiquituousKeyValueStorage.
+     */
+    public let cloudSyncedAnonymousIDs: Bool
+
     internal let internalSettings: InternalDangerousSettingsType
 
     @objc public override convenience init() {
@@ -109,10 +115,12 @@ import Foundation
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
-                  internalSettings: InternalDangerousSettingsType) {
+                  internalSettings: InternalDangerousSettingsType,
+                  cloudSyncedAnonymousIDs: Bool = false) {
         self.autoSyncPurchases = autoSyncPurchases
         self.internalSettings = internalSettings
         self.customEntitlementComputation = customEntitlementComputation
+        self.cloudSyncedAnonymousIDs = cloudSyncedAnonymousIDs
     }
 
 }
