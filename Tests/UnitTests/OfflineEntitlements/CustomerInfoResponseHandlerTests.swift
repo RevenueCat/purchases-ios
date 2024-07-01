@@ -265,7 +265,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
         expect(self.factory.createRequested) == false
 
         self.logger.verifyMessageWasLogged(
-            Strings.configure.fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug,
+            Strings.configure.sk2_invalid_inapp_purchase_key,
             level: .warn
         )
     }
