@@ -25,12 +25,8 @@ import RevenueCat
 @MainActor
 class ManageSubscriptionsViewModel: ObservableObject {
 
-    @Published
-    private(set) var subscriptionInformation: SubscriptionInformation?
-    @Published
-    private(set) var refundRequestStatusMessage: String?
-    @Published
-    private(set) var configuration: CustomerCenterConfigData?
+    let configuration: CustomerCenterConfigData
+
     @Published
     var showRestoreAlert: Bool = false
     @Published
@@ -41,26 +37,30 @@ class ManageSubscriptionsViewModel: ObservableObject {
             }
         }
     }
-
     var isLoaded: Bool {
         return state != .notLoaded
     }
+
+    @Published
+    private(set) var subscriptionInformation: SubscriptionInformation?
+    @Published
+    private(set) var refundRequestStatusMessage: String?
 
     private var purchasesProvider: ManageSubscriptionsPurchaseType
 
     private var error: Error?
 
-    convenience init() {
-        self.init(purchasesProvider: ManageSubscriptionPurchases())
+    convenience init(configuration: CustomerCenterConfigData) {
+        self.init(configuration: configuration,
+                  purchasesProvider: ManageSubscriptionPurchases())
     }
 
-    // @PublicForExternalTesting
-    init(purchasesProvider: ManageSubscriptionsPurchaseType) {
+    init(configuration: CustomerCenterConfigData, purchasesProvider: ManageSubscriptionsPurchaseType) {
         self.state = .notLoaded
+        self.configuration = configuration
         self.purchasesProvider = purchasesProvider
     }
 
-    // @PublicForExternalTesting
     init(configuration: CustomerCenterConfigData,
          subscriptionInformation: SubscriptionInformation) {
         self.configuration = configuration
@@ -72,7 +72,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
     func loadScreen() async {
         do {
             try await loadSubscriptionInformation()
-            loadCustomerCenterConfig()
             self.state = .success
         } catch {
             self.state = .error(error)
@@ -102,10 +101,6 @@ class ManageSubscriptionsViewModel: ObservableObject {
             productIdentifier: subscribedProductID,
             active: currentEntitlement.isActive
         )
-    }
-
-    private func loadCustomerCenterConfig() {
-        self.configuration = CustomerCenterConfigTestData.customerCenterData
     }
 
     #if os(iOS) || targetEnvironment(macCatalyst)

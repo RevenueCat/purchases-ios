@@ -38,9 +38,11 @@ import RevenueCat
             }
         }
     }
+    @Published
+    var configuration: CustomerCenterConfigData?
 
     var isLoaded: Bool {
-        return state != .notLoaded
+        return state != .notLoaded && configuration != nil
     }
 
     private var customerInfoFetcher: CustomerInfoFetcher
@@ -92,6 +94,14 @@ import RevenueCat
             self.hasSubscriptions = hasSubscriptions
             self.subscriptionsAreFromApple = subscriptionsAreFromApple
             self.state = .success
+        } catch {
+            self.state = .error(error)
+        }
+    }
+
+    func loadCustomerCenterConfig() async {
+        do {
+            self.configuration = try await Purchases.shared.loadCustomerCenter()
         } catch {
             self.state = .error(error)
         }

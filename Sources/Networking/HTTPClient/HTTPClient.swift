@@ -102,6 +102,9 @@ class HTTPClient {
 
     // Visible for tests
     var defaultHeaders: RequestHeaders {
+        let supportedLocales = self.systemInfo.preferredLanguages.map {
+            $0.replacingOccurrences(of: "-", with: "_")
+        }.joined(separator: ",")
         var headers: RequestHeaders = [
             "content-type": "application/json",
             "X-Version": SystemInfo.frameworkVersion,
@@ -112,6 +115,7 @@ class HTTPClient {
             "X-Client-Build-Version": SystemInfo.buildVersion,
             "X-Client-Bundle-ID": SystemInfo.bundleIdentifier,
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKit2Setting.isEnabledAndAvailable)",
+            "X-Supported-Locales": supportedLocales,
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]

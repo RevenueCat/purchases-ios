@@ -29,9 +29,12 @@ struct ManageSubscriptionsView: View {
     var openURL
 
     @StateObject
-    private var viewModel = ManageSubscriptionsViewModel()
+    private var viewModel: ManageSubscriptionsViewModel
 
-    init() { }
+    init(configuration: CustomerCenterConfigData) {
+        let viewModel = ManageSubscriptionsViewModel(configuration: configuration)
+        self._viewModel = .init(wrappedValue: viewModel)
+    }
 
     fileprivate init(viewModel: ManageSubscriptionsViewModel) {
         self._viewModel = .init(wrappedValue: viewModel)
@@ -88,8 +91,8 @@ struct HeaderView: View {
     private(set) var viewModel: ManageSubscriptionsViewModel
 
     var body: some View {
-        if let configuration = viewModel.configuration {
-            Text(configuration.title)
+        if let screen = viewModel.configuration.screen(ofType: .management) {
+            Text(screen.title)
                 .font(.title)
                 .padding()
         }
@@ -148,23 +151,21 @@ struct ManageSubscriptionsButtonsView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if let configuration = viewModel.configuration {
-                let filteredPaths = configuration.paths.filter { path in
-                    #if targetEnvironment(macCatalyst)
-                        return path.type == .refundRequest
-                    #else
-                        return true
-                    #endif
-                }
-                ForEach(filteredPaths, id: \.id) { path in
-                    AsyncButton(action: {
-                        await self.viewModel.handleAction(for: path)
-                    }, label: {
-                        Text(path.title)
-                    })
-                    .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
-                    .buttonStyle(ManageSubscriptionsButtonStyle())
-                }
+            let filteredPaths = viewModel.configuration.paths.filter { path in
+                #if targetEnvironment(macCatalyst)
+                    return path.type == .refundRequest
+                #else
+                    return true
+                #endif
+            }
+            ForEach(filteredPaths, id: \.id) { path in
+                AsyncButton(action: {
+                    await self.viewModel.handleAction(for: path)
+                }, label: {
+                    Text(path.title)
+                })
+                .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
+                .buttonStyle(ManageSubscriptionsButtonStyle())
             }
         }
     }
