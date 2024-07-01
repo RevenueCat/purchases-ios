@@ -77,6 +77,7 @@ enum CustomerCenterConfigTestData {
                 subtitle: "You currently have no active subscriptions"
             )
         ]
+        appearance: CustomerCenterConfigData.Appearance(mode: .system)
     )
 
     static let subscriptionInformation: SubscriptionInformation = .init(

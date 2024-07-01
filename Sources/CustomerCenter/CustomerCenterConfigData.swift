@@ -16,15 +16,37 @@
 import Foundation
 
 // swiftlint:disable missing_docs
+public typealias RCColor = PaywallColor
+
+// swiftlint:disable missing_docs
 // swiftlint:disable nesting
 public struct CustomerCenterConfigData {
 
     public let paths: [HelpPath]
     public let screens: [Screen]
+    public let appearance: Appearance
 
-    public init(paths: [HelpPath], screens: [Screen]) {
+    public init(paths: [HelpPath], 
+                screens: [Screen],
+                appearance: Appearance) {
         self.paths = paths
         self.screens = screens
+        self.appearance = appearance
+    }
+
+    public struct Appearance {
+
+        public let mode: AppearanceMode
+
+        public init(mode: AppearanceMode) {
+            self.mode = mode
+        }
+
+        public enum AppearanceMode {
+            case system
+            case custom(color: RCColor)
+        }
+
     }
 
     public struct HelpPath {

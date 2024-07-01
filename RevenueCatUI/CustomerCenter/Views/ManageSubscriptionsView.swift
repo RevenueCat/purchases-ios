@@ -43,17 +43,17 @@ struct ManageSubscriptionsView: View {
     var body: some View {
         NavigationView {
             VStack {
-                if viewModel.isLoaded {
-                    HeaderView(viewModel: viewModel)
+                if self.viewModel.isLoaded {
+                    HeaderView(viewModel: self.viewModel)
 
                     if let subscriptionInformation = self.viewModel.subscriptionInformation {
                         SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
-                                                refundRequestStatusMessage: viewModel.refundRequestStatusMessage)
+                                                refundRequestStatusMessage: self.viewModel.refundRequestStatusMessage)
                     }
 
                     Spacer()
 
-                    ManageSubscriptionsButtonsView(viewModel: viewModel,
+                    ManageSubscriptionsButtonsView(viewModel: self.viewModel,
                                                    loadingPath: self.$viewModel.loadingPath)
 
                 } else {
@@ -61,11 +61,13 @@ struct ManageSubscriptionsView: View {
                         .progressViewStyle(CircularProgressViewStyle())
                 }
 
-                if let feedbackSurveyData = viewModel.feedbackSurveyData {
+                if let feedbackSurveyData = self.viewModel.feedbackSurveyData,
+                   let configuration = self.viewModel.configuration {
                     NavigationLink(
-                        destination: FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData)
+                        destination: FeedbackSurveyView(feedbackSurveyData: feedbackSurveyData,
+                                                        appearance: configuration.appearance)
                             .onDisappear {
-                                viewModel.feedbackSurveyData = nil
+                                self.viewModel.feedbackSurveyData = nil
                             },
                         isActive: .constant(true)
                     ) {
@@ -197,27 +199,33 @@ struct ManageSubscriptionButton: View {
     @ObservedObject var viewModel: ManageSubscriptionsViewModel
 
     var body: some View {
-        AsyncButton(action: {
-            await viewModel.determineFlow(for: path)
-        }) {
-            if viewModel.loadingPath?.id == path.id {
-                ProgressView()
-            } else {
-                Text(path.title)
+        if let configuration = viewModel.configuration {
+            AsyncButton(action: {
+                await viewModel.determineFlow(for: path)
+            }) {
+                if self.viewModel.loadingPath?.id == path.id {
+                    ProgressView()
+                } else {
+                    Text(path.title)
+                }
             }
+            .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+            .sheet(isPresented: self.$viewModel.isShowingPromotionalOffer, onDismiss: {
+                self.viewModel.handleSheetDismiss()
+            }, content: {
+                if let promotionalOffer = self.viewModel.promotionalOffer,
+                   let product = self.viewModel.product {
+                    PromotionalOfferView(promotionalOffer: promotionalOffer,
+                                         product: product,
+                                         appearance: configuration.appearance)
+                }
+            })
+            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: configuration.appearance))
+            .disabled(self.viewModel.loadingPath?.id == path.id)
+        } else {
+            EmptyView()
         }
-        .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
-        .sheet(isPresented: $viewModel.isShowingPromotionalOffer, onDismiss: {
-            viewModel.handleSheetDismiss()
-        }, content: {
-            if let promotionalOffer = viewModel.promotionalOffer,
-               let product = viewModel.product {
-                PromotionalOfferView(promotionalOffer: promotionalOffer,
-                                     product: product)
-            }
-        })
-        .buttonStyle(ManageSubscriptionsButtonStyle())
-        .disabled(viewModel.loadingPath?.id == path.id)
+
     }
 }
 

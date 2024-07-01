@@ -27,9 +27,12 @@ struct FeedbackSurveyView: View {
 
     @StateObject
     private var viewModel: FeedbackSurveyViewModel
+    private let appearance: CustomerCenterConfigData.Appearance
 
-    init(feedbackSurveyData: FeedbackSurveyData) {
+    init(feedbackSurveyData: FeedbackSurveyData,
+         appearance: CustomerCenterConfigData.Appearance) {
         self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData))
+        self.appearance = appearance
     }
 
     var body: some View {
@@ -42,6 +45,7 @@ struct FeedbackSurveyView: View {
 
             FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
                                       action: self.viewModel.handleAction(for:),
+                                      appearance: self.appearance,
                                       loadingStates: self.$viewModel.loadingStates)
         }
         .sheet(
@@ -51,8 +55,8 @@ struct FeedbackSurveyView: View {
                 if let promotionalOffer = self.viewModel.promotionalOffer,
                    let product = self.viewModel.product {
                     PromotionalOfferView(promotionalOffer: promotionalOffer,
-                                         product: product
-                    )
+                                         product: product,
+                                         appearance: self.appearance)
                 }
             })
     }
@@ -68,6 +72,8 @@ struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
     let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
+    let appearance: CustomerCenterConfigData.Appearance
+
     @Binding
     var loadingStates: [String: Bool]
 
@@ -85,7 +91,7 @@ struct FeedbackSurveyButtonsView: View {
                         Text(option.title)
                     }
                 }
-                .buttonStyle(ManageSubscriptionsButtonStyle())
+                .buttonStyle(ManageSubscriptionsButtonStyle(appearance: appearance))
                 .disabled(self.loadingStates[option.id] ?? false)
             }
         }

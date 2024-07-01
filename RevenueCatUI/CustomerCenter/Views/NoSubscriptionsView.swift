@@ -29,15 +29,16 @@ struct NoSubscriptionsView: View {
     // TODO: build screen using this configuration
     let configuration: CustomerCenterConfigData
 
-    @Environment(\.dismiss)
-    var dismiss
-
-    @State
-    private var showRestoreAlert: Bool = false
-
     init(configuration: CustomerCenterConfigData) {
         self.configuration = configuration
     }
+
+    var appearance: CustomerCenterConfigData.Appearance
+
+    @Environment(\.dismiss)
+    private var dismiss
+    @State
+    private var showRestoreAlert: Bool = false
 
     var body: some View {
         VStack {
@@ -54,7 +55,7 @@ struct NoSubscriptionsView: View {
                 showRestoreAlert = true
             }
             .restorePurchasesAlert(isPresented: $showRestoreAlert)
-            .buttonStyle(ManageSubscriptionsButtonStyle())
+            .buttonStyle(ManageSubscriptionsButtonStyle(appearance: appearance))
 
             Button("Cancel") {
                 dismiss()
