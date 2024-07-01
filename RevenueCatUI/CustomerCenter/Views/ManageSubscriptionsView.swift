@@ -45,7 +45,7 @@ struct ManageSubscriptionsView: View {
             VStack {
                 if viewModel.isLoaded {
                     HeaderView(viewModel: viewModel)
-                    
+
                     if let subscriptionInformation = self.viewModel.subscriptionInformation {
                         SubscriptionDetailsView(subscriptionInformation: subscriptionInformation,
                                                 refundRequestStatusMessage: viewModel.refundRequestStatusMessage)
@@ -53,7 +53,8 @@ struct ManageSubscriptionsView: View {
 
                     Spacer()
 
-                    ManageSubscriptionsButtonsView(viewModel: viewModel)
+                    ManageSubscriptionsButtonsView(viewModel: viewModel,
+                                                   loadingPath: self.$viewModel.loadingPath)
 
                 } else {
                     ProgressView()
@@ -162,7 +163,9 @@ struct SubscriptionDetailsView: View {
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
-    private(set) var viewModel: ManageSubscriptionsViewModel
+    var viewModel: ManageSubscriptionsViewModel
+    @Binding
+    var loadingPath: CustomerCenterConfigData.HelpPath?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -175,18 +178,47 @@ struct ManageSubscriptionsButtonsView: View {
                     #endif
                 }
                 ForEach(filteredPaths, id: \.id) { path in
-                    AsyncButton(action: {
-                        self.viewModel.determineFlow(for: path)
-                    }, label: {
-                        Text(path.title)
-                    })
-                    .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
-                    .buttonStyle(ManageSubscriptionsButtonStyle())
+                    ManageSubscriptionButton(path: path, viewModel: viewModel)
                 }
             }
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+struct ManageSubscriptionButton: View {
+
+    let path: CustomerCenterConfigData.HelpPath
+    @ObservedObject var viewModel: ManageSubscriptionsViewModel
+
+    var body: some View {
+        AsyncButton(action: {
+            await viewModel.determineFlow(for: path)
+        }) {
+            if viewModel.loadingPath?.id == path.id {
+                ProgressView()
+            } else {
+                Text(path.title)
+            }
+        }
+        .restorePurchasesAlert(isPresented: $viewModel.showRestoreAlert)
+        .sheet(isPresented: $viewModel.isShowingPromotionalOffer, onDismiss: {
+            viewModel.handleSheetDismiss()
+        }, content: {
+            if let promotionalOffer = viewModel.promotionalOffer,
+               let product = viewModel.product {
+                PromotionalOfferView(promotionalOffer: promotionalOffer,
+                                     product: product)
+            }
+        })
+        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .disabled(viewModel.loadingPath?.id == path.id)
+    }
 }
 
 #if DEBUG

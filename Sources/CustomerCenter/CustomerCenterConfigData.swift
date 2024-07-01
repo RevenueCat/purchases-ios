@@ -100,10 +100,12 @@ public struct CustomerCenterConfigData {
 
                 public let id: String
                 public let title: String
+                public let promotionalOffer: PromotionalOffer?
 
-                public init(id: String, title: String) {
+                public init(id: String, title: String, promotionalOffer: PromotionalOffer?) {
                     self.id = id
                     self.title = title
+                    self.promotionalOffer = promotionalOffer
                 }
 
             }
