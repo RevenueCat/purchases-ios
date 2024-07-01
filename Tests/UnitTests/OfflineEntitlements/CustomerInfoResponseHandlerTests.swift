@@ -241,6 +241,10 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
 // swiftlint:disable:next type_name
 class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: BaseCustomerInfoResponseHandlerTests {
 
+    override func setUpWithError() throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+    }
+
     func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorEnabled() async {
         self.factory.stubbedResult = Self.offlineCustomerInfo
         self.fetcher.stubbedResult = .success([])
