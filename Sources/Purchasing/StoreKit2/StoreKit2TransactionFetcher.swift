@@ -31,6 +31,10 @@ protocol StoreKit2TransactionFetcherType: Sendable {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var firstVerifiedTransaction: StoreTransaction? { get async }
 
+    var appTransactionJWS: String? { get async }
+
+    func appTransactionJWS(_ completionHandler: @escaping (String?) -> Void)
+
 }
 
 final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
@@ -99,6 +103,42 @@ final class StoreKit2TransactionFetcher: StoreKit2TransactionFetcherType {
         )
     }
 
+    /// A computed property that retrieves the JWS (JSON Web Signature) representation 
+    /// of the app transaction asynchronously.
+    ///
+    /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil`.
+    ///
+    /// - Returns: A `String` containing the JWS representation of the app transaction, 
+    /// or `nil` if the feature is unavailable on the current platform version.
+    var appTransactionJWS: String? {
+        get async {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return try? await AppTransaction.shared.jwsRepresentation
+            } else {
+                return nil
+            }
+        }
+    }
+
+    /// Retrieves the JWS (JSON Web Signature) representation of the AppTransaction asynchronously and
+    /// passes it to the provided completion handler.
+    ///
+    /// If the OS does not support AppTransaction (available in iOS16+), it returns `nil` through the 
+    /// completion handler.
+    ///
+    /// - Parameter completion: A closure that is called with the JWS representation of the app transaction, or `nil`
+    /// if the feature is unavailable on the current platform version.
+    /// - Parameter result: A `String?` containing the JWS representation of the app transaction, 
+    /// or `nil` if unavailable.
+    func appTransactionJWS(_ completion: @escaping (String?) -> Void) {
+        Async.call(with: completion) {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                return try? await AppTransaction.shared.jwsRepresentation
+            } else {
+                return nil
+            }
+        }
+    }
 }
 
 // MARK: -

@@ -29,6 +29,7 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     // `StoreKit.Transaction` can't be stored directly as a property.
     // See https://openradar.appspot.com/radar?id=4970535809187840 / https://bugs.swift.org/browse/SR-15825
     var mockTransaction: Box<StoreKit.Transaction?> = .init(nil)
+    var mockResult: Box<StoreKit.Product.PurchaseResult?> = .init(nil)
     var mockJWSToken: String = ""
     var mockEnvironment: StoreEnvironment = .sandbox
 
@@ -55,20 +56,40 @@ final class MockStoreKit2TransactionListener: StoreKit2TransactionListenerType {
     var invokedHandleParametersList = [(purchaseResult: Box<StoreKit.Product.PurchaseResult>, Void)]()
 
     func handle(
-        purchaseResult: StoreKit.Product.PurchaseResult
+        purchaseResult: StoreKit.Product.PurchaseResult,
+        fromTransactionUpdate: Bool = false
     ) async throws -> StoreKit2TransactionListener.ResultData {
         self.invokedHandle = true
         self.invokedHandleCount += 1
         self.invokedHandleParameters = (.init(purchaseResult), ())
         self.invokedHandleParametersList.append((.init(purchaseResult), ()))
 
-        let transaction: StoreTransaction? = self.mockTransaction.value.map {
-            StoreTransaction(sk2Transaction: $0,
-                             jwsRepresentation: self.mockJWSToken,
-                             environmentOverride: self.mockEnvironment)
+        var transaction: StoreTransaction?
+
+        if let mockTransaction = self.mockTransaction.value {
+            transaction = StoreTransaction(sk2Transaction: mockTransaction,
+                                           jwsRepresentation: self.mockJWSToken,
+                                           environmentOverride: self.mockEnvironment)
+        } else if let mockResult  = self.mockResult.value {
+            if let verificationResult = mockResult.verificationResult {
+                transaction = StoreTransaction(sk2Transaction: verificationResult.underlyingTransaction,
+                                               jwsRepresentation: self.mockJWSToken,
+                                               environmentOverride: self.mockEnvironment)
+            }
+        } else if let parameterResult = purchaseResult.verificationResult {
+            transaction = StoreTransaction(sk2Transaction: parameterResult.underlyingTransaction,
+                                           jwsRepresentation: parameterResult.jwsRepresentation,
+                                           environmentOverride: self.mockEnvironment)
         }
 
         return (self.mockCancelled, transaction)
+    }
+
+    var invokedHandleSK2ObserverModeTransaction = false
+    var invokedHandleSK2ObserverModeTransactionCount = 0
+    func handleSK2ObserverModeTransaction(verifiedTransaction: Transaction, jwsRepresentation: String) async throws {
+        self.invokedHandleSK2ObserverModeTransaction = true
+        invokedHandleSK2ObserverModeTransactionCount += 1
     }
 }
 

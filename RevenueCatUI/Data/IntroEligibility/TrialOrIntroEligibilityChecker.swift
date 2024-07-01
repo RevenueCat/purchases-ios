@@ -14,7 +14,6 @@
 import Foundation
 import RevenueCat
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 // @PublicForExternalTesting
 final class TrialOrIntroEligibilityChecker: ObservableObject {
 
@@ -53,7 +52,6 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension TrialOrIntroEligibilityChecker {
 
     func eligibility(for package: Package) async -> IntroEligibilityStatus {
@@ -67,7 +65,6 @@ extension TrialOrIntroEligibilityChecker {
 
 }
 
-@available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
 extension StoreProduct {
 
     // @PublicForExternalTesting

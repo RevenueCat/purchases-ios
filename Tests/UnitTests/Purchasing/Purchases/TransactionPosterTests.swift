@@ -74,8 +74,8 @@ class TransactionPosterTests: TestCase {
         expect(self.mockTransaction.finishInvoked) == true
     }
 
-    func testHandlePurchasedTransactionSendsReceiptIfJWSSettingEnabledButJWSTokenIsMissing() throws {
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+    func testHandlePurchasedTransactionSendsReceiptIfStoreKit2EnabledButJWSTokenIsMissing() throws {
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
 
         let product = MockSK1Product(mockProductIdentifier: "product")
         let transactionData = PurchasedTransactionData(
@@ -101,7 +101,9 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsJWS() throws {
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation)
 
@@ -128,9 +130,9 @@ class TransactionPosterTests: TestCase {
     }
 
     func testHandlePurchasedTransactionSendsSK2Receipt() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        self.setUp(observerMode: false, usesStoreKit2JWS: true)
+        self.setUp(observerMode: false, storeKitVersion: .storeKit2)
         let jwsRepresentation = UUID().uuidString
         self.mockTransaction = MockStoreTransaction(jwsRepresentation: jwsRepresentation, environment: .xcode)
 
@@ -271,9 +273,6 @@ class TransactionPosterTests: TestCase {
     // MARK: - shouldFinishTransaction
 
     func testShouldNotFinishWithOfflineCustomerInfo() throws {
-        // Offline CustomerInfo isn't available on iOS 12
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let info = Self.mockCustomerInfo.copy(with: .verifiedOnDevice)
 
         expect(
@@ -357,9 +356,9 @@ class TransactionPosterTests: TestCase {
 
 private extension TransactionPosterTests {
 
-    func setUp(observerMode: Bool, usesStoreKit2JWS: Bool = false) {
+    func setUp(observerMode: Bool, storeKitVersion: StoreKitVersion = .default) {
         self.operationDispatcher = .init()
-        self.systemInfo = .init(finishTransactions: !observerMode, usesStoreKit2JWS: usesStoreKit2JWS)
+        self.systemInfo = .init(finishTransactions: !observerMode, storeKitVersion: storeKitVersion)
         self.productsManager = .init(systemInfo: self.systemInfo, requestTimeout: 0)
         self.receiptFetcher = .init(requestFetcher: .init(operationDispatcher: self.operationDispatcher),
                                     systemInfo: self.systemInfo)

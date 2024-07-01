@@ -55,10 +55,7 @@ class PurchasesGetProductsTests: BasePurchasesTests {
         ) == true
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     func testGetEligibilityForPackages() async throws {
-        try AvailabilityChecks.iOS13APIAvailableOrSkipTest()
-
         let packages: [Package] = [
             .init(identifier: "package1",
                   packageType: .weekly,
@@ -132,9 +129,7 @@ class PurchasesGetProductsBackgroundTests: BasePurchasesTests {
         expect(self.backend.postedProductID).toNot(beNil())
         expect(self.backend.postedPrice).toNot(beNil())
         expect(self.backend.postedCurrencyCode).toNot(beNil())
-        if #available(iOS 12.2, macOS 10.14.4, *) {
-            expect(self.backend.postedIntroPrice).toNot(beNil())
-        }
+        expect(self.backend.postedIntroPrice).toNot(beNil())
     }
 
 }

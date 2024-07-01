@@ -526,6 +526,166 @@ public extension Purchases {
         fatalError()
     }
 
+    /**
+     * Configures an instance of the Purchases SDK with a custom `UserDefaults`.
+     *
+     * Use this constructor if you want to
+     * sync status across a shared container, such as between a host app and an extension. The instance of the
+     * Purchases SDK will be set as a singleton.
+     * You should access the singleton instance using ``Purchases/shared``
+     *
+     * - Parameter apiKey: The API Key generated for your app from https://app.revenuecat.com/
+     *
+     * - Parameter appUserID: The unique app user id for this user. This user id will allow users to share their
+     * purchases and subscriptions across devices. Pass `nil` or an empty string if you want ``Purchases``
+     * to generate this for you.
+     *
+     * - Parameter observerMode: Set this to `true` if you have your own IAP implementation and want to use only
+     * RevenueCat's backend. Default is `false`.
+     *
+     * - Returns: An instantiated ``Purchases`` object that has been set as a singleton.
+     *
+     * - Warning: This assumes your IAP implementation uses StoreKit 1.
+     * - Warning: If you're using observer mode with StoreKit 2, configure the SDK with `configure(withAPIKey:appUserID:observerMode:storeKitVersion:)` passing in `.storeKit2` as the `storeKitVersion` and ensure that you call ``Purchases/recordPurchase(_:)`` after making a purchase.
+     */
+    @available(iOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:)
+    @_disfavoredOverload
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool) -> Purchases {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: "Explicitly setting the StoreKit version is now required when setting purchasesAreCompletedBy.",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: StaticString,
+                                             observerMode: Bool) -> Purchases {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(tvOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(watchOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @available(macOS, obsoleted: 1,
+               message: """
+Explicitly setting the StoreKit version is now required when setting
+purchasesAreCompletedBy. Please use the Configuration.Builder class to configure the SDK with
+custom UserDefaults.
+""",
+               renamed: "configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?) -> Purchases {
+        fatalError()
+
+    }
+
+    @available(iOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(tvOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(watchOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool) -> Purchases {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(tvOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(watchOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool,
+                                             dangerousSettings: DangerousSettings?) -> Purchases {
+        fatalError()
+    }
+
+    /**
+     * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
+     */
+    @available(iOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(tvOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(watchOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @available(macOS, obsoleted: 1,
+               message: """
+    Use Purchases.shared.attribution.enableAdServicesAttributionTokenCollection() instead.
+    AdClient doesn't work after February 7, 2023  so this boolean doesn't have any effect.
+    """,
+               renamed: "Purchases.shared.attribution.enableAdServicesAttributionTokenCollection()")
+    @objc static var automaticAppleSearchAdsAttributionCollection: Bool {
+        get { fatalError() }
+        // swiftlint:disable:next unused_setter_value
+        set { fatalError() }
+    }
+
 }
 
 @available(iOS, obsoleted: 1, renamed: "StartPurchaseBlock")
@@ -723,5 +883,18 @@ public extension Purchases {
     @available(macOS, obsoleted: 1, message: "Remove `Purchases.`")
     @available(macCatalyst, obsoleted: 1, message: "Remove `Purchases.`")
     enum PeriodType {}
+}
 
+public extension Configuration.Builder {
+    @available(iOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(tvOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(watchOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @available(macOS, obsoleted: 1, renamed: "with(purchasesAreCompletedBy:storeKitVersion:)",
+               message: "Observer Mode is now named PurchasesAreCompletedBy.")
+    @objc func with(observerMode: Bool) -> Configuration.Builder {
+        fatalError()
+    }
 }

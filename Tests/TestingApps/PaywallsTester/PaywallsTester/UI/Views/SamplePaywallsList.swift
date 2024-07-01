@@ -240,6 +240,8 @@ extension PaywallTemplate {
             return "4: Horizontal packages"
         case .template5:
             return "5: Minimalist with Small Banner"
+        case .template7:
+            return "7: Multi-tier with Small Banner"
         }
     }
 

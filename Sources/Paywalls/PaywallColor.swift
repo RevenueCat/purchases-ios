@@ -36,7 +36,6 @@ public struct PaywallColor {
 
     #if canImport(SwiftUI)
     /// The underlying SwiftUI `Color`.
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     public var underlyingColor: Color {
         // swiftlint:disable:next force_cast
         return self._underlyingColor as! Color
@@ -56,13 +55,7 @@ extension PaywallColor {
 
     /// Creates a color from a Hex string: `#RRGGBB` or `#RRGGBBAA`.
     public init(stringRepresentation: String) throws {
-        if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-            self.init(stringRepresentation: stringRepresentation, color: try Self.parseColor(stringRepresentation))
-        } else {
-            // In older devices, `_underlyingColor` will be `nil`, but it also won't be
-            // accessible through `underlyingColor`.
-            self.init(stringRepresentation: stringRepresentation, underlyingColor: nil)
-        }
+        self.init(stringRepresentation: stringRepresentation, color: try Self.parseColor(stringRepresentation))
     }
 
         #if canImport(UIKit)
@@ -86,12 +79,10 @@ private extension PaywallColor {
 
     #if canImport(SwiftUI)
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     init(stringRepresentation: String, color: Color) {
         self.init(stringRepresentation: stringRepresentation, underlyingColor: color)
     }
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     static func parseColor(_ input: String) throws -> Color {
         let red, green, blue, alpha: CGFloat
 
@@ -191,7 +182,6 @@ public extension Color {
 
 #if canImport(UIKit)
 
-    @available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *)
     private extension Color {
 
         init(light: UIColor, dark: UIColor) {

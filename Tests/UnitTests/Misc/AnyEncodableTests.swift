@@ -45,7 +45,9 @@ class AnyEncodableTests: TestCase {
         assertSnapshot(matching: AnyEncodable(dictionary), as: .json)
     }
 
-    func testNestedDictionary() {
+    func testNestedDictionary() throws {
+        try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
+
         let dictionary: [String: Any?] = [
             "a": 1,
             "b": [

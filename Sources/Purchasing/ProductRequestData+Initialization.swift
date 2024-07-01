@@ -51,49 +51,27 @@ extension ProductRequestData {
 private extension ProductRequestData {
 
     static func extractIntroDurationType(for product: StoreProduct) -> StoreProductDiscount.PaymentMode? {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
-           let discount = product.introductoryDiscount {
-            return discount.paymentMode
-        } else {
-            return nil
-        }
+        return product.introductoryDiscount?.paymentMode
     }
 
     static func extractSubscriptionGroup(for product: StoreProduct) -> String? {
-        if #available(iOS 12.0, macOS 10.14.0, tvOS 12.0, *) {
-            return product.subscriptionGroupIdentifier
-        } else {
-            return nil
-        }
+        return product.subscriptionGroupIdentifier
     }
 
     static func extractDiscounts(for product: StoreProduct) -> [StoreProductDiscount]? {
-        if #available(iOS 12.2, macOS 10.14.4, tvOS 12.2, *) {
-            return product.discounts
-        } else {
-            return nil
-        }
+        return product.discounts
     }
 
     static func extractPaymentMode(for product: StoreProduct) -> StoreProductDiscount.PaymentMode? {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *), let discount = product.introductoryDiscount {
-           return discount.paymentMode
-        } else {
-            return nil
-        }
+        return product.introductoryDiscount?.paymentMode
     }
 
     static func extractIntroPrice(for product: StoreProduct) -> NSDecimalNumber? {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *) {
-           return product.introductoryDiscount?.price as NSDecimalNumber?
-        } else {
-            return nil
-        }
+       return product.introductoryDiscount?.price as NSDecimalNumber?
     }
 
     static func extractNormalDuration(for product: StoreProduct) -> String? {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
-           let subscriptionPeriod = product.subscriptionPeriod,
+        if let subscriptionPeriod = product.subscriptionPeriod,
            subscriptionPeriod.value != 0 {
             return ISOPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
         } else {
@@ -102,8 +80,7 @@ private extension ProductRequestData {
     }
 
     static func extractIntroDuration(for product: StoreProduct) -> String? {
-        if #available(iOS 11.2, macOS 10.13.2, tvOS 11.2, *),
-           let subscriptionPeriod = product.introductoryDiscount?.subscriptionPeriod {
+        if let subscriptionPeriod = product.introductoryDiscount?.subscriptionPeriod {
             return ISOPeriodFormatter.string(fromProductSubscriptionPeriod: subscriptionPeriod)
         } else {
             return nil
