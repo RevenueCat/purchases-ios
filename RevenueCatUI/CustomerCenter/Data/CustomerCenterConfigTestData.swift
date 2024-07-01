@@ -20,7 +20,6 @@ enum CustomerCenterConfigTestData {
 
     @available(iOS 14.0, *)
     static let customerCenterData = CustomerCenterConfigData(
-        id: "customer_center_id",
         paths: [
             .init(
                 id: "1",
@@ -63,7 +62,18 @@ enum CustomerCenterConfigTestData {
                 ))
             )
         ],
-        title: "How can we help?"
+        screens: [
+            .init(
+                type: .management,
+                title: "Manage Subscription",
+                subtitle: "Manage your subscription details here"
+            ),
+            .init(
+                type: .noActive,
+                title: "No Active Subscription",
+                subtitle: "You currently have no active subscriptions"
+            )
+        ]
     )
 
     static let subscriptionInformation: SubscriptionInformation = .init(

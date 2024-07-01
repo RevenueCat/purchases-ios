@@ -21,6 +21,7 @@
 		2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C526EBE7EA007DDB75 /* EntitlementInfosAPI.swift */; };
 		2DD778EF270E23460079CBD4 /* EntitlementInfoAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D614C826EBE7EA007DDB75 /* EntitlementInfoAPI.swift */; };
 		4D30B3B32B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */; };
+		35F38B462C3008E500CD29FD /* CustomerCenterConfigDataAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F38B452C3008E500CD29FD /* CustomerCenterConfigDataAPI.swift */; };
 		4F1428A22A4A11D7006CD196 /* TestStoreProductAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */; };
 		4F1428A72A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */; };
 		4F6BEE752A27C77C00CD9322 /* OtherAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */; };
@@ -62,6 +63,7 @@
 		2CA538392B7D42100037D96F /* PresentedOfferingContextAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentedOfferingContextAPI.swift; sourceTree = "<group>"; };
 		2DD778D0270E233F0079CBD4 /* SwiftAPITester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftAPITester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitVersionAPI.swift; sourceTree = "<group>"; };
+		35F38B452C3008E500CD29FD /* CustomerCenterConfigDataAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterConfigDataAPI.swift; sourceTree = "<group>"; };
 		4F1428A12A4A11D7006CD196 /* TestStoreProductAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductAPI.swift; sourceTree = "<group>"; };
 		4F1428A62A4A16C0006CD196 /* TestStoreProductDiscountAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStoreProductDiscountAPI.swift; sourceTree = "<group>"; };
 		4F6BEE742A27C77C00CD9322 /* OtherAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherAPI.swift; sourceTree = "<group>"; };
@@ -169,6 +171,7 @@
 				A5D614CB26EBE7EA007DDB75 /* TransactionAPI.swift */,
 				5740FCD42996D7B800E049F9 /* VerificationResultAPI.swift */,
 				4D30B3B22B32F8FA00B5C7D7 /* StoreKitVersionAPI.swift */,
+				35F38B452C3008E500CD29FD /* CustomerCenterConfigDataAPI.swift */,
 			);
 			path = SwiftAPITester;
 			sourceTree = "<group>";
@@ -262,6 +265,7 @@
 				2DD778E9270E23460079CBD4 /* CustomerInfoAPI.swift in Sources */,
 				5758EE4F2786493400B3B703 /* StoreProductAPI.swift in Sources */,
 				5753ED9D294A6F3F00CBAB54 /* PurchasesReceiptParserAPI.swift in Sources */,
+				35F38B462C3008E500CD29FD /* CustomerCenterConfigDataAPI.swift in Sources */,
 				2DD778ED270E23460079CBD4 /* OfferingAPI.swift in Sources */,
 				B378153A2857A609000A7B93 /* AttributionAPI.swift in Sources */,
 				2DD778EE270E23460079CBD4 /* EntitlementInfosAPI.swift in Sources */,
