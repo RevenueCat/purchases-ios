@@ -1155,7 +1155,7 @@ public extension Purchases {
     ) async throws -> StoreTransaction? {
         guard self.systemInfo.observerMode else {
             throw NewErrorUtils.configurationError(
-                message: Strings.configure.handle_transaction_observer_mode_required.description
+                message: Strings.configure.record_purchase_requires_purchases_made_by_my_app.description
             ).asPublicError
         }
         guard self.systemInfo.storeKitVersion == .storeKit2 else {

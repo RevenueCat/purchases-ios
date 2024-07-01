@@ -81,9 +81,7 @@ class CustomerInfoResponseHandler {
                         case let .errorResponse(errorResponse, _, _) = networkError,
                         errorResponse.code == .invalidAppleSubscriptionKey {
 
-                        Logger.warn(
-                            Strings.configure.fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug
-                        )
+                        Logger.warn(Strings.configure.sk2_invalid_inapp_purchase_key)
 
                         completion(.failure(failure))
                     } else {

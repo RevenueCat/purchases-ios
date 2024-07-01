@@ -73,11 +73,11 @@ enum ConfigureStrings {
 
     case sk2_required_for_swiftui_paywalls
 
-    case handle_transaction_observer_mode_required
+    case record_purchase_requires_purchases_made_by_my_app
 
     case sk2_required
 
-    case fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug
+    case sk2_invalid_inapp_purchase_key
 }
 
 extension ConfigureStrings: LogMessage {
@@ -189,7 +189,7 @@ extension ConfigureStrings: LogMessage {
             "transactions coming from SwiftUI paywalls. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
 
-        case .handle_transaction_observer_mode_required:
+        case .record_purchase_requires_purchases_made_by_my_app:
             return "Attempted to manually handle transactions with purchasesAreCompletedBy not set to .myApp. " +
             "You must use `.with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
@@ -198,7 +198,7 @@ extension ConfigureStrings: LogMessage {
             return "StoreKit 2 must be enabled. You must use `.with(storeKitVersion: .storeKit2)` " +
             "when configuring the SDK."
 
-        case .fail_post_receipt_due_to_invalid_in_app_purchase_key_configured_in_debug:
+        case .sk2_invalid_inapp_purchase_key:
             return "Failed to post the transaction to RevenueCat's backend because your Apple In-App Purchase Key is " +
             "invalid or not present. This error is thrown only in debug builds; in production, it will fail " +
             "silently. You must configure an In-App Purchase Key. Please see " +
