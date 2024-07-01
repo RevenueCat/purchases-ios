@@ -1,5 +1,4 @@
 ## 5.0.0
-## 5.0.0
 
 The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
 
