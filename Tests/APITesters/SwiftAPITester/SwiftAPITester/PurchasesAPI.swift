@@ -344,29 +344,6 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
 
     Purchases.configure(withAPIKey: "", appUserID: "")
-    Purchases.configure(withAPIKey: "",
-                        appUserID: nil,
-                        observerMode: true,
-                        userDefaults: UserDefaults(),
-                        useStoreKit2IfAvailable: true)
-    Purchases.configure(withAPIKey: "",
-                        appUserID: "",
-                        observerMode: true,
-                        userDefaults: UserDefaults(),
-                        useStoreKit2IfAvailable: true,
-                        dangerousSettings: nil)
-    Purchases.configure(withAPIKey: "",
-                        appUserID: "",
-                        observerMode: true,
-                        userDefaults: UserDefaults(),
-                        useStoreKit2IfAvailable: true,
-                        dangerousSettings: DangerousSettings())
-    Purchases.configure(withAPIKey: "",
-                        appUserID: "",
-                        observerMode: true,
-                        userDefaults: UserDefaults(),
-                        useStoreKit2IfAvailable: true,
-                        dangerousSettings: DangerousSettings(autoSyncPurchases: false))
 
     let _: Bool = purchases.finishTransactions
 
