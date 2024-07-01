@@ -237,15 +237,13 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
 // swiftlint:disable:next type_name
 class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: BaseCustomerInfoResponseHandlerTests {
 
-    override func setUpWithError() throws {
+    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorEnabled() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-    }
 
-    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorEnabled() async {
         self.factory.stubbedResult = Self.offlineCustomerInfo
         self.fetcher.stubbedResult = .success([])
 
@@ -274,7 +272,8 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
         )
     }
 
-    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorEnabled() async {
+    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorEnabled() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         self.factory.stubbedResult = Self.offlineCustomerInfo
         self.fetcher.stubbedResult = .success([])
 
@@ -298,7 +297,8 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
         expect(self.factory.createRequested) == true
     }
 
-    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorDisabled() async {
+    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorDisabled() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         self.factory.stubbedResult = Self.offlineCustomerInfo
         self.fetcher.stubbedResult = .success([])
 
@@ -322,7 +322,8 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
         expect(self.factory.createRequested) == true
     }
 
-    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorDisabled() async {
+    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorDisabled() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         self.factory.stubbedResult = Self.offlineCustomerInfo
         self.fetcher.stubbedResult = .success([])
 
