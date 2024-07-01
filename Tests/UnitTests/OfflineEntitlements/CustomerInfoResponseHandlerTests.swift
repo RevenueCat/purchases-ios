@@ -235,7 +235,112 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
             level: .error
         )
     }
+}
 
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+// swiftlint:disable:next type_name
+class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: BaseCustomerInfoResponseHandlerTests {
+
+    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorEnabled() async {
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+        self.fetcher.stubbedResult = .success([])
+
+        let error: NetworkError = .errorResponse(
+            ErrorResponse(
+                code: .invalidAppleSubscriptionKey,
+                originalCode: .init()
+            ),
+            .internalServerError
+        )
+
+        let result = await self.handle(
+            .failure(error),
+            Self.mapping,
+            failIfInvalidSubscriptionKeyDetectedInDebug: true,
+            isDebug: true
+        )
+
+        expect(result).to(beFailure())
+        expect(result.error?.asPublicError.code).to(equal(17))
+        expect(self.factory.createRequested) == false
+
+        self.logger.verifyMessageWasLogged(
+            Strings.configure.sk2_invalid_inapp_purchase_key,
+            level: .warn
+        )
+    }
+
+    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorEnabled() async {
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+        self.fetcher.stubbedResult = .success([])
+
+        let error: NetworkError = .errorResponse(
+            ErrorResponse(
+                code: .invalidAppleSubscriptionKey,
+                originalCode: .init()
+            ),
+            .internalServerError
+        )
+
+        let result = await self.handle(
+            .failure(error),
+            Self.mapping,
+            failIfInvalidSubscriptionKeyDetectedInDebug: true,
+            isDebug: false
+        )
+
+        expect(result).to(beSuccess())
+        expect(result.error).to(beNil())
+        expect(self.factory.createRequested) == true
+    }
+
+    func testResultsInFailureFromInvalidInAppPurchaseKeyInDebugBehaviorDisabled() async {
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+        self.fetcher.stubbedResult = .success([])
+
+        let error: NetworkError = .errorResponse(
+            ErrorResponse(
+                code: .invalidAppleSubscriptionKey,
+                originalCode: .init()
+            ),
+            .internalServerError
+        )
+
+        let result = await self.handle(
+            .failure(error),
+            Self.mapping,
+            failIfInvalidSubscriptionKeyDetectedInDebug: false,
+            isDebug: true
+        )
+
+        expect(result).to(beSuccess())
+        expect(result.error).to(beNil())
+        expect(self.factory.createRequested) == true
+    }
+
+    func testDoesNotResultInFailureFromInvalidInAppPurchaseKeyInNonDebugBehaviorDisabled() async {
+        self.factory.stubbedResult = Self.offlineCustomerInfo
+        self.fetcher.stubbedResult = .success([])
+
+        let error: NetworkError = .errorResponse(
+            ErrorResponse(
+                code: .invalidAppleSubscriptionKey,
+                originalCode: .init()
+            ),
+            .internalServerError
+        )
+
+        let result = await self.handle(
+            .failure(error),
+            Self.mapping,
+            failIfInvalidSubscriptionKeyDetectedInDebug: true,
+            isDebug: false
+        )
+
+        expect(result).to(beSuccess())
+        expect(result.error).to(beNil())
+        expect(self.factory.createRequested) == true
+    }
 }
 
 private extension BaseCustomerInfoResponseHandlerTests {
@@ -244,22 +349,34 @@ private extension BaseCustomerInfoResponseHandlerTests {
         let productEntitlementMapping: ProductEntitlementMapping?
     }
 
-    private func create(_ mapping: ProductEntitlementMapping?) -> CustomerInfoResponseHandler {
+    private func create(
+        _ mapping: ProductEntitlementMapping?,
+        failIfInvalidSubscriptionKeyDetectedInDebug: Bool = false,
+        isDebug: Bool = false
+    ) -> CustomerInfoResponseHandler {
         return .init(
             offlineCreator: .init(
                 purchasedProductsFetcher: self.fetcher,
                 productEntitlementMappingFetcher: MappingFetcher(productEntitlementMapping: mapping),
                 creator: { self.factory.create(products: $0, mapping: $1, userID: $2) }
             ),
-            userID: self.userID
+            userID: self.userID,
+            failIfInvalidSubscriptionKeyDetectedInDebug: failIfInvalidSubscriptionKeyDetectedInDebug,
+            isDebug: isDebug
         )
     }
 
     func handle(
         _ response: VerifiedHTTPResponse<CustomerInfoResponseHandler.Response>.Result,
-        _ mapping: ProductEntitlementMapping?
+        _ mapping: ProductEntitlementMapping?,
+        failIfInvalidSubscriptionKeyDetectedInDebug: Bool = false,
+        isDebug: Bool =  false
     ) async -> Result<CustomerInfo, BackendError> {
-        let handler = self.create(mapping)
+        let handler = self.create(
+            mapping,
+            failIfInvalidSubscriptionKeyDetectedInDebug: failIfInvalidSubscriptionKeyDetectedInDebug,
+            isDebug: isDebug
+        )
 
         return await Async.call { completion in
             handler.handle(customerInfoResponse: response, completion: completion)
