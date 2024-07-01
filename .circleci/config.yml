@@ -397,6 +397,37 @@ commands:
           destination: scan-test-output
 
 jobs:
+  spm-release-build-xcode-14:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-release-build-xcode-15:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+
+  spm-xcode-14-1:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM RevenueCat Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 30m
+
   spm-release-build:
     <<: *base-job
     steps:
@@ -1186,6 +1217,14 @@ workflows:
       - spm-release-build
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
+      - spm-release-build-xcode-14:
+          xcode_version: '14.3.0'
+          install_swiftlint: false
+      - spm-release-build-xcode-15:
+          xcode_version: '15.2'
+      - spm-xcode-14-1:
+          xcode_version: '14.1.0'
+          install_swiftlint: false
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
