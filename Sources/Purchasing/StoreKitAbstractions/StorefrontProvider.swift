@@ -20,7 +20,7 @@ protocol StorefrontProviderType {
 
 }
 
-/// Main `StorefrontProviderType` implementation.
+/// Main ``StorefrontProviderType`` implementation.
 /// Relies on StoreKit 1 because StoreKit 2's implementation would be `async`.
 final class DefaultStorefrontProvider: StorefrontProviderType {
 
