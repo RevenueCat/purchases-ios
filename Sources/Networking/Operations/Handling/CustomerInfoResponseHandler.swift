@@ -18,20 +18,20 @@ class CustomerInfoResponseHandler {
     private let offlineCreator: OfflineCustomerInfoCreator?
     private let userID: String
     private let failIfInvalidSubscriptionKeyDetectedInDebug: Bool
-    private let isDebug: () -> Bool
+    private let isDebug: Bool
 
     /// - Parameter offlineCreator: can be `nil` if offline ``CustomerInfo`` shouldn't or can't be computed.
     init(
         offlineCreator: OfflineCustomerInfoCreator?,
         userID: String,
         failIfInvalidSubscriptionKeyDetectedInDebug: Bool,
-        isDebug: @escaping () -> Bool = {
+        isDebug: Bool = {
             var debug = false
             #if DEBUG
             debug = true
             #endif
             return debug
-        }
+        }()
     ) {
         self.offlineCreator = offlineCreator
         self.userID = userID
@@ -76,7 +76,7 @@ class CustomerInfoResponseHandler {
                 case .failure(let failure):
                     let failIfInvalidSubscriptionKeyDetectedInDebug = self.failIfInvalidSubscriptionKeyDetectedInDebug
 
-                    if isDebug() && failIfInvalidSubscriptionKeyDetectedInDebug,
+                    if isDebug && failIfInvalidSubscriptionKeyDetectedInDebug,
                         case let .networkError(networkError) = failure,
                         case let .errorResponse(errorResponse, _, _) = networkError,
                         errorResponse.code == .invalidAppleSubscriptionKey {

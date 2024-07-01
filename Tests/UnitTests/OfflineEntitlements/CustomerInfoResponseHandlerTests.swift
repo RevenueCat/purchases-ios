@@ -257,7 +257,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
             .failure(error),
             Self.mapping,
             failIfInvalidSubscriptionKeyDetectedInDebug: true,
-            isDebug: { return true }
+            isDebug: true
         )
 
         expect(result).to(beFailure())
@@ -286,7 +286,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
             .failure(error),
             Self.mapping,
             failIfInvalidSubscriptionKeyDetectedInDebug: true,
-            isDebug: { return false }
+            isDebug: false
         )
 
         expect(result).to(beSuccess())
@@ -310,7 +310,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
             .failure(error),
             Self.mapping,
             failIfInvalidSubscriptionKeyDetectedInDebug: false,
-            isDebug: { return true }
+            isDebug: true
         )
 
         expect(result).to(beSuccess())
@@ -334,7 +334,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
             .failure(error),
             Self.mapping,
             failIfInvalidSubscriptionKeyDetectedInDebug: true,
-            isDebug: { return false }
+            isDebug: false
         )
 
         expect(result).to(beSuccess())
@@ -352,7 +352,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
     private func create(
         _ mapping: ProductEntitlementMapping?,
         failIfInvalidSubscriptionKeyDetectedInDebug: Bool = false,
-        isDebug: @escaping () -> Bool = { return false }
+        isDebug: Bool = false
     ) -> CustomerInfoResponseHandler {
         return .init(
             offlineCreator: .init(
@@ -370,7 +370,7 @@ private extension BaseCustomerInfoResponseHandlerTests {
         _ response: VerifiedHTTPResponse<CustomerInfoResponseHandler.Response>.Result,
         _ mapping: ProductEntitlementMapping?,
         failIfInvalidSubscriptionKeyDetectedInDebug: Bool = false,
-        isDebug: @escaping () -> Bool = { return false }
+        isDebug: Bool =  false
     ) async -> Result<CustomerInfo, BackendError> {
         let handler = self.create(
             mapping,
