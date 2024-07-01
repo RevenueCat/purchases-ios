@@ -623,6 +623,36 @@ custom UserDefaults.
 
     }
 
+    @available(iOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(tvOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(watchOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool) -> Purchases {
+        fatalError()
+    }
+
+    @available(iOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(tvOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(watchOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macOS, obsoleted: 1, renamed: "configure(with:)")
+    @available(macCatalyst, obsoleted: 1, renamed: "configure(with:)")
+    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
+    // swiftlint:disable:next function_parameter_count
+    @discardableResult static func configure(withAPIKey apiKey: String,
+                                             appUserID: String?,
+                                             observerMode: Bool,
+                                             userDefaults: UserDefaults?,
+                                             useStoreKit2IfAvailable: Bool,
+                                             dangerousSettings: DangerousSettings?) -> Purchases {
+        fatalError()
+    }
+
     /**
      * Enable automatic collection of Apple Search Ads attribution. Defaults to `false`.
      */

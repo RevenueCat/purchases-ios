@@ -57,56 +57,6 @@ public extension Purchases {
     func getEligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffers(forProduct: product)
     }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool) -> Purchases {
-        configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            useStoreKit2IfAvailable: useStoreKit2IfAvailable,
-            dangerousSettings: nil
-        )
-    }
-
-    @available(iOS, deprecated: 1, renamed: "configure(with:)")
-    @available(tvOS, deprecated: 1, renamed: "configure(with:)")
-    @available(watchOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macOS, deprecated: 1, renamed: "configure(with:)")
-    @available(macCatalyst, deprecated: 1, renamed: "configure(with:)")
-    @objc(configureWithAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:dangerousSettings:)
-    // swiftlint:disable:next function_parameter_count
-    @discardableResult static func configure(withAPIKey apiKey: String,
-                                             appUserID: String?,
-                                             observerMode: Bool,
-                                             userDefaults: UserDefaults?,
-                                             useStoreKit2IfAvailable: Bool,
-                                             dangerousSettings: DangerousSettings?) -> Purchases {
-        return Self.configure(
-            withAPIKey: apiKey,
-            appUserID: appUserID,
-            observerMode: observerMode,
-            userDefaults: userDefaults,
-            platformInfo: nil,
-            responseVerificationMode: .default,
-            storeKitVersion: useStoreKit2IfAvailable ? .storeKit2 : .storeKit1,
-            storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-            networkTimeout: Configuration.networkTimeoutDefault,
-            dangerousSettings: dangerousSettings,
-            showStoreMessagesAutomatically: true,
-            diagnosticsEnabled: false
-        )
-    }
 }
 
 public extension Purchases {
