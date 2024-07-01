@@ -107,7 +107,6 @@ public extension Purchases {
             diagnosticsEnabled: false
         )
     }
-
 }
 
 public extension Purchases {
