@@ -739,16 +739,20 @@ platform :ios do
 
   private_lane :build_symbols_for_docs do
     ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+    
 
     sh("swift",
        "build",
        "--target", "RevenueCat",
        # Build for iOS instead of the default macOS. This ensures that iOS-only symbols are included in the docs.
-       "-Xswiftc", "-sdk", "-Xswiftc", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
+       "--sdk", sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-path").strip!,
        "-Xswiftc", "-target", "-Xswiftc", "arm64-apple-ios#{ios_version}-simulator",
        "-Xswiftc", "-emit-symbol-graph",
        "-Xswiftc", "-emit-symbol-graph-dir",
-       "-Xswiftc", ".build")
+       "-Xswiftc", ".build"
+       )
+
+    #sh("swift package dump-symbol-graph")
   end
 
   desc "Preview docs"
@@ -811,7 +815,8 @@ platform :ios do
            hosting_base_path,
            "--transform-for-static-hosting",
            "--enable-inherited-docs",
-           "--additional-symbol-graph-dir", ".build")
+           "--additional-symbol-graph-dir", ".build",
+	   "--verbose")
 
         docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
         # clone docs repo
