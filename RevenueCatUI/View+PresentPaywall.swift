@@ -395,8 +395,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     }
 
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
-    var performPurchase: PerformPurchase?
-    var performRestore: PerformRestore?
     var presentationMode: PaywallPresentationMode
     var purchaseStarted: PurchaseOfPackageStartedHandler?
     var purchaseCompleted: PurchaseOrRestoreCompletedHandler?
@@ -432,8 +430,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         purchaseHandler: PurchaseHandler?
     ) {
         self.shouldDisplay = shouldDisplay
-        self.performPurchase = myAppPurchaseLogic?.performPurchase
-        self.performRestore = myAppPurchaseLogic?.performRestore
         self.presentationMode = presentationMode
         self.purchaseStarted = purchaseStarted
         self.purchaseCompleted = purchaseCompleted
@@ -447,7 +443,9 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
         self.introEligibility = introEligibility
-        self._purchaseHandler = .init(wrappedValue: purchaseHandler ?? PurchaseHandler.default())
+        self._purchaseHandler = .init(wrappedValue: purchaseHandler ??
+                                      PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
+                                                              performRestore: myAppPurchaseLogic?.performRestore))
     }
 
     @StateObject
