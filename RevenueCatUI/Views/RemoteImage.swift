@@ -14,7 +14,7 @@
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct RemoteImage: View {
+struct RemoteImage: View, Sendable {
 
     let url: URL
     let lowResUrl: URL?
@@ -56,26 +56,22 @@ struct RemoteImage: View {
                 emptyView(error: nil)
             }
         }
+        .accessibilityHidden(true)
         .transition(Self.transition)
         .task(id: self.url) { // This cancels the previous task when the URL changes.
             await loadImages()
         }
     }
 
+    @ViewBuilder
     private func displayImage(_ image: Image) -> some View {
         if let aspectRatio {
-            return AnyView(
-                image
-                    .fitToAspect(aspectRatio, contentMode: .fill)
-                    .frame(maxWidth: self.maxWidth)
-                    .accessibilityHidden(true)
-            )
+            image
+                .fitToAspect(aspectRatio, contentMode: .fill)
+                .frame(maxWidth: self.maxWidth)
         } else {
-            return AnyView(
-                image
-                    .resizable()
-                    .accessibilityHidden(true)
-            )
+            image
+                .resizable()
         }
     }
 
