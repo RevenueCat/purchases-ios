@@ -67,7 +67,7 @@ aliases:
       tags:
         ignore: /.*/
       branches:
-        only: /^release\/.*\.0$/    
+        only: /^release\/.*\.0$/
 
 commands:
   install-runtime:
