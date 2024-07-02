@@ -187,6 +187,7 @@
 		354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D3267AE4B4001DC5B1 /* AttributionKey.swift */; };
 		354895D6267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */; };
 		35549323269E298B005F9AE9 /* OfferingsFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35549322269E298B005F9AE9 /* OfferingsFactory.swift */; };
+		358C756C2C332BE800ECCA12 /* PreferredLocalesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358C756B2C332BE800ECCA12 /* PreferredLocalesProvider.swift */; };
 		359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */; };
 		35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */; };
 		35AAEB492BBB17B500A12548 /* DiagnosticsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB482BBB17B500A12548 /* DiagnosticsEvent.swift */; };
@@ -1132,6 +1133,7 @@
 		354895D5267BEDE3001DC5B1 /* ReservedSubscriberAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReservedSubscriberAttributes.swift; sourceTree = "<group>"; };
 		35549322269E298B005F9AE9 /* OfferingsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfferingsFactory.swift; sourceTree = "<group>"; };
 		357C9BC022725CFA006BC624 /* iAd.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = iAd.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.2.sdk/System/Library/Frameworks/iAd.framework; sourceTree = DEVELOPER_DIR; };
+		358C756B2C332BE800ECCA12 /* PreferredLocalesProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferredLocalesProvider.swift; sourceTree = "<group>"; };
 		3597020F24BF6A710010506E /* TransactionsFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactory.swift; sourceTree = "<group>"; };
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
 		359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
@@ -2187,6 +2189,7 @@
 		2DDA3E4524DB0B4500EDFE5B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				358C75682C332BAE00ECCA12 /* Locale */,
 				57F3C0CA29B7A08F0004FD7E /* Codable */,
 				57F3C0CB29B7A0B10004FD7E /* Concurrency */,
 				352B7D7827BD919B002A47DD /* DangerousSettings.swift */,
@@ -2560,6 +2563,14 @@
 				A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */,
 			);
 			path = SubscriberAttributes;
+			sourceTree = "<group>";
+		};
+		358C75682C332BAE00ECCA12 /* Locale */ = {
+			isa = PBXGroup;
+			children = (
+				358C756B2C332BE800ECCA12 /* PreferredLocalesProvider.swift */,
+			);
+			path = Locale;
 			sourceTree = "<group>";
 		};
 		35D159C72BC438C6004D8061 /* Networking */ = {
@@ -4454,6 +4465,7 @@
 				57E6C2C72975AAE1001AFE98 /* FileReader.swift in Sources */,
 				4F7DBFBD2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift in Sources */,
 				5766AB4728401B8400FA6091 /* PackageType.swift in Sources */,
+				358C756C2C332BE800ECCA12 /* PreferredLocalesProvider.swift in Sources */,
 				B3F3E8DA277158FE0047A5B9 /* DNSChecker.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,

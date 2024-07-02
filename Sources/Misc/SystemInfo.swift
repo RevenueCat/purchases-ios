@@ -39,6 +39,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
+    let preferredLocalesProvider: PreferredLocalesProviderType
 
     var finishTransactions: Bool {
         get { return self._finishTransactions.value }
@@ -67,6 +68,10 @@ class SystemInfo {
 
     var storefront: StorefrontType? {
         return self.storefrontProvider.currentStorefront
+    }
+
+    var preferredLanguages: [String] {
+        return self.preferredLocalesProvider.preferredLanguages
     }
 
     static var frameworkVersion: String {
@@ -131,7 +136,8 @@ class SystemInfo {
          storeKitVersion: StoreKitVersion = .default,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
-         clock: ClockType = Clock.default) {
+         clock: ClockType = Clock.default,
+         preferredLocalesProvider: PreferredLocalesProviderType = PreferredLocalesProvider.default) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -144,6 +150,7 @@ class SystemInfo {
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
+        self.preferredLocalesProvider = preferredLocalesProvider
     }
 
     /// Asynchronous API if caller can't ensure that it's invoked in the `@MainActor`
