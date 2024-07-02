@@ -774,13 +774,13 @@ platform :ios do
   end
 
   desc "Generate docs without publishing"
-  lane :generate_docs do
-    generate_docs_shared
+  lane :build_docs do
+    build_docs_shared
   end
 
   desc "Generate & publish docs"
-  lane :generate_and_publish_docs do
-    generate_docs_shared
+  lane :build_and_publish_docs do
+    build_docs_shared
 
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
@@ -817,7 +817,7 @@ platform :ios do
   end
 
   desc "Builds the docs"
-  private_lane :generate_docs_shared do
+  private_lane :build_docs_shared do
     ENV["INCLUDE_DOCC_PLUGIN"] = "true"
 
     version_number = current_version_number

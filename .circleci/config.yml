@@ -869,7 +869,7 @@ jobs:
       - install-bundle-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane generate_docs
+          command: bundle exec fastlane build_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
 
@@ -881,7 +881,7 @@ jobs:
       - install-bundle-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane generate_and_publish_docs
+          command: bundle exec fastlane build_and_publish_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
 
