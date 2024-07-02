@@ -43,12 +43,13 @@ public final class ConfiguredPurchases {
             Purchases.proxyURL = nil
         }
 
+        let purchasesAreCompletedBy: PurchasesAreCompletedBy = observerMode ? .myApp : .revenueCat
+        let storeKitVersion: StoreKitVersion = useStoreKit2 ? .storeKit2 : .storeKit1
         let purchases = Purchases.configure(
-            with: .builder(withAPIKey: apiKey)
+            with: .init(withAPIKey: apiKey)
                 .with(diagnosticsEnabled: true)
-                .with(observerMode: observerMode, storeKitVersion: useStoreKit2 ? .storeKit2 : .storeKit1)
+                .with(purchasesAreCompletedBy: purchasesAreCompletedBy, storeKitVersion: storeKitVersion)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
-                .build()
         )
 
         self.init(purchases: purchases, proxyURL: Purchases.proxyURL)
