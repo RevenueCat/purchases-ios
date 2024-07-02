@@ -861,6 +861,18 @@ jobs:
           path: fastlane/test_output/report.html
           destination: test_report.html
 
+  docs-build:
+    <<: *base-job
+    steps:
+      - setup-git-credentials
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: Build docs
+          command: bundle exec fastlane build_docs
+          environment:
+            DOCS_IOS_VERSION: "17.4"
+
   docs-deploy:
     <<: *base-job
     steps:
@@ -869,9 +881,9 @@ jobs:
       - install-bundle-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane generate_docs
+          command: bundle exec fastlane build_and_publish_docs
           environment:
-            DOCS_IOS_VERSION: "16.1"
+            DOCS_IOS_VERSION: "17.4"
 
   make-release:
     <<: *base-job
@@ -1212,6 +1224,9 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
+      - docs-build:
+          xcode_version: '14.3.0'
+          install_swiftlint: false
       - spm-release-build
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
@@ -1329,6 +1344,7 @@ workflows:
           <<: *release-tags
       - docs-deploy:
           <<: *release-tags
+          xcode_version: '14.3.0'
       - deploy-purchase-tester:
           <<: *release-tags
       - notify-on-non-patch-release-branches:

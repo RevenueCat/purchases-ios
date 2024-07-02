@@ -773,22 +773,62 @@ platform :ios do
     end
   end
 
-  desc "Generate docs"
-  lane :generate_docs do
-    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+  desc "Generate docs without publishing"
+  lane :build_docs do
+    build_docs_shared
+  end
+
+  desc "Generate & publish docs"
+  lane :build_and_publish_docs do
+    docs_generation_folder = build_docs_shared
 
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
-    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
 
     UI.user_error!("Missing environment variable: DOCS_REPO_BASE_URL") unless docs_repo_base_url
     UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
 
     docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
+
+    docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
+    # clone docs repo
+    Dir.mktmpdir do |docs_repo_clone_dir|
+      Dir.chdir(docs_repo_clone_dir) do
+        sh("git", "clone", docs_repo_url)
+        Dir.chdir(docs_repo_name) do
+          # copy docs generated in the previous step into the docs folder
+          # and push the changes
+          docs_destination_folder = "docs/#{version_number}"
+          FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
+          docs_files.each do |file|
+            FileUtils.cp file, "docs/"
+          end
+
+          # using sh instead of fastlane commands because fastlane would run
+          # from the repo root
+          sh("git", "add", docs_destination_folder)
+          sh("git", "add", "docs/*.html")
+          sh("git", "commit", "-m", "Update documentation for #{version_number}")
+          sh("git", "push")
+        end
+      end
+    end
+  end
+
+  desc "Builds the docs"
+  private_lane :build_docs_shared do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+
+    version_number = current_version_number
+    docs_repo_name = ENV["DOCS_REPO_NAME"]
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
+
     hosting_base_path = File.join(docs_repo_name, version_number)
 
-    Dir.mktmpdir do |docs_generation_folder|
+    docs_path = Dir.mktmpdir do |docs_generation_folder|
       # swift package must be run from the dir that contains the Package.swift
       # output is generated in docs_generation_folder
       Dir.chdir("..") do
@@ -812,32 +852,12 @@ platform :ios do
            "--transform-for-static-hosting",
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
-
-        docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
-        # clone docs repo
-        Dir.mktmpdir do |docs_repo_clone_dir|
-          Dir.chdir(docs_repo_clone_dir) do
-            sh("git", "clone", docs_repo_url)
-            Dir.chdir(docs_repo_name) do
-              # copy docs generated in the previous step into the docs folder
-              # and push the changes
-              docs_destination_folder = "docs/#{version_number}"
-              FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              docs_files.each do |file|
-                FileUtils.cp file, "docs/"
-              end
-
-              # using sh instead of fastlane commands because fastlane would run
-              # from the repo root
-              sh("git", "add", docs_destination_folder)
-              sh("git", "add", "docs/*.html")
-              sh("git", "commit", "-m", "Update documentation for #{version_number}")
-              sh("git", "push")
-            end
-          end
-        end
       end
+
+      docs_generation_folder # returning path from block
     end
+
+    docs_path # returning path from lane
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
