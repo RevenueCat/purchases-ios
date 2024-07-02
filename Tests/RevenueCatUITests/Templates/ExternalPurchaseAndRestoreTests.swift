@@ -27,6 +27,8 @@ enum TestError: Error {
 // swiftlint:disable type_body_length
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
+// When this class is named ExternalPurchaseAndRestoreTests, the test testSamplePaywallWithLoadingEligibility in
+// Template1ViewTests reliably fails on CI (although it passes when run locally).
 class ZZExternalPurchaseAndRestoreTests: TestCase {
 
     func testHandleExternalPurchasePaywall() throws {
