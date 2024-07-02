@@ -780,7 +780,7 @@ platform :ios do
 
   desc "Generate & publish docs"
   lane :build_and_publish_docs do
-    build_docs_shared
+    docs_generation_folder = build_docs_shared
 
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
@@ -800,7 +800,7 @@ platform :ios do
           # copy docs generated in the previous step into the docs folder
           # and push the changes
           docs_destination_folder = "docs/#{version_number}"
-          FileUtils.cp_r @docs_generation_folder + "/.", docs_destination_folder
+          FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
           docs_files.each do |file|
             FileUtils.cp file, "docs/"
           end
@@ -828,8 +828,7 @@ platform :ios do
 
     hosting_base_path = File.join(docs_repo_name, version_number)
 
-    Dir.mktmpdir do |docs_generation_folder|
-      @docs_generation_folder = docs_generation_folder
+    docs_path = Dir.mktmpdir do |docs_generation_folder|
       # swift package must be run from the dir that contains the Package.swift
       # output is generated in docs_generation_folder
       Dir.chdir("..") do
@@ -854,7 +853,11 @@ platform :ios do
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
       end
+
+      docs_generation_folder # returning path from block
     end
+
+    docs_path # returning path from lane
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
