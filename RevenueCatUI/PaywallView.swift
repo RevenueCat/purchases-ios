@@ -43,7 +43,8 @@ public struct PaywallView: View {
     @ObservedObject
     var purchaseHandler: PurchaseHandler
 
-    let introEligibility: TrialOrIntroEligibilityChecker
+    @StateObject
+    var introEligibility: TrialOrIntroEligibilityChecker
 
     @State
     private var offering: Offering?
@@ -121,7 +122,7 @@ public struct PaywallView: View {
         }
         self._purchaseHandler = .init(initialValue: configuration.purchaseHandler)
 
-        self.introEligibility = configuration.introEligibility ?? .default()
+        self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
