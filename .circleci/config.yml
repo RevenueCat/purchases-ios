@@ -68,6 +68,8 @@ aliases:
         ignore: /.*/
       branches:
         only: /^release\/.*\.0$/
+  docs: &docs
+    xcode_version: '14.3.0'
 
 commands:
   install-runtime:
@@ -861,8 +863,9 @@ jobs:
           path: fastlane/test_output/report.html
           destination: test_report.html
 
-  docs-deploy:
+  docs-build:
     <<: *base-job
+    <<: *docs
     steps:
       - setup-git-credentials
       - checkout
@@ -871,7 +874,20 @@ jobs:
           name: Build docs
           command: bundle exec fastlane generate_docs
           environment:
-            DOCS_IOS_VERSION: "16.1"
+            DOCS_IOS_VERSION: "17.4"
+
+  docs-deploy:
+    <<: *base-job
+    <<: *docs
+    steps:
+      - setup-git-credentials
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: Build docs
+          command: bundle exec fastlane generate_and_publish_docs
+          environment:
+            DOCS_IOS_VERSION: "17.4"
 
   make-release:
     <<: *base-job
@@ -1212,6 +1228,7 @@ workflows:
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
+      - docs-build
       - spm-release-build
       - spm-custom-entitlement-computation-build
       - spm-receipt-parser
@@ -1328,6 +1345,7 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
+          <<: *docs
           <<: *release-tags
       - deploy-purchase-tester:
           <<: *release-tags
