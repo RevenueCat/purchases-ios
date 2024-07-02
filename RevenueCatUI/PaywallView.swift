@@ -38,10 +38,10 @@ public struct PaywallView: View {
     // purposes only and may or may not be the same
     // object as `purchaseHandler`.
     @StateObject
-    var doNotAccessPurchaseHandler: PurchaseHandler
+    private var doNotAccessPurchaseHandler: PurchaseHandler
 
     @ObservedObject
-    var purchaseHandler: PurchaseHandler
+    private var purchaseHandler: PurchaseHandler
 
     @StateObject
     var introEligibility: TrialOrIntroEligibilityChecker
