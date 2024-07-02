@@ -298,7 +298,7 @@ extension PurchaseHandler {
 
         let customerInfo = try await self.purchases.customerInfo()
 
-        // This is done by `RestorePurchasesButton` whend using RevenueCat logic.
+        // This is done by `RestorePurchasesButton` when using RevenueCat logic.
         self.setRestored(customerInfo)
 
         return (info: customerInfo, result.success)
