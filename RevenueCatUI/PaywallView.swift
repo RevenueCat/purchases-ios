@@ -33,7 +33,15 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    let purchaseHandler: PurchaseHandler
+    // Do NOT reference this object directly, always
+    // use `purchaseHandler`. It is here for lifecycle
+    // purposes only and may or may not be the same
+    // object as `purchaseHandler`.
+    @StateObject
+    var doNotAccessPurchaseHandler: PurchaseHandler
+
+    @ObservedObject
+    var purchaseHandler: PurchaseHandler
 
     let introEligibility: TrialOrIntroEligibilityChecker
 
@@ -103,15 +111,25 @@ public struct PaywallView: View {
     // Notes: Should this be internal, and public only for dev? Should configuration be totally private, yes?
     // And these purchase blocks should ONLY be defined on the purchase handler?
     // @PublicForExternalTesting
-    init(configuration: PaywallViewConfiguration) {
+    init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
+        if paywallViewOwnsPurchaseHandler {
+            self._doNotAccessPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
+        } else {
+            // this is unused and is only present to fulfill the need to have an object assigned
+            // to a @StateObject
+            self._doNotAccessPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
+        }
+        self._purchaseHandler = .init(initialValue: configuration.purchaseHandler)
+
         self.introEligibility = configuration.introEligibility ?? .default()
-        self.purchaseHandler = configuration.purchaseHandler
+
         self._offering = .init(
             initialValue: configuration.content.extractInitialOffering()
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
+
         self.contentToDisplay = configuration.content
         self.mode = configuration.mode
         self.fonts = configuration.fonts

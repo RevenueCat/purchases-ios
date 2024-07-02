@@ -493,7 +493,8 @@ private struct PresentingPaywallModifier: ViewModifier {
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
                 purchaseHandler: self.purchaseHandler
-            )
+            ),
+            paywallViewOwnsPurchaseHandler: false
         )
         .onPurchaseStarted {
             self.purchaseStarted?($0)
