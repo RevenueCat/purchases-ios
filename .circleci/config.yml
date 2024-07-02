@@ -1270,7 +1270,7 @@ workflows:
               # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
               ignore: /pull\/[0-9]+/
       - backend-integration-tests-offline:
-          xcode_version: "15.2"
+          xcode_version: "15.3"
           install_swiftlint: false
           # These tests are flaky due to FB13133387 so we don't want the noise in every PR
           # <<: *release-branches-and-main
