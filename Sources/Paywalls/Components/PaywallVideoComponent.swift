@@ -1,14 +1,14 @@
 //
-//  PaywallImageComponent.swift
+//  File.swift
+//  
 //
-//
-//  Created by Josh Holtz on 6/12/24.
+//  Created by Josh Holtz on 6/25/24.
 //
 
 import Foundation
 
 public extension PaywallComponent {
-    struct ImageComponent: PaywallComponentBase {
+    struct VideoComponent: PaywallComponentBase {
 
         let type: String
         public let url: URL
@@ -18,7 +18,7 @@ public extension PaywallComponent {
             url: URL,
             displayPreferences: [DisplayPreference]? = nil
         ) {
-            self.type = "image"
+            self.type = "video"
             self.url = url
             self.displayPreferences = displayPreferences
         }

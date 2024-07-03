@@ -8,15 +8,24 @@
 import Foundation
 
 public extension PaywallComponent {
-    struct PackagesComponent: Decodable, Sendable, Hashable, Equatable {
+    struct PackagesComponent: PaywallComponentBase {
 
         let type: String
         public let packages: Packages
+        public let displayPreferences: [DisplayPreference]?
 
-        public init(packages: Packages) {
+        public init(
+            packages: Packages,
+            displayPreferences: [DisplayPreference]? = nil
+        ) {
             self.type = "packages"
             self.packages = packages
+            self.displayPreferences = displayPreferences
         }
+
+        public var focusIdentifiers: [FocusIdentifier]? = {
+            return [UUID.init().uuidString]
+        }()
 
     }
 }

@@ -45,7 +45,7 @@ public final class ConfiguredPurchases {
 
         let purchases = Purchases.configure(
             with: .builder(withAPIKey: apiKey)
-                .with(observerMode: observerMode, storeKitVersion: useStoreKit2 ? .storeKit2 : .storeKit1)
+//                .with(observerMode: observerMode, storeKitVersion: useStoreKit2 ? .storeKit2 : .storeKit1)
                 .with(entitlementVerificationMode: entitlementVerificationMode)
                 .build()
         )
