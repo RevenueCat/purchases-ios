@@ -22,11 +22,22 @@ struct CustomerCenterConfigResponse {
     let customerCenter: CustomerCenter
 
     struct CustomerCenter {
+
         let locale: String
         let paths: [HelpPath]
         let supportEmail: String
         let appearance: Appearance
         let screens: [Screen]
+        let localization: Localization
+
+    }
+
+    struct Localization {
+
+        let supported: [String]
+        let `default`: String
+        let localizedStrings: [String: String]
+
     }
 
     struct HelpPath {
@@ -100,10 +111,17 @@ struct CustomerCenterConfigResponse {
         }
     }
 
+    struct Support {
+        
+        let email: String
+    
+    }
+
 }
 
 extension CustomerCenterConfigResponse: Codable, Equatable {}
 extension CustomerCenterConfigResponse.CustomerCenter: Codable, Equatable {}
+extension CustomerCenterConfigResponse.Localization: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PathType: Codable, Equatable {}
 extension CustomerCenterConfigResponse.HelpPath.PromotionalOffer: Codable, Equatable {}
