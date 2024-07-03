@@ -8,10 +8,12 @@
 import Foundation
 
 public extension PaywallComponent {
-    struct TiersComponent: Decodable, Sendable, Hashable, Equatable {
+    struct TiersComponent: PaywallComponentBase {
+
 
         let type: String
         public let tiers: [TierInfo]
+        public let displayPreferences: [DisplayPreference]?
 
         public struct TierInfo: Decodable, Sendable, Hashable, Equatable {
             public init(id: String, displayName: PaywallComponent.LocaleResources<String>, components: [PaywallComponent]) {
@@ -25,28 +27,40 @@ public extension PaywallComponent {
             public let components: [PaywallComponent]
         }
 
-        public init(tiers: [TierInfo]) {
+        public init(
+            tiers: [TierInfo],
+            displayPreferences: [DisplayPreference]? = nil
+        ) {
             self.type = "tiers"
             self.tiers = tiers
+            self.displayPreferences = displayPreferences
         }
+
+        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }
 
 public extension PaywallComponent {
-    struct TierSelectorComponent: Decodable, Sendable, Hashable, Equatable {
+    struct TierSelectorComponent: PaywallComponentBase {
 
         let type: String
+        public let displayPreferences: [DisplayPreference]?
 
-        public init() {
+        public init(
+            displayPreferences: [DisplayPreference]? = nil
+        ) {
             self.type = "tier_selector"
+            self.displayPreferences = displayPreferences
         }
+
+        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }
 
 public extension PaywallComponent {
-    struct TierToggleComponent: Decodable, Sendable, Hashable, Equatable {
+    struct TierToggleComponent: PaywallComponentBase {
 
         let type: String
         public let text: DisplayString
@@ -56,6 +70,7 @@ public extension PaywallComponent {
         public let horizontalAlignment: HorizontalAlignment
         public let backgroundColor: ColorInfo?
         public let padding: Padding
+        public let displayPreferences: [DisplayPreference]?
 
         public init(
             text: DisplayString,
@@ -64,7 +79,8 @@ public extension PaywallComponent {
             backgroundColor: ColorInfo? = nil,
             padding: Padding = .default,
             textStyle: TextStyle = .body,
-            horitzontalAlignment: HorizontalAlignment = .center
+            horitzontalAlignment: HorizontalAlignment = .center,
+            displayPreferences: [DisplayPreference]? = nil
         ) {
             self.type = "text"
             self.text = text
@@ -74,7 +90,10 @@ public extension PaywallComponent {
             self.padding = padding
             self.textStyle = textStyle
             self.horizontalAlignment = horitzontalAlignment
+            self.displayPreferences = displayPreferences
         }
+
+        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }

@@ -8,13 +8,19 @@
 import Foundation
 
 public extension PaywallComponent {
-    struct SpacerComponent: Decodable, Sendable, Hashable, Equatable {
+    struct SpacerComponent: PaywallComponentBase {
 
         let type: String
+        public let displayPreferences: [DisplayPreference]?
 
-        public init() {
+        public init(
+            displayPreferences: [DisplayPreference]? = nil
+        ) {
             self.type = "spacer"
+            self.displayPreferences = displayPreferences
         }
+
+        var focusIdentifiers: [FocusIdentifier]? = nil
 
     }
 }

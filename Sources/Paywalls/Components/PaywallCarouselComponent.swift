@@ -1,25 +1,25 @@
 //
-//  PaywallImageComponent.swift
+//  File.swift
+//  
 //
-//
-//  Created by Josh Holtz on 6/12/24.
+//  Created by Josh Holtz on 6/25/24.
 //
 
 import Foundation
 
 public extension PaywallComponent {
-    struct ImageComponent: PaywallComponentBase {
+    struct CarouselComponent: PaywallComponentBase {
 
         let type: String
-        public let url: URL
+        public let urls: [URL]
         public let displayPreferences: [DisplayPreference]?
 
         public init(
-            url: URL,
+            urls: [URL],
             displayPreferences: [DisplayPreference]? = nil
         ) {
-            self.type = "image"
-            self.url = url
+            self.type = "carousel"
+            self.urls = urls
             self.displayPreferences = displayPreferences
         }
 

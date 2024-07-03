@@ -648,42 +648,90 @@ private extension SamplePaywallLoader {
             assetBaseURL: Self.paywallAssetBaseURL,
 
             componentData: PaywallComponent.Data(
+                backgroundColor: .init(light: "#FFFFFF"),
                 components: multiTierFull
             )
         )
     }
 
-    static var singleTier1: [PaywallComponent] {
-            return [
-                .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
-                .spacer(.init()),
-                .text(.init(
-                    text: .init(value: [
-                        "en_US": "Get started with our plan"
-                    ]),
-                    color: .init(light: "#000000"),
-                    textStyle: .largeTitle
-                )),
-                .text(.init(
-                    text: .init(value: [
-                        "en_US": "Get access to all our educational content trusted by thousands of parents. And bunch of other awesome stuff and this we are trying to just make this super super duper long."
-                    ]),
-                    color: .init(light: "#000000"),
-                    textStyle: .body
-                )),
-                .spacer(.init()),
-                .text(.init(
-                    text: .init(value: [
-                        "en_US": "Subscribe for $9.99/mo"
-                    ]),
-                    color: .init(light: "#999999"),
-                    textStyle: .body
-                )),
-                .purchaseButton(.init(cta: .init(value: [
+    static var backbone: [PaywallComponent] {
+        return [
+            .image(.init(
+                url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!,
+                displayPreferences: [.portrait]
+            )),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get started with our plan"
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .largeTitle,
+                displayPreferences: [.portrait, .landscapeLeft]
+            )),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get access to all our educational content trusted by thousands of parents. And bunch of other awesome stuff and this we are trying to just make this super super duper long."
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .body,
+                displayPreferences: [.portrait, .landscapeLeft]
+            )),
+            .spacer(.init(
+                displayPreferences: [.landscapeRight]
+            )),
+            .spacer(.init(
+                displayPreferences: [.portrait, .landscapeRight]
+            )),
+            .packages(.init(
+                packages: .init(
+                    default: annualPackageComponent,
+                    packages: [annualPackageComponent, monthlyPackageComponent]
+                ),
+                displayPreferences: [.portrait, .landscapeRight]
+            )),
+            .spacer(.init(
+                displayPreferences: [.portrait, .landscapeRight]
+            )),
+            .purchaseButton(.init(
+                cta: .init(value: [
                     "en_US": "Continue"
-                ])))
-            ]
-        }
+                ]),
+                displayPreferences: [.portrait, .landscapeRight]
+            ))
+        ]
+    }
+
+    static var singleTier1: [PaywallComponent] {
+        return [
+            .image(.init(url: URL(string: "https://assets.pawwalls.com/954459_1701267532.jpeg")!)),
+            .spacer(.init()),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get started with our plan"
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .largeTitle
+            )),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Get access to all our educational content trusted by thousands of parents. And bunch of other awesome stuff and this we are trying to just make this super super duper long."
+                ]),
+                color: .init(light: "#000000"),
+                textStyle: .body
+            )),
+            .spacer(.init()),
+            .text(.init(
+                text: .init(value: [
+                    "en_US": "Subscribe for $9.99/mo"
+                ]),
+                color: .init(light: "#999999"),
+                textStyle: .body
+            )),
+            .purchaseButton(.init(cta: .init(value: [
+                "en_US": "Continue"
+            ])))
+        ]
+    }
 
 
     static var singleTier5: [PaywallComponent] {
