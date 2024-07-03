@@ -44,7 +44,7 @@ public struct PaywallView: View {
     private var purchaseHandler: PurchaseHandler
 
     @StateObject
-    var introEligibility: TrialOrIntroEligibilityChecker
+    private var introEligibility: TrialOrIntroEligibilityChecker
 
     @State
     private var offering: Offering?
