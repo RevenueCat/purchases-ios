@@ -33,10 +33,10 @@ public struct PaywallView: View {
     @Environment(\.locale)
     private var locale
 
-    // Do NOT reference this object directly, always
-    // use `purchaseHandler`. It is here for lifecycle
-    // purposes only and may or may not be the same
-    // object as `purchaseHandler`.
+    // Do NOT reference this object directly, always use `purchaseHandler`.
+    // `doNotAccessPurchaseHandler` is here to own the `PurchaseHandler` when
+    //  it is owned by this view. When it is owned by an external object, this
+    //  references a "dummy" purchase handler.
     @StateObject
     private var doNotAccessPurchaseHandler: PurchaseHandler
 
