@@ -211,6 +211,56 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(passedError).toEventually(matchError(TestError.error))
     }
 
+    func testExternalRestorePaywallSuccessCallbackOrder() throws {
+        var completed = false
+        var callbackOrder = [String]()
+
+        let purchasHandler = Self.externalPurchaseHandler { _ in
+            callbackOrder.append("performPurchase")
+            return (userCancelled: false, error: nil)
+        } performRestore: {
+            callbackOrder.append("performRestore")
+            return (success: true, error: nil)
+        }
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: purchasHandler
+        )
+        .onPurchaseStarted { _ in
+            callbackOrder.append("onPurchaseStarted")
+        }
+        .onPurchaseCompleted { @MainActor _ in
+            callbackOrder.append("onPurchaseCompleted")
+        }
+        .onPurchaseCancelled {
+            callbackOrder.append("onPurchaseCancelled")
+        }
+        .onPurchaseFailure { _ in
+            callbackOrder.append("onPurchaseFailure")
+        }
+        .onRestoreStarted({
+            callbackOrder.append("onRestoreStarted")
+        })
+        .onRestoreCompleted({ _ in
+            callbackOrder.append("onRestoreCompleted")
+        })
+        .onRestoreFailure({ _ in
+            callbackOrder.append("onRestoreFailure")
+        })
+        .addToHierarchy()
+
+        Task {
+            _ = try await purchasHandler.restorePurchases()
+            completed = true
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(callbackOrder).to(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
+    }
+
 
     func testExternalRestoreReturnsCorrectCustomerInfo() throws {
         var customerInfo: CustomerInfo?
