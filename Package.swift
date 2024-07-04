@@ -10,7 +10,7 @@ let environmentVariables = ProcessInfo.processInfo.environment
 let shouldIncludeDocCPlugin = environmentVariables["INCLUDE_DOCC_PLUGIN"] == "true"
 
 var dependencies: [Package.Dependency] = [
-    .package(url: "git@github.com:Quick/Nimble.git", from: "10.0.0"),
+    .package(url: "git@github.com:Quick/Nimble.git", from: "13.3.0"),
     // SST requires iOS 13 starting from version 1.13.0
     .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
 ]

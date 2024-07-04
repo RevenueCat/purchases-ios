@@ -129,4 +129,4 @@ func asyncWait<T>(
 
 // Higher value required to avoid slow CI failing tests.
 let defaultTimeout: DispatchTimeInterval = .seconds(2)
-let defaultPollInterval: DispatchTimeInterval = AsyncDefaults.pollInterval
+let defaultPollInterval: DispatchTimeInterval = PollingDefaults.pollInterval.dispatchTimeInterval
