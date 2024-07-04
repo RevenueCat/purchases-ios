@@ -78,7 +78,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(completed).toEventually(beTrue())
-        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
+        expect(callbackOrder).to(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
     }
 
     func testHandleExternalPurchaseCancelledPaywall() throws {
@@ -128,7 +128,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(completed).toEventually(beTrue())
-        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCancelled"]))
+        expect(callbackOrder).to(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCancelled"]))
     }
 
     func testHandleExternalPurchaseFailedPaywall() throws {
@@ -178,7 +178,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseFailure"]))
-        expect(passedError).toEventually(matchError(TestError.error))
+        expect(passedError).to(matchError(TestError.error))
     }
 
     func testHandleExternalRestore() throws {
@@ -229,8 +229,8 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(completed).toEventually(beTrue())
-        expect(customerInfo).toEventually(be(TestData.customerInfo))
-        expect(callbackOrder).toEventually(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
+        expect(customerInfo).to(be(TestData.customerInfo))
+        expect(callbackOrder).to(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
     }
 
     func testHandleExternalRestoreFailure() throws {
@@ -279,7 +279,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
 
         expect(callbackOrder).toEventually(equal(["onRestoreStarted", "performRestore", "onRestoreFailure"]))
-        expect(passedError).toEventually(matchError(TestError.error))
+        expect(passedError).to(matchError(TestError.error))
     }
 
     func testHandleExternalPurchaseWithoutPurchaseHandler() throws {
