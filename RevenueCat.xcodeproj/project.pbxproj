@@ -625,6 +625,12 @@
 		6E38843A0CAFD551013D0A3F /* StoreProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF627761D375C8431EB866 /* StoreProduct.swift */; };
 		805B60C97993B311CEC93EAF /* ProductsFetcherSK2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3628C1F100BB3C1782860D24 /* ProductsFetcherSK2.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
+		88490D1F2C376B0B006D6319 /* Template7View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D1E2C376B0B006D6319 /* Template7View.swift */; };
+		88490D222C376B72006D6319 /* TemplatePackageSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D202C376B6D006D6319 /* TemplatePackageSetting.swift */; };
+		88490D232C376B9B006D6319 /* TemplatePackageSetting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D202C376B6D006D6319 /* TemplatePackageSetting.swift */; };
+		88490D252C376C46006D6319 /* TemplateView+MultiTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D242C376C46006D6319 /* TemplateView+MultiTier.swift */; };
+		88490D272C376C83006D6319 /* ConsistentTierContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D262C376C83006D6319 /* ConsistentTierContentView.swift */; };
+		88490D292C376CB8006D6319 /* TierSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88490D282C376CB8006D6319 /* TierSelectorView.swift */; };
 		887A5FBD2C1D036200E1A461 /* RevenueCatUIDev.h in Headers */ = {isa = PBXBuildFile; fileRef = 887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		887A60672C1D037000E1A461 /* PaywallError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC72C1D037000E1A461 /* PaywallError.swift */; };
 		887A60682C1D037000E1A461 /* TemplateError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FC82C1D037000E1A461 /* TemplateError.swift */; };
@@ -1540,6 +1546,11 @@
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		88490D1E2C376B0B006D6319 /* Template7View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Template7View.swift; sourceTree = "<group>"; };
+		88490D202C376B6D006D6319 /* TemplatePackageSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TemplatePackageSetting.swift; path = Tests/RevenueCatUITests/TemplatePackageSetting.swift; sourceTree = SOURCE_ROOT; };
+		88490D242C376C46006D6319 /* TemplateView+MultiTier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TemplateView+MultiTier.swift"; sourceTree = "<group>"; };
+		88490D262C376C83006D6319 /* ConsistentTierContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentTierContentView.swift; sourceTree = "<group>"; };
+		88490D282C376CB8006D6319 /* TierSelectorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TierSelectorView.swift; sourceTree = "<group>"; };
 		887A5FB42C1D024300E1A461 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		887A5FBC2C1D036200E1A461 /* RevenueCatUIDev.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RevenueCatUIDev.h; sourceTree = "<group>"; };
@@ -3196,6 +3207,7 @@
 				887A5FE32C1D037000E1A461 /* Package+VariableDataProvider.swift */,
 				887A5FE42C1D037000E1A461 /* PaywallData+Default.swift */,
 				887A5FE52C1D037000E1A461 /* PreviewHelpers.swift */,
+				88490D242C376C46006D6319 /* TemplateView+MultiTier.swift */,
 				887A5FE62C1D037000E1A461 /* VersionDetector.swift */,
 			);
 			path = Helpers;
@@ -3205,6 +3217,7 @@
 			isa = PBXGroup;
 			children = (
 				887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */,
+				88490D262C376C83006D6319 /* ConsistentTierContentView.swift */,
 				887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */,
 				887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */,
 				887A5FEB2C1D037000E1A461 /* ViewExtensions.swift */,
@@ -3290,6 +3303,7 @@
 				887A604B2C1D037000E1A461 /* Template3View.swift */,
 				887A604C2C1D037000E1A461 /* Template4View.swift */,
 				887A604D2C1D037000E1A461 /* Template5View.swift */,
+				88490D1E2C376B0B006D6319 /* Template7View.swift */,
 				887A604E2C1D037000E1A461 /* TemplateViewType.swift */,
 			);
 			path = Templates;
@@ -3319,6 +3333,7 @@
 				887A605C2C1D037000E1A461 /* PurchaseButton.swift */,
 				887A605D2C1D037000E1A461 /* RemoteImage.swift */,
 				887A605E2C1D037000E1A461 /* TemplateBackgroundImageView.swift */,
+				88490D282C376CB8006D6319 /* TierSelectorView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -3466,6 +3481,7 @@
 				887A62212C1D168B00E1A461 /* PaywallViewEventsTests.swift */,
 				887A62222C1D168B00E1A461 /* PresentIfNeededTests.swift */,
 				887A62232C1D168B00E1A461 /* PurchaseCompletedHandlerTests.swift */,
+				88490D202C376B6D006D6319 /* TemplatePackageSetting.swift */,
 				887A63482C1D17A200E1A461 /* RevenueCatUIDev.xctestplan */,
 			);
 			name = RevenueCatUITests;
@@ -5003,10 +5019,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88490D232C376B9B006D6319 /* TemplatePackageSetting.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
 				887A60B82C1D037000E1A461 /* Template1View.swift in Sources */,
 				887A60C62C1D037000E1A461 /* LoadingPaywallView.swift in Sources */,
 				887A60C72C1D037000E1A461 /* PackageButtonStyle.swift in Sources */,
+				88490D292C376CB8006D6319 /* TierSelectorView.swift in Sources */,
 				887A60C52C1D037000E1A461 /* IntroEligibilityStateView.swift in Sources */,
 				887A60B72C1D037000E1A461 /* WatchTemplateView.swift in Sources */,
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
@@ -5042,11 +5060,13 @@
 				887A60712C1D037000E1A461 /* PaywallViewConfiguration.swift in Sources */,
 				887A60C82C1D037000E1A461 /* ProgressView.swift in Sources */,
 				887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */,
+				88490D252C376C46006D6319 /* TemplateView+MultiTier.swift in Sources */,
 				887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,
 				887A60782C1D037000E1A461 /* TestData.swift in Sources */,
 				887A60672C1D037000E1A461 /* PaywallError.swift in Sources */,
+				88490D272C376C83006D6319 /* ConsistentTierContentView.swift in Sources */,
 				887A606E2C1D037000E1A461 /* LocalizedAlertError.swift in Sources */,
 				887A60802C1D037000E1A461 /* Package+VariableDataProvider.swift in Sources */,
 				887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */,
@@ -5063,6 +5083,7 @@
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,
+				88490D1F2C376B0B006D6319 /* Template7View.swift in Sources */,
 				887A606F2C1D037000E1A461 /* PaywallData+Validation.swift in Sources */,
 				887A60762C1D037000E1A461 /* TemplateViewConfiguration+Extensions.swift in Sources */,
 				887A607A2C1D037000E1A461 /* Variables.swift in Sources */,
@@ -5092,6 +5113,7 @@
 				887A633B2C1D177800E1A461 /* PaywallViewLocalizationTests.swift in Sources */,
 				887A633C2C1D177800E1A461 /* Template1ViewTests.swift in Sources */,
 				887A633D2C1D177800E1A461 /* Template2ViewTests.swift in Sources */,
+				88490D222C376B72006D6319 /* TemplatePackageSetting.swift in Sources */,
 				887A633E2C1D177800E1A461 /* Template3ViewTests.swift in Sources */,
 				887A633F2C1D177800E1A461 /* Template4ViewTests.swift in Sources */,
 				887A63402C1D177800E1A461 /* Template5ViewTests.swift in Sources */,
