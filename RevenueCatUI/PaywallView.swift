@@ -134,10 +134,10 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
 
-        checkForConfigurationConsitency()
+        checkForConfigurationConsistency()
     }
 
-    private mutating func checkForConfigurationConsitency() {
+    private mutating func checkForConfigurationConsistency() {
         switch self.purchaseHandler.purchasesAreCompletedBy {
         case .myApp:
             if self.purchaseHandler.performPurchase == nil || self.purchaseHandler.performRestore == nil {
