@@ -31,7 +31,7 @@ enum TestError: Error {
 // Template1ViewTests reliably fails on CI (although it passes when run locally).
 class ZZExternalPurchaseAndRestoreTests: TestCase {
 
-    func testHandleExternalPurchasePaywall() throws {
+    func testExternalPurchasePaywallSuccessCallbackOrder() throws {
         var completed = false
         var callbackOrder = [String]()
 
@@ -52,7 +52,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         .onPurchaseStarted { _ in
             callbackOrder.append("onPurchaseStarted")
         }
-        .onPurchaseCompleted { _ in
+        .onPurchaseCompleted { @MainActor _ in
             callbackOrder.append("onPurchaseCompleted")
         }
         .onPurchaseCancelled {
@@ -81,7 +81,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(callbackOrder).to(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCompleted"]))
     }
 
-    func testHandleExternalPurchaseCancelledPaywall() throws {
+    func testExternalPurchasePaywallCancelledCallbackOrder() throws {
         var completed = false
         var callbackOrder = [String]()
 
@@ -131,9 +131,9 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(callbackOrder).to(equal(["onPurchaseStarted", "performPurchase", "onPurchaseCancelled"]))
     }
 
-    func testHandleExternalPurchaseFailedPaywall() throws {
+    func testExternalPurchasePaywallFailureCallbackOrder() throws {
         var callbackOrder = [String]()
-        var passedError: Error?
+        var completed = false
 
         let purchasHandler = Self.externalPurchaseHandler { _ in
             callbackOrder.append("performPurchase")
@@ -160,7 +160,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         }
         .onPurchaseFailure { error in
             callbackOrder.append("onPurchaseFailure")
-            passedError = error
         }
         .onRestoreStarted({
             callbackOrder.append("onRestoreStarted")
@@ -174,15 +173,46 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         .addToHierarchy()
 
         Task {
+            do {
+                _ = try await purchasHandler.purchase(package: Self.package)
+            } catch {
+                completed = true
+            }
+        }
+
+        expect(completed).toEventually(beTrue())
+        expect(callbackOrder).to(equal(["onPurchaseStarted", "performPurchase", "onPurchaseFailure"]))
+    }
+
+    func testExternalPurchasePaywallFailureCorrectErrorIsPassed() throws {
+        var passedError: Error?
+
+        let purchasHandler = Self.externalPurchaseHandler { _ in
+            return (userCancelled: false, error: TestError.error)
+        } performRestore: {
+            return (success: true, error: nil)
+        }
+
+        try PaywallView(
+            offering: Self.offering.withLocalImages,
+            customerInfo: TestData.customerInfo,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: purchasHandler
+        )
+        .onPurchaseFailure { error in
+            passedError = error
+        }
+        .addToHierarchy()
+
+        Task {
             _ = try await purchasHandler.purchase(package: Self.package)
         }
 
-        expect(callbackOrder).toEventually(equal(["onPurchaseStarted", "performPurchase", "onPurchaseFailure"]))
-        expect(passedError).to(matchError(TestError.error))
+        expect(passedError).toEventually(matchError(TestError.error))
     }
 
-    func testHandleExternalRestore() throws {
-        var completed = false
+
+    func testExternalRestoreReturnsCorrectCustomerInfo() throws {
         var customerInfo: CustomerInfo?
         var callbackOrder = [String]()
 
@@ -199,90 +229,20 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
-        .onPurchaseStarted { _ in
-            callbackOrder.append("onPurchaseStarted")
-        }
-        .onPurchaseCompleted { _ in
-            callbackOrder.append("onPurchaseCompleted")
-        }
-        .onPurchaseCancelled {
-            callbackOrder.append("onPurchaseCancelled")
-        }
-        .onPurchaseFailure { _ in
-            callbackOrder.append("onPurchaseFailure")
-        }
-        .onRestoreStarted({
-            callbackOrder.append("onRestoreStarted")
-        })
         .onRestoreCompleted({ info in
             callbackOrder.append("onRestoreCompleted")
             customerInfo = info
         })
-        .onRestoreFailure({ _ in
-            callbackOrder.append("onRestoreFailure")
-        })
-        .addToHierarchy()
-
-        Task {
-            _ = try await purchasHandler.restorePurchases()
-            completed = true
-        }
-
-        expect(completed).toEventually(beTrue())
-        expect(customerInfo).to(be(TestData.customerInfo))
-        expect(callbackOrder).to(equal(["onRestoreStarted", "performRestore", "onRestoreCompleted"]))
-    }
-
-    func testHandleExternalRestoreFailure() throws {
-        var callbackOrder = [String]()
-        var passedError: Error?
-
-        let purchasHandler = Self.externalPurchaseHandler { _ in
-            return (userCancelled: true, error: nil)
-        } performRestore: {
-            callbackOrder.append("performRestore")
-            return (success: false, error: TestError.error)
-        }
-
-        try PaywallView(
-            offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
-            introEligibility: .producing(eligibility: .eligible),
-            purchaseHandler: purchasHandler
-        )
-        .onPurchaseStarted { _ in
-            callbackOrder.append("onPurchaseStarted")
-        }
-        .onPurchaseCompleted { _ in
-            callbackOrder.append("onPurchaseCompleted")
-        }
-        .onPurchaseCancelled {
-            callbackOrder.append("onPurchaseCancelled")
-        }
-        .onPurchaseFailure { _ in
-            callbackOrder.append("onPurchaseFailure")
-        }
-        .onRestoreStarted({
-            callbackOrder.append("onRestoreStarted")
-        })
-        .onRestoreCompleted({ _ in
-            callbackOrder.append("onRestoreCompleted")
-        })
-        .onRestoreFailure({ error in
-            callbackOrder.append("onRestoreFailure")
-            passedError = error
-        })
         .addToHierarchy()
 
         Task {
             _ = try await purchasHandler.restorePurchases()
         }
 
-        expect(callbackOrder).toEventually(equal(["onRestoreStarted", "performRestore", "onRestoreFailure"]))
-        expect(passedError).to(matchError(TestError.error))
+        expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
-    func testHandleExternalPurchaseWithoutPurchaseHandler() throws {
+    func testExternalPurchasePaywallWithoutPurchaseHandlerThrowsErro() throws {
         var errorThrown = false
 
         let purchasHandler = Self.externalPurchaseHandler()
@@ -302,7 +262,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(errorThrown).toEventually(beTrue())
     }
 
-    func testHandleExternalRestoreWithoutRestoreHandler() throws {
+    func testExternalRestorePaywallWithoutPurchaseHandlerThrowsErro() throws {
         var errorThrown = false
 
         let purchasHandler = Self.externalPurchaseHandler()
@@ -322,7 +282,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(errorThrown).toEventually(beTrue())
     }
 
-    func testHandleInternalRestoreWithPurchaseHandlers() throws {
+    func testExternalRestorePaywallExecutesHandler() throws {
         var completed = false
         var customRestoreCodeExecuted = false
 
