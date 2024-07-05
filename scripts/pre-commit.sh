@@ -88,7 +88,7 @@ fi
 concatenate_circleci_configs() {
   # Define the output file
   local output_file=".circleci/config.yml"
-  local config_folder=".circleci/configuration/"
+  local config_folder=".circleci/configuration"
   local config_files=(
     "$config_folder/workflows.yml"
     "$config_folder/jobs.yml"
