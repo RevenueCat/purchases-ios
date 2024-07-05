@@ -292,7 +292,7 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
         expect(customerInfo).toEventually(be(TestData.customerInfo))
     }
 
-    func testExternalPurchasePaywallWithoutPurchaseHandlerThrowsErro() throws {
+    func testExternalPurchasePaywallWithoutPurchaseHandlerThrowsErro() async throws {
         var errorThrown = false
 
         let purchasHandler = Self.externalPurchaseHandler()
@@ -301,18 +301,16 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         try PaywallView(configuration: config).addToHierarchy()
 
-        Task {
-            do {
-                _ = try await purchasHandler.purchase(package: Self.package)
-            } catch {
-                errorThrown = true
-            }
+        do {
+            _ = try await purchasHandler.purchase(package: Self.package)
+        } catch {
+            errorThrown = true
         }
 
-        expect(errorThrown).toEventually(beTrue())
+        expect(errorThrown).to(beTrue())
     }
 
-    func testExternalRestorePaywallWithoutPurchaseHandlerThrowsErro() throws {
+    func testExternalRestorePaywallWithoutPurchaseHandlerThrowsErro() async throws {
         var errorThrown = false
 
         let purchasHandler = Self.externalPurchaseHandler()
@@ -321,19 +319,16 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         try PaywallView(configuration: config).addToHierarchy()
 
-        Task {
-            do {
-                _ = try await purchasHandler.restorePurchases()
-            } catch {
-                errorThrown = true
-            }
+        do {
+            _ = try await purchasHandler.restorePurchases()
+        } catch {
+            errorThrown = true
         }
 
-        expect(errorThrown).toEventually(beTrue())
+        expect(errorThrown).to(beTrue())
     }
 
-    func testExternalRestorePaywallExecutesHandler() throws {
-        var completed = false
+    func testExternalRestorePaywallDoesNotExecuteWithInternalHandler() async throws {
         var customRestoreCodeExecuted = false
 
         let purchasHandler = Self.internalPurchaseHandler { _ in
@@ -347,13 +342,9 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         try PaywallView(configuration: config).addToHierarchy()
 
-        Task {
-            // expect a warning logged to the console
-            _ = try await purchasHandler.restorePurchases()
-            completed = true
-        }
+        // expect a warning logged to the console
+        _ = try await purchasHandler.restorePurchases()
 
-        expect(completed).toEventually(beTrue())
         expect(customRestoreCodeExecuted) == false
     }
 
