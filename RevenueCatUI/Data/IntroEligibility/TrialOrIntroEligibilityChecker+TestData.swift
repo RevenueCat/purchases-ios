@@ -18,8 +18,7 @@ import RevenueCat
 extension TrialOrIntroEligibilityChecker {
 
     /// Creates a mock `TrialOrIntroEligibilityChecker` with a constant result.
-    // @PublicForExternalTesting
-    static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
+    public static func producing(eligibility: @autoclosure @escaping () -> IntroEligibilityStatus) -> Self {
         return .init { packages in
             return Dictionary(
                 uniqueKeysWithValues: Set(packages)

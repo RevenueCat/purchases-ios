@@ -14,11 +14,9 @@
 import Foundation
 import RevenueCat
 
-// @PublicForExternalTesting
-final class TrialOrIntroEligibilityChecker: ObservableObject {
+public final class TrialOrIntroEligibilityChecker: ObservableObject {
 
-    // @PublicForExternalTesting
-    typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
+    public typealias Checker = @Sendable ([Package]) async -> [Package: IntroEligibilityStatus]
 
     /// `false` if this `TrialOrIntroEligibilityChecker` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
@@ -33,14 +31,12 @@ final class TrialOrIntroEligibilityChecker: ObservableObject {
     }
 
     /// Creates an instance with a custom checker, useful for testing or previews.
-    // @PublicForExternalTesting
-    init(isConfigured: Bool = true, checker: @escaping Checker) {
+    public init(isConfigured: Bool = true, checker: @escaping Checker) {
         self.isConfigured = isConfigured
         self.checker = checker
     }
 
-    // @PublicForExternalTesting
-    static func `default`() -> Self {
+    public static func `default`() -> Self {
         return Purchases.isConfigured ? .init() : .notConfigured()
     }
 
@@ -67,8 +63,7 @@ extension TrialOrIntroEligibilityChecker {
 
 extension StoreProduct {
 
-    // @PublicForExternalTesting
-    var hasIntroDiscount: Bool {
+    public var hasIntroDiscount: Bool {
         // Fix-me: this needs to handle other types of intro discounts
         return self.introductoryDiscount != nil
     }
