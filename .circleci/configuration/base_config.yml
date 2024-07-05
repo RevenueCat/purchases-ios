@@ -1,0 +1,23 @@
+# CircleCI doesn't let us split a config file into multiple, so we have a pre-commit hook that does it for us
+# so that the file doens't become unmanageable. 
+# If you haven't done so yet, set up the pre-commit hook by calling bundle exec fastlane setup_dev.
+
+version: 2.1
+
+orbs:
+  macos: circleci/macos@2.5.1
+  slack: circleci/slack@4.10.1
+  # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
+  # codecov: codecov/codecov@3.3.0
+
+parameters:
+  action:
+    type: enum
+    enum: [default, bump, run-manual-tests]
+    default: default
+  generate_snapshots:
+    default: false
+    type: boolean
+  generate_revenuecatui_snapshots:
+    default: false
+    type: boolean
