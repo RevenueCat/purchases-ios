@@ -83,8 +83,8 @@ else
   verify_no_included_apikeys
 fi
 
-
-# Function to concatenate CircleCI configuration files
+# CircleCI doesn't let us split a config file into multiple, so we have a pre-commit hook that does it for us
+# so that the file doens't become unmanageable. 
 concatenate_circleci_configs() {
   # Define the output file
   local output_file=".circleci/config.yml"
@@ -98,26 +98,30 @@ concatenate_circleci_configs() {
   )
 
   # Check if any files in the config folder have changed
-  if git diff --cached --quiet HEAD -- $config_folder; then
-    echo "No changes in configuration files. Skipping concatenation."
-  else
+  if ! git diff --cached --quiet HEAD -- "$config_folder"; then
     # Clear the output file if it exists
-    > $output_file
+    > "$output_file"
 
     # Concatenate all configuration files in the desired order
     for file in "${config_files[@]}"; do
-      cat "$file" >> $output_file
-      echo -e "\n" >> $output_file # Add a newline for separation
+      if [[ -f "$file" ]]; then
+        # Add a comment with the file name
+        echo "# Contents from $file" >> "$output_file"
+        cat "$file" >> "$output_file"
+        echo -e "\n" >> "$output_file" # Add a newline for separation
+      else
+        echo "Warning: $file does not exist."
+      fi
     done
 
     echo "CircleCI configuration files concatenated into $output_file"
 
     # Add the generated config.yml to the commit
-    git add $output_file
+    git add "$output_file"
+  else
+    echo "No changes in configuration files. Skipping concatenation."
   fi
 }
 
-# Call the function to concatenate CircleCI configuration files
 concatenate_circleci_configs
 circleci config validate
-
