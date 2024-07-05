@@ -25,20 +25,39 @@ import SwiftUI
 @available(visionOS, unavailable)
 struct FeedbackSurveyView: View {
 
-    @ObservedObject
-    var feedbackSurveyData: FeedbackSurveyData
+    @StateObject
+    private var viewModel: FeedbackSurveyViewModel
+
+    init(feedbackSurveyData: FeedbackSurveyData) {
+        self._viewModel = StateObject(wrappedValue: FeedbackSurveyViewModel(feedbackSurveyData: feedbackSurveyData))
+    }
 
     var body: some View {
         VStack {
-            Text(feedbackSurveyData.configuration.title)
+            Text(self.viewModel.feedbackSurveyData.configuration.title)
                 .font(.title)
                 .padding()
 
             Spacer()
 
-            FeedbackSurveyButtonsView(options: feedbackSurveyData.configuration.options,
-                                      action: feedbackSurveyData.action)
+            FeedbackSurveyButtonsView(options: self.viewModel.feedbackSurveyData.configuration.options,
+                                      action: self.viewModel.handleAction(for:),
+                                      loadingStates: self.$viewModel.loadingStates)
         }
+        .sheet(
+            isPresented: self.$viewModel.isShowingPromotionalOffer,
+            onDismiss: { self.viewModel.handleSheetDismiss() },
+            content: {
+                if let promotionalOffer = self.viewModel.promotionalOffer,
+                   let product = self.viewModel.product,
+                   let promoOfferDetails = self.viewModel.promoOfferDetails,
+                   let localization = self.viewModel.localization {
+                    PromotionalOfferView(promotionalOffer: promotionalOffer,
+                                         product: product,
+                                         promoOfferDetails: promoOfferDetails,
+                                         localization: localization)
+                }
+            })
     }
 
 }
@@ -51,17 +70,24 @@ struct FeedbackSurveyView: View {
 struct FeedbackSurveyButtonsView: View {
 
     let options: [CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option]
-    let action: (() -> Void)
+    let action: (CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) async -> Void
+    @Binding
+    var loadingStates: [String: Bool]
 
     var body: some View {
         VStack(spacing: Self.buttonSpacing) {
             ForEach(options, id: \.id) { option in
                 AsyncButton(action: {
-                    self.action()
+                    await self.action(option)
                 }, label: {
-                    Text(option.title)
+                    if self.loadingStates[option.id] ?? false {
+                        ProgressView()
+                    } else {
+                        Text(option.title)
+                    }
                 })
                 .buttonStyle(ManageSubscriptionsButtonStyle())
+                .disabled(self.loadingStates[option.id] ?? false)
             }
         }
     }

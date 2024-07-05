@@ -36,7 +36,12 @@ enum CustomerCenterConfigTestData {
                             id: "2",
                             title: "Request a refund",
                             type: .refundRequest,
-                            detail: nil
+                            detail: .promotionalOffer(CustomerCenterConfigData.HelpPath.PromotionalOffer(
+                                iosOfferId: "offer_id",
+                                eligible: true,
+                                title: "title",
+                                subtitle: "subtitle"
+                            ))
                         ),
                         .init(
                             id: "3",
@@ -53,15 +58,18 @@ enum CustomerCenterConfigTestData {
                                 options: [
                                     .init(
                                         id: "1",
-                                        title: "Too expensive"
+                                        title: "Too expensive",
+                                        promotionalOffer: nil
                                     ),
                                     .init(
                                         id: "2",
-                                        title: "Don't use the app"
+                                        title: "Don't use the app",
+                                        promotionalOffer: nil
                                     ),
                                     .init(
                                         id: "3",
-                                        title: "Bought by mistake"
+                                        title: "Bought by mistake",
+                                        promotionalOffer: nil
                                     )
                                 ]
                             ))

@@ -39,8 +39,13 @@ func checkHelpPathDetail(_ detail: CustomerCenterConfigData.HelpPath.PathDetail)
 func checkPromotionalOffer(_ offer: CustomerCenterConfigData.HelpPath.PromotionalOffer) {
     let iosOfferId: String = offer.iosOfferId
     let eligible: Bool = offer.eligible
+    let title: String = offer.title
+    let subtitle: String = offer.subtitle
 
-    let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId, eligible: eligible)
+    let _: CustomerCenterConfigData.HelpPath.PromotionalOffer = .init(iosOfferId: iosOfferId,
+                                                                      eligible: eligible,
+                                                                      title: title,
+                                                                      subtitle: subtitle)
 }
 
 func checkFeedbackSurvey(_ survey: CustomerCenterConfigData.HelpPath.FeedbackSurvey) {
@@ -53,8 +58,11 @@ func checkFeedbackSurvey(_ survey: CustomerCenterConfigData.HelpPath.FeedbackSur
 func checkFeedbackSurveyOption(_ option: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option) {
     let id: String = option.id
     let title: String = option.title
+    let promotionalOffer: CustomerCenterConfigData.HelpPath.PromotionalOffer? = option.promotionalOffer
 
-    let _: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option = .init(id: id, title: title)
+    let _: CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option = .init(id: id,
+                                                                           title: title,
+                                                                           promotionalOffer: promotionalOffer)
 }
 
 func checkScreen(_ screen: CustomerCenterConfigData.Screen) {

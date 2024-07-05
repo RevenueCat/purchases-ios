@@ -21,6 +21,9 @@ enum CustomerCenterError: Error {
     /// Could not find information for an active subscription.
     case couldNotFindSubscriptionInformation
 
+    /// Could not find offer id for any active product
+    case couldNotFindOfferForActiveProducts
+
 }
 
 extension CustomerCenterError: CustomNSError {
@@ -35,6 +38,8 @@ extension CustomerCenterError: CustomNSError {
         switch self {
         case .couldNotFindSubscriptionInformation:
             return "Could not find information for an active subscription."
+        case .couldNotFindOfferForActiveProducts:
+            return "Could not find any product with specified offer id."
         }
     }
 
