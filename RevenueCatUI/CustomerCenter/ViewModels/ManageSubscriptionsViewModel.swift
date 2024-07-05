@@ -25,7 +25,7 @@ import RevenueCat
 @MainActor
 class ManageSubscriptionsViewModel: ObservableObject {
 
-    let configuration: CustomerCenterConfigData
+    let screen: CustomerCenterConfigData.Screen
 
     @Published
     var showRestoreAlert: Bool = false
@@ -50,20 +50,21 @@ class ManageSubscriptionsViewModel: ObservableObject {
 
     private var error: Error?
 
-    convenience init(configuration: CustomerCenterConfigData) {
-        self.init(configuration: configuration,
+    convenience init(screen: CustomerCenterConfigData.Screen) {
+        self.init(screen: screen,
                   purchasesProvider: ManageSubscriptionPurchases())
     }
 
-    init(configuration: CustomerCenterConfigData, purchasesProvider: ManageSubscriptionsPurchaseType) {
+    init(screen: CustomerCenterConfigData.Screen,
+         purchasesProvider: ManageSubscriptionsPurchaseType) {
         self.state = .notLoaded
-        self.configuration = configuration
+        self.screen = screen
         self.purchasesProvider = purchasesProvider
     }
 
-    init(configuration: CustomerCenterConfigData,
+    init(screen: CustomerCenterConfigData.Screen,
          subscriptionInformation: SubscriptionInformation) {
-        self.configuration = configuration
+        self.screen = screen
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
         state = .success

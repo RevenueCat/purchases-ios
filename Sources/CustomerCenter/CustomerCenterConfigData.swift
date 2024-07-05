@@ -28,12 +28,16 @@ public struct CustomerCenterConfigData {
         self.appearance = appearance
         self.localization = localization
     }
-    
+
     public struct Localization {
 
-        let supported: [String]
-        let `default`: String
+        let locale: String
         let localizedStrings: [String: String]
+
+        public init(locale: String, localizedStrings: [String: String]) {
+            self.locale = locale
+            self.localizedStrings = localizedStrings
+        }
 
     }
 
@@ -128,11 +132,23 @@ public struct CustomerCenterConfigData {
         let light: AppearanceCustomColors
         let dark: AppearanceCustomColors
 
-        struct AppearanceCustomColors {
+        public init(mode: AppearanceMode, light: AppearanceCustomColors, dark: AppearanceCustomColors) {
+            self.mode = mode
+            self.light = light
+            self.dark = dark
+        }
+
+        public struct AppearanceCustomColors {
 
             let accentColor: String
             let backgroundColor: String
             let textColor: String
+
+            public init(accentColor: String, backgroundColor: String, textColor: String) {
+                self.accentColor = accentColor
+                self.backgroundColor = backgroundColor
+                self.textColor = textColor
+            }
 
         }
 
@@ -205,19 +221,22 @@ extension CustomerCenterConfigData {
         let localization = Localization(from: response.customerCenter.localization)
         self.localization = localization
         self.appearance = Appearance(from: response.customerCenter.appearance)
-        self.screens = response.customerCenter.screens.map { Screen(from: $0.value, type: $0.key, localization: localization) }
+        self.screens = response.customerCenter.screens.map {
+            Screen(from: $0.value, type: $0.key, localization: localization)
+        }
     }
 
 }
 
 extension CustomerCenterConfigData.Screen {
 
-    init(from response: CustomerCenterConfigResponse.Screen, type: String, localization: CustomerCenterConfigData.Localization) {
+    init(from response: CustomerCenterConfigResponse.Screen,
+         type: String,
+         localization: CustomerCenterConfigData.Localization) {
         self.type = ScreenType(from: type)
-        self.title = localization.localizedStrings[response.titleKey] ?? ""
-        let subtitleKey = response.subtitleKey ?? ""
-        self.subtitle = localization.localizedStrings[subtitleKey]
-        self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0, localization: localization) }
+        self.title = response.title
+        self.subtitle = response.subtitle
+        self.paths = response.paths.map { CustomerCenterConfigData.HelpPath(from: $0) }
     }
 
 }
@@ -247,8 +266,9 @@ extension CustomerCenterConfigData.Appearance.AppearanceCustomColors {
 extension CustomerCenterConfigData.Localization {
 
     init(from response: CustomerCenterConfigResponse.Localization) {
-        self.supported = response.supported
-        self.default = response.default
+        // swiftlint:disable:next todo
+        // TODO: convert to Locale
+        self.locale = response.locale
         self.localizedStrings = response.localizedStrings
     }
 
@@ -256,14 +276,14 @@ extension CustomerCenterConfigData.Localization {
 
 extension CustomerCenterConfigData.HelpPath {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath, localization: CustomerCenterConfigData.Localization) {
+    init(from response: CustomerCenterConfigResponse.HelpPath) {
         self.id = response.id
-        self.title = localization.localizedStrings[response.titleKey] ?? ""
+        self.title = response.title
         self.type = CustomerCenterConfigData.HelpPath.PathType(from: response.type.rawValue)
         if let promotionalOfferResponse = response.promotionalOffer {
             self.detail = .promotionalOffer(PromotionalOffer(from: promotionalOfferResponse))
         } else if let feedbackSurveyResponse = response.feedbackSurvey {
-            self.detail = .feedbackSurvey(FeedbackSurvey(from: feedbackSurveyResponse, localization: localization))
+            self.detail = .feedbackSurvey(FeedbackSurvey(from: feedbackSurveyResponse))
         } else {
             self.detail = nil
         }
@@ -281,18 +301,18 @@ extension CustomerCenterConfigData.HelpPath.PromotionalOffer {
 
 extension CustomerCenterConfigData.HelpPath.FeedbackSurvey {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey, localization: CustomerCenterConfigData.Localization) {
-        self.title = localization.localizedStrings[response.titleKey] ?? ""
-        self.options = response.options.map { Option(from: $0, localization: localization) }
+    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey) {
+        self.title = response.title
+        self.options = response.options.map { Option(from: $0) }
     }
 
 }
 
 extension CustomerCenterConfigData.HelpPath.FeedbackSurvey.Option {
 
-    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option, localization: CustomerCenterConfigData.Localization) {
+    init(from response: CustomerCenterConfigResponse.HelpPath.FeedbackSurvey.Option) {
         self.id = response.id
-        self.title = localization.localizedStrings[response.titleKey] ?? ""
+        self.title = response.title
     }
 
 }

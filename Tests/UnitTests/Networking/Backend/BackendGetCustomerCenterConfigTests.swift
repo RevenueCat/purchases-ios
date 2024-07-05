@@ -142,7 +142,9 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         let customerCenter = try XCTUnwrap(response.customerCenter)
         let appearance = try XCTUnwrap(customerCenter.appearance)
 
-        expect(customerCenter.locale) == "en_US"
+        expect(customerCenter.localization.locale) == "en_US"
+        expect(customerCenter.localization.localizedStrings).to(haveCount(12))
+
         expect(appearance.dark.accentColor) == "#ffffff"
         expect(appearance.dark.backgroundColor) == "#000000"
         expect(appearance.dark.textColor) == "#000000"
@@ -151,25 +153,45 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         expect(appearance.light.textColor) == "#ffffff"
         expect(appearance.mode) == "CUSTOM"
 
-        let paths = try XCTUnwrap(customerCenter.paths)
-        expect(paths).to(haveCount(4))
+        let screens = try XCTUnwrap(customerCenter.screens)
+        expect(screens).to(haveCount(2))
 
-        let path1 = paths[0]
+        let noActiveScreen = try XCTUnwrap(customerCenter.screens[
+            CustomerCenterConfigData.Screen.ScreenType.noActive.rawValue
+        ])
+        expect(noActiveScreen.title) == "No subscriptions found"
+        expect(noActiveScreen.subtitle) == "We can try checking your account for any previous purchases"
+
+        let managementScreen = try XCTUnwrap(customerCenter.screens[
+            CustomerCenterConfigData.Screen.ScreenType.management.rawValue
+        ])
+        expect(managementScreen.type) == .management
+        expect(managementScreen.title) == "How can we help?"
+
+        let noActiveScreenPaths = noActiveScreen.paths
+        expect(noActiveScreenPaths).to(haveCount(1))
+
+        let managementPaths = managementScreen.paths
+        expect(managementPaths).to(haveCount(4))
+
+        let path1 = managementPaths[0]
         expect(path1.id) == "ownmsldfow"
         expect(path1.title) == "Didn't receive purchase"
         expect(path1.type) == .missingPurchase
 
-        let path2 = paths[1]
+        let path2 = managementPaths[1]
         expect(path2.id) == "nwodkdnfaoeb"
         expect(path2.title) == "Request a refund"
         expect(path2.type) == .refundRequest
+        let promotionalOffer1 = try XCTUnwrap(path2.promotionalOffer)
+        expect(promotionalOffer1.iosOfferId) == "rc-refund-offer"
 
-        let path3 = paths[2]
+        let path3 = managementPaths[2]
         expect(path3.id) == "nfoaiodifj9"
         expect(path3.title) == "Change plans"
         expect(path3.type) == .changePlans
 
-        let path4 = paths[3]
+        let path4 = managementPaths[3]
         expect(path4.id) == "jnkasldfhas"
         expect(path4.title) == "Cancel subscription"
         expect(path4.type) == .cancel
@@ -181,26 +203,18 @@ class BackendGetCustomerCenterConfigTests: BaseBackendTests {
         let option1 = feedbackSurvey.options[0]
         expect(option1.id) == "iewrthals"
         expect(option1.title) == "Too expensive"
+        let promotionalOffer2 = try XCTUnwrap(option1.promotionalOffer)
+        expect(promotionalOffer2.iosOfferId) == "rc-cancel-offer"
 
         let option2 = feedbackSurvey.options[1]
         expect(option2.id) == "qklpadsfj"
         expect(option2.title) == "Don't use the app"
+        let promotionalOffer3 = try XCTUnwrap(option2.promotionalOffer)
+        expect(promotionalOffer3.iosOfferId) == "rc-cancel-offer"
 
         let option3 = feedbackSurvey.options[2]
         expect(option3.id) == "jargnapocps"
         expect(option3.title) == "Bought by mistake"
-
-        let screens = try XCTUnwrap(customerCenter.screens)
-        expect(screens).to(haveCount(2))
-
-        let screen1 = screens[0]
-        expect(screen1.type) == .management
-        expect(screen1.title) == "How can we help?"
-
-        let screen2 = screens[1]
-        expect(screen2.type) == .noActive
-        expect(screen2.title) == "No subscriptions found"
-        expect(screen2.subtitle) == "We can try checking your account for any previous purchases"
     }
 
     func testGetCustomerCenterConfigFailSendsNil() {
@@ -262,6 +276,82 @@ private extension BackendGetCustomerCenterConfigTests {
 
     static let customerCenterResponse: [String: Any?] = [
         "customer_center": [
+            "localization": [
+                "locale": "en_US",
+                "localized_strings": [
+                    "cancel": "Cancel",
+                    "back": "Back"
+                ],
+                "supported": [
+                    "en_US"
+                ]
+            ],
+            "screens": [
+                "management": [
+                    "paths": [
+                        [
+                            "id": "ownmsldfow",
+                            "title": "Didn't receive purchase",
+                            "type": "MISSING_PURCHASE"
+                        ],
+                        [
+                            "id": "nwodkdnfaoeb",
+                            "promotional_offer": [
+                                "ios_offer_id": "rc-refund-offer"
+                            ],
+                            "title": "Request a refund",
+                            "type": "REFUND_REQUEST"
+                        ],
+                        [
+                            "id": "nfoaiodifj9",
+                            "title": "Change plans",
+                            "type": "CHANGE_PLANS"
+                        ],
+                        [
+                            "feedback_survey": [
+                                "options": [
+                                    [
+                                        "id": "iewrthals",
+                                        "promotional_offer": [
+                                            "ios_offer_id": "rc-cancel-offer"
+                                        ],
+                                        "title": "Too expensive"
+                                    ],
+                                    [
+                                        "id": "qklpadsfj",
+                                        "promotional_offer": [
+                                            "ios_offer_id": "rc-cancel-offer"
+                                        ],
+                                        "title": "Don't use the app"
+                                    ],
+                                    [
+                                        "id": "jargnapocps",
+                                        "title": "Bought by mistake"
+                                    ]
+                                ],
+                                "title": "Why are you cancelling?"
+                            ],
+                            "id": "jnkasldfhas",
+                            "title": "Cancel subscription",
+                            "type": "CANCEL"
+                        ]
+                    ],
+                    "title": "How can we help?",
+                    "type": "MANAGEMENT"
+                ],
+                "no_active": [
+                    "paths": [
+                        [
+                            "id": "9q9719171o",
+                            "title": "Check purchases",
+                            "type": "MISSING_PURCHASE"
+                        ]
+                    ],
+                    "subtitle": "We can try checking your account for any previous purchases",
+                    "title": "No subscriptions found",
+                    "type": "NO_ACTIVE"
+                ]
+            ],
             "appearance": [
                 "dark": [
                     "accent_color": "#ffffff",
@@ -275,60 +365,9 @@ private extension BackendGetCustomerCenterConfigTests {
                 ],
                 "mode": "CUSTOM"
             ],
-            "locale": "en_US",
-            "paths": [
-                [
-                    "id": "ownmsldfow",
-                    "title": "Didn't receive purchase",
-                    "type": "MISSING_PURCHASE"
-                ],
-                [
-                    "id": "nwodkdnfaoeb",
-                    "title": "Request a refund",
-                    "type": "REFUND_REQUEST"
-                ],
-                [
-                    "id": "nfoaiodifj9",
-                    "title": "Change plans",
-                    "type": "CHANGE_PLANS"
-                ],
-                [
-
-                    "id": "jnkasldfhas",
-                    "title": "Cancel subscription",
-                    "type": "CANCEL",
-                    "feedback_survey": [
-                        "id": "jlajsdfkal",
-                        "options": [
-                            [
-                                "id": "iewrthals",
-                                "title": "Too expensive"
-                            ],
-                            [
-                                "id": "qklpadsfj",
-                                "title": "Don't use the app"
-                            ],
-                            [
-                                "id": "jargnapocps",
-                                "title": "Bought by mistake"
-                            ]
-                        ],
-                        "title": "Why are you cancelling?"
-                    ]
-                ]
-            ],
-            "screens": [
-                [
-                    "title": "How can we help?",
-                    "type": "MANAGEMENT"
-                ],
-                [
-                    "subtitle": "We can try checking your account for any previous purchases",
-                    "title": "No subscriptions found",
-                    "type": "NO_ACTIVE"
-                ]
-            ],
-            "support_email": "support@revenuecat.com"
+            "support": [
+                "email": "support@revenuecat.com"
+            ]
         ]
     ]
 

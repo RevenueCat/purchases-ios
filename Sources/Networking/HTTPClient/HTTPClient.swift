@@ -117,7 +117,6 @@ class HTTPClient {
             "X-Preferred-Locales": preferredLanguages,
             "X-StoreKit2-Enabled": "\(self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable)",
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
-            "X-Supported-Locales": supportedLocales,
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)"
         ]

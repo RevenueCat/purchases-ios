@@ -9,10 +9,11 @@ import Foundation
 import RevenueCat
 
 func checkCustomerCenterConfigData(_ data: CustomerCenterConfigData) {
-    let paths: [CustomerCenterConfigData.HelpPath] = data.paths
     let screens: [CustomerCenterConfigData.Screen] = data.screens
+    let appearance: CustomerCenterConfigData.Appearance = data.appearance
+    let localization: CustomerCenterConfigData.Localization = data.localization
 
-    let _: CustomerCenterConfigData = .init(paths: paths, screens: screens)
+    let _: CustomerCenterConfigData = .init(screens: screens, appearance: appearance, localization: localization)
 }
 
 func checkHelpPath(_ path: CustomerCenterConfigData.HelpPath) {
@@ -59,8 +60,9 @@ func checkScreen(_ screen: CustomerCenterConfigData.Screen) {
     let type: CustomerCenterConfigData.Screen.ScreenType = screen.type
     let title: String = screen.title
     let subtitle: String? = screen.subtitle
+    let paths: [CustomerCenterConfigData.HelpPath] = screen.paths
 
-    let _: CustomerCenterConfigData.Screen = .init(type: type, title: title, subtitle: subtitle)
+    let _: CustomerCenterConfigData.Screen = .init(type: type, title: title, subtitle: subtitle, paths: paths)
 }
 
 func checkScreenType(_ type: CustomerCenterConfigData.Screen.ScreenType) {
