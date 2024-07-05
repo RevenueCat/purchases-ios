@@ -91,10 +91,10 @@ concatenate_circleci_configs() {
   local config_folder=".circleci/configuration"
   local config_files=(
     "$config_folder/base_config.yml"
+    "$config_folder/commands.yml"
     "$config_folder/workflows.yml"
     "$config_folder/jobs.yml"
     "$config_folder/executors.yml"
-    "$config_folder/commands.yml"
     "$config_folder/filters.yml"
   )
 
@@ -120,4 +120,5 @@ concatenate_circleci_configs() {
 
 # Call the function to concatenate CircleCI configuration files
 concatenate_circleci_configs
+circleci config validate
 
