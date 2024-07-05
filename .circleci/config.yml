@@ -1200,6 +1200,7 @@ workflows:
       - run-test-ios-13:
           xcode_version: '14.2.0'
           install_swiftlint: false
+          <<: *release-branches
       - run-test-macos:
           <<: *release-branches
 
