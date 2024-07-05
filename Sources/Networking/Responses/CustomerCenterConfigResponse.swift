@@ -59,6 +59,8 @@ struct CustomerCenterConfigResponse {
 
             let iosOfferId: String
             let eligible: Bool
+            let title: String
+            let subtitle: String
 
         }
 

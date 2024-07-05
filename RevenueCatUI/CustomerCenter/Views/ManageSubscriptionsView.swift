@@ -84,8 +84,8 @@ struct ManageSubscriptionsView: View {
 
                 Spacer()
 
-                ManageSubscriptionsButtonsView(viewModel: self.viewModel)
-
+                ManageSubscriptionsButtonsView(viewModel: self.viewModel,
+                                               loadingPath: self.$viewModel.loadingPath)
             } else {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
@@ -178,7 +178,9 @@ struct SubscriptionDetailsView: View {
 struct ManageSubscriptionsButtonsView: View {
 
     @ObservedObject
-    private(set) var viewModel: ManageSubscriptionsViewModel
+    var viewModel: ManageSubscriptionsViewModel
+    @Binding
+    var loadingPath: CustomerCenterConfigData.HelpPath?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -190,17 +192,48 @@ struct ManageSubscriptionsButtonsView: View {
                 #endif
             }
             ForEach(filteredPaths, id: \.id) { path in
-                AsyncButton(action: {
-                    await self.viewModel.determineFlow(for: path)
-                }, label: {
-                    Text(path.title)
-                })
-                .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
-                .buttonStyle(ManageSubscriptionsButtonStyle())
+                ManageSubscriptionButton(path: path, viewModel: self.viewModel)
             }
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+struct ManageSubscriptionButton: View {
+
+    let path: CustomerCenterConfigData.HelpPath
+    @ObservedObject var viewModel: ManageSubscriptionsViewModel
+
+    var body: some View {
+        AsyncButton(action: {
+            await self.viewModel.determineFlow(for: path)
+        }, label: {
+            Text(path.title)
+        })
+        .restorePurchasesAlert(isPresented: self.$viewModel.showRestoreAlert)
+        .sheet(isPresented: self.$viewModel.isShowingPromotionalOffer, onDismiss: {
+            Task {
+                await self.viewModel.handleSheetDismiss()
+            }
+        }, content: {
+            if let promotionalOffer = self.viewModel.promotionalOffer,
+               let product = self.viewModel.product,
+               let promoOfferDetails = self.viewModel.promoOfferDetails,
+               let localization = self.viewModel.localization {
+                PromotionalOfferView(promotionalOffer: promotionalOffer,
+                                     product: product,
+                                     promoOfferDetails: promoOfferDetails,
+                                     localization: localization)
+            }
+        })
+        .buttonStyle(ManageSubscriptionsButtonStyle())
+        .disabled(self.viewModel.loadingPath?.id == path.id)
+    }
 }
 
 #if DEBUG

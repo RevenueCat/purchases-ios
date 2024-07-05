@@ -31,6 +31,10 @@ class ManageSubscriptionsViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
     @Published
     var feedbackSurveyData: FeedbackSurveyData?
+    @Published
+    var isShowingPromotionalOffer: Bool = false
+    @Published
+    var loadingPath: CustomerCenterConfigData.HelpPath?
 
     @Published
     var state: CustomerCenterViewState {
@@ -49,20 +53,41 @@ class ManageSubscriptionsViewModel: ObservableObject {
     @Published
     private(set) var refundRequestStatusMessage: String?
 
+    var promotionalOffer: PromotionalOffer? {
+        return promotionalOfferViewModel.promotionalOffer
+    }
+
+    var promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer? {
+        return promotionalOfferViewModel.promoOfferDetails
+    }
+
+    var localization: CustomerCenterConfigData.Localization? {
+        return promotionalOfferViewModel.localization
+    }
+
+    var product: StoreProduct? {
+        return promotionalOfferViewModel.product
+    }
+
     private var purchasesProvider: ManageSubscriptionsPurchaseType
+    private var promotionalOfferViewModel: PromotionalOfferViewModel
 
     private var error: Error?
 
     convenience init(screen: CustomerCenterConfigData.Screen) {
         self.init(screen: screen,
-                  purchasesProvider: ManageSubscriptionPurchases())
+                  purchasesProvider: ManageSubscriptionPurchases(),
+                  promotionalOfferViewModel: PromotionalOfferViewModel())
     }
 
+    // @PublicForExternalTesting
     init(screen: CustomerCenterConfigData.Screen,
-         purchasesProvider: ManageSubscriptionsPurchaseType) {
+         purchasesProvider: ManageSubscriptionsPurchaseType,
+         promotionalOfferViewModel: PromotionalOfferViewModel) {
         self.state = .notLoaded
         self.screen = screen
         self.purchasesProvider = purchasesProvider
+        self.promotionalOfferViewModel = promotionalOfferViewModel
     }
 
     init(screen: CustomerCenterConfigData.Screen,
@@ -70,6 +95,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
         self.screen = screen
         self.subscriptionInformation = subscriptionInformation
         self.purchasesProvider = ManageSubscriptionPurchases()
+        self.promotionalOfferViewModel = PromotionalOfferViewModel()
         state = .success
     }
 
@@ -118,20 +144,42 @@ class ManageSubscriptionsViewModel: ObservableObject {
         )
     }
 
-    #if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || targetEnvironment(macCatalyst)
     func determineFlow(for path: CustomerCenterConfigData.HelpPath) async {
-        if case let .feedbackSurvey(feedbackSurvey) = path.detail {
+        switch path.detail {
+        case let .feedbackSurvey(feedbackSurvey):
             self.feedbackSurveyData = FeedbackSurveyData(configuration: feedbackSurvey) { [weak self] in
                 Task {
                     await self?.performAction(for: path)
                 }
             }
-        } else {
+        case let .promotionalOffer(promotionalOffer):
+            self.loadingPath = path
+            await promotionalOfferViewModel.loadPromo(promotionalOfferId: promotionalOffer.iosOfferId)
+            self.isShowingPromotionalOffer = true
+        default:
             await self.performAction(for: path)
         }
     }
 
-    func performAction(for path: CustomerCenterConfigData.HelpPath) async {
+    func handleSheetDismiss() async {
+        if let loadingPath = loadingPath {
+            await self.performAction(for: loadingPath)
+            self.loadingPath = nil
+        }
+    }
+#endif
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private extension ManageSubscriptionsViewModel {
+
+#if os(iOS) || targetEnvironment(macCatalyst)
+    private func performAction(for path: CustomerCenterConfigData.HelpPath) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
@@ -162,7 +210,7 @@ class ManageSubscriptionsViewModel: ObservableObject {
             break
         }
     }
-    #endif
+#endif
 
 }
 

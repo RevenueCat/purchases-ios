@@ -53,15 +53,18 @@ enum CustomerCenterConfigTestData {
                                 options: [
                                     .init(
                                         id: "1",
-                                        title: "Too expensive"
+                                        title: "Too expensive",
+                                        promotionalOffer: nil
                                     ),
                                     .init(
                                         id: "2",
-                                        title: "Don't use the app"
+                                        title: "Don't use the app",
+                                        promotionalOffer: nil
                                     ),
                                     .init(
                                         id: "3",
-                                        title: "Bought by mistake"
+                                        title: "Bought by mistake",
+                                        promotionalOffer: nil
                                     )
                                 ]
                             ))
