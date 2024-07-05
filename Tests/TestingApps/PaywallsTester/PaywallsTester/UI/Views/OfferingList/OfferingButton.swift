@@ -51,7 +51,7 @@ private extension OfferingButton {
     
     @ViewBuilder
     private func label() -> some View {
-        let paywallTitle = rcOffering.paywall?.localizedConfiguration.title ?? ""
+        let paywallTitle = rcOffering.paywall?.localizedConfiguration?.title ?? ""
         let decorator = viewModel.hasMultipleOfferingsWithPaywalls && self.selectedItemID == responseOffering.id ? "▶ " : ""
         HStack {
             VStack(alignment:.leading, spacing: 5) {
