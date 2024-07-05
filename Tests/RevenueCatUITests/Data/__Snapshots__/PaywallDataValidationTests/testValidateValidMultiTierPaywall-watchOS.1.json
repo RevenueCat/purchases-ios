@@ -2,29 +2,6 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : false,
-    "color_overrides_by_tier" : {
-      "basic" : {
-        "light" : {
-          "accent1" : "#2D7FC1",
-          "accent3" : "#100031",
-          "call_to_action_background" : "#42C1F7"
-        }
-      },
-      "premium" : {
-        "light" : {
-          "accent1" : "#77C344",
-          "accent3" : "#213711",
-          "call_to_action_background" : "#95D26B"
-        }
-      },
-      "standard" : {
-        "light" : {
-          "accent1" : "#CE0755",
-          "accent3" : "#310217",
-          "call_to_action_background" : "#DA407A"
-        }
-      }
-    },
     "colors" : {
       "dark" : {
         "accent2" : "#CE0755",
@@ -43,8 +20,49 @@
         "text3" : "#b15d5d"
       }
     },
+    "colors_by_tier" : {
+      "basic" : {
+        "light" : {
+          "accent1" : "#2D7FC1",
+          "accent2" : "#7676801F",
+          "accent3" : "#100031",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#42C1F7",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d"
+        }
+      },
+      "premium" : {
+        "light" : {
+          "accent1" : "#77C344",
+          "accent2" : "#7676801F",
+          "accent3" : "#213711",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#95D26B",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d"
+        }
+      },
+      "standard" : {
+        "light" : {
+          "accent1" : "#CE0755",
+          "accent2" : "#7676801F",
+          "accent3" : "#310217",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#DA407A",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d"
+        }
+      }
+    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
       "basic" : {
         "background" : null,
         "header" : "954459_1703109702.png",

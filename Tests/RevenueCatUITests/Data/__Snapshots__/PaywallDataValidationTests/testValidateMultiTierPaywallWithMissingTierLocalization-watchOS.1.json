@@ -2,9 +2,6 @@
   "asset_base_url" : "https://assets.pawwalls.com",
   "config" : {
     "blurred_background_image" : true,
-    "color_overrides_by_tier" : {
-
-    },
     "colors" : {
       "light" : {
         "background" : "#FFFFFF",
@@ -13,8 +10,11 @@
         "text1" : "#FFFFFF"
       }
     },
+    "colors_by_tier" : {
+
+    },
     "display_restore_purchases" : true,
-    "image_overrides_by_tier" : {
+    "images_by_tier" : {
 
     },
     "images_heic" : {
