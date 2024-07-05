@@ -57,9 +57,7 @@ extension HTTPResponse where Body == Data? {
         publicKey: Signing.PublicKey?,
         signing: SigningType
     ) -> VerificationResult {
-        guard let publicKey = publicKey,
-              statusCode.isSuccessfulResponse,
-              #available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *) else {
+        guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
             return .notRequested
         }
 

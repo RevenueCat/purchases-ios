@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "RevenueCatUI"
-  s.version          = "4.44.0-SNAPSHOT"
+  s.version          = "5.0.0"
   s.summary          = "UI library for RevenueCat paywalls."
 
   s.description      = <<-DESC
@@ -19,10 +19,10 @@ Pod::Spec.new do |s|
   # RevenueCatUI APIs are not available in all these platforms / versions, however retaining this support at the Pod level 
   # allows us to depend on it in the same platforms as RevenueCat.
   # Opening support allows us to depend on it in the same platforms as RevenueCat.
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '13.0'
   s.watchos.deployment_target = '6.2'
-  s.tvos.deployment_target = '11.0'
-  s.osx.deployment_target = '10.13'
+  s.tvos.deployment_target = '13.0'
+  s.osx.deployment_target = '10.15'
   s.visionos.deployment_target = '1.0'
   
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }

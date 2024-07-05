@@ -33,13 +33,18 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 - Important: You're viewing the documentation for RevenueCat iOS SDK version 4.
 For documentation on version 3, visit [the docs for RevenueCat iOS SDK version 3.](https://sdk.revenuecat.com/ios/index.html)
 
-## Migrating from Purchases v3
-When transitioning between our V3 SDK, we ported our entire SDK into Swift. 
+## Migrating from Purchases v4 to v5
+Version 5.0 of the SDK enables full StoreKit 2 flow on the SDK and the RevenueCat backend by default.
+
+Our <doc:V5_API_Migration_guide> provides information on how to migrate from v4 to v5.
+
+## Migrating from Purchases v3 to v4
+When transitioning between our V3 SDK, we ported our entire SDK into Swift.
 Migrating from Objective-C to Swift required a number of API changes, but we feel that the
 changes resulted in the SDK having a more natural feel for developers. In addition,
 we introduced several new types and APIs.
 
-Our <doc:V4_API_Migration_guide> provides information on how to migrate from V3 to V4. 
+Our <doc:V4_API_Migration_guide> provides information on how to migrate from v3 to v4.
 
 ## Getting Started
 For more detailed information, you can view our complete documentation at [docs.revenuecat.com](https://docs.revenuecat.com/docs).
@@ -154,7 +159,7 @@ Or browse our iOS sample apps:
 - ``Purchases/setOnesignalID(_:)``
 
 ### Configuring the SDK with parameters (deprecated)
-- ``Purchases/configure(withAPIKey:appUserID:)``
-- ``Purchases/configure(withAPIKey:appUserID:observerMode:)``
+- ``Purchases/configure(withAPIKey:appUserID:)-57pv0``
+- ``Purchases/configure(withAPIKey:appUserID:purchasesAreCompletedBy:storeKitVersion:)-2k6md``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:)``
 - ``Purchases/configure(withAPIKey:appUserID:observerMode:userDefaults:useStoreKit2IfAvailable:)``

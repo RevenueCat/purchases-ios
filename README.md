@@ -24,7 +24,10 @@ Sign up to [get started for free](https://app.revenuecat.com/signup).
 
 *RevenueCat* is the client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It's 100% `Swift` and compatible with `Objective-C`.
 
-## Migrating from Purchases v3
+## Migrating from Purchases v4 to v5
+- See our [Migration guide](https://revenuecat.github.io/purchases-ios-docs/v5_api_migration_guide.html)
+
+## Migrating from Purchases v3 to v4
 - See our [Migration guide](https://revenuecat.github.io/purchases-ios-docs/v4_api_migration_guide.html)
 
 ## RevenueCat SDK Features
@@ -52,15 +55,15 @@ Or view our iOS sample apps:
 - [MagicWeather SwiftUI](Examples/MagicWeatherSwiftUI)
 
 ## Requirements
-- Xcode 14.0+
+- Xcode 15.0+
 
 | Platform | Minimum target |
-| --- | --- |
-| iOS | 11.0+ |
-| tvOS | 11.0+ |
-| macOS | 10.13+ |
-| watchOS | 6.2+ |
-| visionOS | 1.0+ |
+|----------|----------------|
+| iOS      | 13.0+          |
+| tvOS     | 13.0+          |
+| macOS    | 10.15+         |
+| watchOS  | 6.2+           |
+| visionOS | 1.0+           |
 
 ## SDK Reference
 Our full SDK reference [can be found here](https://revenuecat.github.io/purchases-ios-docs).

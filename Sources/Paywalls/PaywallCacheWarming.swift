@@ -112,9 +112,23 @@ internal extension PaywallData {
 
     /// - Returns: all image URLs contained in this paywall.
     var allImageURLs: [URL] {
-        return self.config.images
-            .allImageNames
+        return self
+            .allImages
+            .lazy
+            .flatMap(\.allImageNames)
             .map { self.assetBaseURL.appendingPathComponent($0) }
+    }
+
+    private var allImages: [PaywallData.Configuration.Images] {
+        if self.config.tiers.isEmpty {
+            return [self.config.images]
+        } else {
+            let imagesByTier = self.config.imagesByTier
+            return self.config.tiers
+                .lazy
+                .map(\.id)
+                .compactMap { imagesByTier[$0] }
+        }
     }
 
 }

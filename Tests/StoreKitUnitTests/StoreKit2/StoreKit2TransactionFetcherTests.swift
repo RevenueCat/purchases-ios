@@ -23,7 +23,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         self.fetcher = .init()
     }
@@ -43,7 +43,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testOneUnfinishedConsumablePurchase() async throws {
-        let transaction = try await self.createTransaction(productID: Self.consumable,
+        let transaction = try await self.createTransaction(productID: Self.consumableProductId,
                                                            finished: false)
         let result = await self.fetcher.unfinishedVerifiedTransactions
 
@@ -82,14 +82,14 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testHasNoPendingConsumablePurchaseWithFinishedConsumable() async throws {
-        _ = try await self.createTransaction(productID: Self.consumable, finished: true)
+        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: true)
 
         let result = await self.fetcher.hasPendingConsumablePurchase
         expect(result) == false
     }
 
     func testHasPendingConsumablePurchase() async throws {
-        _ = try await self.createTransaction(productID: Self.consumable, finished: false)
+        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: false)
 
         let result = await self.fetcher.hasPendingConsumablePurchase
         expect(result) == true
@@ -109,13 +109,13 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testFirstVerifiedAutoRenewableTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.consumable, finished: true)
+        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: true)
         let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == nil
     }
 
     func testHasVerifiedAutoRenewableTransactionDoesNotIncludeUnfinishedConsumableTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.consumable, finished: false)
+        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: false)
         let result = await self.fetcher.firstVerifiedAutoRenewableTransaction
         expect(result) == nil
     }
@@ -134,13 +134,13 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testFirstVerifiedTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.consumable, finished: true)
+        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: true)
         let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == nil
     }
 
     func testHasVerifiedTransactionIncludesUnfinishedConsumableTransaction() async throws {
-        let transaction = try await self.createTransaction(productID: Self.consumable,
+        let transaction = try await self.createTransaction(productID: Self.consumableProductId,
                                                            finished: false)
         let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == transaction
@@ -226,6 +226,5 @@ private extension StoreKit2TransactionFetcherTests {
 
     static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"
     static let product2 = "com.revenuecat.annual_39.99_no_trial"
-    static let consumable = "com.revenuecat.consumable"
 
 }

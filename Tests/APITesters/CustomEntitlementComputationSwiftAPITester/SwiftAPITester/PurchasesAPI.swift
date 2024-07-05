@@ -31,13 +31,11 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
 
-    if #available(iOS 13.0, tvOS 13.0, macOS 10.15, watchOS 6.2, *) {
-        _ = Task<Void, Never> {
-            await checkAsyncMethods(purchases: purch)
-        }
-
-        checkNonAsyncMethods(purch)
+    _ = Task<Void, Never> {
+        await checkAsyncMethods(purchases: purch)
     }
+
+    checkNonAsyncMethods(purch)
 }
 
 var periodType: PeriodType!
@@ -100,8 +98,8 @@ private func checkTypealiases(
                                                   customerInfo: customerInfo,
                                                   userCancelled: userCancelled)
 
-    // swiftlint:disable:next line_length redundant_void_return
-    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) -> Void in }
+    // swiftlint:disable:next line_length
+    let purchaseCompletedBlock: PurchaseCompletedBlock = { (_: StoreTransaction?, _: CustomerInfo?, _: Error?, _: Bool) in }
 
     let startPurchaseBlock: StartPurchaseBlock = { (_: PurchaseCompletedBlock) in }
 

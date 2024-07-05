@@ -722,7 +722,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
     // MARK: Post receipt with attributes
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessful() {
         setupPurchases()
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
@@ -748,7 +747,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockIdentityManager.currentAppUserID
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptMarksSubscriberAttributesSyncedIfBackendSuccessfullySynced() {
         setupPurchases()
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
@@ -819,7 +817,6 @@ class PurchasesSubscriberAttributesTests: TestCase {
         )
     }
 
-    @available(iOS 12.2, macOS 10.14.4, watchOS 6.2, macCatalyst 13.0, tvOS 12.2, *)
     func testPostReceiptDoesntMarkSubscriberAttributesSyncedIfBackendNotSuccessfullySynced() {
         setupPurchases()
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))

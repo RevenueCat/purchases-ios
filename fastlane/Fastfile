@@ -12,12 +12,17 @@
 
 default_platform(:ios)
 
+def current_version_number
+  File.read("#{File.dirname(__FILE__)}/../.version").strip
+end
+
 files_with_version_number = {
   './RevenueCat.podspec' => ['s.version          = "{x}"'],
   './RevenueCatUI.podspec' => ['s.version          = "{x}"'],
   './Sources/Misc/SystemInfo.swift' => ['return "{x}"'],
   './.version' => ['{x}'],
-  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide']
+  './scripts/docs/v4_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v4_api_migration_guide'],
+  './scripts/docs/v5_api_migration_guide.html' => ['purchases-ios-docs/{x}/documentation/revenuecat/v5_api_migration_guide']
 }
 PLIST_VERSION_PATTERNS = ["<key>CFBundleShortVersionString</key>\n\t<string>{x}</string>",]
 files_with_version_number_without_prerelease_modifiers = {
@@ -39,7 +44,6 @@ changelog_path = './CHANGELOG.md'
 platform :ios do
   before_all do
     setup_circle_ci
-    update_fastlane
 
     if ENV['APP_STORE_CONNECT_API_KEY_ISSUER_ID']
       app_store_connect_api_key # This will create a shared client that all the tools know how to use and will look for
@@ -253,20 +257,6 @@ platform :ios do
 
   desc "visionOS build"
   lane :build_visionos do |options|
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-    pod_lib_lint(
-      verbose: true,
-      podspec: 'RevenueCatUI.podspec',
-      include_podspecs: 'RevenueCat.podspec',
-      platforms: "visionos",
-      fail_fast: true
-    )
-
     build_release(
       platform: 'visionOS',
       scheme: 'RevenueCat'
@@ -575,16 +565,20 @@ platform :ios do
         'maccatalyst',
         'tvOS',
         'watchOS',
-        # Fixme: add xrOS
+        'visionOS'
       ]
 
     create_xcframework(
       destinations: platforms,
       scheme: 'RevenueCat',
+      product_name: 'RevenueCat',
       xcframework_output_directory: output_directory,
       # Bitcode is no longer required since Xcode 14.
       enable_bitcode: false,
-      include_debug_symbols: true
+      include_debug_symbols: true,
+      # Set SKIP_INSTALL and BUILD_LIBRARY_FOR_DISTRIBUTION.
+      # See https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle#Set-up-the-project
+      override_xcargs: true
     )
 
     # sh runs from the Fastfile's location, but other commands run from the project root.
@@ -779,22 +773,62 @@ platform :ios do
     end
   end
 
-  desc "Generate docs"
-  lane :generate_docs do
-    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+  desc "Generate docs without publishing"
+  lane :build_docs do
+    build_docs_shared
+  end
+
+  desc "Generate & publish docs"
+  lane :build_and_publish_docs do
+    docs_generation_folder = build_docs_shared
 
     version_number = current_version_number
     docs_repo_base_url = ENV["DOCS_REPO_BASE_URL"]
     docs_repo_name = ENV["DOCS_REPO_NAME"]
-    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
 
     UI.user_error!("Missing environment variable: DOCS_REPO_BASE_URL") unless docs_repo_base_url
     UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
 
     docs_repo_url = File.join(docs_repo_base_url, docs_repo_name)
+
+    docs_files = Dir.glob("scripts/docs/*.html").map { |file| File.realpath(file) }
+    # clone docs repo
+    Dir.mktmpdir do |docs_repo_clone_dir|
+      Dir.chdir(docs_repo_clone_dir) do
+        sh("git", "clone", docs_repo_url)
+        Dir.chdir(docs_repo_name) do
+          # copy docs generated in the previous step into the docs folder
+          # and push the changes
+          docs_destination_folder = "docs/#{version_number}"
+          FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
+          docs_files.each do |file|
+            FileUtils.cp file, "docs/"
+          end
+
+          # using sh instead of fastlane commands because fastlane would run
+          # from the repo root
+          sh("git", "add", docs_destination_folder)
+          sh("git", "add", "docs/*.html")
+          sh("git", "commit", "-m", "Update documentation for #{version_number}")
+          sh("git", "push")
+        end
+      end
+    end
+  end
+
+  desc "Builds the docs"
+  private_lane :build_docs_shared do
+    ENV["INCLUDE_DOCC_PLUGIN"] = "true"
+
+    version_number = current_version_number
+    docs_repo_name = ENV["DOCS_REPO_NAME"]
+    ios_version = ENV['DOCS_IOS_VERSION'] || "16.1"
+
+    UI.user_error!("Missing environment variable: DOCS_REPO_NAME") unless docs_repo_name
+
     hosting_base_path = File.join(docs_repo_name, version_number)
 
-    Dir.mktmpdir do |docs_generation_folder|
+    docs_path = Dir.mktmpdir do |docs_generation_folder|
       # swift package must be run from the dir that contains the Package.swift
       # output is generated in docs_generation_folder
       Dir.chdir("..") do
@@ -818,35 +852,12 @@ platform :ios do
            "--transform-for-static-hosting",
            "--enable-inherited-docs",
            "--additional-symbol-graph-dir", ".build")
-
-        docs_index_path = File.join(Dir.pwd, "scripts/docs/index.html")
-        docs_migration_guide_path = File.join(Dir.pwd, "scripts/docs/v4_api_migration_guide.html")
-        # clone docs repo
-        Dir.mktmpdir do |docs_repo_clone_dir|
-          Dir.chdir(docs_repo_clone_dir) do
-            sh("git", "clone", docs_repo_url)
-            Dir.chdir(docs_repo_name) do
-              # copy docs generated in the previous step into the docs folder
-              # and push the changes
-              docs_destination_folder = "docs/#{version_number}"
-              index_destination_path = "docs/index.html"
-              migration_guide_destination_path = "docs/v4_api_migration_guide.html"
-              FileUtils.cp_r docs_generation_folder + "/.", docs_destination_folder
-              FileUtils.cp docs_index_path, index_destination_path
-              FileUtils.cp docs_migration_guide_path, migration_guide_destination_path
-
-              # using sh instead of fastlane commands because fastlane would run
-              # from the repo root
-              sh("git", "add", docs_destination_folder)
-              sh("git", "add", index_destination_path)
-              sh("git", "add", migration_guide_destination_path)
-              sh("git", "commit", "-m", "Update documentation for #{version_number}")
-              sh("git", "push")
-            end
-          end
-        end
       end
+
+      docs_generation_folder # returning path from block
     end
+
+    docs_path # returning path from lane
   end
 
   desc "Build and deploy PurchaseTesterSwiftUI"
@@ -1059,19 +1070,17 @@ def check_no_github_release_exists(version_number)
 end
 
 lane :check_pods do
-  # Note: see also `build_visionos`
-  # Fix-me: add `visionOS` when we start building with Xcode 15.1
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
   pod_lib_lint(
     verbose: true,
     podspec: 'RevenueCatUI.podspec',
     include_podspecs: 'RevenueCat.podspec',
-    platforms: 'ios,osx,tvos,watchos',
+    platforms: 'ios,osx,tvos,watchos,visionos',
     fail_fast: true
   )
 end
@@ -1080,10 +1089,6 @@ lane :load_spm_dependencies do
   Dir.chdir("#{File.dirname(__FILE__)}/../") do
     sh("xcodebuild", "-list")
   end
-end
-
-def current_version_number
-  File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
 # Snapshots

@@ -106,11 +106,14 @@ final class TransactionPoster: TransactionPosterType {
             switch result {
             case .success(let encodedReceipt):
                 self.product(with: productIdentifier) { product in
-                    self.postReceipt(transaction: transaction,
-                                     purchasedTransactionData: data,
-                                     receipt: encodedReceipt,
-                                     product: product,
-                                     completion: completion)
+                    self.transactionFetcher.appTransactionJWS { appTransaction in
+                        self.postReceipt(transaction: transaction,
+                                         purchasedTransactionData: data,
+                                         receipt: encodedReceipt,
+                                         product: product,
+                                         appTransaction: appTransaction,
+                                         completion: completion)
+                    }
                 }
             case .failure(let error):
                 self.handleReceiptPost(withTransaction: transaction,
@@ -179,7 +182,6 @@ final class TransactionPoster: TransactionPosterType {
 }
 
 /// Async extension
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension TransactionPosterType {
 
     /// Starts a `PostReceiptDataOperation` for the transaction.
@@ -232,17 +234,20 @@ private extension TransactionPoster {
         }
     }
 
+    // swiftlint:disable function_parameter_count
     func postReceipt(transaction: StoreTransactionType,
                      purchasedTransactionData: PurchasedTransactionData,
                      receipt: EncodedAppleReceipt,
                      product: StoreProduct?,
+                     appTransaction: String?,
                      completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         let productData = product.map { ProductRequestData(with: $0, storefront: purchasedTransactionData.storefront) }
 
         self.backend.post(receipt: receipt,
                           productData: productData,
                           transactionData: purchasedTransactionData,
-                          observerMode: self.observerMode) { result in
+                          observerMode: self.observerMode,
+                          appTransaction: appTransaction) { result in
             self.handleReceiptPost(withTransaction: transaction,
                                    result: result.map { ($0, product) },
                                    subscriberAttributes: purchasedTransactionData.unsyncedAttributes,
@@ -252,7 +257,7 @@ private extension TransactionPoster {
 
     func fetchEncodedReceipt(transaction: StoreTransactionType,
                              completion: @escaping (Result<EncodedAppleReceipt, BackendError>) -> Void) {
-        if systemInfo.dangerousSettings.internalSettings.usesStoreKit2JWS,
+        if systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
            let jwsRepresentation = transaction.jwsRepresentation {
             if transaction.environment == .xcode, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 _ = Task<Void, Never> {
@@ -261,7 +266,7 @@ private extension TransactionPoster {
                     ))
                 }
             } else {
-                    completion(.success(.jws(jwsRepresentation)))
+                completion(.success(.jws(jwsRepresentation)))
             }
         } else {
             self.receiptFetcher.receiptData(

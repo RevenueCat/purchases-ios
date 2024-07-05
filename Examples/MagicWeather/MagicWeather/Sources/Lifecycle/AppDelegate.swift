@@ -21,14 +21,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
          
             - `appUserID` is nil by default, so an anonymous ID will be generated automatically by the Purchases SDK.
                 Read more about Identifying Users here: https://docs.revenuecat.com/docs/user-ids
-         
-            - `observerMode` is false by default, so Purchases will automatically handle finishing transactions.
-                Read more about Observer Mode here: https://docs.revenuecat.com/docs/observer-mode
          */
 
         Purchases.configure(
             with: Configuration.Builder(withAPIKey: Constants.apiKey)
-                .with(usesStoreKit2IfAvailable: true)
+                .with(storeKitVersion: .storeKit2)
                 .build()
         )
 

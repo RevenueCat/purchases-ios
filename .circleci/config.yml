@@ -104,6 +104,7 @@ commands:
             - v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
       # CircleCI images fail on Ruby 3.3
       # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
+      # Also, not using macos/switch-ruby because its broken
       - run:
           name: Set Ruby 3.2.2
           command: |
@@ -118,9 +119,9 @@ commands:
           name: Bundle install
           working_directory: << parameters.directory >>
           command: |
-              bundle config set --local clean 'true'
-              bundle config set --local path 'vendor/bundle'
-              bundle install
+            bundle config set --local clean 'true'
+            bundle config set --local path 'vendor/bundle'
+            bundle install
       - save_cache:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
@@ -218,8 +219,8 @@ commands:
       - run:
           name: Compress result bundle
           command: |
-             tar -czf << parameters.bundle_name >>.xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
-             rm -r << parameters.bundle_name >>.xcresult
+            tar -czf << parameters.bundle_name >>.xcresult.tar.gz << parameters.bundle_name >>.xcresult && \
+            rm -r << parameters.bundle_name >>.xcresult
           working_directory: << parameters.directory >>
           when: always
 
@@ -262,7 +263,7 @@ commands:
           name: Archive
           working_directory: << parameters.directory >>
           command: |
-              bundle exec fastlane archive
+            bundle exec fastlane archive
 
   scan-and-archive-all-platforms:
     parameters:
@@ -285,7 +286,7 @@ commands:
           name: Archive all platforms
           working_directory: << parameters.directory >>
           command: |
-              bundle exec fastlane archive_all_platforms
+            bundle exec fastlane archive_all_platforms
 
   install-dependencies-scan-and-archive:
     parameters:
@@ -298,29 +299,29 @@ commands:
           directory: << parameters.directory >>
 
   setup-git-credentials:
-     steps:
-       - run:
-           name: Setup Git config
-           command: |
-             git config --global user.email $GIT_EMAIL
-             git config --global user.name $GIT_USERNAME
+    steps:
+      - run:
+          name: Setup Git config
+          command: |
+            git config --global user.email $GIT_EMAIL
+            git config --global user.name $GIT_USERNAME
 
   trust-github-key:
     steps:
       - run:
           name: Trust GitHub key
           command: |
-              for ip in $(dig @8.8.8.8 github.com +short); \
-              do ssh-keyscan github.com,$ip; \
-              ssh-keyscan $ip; \
-              done 2>/dev/null >> ~/.ssh/known_hosts
+            for ip in $(dig @8.8.8.8 github.com +short); \
+            do ssh-keyscan github.com,$ip; \
+            ssh-keyscan $ip; \
+            done 2>/dev/null >> ~/.ssh/known_hosts
 
   update-spm-installation-commit:
     steps:
       - run:
           name: Update git commit in targets that use SPM for dependencies
           command: |
-              bundle exec fastlane update_swift_package_commit
+            bundle exec fastlane update_swift_package_commit
 
   update-carthage-installation-commit:
     steps:
@@ -329,7 +330,7 @@ commands:
           name: Update git commit in Carthage Installation tests
           working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
-              bundle exec fastlane update_carthage_commit
+            bundle exec fastlane update_carthage_commit
 
   create-snapshot-pr-if-needed:
     parameters:
@@ -385,7 +386,7 @@ commands:
           command: bundle exec fastlane retry_failed_tests retry_attempt:4 fail_build:true
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 15 Pro (17.4.0)
+            SCAN_DEVICE: iPhone SE (17.4.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -414,6 +415,32 @@ jobs:
           command: swift build -c release --target RevenueCat
           no_output_timeout: 30m
 
+  spm-xcode-14-1:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM RevenueCat Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 30m
+
+  spm-release-build:
+    <<: *base-job
+    steps:
+      - checkout
+      - run:
+          name: SPM Release Build
+          command: swift build -c release --target RevenueCat
+          no_output_timeout: 30m
+      - run:
+          name: SPM RevenueCatUI Release Build
+          command: swift build -c release --target RevenueCatUI
+          no_output_timeout: 30m
+
   spm-custom-entitlement-computation-build:
     <<: *base-job
     steps:
@@ -435,19 +462,6 @@ jobs:
       - run:
           name: SPM Receipt Parser
           command: swift build -c release --target ReceiptParser
-          no_output_timeout: 30m
-
-  spm-xcode-14-1:
-    <<: *base-job
-    steps:
-      - checkout
-      - run:
-          name: SPM RevenueCat Release Build
-          command: swift build -c release --target RevenueCat
-          no_output_timeout: 30m
-      - run:
-          name: SPM RevenueCatUI Release Build
-          command: swift build -c release --target RevenueCatUI
           no_output_timeout: 30m
 
   spm-revenuecat-ui-ios-15:
@@ -693,6 +707,10 @@ jobs:
           name: Run tests
           command: bundle exec fastlane test_watchos
           no_output_timeout: 5m
+          environment:
+            SCAN_PLATFORM: watchOS Simulator
+            SCAN_DEVICE: Apple Watch Series 9 (45mm) (10.4)
+            BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
           bundle_name: RevenueCat
@@ -759,38 +777,6 @@ jobs:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
           version: "ios-13"
-      - store_test_results:
-          path: fastlane/test_output
-      - store_artifacts:
-          path: fastlane/test_output/xctest
-          destination: scan-test-output
-
-  run-test-ios-12:
-    <<: *base-job
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-          install_mint: true
-          install_swiftlint: << parameters.install_swiftlint >>
-      - macos/install-rosetta
-      - install-xcbeautify-for-xcode14
-      - update-spm-installation-commit
-      - install-runtime:
-          runtime-name: iOS 12.4
-      - run:
-          name: Run tests
-          command: bundle exec fastlane test_ios
-          no_output_timeout: 5m
-          environment:
-            SCAN_DEVICE: iPhone 6 (12.4)
-      - compress_result_bundle:
-          directory: fastlane/test_output/xctest/ios
-          bundle_name: RevenueCat
-      - create-snapshot-pr-if-needed:
-          condition: << pipeline.parameters.generate_snapshots >>
-          job: "create_snapshot_pr"
-          version: "ios-12"
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -875,6 +861,18 @@ jobs:
           path: fastlane/test_output/report.html
           destination: test_report.html
 
+  docs-build:
+    <<: *base-job
+    steps:
+      - setup-git-credentials
+      - checkout
+      - install-bundle-dependencies
+      - run:
+          name: Build docs
+          command: bundle exec fastlane build_docs
+          environment:
+            DOCS_IOS_VERSION: "17.4"
+
   docs-deploy:
     <<: *base-job
     steps:
@@ -883,7 +881,7 @@ jobs:
       - install-bundle-dependencies
       - run:
           name: Build docs
-          command: bundle exec fastlane generate_docs
+          command: bundle exec fastlane build_and_publish_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
 
@@ -924,7 +922,6 @@ jobs:
   prepare-next-version:
     <<: *base-job
     steps:
-      - setup-git-credentials
       - checkout
       - install-dependencies
       - trust-github-key
@@ -943,7 +940,7 @@ jobs:
           name: Install Pods
           working_directory: Tests/InstallationTests/CocoapodsInstallation/
           command: |
-              bundle exec pod install
+            bundle exec pod install
       - scan-and-archive:
           directory: Tests/InstallationTests/CocoapodsInstallation
 
@@ -999,7 +996,7 @@ jobs:
           name: Carthage Update
           working_directory: Tests/InstallationTests/CarthageInstallation/
           command: |
-              bundle exec fastlane installation_tests
+            bundle exec fastlane installation_tests
 
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
@@ -1123,70 +1120,75 @@ jobs:
 
   notify-on-non-patch-release-branches:
     docker:
-      - image: 'cimg/base:stable'
+      - image: "cimg/base:stable"
     steps:
       - slack/notify:
           custom: |
-              {
-                "text": "Public facing changes detected",
-                "blocks": [
-                  {
-                    "type": "header",
-                    "text": {
-                      "type": "plain_text",
-                      "text": "REMINDER :raised_hand:",
-                      "emoji": true
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "Do *public docs* need to be updated?"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "text": {
-                      "type": "mrkdwn",
-                      "text": "Does the *SDK parity spreadsheet* need to be updated?"
-                    }
-                  },
-                  {
-                    "type": "section",
-                    "fields": [
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
-                      },
-                      {
-                        "type": "mrkdwn",
-                        "text": "*Branch*: $CIRCLE_BRANCH"
-                      }
-                    ]
+            {
+              "text": "Public facing changes detected",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "REMINDER :raised_hand:",
+                    "emoji": true
                   }
-                ]
-              }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Do *public docs* need to be updated?"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Does the *SDK parity spreadsheet* need to be updated?"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Project*: $CIRCLE_PROJECT_REPONAME"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch*: $CIRCLE_BRANCH"
+                    }
+                  ]
+                }
+              ]
+            }
 
   deploy-to-spm:
     docker:
-      - image: cimg/ruby:3.1.2
-    working_directory: ~/purchases-ios
-    shell: /bin/bash --login -o pipefail
+      - image: cimg/base:stable
+    resource_class: small
     steps:
       - checkout
-      - install-rubydocker-dependencies
+      - setup-git-credentials
       - run:
           name: Clone purchases-ios and push to purchases-ios-spm
-          command: bundle exec fastlane deploy_to_spm
-            
+          command: |
+            git clone https://github.com/RevenueCat/purchases-ios.git
+            cd purchases-ios
+            git fetch --tags
+            git remote set-url origin https://github.com/RevenueCat/purchases-ios-spm.git
+            git push origin
+            git push --tags
+
 workflows:
   version: 2
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
       - run-test-ios-17:
-          xcode_version: '15.2'
+          xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
@@ -1197,9 +1199,6 @@ workflows:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-ios-13:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-      - run-test-ios-12:
           xcode_version: '14.2.0'
           install_swiftlint: false
       - run-test-macos
@@ -1214,17 +1213,23 @@ workflows:
           xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
+          xcode_version: "15.2"
 
   build-test:
     when:
       and:
         - not:
-            equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+            equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not: << pipeline.parameters.generate_snapshots >>
         - not: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - lint
+      - docs-build:
+          xcode_version: '14.3.0'
+          install_swiftlint: false
+      - spm-release-build
+      - spm-custom-entitlement-computation-build
+      - spm-receipt-parser
       - spm-release-build-xcode-14:
           xcode_version: '14.3.0'
           install_swiftlint: false
@@ -1233,8 +1238,6 @@ workflows:
       - spm-xcode-14-1:
           xcode_version: '14.1.0'
           install_swiftlint: false
-      - spm-custom-entitlement-computation-build
-      - spm-receipt-parser
       - spm-revenuecat-ui-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
@@ -1242,19 +1245,18 @@ workflows:
           xcode_version: '14.3.0'
           install_swiftlint: false
       - spm-revenuecat-ui-ios-17:
-          xcode_version: '15.2'
+          xcode_version: "15.2"
       - spm-revenuecat-ui-watchos
       - run-test-macos
       - run-test-ios-17:
-          xcode_version: '15.2'
+          xcode_version: "15.2"
       - run-test-ios-16:
           xcode_version: '14.3.0'
           install_swiftlint: false
       - run-test-ios-15:
           xcode_version: '14.3.0'
           install_swiftlint: false
-      - run-test-watchos:
-          xcode_version: '14.3.0'
+      - run-test-watchos
       - run-test-tvos
       # Pre-iOS 15 requires macOS 12 which requires Xcode 14.2
       # See https://circleci.com/docs/using-macos/#supported-xcode-versions
@@ -1265,40 +1267,36 @@ workflows:
           xcode_version: '14.2.0'
           install_swiftlint: false
           <<: *release-branches-and-main
-      - run-test-ios-12:
-          xcode_version: '14.2.0'
-          install_swiftlint: false
-          <<: *release-branches-and-main
       - build-tv-watch-and-macos
       - build-visionos
       - backend-integration-tests-SK1:
           filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              ignore: /pull\/[0-9]+/
       - backend-integration-tests-SK2:
           filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              ignore: /pull\/[0-9]+/
       - backend-integration-tests-other:
           filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              ignore: /pull\/[0-9]+/
       - backend-integration-tests-offline:
           # These tests are flaky due to FB13133387 so we don't want the noise in every PR
           <<: *release-branches-and-main
       - backend-integration-tests-custom-entitlements:
           filters:
-              branches:
-                # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
-                ignore: /pull\/[0-9]+/
+            branches:
+              # Forked pull requests have CIRCLE_BRANCH set to pull/XXX
+              ignore: /pull\/[0-9]+/
 
   deploy:
     when:
       not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - release-checks:
           <<: *release-branches
@@ -1345,8 +1343,8 @@ workflows:
             - make-release
           <<: *release-tags
       - docs-deploy:
-          xcode_version: '14.3.0'
           <<: *release-tags
+          xcode_version: '14.3.0'
       - deploy-purchase-tester:
           <<: *release-tags
       - notify-on-non-patch-release-branches:
@@ -1357,7 +1355,7 @@ workflows:
   snapshot-bump:
     when:
       not:
-        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - prepare-next-version:
           <<: *only-main-branch
@@ -1367,22 +1365,23 @@ workflows:
   weekly-run-workflow:
     when:
       and:
-        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-        - equal: [ "release-train", << pipeline.schedule.name >> ]
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["release-train", << pipeline.schedule.name >>]
     jobs:
       - release-train
 
   daily-loadshedder-integration-tests:
     when:
       and:
-        - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
-        - equal: [ "load_shedder_integration_tests", << pipeline.schedule.name >> ]
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal:
+            ["load_shedder_integration_tests", << pipeline.schedule.name >>]
     jobs:
       - loadshedder-integration-tests-v3
       - integration-tests-all
 
   manual-trigger-bump:
     when:
-      equal: [ bump, << pipeline.parameters.action >> ]
+      equal: [bump, << pipeline.parameters.action >>]
     jobs:
       - release-train

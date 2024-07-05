@@ -38,7 +38,32 @@ extension CustomerInfo {
             "original_app_user_id": "app_user_id",
             "subscriptions": [:] as [String: Any],
             "other_purchases": [:] as [String: Any],
+            "original_application_version": "1.0",
+            "original_purchase_date": "2019-07-17T00:05:54Z"
+        ] as [String: Any]
+    ])
+
+    // swiftlint:disable:next force_try
+    static let missingOriginalPurchaseDate: CustomerInfo = try! .init(data: [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
             "original_application_version": "1.0"
+        ] as [String: Any]
+    ])
+
+    // swiftlint:disable:next force_try
+    static let missingOriginalApplicationVersion: CustomerInfo = try! .init(data: [
+        "request_date": "2019-08-16T10:30:42Z",
+        "subscriber": [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
+            "subscriptions": [:] as [String: Any],
+            "other_purchases": [:] as [String: Any],
+            "original_purchase_date": "2019-07-17T00:05:54Z"
         ] as [String: Any]
     ])
 

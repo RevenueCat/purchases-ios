@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 10/10/22.
 
 @testable import RevenueCat
+import StoreKit
 
 final class MockPurchases {
 
@@ -51,7 +52,6 @@ final class MockPurchases {
 
 extension MockPurchases: InternalPurchasesType {
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func healthRequest(signatureVerification: Bool) async throws {
         if signatureVerification {
             return try self.mockedHealthRequestWithSignatureVerificationResponse.get()
@@ -85,7 +85,6 @@ extension MockPurchases: PurchasesType {
         self.getCustomerInfo(completion: completion)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo() async throws -> CustomerInfo {
         self.invokedGetCustomerInfo = true
         return try self.mockedCustomerInfoResponse.get()
@@ -100,12 +99,10 @@ extension MockPurchases: PurchasesType {
         completion(self.mockedOfferingsResponse.value, self.mockedOfferingsResponse.error)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings() async throws -> Offerings {
         return try await self.offerings(fetchPolicy: .default)
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         self.invokedGetOfferings = true
         self.invokedGetOfferingsParameters = fetchPolicy
@@ -153,7 +150,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logIn(
         _ appUserID: String
     ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
@@ -164,7 +160,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func logOut() async throws -> CustomerInfo {
         self.unimplemented()
     }
@@ -175,12 +170,10 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncAttributesAndOfferingsIfNeeded() async throws -> Offerings? {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo {
         self.unimplemented()
     }
@@ -189,7 +182,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func products(_ productIdentifiers: [String]) async -> [StoreProduct] {
         self.unimplemented()
     }
@@ -198,7 +190,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(product: StoreProduct) async throws -> PurchaseResultData {
         self.unimplemented()
     }
@@ -207,7 +198,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(package: Package) async throws -> PurchaseResultData {
         self.unimplemented()
     }
@@ -220,7 +210,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(
         product: StoreProduct,
         promotionalOffer: PromotionalOffer
@@ -236,7 +225,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer
@@ -248,7 +236,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func restorePurchases() async throws -> CustomerInfo {
         self.unimplemented()
     }
@@ -257,7 +244,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func syncPurchases() async throws -> CustomerInfo {
         self.unimplemented()
     }
@@ -269,7 +255,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(
         productIdentifiers: [String]
     ) async -> [String: IntroEligibility] {
@@ -283,7 +268,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func checkTrialOrIntroDiscountEligibility(
         product: StoreProduct
     ) async -> IntroEligibilityStatus {
@@ -298,7 +282,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func promotionalOffer(
         forProductDiscount discount: StoreProductDiscount,
         product: StoreProduct
@@ -306,7 +289,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         self.unimplemented()
     }
@@ -315,17 +297,14 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func beginRefundRequest(forProduct productID: String) async throws -> RefundRequestStatus {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func beginRefundRequest(forEntitlement entitlementID: String) async throws -> RefundRequestStatus {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func beginRefundRequestForActiveEntitlement() async throws -> RefundRequestStatus {
         self.unimplemented()
     }
@@ -346,7 +325,6 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
     func showManageSubscriptions() async throws {
         self.unimplemented()
     }
@@ -447,7 +425,6 @@ extension MockPurchases: PurchasesType {
 
 }
 
-@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)
 extension MockPurchases: PurchasesSwiftType {
 
     var customerInfoStream: AsyncStream<CustomerInfo> {
@@ -471,6 +448,13 @@ extension MockPurchases: PurchasesSwiftType {
     func beginRefundRequestForActiveEntitlement(
         completion: @escaping (Result<RefundRequestStatus, PublicError>) -> Void
     ) {
+        self.unimplemented()
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func recordPurchase(
+        _ purchaseResult: Product.PurchaseResult
+    ) async throws -> RevenueCat.StoreTransaction? {
         self.unimplemented()
     }
 
